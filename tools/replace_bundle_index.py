@@ -26,21 +26,39 @@ def main() -> None:
     index = Path(args.index)
     if not bundle.exists() or not index.exists():
         raise SystemExit("bundle/index missing")
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as tmp:
+
+    # Keep the temporary archive beside the target bundle. On Windows,
+    # os.replace()/Path.replace() cannot atomically move a file between drives
+    # (GitHub runners commonly use C: for temp files and D: for the workspace).
+    bundle.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(
+        delete=False,
+        suffix=".zip",
+        prefix=f".{bundle.stem}-",
+        dir=bundle.parent,
+    ) as tmp:
         temp = Path(tmp.name)
-    with zipfile.ZipFile(bundle, "r") as src, zipfile.ZipFile(temp, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as dst:
-        for info in src.infolist():
-            name = info.filename.replace("\\", "/")
-            if name == "index.html" or name in DROP:
-                continue
-            dst.writestr(info, src.read(info.filename))
-        dst.writestr("index.html", index.read_bytes())
-    with zipfile.ZipFile(temp) as check:
-        names = check.namelist()
-        jpg = sum(n.lower().endswith(".jpg") for n in names)
-        if "index.html" not in names or jpg != 204 or check.testzip() is not None:
-            raise SystemExit(f"rebuilt AppBundle invalid: index={'index.html' in names}, jpg={jpg}")
-    temp.replace(bundle)
+
+    try:
+        with zipfile.ZipFile(bundle, "r") as src, zipfile.ZipFile(temp, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as dst:
+            for info in src.infolist():
+                name = info.filename.replace("\\", "/")
+                if name == "index.html" or name in DROP:
+                    continue
+                dst.writestr(info, src.read(info.filename))
+            dst.writestr("index.html", index.read_bytes())
+
+        with zipfile.ZipFile(temp) as check:
+            names = check.namelist()
+            jpg = sum(n.lower().endswith(".jpg") for n in names)
+            if "index.html" not in names or jpg != 204 or check.testzip() is not None:
+                raise SystemExit(f"rebuilt AppBundle invalid: index={'index.html' in names}, jpg={jpg}")
+
+        temp.replace(bundle)
+    finally:
+        if temp.exists():
+            temp.unlink()
+
     print(f"AppBundle ready: {bundle} · 204 JPEG assets")
 
 if __name__ == "__main__":
