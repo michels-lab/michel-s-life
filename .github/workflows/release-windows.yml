@@ -1,0 +1,192 @@
+name: Build Windows release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bundle_url:
+        description: Optional AppBundle.zip bootstrap URL. Leave empty to use latest public release.
+        required: false
+        type: string
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+env:
+  RELEASES_REPO: realmichelduarte/michel-s-life-releases
+  HAS_WINDOWS_CERT: ${{ secrets.WINDOWS_CERT_BASE64 != '' }}
+  HAS_RELEASE_TOKEN: ${{ secrets.RELEASES_REPO_TOKEN != '' }}
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Materialize host source
+        shell: pwsh
+        run: python tools/materialize_host_source.py
+
+      - name: Validate source
+        shell: pwsh
+        run: python tools/release_smoke_test.py
+
+      - name: Resolve release version
+        id: ver
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REF_NAME -like 'v*') {
+            $v = $env:GITHUB_REF_NAME.TrimStart('v')
+          } else {
+            [xml]$proj = Get-Content 'src/MichelsLife/MichelsLife.csproj'
+            $v = [string]$proj.Project.PropertyGroup.Version
+          }
+          "version=$v" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "Building Michel's Life v$v"
+
+      - name: Download v3.0.201 visual bundle + icon bootstrap
+        shell: pwsh
+        env:
+          INPUT_BUNDLE_URL: ${{ inputs.bundle_url }}
+        run: |
+          $base = $env:INPUT_BUNDLE_URL
+          if ([string]::IsNullOrWhiteSpace($base)) {
+            $base = "https://github.com/$env:RELEASES_REPO/releases/latest/download/AppBundle.zip"
+          }
+          Invoke-WebRequest -Uri $base -OutFile 'src/MichelsLife/AppBundle.zip'
+          New-Item -ItemType Directory -Force 'src/MichelsLife/Assets' | Out-Null
+          $icon = "https://github.com/$env:RELEASES_REPO/releases/latest/download/michels_life_icon.ico"
+          Invoke-WebRequest -Uri $icon -OutFile 'src/MichelsLife/Assets/michels_life_icon.ico'
+
+      - name: Patch frontend to v3.0.202 and validate full bundle
+        shell: pwsh
+        run: |
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip=[IO.Compression.ZipFile]::OpenRead((Resolve-Path 'src/MichelsLife/AppBundle.zip'))
+          $entry=$zip.GetEntry('index.html')
+          if (-not $entry) { throw 'Base AppBundle.zip has no index.html' }
+          $reader=New-Object IO.StreamReader($entry.Open())
+          $html=$reader.ReadToEnd(); $reader.Dispose(); $zip.Dispose()
+          Set-Content -Path 'src/MichelsLife/base-index.html' -Value $html -NoNewline -Encoding UTF8
+          python tools/patch_frontend_v30202.py --index src/MichelsLife/base-index.html --overlay src/MichelsLife/AppPatches/v3.0.202.html
+          python tools/validate_generated_index.py --index src/MichelsLife/base-index.html
+          python tools/replace_bundle_index.py --bundle src/MichelsLife/AppBundle.zip --index src/MichelsLife/base-index.html
+          Remove-Item src/MichelsLife/base-index.html -Force
+
+      - name: Inject Google OAuth build credential
+        shell: pwsh
+        env:
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:GOOGLE_CLIENT_SECRET)) {
+            throw 'GOOGLE_CLIENT_SECRET repository secret is required for an official build.'
+          }
+          $path = 'src/MichelsLife/BuildSecrets.cs'
+          $content = Get-Content $path -Raw
+          $escaped = $env:GOOGLE_CLIENT_SECRET.Replace('\','\\').Replace('"','\"')
+          $content = $content.Replace('__BUILD_SECRET_GOOGLE__', $escaped)
+          Set-Content -Path $path -Value $content -NoNewline -Encoding UTF8
+
+      - name: Publish portable Windows executable
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts/publish | Out-Null
+          dotnet restore src/MichelsLife/MichelsLife.csproj
+          dotnet publish src/MichelsLife/MichelsLife.csproj `
+            -c Release -r win-x64 --self-contained true `
+            -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true `
+            -o artifacts/publish
+          $v='${{ steps.ver.outputs.version }}'
+          Copy-Item artifacts/publish/MichelsLife.exe "artifacts/MichelsLife-v$v.exe"
+
+      - name: Optional Authenticode signing for portable EXE
+        if: ${{ env.HAS_WINDOWS_CERT == 'true' }}
+        shell: pwsh
+        env:
+          WINDOWS_CERT_BASE64: ${{ secrets.WINDOWS_CERT_BASE64 }}
+          WINDOWS_CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
+        run: |
+          [IO.File]::WriteAllBytes('artifacts/signing.pfx',[Convert]::FromBase64String($env:WINDOWS_CERT_BASE64))
+          $signtool = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin" -Filter signtool.exe -Recurse | Where-Object {$_.FullName -match '\\x64\\'} | Sort-Object FullName -Descending | Select-Object -First 1
+          if (-not $signtool) { throw 'signtool.exe not found' }
+          & $signtool.FullName sign /fd SHA256 /f artifacts/signing.pfx /p $env:WINDOWS_CERT_PASSWORD /tr http://timestamp.digicert.com /td SHA256 "artifacts/MichelsLife-v${{ steps.ver.outputs.version }}.exe"
+          Remove-Item artifacts/signing.pfx -Force
+
+      - name: Create portable checksum
+        shell: pwsh
+        run: |
+          $v='${{ steps.ver.outputs.version }}'
+          $exe="artifacts/MichelsLife-v$v.exe"
+          $hash=(Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  MichelsLife-v$v.exe" | Set-Content "$exe.sha256" -Encoding ascii
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          choco install innosetup --yes --no-progress
+          $v='${{ steps.ver.outputs.version }}'
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DMyAppVersion=$v" "/DPublishDir=$((Resolve-Path 'artifacts/publish').Path)" installer/MichelsLife.iss
+
+      - name: Optional Authenticode signing for installer
+        if: ${{ env.HAS_WINDOWS_CERT == 'true' }}
+        shell: pwsh
+        env:
+          WINDOWS_CERT_BASE64: ${{ secrets.WINDOWS_CERT_BASE64 }}
+          WINDOWS_CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
+        run: |
+          [IO.File]::WriteAllBytes('artifacts/signing.pfx',[Convert]::FromBase64String($env:WINDOWS_CERT_BASE64))
+          $signtool = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin" -Filter signtool.exe -Recurse | Where-Object {$_.FullName -match '\\x64\\'} | Sort-Object FullName -Descending | Select-Object -First 1
+          & $signtool.FullName sign /fd SHA256 /f artifacts/signing.pfx /p $env:WINDOWS_CERT_PASSWORD /tr http://timestamp.digicert.com /td SHA256 "artifacts/MichelsLife-Setup-v${{ steps.ver.outputs.version }}.exe"
+          Remove-Item artifacts/signing.pfx -Force
+
+      - name: Keep bootstrap assets for next release
+        shell: pwsh
+        run: |
+          Copy-Item src/MichelsLife/AppBundle.zip artifacts/AppBundle.zip
+          Copy-Item src/MichelsLife/Assets/michels_life_icon.ico artifacts/michels_life_icon.ico
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MichelsLife-v${{ steps.ver.outputs.version }}
+          path: |
+            artifacts/MichelsLife-v${{ steps.ver.outputs.version }}.exe
+            artifacts/MichelsLife-v${{ steps.ver.outputs.version }}.exe.sha256
+            artifacts/MichelsLife-Setup-v${{ steps.ver.outputs.version }}.exe
+            artifacts/AppBundle.zip
+            artifacts/michels_life_icon.ico
+
+      - name: Publish to public release channel
+        if: ${{ startsWith(github.ref, 'refs/tags/') && env.HAS_RELEASE_TOKEN == 'true' }}
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_REPO_TOKEN }}
+        run: |
+          $tag=$env:GITHUB_REF_NAME
+          $v='${{ steps.ver.outputs.version }}'
+          $assets=@(
+            "artifacts/MichelsLife-v$v.exe",
+            "artifacts/MichelsLife-v$v.exe.sha256",
+            "artifacts/MichelsLife-Setup-v$v.exe",
+            "artifacts/AppBundle.zip",
+            "artifacts/michels_life_icon.ico"
+          )
+          gh release view $tag --repo $env:RELEASES_REPO *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag @assets --repo $env:RELEASES_REPO --clobber
+          } else {
+            gh release create $tag @assets --repo $env:RELEASES_REPO --title "Michel's Life $tag" --notes "Release $tag. See the private source changelog for full details."
+          }
