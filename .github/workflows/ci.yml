@@ -24,3 +24,6 @@ jobs:
 
       - name: Release-readiness smoke tests
         run: python tools/release_smoke_test.py
+
+      - name: Microsoft Store packaging smoke tests
+        run: python tools/store_smoke_test.py

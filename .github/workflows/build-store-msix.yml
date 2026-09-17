@@ -1,0 +1,178 @@
+name: Build Microsoft Store MSIX
+
+on:
+  workflow_dispatch:
+    inputs:
+      package_identity_name:
+        description: Exact Package/Identity/Name from Partner Center.
+        required: true
+        type: string
+      publisher:
+        description: Exact Publisher value from Partner Center (for example CN=...).
+        required: true
+        type: string
+      publisher_display_name:
+        description: Exact Publisher display name from Partner Center.
+        required: true
+        type: string
+      display_name:
+        description: Store display name.
+        required: true
+        default: "Michel's Life"
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  RELEASES_REPO: realmichelduarte/michel-s-life-releases
+
+jobs:
+  package:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Materialize host source
+        shell: pwsh
+        run: python tools/materialize_host_source.py
+
+      - name: Validate release and Store packaging source
+        shell: pwsh
+        run: |
+          python tools/release_smoke_test.py
+          python tools/store_smoke_test.py
+
+      - name: Resolve app version
+        id: ver
+        shell: pwsh
+        run: |
+          [xml]$proj = Get-Content 'src/MichelsLife/MichelsLife.csproj'
+          $v = [string]$proj.Project.PropertyGroup.Version
+          "version=$v" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "Packaging Michel's Life Store build v$v"
+
+      - name: Download current visual bundle and icon
+        shell: pwsh
+        run: |
+          $base = "https://github.com/$env:RELEASES_REPO/releases/latest/download/AppBundle.zip"
+          $icon = "https://github.com/$env:RELEASES_REPO/releases/latest/download/michels_life_icon.ico"
+          Invoke-WebRequest -Uri $base -OutFile 'src/MichelsLife/AppBundle.zip'
+          New-Item -ItemType Directory -Force 'src/MichelsLife/Assets' | Out-Null
+          Invoke-WebRequest -Uri $icon -OutFile 'src/MichelsLife/Assets/michels_life_icon.ico'
+
+      - name: Prepare Store frontend bundle
+        shell: pwsh
+        run: |
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip=[IO.Compression.ZipFile]::OpenRead((Resolve-Path 'src/MichelsLife/AppBundle.zip'))
+          $entry=$zip.GetEntry('index.html')
+          if (-not $entry) { throw 'Base AppBundle.zip has no index.html' }
+          $reader=New-Object IO.StreamReader($entry.Open())
+          $html=$reader.ReadToEnd(); $reader.Dispose(); $zip.Dispose()
+          Set-Content -Path 'src/MichelsLife/base-index.html' -Value $html -NoNewline -Encoding UTF8
+          python tools/patch_frontend_v30202.py --index src/MichelsLife/base-index.html --overlay src/MichelsLife/AppPatches/v3.0.202.html
+          python tools/append_store_overlay.py --index src/MichelsLife/base-index.html --overlay src/MichelsLife/AppPatches/store-msix.html
+          python tools/validate_generated_index.py --index src/MichelsLife/base-index.html
+          python tools/replace_bundle_index.py --bundle src/MichelsLife/AppBundle.zip --index src/MichelsLife/base-index.html
+          Remove-Item src/MichelsLife/base-index.html -Force
+
+      - name: Inject Google OAuth build credential
+        shell: pwsh
+        env:
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:GOOGLE_CLIENT_SECRET)) {
+            throw 'GOOGLE_CLIENT_SECRET repository secret is required for the Store build.'
+          }
+          $path = 'src/MichelsLife/BuildSecrets.cs'
+          $content = Get-Content $path -Raw
+          $escaped = $env:GOOGLE_CLIENT_SECRET.Replace('\','\\').Replace('"','\"')
+          $content = $content.Replace('__BUILD_SECRET_GOOGLE__', $escaped)
+          Set-Content -Path $path -Value $content -NoNewline -Encoding UTF8
+
+      - name: Publish unpacked x64 app for MSIX
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts/store-publish | Out-Null
+          dotnet restore src/MichelsLife/MichelsLife.csproj
+          dotnet publish src/MichelsLife/MichelsLife.csproj `
+            -c Release -r win-x64 --self-contained true `
+            -p:PublishSingleFile=false `
+            -o artifacts/store-publish
+
+      - name: Build MSIX layout
+        shell: pwsh
+        env:
+          PACKAGE_IDENTITY_NAME: ${{ inputs.package_identity_name }}
+          STORE_PUBLISHER: ${{ inputs.publisher }}
+          STORE_PUBLISHER_DISPLAY_NAME: ${{ inputs.publisher_display_name }}
+          STORE_DISPLAY_NAME: ${{ inputs.display_name }}
+        run: |
+          $layout = 'artifacts/msix-layout'
+          New-Item -ItemType Directory -Force $layout | Out-Null
+          Copy-Item 'artifacts/store-publish/*' $layout -Recurse -Force
+          New-Item -ItemType Directory -Force "$layout/Assets" | Out-Null
+          pwsh -File tools/create_store_assets.ps1 `
+            -IconPath 'src/MichelsLife/Assets/michels_life_icon.ico' `
+            -OutputDir "$layout/Assets"
+          python tools/render_store_manifest.py `
+            --template store/AppxManifest.template.xml `
+            --output "$layout/AppxManifest.xml" `
+            --package-name "$env:PACKAGE_IDENTITY_NAME" `
+            --publisher "$env:STORE_PUBLISHER" `
+            --publisher-display-name "$env:STORE_PUBLISHER_DISPLAY_NAME" `
+            --display-name "$env:STORE_DISPLAY_NAME" `
+            --version '${{ steps.ver.outputs.version }}'
+
+      - name: Create unsigned Store MSIX
+        shell: pwsh
+        run: |
+          $makeappx = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin" -Filter makeappx.exe -Recurse |
+            Where-Object { $_.FullName -match '\\x64\\' } |
+            Sort-Object FullName -Descending |
+            Select-Object -First 1
+          if (-not $makeappx) { throw 'makeappx.exe not found on the Windows runner.' }
+
+          $v='${{ steps.ver.outputs.version }}'
+          $msix="artifacts/MichelsLife-Store-v$v-x64.msix"
+          & $makeappx.FullName pack /d artifacts/msix-layout /p $msix /o
+          if ($LASTEXITCODE -ne 0) { throw 'MakeAppx pack failed.' }
+
+          Remove-Item artifacts/msix-verify -Recurse -Force -ErrorAction SilentlyContinue
+          & $makeappx.FullName unpack /p $msix /d artifacts/msix-verify /o
+          if ($LASTEXITCODE -ne 0) { throw 'MakeAppx verification unpack failed.' }
+          if (-not (Test-Path 'artifacts/msix-verify/AppxManifest.xml')) { throw 'MSIX verification manifest missing.' }
+          if (-not (Test-Path 'artifacts/msix-verify/MichelsLife.exe')) { throw 'MSIX verification executable missing.' }
+
+          $hash=(Get-FileHash $msix -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  MichelsLife-Store-v$v-x64.msix" | Set-Content "$msix.sha256" -Encoding ascii
+          Copy-Item artifacts/msix-layout/AppxManifest.xml artifacts/AppxManifest.Store.xml
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MichelsLife-Store-v${{ steps.ver.outputs.version }}
+          path: |
+            artifacts/MichelsLife-Store-v${{ steps.ver.outputs.version }}-x64.msix
+            artifacts/MichelsLife-Store-v${{ steps.ver.outputs.version }}-x64.msix.sha256
+            artifacts/AppxManifest.Store.xml
+          if-no-files-found: error
+
+      - name: Store package note
+        shell: pwsh
+        run: |
+          Write-Host 'The MSIX artifact is intentionally unsigned.'
+          Write-Host 'Upload it to Partner Center. Microsoft Store re-signs accepted MSIX packages.'
+          Write-Host 'Do not publish this unsigned MSIX as a direct-download installer.'

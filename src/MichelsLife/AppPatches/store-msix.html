@@ -1,0 +1,16 @@
+<!-- mlv-store-msix-channel: Microsoft Store distribution behavior -->
+<style id="mlv-store-msix-channel">
+section[data-mlv202-update]{display:none!important}
+</style>
+<script id="mlv-store-msix-channel-script">
+(function(){
+'use strict';
+if(window.MLVStoreChannel)return;
+function card(){return `<section class="card" data-ml-store-update><div class="section-title"><div><h2>Microsoft Store updates</h2><p>This edition is installed and updated through Microsoft Store.</p></div><span class="pill">Store</span></div><div class="mlv202-note">GitHub and local self-update controls are disabled in the Store package. Microsoft Store handles trusted installation and future updates for this edition.</div></section>`}
+function mount(){const a=document.querySelector('[data-v30171-pane="about"]');if(!a)return;if(a.querySelector('[data-ml-store-update]'))return;const t=document.createElement('template');t.innerHTML=card();a.appendChild(t.content.firstElementChild)}
+const mo=new MutationObserver(()=>{clearTimeout(mo._t);mo._t=setTimeout(mount,120)});try{mo.observe(document.body,{childList:true,subtree:true})}catch(_){}
+document.addEventListener('click',e=>{if(e.target.closest?.('[data-v30171-setting="about"]'))setTimeout(mount,180)},true);
+setTimeout(mount,900);
+window.MLVStoreChannel={version:'1',mount};
+})();
+</script>
