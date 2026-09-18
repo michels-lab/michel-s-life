@@ -1,0 +1,136 @@
+name: Build Windows test ZIP
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-test-main
+  cancel-in-progress: true
+
+env:
+  RELEASES_REPO: realmichelduarte/michel-s-life-releases
+
+jobs:
+  build-test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Materialize host source
+        shell: pwsh
+        run: python tools/materialize_host_source.py
+
+      - name: Validate source
+        shell: pwsh
+        run: |
+          python tools/release_smoke_test.py
+          python tools/store_smoke_test.py
+
+      - name: Resolve version
+        id: ver
+        shell: pwsh
+        run: |
+          [xml]$proj = Get-Content 'src/MichelsLife/MichelsLife.csproj'
+          $v = [string]$proj.Project.PropertyGroup.Version
+          "version=$v" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: Download visual bundle
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/$env:RELEASES_REPO/releases/latest/download/AppBundle.zip" -OutFile 'src/MichelsLife/AppBundle.zip'
+
+      - name: Generate current app icon
+        shell: pwsh
+        run: |
+          choco install imagemagick --yes --no-progress
+          New-Item -ItemType Directory -Force 'src/MichelsLife/Assets' | Out-Null
+          $magick = Get-Command magick -ErrorAction SilentlyContinue
+          if (-not $magick) {
+            $exe = Get-ChildItem "$env:ProgramFiles\ImageMagick*" -Filter magick.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            if (-not $exe) { throw 'ImageMagick magick.exe not found.' }
+            $magickPath = $exe.FullName
+          } else { $magickPath = $magick.Source }
+          & $magickPath -background none 'branding/michels_life_mark.svg' -define icon:auto-resize=256,128,64,48,32,16 'src/MichelsLife/Assets/michels_life_icon.ico'
+          if ($LASTEXITCODE -ne 0) { throw 'App icon generation failed.' }
+
+      - name: Prepare frontend
+        shell: pwsh
+        run: |
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip=[IO.Compression.ZipFile]::OpenRead((Resolve-Path 'src/MichelsLife/AppBundle.zip'))
+          $entry=$zip.GetEntry('index.html')
+          if (-not $entry) { throw 'Base AppBundle.zip has no index.html' }
+          $reader=New-Object IO.StreamReader($entry.Open())
+          $html=$reader.ReadToEnd(); $reader.Dispose(); $zip.Dispose()
+          Set-Content -Path 'src/MichelsLife/base-index.html' -Value $html -NoNewline -Encoding UTF8
+          python tools/patch_frontend_v30202.py --index src/MichelsLife/base-index.html --overlay src/MichelsLife/AppPatches/v3.0.202.html
+          python tools/append_overlay.py --index src/MichelsLife/base-index.html --overlay src/MichelsLife/AppPatches/developer-branding.html --marker mlv-developer-branding
+          if (Test-Path 'src/MichelsLife/AppPatches/user-profile-birthday.html') {
+            python tools/append_overlay.py --index src/MichelsLife/base-index.html --overlay src/MichelsLife/AppPatches/user-profile-birthday.html --marker mlv-user-profile-birthday
+          }
+          python tools/validate_generated_index.py --index src/MichelsLife/base-index.html
+          python tools/replace_bundle_index.py --bundle src/MichelsLife/AppBundle.zip --index src/MichelsLife/base-index.html
+          Remove-Item src/MichelsLife/base-index.html -Force
+
+      - name: Inject Google OAuth build credential
+        shell: pwsh
+        env:
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:GOOGLE_CLIENT_SECRET)) {
+            throw 'GOOGLE_CLIENT_SECRET repository secret is required for test builds.'
+          }
+          $path = 'src/MichelsLife/BuildSecrets.cs'
+          $content = Get-Content $path -Raw
+          $escaped = $env:GOOGLE_CLIENT_SECRET.Replace('\','\\').Replace('"','\"')
+          $content = $content.Replace('__BUILD_SECRET_GOOGLE__', $escaped)
+          Set-Content -Path $path -Value $content -NoNewline -Encoding UTF8
+
+      - name: Build portable test executable
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts/test | Out-Null
+          dotnet restore src/MichelsLife/MichelsLife.csproj
+          dotnet publish src/MichelsLife/MichelsLife.csproj `
+            -c Release -r win-x64 --self-contained true `
+            -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true `
+            -o artifacts/publish
+          Copy-Item artifacts/publish/MichelsLife.exe artifacts/test/MichelsLife.exe
+          @"
+          Michel's Life TEST BUILD
+          Version: ${{ steps.ver.outputs.version }}
+          Commit: $env:GITHUB_SHA
+          Built: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss K')
+
+          This is a private test build. It is not a public release.
+          "@ | Set-Content artifacts/test/TEST_BUILD.txt -Encoding UTF8
+
+      - name: Create test ZIP
+        shell: pwsh
+        run: |
+          $v='${{ steps.ver.outputs.version }}'
+          Compress-Archive -Path artifacts/test/* -DestinationPath "artifacts/MichelsLife-TEST-v$v.zip" -Force
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MichelsLife-TEST-v${{ steps.ver.outputs.version }}
+          path: artifacts/MichelsLife-TEST-v${{ steps.ver.outputs.version }}.zip
+          if-no-files-found: error
+          retention-days: 14
