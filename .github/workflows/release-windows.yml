@@ -7,10 +7,6 @@ on:
         description: Optional AppBundle.zip bootstrap URL. Leave empty to use latest public release.
         required: false
         type: string
-      icon_url:
-        description: Optional icon bootstrap URL. Leave empty to use latest public release.
-        required: false
-        type: string
       publish:
         description: Publish the generated build to the public releases repository.
         required: false
@@ -67,23 +63,30 @@ jobs:
           "version=$v" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           Write-Host "Building Michel's Life v$v"
 
-      - name: Download v3.0.201 visual bundle + icon bootstrap
+      - name: Download current visual bundle
         shell: pwsh
         env:
           INPUT_BUNDLE_URL: ${{ inputs.bundle_url }}
-          INPUT_ICON_URL: ${{ inputs.icon_url }}
         run: |
           $base = $env:INPUT_BUNDLE_URL
           if ([string]::IsNullOrWhiteSpace($base)) {
             $base = "https://github.com/$env:RELEASES_REPO/releases/latest/download/AppBundle.zip"
           }
           Invoke-WebRequest -Uri $base -OutFile 'src/MichelsLife/AppBundle.zip'
+
+      - name: Generate current Michel's Life icon
+        shell: pwsh
+        run: |
+          choco install imagemagick --yes --no-progress
           New-Item -ItemType Directory -Force 'src/MichelsLife/Assets' | Out-Null
-          $icon = $env:INPUT_ICON_URL
-          if ([string]::IsNullOrWhiteSpace($icon)) {
-            $icon = "https://github.com/$env:RELEASES_REPO/releases/latest/download/michels_life_icon.ico"
-          }
-          Invoke-WebRequest -Uri $icon -OutFile 'src/MichelsLife/Assets/michels_life_icon.ico'
+          $magick = Get-Command magick -ErrorAction SilentlyContinue
+          if (-not $magick) {
+            $exe = Get-ChildItem "$env:ProgramFiles\ImageMagick*" -Filter magick.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            if (-not $exe) { throw 'ImageMagick magick.exe not found.' }
+            $magickPath = $exe.FullName
+          } else { $magickPath = $magick.Source }
+          & $magickPath -background none 'branding/michels_life_mark.svg' -define icon:auto-resize=256,128,64,48,32,16 'src/MichelsLife/Assets/michels_life_icon.ico'
+          if ($LASTEXITCODE -ne 0) { throw 'App icon generation failed.' }
 
       - name: Patch frontend to v3.0.202 and validate full bundle
         shell: pwsh
@@ -96,6 +99,7 @@ jobs:
           $html=$reader.ReadToEnd(); $reader.Dispose(); $zip.Dispose()
           Set-Content -Path 'src/MichelsLife/base-index.html' -Value $html -NoNewline -Encoding UTF8
           python tools/patch_frontend_v30202.py --index src/MichelsLife/base-index.html --overlay src/MichelsLife/AppPatches/v3.0.202.html
+          python tools/append_overlay.py --index src/MichelsLife/base-index.html --overlay src/MichelsLife/AppPatches/developer-branding.html --marker mlv-developer-branding
           python tools/validate_generated_index.py --index src/MichelsLife/base-index.html
           python tools/replace_bundle_index.py --bundle src/MichelsLife/AppBundle.zip --index src/MichelsLife/base-index.html
           Remove-Item src/MichelsLife/base-index.html -Force
