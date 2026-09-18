@@ -99,6 +99,7 @@ jobs:
           python tools/append_store_overlay.py --index src/MichelsLife/base-index.html --overlay src/MichelsLife/AppPatches/store-msix.html
           python tools/validate_generated_index.py --index src/MichelsLife/base-index.html
           python tools/replace_bundle_index.py --bundle src/MichelsLife/AppBundle.zip --index src/MichelsLife/base-index.html
+          python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source branding/michel_duarte_avatar.jpg --arcname assets/michel_duarte_avatar.jpg
           Remove-Item src/MichelsLife/base-index.html -Force
 
       - name: Inject Google OAuth build credential
