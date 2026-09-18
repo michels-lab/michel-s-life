@@ -64,14 +64,25 @@ jobs:
           "version=$v" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           Write-Host "Packaging Michel's Life Store build v$v"
 
-      - name: Download current visual bundle and icon
+      - name: Download current visual bundle
         shell: pwsh
         run: |
           $base = "https://github.com/$env:RELEASES_REPO/releases/latest/download/AppBundle.zip"
-          $icon = "https://github.com/$env:RELEASES_REPO/releases/latest/download/michels_life_icon.ico"
           Invoke-WebRequest -Uri $base -OutFile 'src/MichelsLife/AppBundle.zip'
+
+      - name: Generate current Michel's Life icon
+        shell: pwsh
+        run: |
+          choco install imagemagick --yes --no-progress
           New-Item -ItemType Directory -Force 'src/MichelsLife/Assets' | Out-Null
-          Invoke-WebRequest -Uri $icon -OutFile 'src/MichelsLife/Assets/michels_life_icon.ico'
+          $magick = Get-Command magick -ErrorAction SilentlyContinue
+          if (-not $magick) {
+            $exe = Get-ChildItem "$env:ProgramFiles\ImageMagick*" -Filter magick.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            if (-not $exe) { throw 'ImageMagick magick.exe not found.' }
+            $magickPath = $exe.FullName
+          } else { $magickPath = $magick.Source }
+          & $magickPath -background none 'branding/michels_life_mark.svg' -define icon:auto-resize=256,128,64,48,32,16 'src/MichelsLife/Assets/michels_life_icon.ico'
+          if ($LASTEXITCODE -ne 0) { throw 'App icon generation failed.' }
 
       - name: Prepare Store frontend bundle
         shell: pwsh
@@ -84,6 +95,7 @@ jobs:
           $html=$reader.ReadToEnd(); $reader.Dispose(); $zip.Dispose()
           Set-Content -Path 'src/MichelsLife/base-index.html' -Value $html -NoNewline -Encoding UTF8
           python tools/patch_frontend_v30202.py --index src/MichelsLife/base-index.html --overlay src/MichelsLife/AppPatches/v3.0.202.html
+          python tools/append_overlay.py --index src/MichelsLife/base-index.html --overlay src/MichelsLife/AppPatches/developer-branding.html --marker mlv-developer-branding
           python tools/append_store_overlay.py --index src/MichelsLife/base-index.html --overlay src/MichelsLife/AppPatches/store-msix.html
           python tools/validate_generated_index.py --index src/MichelsLife/base-index.html
           python tools/replace_bundle_index.py --bundle src/MichelsLife/AppBundle.zip --index src/MichelsLife/base-index.html
