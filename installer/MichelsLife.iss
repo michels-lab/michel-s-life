@@ -8,7 +8,7 @@
 AppId={{7F89006A-96B6-4B55-9151-46CB7D5953E1}
 AppName=Michel's Life
 AppVersion={#MyAppVersion}
-AppPublisher=Michel's Life
+AppPublisher=Michel's Lab
 DefaultDirName={autopf}\MichelsLife
 DefaultGroupName=Michel's Life
 DisableProgramGroupPage=yes
