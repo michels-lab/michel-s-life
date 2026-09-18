@@ -83,6 +83,7 @@ jobs:
           python tools/patch_frontend_v30202.py --index src/MichelsLife/base-index.html --overlay src/MichelsLife/AppPatches/v3.0.202.html
           python tools/patch_settings_about_routing.py --index src/MichelsLife/base-index.html
           python tools/append_overlay.py --index src/MichelsLife/base-index.html --overlay src/MichelsLife/AppPatches/developer-branding.html --marker mlv-developer-branding
+          python tools/verify_about_routing.py --index src/MichelsLife/base-index.html
           if (Test-Path 'src/MichelsLife/AppPatches/user-profile-birthday.html') {
             python tools/append_overlay.py --index src/MichelsLife/base-index.html --overlay src/MichelsLife/AppPatches/user-profile-birthday.html --marker mlv-user-profile-birthday
           }
