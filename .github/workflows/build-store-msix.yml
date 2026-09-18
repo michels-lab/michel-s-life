@@ -97,6 +97,7 @@ jobs:
           python tools/patch_frontend_v30202.py --index src/MichelsLife/base-index.html --overlay src/MichelsLife/AppPatches/v3.0.202.html
           python tools/patch_settings_about_routing.py --index src/MichelsLife/base-index.html
           python tools/append_overlay.py --index src/MichelsLife/base-index.html --overlay src/MichelsLife/AppPatches/developer-branding.html --marker mlv-developer-branding
+          python tools/verify_about_routing.py --index src/MichelsLife/base-index.html
           python tools/append_store_overlay.py --index src/MichelsLife/base-index.html --overlay src/MichelsLife/AppPatches/store-msix.html
           python tools/validate_generated_index.py --index src/MichelsLife/base-index.html
           python tools/replace_bundle_index.py --bundle src/MichelsLife/AppBundle.zip --index src/MichelsLife/base-index.html
