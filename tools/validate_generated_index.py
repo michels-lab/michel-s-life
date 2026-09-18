@@ -4,7 +4,11 @@ from pathlib import Path
 import argparse, subprocess, tempfile, sys
 ap=argparse.ArgumentParser(); ap.add_argument('--index',required=True); a=ap.parse_args(); p=Path(a.index); text=p.read_text(encoding='utf-8')
 assert '3.0.202' in text and 'mlv-v30202-release-readiness-script' in text
-assert 'realmichelduarte' not in text.lower() and 'micheltheog' not in text.lower()
+assert 'micheltheog' not in text.lower()
+assert 'realmichelduarte' in text.lower()
+assert 'mlv-v30202-ui-hotfix-script' in text
+assert 'assets/michels_life_mark.svg' in text
+assert '© 2026 Michel Duarte / Michel’s Lab. All rights reserved.' in text
 def_line=next(line for line in text.splitlines() if line.startswith('function defaultState()'))
 mig_line=next(line for line in text.splitlines() if line.startswith('function migrate(s)'))
 js=f"""function nowISO(){{return '2026-09-17T00:00:00.000Z'}}\n{def_line}\n{mig_line}\nfunction ok(v,m){{if(!v)throw new Error(m)}}\nconst fresh=defaultState();ok(fresh.settings.characterName==='Player','fresh name');ok(fresh.settings.onboardingRequired===true,'fresh onboarding');ok(fresh.missions.length===0,'fresh missions');for(const v of ['3.0.196','3.0.197','3.0.198','3.0.199','3.0.200','3.0.201']){{const old={{settings:{{hideCompleted:true}},xp:123,missions:[{{id:'m1',completions:[]}}],history:[{{id:'h1'}}],goals:[{{id:'g1'}}]}};const n=migrate(old);ok(n.xp===123,v+' xp');ok(n.missions.length===1,v+' missions');ok(n.settings.onboardingRequired===false,v+' onboarding')}};console.log('migration checks passed');"""

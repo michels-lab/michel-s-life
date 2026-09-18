@@ -91,6 +91,8 @@ jobs:
       - name: Patch frontend to v3.0.202 and validate full bundle
         shell: pwsh
         run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
           Add-Type -AssemblyName System.IO.Compression.FileSystem
           $zip=[IO.Compression.ZipFile]::OpenRead((Resolve-Path 'src/MichelsLife/AppBundle.zip'))
           $entry=$zip.GetEntry('index.html')
@@ -101,10 +103,12 @@ jobs:
           python tools/patch_frontend_v30202.py --index src/MichelsLife/base-index.html --overlay src/MichelsLife/AppPatches/v3.0.202.html
           python tools/patch_settings_about_routing.py --index src/MichelsLife/base-index.html
           python tools/append_overlay.py --index src/MichelsLife/base-index.html --overlay src/MichelsLife/AppPatches/developer-branding.html --marker mlv-developer-branding
+          python tools/append_overlay.py --index src/MichelsLife/base-index.html --overlay src/MichelsLife/AppPatches/v3.0.202-ui-hotfix.html --marker mlv-v30202-ui-hotfix-script
           python tools/verify_about_routing.py --index src/MichelsLife/base-index.html
           python tools/validate_generated_index.py --index src/MichelsLife/base-index.html
           python tools/replace_bundle_index.py --bundle src/MichelsLife/AppBundle.zip --index src/MichelsLife/base-index.html
           python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source branding/michel_duarte_avatar.jpg --arcname assets/michel_duarte_avatar.jpg
+          python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source branding/michels_life_mark.svg --arcname assets/michels_life_mark.svg
           Remove-Item src/MichelsLife/base-index.html -Force
 
       - name: Inject Google OAuth build credential
