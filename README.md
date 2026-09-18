@@ -32,3 +32,14 @@ python tools/release_smoke_test.py
 ```
 
 A full release build additionally reconstructs the frontend and runs `tools/validate_generated_index.py`, including migration checks and syntax validation for every inline script.
+
+
+## Developer & licensing
+
+Michel's Life is developed by **Michel Duarte / Michel’s Lab** and is distributed
+free for personal use. Free distribution does **not** make the project open
+source. The source repository remains private and the application, branding,
+visual assets, and redistribution rights are protected under `LICENSE.txt`.
+
+Developer links: Instagram, Facebook, LinkedIn, GitHub, and
+`realmichelduarte@gmail.com` are exposed from the in-app Developer panel.
