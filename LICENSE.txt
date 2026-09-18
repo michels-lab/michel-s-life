@@ -1,0 +1,26 @@
+MICHEL'S LAB PROPRIETARY PERSONAL-USE LICENSE
+
+Copyright © 2026 Michel Duarte / Michel’s Lab. All rights reserved.
+
+Michel's Life is provided free of charge for personal use.
+
+Permission is granted to download, install, and use unmodified copies of the
+officially distributed application for personal, non-commercial purposes.
+Copies automatically required for normal installation and reasonable personal
+backup are permitted.
+
+No permission is granted to copy or reuse the source code, branding, visual
+assets, application design, or other protected components; modify or create
+derivative works; redistribute the application outside its official channels;
+rebrand, sublicense, sell, rent, or commercially exploit the software; remove
+or obscure authorship or copyright notices; or represent this software, its
+design, or any substantial part of it as your own work.
+
+Any use outside the permission above requires prior written permission from
+Michel Duarte / Michel’s Lab.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW.
+
+Contact: realmichelduarte@gmail.com
+Developer profile: https://github.com/realmichelduarte
