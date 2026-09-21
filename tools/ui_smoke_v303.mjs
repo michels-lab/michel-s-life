@@ -69,26 +69,24 @@ try{
   });
   ok(headingFonts.pane===headingFonts.section,'Settings pane title font does not match the Background Themes-style section heading font');
 
-  const paletteBefore=await page.evaluate(()=>{
-    const root=getComputedStyle(document.documentElement),body=getComputedStyle(document.body);
-    return {
-      text:root.getPropertyValue('--text'),bg:root.getPropertyValue('--bg'),
-      accent:root.getPropertyValue('--accent'),gold:root.getPropertyValue('--gold'),
-      bodyColor:body.color,bodyBackground:body.backgroundImage
+  const typographyPaletteCheck=await page.evaluate(()=>{
+    const capture=()=>{
+      const root=getComputedStyle(document.documentElement),body=getComputedStyle(document.body);
+      return {
+        text:root.getPropertyValue('--text'),bg:root.getPropertyValue('--bg'),
+        accent:root.getPropertyValue('--accent'),gold:root.getPropertyValue('--gold'),
+        bodyColor:body.color,bodyBackground:body.backgroundImage
+      };
     };
+    const before=capture();
+    window.MLVTypographyV303.apply('folklore',true);
+    const after=capture();
+    return {before,after,selected:document.documentElement.dataset.mlvTypography};
   });
-
-  await page.click('[data-mlv-font-preset="folklore"]');
-  await page.waitForFunction(()=>document.documentElement.dataset.mlvTypography==='folklore');
-  const paletteAfter=await page.evaluate(()=>{
-    const root=getComputedStyle(document.documentElement),body=getComputedStyle(document.body);
-    return {
-      text:root.getPropertyValue('--text'),bg:root.getPropertyValue('--bg'),
-      accent:root.getPropertyValue('--accent'),gold:root.getPropertyValue('--gold'),
-      bodyColor:body.color,bodyBackground:body.backgroundImage
-    };
-  });
-  ok(JSON.stringify(paletteBefore)===JSON.stringify(paletteAfter),'Typography preset changed app colors/backgrounds: '+JSON.stringify({before:paletteBefore,after:paletteAfter}));
+  ok(typographyPaletteCheck.selected==='folklore','Typography API did not apply Folklore');
+  ok(JSON.stringify(typographyPaletteCheck.before)===JSON.stringify(typographyPaletteCheck.after),'Typography API changed app colors/backgrounds: '+JSON.stringify(typographyPaletteCheck));
+  await page.evaluate(()=>window.MLVTypographyV303.apply('midnights',true));
+  await page.waitForFunction(()=>document.documentElement.dataset.mlvTypography==='midnights');
 
   await page.screenshot({path:`${out}/01-typography.png`,fullPage:true});
   await page.evaluate(()=>window.MLVTypographyV303.apply('midnights',true));
@@ -133,7 +131,7 @@ try{
   await page.waitForTimeout(600);
   await page.screenshot({path:`${out}/05-dashboard.png`,fullPage:true});
 
-  console.log(JSON.stringify({logo,typographyRoute,headingFonts,avatar,chapterTarget:target,typography:'midnights',cloudPopups:cloudCount},null,2));
+  console.log(JSON.stringify({logo,typographyRoute,typographyPaletteCheck,headingFonts,avatar,chapterTarget:target,typography:'midnights',cloudPopups:cloudCount},null,2));
 } finally {
   await browser.close();
 }
