@@ -49,13 +49,16 @@ for required in (
 builder=read_text_safe(BUILDER)
 for required in (
     "panes.about.insertAdjacentHTML('beforeend',aboutPane())",
-    'assets/michels_life_mark.svg',
-    'const activeNotifications=new Map();',
+    'data:image/png;base64,',
+    'data:image/jpeg;base64,',
+    'window.__mlvToastSession',
+    'ChapterScenesV30170?.select?.(scene.dataset.v30170Scene)',
     '© 2026 Michel Duarte / Michel’s Lab.',
 ):
     assert required in builder, f'missing root frontend behavior: {required}'
 assert 'append_overlay.py --index' not in builder, 'root builder must not invoke runtime overlay appenders'
 assert "panes.chapters&&!panes.chapters.querySelector('[data-mlv-chapter-core]')" not in builder, 'About/branding changes must not alter Chapter pane mounting'
+assert 'const activeNotifications=new Map();' not in builder, 'Cloud notifications must use the root toast system'
 
 subprocess.run([sys.executable,'-m','py_compile',str(BUILDER)],check=True)
 
