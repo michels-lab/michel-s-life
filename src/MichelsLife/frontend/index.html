@@ -28577,56 +28577,69 @@ function absorbSettingsStrays(root){
  });
  moveDataActions(panes);
 }
+function settingsShellIsCanonical(shell){
+ if(!shell||shell.dataset.v30171Canonical!=='3.0.203')return false;
+ const expected=SETTINGS.map(([k])=>k);
+ const nav=[...shell.querySelectorAll('.v30171-settings-nav [data-v30171-setting]')].map(b=>b.dataset.v30171Setting);
+ const panes=[...shell.querySelectorAll('.v30171-settings-content > [data-v30171-pane]')].map(p=>p.dataset.v30171Pane);
+ return expected.length===nav.length&&expected.length===panes.length&&expected.every((k,i)=>nav[i]===k&&panes[i]===k);
+}
+function createCanonicalSettingsShell(root){
+ try{window.ModernNavV30168?.repairSettings?.()}catch(_){}
+ const source=[];
+ const seen=new Set();
+ const add=el=>{
+   if(!(el instanceof Element)||seen.has(el))return;
+   if(el.matches('.v30171-settings-shell,[data-mlv-typography-core],[data-mlv-about-core],.v30171-pane-heading'))return;
+   seen.add(el);source.push(el);
+ };
+ [...root.children].forEach(el=>{
+   if(el.matches('.v30171-settings-shell')){
+     el.querySelectorAll('.v30171-settings-content > .v30171-settings-pane > :scope > *').forEach(add);
+   }else{
+     add(el);
+     el.querySelectorAll?.(':scope > .card').forEach(add);
+   }
+ });
+ const shell=document.createElement('div');
+ shell.className='v30171-settings-shell';
+ shell.dataset.v30171Canonical='3.0.203';
+ const nav=document.createElement('aside');
+ nav.className='v30171-settings-nav';
+ nav.innerHTML='<div class="v30171-settings-title">SETTINGS</div>'+SETTINGS.map(([k,i,n])=>'<button type="button" class="v30171-settings-btn" data-v30171-setting="'+k+'"><span class="v30171-settings-ico">'+i+'</span><span>'+n+'</span></button>').join('');
+ const content=document.createElement('div');
+ content.className='v30171-settings-content';
+ const panes={};
+ for(const [k] of SETTINGS){
+   const pane=document.createElement('div');
+   pane.className='v30171-settings-pane';
+   pane.dataset.v30171Pane=k;
+   pane.innerHTML=paneHead(k);
+   content.appendChild(pane);
+   panes[k]=pane;
+ }
+ panes.typography.insertAdjacentHTML('beforeend',typographyPane());
+ panes.about.insertAdjacentHTML('beforeend',aboutPane());
+ source.forEach(el=>{
+   if(!el.isConnected&&el.parentNode===null)return;
+   const target=panes[classify(el)]||panes.general;
+   target.appendChild(el);
+ });
+ shell.append(nav,content);
+ root.replaceChildren(shell);
+ return shell;
+}
 function buildSettings(){
  if(String(state?.activeTab||'')!=='settings')return false;
  const root=document.getElementById('tab-settings')||forceSettingsMain();if(!root)return false;
  let shell=root.querySelector(':scope > .v30171-settings-shell');
- if(!shell){
-   try{window.ModernNavV30168?.repairSettings?.()}catch(_){}
-   const original=[...root.children];
-   // Pull only nested cards that are true standalone Settings sections (not arbitrary nested UI blocks).
-   const nested=[];
-   original.forEach(parent=>parent.querySelectorAll?.(':scope > .card').forEach(card=>{
-     const h=heading(card).toLowerCase();
-     if(/color theme|background|panel transparency|focus|pomodoro|notification|next up|backup|data cleanup|reset progress|xp balance|seasonal panel/.test(h)){card.remove();nested.push(card)}
-   }));
-   shell=document.createElement('div');shell.className='v30171-settings-shell';
-   const nav=document.createElement('aside');nav.className='v30171-settings-nav';nav.innerHTML='<div class="v30171-settings-title">SETTINGS</div>'+SETTINGS.map(([k,i,n])=>'<button type="button" class="v30171-settings-btn" data-v30171-setting="'+k+'"><span class="v30171-settings-ico">'+i+'</span><span>'+n+'</span></button>').join('');
-   const content=document.createElement('div');content.className='v30171-settings-content';
-   for(const [k] of SETTINGS){const pane=document.createElement('div');pane.className='v30171-settings-pane';pane.dataset.v30171Pane=k;pane.innerHTML=paneHead(k);content.appendChild(pane)}
-   shell.append(nav,content);root.replaceChildren(shell);
-   const panes={};content.querySelectorAll('[data-v30171-pane]').forEach(p=>panes[p.dataset.v30171Pane]=p);
-   if(panes.typography&&!panes.typography.querySelector('[data-mlv-typography-core]'))panes.typography.insertAdjacentHTML('beforeend',typographyPane());
-   if(panes.about&&!panes.about.querySelector('[data-mlv-about-core]'))panes.about.insertAdjacentHTML('beforeend',aboutPane());
-   [...original,...nested].forEach(el=>{if(el===shell)return;(panes[classify(el)]||panes.general).appendChild(el)});
- }
- // Repair Settings from its canonical definition even if an older shell already existed.
- const nav=shell.querySelector('.v30171-settings-nav');
- const content=shell.querySelector('.v30171-settings-content');
- if(nav)nav.innerHTML='<div class="v30171-settings-title">SETTINGS</div>'+SETTINGS.map(([k,i,n])=>'<button type="button" class="v30171-settings-btn" data-v30171-setting="'+k+'"><span class="v30171-settings-ico">'+i+'</span><span>'+n+'</span></button>').join('');
- if(content){
-   for(const [k] of SETTINGS){
-     let pane=content.querySelector('[data-v30171-pane="'+k+'"]');
-     if(!pane){pane=document.createElement('div');pane.className='v30171-settings-pane';pane.dataset.v30171Pane=k;pane.innerHTML=paneHead(k);content.appendChild(pane)}
-   }
-   const panes={};content.querySelectorAll('[data-v30171-pane]').forEach(p=>panes[p.dataset.v30171Pane]=p);
-   if(panes.typography&&!panes.typography.querySelector('[data-mlv-typography-core]'))panes.typography.insertAdjacentHTML('beforeend',typographyPane());
-   if(panes.about&&!panes.about.querySelector('[data-mlv-about-core]'))panes.about.insertAdjacentHTML('beforeend',aboutPane());
- }
+ if(!settingsShellIsCanonical(shell))shell=createCanonicalSettingsShell(root);
  absorbSettingsStrays(root);
  activateSetting(savedSetting(),root);
  return true;
 }
 function activateSetting(key,root){
  root=root||document.getElementById('tab-settings');if(!root)return;
- const shell=root.querySelector(':scope > .v30171-settings-shell');
- const content=shell?.querySelector?.('.v30171-settings-content');
- let pane=root.querySelector('[data-v30171-pane="'+key+'"]');
- if(!pane&&content){
-   pane=document.createElement('div');pane.className='v30171-settings-pane';pane.dataset.v30171Pane=key;pane.innerHTML=paneHead(key);content.appendChild(pane);
- }
- if(key==='typography'&&pane&&!pane.querySelector('[data-mlv-typography-core]'))pane.insertAdjacentHTML('beforeend',typographyPane());
- if(key==='about'&&pane&&!pane.querySelector('[data-mlv-about-core]'))pane.insertAdjacentHTML('beforeend',aboutPane());
  root.querySelectorAll('[data-v30171-setting]').forEach(b=>b.classList.toggle('active',b.dataset.v30171Setting===key));
  root.querySelectorAll('[data-v30171-pane]').forEach(p=>p.classList.toggle('active',p.dataset.v30171Pane===key));
  try{localStorage.setItem('michelsLife.settingsSection.v30171',key)}catch(_){}
@@ -28638,7 +28651,7 @@ const oldAll=window.renderAll;if(typeof oldAll==='function'&&!oldAll.__v30171){c
 document.addEventListener('click',function(e){
  const nav=e.target?.closest?.('#v30171PrimaryNav [data-tab]');if(nav){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();route(nav.dataset.tab);return}
  const today=e.target?.closest?.('[data-v30171-day="today"]');if(today){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();route('dashboard');return}
- const set=e.target?.closest?.('[data-v30171-setting]');if(set){e.preventDefault();e.stopPropagation();activateSetting(set.dataset.v30171Setting);return}
+ const set=e.target?.closest?.('[data-v30171-setting]');if(set){e.preventDefault();e.stopPropagation();buildSettings();activateSetting(set.dataset.v30171Setting);return}
  const font=e.target?.closest?.('[data-mlv-font-preset]');if(font){e.preventDefault();applyTypography(font.dataset.mlvFontPreset,true);font.closest('[data-mlv-typography-core]')?.querySelectorAll('.mlv303-font-check').forEach(x=>x.textContent=x.closest('[data-mlv-font-preset]')?.classList.contains('selected')?'✓':'');return}
  const scene=e.target?.closest?.('.v30171-scene-card[data-v30170-scene]');if(scene){e.preventDefault();const ok=window.ChapterScenesV30170?.select?.(scene.dataset.v30170Scene);if(ok!==false)setTimeout(()=>refreshChapterSelection(document.getElementById('tab-settings')),40);return}
 },true);
