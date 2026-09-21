@@ -22,9 +22,13 @@ for required in (
     'window.__mlvToastSession',
     'ChapterScenesV30170?.select?.(scene.dataset.v30170Scene)',
     '.v30165-hero-actions [data-tab="story"]',
+    '.v30171-pane-heading{padding:14px 20px 7px!important}',
+    '.mlv190-google-option>input[type="checkbox"]{width:18px!important',
+    "if(String(title||'').trim().toLowerCase()==='cloud overview')return null;",
+    '.v30171-brand-mark>img{width:82px!important;height:82px!important;display:block!important;visibility:visible!important;opacity:1!important;position:static!important',
 ):
     assert required in text, f'missing core frontend marker: {required}'
-for forbidden in ('mlv-v30202-ui-hotfix-script','id="mlv-developer-branding"',"panes.chapters&&!panes.chapters.querySelector('[data-mlv-chapter-core]')",'const activeNotifications=new Map();'):
+for forbidden in ('mlv-v30202-ui-hotfix-script','id="mlv-developer-branding"',"panes.chapters&&!panes.chapters.querySelector('[data-mlv-chapter-core]')",'const activeNotifications=new Map();','.brand-mark picture,','body.ml-theme-ui .brand-mark img,'):
     assert forbidden not in text, f'obsolete runtime overlay still present: {forbidden}'
 
 def_line=next(line for line in text.splitlines() if line.startswith('function defaultState()'))
