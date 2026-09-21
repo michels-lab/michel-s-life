@@ -54,7 +54,7 @@ try{
     return {
       text:root.getPropertyValue('--text'),bg:root.getPropertyValue('--bg'),
       accent:root.getPropertyValue('--accent'),gold:root.getPropertyValue('--gold'),
-      bodyColor:body.color,bodyBackground:body.backgroundImage
+      bodyColor:body.color
     };
   });
 
@@ -65,7 +65,7 @@ try{
     return {
       text:root.getPropertyValue('--text'),bg:root.getPropertyValue('--bg'),
       accent:root.getPropertyValue('--accent'),gold:root.getPropertyValue('--gold'),
-      bodyColor:body.color,bodyBackground:body.backgroundImage
+      bodyColor:body.color
     };
   });
   ok(JSON.stringify(paletteBefore)===JSON.stringify(paletteAfter),'Typography preset changed app colors/backgrounds');
