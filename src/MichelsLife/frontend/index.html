@@ -28648,7 +28648,7 @@ document.addEventListener('click',function(e){
  const nav=e.target?.closest?.('#v30171PrimaryNav [data-tab]');if(nav){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();route(nav.dataset.tab);return}
  const today=e.target?.closest?.('[data-v30171-day="today"]');if(today){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();route('dashboard');return}
  const set=e.target?.closest?.('[data-v30171-setting]');if(set){e.preventDefault();e.stopPropagation();buildSettings();activateSetting(set.dataset.v30171Setting);return}
- const font=e.target?.closest?.('[data-mlv-font-preset]');if(font){e.preventDefault();applyTypography(font.dataset.mlvFontPreset,true);font.closest('[data-mlv-typography-core]')?.querySelectorAll('.mlv303-font-check').forEach(x=>x.textContent=x.closest('[data-mlv-font-preset]')?.classList.contains('selected')?'✓':'');return}
+ const font=e.target?.closest?.('[data-mlv-font-preset]');if(font){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();applyTypography(font.dataset.mlvFontPreset,true);font.closest('[data-mlv-typography-core]')?.querySelectorAll('.mlv303-font-check').forEach(x=>x.textContent=x.closest('[data-mlv-font-preset]')?.classList.contains('selected')?'✓':'');return}
 },true);
 let mq=0;const mo=new MutationObserver(()=>{clearTimeout(mq);mq=setTimeout(()=>{if(String(state?.activeTab||'')==='settings'){forceSettingsMain();buildSettings()}},70)});try{const main=document.getElementById('main');if(main)mo.observe(main,{childList:true,subtree:true})}catch(_){}
 
