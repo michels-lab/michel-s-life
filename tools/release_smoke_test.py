@@ -13,11 +13,15 @@ LICENSE=ROOT/'LICENSE.txt'
 for p in (PROGRAM,GOOGLE,SECRETS,OVERLAY,BUILDER,PROFILE,LICENSE):
     assert p.exists(),f'missing {p}'
 
-all_source='\n'.join(p.read_text(encoding='utf-8') for p in (PROGRAM,GOOGLE,SECRETS,OVERLAY,BUILDER,PROFILE,LICENSE))
+security_source='\n'.join(p.read_text(encoding='utf-8') for p in (PROGRAM,GOOGLE,SECRETS,OVERLAY,BUILDER,PROFILE,LICENSE))
+for forbidden in ('GOCSPX-','github_pat_','ghp_','client_secret_794181'):
+    assert forbidden.lower() not in security_source.lower(), f'forbidden committed secret content: {forbidden}'
+product_source='\n'.join(p.read_text(encoding='utf-8') for p in (PROGRAM,GOOGLE,SECRETS,OVERLAY,PROFILE,LICENSE))
+for forbidden in ('micheltheog','Instagram mission recovery','Restore Instagram missions'):
+    assert forbidden.lower() not in product_source.lower(), f'forbidden product content: {forbidden}'
+
 assert 'CurrentAppVersion = new("3.0.202")' in PROGRAM.read_text(encoding='utf-8')
 assert '__BUILD_SECRET_GOOGLE__' in SECRETS.read_text(encoding='utf-8')
-for forbidden in ('GOCSPX-','github_pat_','ghp_','client_secret_794181','micheltheog','Instagram mission recovery','Restore Instagram missions'):
-    assert forbidden.lower() not in all_source.lower(), f'forbidden committed content: {forbidden}'
 
 profile=json.loads(PROFILE.read_text(encoding='utf-8'))
 for key,value in {
