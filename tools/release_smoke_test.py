@@ -54,6 +54,10 @@ for required in (
     'data:image/jpeg;base64,',
     'window.__mlvToastSession',
     'ChapterScenesV30170?.select?.(scene.dataset.v30170Scene)',
+    "if(String(title||'').trim().toLowerCase()==='cloud overview')return null;",
+    'Settings pane heading spacing',
+    'Google option alignment',
+    'legacy logo-hide cleanup failed',
 ):
     assert required in builder, f'missing root frontend behavior: {required}'
 assert 'append_overlay.py --index' not in builder, 'root builder must not invoke runtime overlay appenders'
