@@ -3,9 +3,6 @@ name: Branch v3.0.203 UI smoke
 on:
   push:
     branches: [refactor/v3.0.203-canonical-frontend]
-push:
-    branches: [main]
-  workflow_dispatch:
 
 permissions:
   contents: read
