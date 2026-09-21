@@ -46,7 +46,7 @@ for forbidden in (
 
 # Settings must be constructed centrally; activation may only switch state.
 activate_start=text.index('function activateSetting(key,root){')
-activate_end=text.index('function refreshChapterSelection',activate_start)
+activate_end=text.index('function enhance()',activate_start)
 activate_code=text[activate_start:activate_end]
 for forbidden in ('document.createElement','insertAdjacentHTML','typographyPane()','aboutPane()'):
     assert forbidden not in activate_code, f'activateSetting is creating UI instead of only activating it: {forbidden}'
