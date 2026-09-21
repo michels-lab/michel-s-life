@@ -9,6 +9,9 @@ function ok(value,message){if(!value)throw new Error(message)}
 
 const browser=await chromium.launch({headless:true});
 const page=await browser.newPage({viewport:{width:1600,height:1000},deviceScaleFactor:1});
+await page.addInitScript(()=>{
+  try{localStorage.setItem('michelsLife.onboarding.v30200','done')}catch(_){}
+});
 try{
   await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
   await page.waitForFunction(()=>window.LeftNavV30171&&document.querySelector('#v30171Sidebar'),null,{timeout:60000});
