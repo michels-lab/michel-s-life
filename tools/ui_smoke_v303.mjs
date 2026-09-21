@@ -78,13 +78,36 @@ try{
         bodyColor:body.color,bodyBackground:body.backgroundImage
       };
     };
-    const before=capture();
+    const mid=document.querySelector('[data-mlv-font-preset="midnights"]');
+    const folk=document.querySelector('[data-mlv-font-preset="folklore"]');
+    const before={
+      palette:capture(),
+      midPreview:getComputedStyle(mid.querySelector('.mlv303-font-word')).fontFamily,
+      folkPreview:getComputedStyle(folk.querySelector('.mlv303-font-word')).fontFamily,
+      midState:mid.querySelector('.mlv303-font-state')?.textContent||'',
+      folkState:folk.querySelector('.mlv303-font-state')?.textContent||''
+    };
     window.MLVTypographyV303.apply('folklore',true);
-    const after=capture();
-    return {before,after,selected:document.documentElement.dataset.mlvTypography};
+    const selectedCard=document.querySelector('[data-mlv-font-preset="folklore"]');
+    const after={
+      palette:capture(),
+      selected:document.documentElement.dataset.mlvTypography,
+      midPreview:getComputedStyle(mid.querySelector('.mlv303-font-word')).fontFamily,
+      folkPreview:getComputedStyle(folk.querySelector('.mlv303-font-word')).fontFamily,
+      midState:mid.querySelector('.mlv303-font-state')?.textContent||'',
+      folkState:folk.querySelector('.mlv303-font-state')?.textContent||'',
+      selectedText:getComputedStyle(selectedCard.querySelector('.mlv303-font-copy b')).color,
+      bodyText:getComputedStyle(document.body).color,
+      selectedBg:getComputedStyle(selectedCard).backgroundImage
+    };
+    return {before,after};
   });
-  ok(typographyPaletteCheck.selected==='folklore','Typography API did not apply Folklore');
-  ok(JSON.stringify(typographyPaletteCheck.before)===JSON.stringify(typographyPaletteCheck.after),'Typography API changed app colors/backgrounds: '+JSON.stringify(typographyPaletteCheck));
+  ok(typographyPaletteCheck.after.selected==='folklore','Typography API did not apply Folklore');
+  ok(JSON.stringify(typographyPaletteCheck.before.palette)===JSON.stringify(typographyPaletteCheck.after.palette),'Typography API changed app colors/backgrounds: '+JSON.stringify(typographyPaletteCheck));
+  ok(typographyPaletteCheck.before.midPreview!==typographyPaletteCheck.before.folkPreview,'Typography cards are not previewing distinct font stacks');
+  ok(typographyPaletteCheck.before.midPreview===typographyPaletteCheck.after.midPreview&&typographyPaletteCheck.before.folkPreview===typographyPaletteCheck.after.folkPreview,'Changing the active font altered the other cards’ previews');
+  ok(/SELECTED/.test(typographyPaletteCheck.after.folkState)&&/PREVIEW/.test(typographyPaletteCheck.after.midState),'Typography selected/preview labels did not update correctly');
+  ok(typographyPaletteCheck.after.selectedText===typographyPaletteCheck.after.bodyText,'Selected typography card text is not readable in the normal interface text color');
   await page.evaluate(()=>window.MLVTypographyV303.apply('midnights',true));
   await page.waitForFunction(()=>document.documentElement.dataset.mlvTypography==='midnights');
 
