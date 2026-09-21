@@ -28542,14 +28542,22 @@ function classify(el){
 function paneHead(key){const row=SETTINGS.find(x=>x[0]===key);return '<div class="v30171-pane-heading"><h2 class="v30171-pane-title">'+esc(row?.[2]||key)+'</h2><p class="v30171-pane-desc">'+esc(row?.[3]||'')+'</p></div>'}
 
 const MLV303_TYPOGRAPHY={
- midnights:{name:'Midnights',albums:'Taylor Swift · Midnights',desc:'Neo-grotesk, clean and modern. Default.',stack:'Inter,"Segoe UI",Arial,sans-serif'},
- folklore:{name:'folklore / evermore',albums:'Taylor Swift · folklore · evermore',desc:'Old-style literary serif inspired by IM Fell DW Pica.',stack:'Georgia,"Times New Roman",serif'},
- ttpd:{name:'Tortured Poets',albums:'Taylor Swift · The Tortured Poets Department',desc:'Editorial serif inspired by the Somer / Caslon direction.',stack:'"Palatino Linotype","Book Antiqua",Georgia,serif'},
- fearless:{name:'Fearless TV',albums:'Taylor Swift · Fearless (Taylor’s Version)',desc:'Friendly clean sans inspired by Carla Sans.',stack:'"Trebuchet MS","Segoe UI",Arial,sans-serif'},
- condensed:{name:'Red / Lana Condensed',albums:'Taylor Swift · Red TV · Lana Del Rey · Born to Die · Paradise · Ultraviolence',desc:'Narrow editorial sans inspired by Kapra Neue and LDRCondensed.',stack:'"Arial Narrow","Bahnschrift SemiCondensed","Segoe UI",Arial,sans-serif'},
- garamond:{name:'Lust for Life',albums:'Lana Del Rey · Lust for Life',desc:'Classic book serif inspired by Adobe Garamond.',stack:'Garamond,"Palatino Linotype","Book Antiqua","Times New Roman",serif'},
- bodoni:{name:'Chemtrails / Blue Banisters',albums:'Lana Del Rey · Chemtrails over the Country Club · Blue Banisters',desc:'High-contrast editorial serif inspired by Bodoni.',stack:'"Bodoni MT",Didot,"Times New Roman",serif'},
- honeymoon:{name:'Honeymoon',albums:'Lana Del Rey · Honeymoon',desc:'Elegant serif direction inspired by Joanna.',stack:'"Palatino Linotype",Georgia,"Times New Roman",serif'}
+ midnights:{artist:'Taylor Swift',name:'Midnights',source:'Neue Haas Grotesk Display',desc:'Neo-grotesk album typography. Default interface preset.',stack:'"Neue Haas Grotesk Display","Helvetica Neue",Inter,"Segoe UI",Arial,sans-serif'},
+ fearless:{artist:'Taylor Swift',name:'Fearless',source:'ITC Blair Pro Medium',desc:'Original 2008 era; clean, structured sans-serif.',stack:'"ITC Blair Pro Medium","Blair ITC Medium","Trebuchet MS","Segoe UI",Arial,sans-serif'},
+ red:{artist:'Taylor Swift',name:'Red',source:'Tungsten Semibold',desc:'Tall condensed sans used for the original RED identity.',stack:'Tungsten,"Bahnschrift SemiCondensed","Arial Narrow","Segoe UI",Arial,sans-serif'},
+ folklore:{artist:'Taylor Swift',name:'folklore',source:'IM Fell DW Pica',desc:'Literary old-style serif used throughout the folklore era.',stack:'"IM FELL DW Pica",Georgia,"Times New Roman",serif'},
+ evermore:{artist:'Taylor Swift',name:'evermore',source:'IM Fell DW Pica',desc:'Kept separate as its own era even though it shares the core face with folklore.',stack:'"IM FELL DW Pica",Georgia,"Times New Roman",serif'},
+ ttpd:{artist:'Taylor Swift',name:'The Tortured Poets Department',source:'Big Caslon',desc:'Editorial display serif adapted here to a readable book-serif stack.',stack:'"Big Caslon","Book Antiqua","Palatino Linotype",Georgia,serif'},
+ showgirl:{artist:'Taylor Swift',name:'The Life of a Showgirl',source:'Gazzetta',desc:'Tall condensed neo-grotesk direction from the 2025 album identity.',stack:'Gazzetta,"Bahnschrift Condensed","Arial Narrow","Segoe UI",Arial,sans-serif'},
+
+ born_to_die:{artist:'Lana Del Rey',name:'Born to Die',source:'LDRCondensed',desc:'Custom condensed Lana identity; Windows fallback keeps the narrow editorial feel.',stack:'LDRCondensed,Steelfish,"Bahnschrift Condensed","Arial Narrow","Segoe UI",Arial,sans-serif'},
+ paradise:{artist:'Lana Del Rey',name:'Paradise',source:'LDRCondensed',desc:'Separate Paradise-era preset; the artwork uses the same custom LDRCondensed family.',stack:'LDRCondensed,Steelfish,"Arial Narrow","Bahnschrift Condensed","Segoe UI",Arial,sans-serif'},
+ ultraviolence:{artist:'Lana Del Rey',name:'Ultraviolence',source:'LDRCondensed',desc:'Kept as its own era even though the cover returns to LDRCondensed.',stack:'LDRCondensed,Steelfish,"Franklin Gothic Medium","Arial Narrow","Segoe UI",Arial,sans-serif'},
+ honeymoon:{artist:'Lana Del Rey',name:'Honeymoon',source:'Joanna Solotype CG',desc:'Art-Deco headline direction approximated with a readable classical serif stack.',stack:'"Joanna Solotype CG","Palatino Linotype",Georgia,"Times New Roman",serif'},
+ lust_for_life:{artist:'Lana Del Rey',name:'Lust for Life',source:'Adobe Garamond',desc:'Classic book serif used in the album title lettering.',stack:'"Adobe Garamond Pro",Garamond,"Palatino Linotype","Book Antiqua","Times New Roman",serif'},
+ nfr:{artist:'Lana Del Rey',name:'Norman F***ing Rockwell!',source:'Mom’s Typewriter · supporting typography',desc:'The front title is Biff Bam Boom Outline; this interface preset uses the era’s readable typewriter companion.',stack:'"Mom's Typewriter",Consolas,"Courier New",monospace'},
+ chemtrails:{artist:'Lana Del Rey',name:'Chemtrails Over the Country Club',source:'Monotype Bodoni · supporting typography',desc:'The title uses Muara/Marons display lettering; this preset uses the album’s readable Bodoni direction.',stack:'"Bodoni MT",Didot,"Times New Roman",serif'},
+ blue_banisters:{artist:'Lana Del Rey',name:'Blue Banisters',source:'ITC Modern No. 216 Heavy',desc:'High-contrast serif identity approximated with the closest common desktop faces.',stack:'"ITC Modern No. 216","Bodoni MT",Didot,Georgia,"Times New Roman",serif'}
 };
 function typographyCurrent(){let v='midnights';try{v=localStorage.getItem('michelsLife.typography.v303')||'midnights'}catch(_){}return MLV303_TYPOGRAPHY[v]?v:'midnights'}
 function applyTypography(id,persist=true){
@@ -28567,15 +28575,18 @@ function applyTypography(id,persist=true){
 }
 function typographyPane(){
  const current=typographyCurrent();
- const cards=Object.entries(MLV303_TYPOGRAPHY).map(([id,p])=>{
+ const card=([id,p])=>{
    const selected=id===current;
-   return '<button type="button" class="mlv303-font-card '+(selected?'selected':'')+'" data-mlv-font-preset="'+id+'" aria-pressed="'+(selected?'true':'false')+'" style="--mlv-preview-font:'+p.stack+'">'+
+   return '<button type="button" class="mlv303-font-card '+(selected?'selected':'')+'" data-mlv-font-preset="'+id+'" data-mlv-font-artist="'+esc(p.artist)+'" aria-pressed="'+(selected?'true':'false')+'" style="--mlv-preview-font:'+p.stack+'">'+
      '<span class="mlv303-font-preview"><span class="mlv303-font-sample">Aa</span><span class="mlv303-font-word">Michel’s Life</span><span class="mlv303-font-line">Build the life you imagine · 0123</span></span>'+
-     '<span class="mlv303-font-copy"><b>'+esc(p.name)+'</b><small>'+esc(p.albums)+'</small><em>'+esc(p.desc)+'</em></span>'+
+     '<span class="mlv303-font-copy"><b>'+esc(p.name)+'</b><small>'+esc(p.artist)+' · '+esc(p.source)+'</small><em>'+esc(p.desc)+'</em></span>'+
      '<span class="mlv303-font-state">'+(selected?'✓ SELECTED':'PREVIEW')+'</span>'+
    '</button>';
- }).join('');
- return '<section class="card mlv303-font-panel" data-mlv-typography-core data-v30171-owner="typography"><div class="section-title"><div><h2>Interface Typography</h2><p>Every card previews its own typeface. Choosing one changes typography only — never colors, backgrounds or accents.</p></div><span class="pill hot">Midnights default</span></div><div class="mlv303-font-grid">'+cards+'</div><p class="mlv303-font-note">Each preview stays in its own typeface even after another preset is selected, so you can compare them side by side. Handwritten, blackletter and display-only lettering remains excluded from the full-interface presets.</p></section>';
+ };
+ const group=artist=>'<section class="mlv303-artist-group"><div class="mlv303-artist-head"><b>'+esc(artist)+'</b><span>one era = one preset</span></div><div class="mlv303-font-grid">'+Object.entries(MLV303_TYPOGRAPHY).filter(([,p])=>p.artist===artist).map(card).join('')+'</div></section>';
+ return '<section class="card mlv303-font-panel" data-mlv-typography-core data-v30171-owner="typography"><div class="section-title"><div><h2>Interface Typography</h2><p>Typography only. Presets never change colors, backgrounds or accents. Every era below is independent — no Taylor/Lana hybrids and no merged albums.</p></div><span class="pill hot">Midnights default</span></div>'+
+   group('Taylor Swift')+group('Lana Del Rey')+
+   '<p class="mlv303-font-note"><b>Compatibility rule:</b> script, handwriting, blackletter and extreme display faces are not exposed as full-interface presets. That is why Taylor Swift debut, Speak Now, 1989, reputation and Lover, plus Lana Del Ray and Ocean Blvd, are intentionally not selectable here. Norman F***ing Rockwell! and Chemtrails use documented readable supporting typography from those eras instead of forcing their display-only cover titles across the whole app.</p></section>';
 }
 
 function aboutPane(){return `<section class="card mlvdev-card" data-mlv-about-core data-mlv-developer data-v30171-owner="about"><div class="mlvdev-main"><div class="mlvdev-avatar-wrap"><img class="mlvdev-avatar" src="assets/michel_duarte_avatar.jpg" alt="Michel Duarte"></div><div class="mlvdev-info"><div class="mlvdev-title"><h2>Michel Duarte</h2><p>Developer · Michel’s Lab</p></div><div class="mlvdev-copy">Michel’s Life is created and maintained by Michel Duarte under Michel’s Lab. Independent software focused on productivity, life systems and personal tools.</div><div class="mlvdev-contact">Contact: <a href="mailto:realmichelduarte@gmail.com">realmichelduarte@gmail.com</a></div><div class="mlvdev-socials"><a class="mlvdev-social" href="https://www.instagram.com/realmichelduarte/" target="_blank" rel="noopener noreferrer"><span><strong>Instagram</strong><small>@realmichelduarte</small></span></a><a class="mlvdev-social" href="https://www.facebook.com/realmichelduarte" target="_blank" rel="noopener noreferrer"><span><strong>Facebook</strong><small>realmichelduarte</small></span></a><a class="mlvdev-social" href="https://www.linkedin.com/in/realmichelduart/" target="_blank" rel="noopener noreferrer"><span><strong>LinkedIn</strong><small>realmichelduart</small></span></a><a class="mlvdev-social" href="https://github.com/realmichelduarte" target="_blank" rel="noopener noreferrer"><span><strong>GitHub</strong><small>realmichelduarte</small></span></a><a class="mlvdev-social" href="mailto:realmichelduarte@gmail.com" target="_blank" rel="noopener noreferrer"><span><strong>Email</strong><small>realmichelduarte@gmail.com</small></span></a></div><div class="mlvdev-meta"><div><small>APP</small><b>Michel’s Life</b></div><div><small>VERSION</small><b>v3.0.203</b></div><div><small>LICENSE</small><b>Proprietary · Personal use</b></div></div><div class="mlvdev-legal">Free for personal use. Unauthorized copying, modification, redistribution, rebranding, resale, sublicensing, or claiming this software as your own is not permitted without prior written permission.<span class="mlvdev-copyright">© 2026 Michel Duarte / Michel’s Lab. All rights reserved.</span></div></div></div></section>`}
@@ -30230,14 +30241,21 @@ setTimeout(mount,800);window.MLV202ReleaseReadiness={version:VERSION,mount,runDi
  --mlv-font-midnights:Inter,"Segoe UI",Arial,sans-serif;
  --mlv-ui-font:var(--mlv-font-midnights);
 }
-html[data-mlv-typography="midnights"]{--mlv-ui-font:Inter,"Segoe UI",Arial,sans-serif}
-html[data-mlv-typography="folklore"]{--mlv-ui-font:Georgia,"Times New Roman",serif}
-html[data-mlv-typography="ttpd"]{--mlv-ui-font:"Palatino Linotype","Book Antiqua",Georgia,serif}
-html[data-mlv-typography="fearless"]{--mlv-ui-font:"Trebuchet MS","Segoe UI",Arial,sans-serif}
-html[data-mlv-typography="condensed"]{--mlv-ui-font:"Arial Narrow","Bahnschrift SemiCondensed","Segoe UI",Arial,sans-serif}
-html[data-mlv-typography="garamond"]{--mlv-ui-font:Garamond,"Palatino Linotype","Book Antiqua","Times New Roman",serif}
-html[data-mlv-typography="bodoni"]{--mlv-ui-font:"Bodoni MT",Didot,"Times New Roman",serif}
-html[data-mlv-typography="honeymoon"]{--mlv-ui-font:"Palatino Linotype",Georgia,"Times New Roman",serif}
+html[data-mlv-typography="midnights"]{--mlv-ui-font:"Neue Haas Grotesk Display","Helvetica Neue",Inter,"Segoe UI",Arial,sans-serif}
+html[data-mlv-typography="fearless"]{--mlv-ui-font:"ITC Blair Pro Medium","Blair ITC Medium","Trebuchet MS","Segoe UI",Arial,sans-serif}
+html[data-mlv-typography="red"]{--mlv-ui-font:Tungsten,"Bahnschrift SemiCondensed","Arial Narrow","Segoe UI",Arial,sans-serif}
+html[data-mlv-typography="folklore"]{--mlv-ui-font:"IM FELL DW Pica",Georgia,"Times New Roman",serif}
+html[data-mlv-typography="evermore"]{--mlv-ui-font:"IM FELL DW Pica",Georgia,"Times New Roman",serif}
+html[data-mlv-typography="ttpd"]{--mlv-ui-font:"Big Caslon","Book Antiqua","Palatino Linotype",Georgia,serif}
+html[data-mlv-typography="showgirl"]{--mlv-ui-font:Gazzetta,"Bahnschrift Condensed","Arial Narrow","Segoe UI",Arial,sans-serif}
+html[data-mlv-typography="born_to_die"]{--mlv-ui-font:LDRCondensed,Steelfish,"Bahnschrift Condensed","Arial Narrow","Segoe UI",Arial,sans-serif}
+html[data-mlv-typography="paradise"]{--mlv-ui-font:LDRCondensed,Steelfish,"Arial Narrow","Bahnschrift Condensed","Segoe UI",Arial,sans-serif}
+html[data-mlv-typography="ultraviolence"]{--mlv-ui-font:LDRCondensed,Steelfish,"Franklin Gothic Medium","Arial Narrow","Segoe UI",Arial,sans-serif}
+html[data-mlv-typography="honeymoon"]{--mlv-ui-font:"Joanna Solotype CG","Palatino Linotype",Georgia,"Times New Roman",serif}
+html[data-mlv-typography="lust_for_life"]{--mlv-ui-font:"Adobe Garamond Pro",Garamond,"Palatino Linotype","Book Antiqua","Times New Roman",serif}
+html[data-mlv-typography="nfr"]{--mlv-ui-font:"Mom's Typewriter",Consolas,"Courier New",monospace}
+html[data-mlv-typography="chemtrails"]{--mlv-ui-font:"Bodoni MT",Didot,"Times New Roman",serif}
+html[data-mlv-typography="blue_banisters"]{--mlv-ui-font:"ITC Modern No. 216","Bodoni MT",Didot,Georgia,"Times New Roman",serif}
 body,button,input,select,textarea,.tab-btn,.btn,.pill,.v30171-nav-btn,.v30171-settings-btn{
  font-family:var(--mlv-ui-font)!important;
 }
@@ -30291,6 +30309,10 @@ body,button,input,select,textarea,.tab-btn,.btn,.pill,.v30171-nav-btn,.v30171-se
  #v30171Sidebar .v30171-brand-mark>img,#v30171Sidebar .brand-mark>img{width:82px!important;height:82px!important;min-width:82px!important;min-height:82px!important}
  #v30171Sidebar h1.v30171-brand-title{font-size:20px!important}
 }
+.mlv303-artist-group{margin-top:18px}
+.mlv303-artist-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 2px 9px;padding-bottom:7px;border-bottom:1px solid rgba(255,255,255,.07)}
+.mlv303-artist-head b{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--text)}
+.mlv303-artist-head span{font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .mlv303-font-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .mlv303-font-card{
  position:relative;display:grid;grid-template-columns:minmax(145px,.78fr) minmax(0,1.25fr);align-items:center;gap:16px;
