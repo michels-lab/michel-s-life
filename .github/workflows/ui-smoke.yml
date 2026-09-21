@@ -1,0 +1,65 @@
+name: UI smoke
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  RELEASES_REPO: realmichelduarte/michel-s-life-releases
+
+jobs:
+  ui-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Build browser-test bundle from canonical frontend
+        run: |
+          mkdir -p artifacts/ui-bundle
+          curl -L --fail --retry 3 \
+            "https://github.com/$RELEASES_REPO/releases/latest/download/AppBundle.zip" \
+            -o artifacts/AppBundle.zip
+          python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
+          python tools/replace_bundle_index.py --bundle artifacts/AppBundle.zip --index src/MichelsLife/frontend/index.html
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle.zip --source branding/michel_duarte_avatar.jpg --arcname assets/michel_duarte_avatar.jpg
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle.zip --source branding/michels_life_logo.svg --arcname assets/michels_life_logo.svg
+          python - <<'PY'
+          from zipfile import ZipFile
+          with ZipFile('artifacts/AppBundle.zip') as z:
+              z.extractall('artifacts/ui-bundle')
+          PY
+
+      - name: Install Chromium test runtime
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Render and test critical UI
+        run: |
+          python -m http.server 4173 --directory artifacts/ui-bundle >/tmp/mlv-http.log 2>&1 &
+          export MLV_UI_URL=http://127.0.0.1:4173
+          export MLV_UI_SCREENSHOTS=artifacts/ui-smoke
+          node tools/ui_smoke_v303.mjs
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-smoke-v3.0.203
+          path: |
+            artifacts/ui-smoke
+            /tmp/mlv-http.log
+          if-no-files-found: warn
+          retention-days: 7
