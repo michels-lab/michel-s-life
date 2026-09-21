@@ -13,18 +13,18 @@ assert '3.0.202' in text and 'mlv-v30202-release-readiness-script' in text
 assert 'micheltheog' not in text.lower()
 assert 'realmichelduarte' in text.lower()
 for required in (
-    'assets/michels_life_mark.svg',
-    'v30171-brand-legal',
+    'data:image/png;base64,',
     "panes.about.insertAdjacentHTML('beforeend',aboutPane())",
     'data-mlv-about-core',
     'data-mlv-developer',
-    'assets/michel_duarte_avatar.jpg',
+    'data:image/jpeg;base64,',
     '© 2026 Michel Duarte / Michel’s Lab. All rights reserved.',
-    'const activeNotifications=new Map();',
-    'dismissedNotifications.add(key)',
+    'window.__mlvToastSession',
+    'ChapterScenesV30170?.select?.(scene.dataset.v30170Scene)',
+    '.v30165-hero-actions [data-tab="story"]',
 ):
     assert required in text, f'missing core frontend marker: {required}'
-for forbidden in ('mlv-v30202-ui-hotfix-script','id="mlv-developer-branding"',"panes.chapters&&!panes.chapters.querySelector('[data-mlv-chapter-core]')"):
+for forbidden in ('mlv-v30202-ui-hotfix-script','id="mlv-developer-branding"',"panes.chapters&&!panes.chapters.querySelector('[data-mlv-chapter-core]')",'const activeNotifications=new Map();'):
     assert forbidden not in text, f'obsolete runtime overlay still present: {forbidden}'
 
 def_line=next(line for line in text.splitlines() if line.startswith('function defaultState()'))
