@@ -9,9 +9,9 @@
     <AssemblyName>MichelsLife</AssemblyName>
     <RootNamespace>MichelsLife</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>3.0.202</Version>
-    <AssemblyVersion>3.0.202.0</AssemblyVersion>
-    <FileVersion>3.0.202.0</FileVersion>
+    <Version>3.0.203</Version>
+    <AssemblyVersion>3.0.203.0</AssemblyVersion>
+    <FileVersion>3.0.203.0</FileVersion>
     <Product>Michel's Life</Product>
     <Company>Michel's Lab</Company>
     <Description>RPG-inspired productivity and life management desktop app.</Description>
