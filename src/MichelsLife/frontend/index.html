@@ -28577,7 +28577,7 @@ function typographyPane(){
  const current=typographyCurrent();
  const card=([id,p])=>{
    const selected=id===current;
-   return '<button type="button" class="mlv303-font-card '+(selected?'selected':'')+'" data-mlv-font-preset="'+id+'" data-mlv-font-artist="'+esc(p.artist)+'" aria-pressed="'+(selected?'true':'false')+'" style="--mlv-preview-font:'+p.stack+'">'+
+   return '<button type="button" class="mlv303-font-card '+(selected?'selected':'')+'" data-mlv-font-preset="'+id+'" data-mlv-font-artist="'+esc(p.artist)+'" aria-pressed="'+(selected?'true':'false')+'">'+
      '<span class="mlv303-font-preview"><span class="mlv303-font-sample">Aa</span><span class="mlv303-font-word">Michel’s Life</span><span class="mlv303-font-line">Build the life you imagine · 0123</span></span>'+
      '<span class="mlv303-font-copy"><b>'+esc(p.name)+'</b><small>'+esc(p.artist)+' · '+esc(p.source)+'</small><em>'+esc(p.desc)+'</em></span>'+
      '<span class="mlv303-font-state">'+(selected?'✓ SELECTED':'PREVIEW')+'</span>'+
@@ -30332,6 +30332,21 @@ body.ml-theme-ui button.mlv303-font-card[aria-pressed="true"],.mlv303-font-card.
  min-width:0;align-self:stretch;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
  padding:11px 13px;border-radius:13px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07)
 }
+.mlv303-font-card[data-mlv-font-preset="midnights"]{--mlv-preview-font:"Neue Haas Grotesk Display","Helvetica Neue",Inter,"Segoe UI",Arial,sans-serif}
+.mlv303-font-card[data-mlv-font-preset="fearless"]{--mlv-preview-font:"ITC Blair Pro Medium","Blair ITC Medium","Trebuchet MS","Segoe UI",Arial,sans-serif}
+.mlv303-font-card[data-mlv-font-preset="red"]{--mlv-preview-font:Tungsten,"Bahnschrift SemiCondensed","Arial Narrow","Segoe UI",Arial,sans-serif}
+.mlv303-font-card[data-mlv-font-preset="folklore"]{--mlv-preview-font:"IM FELL DW Pica",Georgia,"Times New Roman",serif}
+.mlv303-font-card[data-mlv-font-preset="evermore"]{--mlv-preview-font:"IM FELL DW Pica",Georgia,"Times New Roman",serif}
+.mlv303-font-card[data-mlv-font-preset="ttpd"]{--mlv-preview-font:"Big Caslon","Book Antiqua","Palatino Linotype",Georgia,serif}
+.mlv303-font-card[data-mlv-font-preset="showgirl"]{--mlv-preview-font:Gazzetta,"Bahnschrift Condensed","Arial Narrow","Segoe UI",Arial,sans-serif}
+.mlv303-font-card[data-mlv-font-preset="born_to_die"]{--mlv-preview-font:LDRCondensed,Steelfish,"Bahnschrift Condensed","Arial Narrow","Segoe UI",Arial,sans-serif}
+.mlv303-font-card[data-mlv-font-preset="paradise"]{--mlv-preview-font:LDRCondensed,Steelfish,"Arial Narrow","Bahnschrift Condensed","Segoe UI",Arial,sans-serif}
+.mlv303-font-card[data-mlv-font-preset="ultraviolence"]{--mlv-preview-font:LDRCondensed,Steelfish,"Franklin Gothic Medium","Arial Narrow","Segoe UI",Arial,sans-serif}
+.mlv303-font-card[data-mlv-font-preset="honeymoon"]{--mlv-preview-font:"Joanna Solotype CG","Palatino Linotype",Georgia,"Times New Roman",serif}
+.mlv303-font-card[data-mlv-font-preset="lust_for_life"]{--mlv-preview-font:"Adobe Garamond Pro",Garamond,"Palatino Linotype","Book Antiqua","Times New Roman",serif}
+.mlv303-font-card[data-mlv-font-preset="nfr"]{--mlv-preview-font:"Mom's Typewriter",Consolas,"Courier New",monospace}
+.mlv303-font-card[data-mlv-font-preset="chemtrails"]{--mlv-preview-font:"Bodoni MT",Didot,"Times New Roman",serif}
+.mlv303-font-card[data-mlv-font-preset="blue_banisters"]{--mlv-preview-font:"ITC Modern No. 216","Bodoni MT",Didot,Georgia,"Times New Roman",serif}
 .mlv303-font-preview,.mlv303-font-preview *{font-family:var(--mlv-preview-font)!important}
 .mlv303-font-sample{display:block;font-size:35px;font-weight:700;line-height:.95;color:var(--text,#eef4ff)!important;-webkit-text-fill-color:var(--text,#eef4ff)!important}
 .mlv303-font-word{display:block;margin-top:7px;font-size:17px;font-weight:700;line-height:1.05;color:var(--text,#eef4ff)!important;-webkit-text-fill-color:var(--text,#eef4ff)!important;white-space:nowrap}
