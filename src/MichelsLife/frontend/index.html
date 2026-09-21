@@ -28449,9 +28449,29 @@ function syncNavState(wrap,a=normalizedNavTab()){
  const statsActive=['stats','compare','weekly-review'].includes(a);
  wrap.querySelectorAll('.v30171-nav-btn').forEach(b=>{const id=b.dataset.tab||'';let on=id===a;if(b.dataset.v3093Open)on=a===b.dataset.v3093Open;if(b.dataset.v30171Day==='today')on=a==='dashboard';b.classList.toggle('active',on);b.classList.toggle('v30171-parent-active',(id==='dashboard'&&a==='dashboard')||(id==='stats'&&statsActive)||(id==='settings'&&a==='settings'));b.setAttribute('aria-current',on?'page':'false')});
 }
+function enforceBrandLockup(side){
+ if(!side)return null;
+ const markup='<div class="brand v30171-brand" data-mlv-brand-lockup="v303"><div class="brand-mark v30171-brand-mark" aria-hidden="true"><img src="assets/michels_life_logo.svg" alt=""></div><div class="v30171-brand-copy"><h1 class="v30171-brand-title">MICHEL\'S LIFE</h1><p class="v30171-brand-sub">Personal Progress System</p></div></div>';
+ let brand=side.querySelector(':scope > .v30171-brand');
+ if(!brand||brand.dataset.mlvBrandLockup!=='v303'){
+   const t=document.createElement('template');t.innerHTML=markup;const next=t.content.firstElementChild;
+   const old=side.querySelector(':scope > .brand');old?old.replaceWith(next):side.prepend(next);brand=next;
+ }
+ const mark=brand.querySelector('.v30171-brand-mark'),img=mark?.querySelector('img'),copy=brand.querySelector('.v30171-brand-copy'),title=brand.querySelector('.v30171-brand-title'),sub=brand.querySelector('.v30171-brand-sub');
+ const imp=(el,obj)=>{if(!el)return;for(const [k,v] of Object.entries(obj))el.style.setProperty(k,v,'important')};
+ imp(brand,{display:'flex','flex-direction':'column','align-items':'center','justify-content':'center',gap:'7px',width:'100%','min-width':'0',padding:'8px 6px 15px',margin:'0 0 2px','text-align':'center','box-sizing':'border-box'});
+ imp(mark,{display:'grid','place-items':'center',width:'88px',height:'88px','min-width':'88px','min-height':'88px',flex:'0 0 88px',padding:'0',margin:'0 auto',position:'relative',left:'auto',right:'auto',top:'auto',bottom:'auto',transform:'none','box-sizing':'border-box',overflow:'visible','border-radius':'0',background:'transparent',border:'0','box-shadow':'none'});
+ imp(img,{display:'block',visibility:'visible',opacity:'1',width:'82px',height:'82px','max-width':'82px','max-height':'82px',margin:'auto',padding:'0',position:'static',left:'auto',right:'auto',top:'auto',bottom:'auto',transform:'none','object-fit':'contain','border-radius':'0'});
+ imp(copy,{display:'block',width:'100%','min-width':'0',margin:'0',padding:'0',position:'static',transform:'none','text-align':'center','box-sizing':'border-box'});
+ imp(title,{display:'block',margin:'0',padding:'0','font-family':'Georgia, "Times New Roman", serif','font-size':'20px','font-weight':'800','line-height':'1.08','letter-spacing':'.075em','text-transform':'uppercase','text-align':'center',color:'var(--ui-gold,var(--gold,#ffd166))','white-space':'nowrap',position:'static',transform:'none'});
+ imp(sub,{display:'block',margin:'7px 0 0',padding:'0','font-size':'9.5px','line-height':'1.15','letter-spacing':'.14em','text-transform':'uppercase','text-align':'center',color:'var(--muted)','white-space':'nowrap',position:'static',transform:'none'});
+ return brand;
+}
 function renderNav(){
- let side=document.getElementById('v30171Sidebar');if(!side){side=document.createElement('aside');side.id='v30171Sidebar';side.className='v30171-sidebar';side.innerHTML='<div class="brand v30171-brand"><div class="brand-mark v30171-brand-mark" aria-hidden="true"><img src="assets/michels_life_logo.svg" alt=""></div><div class="v30171-brand-copy"><h1 class="v30171-brand-title" style="color:var(--ui-gold,var(--gold,#ffd166))!important">MICHEL\'S LIFE</h1><p class="v30171-brand-sub">Personal Progress System</p></div></div><nav id="v30171PrimaryNav" class="v30171-primary-nav"></nav>';(document.querySelector('.app')||document.body).prepend(side)}
- const wrap=side.querySelector('#v30171PrimaryNav');if(!wrap)return;
+ let side=document.getElementById('v30171Sidebar');if(!side){side=document.createElement('aside');side.id='v30171Sidebar';side.className='v30171-sidebar';side.innerHTML='<nav id="v30171PrimaryNav" class="v30171-primary-nav"></nav>';(document.querySelector('.app')||document.body).prepend(side)}
+ enforceBrandLockup(side);
+ let wrap=side.querySelector('#v30171PrimaryNav');if(!wrap){wrap=document.createElement('nav');wrap.id='v30171PrimaryNav';wrap.className='v30171-primary-nav';side.appendChild(wrap)}
+ if(!wrap)return;
  const signature='mlv185-nav-v1';
  if(wrap.dataset.structure!==signature){
    const main=[];
@@ -28470,7 +28490,7 @@ function renderNav(){
    wrap.innerHTML=main.join('');wrap.dataset.structure=signature;
  }
  syncNavState(wrap);
- const brand=side.querySelector('.brand');if(brand){const h=brand.querySelector('h1'),p=brand.querySelector('p'),mark=brand.querySelector('.v30171-brand-mark');if(h)h.textContent="MICHEL'S LIFE";if(p)p.textContent='Personal Progress System';if(mark&&!mark.querySelector('img'))mark.innerHTML='<img src="assets/michels_life_logo.svg" alt="">';brand.querySelectorAll('.v30171-brand-legal').forEach(x=>x.remove())}
+ enforceBrandLockup(side);
 }
 function route(id){
  id=String(id||'');
