@@ -28618,6 +28618,8 @@ document.addEventListener('click',function(e){
 },true);
 let mq=0;const mo=new MutationObserver(()=>{clearTimeout(mq);mq=setTimeout(()=>{if(String(state?.activeTab||'')==='settings'){forceSettingsMain();buildSettings()}},70)});try{const main=document.getElementById('main');if(main)mo.observe(main,{childList:true,subtree:true})}catch(_){}
 
+applyTypography(typographyCurrent(),false);
+window.MLVTypographyV303={version:'3.0.203',presets:MLV303_TYPOGRAPHY,current:typographyCurrent,apply:applyTypography};
 setTimeout(enhance,0);setTimeout(enhance,350);setTimeout(enhance,950);
 window.LeftNavV30171={version:VERSION,renderNav,buildSettings,activateSetting,refreshChapterSelection,route};
 window.__MICHELS_LIFE_BUILD__=VERSION;
@@ -30178,6 +30180,5 @@ body,button,input,select,textarea,.tab-btn,.btn,.pill,.v30171-nav-btn,.v30171-se
 @media(max-width:900px){.mlv303-font-grid{grid-template-columns:1fr}}
 </style>
 
-<script id="mlv-v303-typography-init">applyTypography(typographyCurrent(),false);</script>
 </body>
 </html>
