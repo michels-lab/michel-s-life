@@ -28600,6 +28600,19 @@ function buildSettings(){
    if(panes.about&&!panes.about.querySelector('[data-mlv-about-core]'))panes.about.insertAdjacentHTML('beforeend',aboutPane());
    [...original,...nested].forEach(el=>{if(el===shell)return;(panes[classify(el)]||panes.general).appendChild(el)});
  }
+ // Repair Settings from its canonical definition even if an older shell already existed.
+ const nav=shell.querySelector('.v30171-settings-nav');
+ const content=shell.querySelector('.v30171-settings-content');
+ if(nav)nav.innerHTML='<div class="v30171-settings-title">SETTINGS</div>'+SETTINGS.map(([k,i,n])=>'<button type="button" class="v30171-settings-btn" data-v30171-setting="'+k+'"><span class="v30171-settings-ico">'+i+'</span><span>'+n+'</span></button>').join('');
+ if(content){
+   for(const [k] of SETTINGS){
+     let pane=content.querySelector('[data-v30171-pane="'+k+'"]');
+     if(!pane){pane=document.createElement('div');pane.className='v30171-settings-pane';pane.dataset.v30171Pane=k;pane.innerHTML=paneHead(k);content.appendChild(pane)}
+   }
+   const panes={};content.querySelectorAll('[data-v30171-pane]').forEach(p=>panes[p.dataset.v30171Pane]=p);
+   if(panes.typography&&!panes.typography.querySelector('[data-mlv-typography-core]'))panes.typography.insertAdjacentHTML('beforeend',typographyPane());
+   if(panes.about&&!panes.about.querySelector('[data-mlv-about-core]'))panes.about.insertAdjacentHTML('beforeend',aboutPane());
+ }
  absorbSettingsStrays(root);
  activateSetting(savedSetting(),root);
  return true;
