@@ -88,7 +88,7 @@ try{
       bodyColor:body.color,bodyBackground:body.backgroundImage
     };
   });
-  ok(JSON.stringify(paletteBefore)===JSON.stringify(paletteAfter),'Typography preset changed app colors/backgrounds');
+  ok(JSON.stringify(paletteBefore)===JSON.stringify(paletteAfter),'Typography preset changed app colors/backgrounds: '+JSON.stringify({before:paletteBefore,after:paletteAfter}));
 
   await page.screenshot({path:`${out}/01-typography.png`,fullPage:true});
   await page.evaluate(()=>window.MLVTypographyV303.apply('midnights',true));
