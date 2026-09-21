@@ -28520,7 +28520,7 @@ function classify(el){
 function paneHead(key){const row=SETTINGS.find(x=>x[0]===key);return '<div class="v30171-pane-heading"><h2 class="v30171-pane-title">'+esc(row?.[2]||key)+'</h2><p class="v30171-pane-desc">'+esc(row?.[3]||'')+'</p></div>'}
 
 const MLV303_TYPOGRAPHY={
- midnights:{name:'Midnights',albums:'Taylor Swift · Midnights',desc:'Neo-grotesk, clean and modern. Default.',stack:'Arial,"Helvetica Neue","Segoe UI",sans-serif'},
+ midnights:{name:'Midnights',albums:'Taylor Swift · Midnights',desc:'Neo-grotesk, clean and modern. Default.',stack:'Inter,"Segoe UI",Arial,sans-serif'},
  folklore:{name:'folklore / evermore',albums:'Taylor Swift · folklore · evermore',desc:'Old-style literary serif inspired by IM Fell DW Pica.',stack:'Georgia,"Times New Roman",serif'},
  ttpd:{name:'Tortured Poets',albums:'Taylor Swift · The Tortured Poets Department',desc:'Editorial serif inspired by the Somer / Caslon direction.',stack:'"Palatino Linotype","Book Antiqua",Georgia,serif'},
  fearless:{name:'Fearless TV',albums:'Taylor Swift · Fearless (Taylor’s Version)',desc:'Friendly clean sans inspired by Carla Sans.',stack:'"Trebuchet MS","Segoe UI",Arial,sans-serif'},
@@ -30142,10 +30142,10 @@ setTimeout(mount,800);window.MLV202ReleaseReadiness={version:VERSION,mount,runDi
 
 <style id="mlv-v303-canonical-design-system">
 :root{
- --mlv-font-midnights:Arial,"Helvetica Neue","Segoe UI",sans-serif;
+ --mlv-font-midnights:Inter,"Segoe UI",Arial,sans-serif;
  --mlv-ui-font:var(--mlv-font-midnights);
 }
-html[data-mlv-typography="midnights"]{--mlv-ui-font:Arial,"Helvetica Neue","Segoe UI",sans-serif}
+html[data-mlv-typography="midnights"]{--mlv-ui-font:Inter,"Segoe UI",Arial,sans-serif}
 html[data-mlv-typography="folklore"]{--mlv-ui-font:Georgia,"Times New Roman",serif}
 html[data-mlv-typography="ttpd"]{--mlv-ui-font:"Palatino Linotype","Book Antiqua",Georgia,serif}
 html[data-mlv-typography="fearless"]{--mlv-ui-font:"Trebuchet MS","Segoe UI",Arial,sans-serif}
