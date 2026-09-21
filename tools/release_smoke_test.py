@@ -36,6 +36,7 @@ for key,value in {
     'studio':'Michel’s Lab',
     'developer':'Michel Duarte',
     'email':'realmichelduarte@gmail.com',
+    'copyright':'© 2026 Michel Duarte / Michel’s Lab. All rights reserved.',
 }.items():
     assert profile.get(key)==value, f'bad developer profile value: {key}'
 for required in (
@@ -53,7 +54,6 @@ for required in (
     'data:image/jpeg;base64,',
     'window.__mlvToastSession',
     'ChapterScenesV30170?.select?.(scene.dataset.v30170Scene)',
-    '© 2026 Michel Duarte / Michel’s Lab.',
 ):
     assert required in builder, f'missing root frontend behavior: {required}'
 assert 'append_overlay.py --index' not in builder, 'root builder must not invoke runtime overlay appenders'
