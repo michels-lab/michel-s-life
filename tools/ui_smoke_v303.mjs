@@ -26,13 +26,25 @@ try{
   });
   await page.waitForTimeout(900);
 
-  const logo=await page.$eval('#v30171Sidebar .v30171-brand-mark img',img=>({
-    src:img.getAttribute('src'),w:img.naturalWidth,h:img.naturalHeight,
-    cw:img.getBoundingClientRect().width,ch:img.getBoundingClientRect().height,
-    display:getComputedStyle(img).display,visibility:getComputedStyle(img).visibility,opacity:getComputedStyle(img).opacity
-  }));
+  const logo=await page.evaluate(()=>{
+    const img=document.querySelector('#v30171Sidebar .v30171-brand-mark img');
+    const title=document.querySelector('#v30171Sidebar .v30171-brand-title');
+    const sub=document.querySelector('#v30171Sidebar .v30171-brand-sub');
+    const brand=document.querySelector('#v30171Sidebar .v30171-brand');
+    const ir=img.getBoundingClientRect(),tr=title.getBoundingClientRect(),sr=sub.getBoundingClientRect(),br=brand.getBoundingClientRect();
+    return {
+      src:img.getAttribute('src'),w:img.naturalWidth,h:img.naturalHeight,cw:ir.width,ch:ir.height,
+      display:getComputedStyle(img).display,visibility:getComputedStyle(img).visibility,opacity:getComputedStyle(img).opacity,
+      direction:getComputedStyle(brand).flexDirection,
+      imgBottom:ir.bottom,titleTop:tr.top,titleBottom:tr.bottom,subTop:sr.top,
+      imgCenter:ir.left+ir.width/2,titleCenter:tr.left+tr.width/2,subCenter:sr.left+sr.width/2,brandCenter:br.left+br.width/2
+    };
+  });
   ok(logo.src==='assets/michels_life_logo.svg','sidebar is not using the canonical logo asset');
-  ok(logo.w>20&&logo.h>20&&logo.cw>=60&&logo.ch>=60&&logo.display!=='none'&&logo.visibility!=='hidden'&&logo.opacity!=='0','canonical sidebar logo is not visibly rendered');
+  ok(logo.w>20&&logo.h>20&&logo.cw>=80&&logo.ch>=80&&logo.display!=='none'&&logo.visibility!=='hidden'&&logo.opacity!=='0','canonical sidebar logo is not visibly rendered');
+  ok(logo.direction==='column','Michel’s Life brand is not stacked vertically');
+  ok(logo.imgBottom<=logo.titleTop+2&&logo.titleBottom<=logo.subTop+2,'Michel’s Life mark/title/subtitle are not in the approved vertical order');
+  ok(Math.abs(logo.imgCenter-logo.brandCenter)<4&&Math.abs(logo.titleCenter-logo.brandCenter)<4&&Math.abs(logo.subCenter-logo.brandCenter)<4,'Michel’s Life brand is not centered');
 
   const defaultType=await page.evaluate(()=>document.documentElement.dataset.mlvTypography);
   ok(defaultType==='midnights','Midnights is not the default typography');
@@ -41,6 +53,13 @@ try{
   await page.waitForSelector('[data-v30171-setting="typography"]',{timeout:10000});
   await page.click('[data-v30171-setting="typography"]');
   await page.waitForSelector('[data-v30171-pane="typography"].active [data-mlv-typography-core]',{timeout:10000});
+  await page.waitForTimeout(1200);
+  const typographyRoute=await page.evaluate(()=>({
+    activePane:document.querySelector('.v30171-settings-pane.active')?.dataset?.v30171Pane||'',
+    activeButton:document.querySelector('.v30171-settings-btn.active')?.dataset?.v30171Setting||'',
+    saved:localStorage.getItem('michelsLife.settingsSection.v30171')||''
+  }));
+  ok(typographyRoute.activePane==='typography'&&typographyRoute.activeButton==='typography'&&typographyRoute.saved==='typography','Typography route fell back to General after delayed rerenders');
 
   const headingFonts=await page.evaluate(()=>{
     const a=document.querySelector('[data-v30171-pane="typography"] .v30171-pane-title');
@@ -113,7 +132,7 @@ try{
   await page.waitForTimeout(600);
   await page.screenshot({path:`${out}/05-dashboard.png`,fullPage:true});
 
-  console.log(JSON.stringify({logo,headingFonts,avatar,chapterTarget:target,typography:'midnights',cloudPopups:cloudCount},null,2));
+  console.log(JSON.stringify({logo,typographyRoute,headingFonts,avatar,chapterTarget:target,typography:'midnights',cloudPopups:cloudCount},null,2));
 } finally {
   await browser.close();
 }
