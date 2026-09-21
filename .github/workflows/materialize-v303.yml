@@ -1,0 +1,64 @@
+name: Materialize canonical v3.0.203 frontend
+
+on:
+  push:
+    branches:
+      - refactor/v3.0.203-canonical-frontend
+
+permissions:
+  contents: write
+
+env:
+  RELEASES_REPO: realmichelduarte/michel-s-life-releases
+
+jobs:
+  materialize:
+    if: ${{ !contains(github.event.head_commit.message, '[canonical-generated]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refactor/v3.0.203-canonical-frontend
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Download visual asset bundle
+        run: |
+          mkdir -p src/MichelsLife/frontend
+          curl -L --fail --retry 3 \
+            "https://github.com/$RELEASES_REPO/releases/latest/download/AppBundle.zip" \
+            -o /tmp/AppBundle.zip
+          python - <<'PY'
+          from zipfile import ZipFile
+          from pathlib import Path
+          with ZipFile('/tmp/AppBundle.zip') as z:
+              Path('src/MichelsLife/frontend/index.html').write_bytes(z.read('index.html'))
+          PY
+
+      - name: Materialize current UI once
+        run: |
+          python tools/build_frontend_v30202.py \
+            --index src/MichelsLife/frontend/index.html \
+            --profile branding/developer-profile.json \
+            --release-overlay src/MichelsLife/AppPatches/v3.0.202.html
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('src/MichelsLife/frontend/index.html')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('3.0.202','3.0.203')
+          p.write_text(s,encoding='utf-8')
+          PY
+
+      - name: Commit canonical frontend
+        run: |
+          git config user.name "Michel's Life Build"
+          git config user.email "realmichelduarte@gmail.com"
+          git add src/MichelsLife/frontend/index.html
+          git commit -m "build: materialize canonical v3.0.203 frontend [canonical-generated]"
+          git push origin HEAD:refactor/v3.0.203-canonical-frontend
