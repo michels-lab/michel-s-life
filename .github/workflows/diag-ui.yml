@@ -13,30 +13,53 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Materialize host source
+        run: python tools/materialize_host_source.py
       - name: Download official v3.0.202 AppBundle
         run: |
-          mkdir -p diag/base
+          mkdir -p diag/base diag/generated
           curl -L --fail --retry 3 \
             "https://github.com/realmichelduarte/michel-s-life-releases/releases/download/v3.0.202/AppBundle.zip" \
             -o diag/AppBundle-v3.0.202.zip
           unzip -q diag/AppBundle-v3.0.202.zip -d diag/base
-          test -f diag/base/index.html
-      - name: Capture UI source diagnostics
+          cp diag/base/index.html diag/generated/index.html
+      - name: Generate current frontend from exact official bundle
+        run: |
+          python tools/build_frontend_v30202.py \
+            --index diag/generated/index.html \
+            --profile branding/developer-profile.json \
+            --release-overlay src/MichelsLife/AppPatches/v3.0.202.html
+          python tools/validate_generated_index.py --index diag/generated/index.html
+      - name: Capture diagnostics
         run: |
           python - <<'PY'
           from pathlib import Path
-          import json,re
-          p=Path('diag/base/index.html')
-          s=p.read_text(encoding='utf-8',errors='replace')
-          keys=['function buildSettings','function aboutPane','function renderNav','function notification','function renderChapter','function chapterPane','toastWrap','data-v30171-setting="about"']
-          report={k:s.find(k) for k in keys}
-          Path('diag/report.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
-          print(json.dumps(report,indent=2))
+          import json
+          out={}
+          for label,path in [('base','diag/base/index.html'),('generated','diag/generated/index.html')]:
+              s=Path(path).read_text(encoding='utf-8',errors='replace')
+              out[label]={k:s.find(k) for k in [
+                  'function buildSettings','function aboutPane','function renderNav',
+                  'function notification','function renderChapter','function chapterPane',
+                  'toastWrap','data-v30171-setting="about"',
+                  'assets/michels_life_mark.svg','data-mlv-developer',
+                  'const activeNotifications=new Map();'
+              ]}
+          Path('diag/report.json').write_text(json.dumps(out,indent=2),encoding='utf-8')
+          print(json.dumps(out,indent=2))
           PY
       - uses: actions/upload-artifact@v4
         with:
-          name: v30202-official-ui-source
+          name: v30202-ui-regression-diagnostics
           path: |
             diag/base/index.html
+            diag/generated/index.html
             diag/report.json
+            src/MichelsLife/Program.cs
           retention-days: 3
