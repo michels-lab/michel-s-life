@@ -142,10 +142,8 @@ def main() -> None:
 
     # Insert About content when Settings is built. This fixes the original empty pane cause.
     panes_anchor = "const panes={};content.querySelectorAll('[data-v30171-pane]').forEach(p=>panes[p.dataset.v30171Pane]=p);"
-    chapter_line = "if(panes.chapters&&!panes.chapters.querySelector('[data-mlv-chapter-core]')){const t=document.createElement('template');t.innerHTML='<div data-mlv-chapter-core>'+chapterPane()+'</div>';panes.chapters.appendChild(t.content.firstElementChild)}"
     about_line = "if(panes.about&&!panes.about.querySelector('[data-mlv-about-core]'))panes.about.insertAdjacentHTML('beforeend',aboutPane());"
     inserts=[]
-    if chapter_line not in text: inserts.append(chapter_line)
     if about_line not in text: inserts.append(about_line)
     if inserts:
         text = replace_once(text, panes_anchor, panes_anchor + '\n   ' + '\n   '.join(inserts), 'Settings pane core mounts')

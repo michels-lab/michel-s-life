@@ -24,7 +24,7 @@ for required in (
     'dismissedNotifications.add(key)',
 ):
     assert required in text, f'missing core frontend marker: {required}'
-for forbidden in ('mlv-v30202-ui-hotfix-script','id="mlv-developer-branding"'):
+for forbidden in ('mlv-v30202-ui-hotfix-script','id="mlv-developer-branding"',"panes.chapters&&!panes.chapters.querySelector('[data-mlv-chapter-core]')"):
     assert forbidden not in text, f'obsolete runtime overlay still present: {forbidden}'
 
 def_line=next(line for line in text.splitlines() if line.startswith('function defaultState()'))

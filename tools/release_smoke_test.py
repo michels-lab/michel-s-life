@@ -23,7 +23,12 @@ product_source='\n'.join(read_text_safe(p) for p in (PROGRAM,GOOGLE,SECRETS,OVER
 for forbidden in ('micheltheog','Instagram mission recovery','Restore Instagram missions'):
     assert forbidden.lower() not in product_source.lower(), f'forbidden product content: {forbidden}'
 
-assert 'CurrentAppVersion = new("3.0.202")' in read_text_safe(PROGRAM)
+program=read_text_safe(PROGRAM)
+assert 'CurrentAppVersion = new("3.0.202")' in program
+assert 'ComputeEmbeddedBundleFingerprint' in program
+assert 'SHA256.Create()' in program
+assert 'string.Equals(marker, bundleFingerprint' in program
+assert 'File.WriteAllText(markerPath, bundleFingerprint)' in program
 assert '__BUILD_SECRET_GOOGLE__' in read_text_safe(SECRETS)
 
 profile=json.loads(read_text_safe(PROFILE))
@@ -50,6 +55,7 @@ for required in (
 ):
     assert required in builder, f'missing root frontend behavior: {required}'
 assert 'append_overlay.py --index' not in builder, 'root builder must not invoke runtime overlay appenders'
+assert "panes.chapters&&!panes.chapters.querySelector('[data-mlv-chapter-core]')" not in builder, 'About/branding changes must not alter Chapter pane mounting'
 
 subprocess.run([sys.executable,'-m','py_compile',str(BUILDER)],check=True)
 
