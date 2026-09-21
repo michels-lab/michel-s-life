@@ -1,0 +1,42 @@
+name: Diagnose v3.0.202 UI bundle
+
+on:
+  push:
+    branches:
+      - diag/ui-regression-v30202
+
+permissions:
+  contents: read
+
+jobs:
+  extract-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download official v3.0.202 AppBundle
+        run: |
+          mkdir -p diag/base
+          curl -L --fail --retry 3 \
+            "https://github.com/realmichelduarte/michel-s-life-releases/releases/download/v3.0.202/AppBundle.zip" \
+            -o diag/AppBundle-v3.0.202.zip
+          unzip -q diag/AppBundle-v3.0.202.zip -d diag/base
+          test -f diag/base/index.html
+      - name: Capture UI source diagnostics
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json,re
+          p=Path('diag/base/index.html')
+          s=p.read_text(encoding='utf-8',errors='replace')
+          keys=['function buildSettings','function aboutPane','function renderNav','function notification','function renderChapter','function chapterPane','toastWrap','data-v30171-setting="about"']
+          report={k:s.find(k) for k in keys}
+          Path('diag/report.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
+          print(json.dumps(report,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v30202-official-ui-source
+          path: |
+            diag/base/index.html
+            diag/report.json
+          retention-days: 3
