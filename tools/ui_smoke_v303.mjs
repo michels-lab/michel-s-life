@@ -68,6 +68,14 @@ try{
     return {pane:getComputedStyle(a).fontFamily,section:getComputedStyle(b).fontFamily};
   });
   ok(headingFonts.pane===headingFonts.section,'Settings pane title font does not match the Background Themes-style section heading font');
+  const eraCatalog=await page.evaluate(()=>({
+    ids:[...document.querySelectorAll('[data-mlv-font-preset]')].map(x=>x.dataset.mlvFontPreset),
+    labels:[...document.querySelectorAll('.mlv303-font-copy b')].map(x=>(x.textContent||'').trim()),
+    artists:[...document.querySelectorAll('.mlv303-artist-head b')].map(x=>(x.textContent||'').trim())
+  }));
+  for(const id of ['red','born_to_die','paradise','ultraviolence','folklore','evermore'])ok(eraCatalog.ids.includes(id),'Missing independent typography era: '+id);
+  ok(!eraCatalog.labels.some(x=>/Red\s*\/\s*Lana|folklore\s*\/\s*evermore|Chemtrails\s*\/\s*Blue Banisters/i.test(x)),'Typography still contains merged eras: '+JSON.stringify(eraCatalog.labels));
+  ok(eraCatalog.artists.includes('Taylor Swift')&&eraCatalog.artists.includes('Lana Del Rey'),'Typography catalog is not separated by artist');
 
   const typographyPaletteCheck=await page.evaluate(()=>{
     const capture=()=>{
