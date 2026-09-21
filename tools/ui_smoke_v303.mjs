@@ -84,16 +84,22 @@ try{
   ok(avatar.w>100&&avatar.h>100&&avatar.cw>=180&&avatar.ch>=220,'About portrait is missing or still rendered as a thumbnail');
   await page.screenshot({path:`${out}/03-about.png`,fullPage:true});
 
+  await page.evaluate(()=>{
+    if(!window.FocusStoryV30162?.activeChapter?.()){
+      window.FocusStoryV30162?.createChapter?.('UI Test Chapter','',new Date().toISOString().slice(0,10));
+    }
+  });
   await page.click('[data-v30171-setting="chapters"]');
-  await page.waitForSelector('[data-v30171-pane="chapters"].active .v30171-scene-card',{timeout:10000});
+  await page.waitForSelector('[data-v30171-pane="chapters"].active [data-mlv184-chapter]',{timeout:10000});
   const chapterData=await page.evaluate(()=>({
-    current:window.ChapterScenesV30170?.currentPack?.()||'',
-    options:[...document.querySelectorAll('[data-v30170-scene]')].map(x=>x.dataset.v30170Scene)
+    current:window.FocusStoryV30162?.activeChapter?.()?.scenePack||'dark_kingdom',
+    options:[...document.querySelectorAll('[data-v30171-pane="chapters"].active [data-mlv184-chapter]')].map(x=>x.dataset.mlv184Chapter)
   }));
   const target=chapterData.options.find(x=>x&&x!==chapterData.current);
   ok(!!target,'No alternate Chapter Scene option available for interaction test');
-  await page.click(`[data-v30170-scene="${target}"]`);
-  await page.waitForFunction(t=>window.ChapterScenesV30170?.currentPack?.()===t,target,{timeout:10000});
+  await page.click(`[data-v30171-pane="chapters"].active [data-mlv184-chapter="${target}"]`);
+  await page.waitForFunction(t=>window.FocusStoryV30162?.activeChapter?.()?.scenePack===t,target,{timeout:10000});
+  await page.waitForSelector(`[data-v30171-pane="chapters"].active [data-mlv184-chapter="${target}"].active`,{timeout:10000});
   await page.screenshot({path:`${out}/04-chapters.png`,fullPage:true});
 
   const cloudCount=await page.evaluate(()=>{

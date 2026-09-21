@@ -27,7 +27,8 @@ required=(
     "panes.about.insertAdjacentHTML('beforeend',aboutPane());",
     "function activateSetting(key,root){",
     "if(String(title||'').trim().toLowerCase()==='cloud overview')return null;",
-    "ChapterScenesV30170?.select?.(scene.dataset.v30170Scene)",
+    "function setChapter(id)",
+    "data-mlv184-chapter",
     "© 2026 Michel Duarte / Michel’s Lab. All rights reserved.",
 )
 for marker in required:
@@ -39,6 +40,7 @@ for forbidden in (
     'mlv-v30202-ui-hotfix-script',
     'id="mlv-developer-branding"',
     'const activeNotifications=new Map();',
+    '.v30171-scene-card[data-v30170-scene]',
 ):
     assert forbidden not in text, f'obsolete/non-canonical frontend content remains: {forbidden}'
 
