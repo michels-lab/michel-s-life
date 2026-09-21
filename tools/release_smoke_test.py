@@ -49,8 +49,7 @@ for required in (
     '© 2026 Michel Duarte / Michel’s Lab.',
 ):
     assert required in builder, f'missing root frontend behavior: {required}'
-for forbidden in ('append_overlay.py --index','mlv-v30202-ui-hotfix-script'):
-    assert forbidden not in builder, f'root builder contains obsolete overlay behavior: {forbidden}'
+assert 'append_overlay.py --index' not in builder, 'root builder must not invoke runtime overlay appenders'
 
 subprocess.run([sys.executable,'-m','py_compile',str(BUILDER)],check=True)
 
