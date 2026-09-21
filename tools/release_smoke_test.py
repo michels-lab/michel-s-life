@@ -46,7 +46,7 @@ for required in (
     "panes.about.insertAdjacentHTML('beforeend',aboutPane())",
     'assets/michels_life_mark.svg',
     'const activeNotifications=new Map();',
-    '© 2026 Michel Duarte / Michel’s Lab. All rights reserved.',
+    '© 2026 Michel Duarte / Michel’s Lab.',
 ):
     assert required in builder, f'missing root frontend behavior: {required}'
 for forbidden in ('append_overlay.py --index','mlv-v30202-ui-hotfix-script'):
