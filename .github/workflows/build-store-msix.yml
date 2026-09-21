@@ -81,28 +81,20 @@ jobs:
             if (-not $exe) { throw 'ImageMagick magick.exe not found.' }
             $magickPath = $exe.FullName
           } else { $magickPath = $magick.Source }
-          & $magickPath -background none 'branding/michels_life_mark.svg' -define icon:auto-resize=256,128,64,48,32,16 'src/MichelsLife/Assets/michels_life_icon.ico'
+          & $magickPath -background none 'branding/michels_life_logo.svg' -define icon:auto-resize=256,128,64,48,32,16 'src/MichelsLife/Assets/michels_life_icon.ico'
           if ($LASTEXITCODE -ne 0) { throw 'App icon generation failed.' }
 
-      - name: Prepare Store frontend bundle
+      - name: Prepare Store frontend bundle from canonical source
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
           $PSNativeCommandUseErrorActionPreference = $true
-          Add-Type -AssemblyName System.IO.Compression.FileSystem
-          $zip=[IO.Compression.ZipFile]::OpenRead((Resolve-Path 'src/MichelsLife/AppBundle.zip'))
-          $entry=$zip.GetEntry('index.html')
-          if (-not $entry) { throw 'Base AppBundle.zip has no index.html' }
-          $reader=New-Object IO.StreamReader($entry.Open())
-          $html=$reader.ReadToEnd(); $reader.Dispose(); $zip.Dispose()
-          Set-Content -Path 'src/MichelsLife/base-index.html' -Value $html -NoNewline -Encoding UTF8
-          python tools/build_frontend_v30202.py --index src/MichelsLife/base-index.html --profile branding/developer-profile.json --release-overlay src/MichelsLife/AppPatches/v3.0.202.html
-          python tools/append_store_overlay.py --index src/MichelsLife/base-index.html --overlay src/MichelsLife/AppPatches/store-msix.html
-          python tools/validate_generated_index.py --index src/MichelsLife/base-index.html
-          python tools/replace_bundle_index.py --bundle src/MichelsLife/AppBundle.zip --index src/MichelsLife/base-index.html
+          python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
+          python tools/replace_bundle_index.py --bundle src/MichelsLife/AppBundle.zip --index src/MichelsLife/frontend/index.html
           python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source branding/michel_duarte_avatar.jpg --arcname assets/michel_duarte_avatar.jpg
-          python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source branding/michels_life_mark.svg --arcname assets/michels_life_mark.svg
-          Remove-Item src/MichelsLife/base-index.html -Force
+          python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source branding/michels_life_logo.svg --arcname assets/michels_life_logo.svg
+          python tools/append_store_overlay.py --index src/MichelsLife/frontend/index.html --overlay src/MichelsLife/AppPatches/store-msix.html
+          python tools/replace_bundle_index.py --bundle src/MichelsLife/AppBundle.zip --index src/MichelsLife/frontend/index.html
 
       - name: Inject Google OAuth build credential
         shell: pwsh
