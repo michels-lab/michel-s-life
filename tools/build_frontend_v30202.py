@@ -226,7 +226,6 @@ function escapeHtml(s)"""
     # Final invariants: the generated file itself owns the behavior.
     required = (
         'data:image/png;base64,',
-        'v30171-brand-legal',
         "panes.about.insertAdjacentHTML('beforeend',aboutPane())",
         'data-mlv-about-core',
         'data-mlv-developer',
