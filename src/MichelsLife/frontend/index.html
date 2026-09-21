@@ -28557,13 +28557,25 @@ function applyTypography(id,persist=true){
  document.documentElement.dataset.mlvTypography=id;
  if(persist){try{localStorage.setItem('michelsLife.typography.v303',id)}catch(_){}}
  const root=document.getElementById('tab-settings');
- root?.querySelectorAll?.('[data-mlv-font-preset]')?.forEach?.(b=>{const on=b.dataset.mlvFontPreset===id;b.classList.toggle('selected',on);b.setAttribute('aria-pressed',on?'true':'false')});
+ root?.querySelectorAll?.('[data-mlv-font-preset]')?.forEach?.(b=>{
+   const on=b.dataset.mlvFontPreset===id;
+   b.classList.toggle('selected',on);
+   b.setAttribute('aria-pressed',on?'true':'false');
+   const st=b.querySelector('.mlv303-font-state');if(st)st.textContent=on?'✓ SELECTED':'PREVIEW';
+ });
  return id;
 }
 function typographyPane(){
  const current=typographyCurrent();
- const cards=Object.entries(MLV303_TYPOGRAPHY).map(([id,p])=>'<button type="button" class="mlv303-font-card '+(id===current?'selected':'')+'" data-mlv-font-preset="'+id+'" aria-pressed="'+(id===current?'true':'false')+'"><span class="mlv303-font-sample" style="font-family:'+p.stack+'">Aa</span><span class="mlv303-font-copy"><b style="font-family:'+p.stack+'">'+esc(p.name)+'</b><small>'+esc(p.albums)+'</small><em>'+esc(p.desc)+'</em></span><span class="mlv303-font-check">'+(id===current?'✓':'')+'</span></button>').join('');
- return '<section class="card mlv303-font-panel" data-mlv-typography-core data-v30171-owner="typography"><div class="section-title"><div><h2>Interface Typography</h2><p>Typography only. Presets never change colors, backgrounds or accents.</p></div><span class="pill hot">Midnights default</span></div><div class="mlv303-font-grid">'+cards+'</div><p class="mlv303-font-note">Only album-inspired families that remain readable across a full interface are included. Handwritten, blackletter and display-only album lettering is intentionally excluded.</p></section>';
+ const cards=Object.entries(MLV303_TYPOGRAPHY).map(([id,p])=>{
+   const selected=id===current;
+   return '<button type="button" class="mlv303-font-card '+(selected?'selected':'')+'" data-mlv-font-preset="'+id+'" aria-pressed="'+(selected?'true':'false')+'" style="--mlv-preview-font:'+p.stack+'">'+
+     '<span class="mlv303-font-preview"><span class="mlv303-font-sample">Aa</span><span class="mlv303-font-word">Michel’s Life</span><span class="mlv303-font-line">Build the life you imagine · 0123</span></span>'+
+     '<span class="mlv303-font-copy"><b>'+esc(p.name)+'</b><small>'+esc(p.albums)+'</small><em>'+esc(p.desc)+'</em></span>'+
+     '<span class="mlv303-font-state">'+(selected?'✓ SELECTED':'PREVIEW')+'</span>'+
+   '</button>';
+ }).join('');
+ return '<section class="card mlv303-font-panel" data-mlv-typography-core data-v30171-owner="typography"><div class="section-title"><div><h2>Interface Typography</h2><p>Every card previews its own typeface. Choosing one changes typography only — never colors, backgrounds or accents.</p></div><span class="pill hot">Midnights default</span></div><div class="mlv303-font-grid">'+cards+'</div><p class="mlv303-font-note">Each preview stays in its own typeface even after another preset is selected, so you can compare them side by side. Handwritten, blackletter and display-only lettering remains excluded from the full-interface presets.</p></section>';
 }
 
 function aboutPane(){return `<section class="card mlvdev-card" data-mlv-about-core data-mlv-developer data-v30171-owner="about"><div class="mlvdev-main"><div class="mlvdev-avatar-wrap"><img class="mlvdev-avatar" src="assets/michel_duarte_avatar.jpg" alt="Michel Duarte"></div><div class="mlvdev-info"><div class="mlvdev-title"><h2>Michel Duarte</h2><p>Developer · Michel’s Lab</p></div><div class="mlvdev-copy">Michel’s Life is created and maintained by Michel Duarte under Michel’s Lab. Independent software focused on productivity, life systems and personal tools.</div><div class="mlvdev-contact">Contact: <a href="mailto:realmichelduarte@gmail.com">realmichelduarte@gmail.com</a></div><div class="mlvdev-socials"><a class="mlvdev-social" href="https://www.instagram.com/realmichelduarte/" target="_blank" rel="noopener noreferrer"><span><strong>Instagram</strong><small>@realmichelduarte</small></span></a><a class="mlvdev-social" href="https://www.facebook.com/realmichelduarte" target="_blank" rel="noopener noreferrer"><span><strong>Facebook</strong><small>realmichelduarte</small></span></a><a class="mlvdev-social" href="https://www.linkedin.com/in/realmichelduart/" target="_blank" rel="noopener noreferrer"><span><strong>LinkedIn</strong><small>realmichelduart</small></span></a><a class="mlvdev-social" href="https://github.com/realmichelduarte" target="_blank" rel="noopener noreferrer"><span><strong>GitHub</strong><small>realmichelduarte</small></span></a><a class="mlvdev-social" href="mailto:realmichelduarte@gmail.com" target="_blank" rel="noopener noreferrer"><span><strong>Email</strong><small>realmichelduarte@gmail.com</small></span></a></div><div class="mlvdev-meta"><div><small>APP</small><b>Michel’s Life</b></div><div><small>VERSION</small><b>v3.0.203</b></div><div><small>LICENSE</small><b>Proprietary · Personal use</b></div></div><div class="mlvdev-legal">Free for personal use. Unauthorized copying, modification, redistribution, rebranding, resale, sublicensing, or claiming this software as your own is not permitted without prior written permission.<span class="mlvdev-copyright">© 2026 Michel Duarte / Michel’s Lab. All rights reserved.</span></div></div></div></section>`}
@@ -28685,7 +28697,7 @@ document.addEventListener('click',function(e){
    [0,90,260,760].forEach(ms=>setTimeout(()=>{if(String(state?.activeTab||'')!=='settings')return;buildSettings();activateSetting(key)},ms));
    return;
  }
- const font=e.target?.closest?.('[data-mlv-font-preset]');if(font){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();applyTypography(font.dataset.mlvFontPreset,true);font.closest('[data-mlv-typography-core]')?.querySelectorAll('.mlv303-font-check').forEach(x=>x.textContent=x.closest('[data-mlv-font-preset]')?.classList.contains('selected')?'✓':'');return}
+ const font=e.target?.closest?.('[data-mlv-font-preset]');if(font){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();applyTypography(font.dataset.mlvFontPreset,true);return}
 },true);
 let mq=0;const mo=new MutationObserver(()=>{clearTimeout(mq);mq=setTimeout(()=>{if(String(state?.activeTab||'')==='settings'){forceSettingsMain();buildSettings()}},70)});try{const main=document.getElementById('main');if(main)mo.observe(main,{childList:true,subtree:true})}catch(_){}
 
@@ -30266,14 +30278,45 @@ body,button,input,select,textarea,.tab-btn,.btn,.pill,.v30171-nav-btn,.v30171-se
  #v30171Sidebar .v30171-brand-mark>img,#v30171Sidebar .brand-mark>img{width:88px!important;height:88px!important}
  #v30171Sidebar h1.v30171-brand-title{font-size:20px!important}
 }
-.mlv303-font-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.mlv303-font-card{position:relative;display:grid;grid-template-columns:58px minmax(0,1fr) 24px;align-items:center;gap:12px;min-height:92px;padding:13px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.026);text-align:left;cursor:pointer}
-.mlv303-font-card:hover{transform:translateY(-1px);border-color:rgba(var(--ui-accent-rgb,117,228,255),.30)}
-.mlv303-font-card.selected{border-color:rgba(var(--ui-gold-rgb,255,209,102),.50);box-shadow:inset 3px 0 0 var(--ui-gold,var(--gold,#ffd166))}
-.mlv303-font-sample{font-size:30px;font-weight:800;line-height:1;text-align:center}
-.mlv303-font-copy{display:block;min-width:0}.mlv303-font-copy b{display:block;font-size:14px;line-height:1.15}.mlv303-font-copy small{display:block;margin-top:4px;font-size:9px;color:var(--muted);line-height:1.3}.mlv303-font-copy em{display:block;margin-top:5px;font-size:9.5px;color:var(--soft);font-style:normal;line-height:1.35}
-.mlv303-font-check{font-size:16px;text-align:center}.mlv303-font-note{margin:12px 2px 0;color:var(--muted);font-size:10px;line-height:1.45}
-@media(max-width:900px){.mlv303-font-grid{grid-template-columns:1fr}}
+.mlv303-font-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.mlv303-font-card{
+ position:relative;display:grid;grid-template-columns:minmax(145px,.78fr) minmax(0,1.25fr);align-items:center;gap:16px;
+ min-height:126px;padding:16px 17px;border-radius:18px;border:1px solid rgba(255,255,255,.12)!important;
+ background:linear-gradient(160deg,rgba(var(--ui-control-rgb,4,7,16),.94),rgba(var(--ui-card-rgb,7,12,28),.82))!important;
+ color:var(--text,#eef4ff)!important;-webkit-text-fill-color:initial!important;text-align:left;cursor:pointer;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 8px 22px rgba(0,0,0,.10)!important;
+ transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease!important
+}
+.mlv303-font-card:hover{transform:translateY(-2px);border-color:rgba(var(--ui-accent-rgb,117,228,255),.38)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 12px 28px rgba(0,0,0,.18)!important}
+body.ml-theme-ui button.mlv303-font-card[aria-pressed="true"],.mlv303-font-card.selected{
+ background:linear-gradient(160deg,rgba(var(--ui-gold-rgb,255,209,102),.095),rgba(var(--ui-control-rgb,4,7,16),.94) 58%)!important;
+ border-color:rgba(var(--ui-gold-rgb,255,209,102),.70)!important;color:var(--text,#eef4ff)!important;
+ -webkit-text-fill-color:initial!important;box-shadow:inset 4px 0 0 var(--ui-gold,var(--gold,#ffd166)),0 0 0 1px rgba(var(--ui-gold-rgb,255,209,102),.08),0 12px 30px rgba(0,0,0,.20)!important
+}
+.mlv303-font-preview{
+ min-width:0;align-self:stretch;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+ padding:11px 13px;border-radius:13px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07)
+}
+.mlv303-font-preview,.mlv303-font-preview *{font-family:var(--mlv-preview-font)!important}
+.mlv303-font-sample{display:block;font-size:35px;font-weight:700;line-height:.95;color:var(--text,#eef4ff)!important;-webkit-text-fill-color:var(--text,#eef4ff)!important}
+.mlv303-font-word{display:block;margin-top:7px;font-size:17px;font-weight:700;line-height:1.05;color:var(--text,#eef4ff)!important;-webkit-text-fill-color:var(--text,#eef4ff)!important;white-space:nowrap}
+.mlv303-font-line{display:block;margin-top:7px;font-size:9.5px;font-weight:400;line-height:1.25;color:var(--muted,#aeb8cc)!important;-webkit-text-fill-color:var(--muted,#aeb8cc)!important}
+.mlv303-font-copy{display:block;min-width:0;padding-right:6px;color:var(--text,#eef4ff)!important;-webkit-text-fill-color:initial!important}
+.mlv303-font-copy b{display:block;font-size:14.5px;line-height:1.15;color:var(--text,#eef4ff)!important;-webkit-text-fill-color:var(--text,#eef4ff)!important}
+.mlv303-font-copy small{display:block;margin-top:5px;font-size:9px;color:var(--muted,#aeb8cc)!important;-webkit-text-fill-color:var(--muted,#aeb8cc)!important;line-height:1.3}
+.mlv303-font-copy em{display:block;margin-top:6px;font-size:9.5px;color:var(--soft,#7f8ba4)!important;-webkit-text-fill-color:var(--soft,#7f8ba4)!important;font-style:normal;line-height:1.35}
+.mlv303-font-state{
+ position:absolute;right:12px;top:10px;display:inline-flex;align-items:center;justify-content:center;min-width:54px;
+ padding:4px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.18);
+ color:var(--soft,#7f8ba4)!important;-webkit-text-fill-color:var(--soft,#7f8ba4)!important;font:800 7.5px/1 Inter,"Segoe UI",Arial,sans-serif!important;letter-spacing:.08em
+}
+body.ml-theme-ui button.mlv303-font-card[aria-pressed="true"] .mlv303-font-state,.mlv303-font-card.selected .mlv303-font-state{
+ border-color:rgba(var(--ui-gold-rgb,255,209,102),.48);background:rgba(var(--ui-gold-rgb,255,209,102),.12);
+ color:var(--ui-gold,var(--gold,#ffd166))!important;-webkit-text-fill-color:var(--ui-gold,var(--gold,#ffd166))!important
+}
+.mlv303-font-note{margin:13px 2px 0;color:var(--muted);font-size:10px;line-height:1.45}
+@media(max-width:1100px){.mlv303-font-card{grid-template-columns:128px minmax(0,1fr)}.mlv303-font-word{font-size:15px}.mlv303-font-line{font-size:8.5px}}
+@media(max-width:900px){.mlv303-font-grid{grid-template-columns:1fr}.mlv303-font-card{grid-template-columns:150px minmax(0,1fr)}}
 </style>
 
 </body>
