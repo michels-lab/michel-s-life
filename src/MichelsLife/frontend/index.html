@@ -28617,7 +28617,20 @@ function buildSettings(){
  activateSetting(savedSetting(),root);
  return true;
 }
-function activateSetting(key,root){root=root||document.getElementById('tab-settings');if(!root)return;root.querySelectorAll('[data-v30171-setting]').forEach(b=>b.classList.toggle('active',b.dataset.v30171Setting===key));root.querySelectorAll('[data-v30171-pane]').forEach(p=>p.classList.toggle('active',p.dataset.v30171Pane===key));try{localStorage.setItem('michelsLife.settingsSection.v30171',key)}catch(_){} }
+function activateSetting(key,root){
+ root=root||document.getElementById('tab-settings');if(!root)return;
+ const shell=root.querySelector(':scope > .v30171-settings-shell');
+ const content=shell?.querySelector?.('.v30171-settings-content');
+ let pane=root.querySelector('[data-v30171-pane="'+key+'"]');
+ if(!pane&&content){
+   pane=document.createElement('div');pane.className='v30171-settings-pane';pane.dataset.v30171Pane=key;pane.innerHTML=paneHead(key);content.appendChild(pane);
+ }
+ if(key==='typography'&&pane&&!pane.querySelector('[data-mlv-typography-core]'))pane.insertAdjacentHTML('beforeend',typographyPane());
+ if(key==='about'&&pane&&!pane.querySelector('[data-mlv-about-core]'))pane.insertAdjacentHTML('beforeend',aboutPane());
+ root.querySelectorAll('[data-v30171-setting]').forEach(b=>b.classList.toggle('active',b.dataset.v30171Setting===key));
+ root.querySelectorAll('[data-v30171-pane]').forEach(p=>p.classList.toggle('active',p.dataset.v30171Pane===key));
+ try{localStorage.setItem('michelsLife.settingsSection.v30171',key)}catch(_){}
+}
 function refreshChapterSelection(root){root=root||document;const current=window.ChapterScenesV30170?.currentPack?.();root.querySelectorAll('.v30171-scene-card[data-v30170-scene]').forEach(b=>{const on=b.dataset.v30170Scene===current;b.classList.toggle('selected',on);b.querySelector('.v30171-scene-check')?.classList.toggle('selected',on)});const pill=root.querySelector('[data-v30171-pane="chapters"] .pill.hot');if(pill&&current){const p=window.ChapterScenesV30170?.PACKS?.[current];if(p)pill.textContent=p.name}}
 function enhance(){renderNav();if(String(state?.activeTab||'')==='settings')buildSettings()}
 const oldTabs=window.renderTabs;window.renderTabs=function(){renderNav();};try{renderTabs=window.renderTabs}catch(_){}
