@@ -2,6 +2,9 @@
 from pathlib import Path
 import json, subprocess, tempfile, sys, re
 ROOT=Path(__file__).resolve().parents[1]
+
+def read_text_safe(path):
+    return path.read_text(encoding='utf-8', errors='replace')
 subprocess.run([sys.executable,str(ROOT/'tools/materialize_host_source.py')],check=True)
 PROGRAM=ROOT/'src/MichelsLife/Program.cs'
 GOOGLE=ROOT/'src/MichelsLife/GoogleCalendarService.cs'
@@ -13,17 +16,17 @@ LICENSE=ROOT/'LICENSE.txt'
 for p in (PROGRAM,GOOGLE,SECRETS,OVERLAY,BUILDER,PROFILE,LICENSE):
     assert p.exists(),f'missing {p}'
 
-security_source='\n'.join(p.read_text(encoding='utf-8') for p in (PROGRAM,GOOGLE,SECRETS,OVERLAY,BUILDER,PROFILE,LICENSE))
+security_source='\n'.join(read_text_safe(p) for p in (PROGRAM,GOOGLE,SECRETS,OVERLAY,BUILDER,PROFILE,LICENSE))
 for forbidden in ('GOCSPX-','github_pat_','ghp_','client_secret_794181'):
     assert forbidden.lower() not in security_source.lower(), f'forbidden committed secret content: {forbidden}'
-product_source='\n'.join(p.read_text(encoding='utf-8') for p in (PROGRAM,GOOGLE,SECRETS,OVERLAY,PROFILE,LICENSE))
+product_source='\n'.join(read_text_safe(p) for p in (PROGRAM,GOOGLE,SECRETS,OVERLAY,PROFILE,LICENSE))
 for forbidden in ('micheltheog','Instagram mission recovery','Restore Instagram missions'):
     assert forbidden.lower() not in product_source.lower(), f'forbidden product content: {forbidden}'
 
-assert 'CurrentAppVersion = new("3.0.202")' in PROGRAM.read_text(encoding='utf-8')
-assert '__BUILD_SECRET_GOOGLE__' in SECRETS.read_text(encoding='utf-8')
+assert 'CurrentAppVersion = new("3.0.202")' in read_text_safe(PROGRAM)
+assert '__BUILD_SECRET_GOOGLE__' in read_text_safe(SECRETS)
 
-profile=json.loads(PROFILE.read_text(encoding='utf-8'))
+profile=json.loads(read_text_safe(PROFILE))
 for key,value in {
     'studio':'Michel’s Lab',
     'developer':'Michel Duarte',
@@ -38,7 +41,7 @@ for required in (
 ):
     assert required in json.dumps(profile), f'missing developer profile URL: {required}'
 
-builder=BUILDER.read_text(encoding='utf-8')
+builder=read_text_safe(BUILDER)
 for required in (
     "panes.about.insertAdjacentHTML('beforeend',aboutPane())",
     'assets/michels_life_mark.svg',
@@ -51,7 +54,7 @@ for forbidden in ('append_overlay.py --index','mlv-v30202-ui-hotfix-script'):
 
 subprocess.run([sys.executable,'-m','py_compile',str(BUILDER)],check=True)
 
-html=OVERLAY.read_text(encoding='utf-8')
+html=read_text_safe(OVERLAY)
 scripts=re.findall(r'<script[^>]*>(.*?)</script>',html,flags=re.S|re.I)
 with tempfile.TemporaryDirectory() as td:
     for i,code in enumerate(scripts):
