@@ -25,5 +25,8 @@ jobs:
       - name: Release-readiness smoke tests
         run: python tools/release_smoke_test.py
 
+      - name: Canonical frontend validation
+        run: python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
+
       - name: Microsoft Store packaging smoke tests
         run: python tools/store_smoke_test.py
