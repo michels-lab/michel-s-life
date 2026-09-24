@@ -10,8 +10,8 @@ p=Path(a.index)
 text=p.read_text(encoding='utf-8')
 
 required=(
-    "const VERSION='3.0.203'",
-    "window.__MICHELS_LIFE_BUILD__='3.0.203'",
+    "const VERSION='3.0.207'",
+    "window.__MICHELS_LIFE_BUILD__='3.0.207'",
     "assets/michels_life_logo.svg",
     "assets/michel_duarte_avatar.jpg",
     "['typography','Aa','Typography'",
@@ -22,7 +22,7 @@ required=(
     "--mlv-font-midnights",
     "Typography only. Presets never change colors, backgrounds or accents.",
     "function createCanonicalSettingsShell(root){",
-    "shell.dataset.v30171Canonical='3.0.203';",
+    "shell.dataset.v30171Canonical='3.0.207';",
     "panes.typography.insertAdjacentHTML('beforeend',typographyPane());",
     "panes.about.insertAdjacentHTML('beforeend',aboutPane());",
     "function activateSetting(key,root){",
@@ -86,4 +86,4 @@ with tempfile.TemporaryDirectory() as td:
         if r.returncode:
             print(r.stderr,file=sys.stderr)
             raise SystemExit(f'JS syntax failed {i}')
-print(f'OK: canonical v3.0.203 frontend + migration checks + {len(parser.items)} inline scripts')
+print(f'OK: canonical v3.0.207 frontend + migration checks + {len(parser.items)} inline scripts')

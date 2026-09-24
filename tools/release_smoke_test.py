@@ -24,7 +24,7 @@ for p in (PROGRAM,GOOGLE,SECRETS,FRONTEND,LOGO,AVATAR,PROFILE,LICENSE,*WORKFLOWS
     assert p.exists(),f'missing {p}'
 
 program=read(PROGRAM)
-assert 'CurrentAppVersion = new("3.0.203")' in program
+assert 'CurrentAppVersion = new("3.0.207")' in program
 for marker in ('ComputeEmbeddedBundleFingerprint','SHA256.Create()','string.Equals(marker, bundleFingerprint','File.WriteAllText(markerPath, bundleFingerprint)'):
     assert marker in program, f'missing runtime cache protection: {marker}'
 assert '__BUILD_SECRET_GOOGLE__' in read(SECRETS)
@@ -40,7 +40,7 @@ for key,value in {
 
 frontend=read(FRONTEND)
 for marker in (
-    "const VERSION='3.0.203'",
+    "const VERSION='3.0.207'",
     "assets/michels_life_logo.svg",
     "assets/michel_duarte_avatar.jpg",
     "['typography','Aa','Typography'",
@@ -61,4 +61,4 @@ security='\n'.join(read(p) for p in (PROGRAM,GOOGLE,SECRETS,FRONTEND,PROFILE,LIC
 for forbidden in ('GOCSPX-','github_pat_','ghp_','client_secret_794181'):
     assert forbidden.lower() not in security.lower(), f'committed secret-like value: {forbidden}'
 
-print('OK: v3.0.203 host + canonical frontend + branding + clean build pipeline')
+print('OK: v3.0.207 host + canonical frontend + branding + clean build pipeline')

@@ -57,7 +57,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ui-smoke-v3.0.203
+          name: ui-smoke-v3.0.207
           path: |
             artifacts/ui-smoke
             /tmp/mlv-http.log

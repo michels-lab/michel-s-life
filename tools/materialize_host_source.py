@@ -13,12 +13,17 @@ for name in ('Program.cs','GoogleCalendarService.cs'):
     if not packed.exists():
         raise SystemExit(f'missing {packed}')
     data=gzip.decompress(base64.b64decode(packed.read_text().strip()))
+    text=data.decode('utf-8')
+    text=text.replace('3.0.203','3.0.207')
     if name=='GoogleCalendarService.cs':
-        text=data.decode('utf-8')
         for old_client_id in LEGACY_GOOGLE_CLIENT_IDS:
             text=text.replace(old_client_id,GOOGLE_CLIENT_ID)
         if GOOGLE_CLIENT_ID not in text:
             raise SystemExit('GoogleCalendarService.cs does not contain the approved Google Desktop OAuth client id')
-        data=text.encode('utf-8')
+    if '3.0.203' in text:
+        raise SystemExit(f'{name} still contains a stale v3.0.203 marker after materialization')
+    if name=='Program.cs' and 'CurrentAppVersion = new("3.0.207")' not in text:
+        raise SystemExit('Program.cs did not materialize with CurrentAppVersion v3.0.207')
+    data=text.encode('utf-8')
     (ROOT/name).write_bytes(data)
     print('materialized',name)
