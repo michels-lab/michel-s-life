@@ -70,7 +70,7 @@ jobs:
           & $magickPath -background none 'branding/michels_life_logo.svg' -define icon:auto-resize=256,128,64,48,32,16 'src/MichelsLife/Assets/michels_life_icon.ico'
           if ($LASTEXITCODE -ne 0) { throw 'App icon generation failed.' }
 
-      - name: Package canonical v3.0.203 frontend
+      - name: Package canonical v3.0.207 frontend
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
@@ -90,7 +90,29 @@ jobs:
           }
           $path = 'src/MichelsLife/BuildSecrets.cs'
           $content = Get-Content $path -Raw
-          $escaped = $env:GOOGLE_CLIENT_SECRET.Replace('\','\\').Replace('"','\"')
+          $oauthSecret = $env:GOOGLE_CLIENT_SECRET.Trim()
+          if ($oauthSecret.StartsWith('{')) {
+            try {
+              $oauthConfig = $oauthSecret | ConvertFrom-Json
+              $oauthSecret = [string]$oauthConfig.installed.client_secret
+            } catch {
+              throw 'GOOGLE_CLIENT_SECRET must be either the raw Desktop client_secret or the downloaded Desktop OAuth JSON.'
+            }
+          }
+          if ([string]::IsNullOrWhiteSpace($oauthSecret)) {
+            throw 'The Desktop OAuth client_secret resolved to an empty value.'
+          }
+          $sha = [System.Security.Cryptography.SHA256]::Create()
+          try {
+            $hashBytes = $sha.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($oauthSecret))
+            $secretHash = -join ($hashBytes | ForEach-Object { $_.ToString('x2') })
+          } finally {
+            $sha.Dispose()
+          }
+          if ($secretHash -ne 'b3bd5879455e68562da33945ce1377369a961aead618a0c97df1dfa16e11c4c3') {
+            throw 'GOOGLE_CLIENT_SECRET does not match the approved Michel''s Life v3.0.207 Desktop OAuth client.'
+          }
+          $escaped = $oauthSecret.Replace('\','\\').Replace('"','\"')
           $content = $content.Replace('__BUILD_SECRET_GOOGLE__', $escaped)
           Set-Content -Path $path -Value $content -NoNewline -Encoding UTF8
 

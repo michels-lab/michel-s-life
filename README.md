@@ -4,7 +4,7 @@ RPG-inspired productivity and life-management desktop app for Windows.
 
 ## Current line
 
-**v3.0.202 — Release Readiness** adds app diagnostics, portable `.michelslife` backups, local error reports, a GitHub update channel, release automation, and product cleanup without redesigning the approved visual system.
+**v3.0.207 — Google Cloud Baseline** is the approved desktop baseline. It preserves the accepted typography and Developer/About systems and includes verified Google OAuth + persistent Google Drive Cloud Sync.
 
 ## Repository layout
 
@@ -21,7 +21,7 @@ The app currently has **204 JPG visual assets**. They live in the official `AppB
 
 ## Secrets
 
-The Google OAuth build credential is **not committed**. Local builds can use `MICHELSLIFE_GOOGLE_CLIENT_SECRET`; official CI injects the GitHub Actions secret `GOOGLE_CLIENT_SECRET` at build time.
+The Google OAuth build credential is **not committed**. Local builds can use `MICHELSLIFE_GOOGLE_CLIENT_SECRET`; official CI injects the GitHub Actions secret `GOOGLE_CLIENT_SECRET` at build time. CI validates that the injected secret belongs to the approved v3.0.207 Desktop OAuth client before publishing.
 
 User OAuth tokens, backups, diagnostics, and personal app data are never stored in this repository.
 

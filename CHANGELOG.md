@@ -1,5 +1,16 @@
 # Changelog
 
+## 3.0.207 — Google Cloud Baseline
+
+- Established v3.0.207 as the approved Michel’s Life baseline.
+- Fixed Desktop OAuth credential handling so `client_secret` is sent as the actual secret value rather than the credential JSON document.
+- Switched the host build to the approved Google Desktop OAuth client for project `michel-s-life`.
+- Verified Google authorization, token exchange, Google Drive API access, and persistent Cloud Sync access end-to-end.
+- Kept Google connection/status/error feedback inside Settings → Google instead of Michel’s Life-owned popup dialogs.
+- Preserved the accepted Typography architecture and About the Developer presentation unchanged.
+- Added CI protection that rejects a mismatched Google OAuth secret before an official Windows build is produced.
+
+
 ## 3.0.202 — Release Readiness
 
 - Added **App Health & Diagnostics** in Settings → Data & Backup.
