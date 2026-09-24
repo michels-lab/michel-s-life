@@ -28,6 +28,8 @@ assert 'CurrentAppVersion = new("3.0.207")' in program
 for marker in ('ComputeEmbeddedBundleFingerprint','SHA256.Create()','string.Equals(marker, bundleFingerprint','File.WriteAllText(markerPath, bundleFingerprint)'):
     assert marker in program, f'missing runtime cache protection: {marker}'
 assert '__BUILD_SECRET_GOOGLE__' in read(SECRETS)
+assert 'NormalizeGoogleClientSecret' in read(SECRETS)
+assert 'JsonDocument.Parse' in read(SECRETS)
 
 profile=json.loads(read(PROFILE))
 for key,value in {
