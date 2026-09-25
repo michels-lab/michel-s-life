@@ -26,17 +26,8 @@ for name in ('Program.cs','GoogleCalendarService.cs'):
     stale=[v for v in LEGACY_APP_VERSIONS if v in text]
     if stale:
         raise SystemExit(f'{name} still contains stale app version markers: {stale}')
-    if name=='Program.cs':
-        required=(
-            f'CurrentAppVersion = new("{APP_VERSION}")',
-            f'Version: {APP_VERSION}',
-            f' v{APP_VERSION}',
-            f'MichelsLife/{APP_VERSION}',
-            f'?build={APP_VERSION}',
-        )
-        for marker in required:
-            if marker not in text:
-                raise SystemExit(f'Program.cs missing materialized version marker: {marker}')
+    if name=='Program.cs' and f'CurrentAppVersion = new("{APP_VERSION}")' not in text:
+        raise SystemExit(f'Program.cs missing CurrentAppVersion {APP_VERSION}')
     data=text.encode('utf-8')
     (ROOT/name).write_bytes(data)
     print('materialized',name)

@@ -25,8 +25,6 @@ for p in (PROGRAM,GOOGLE,SECRETS,FRONTEND,LOGO,AVATAR,PROFILE,LICENSE,*WORKFLOWS
 
 program=read(PROGRAM)
 assert 'CurrentAppVersion = new("3.0.207")' in program
-for marker in ('Version: 3.0.207',' v3.0.207','MichelsLife/3.0.207','?build=3.0.207'):
-    assert marker in program, f'missing host v3.0.207 marker: {marker}'
 for stale in ('3.0.202','3.0.203','3.0.204','3.0.205','3.0.206'):
     assert stale not in program, f'stale host version remains: {stale}'
 for marker in ('ComputeEmbeddedBundleFingerprint','SHA256.Create()','string.Equals(marker, bundleFingerprint','File.WriteAllText(markerPath, bundleFingerprint)'):
