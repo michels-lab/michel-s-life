@@ -25,7 +25,7 @@ required=(
     "function focusPane()",
     "Focus & Timers settings",
     "--mlv-font-midnights",
-    "Typography only. Presets never change colors, backgrounds or accents.",
+    "Choose by era. Every card keeps its own permanent preview, so you can compare styles without selecting them first.",
     "function createCanonicalSettingsShell(root){",
     "shell.dataset.v30171Canonical='3.0.207';",
     "panes.typography.insertAdjacentHTML('beforeend',typographyPane());",
