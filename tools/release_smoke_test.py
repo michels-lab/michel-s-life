@@ -25,6 +25,10 @@ for p in (PROGRAM,GOOGLE,SECRETS,FRONTEND,LOGO,AVATAR,PROFILE,LICENSE,*WORKFLOWS
 
 program=read(PROGRAM)
 assert 'CurrentAppVersion = new("3.0.207")' in program
+for marker in ('Version: 3.0.207',' v3.0.207','MichelsLife/3.0.207','?build=3.0.207'):
+    assert marker in program, f'missing host v3.0.207 marker: {marker}'
+for stale in ('3.0.202','3.0.203','3.0.204','3.0.205','3.0.206'):
+    assert stale not in program, f'stale host version remains: {stale}'
 for marker in ('ComputeEmbeddedBundleFingerprint','SHA256.Create()','string.Equals(marker, bundleFingerprint','File.WriteAllText(markerPath, bundleFingerprint)'):
     assert marker in program, f'missing runtime cache protection: {marker}'
 assert '__BUILD_SECRET_GOOGLE__' in read(SECRETS)
@@ -47,11 +51,17 @@ for marker in (
     "assets/michel_duarte_avatar.jpg",
     "['typography','Aa','Typography'",
     "midnights:{name:'Midnights'",
+    "ocean_blvd:{name:'Did You Know That There’s a Tunnel Under Ocean Blvd'",
+    "--mlv-ui-font:Inter",
+    "function focusPane()",
+    "Focus & Timers settings",
     "michelsLife.typography.v303",
 ):
     assert marker in frontend, f'missing canonical frontend source: {marker}'
-for forbidden in ('data:image/png;base64,','data:image/jpeg;base64,'):
-    assert forbidden not in frontend, f'embedded UI asset remains: {forbidden}'
+for forbidden in ('data:image/png;base64,','data:image/jpeg;base64,',"artist:'Taylor Swift'","artist:'Lana Del Rey'","data-mlv-font-artist="):
+    assert forbidden not in frontend, f'non-canonical frontend content remains: {forbidden}'
+for stale in ('3.0.202','3.0.203','3.0.204','3.0.205','3.0.206'):
+    assert stale not in frontend, f'stale frontend version remains: {stale}'
 
 workflow_text='\n'.join(read(p) for p in WORKFLOWS)
 for forbidden in ('build_frontend_v30202.py','AppPatches/v3.0.202.html','branding/michels_life_mark.svg'):

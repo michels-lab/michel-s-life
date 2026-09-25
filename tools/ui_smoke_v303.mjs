@@ -73,9 +73,9 @@ try{
     labels:[...document.querySelectorAll('.mlv303-font-copy b')].map(x=>(x.textContent||'').trim()),
     artists:[...document.querySelectorAll('.mlv303-artist-head b')].map(x=>(x.textContent||'').trim())
   }));
-  for(const id of ['red','born_to_die','paradise','ultraviolence','folklore','evermore'])ok(eraCatalog.ids.includes(id),'Missing independent typography era: '+id);
+  for(const id of ['red','aka','born_to_die','paradise','ultraviolence','folklore','evermore','ocean_blvd'])ok(eraCatalog.ids.includes(id),'Missing independent typography era: '+id);
   ok(!eraCatalog.labels.some(x=>/Red\s*\/\s*Lana|folklore\s*\/\s*evermore|Chemtrails\s*\/\s*Blue Banisters/i.test(x)),'Typography still contains merged eras: '+JSON.stringify(eraCatalog.labels));
-  ok(eraCatalog.artists.includes('Taylor Swift')&&eraCatalog.artists.includes('Lana Del Rey'),'Typography catalog is not separated by artist');
+  ok(eraCatalog.artists.length===0,'Typography must use one unified era grid without artist group headings: '+JSON.stringify(eraCatalog.artists));
 
   const typographyPaletteCheck=await page.evaluate(()=>{
     const capture=()=>{

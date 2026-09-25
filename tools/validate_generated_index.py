@@ -19,6 +19,11 @@ required=(
     "michelsLife.typography.v303",
     "MLV303_TYPOGRAPHY",
     "midnights:{name:'Midnights'",
+    "ocean_blvd:{name:'Did You Know That There’s a Tunnel Under Ocean Blvd'",
+    "--mlv-ui-font:Inter",
+    "font-family:var(--mlv-ui-font)",
+    "function focusPane()",
+    "Focus & Timers settings",
     "--mlv-font-midnights",
     "Typography only. Presets never change colors, backgrounds or accents.",
     "function createCanonicalSettingsShell(root){",
@@ -33,6 +38,8 @@ required=(
 )
 for marker in required:
     assert marker in text, f'missing canonical frontend marker: {marker}'
+for stale in ('3.0.202','3.0.203','3.0.204','3.0.205','3.0.206'):
+    assert stale not in text, f'stale frontend version remains: {stale}'
 
 for forbidden in (
     'data:image/png;base64,',
@@ -41,6 +48,9 @@ for forbidden in (
     'id="mlv-developer-branding"',
     'const activeNotifications=new Map();',
     '.v30171-scene-card[data-v30170-scene]',
+    "artist:'Taylor Swift'",
+    "artist:'Lana Del Rey'",
+    'data-mlv-font-artist=',
 ):
     assert forbidden not in text, f'obsolete/non-canonical frontend content remains: {forbidden}'
 
