@@ -1,8 +1,6 @@
 name: Build Windows test ZIP
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -146,4 +144,4 @@ jobs:
           name: MichelsLife-TEST-v${{ steps.ver.outputs.version }}
           path: artifacts/MichelsLife-TEST-v${{ steps.ver.outputs.version }}.zip
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 2
