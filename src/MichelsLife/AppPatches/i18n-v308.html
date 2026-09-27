@@ -28,6 +28,29 @@ const ES={
   "Tomorrow":"Mañana",
   "Settings":"Configuración",
   "General":"General",
+  "Color Theme":"Tema de color",
+  "UI Customization":"Personalización de interfaz",
+  "Planning & Next Up":"Planificación y siguiente",
+  "Data & Backup":"Datos y copia de seguridad",
+  "Profile, time ambience and core behavior.":"Perfil, ambiente horario y comportamiento principal.",
+  "Character name":"Nombre del personaje",
+  "Background sets, wallpapers and visual worlds.":"Conjuntos de fondos, wallpapers y mundos visuales.",
+  "Choose the type style used across the interface.":"Elige el estilo tipográfico usado en toda la interfaz.",
+  "Interface Typography":"Tipografía de la interfaz",
+  "Glass, transparency, density and interface surfaces.":"Cristal, transparencia, densidad y superficies de la interfaz.",
+  "Seasonal panel":"Panel estacional",
+  "Pomodoro, focus sessions and timer behavior.":"Pomodoro, sesiones de enfoque y comportamiento del temporizador.",
+  "Pomodoro Focus Timer":"Temporizador Pomodoro de enfoque",
+  "Alerts and notification behavior.":"Alertas y comportamiento de notificaciones.",
+  "Day planning, Next Up and mission time-of-day rules.":"Planificación del día, Siguiente y reglas de horario de misiones.",
+  "Next Up queue":"Cola de Siguiente",
+  "Cloud-sync all Michel’s Life data and optionally connect Calendar.":"Sincroniza en la nube todos los datos de Michel’s Life y conecta Calendar opcionalmente.",
+  "Export, import, recovery and maintenance tools.":"Herramientas de exportación, importación, recuperación y mantenimiento.",
+  "Reset progress only":"Restablecer solo el progreso",
+  "Cinematic worlds used only by Current Chapter.":"Mundos cinematográficos usados solo por Capítulo actual.",
+  "Chapter Scene Packs":"Paquetes de escenas de capítulo",
+  "Developer, license and build information.":"Desarrollador, licencia e información de compilación.",
+  "Developer · Michel’s Lab":"Desarrollador · Michel’s Lab",
   "Themes":"Temas",
   "Background Themes":"Temas de fondo",
   "Typography":"Tipografía",
@@ -363,6 +386,7 @@ function start(){
   document.documentElement.dataset.mlvLanguage=language;
   translateTree(document.body);
   mountCard();
+  for(const delay of [120,350,800,1500,3000])setTimeout(mountCard,delay);
   try{observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']})}catch(_){}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
@@ -372,6 +396,7 @@ window.MLVI18nV308={
   get language(){return language},
   set:setLanguage,
   translate:translateTree,
+  mount:mountCard,
   translations:ES
 };
 })();
