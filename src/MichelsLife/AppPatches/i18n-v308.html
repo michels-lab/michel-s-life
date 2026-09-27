@@ -333,6 +333,9 @@ function setLanguage(next,persist=true){
 }
 
 document.addEventListener('click',e=>{
+  if(e.target.closest?.('[data-v30171-setting="general"]')){
+    setTimeout(mountCard,80);
+  }
   const b=e.target.closest?.('[data-mlv-lang]');
   if(!b)return;
   e.preventDefault();
@@ -342,20 +345,25 @@ document.addEventListener('click',e=>{
 const observer=new MutationObserver(records=>{
   let needsCard=false;
   for(const r of records){
+    if(r.type==='attributes'){
+      const el=r.target;
+      if(el?.matches?.('[data-v30171-setting="general"],.v30171-settings-pane'))needsCard=true;
+      continue;
+    }
     for(const n of r.addedNodes){
       translateTree(n);
-      if(n.nodeType===1&&(n.matches?.('[data-v30171-pane="general"]')||n.querySelector?.('[data-v30171-pane="general"]')))needsCard=true;
+      if(n.nodeType===1&&(n.matches?.('[data-v30171-setting="general"],.v30171-settings-pane')||n.querySelector?.('[data-v30171-setting="general"],.v30171-settings-pane')))needsCard=true;
     }
   }
   clearTimeout(observer._cardTimer);
-  observer._cardTimer=setTimeout(()=>{if(needsCard||document.querySelector('[data-v30171-pane="general"]'))mountCard()},80);
+  observer._cardTimer=setTimeout(()=>{if(needsCard)mountCard()},80);
 });
 function start(){
   document.documentElement.lang=language;
   document.documentElement.dataset.mlvLanguage=language;
   translateTree(document.body);
   mountCard();
-  try{observer.observe(document.body,{childList:true,subtree:true})}catch(_){}
+  try{observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']})}catch(_){}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 
