@@ -922,6 +922,98 @@ const PAIRS={
   "pending now":"pendientes ahora",
   "pending from earlier":"pendientes anteriores",
   "later today":"más tarde hoy",
+  "A mission rule blocked completion.":"Una regla de la misión impidió completarla.",
+  "A restore point was created first.":"Primero se creó un punto de restauración.",
+  "Add only this occurrence":"Agregar solo esta ocasión",
+  "Add task":"Agregar tarea",
+  "Add task to Calendar":"Agregar tarea al Calendario",
+  "Backup imported":"Respaldo importado",
+  "Break ready":"Descanso listo",
+  "Break ready ·":"Descanso listo ·",
+  "By days":"Por días",
+  "Capture an idea without leaving your work":"Captura una idea sin salir de tu trabajo",
+  "Change the task or move it to another date/stage.":"Cambia la tarea o muévela a otra fecha/etapa.",
+  "Cloud conflict resolved":"Conflicto de nube resuelto",
+  "Cloud copy was selected.":"Se seleccionó la copia de la nube.",
+  "Color theme":"Tema de color",
+  "Connect Google in Settings → Google to include Drive history.":"Conecta Google en Configuración → Google para incluir el historial de Drive.",
+  "Content summary unavailable for this legacy backup.":"El resumen de contenido no está disponible para este respaldo antiguo.",
+  "Could not capture the current state for the required safety backup.":"No se pudo capturar el estado actual para el respaldo de seguridad requerido.",
+  "Create a one-off copy on":"Crear una copia única el",
+  "Create a one-off mission tied to this exact date.":"Crear una misión única vinculada a esta fecha exacta.",
+  "Current stage":"Etapa actual",
+  "Daily shutdown completed":"Cierre diario completado",
+  "Drive history is connected.":"El historial de Drive está conectado.",
+  "Drive returned no restorable backup data.":"Drive no devolvió datos de respaldo restaurables.",
+  "FOCUS · BREAK":"ENFOQUE · DESCANSO",
+  "FOCUS · WORK":"ENFOQUE · TRABAJO",
+  "Focus block complete":"Bloque de enfoque completado",
+  "Focus block completed:":"Bloque de enfoque completado:",
+  "Focus block saved:":"Bloque de enfoque guardado:",
+  "Full backup + AI analysis saved in one JSON file.":"Respaldo completo + análisis de IA guardados en un solo archivo JSON.",
+  "Give this day a title…":"Dale un título a este día…",
+  "Glass tint, borders and glow.":"Tinte del cristal, bordes y brillo.",
+  "Health & body":"Salud y cuerpo",
+  "Helper, labels and secondary lettering.":"Ayudas, etiquetas y texto secundario.",
+  "Hide the occurrence on":"Ocultar la ocasión el",
+  "Keeping this PC and saving the previous cloud version in backup history.":"Conservando esta PC y guardando la versión anterior de la nube en el historial de respaldos.",
+  "Large tab panels and Settings sections.":"Paneles grandes de pestañas y secciones de Configuración.",
+  "Link this mission to a project":"Vincular esta misión a un proyecto",
+  "Loading the cloud copy. A local restore point is being created first.":"Cargando la copia de la nube. Primero se está creando un punto de restauración local.",
+  "Local data repaired":"Datos locales reparados",
+  "Local restore points loaded, but Drive history could not be refreshed:":"Se cargaron los puntos de restauración locales, pero no se pudo actualizar el historial de Drive:",
+  "Michel’s Life loaded the selected saved state.":"Michel’s Life cargó el estado guardado seleccionado.",
+  "Michel’s Life original sky, changing automatically with the day.":"Cielo original de Michel’s Life, cambia automáticamente con el día.",
+  "Mission linked to project":"Misión vinculada al proyecto",
+  "Mission not completed":"Misión no completada",
+  "Mission totals":"Totales de misiones",
+  "Mission unlinked from project":"Misión desvinculada del proyecto",
+  "Missions, contracts, KPIs and nested cards.":"Misiones, contratos, KPI y tarjetas anidadas.",
+  "Move your body for 30 minutes":"Mueve tu cuerpo durante 30 minutos",
+  "Next Up limit changed":"Límite de Siguientes actualizado",
+  "Next work block is ready.":"El siguiente bloque de trabajo está listo.",
+  "No achievements":"Sin logros",
+  "No active chapter":"Sin capítulo activo",
+  "No contracts":"Sin contratos",
+  "No duplicate missions or Premium Contracts were found.":"No se encontraron misiones ni Contratos Premium duplicados.",
+  "No new strong matches for":"No hay nuevas coincidencias fuertes para",
+  "No next mission queued":"No hay una siguiente misión en cola",
+  "No pending active mission":"No hay misión activa pendiente",
+  "Open Pomodoro Focus Timer":"Abrir temporizador Pomodoro de enfoque",
+  "Open project outcomes and decision log":"Abrir resultados del proyecto y registro de decisiones",
+  "Open the mission creation form":"Abrir el formulario para crear una misión",
+  "Orphan Current Mission":"Misión actual huérfana",
+  "Orphan Next Up, dependency, project and Current Mission references were repaired.":"Se repararon referencias huérfanas de Siguientes, dependencias, proyectos y Misión actual.",
+  "Pick the areas you actually want on your board.":"Elige las áreas que realmente quieres en tu tablero.",
+  "Planning and streak settings updated.":"Configuración de planificación y rachas actualizada.",
+  "Preparing restore point and historical backup…":"Preparando punto de restauración y respaldo histórico…",
+  "Progress reset requested":"Restablecimiento de progreso solicitado",
+  "Protect one boundary today":"Protege un límite hoy",
+  "Quick Capture · Ctrl+K for commands":"Captura rápida · Ctrl+K para comandos",
+  "Read or learn for 20 minutes":"Lee o aprende durante 20 minutos",
+  "Repeat days":"Días de repetición",
+  "Restore saved state":"Restaurar estado guardado",
+  "Review contracts, mission health and snapshots":"Revisar contratos, estado de misiones y snapshots",
+  "Review today’s spending":"Revisar los gastos de hoy",
+  "RPG PROJECT OPTIONS":"OPCIONES DE PROYECTO RPG",
+  "Run health checks and calibration":"Ejecutar comprobaciones y calibración",
+  "Saved structures normalized after creating a restore point.":"Las estructuras guardadas se normalizaron después de crear un punto de restauración.",
+  "See the year of completed work":"Ver el año de trabajo completado",
+  "Selected backup is not restorable.":"El respaldo seleccionado no se puede restaurar.",
+  "Show only the current mission and what comes next":"Mostrar solo la misión actual y lo que sigue",
+  "Specific task for this date":"Tarea específica para esta fecha",
+  "Start this mission as Current Mission":"Iniciar esta misión como Misión actual",
+  "Story moment:":"Momento de historia:",
+  "Study or deep-work for 30 minutes":"Estudia o haz trabajo profundo durante 30 minutos",
+  "The active timer points to a missing mission.":"El temporizador activo apunta a una misión inexistente.",
+  "The restored local state is now the current Google Drive copy.":"El estado local restaurado ahora es la copia actual de Google Drive.",
+  "This action requires the Windows WebView2 app.":"Esta acción requiere la app de Windows con WebView2.",
+  "This PC":"Esta PC",
+  "This PC was selected.":"Se seleccionó esta PC.",
+  "Today’s plan needs exactly one main mission.":"El plan de hoy necesita exactamente una misión principal.",
+  "Type a command or mission…":"Escribe un comando o misión…",
+  "Use up to two important and three optional missions.":"Usa hasta dos misiones importantes y tres opcionales.",
+  "Weekly contracts":"Contratos semanales",
 };
 const REVERSE=Object.fromEntries(Object.entries(PAIRS).map(([en,es])=>[es,en]));
 
@@ -1035,6 +1127,8 @@ function mapText(raw){
     out=out.replace(/\bOctober\b/g,'octubre');
     out=out.replace(/\bNovember\b/g,'noviembre');
     out=out.replace(/\bDecember\b/g,'diciembre');
+    out=out.replace(/\bdays\s*·/gi,'días ·');
+    out=out.replace(/\bNo revisar chats viejos\s+7\s+days\b/gi,'No revisar chats viejos 7 días');
   }
   const partial=language==='es'?[
     [/\bDelete mission\b/g,'Eliminar misión'],[/\bCurrent Mission\b/g,'Misión actual'],
@@ -1129,6 +1223,11 @@ const mo=new MutationObserver(records=>{
 function init(){
   refresh(document.body);
   mo.observe(document.body,{childList:true,subtree:true,characterData:true});
+  setInterval(()=>{
+    if(language!=='es')return;
+    const badge=document.getElementById('mlv197CloudBadge');
+    if(badge)translateNode(badge);
+  },300);
 }
 let refreshTimer=0;
 function queueRefresh(){
