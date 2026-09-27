@@ -883,12 +883,15 @@ function setLanguage(next){
   refresh(document.body);
   window.dispatchEvent(new CustomEvent('michelslife:languagechange',{detail:{language:next}}));
 }
-let queued=false;
+let mutationFrame=0;
+const pendingMutations=[];
 const mo=new MutationObserver(records=>{
-  if(queued)return;queued=true;
-  requestAnimationFrame(()=>{
-    queued=false;
-    for(const r of records){
+  pendingMutations.push(...records);
+  if(mutationFrame)return;
+  mutationFrame=requestAnimationFrame(()=>{
+    mutationFrame=0;
+    const batch=pendingMutations.splice(0,pendingMutations.length);
+    for(const r of batch){
       if(r.type==='characterData')translateNode(r.target);
       for(const n of r.addedNodes)translateNode(n);
     }
