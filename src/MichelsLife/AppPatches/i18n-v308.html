@@ -433,7 +433,8 @@ function translateTextNode(node){
   if(language==='es'){
     if(Object.prototype.hasOwnProperty.call(ES,trimmed)){
       originalText.set(node,current);
-      node.nodeValue=translateValue(current);
+      const translated=spanishValue(current);
+      if(translated!==current)node.nodeValue=translated;
       return;
     }
     const base=originalText.get(node);
@@ -455,7 +456,8 @@ function translateAttrs(el){
     if(language==='es'){
       if(Object.prototype.hasOwnProperty.call(ES,trimmed)){
         originals[attr]=current;
-        el.setAttribute(attr,translateValue(current));
+        const translated=spanishValue(current);
+        if(translated!==current)el.setAttribute(attr,translated);
       }
       continue;
     }
