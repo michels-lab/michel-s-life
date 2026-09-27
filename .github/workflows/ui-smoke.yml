@@ -56,6 +56,11 @@ jobs:
           export MLV_UI_SCREENSHOTS=artifacts/ui-smoke
           node tools/ui_smoke_v303.mjs
 
+      - name: Audit Spanish interface
+        run: |
+          export MLV_UI_URL=http://127.0.0.1:4173
+          node tools/ui_spanish_smoke.mjs
+
       - uses: actions/upload-artifact@v4
         if: always()
         continue-on-error: true
