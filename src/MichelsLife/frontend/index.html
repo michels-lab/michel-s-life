@@ -28452,7 +28452,7 @@ function syncNavState(wrap,a=normalizedNavTab()){
 }
 function enforceBrandLockup(side){
  if(!side)return null;
- const markup='<div class="brand v30171-brand" data-mlv-brand-lockup="v303"><div class="brand-mark v30171-brand-mark" aria-hidden="true"><img src="assets/michels_life_logo.png" alt=""></div><div class="v30171-brand-copy"><h1 class="v30171-brand-title">MICHEL\'S LIFE</h1><p class="v30171-brand-sub">Personal Progress System</p></div></div>';
+ const markup='<div class="brand v30171-brand" data-mlv-brand-lockup="v303"><div class="brand-mark v30171-brand-mark" aria-hidden="true"><img src="assets/michels_life_logo.webp" alt=""></div><div class="v30171-brand-copy"><h1 class="v30171-brand-title">MICHEL\'S LIFE</h1><p class="v30171-brand-sub">Personal Progress System</p></div></div>';
  let brand=side.querySelector(':scope > .v30171-brand');
  if(!brand||brand.dataset.mlvBrandLockup!=='v303'){
    const t=document.createElement('template');t.innerHTML=markup;const next=t.content.firstElementChild;
