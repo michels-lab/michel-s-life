@@ -1,0 +1,368 @@
+<!-- mlv-i18n-v308: English/Spanish localization layer -->
+<style id="mlv-i18n-v308-style">
+[data-mlv-i18n-card] .mlv-i18n-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+[data-mlv-i18n-card] .mlv-i18n-choice{appearance:none;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.055);color:var(--text);border-radius:14px;padding:12px 14px;font:inherit;font-weight:700;cursor:pointer;transition:.16s ease}
+[data-mlv-i18n-card] .mlv-i18n-choice:hover{transform:translateY(-1px);border-color:rgba(255,255,255,.28)}
+[data-mlv-i18n-card] .mlv-i18n-choice.active{outline:2px solid color-mix(in srgb,var(--accent, #ffffff) 65%,transparent);background:rgba(255,255,255,.11)}
+[data-mlv-i18n-card] .mlv-i18n-note{margin-top:10px;opacity:.72;font-size:.9em}
+@media(max-width:620px){[data-mlv-i18n-card] .mlv-i18n-options{grid-template-columns:1fr}}
+</style>
+<script id="mlv-i18n-v308">
+(function(){
+'use strict';
+if(window.MLVI18nV308)return;
+
+const STORAGE='michelsLife.language.v308';
+const SUPPORTED=new Set(['en','es']);
+const params=new URLSearchParams(location.search);
+const installerLang=(params.get('installerLang')||'').toLowerCase();
+let saved='';
+try{saved=(localStorage.getItem(STORAGE)||'').toLowerCase()}catch(_){}
+let language=SUPPORTED.has(saved)?saved:(SUPPORTED.has(installerLang)?installerLang:'en');
+if(!saved&&SUPPORTED.has(installerLang)){try{localStorage.setItem(STORAGE,installerLang)}catch(_){}}
+
+const ES={
+  "Dashboard":"Panel",
+  "Today":"Hoy",
+  "Yesterday":"Ayer",
+  "Tomorrow":"Mañana",
+  "Settings":"Configuración",
+  "General":"General",
+  "Themes":"Temas",
+  "Background Themes":"Temas de fondo",
+  "Typography":"Tipografía",
+  "Focus & Timers":"Enfoque y temporizadores",
+  "Focus & Timers settings":"Configuración de enfoque y temporizadores",
+  "Chapters":"Capítulos",
+  "About":"Acerca de",
+  "About the Developer":"Acerca del desarrollador",
+  "Google":"Google",
+  "Language":"Idioma",
+  "App language":"Idioma de la app",
+  "Choose the language used throughout Michel's Life.":"Elige el idioma que se usa en Michel's Life.",
+  "You can change this at any time.":"Puedes cambiarlo cuando quieras.",
+  "English":"English",
+  "Spanish":"Español",
+  "Español":"Español",
+  "Selected":"Seleccionado",
+  "SELECTED":"SELECCIONADO",
+  "Preview":"Vista previa",
+  "PREVIEW":"VISTA PREVIA",
+  "Active":"Activo",
+  "Inactive":"Inactivo",
+  "Save":"Guardar",
+  "Saved":"Guardado",
+  "Cancel":"Cancelar",
+  "Close":"Cerrar",
+  "Delete":"Eliminar",
+  "Edit":"Editar",
+  "Add":"Agregar",
+  "Create":"Crear",
+  "Update":"Actualizar",
+  "Reset":"Restablecer",
+  "Restore defaults":"Restaurar valores predeterminados",
+  "Apply":"Aplicar",
+  "Done":"Listo",
+  "Confirm":"Confirmar",
+  "Continue":"Continuar",
+  "Back":"Atrás",
+  "Next":"Siguiente",
+  "Finish":"Finalizar",
+  "Search":"Buscar",
+  "Name":"Nombre",
+  "Description":"Descripción",
+  "Notes":"Notas",
+  "Date":"Fecha",
+  "Time":"Hora",
+  "Start":"Iniciar",
+  "Pause":"Pausar",
+  "Resume":"Reanudar",
+  "Stop":"Detener",
+  "Complete":"Completar",
+  "Completed":"Completado",
+  "Pending":"Pendiente",
+  "Overdue":"Atrasado",
+  "All":"Todos",
+  "None":"Ninguno",
+  "Daily":"Diarias",
+  "Weekly":"Semanales",
+  "Monthly":"Mensuales",
+  "Yearly":"Anuales",
+  "Day":"Día",
+  "Week":"Semana",
+  "Month":"Mes",
+  "Year":"Año",
+  "Statistics":"Estadísticas",
+  "Analytics":"Análisis",
+  "Progress":"Progreso",
+  "Overview":"Resumen",
+  "History":"Historial",
+  "Current Mission":"Misión actual",
+  "Today's 3":"Las 3 de hoy",
+  "To-do today":"Pendientes de hoy",
+  "To-do Today":"Pendientes de hoy",
+  "To-do":"Pendientes",
+  "Premium":"Premium",
+  "Premium Contracts":"Contratos premium",
+  "Weekly Contracts":"Contratos semanales",
+  "Contract":"Contrato",
+  "Contracts":"Contratos",
+  "Reward":"Recompensa",
+  "Claim":"Reclamar",
+  "Claim reward":"Reclamar recompensa",
+  "Tasks":"Tareas",
+  "Task":"Tarea",
+  "Add task":"Agregar tarea",
+  "New task":"Nueva tarea",
+  "Delete task":"Eliminar tarea",
+  "Edit task":"Editar tarea",
+  "Complete task":"Completar tarea",
+  "No tasks yet":"Aún no hay tareas",
+  "No tasks for today":"No hay tareas para hoy",
+  "Move to tomorrow":"Mover a mañana",
+  "Move to today":"Mover a hoy",
+  "Priority":"Prioridad",
+  "High":"Alta",
+  "Medium":"Media",
+  "Low":"Baja",
+  "Focus":"Enfoque",
+  "Focus timer":"Temporizador de enfoque",
+  "Timer":"Temporizador",
+  "Timers":"Temporizadores",
+  "Break":"Descanso",
+  "Short break":"Descanso corto",
+  "Long break":"Descanso largo",
+  "Minutes":"Minutos",
+  "Sound":"Sonido",
+  "Sounds":"Sonidos",
+  "Notifications":"Notificaciones",
+  "Enable":"Activar",
+  "Enabled":"Activado",
+  "Disable":"Desactivar",
+  "Disabled":"Desactivado",
+  "Current Chapter":"Capítulo actual",
+  "Chapter":"Capítulo",
+  "Chapter Scenes":"Escenas de capítulo",
+  "Create Chapter":"Crear capítulo",
+  "New Chapter":"Nuevo capítulo",
+  "End Chapter":"Finalizar capítulo",
+  "Delete Chapter":"Eliminar capítulo",
+  "Start date":"Fecha de inicio",
+  "End date":"Fecha de fin",
+  "Scene":"Escena",
+  "Scene Pack":"Paquete de escenas",
+  "Appearance":"Apariencia",
+  "Atmosphere":"Atmósfera",
+  "Compact":"Compacto",
+  "Comfortable":"Cómodo",
+  "Spacious":"Espacioso",
+  "Density":"Densidad",
+  "Panel opacity":"Opacidad de paneles",
+  "Opacity":"Opacidad",
+  "Gold":"Dorado",
+  "Premium / Gold":"Premium / Dorado",
+  "Reset progress":"Restablecer progreso",
+  "Reset Progress":"Restablecer progreso",
+  "Connect Google":"Conectar Google",
+  "Disconnect Google":"Desconectar Google",
+  "Connected":"Conectado",
+  "Not connected":"No conectado",
+  "Cloud Sync":"Sincronización en la nube",
+  "Cloud sync":"Sincronización en la nube",
+  "Sync":"Sincronizar",
+  "Sync now":"Sincronizar ahora",
+  "Last sync":"Última sincronización",
+  "Google Drive":"Google Drive",
+  "Google Calendar":"Google Calendar",
+  "Calendar":"Calendario",
+  "Authorization":"Autorización",
+  "Authorize":"Autorizar",
+  "Reconnect":"Reconectar",
+  "Account":"Cuenta",
+  "Data":"Datos",
+  "Export":"Exportar",
+  "Import":"Importar",
+  "Backup":"Copia de seguridad",
+  "Restore":"Restaurar",
+  "Developer":"Desarrollador",
+  "Version":"Versión",
+  "Website":"Sitio web",
+  "Email":"Correo",
+  "License":"Licencia",
+  "Streak":"Racha",
+  "Best streak":"Mejor racha",
+  "Tasks completed":"Tareas completadas",
+  "Completion rate":"Tasa de finalización",
+  "This week":"Esta semana",
+  "This month":"Este mes",
+  "This year":"Este año",
+  "No data yet":"Aún no hay datos",
+  "Add mission":"Agregar misión",
+  "New mission":"Nueva misión",
+  "Delete mission":"Eliminar misión",
+  "Mission":"Misión",
+  "Missions":"Misiones",
+  "Journal":"Diario",
+  "New entry":"Nueva entrada",
+  "Add entry":"Agregar entrada",
+  "Entries":"Entradas",
+  "Goals":"Metas",
+  "Goal":"Meta",
+  "New goal":"Nueva meta",
+  "Add goal":"Agregar meta",
+  "Habits":"Hábitos",
+  "Habit":"Hábito",
+  "New habit":"Nuevo hábito",
+  "Add habit":"Agregar hábito",
+  "Achievements":"Logros",
+  "Achievement":"Logro",
+  "Level":"Nivel",
+  "Experience":"Experiencia",
+  "XP":"XP",
+  "Points":"Puntos",
+  "Filters":"Filtros",
+  "Filter":"Filtro",
+  "Clear":"Limpiar",
+  "Clear all":"Limpiar todo",
+  "Open":"Abrir",
+  "Show":"Mostrar",
+  "Hide":"Ocultar",
+  "More":"Más",
+  "Less":"Menos",
+  "On":"Activado",
+  "Off":"Desactivado",
+  "Yes":"Sí",
+  "No":"No"
+};
+
+const originalText=new WeakMap();
+const originalAttrs=new WeakMap();
+const ATTRS=['title','placeholder','aria-label','data-tooltip'];
+
+function translateValue(value){
+  if(language!=='es')return value;
+  const trimmed=String(value??'').trim();
+  if(!trimmed)return value;
+  if(Object.prototype.hasOwnProperty.call(ES,trimmed)){
+    const left=String(value).match(/^\s*/)?.[0]||'';
+    const right=String(value).match(/\s*$/)?.[0]||'';
+    return left+ES[trimmed]+right;
+  }
+  return value;
+}
+
+function shouldSkip(node){
+  const p=node.parentElement;
+  if(!p)return true;
+  return !!p.closest('script,style,textarea,pre,code,[contenteditable="true"],[data-mlv-i18n-skip]');
+}
+
+function translateTextNode(node){
+  if(shouldSkip(node))return;
+  if(!originalText.has(node))originalText.set(node,node.nodeValue||'');
+  const base=originalText.get(node)||'';
+  node.nodeValue=language==='es'?translateValue(base):base;
+}
+
+function translateAttrs(el){
+  if(!(el instanceof Element))return;
+  let originals=originalAttrs.get(el);
+  if(!originals){originals={};originalAttrs.set(el,originals)}
+  for(const attr of ATTRS){
+    if(!el.hasAttribute(attr))continue;
+    if(!(attr in originals))originals[attr]=el.getAttribute(attr)||'';
+    const base=originals[attr];
+    el.setAttribute(attr,language==='es'?translateValue(base):base);
+  }
+}
+
+function translateTree(root=document.body){
+  if(!root)return;
+  if(root.nodeType===Node.TEXT_NODE){translateTextNode(root);return}
+  if(root.nodeType!==Node.ELEMENT_NODE&&root.nodeType!==Node.DOCUMENT_NODE&&root.nodeType!==Node.DOCUMENT_FRAGMENT_NODE)return;
+  if(root instanceof Element)translateAttrs(root);
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_ELEMENT|NodeFilter.SHOW_TEXT);
+  let n;
+  while((n=walker.nextNode())){
+    if(n.nodeType===Node.TEXT_NODE)translateTextNode(n);
+    else translateAttrs(n);
+  }
+}
+
+function cardMarkup(){
+  const es=language==='es';
+  return '<section class="card" data-mlv-i18n-card data-mlv-i18n-skip>'+
+    '<div class="section-title"><div><h2>'+(es?'Idioma':'Language')+'</h2><p>'+(es?"Elige el idioma que se usa en Michel\'s Life.":"Choose the language used throughout Michel\'s Life.")+'</p></div><span class="pill">EN / ES</span></div>'+
+    '<div class="mlv-i18n-options">'+
+      '<button type="button" class="mlv-i18n-choice'+(language==='en'?' active':'')+'" data-mlv-lang="en">English</button>'+
+      '<button type="button" class="mlv-i18n-choice'+(language==='es'?' active':'')+'" data-mlv-lang="es">Español</button>'+
+    '</div>'+
+    '<div class="mlv-i18n-note">'+(es?'Puedes cambiarlo cuando quieras.':'You can change this at any time.')+'</div>'+
+  '</section>';
+}
+
+function mountCard(){
+  const pane=document.querySelector('[data-v30171-pane="general"]');
+  if(!pane)return;
+  let card=pane.querySelector('[data-mlv-i18n-card]');
+  if(!card){
+    const t=document.createElement('template');
+    t.innerHTML=cardMarkup();
+    card=t.content.firstElementChild;
+    const title=pane.querySelector('.v30171-pane-title');
+    if(title)title.insertAdjacentElement('afterend',card);else pane.prepend(card);
+  }else{
+    const t=document.createElement('template');
+    t.innerHTML=cardMarkup();
+    card.replaceWith(t.content.firstElementChild);
+  }
+}
+
+function setLanguage(next,persist=true){
+  next=String(next||'').toLowerCase();
+  if(!SUPPORTED.has(next))return;
+  language=next;
+  document.documentElement.lang=next;
+  document.documentElement.dataset.mlvLanguage=next;
+  if(persist){try{localStorage.setItem(STORAGE,next)}catch(_){}}
+  translateTree(document.body);
+  mountCard();
+  try{window.dispatchEvent(new CustomEvent('mlv:languagechange',{detail:{language:next}}))}catch(_){}
+}
+
+document.addEventListener('click',e=>{
+  const b=e.target.closest?.('[data-mlv-lang]');
+  if(!b)return;
+  e.preventDefault();
+  setLanguage(b.dataset.mlvLang,true);
+},true);
+
+const observer=new MutationObserver(records=>{
+  let needsCard=false;
+  for(const r of records){
+    for(const n of r.addedNodes){
+      translateTree(n);
+      if(n.nodeType===1&&(n.matches?.('[data-v30171-pane="general"]')||n.querySelector?.('[data-v30171-pane="general"]')))needsCard=true;
+    }
+  }
+  clearTimeout(observer._cardTimer);
+  observer._cardTimer=setTimeout(()=>{if(needsCard||document.querySelector('[data-v30171-pane="general"]'))mountCard()},80);
+});
+function start(){
+  document.documentElement.lang=language;
+  document.documentElement.dataset.mlvLanguage=language;
+  translateTree(document.body);
+  mountCard();
+  try{observer.observe(document.body,{childList:true,subtree:true})}catch(_){}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+
+window.MLVI18nV308={
+  version:'3.0.8',
+  get language(){return language},
+  set:setLanguage,
+  translate:translateTree,
+  translations:ES
+};
+})();
+</script>
