@@ -26,9 +26,9 @@
     <EmbeddedResource Include="AppBundle.zip">
       <LogicalName>MichelsLife.AppBundle.zip</LogicalName>
     </EmbeddedResource>
-    <Content Include="Assets\michels_life_icon.ico" Condition="Exists('Assets\michels_life_icon.ico')">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <EmbeddedResource Include="Assets\michels_life_icon.ico" Condition="Exists('Assets\michels_life_icon.ico')">
+      <LogicalName>MichelsLife.michels_life_icon.ico</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>
