@@ -17,24 +17,33 @@ try{
   await page.goto(languageUrl,{waitUntil:'domcontentloaded',timeout:60000});
   await page.waitForFunction(()=>window.LeftNavV30171&&window.MLVI18nV308&&document.querySelector('#v30171Sidebar'),null,{timeout:60000});
 
+  await page.evaluate(()=>window.LeftNavV30171.route('settings'));
+  await page.waitForSelector('[data-v30171-setting="general"]',{timeout:10000});
+  await page.click('[data-v30171-setting="general"]');
+  await page.waitForSelector('[data-v30171-pane="general"].active [data-mlv-i18n-card]',{timeout:10000});
+  await page.waitForTimeout(250);
+
   const installerLanguage=await page.evaluate(()=>({
     language:window.MLVI18nV308?.language||'',
     htmlLang:document.documentElement.lang,
     stored:localStorage.getItem('michelsLife.language.v308')||'',
-    hasSpanishSettings:(document.body.innerText||'').includes('Configuración'),
+    cardTitle:(document.querySelector('[data-mlv-i18n-card] h2')?.textContent||'').trim(),
+    hasSpanishTypography:[...document.querySelectorAll('.v30171-settings-btn')].some(x=>(x.textContent||'').includes('Tipografía')),
     hasSpanishChoice:!!document.querySelector('[data-mlv-lang="es"].active')
   }));
   ok(installerLanguage.language==='es'&&installerLanguage.htmlLang==='es'&&installerLanguage.stored==='es','Installer Spanish choice was not persisted: '+JSON.stringify(installerLanguage));
-  ok(installerLanguage.hasSpanishSettings&&installerLanguage.hasSpanishChoice,'Spanish UI did not render after installer selection: '+JSON.stringify(installerLanguage));
+  ok(installerLanguage.cardTitle==='Idioma'&&installerLanguage.hasSpanishTypography&&installerLanguage.hasSpanishChoice,'Spanish UI did not render in Settings: '+JSON.stringify(installerLanguage));
 
   await page.evaluate(()=>window.MLVI18nV308.set('en',true));
   await page.waitForFunction(()=>window.MLVI18nV308?.language==='en'&&localStorage.getItem('michelsLife.language.v308')==='en');
+  await page.waitForTimeout(150);
   const switchedEnglish=await page.evaluate(()=>({
     htmlLang:document.documentElement.lang,
-    hasEnglishSettings:(document.body.innerText||'').includes('Settings'),
+    cardTitle:(document.querySelector('[data-mlv-i18n-card] h2')?.textContent||'').trim(),
+    hasEnglishTypography:[...document.querySelectorAll('.v30171-settings-btn')].some(x=>(x.textContent||'').includes('Typography')),
     hasEnglishChoice:!!document.querySelector('[data-mlv-lang="en"].active')
   }));
-  ok(switchedEnglish.htmlLang==='en'&&switchedEnglish.hasEnglishSettings&&switchedEnglish.hasEnglishChoice,'In-app English override failed: '+JSON.stringify(switchedEnglish));
+  ok(switchedEnglish.htmlLang==='en'&&switchedEnglish.cardTitle==='Language'&&switchedEnglish.hasEnglishTypography&&switchedEnglish.hasEnglishChoice,'In-app English override failed: '+JSON.stringify(switchedEnglish));
 
   await page.evaluate(()=>{
     try{
