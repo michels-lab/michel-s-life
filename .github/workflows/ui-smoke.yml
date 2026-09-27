@@ -37,7 +37,7 @@ jobs:
           python tools/replace_bundle_index.py --bundle artifacts/AppBundle.zip --index src/MichelsLife/frontend/index.html
           python tools/inject_bundle_asset.py --bundle artifacts/AppBundle.zip --source src/MichelsLife/frontend/i18n.js --arcname i18n.js
           python tools/inject_bundle_asset.py --bundle artifacts/AppBundle.zip --source branding/michel_duarte_avatar.jpg --arcname assets/michel_duarte_avatar.jpg
-          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle.zip --source branding/michels_life_logo.png --arcname assets/michels_life_logo.png
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle.zip --source branding/michels_life_logo.webp --arcname assets/michels_life_logo.webp
           python - <<'PY'
           from zipfile import ZipFile
           with ZipFile('artifacts/AppBundle.zip') as z:
