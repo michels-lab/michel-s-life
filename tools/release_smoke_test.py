@@ -24,8 +24,8 @@ for p in (PROGRAM,GOOGLE,SECRETS,FRONTEND,LOGO,AVATAR,PROFILE,LICENSE,*WORKFLOWS
     assert p.exists(),f'missing {p}'
 
 program=read(PROGRAM)
-assert 'CurrentAppVersion = new("3.0.208")' in program
-for stale in ('3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207'):
+assert 'CurrentAppVersion = new("3.0.209")' in program
+for stale in ('3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207','3.0.208'):
     assert stale not in program, f'stale host version remains: {stale}'
 for marker in ('ComputeEmbeddedBundleFingerprint','SHA256.Create()','string.Equals(marker, bundleFingerprint','File.WriteAllText(markerPath, bundleFingerprint)'):
     assert marker in program, f'missing runtime cache protection: {marker}'
@@ -44,7 +44,7 @@ for key,value in {
 
 frontend=read(FRONTEND)
 for marker in (
-    "const VERSION='3.0.208'",
+    "const VERSION='3.0.209'",
     "assets/michels_life_logo.jpg",
     "assets/michel_duarte_avatar.jpg",
     "['typography','Aa','Typography'",
@@ -72,4 +72,4 @@ security='\n'.join(read(p) for p in (PROGRAM,GOOGLE,SECRETS,FRONTEND,PROFILE,LIC
 for forbidden in ('GOCSPX-','github_pat_','ghp_','client_secret_794181'):
     assert forbidden.lower() not in security.lower(), f'committed secret-like value: {forbidden}'
 
-print('OK: v3.0.208 host + bilingual canonical frontend + branding + clean build pipeline')
+print('OK: v3.0.209 host + bilingual canonical frontend + branding + clean build pipeline')
