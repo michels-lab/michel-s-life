@@ -15,12 +15,16 @@ await page.addInitScript(()=>{
 
 const exactBanned=[
   'Dashboard','Missions','Premium Contracts','Statistics','Projects','Achievements','Affirmations','Story','Settings',
-  'Yesterday','Today','Tomorrow','Weekly Review','Color Theme','Typography','UI Customization','Focus & Timers',
+  'Yesterday','Today','Tomorrow','Weekly Review','weekly','Color Theme','Typography','UI Customization','Focus & Timers',
   'Notifications','Planning & Next Up','Data & Backup','Chapter Scenes','About','Current Mission',
   'New phrase','Open affirmations','Quick Capture','Add contract','Add a quick mission','Quick actions',
   'Recurring Missions','Due today','Pending today','Done today','Done this week','Connect Google','Disconnect',
   'Sync Calendar now','Open Google Calendar','Cloud Sync','Last cloud sync','Keep this PC','Use cloud',
-  'Ready to connect','Needs reconnect','Needs attention','Connecting…','Command','Affirmation'
+  'Ready to connect','Needs reconnect','Needs attention','Connecting…','Command','Affirmation',
+  'Good morning','Good noon','Good afternoon','Good evening','Late night',
+  'CURRENT CHAPTER','CHAPTER ','LEVEL','TOTAL XP','TODAY','FOCUS','DAY','CURRENT BOSS',
+  'No active boss battle','Choose in Projects','Open Story','Life Build','Bosses & Quest Chains',
+  'COMING NEXT','queued','Early autumn','Golden shift','September'
 ];
 
 const englishWords=new Set(('the and your you this that with from for into today tomorrow week weekly mission missions settings save add delete edit open close start stop focus google cloud calendar backup project chapter current completed pending choose connect sync data story theme color language affirmation command new reset restore ready linked optional important main quick capture decision reason profile developer license build show send automatic never offline error failed history account disconnect reconnect upload download keep use apply remove change create select all none next previous view status priority alert notification journal').split(' '));
@@ -65,7 +69,8 @@ async function audit(label){
   const lines=await visibleLines();
   const bad=[];
   for(const line of lines){
-    if(exactBanned.some(x=>line===x||line.startsWith(x+' ')||line.endsWith(' '+x)))bad.push(line);
+    const lower=line.toLowerCase();
+    if(exactBanned.some(x=>lower.includes(String(x).toLowerCase())))bad.push(line);
     else if(englishLooking(line))bad.push(line);
   }
   if(bad.length)findings.set(label,[...new Set(bad)].slice(0,80));
@@ -77,6 +82,14 @@ try{
   await page.evaluate(()=>window.MichelsLifeI18n.setLanguage('es'));
   await page.waitForTimeout(500);
   ok(await page.evaluate(()=>document.documentElement.lang==='es'),'document language is not es');
+  const logo=await page.evaluate(()=>{
+    const img=document.querySelector('#v30171Sidebar .v30171-brand-mark img');
+    if(!img)return null;
+    const r=img.getBoundingClientRect();
+    return {src:img.getAttribute('src')||'',w:img.naturalWidth,h:img.naturalHeight,cw:r.width,ch:r.height};
+  });
+  ok(logo&&logo.src==='assets/michels_life_logo.jpg','Spanish build is not using the real celestial logo: '+JSON.stringify(logo));
+  ok(logo.w>0&&logo.h>0&&logo.cw>=70&&logo.ch>=70,'Spanish build logo is broken or invisible: '+JSON.stringify(logo));
   const translationProbe=await page.evaluate(()=>({
     dashboard:window.MichelsLifeI18n.mapText('Dashboard'),
     layout:window.MichelsLifeI18n.mapText('Dashboard layout'),
@@ -84,7 +97,7 @@ try{
   }));
   ok(translationProbe.dashboard==='Inicio'&&translationProbe.layout==='Diseño de Inicio'&&translationProbe.affirmation==='Hoy elijo ejecución sobre fantasía.','Spanish dictionary probe failed: '+JSON.stringify(translationProbe));
 
-  const routes=['dashboard','missions','contracts','calendar','stats','projects','achievements','affirmations','story','settings'];
+  const routes=['dashboard','missions','contracts','calendar','journal','stats','compare','weekly-review','projects','achievements','affirmations','story','settings'];
   for(const route of routes){
     await page.evaluate(r=>window.LeftNavV30171.route(r),route);
     await page.waitForTimeout(260);
