@@ -10,8 +10,8 @@ p=Path(a.index)
 text=p.read_text(encoding='utf-8')
 
 required=(
-    "const VERSION='3.0.208'",
-    "window.__MICHELS_LIFE_BUILD__='3.0.208'",
+    "const VERSION='3.0.209'",
+    "window.__MICHELS_LIFE_BUILD__='3.0.209'",
     "assets/michels_life_logo.jpg",
     "assets/michel_duarte_avatar.jpg",
     "['typography','Aa','Typography'",
@@ -27,7 +27,7 @@ required=(
     "--mlv-font-midnights",
     "Choose by era. Every card keeps its own permanent preview, so you can compare styles without selecting them first.",
     "function createCanonicalSettingsShell(root){",
-    "shell.dataset.v30171Canonical='3.0.208';",
+    "shell.dataset.v30171Canonical='3.0.209';",
     "panes.typography.insertAdjacentHTML('beforeend',typographyPane());",
     "panes.about.insertAdjacentHTML('beforeend',aboutPane());",
     "function activateSetting(key,root){",
@@ -39,7 +39,7 @@ required=(
 )
 for marker in required:
     assert marker in text, f'missing canonical frontend marker: {marker}'
-for stale in ('3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207'):
+for stale in ('3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207','3.0.208'):
     assert stale not in text, f'stale frontend version remains: {stale}'
 
 for forbidden in (
@@ -97,4 +97,4 @@ with tempfile.TemporaryDirectory() as td:
         if r.returncode:
             print(r.stderr,file=sys.stderr)
             raise SystemExit(f'JS syntax failed {i}')
-print(f'OK: canonical v3.0.208 frontend + migration checks + {len(parser.items)} inline scripts')
+print(f'OK: canonical v3.0.209 frontend + migration checks + {len(parser.items)} inline scripts')
