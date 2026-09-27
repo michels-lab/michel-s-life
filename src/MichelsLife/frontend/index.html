@@ -29661,7 +29661,7 @@ function updateBadge(){
   else if(r.cloudError||r.error){cloudBusySince=0;cls='error';label='Cloud needs attention';show=true}
   else if(r.cloudBusy){if(!cloudBusySince)cloudBusySince=Date.now();if(Date.now()-cloudBusySince>=3500){cls='syncing';label='Cloud syncing…';show=true}}
   else{cloudBusySince=0}
-  b.className=cls;b.textContent=label;b.style.display=show?'flex':'none';
+  b.className=cls;b.textContent=(window.MichelsLifeI18n?.mapText?.(label)||label);b.style.display=show?'flex':'none';
 }
 
 function ensureConflictModal(){
