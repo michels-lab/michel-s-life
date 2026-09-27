@@ -192,7 +192,9 @@ jobs:
           Copy-Item src/MichelsLife/AppBundle.zip artifacts/AppBundle.zip
           Copy-Item src/MichelsLife/Assets/michels_life_icon.ico artifacts/michels_life_icon.ico
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload temporary build artifact
+        if: ${{ !((startsWith(github.ref, 'refs/tags/') || inputs.publish == true) && env.HAS_RELEASE_TOKEN == 'true') }}
+        uses: actions/upload-artifact@v4
         with:
           name: MichelsLife-v${{ steps.ver.outputs.version }}
           path: |
