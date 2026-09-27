@@ -57,6 +57,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         if: always()
+        continue-on-error: true
         with:
           name: ui-smoke-v3.0.207
           path: |
