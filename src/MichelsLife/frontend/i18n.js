@@ -44,7 +44,7 @@ const PAIRS={
   "Automatic":"Automático","Manual":"Manual","Soft":"Suave","Direct":"Directa","Intense":"Intensa",
   "Character name":"Nombre del personaje","Visual stage":"Etapa visual","Messages":"Mensajes",
   "Settings saved":"Configuración guardada","Project saved":"Proyecto guardado","Project linked":"Proyecto vinculado",
-  "Project unlinked":"Proyecto desvinculado","No pending items":"Sin pendientes"
+  "Project unlinked":"Proyecto desvinculado","No pending items":"Sin pendientes",
   "Journal":"Diario",
   "Yesterday":"Ayer",
   "Quick actions":"Acciones rápidas",
