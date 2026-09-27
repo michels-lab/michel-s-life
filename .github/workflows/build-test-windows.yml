@@ -68,13 +68,15 @@ jobs:
           & $magickPath -background none 'branding/michels_life_logo.svg' -define icon:auto-resize=256,128,64,48,32,16 'src/MichelsLife/Assets/michels_life_icon.ico'
           if ($LASTEXITCODE -ne 0) { throw 'App icon generation failed.' }
 
-      - name: Package canonical v3.0.207 frontend
+      - name: Package canonical v3.0.208 bilingual frontend
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
           $PSNativeCommandUseErrorActionPreference = $true
+          python tools/enable_i18n.py --index src/MichelsLife/frontend/index.html
           python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
           python tools/replace_bundle_index.py --bundle src/MichelsLife/AppBundle.zip --index src/MichelsLife/frontend/index.html
+          python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source src/MichelsLife/frontend/i18n.js --arcname i18n.js
           python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source branding/michel_duarte_avatar.jpg --arcname assets/michel_duarte_avatar.jpg
           python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source branding/michels_life_logo.svg --arcname assets/michels_life_logo.svg
 
@@ -108,7 +110,7 @@ jobs:
             $sha.Dispose()
           }
           if ($secretHash -ne 'b3bd5879455e68562da33945ce1377369a961aead618a0c97df1dfa16e11c4c3') {
-            throw 'GOOGLE_CLIENT_SECRET does not match the approved Michel''s Life v3.0.207 Desktop OAuth client.'
+            throw 'GOOGLE_CLIENT_SECRET does not match the approved Michel''s Life Desktop OAuth client.'
           }
           $escaped = $oauthSecret.Replace('\','\\').Replace('"','\"')
           $content = $content.Replace('__BUILD_SECRET_GOOGLE__', $escaped)
