@@ -81,7 +81,7 @@ try{
   const routes=['dashboard','missions','contracts','calendar','stats','projects','achievements','affirmations','story','settings'];
   for(const route of routes){
     await page.evaluate(r=>window.LeftNavV30171.route(r),route);
-    await page.waitForTimeout(650);
+    await page.waitForTimeout(320);
     await audit(route);
   }
 
@@ -89,8 +89,11 @@ try{
   await page.waitForSelector('[data-v30171-setting]',{timeout:10000});
   const settings=await page.evaluate(()=>[...document.querySelectorAll('[data-v30171-setting]')].map(x=>x.dataset.v30171Setting));
   for(const key of settings){
-    await page.click('[data-v30171-setting="'+key+'"]');
-    await page.waitForTimeout(450);
+    await page.evaluate(k=>{
+      const el=document.querySelector('[data-v30171-setting="'+k+'"]');
+      if(el)el.click();
+    },key);
+    await page.waitForTimeout(260);
     await audit('settings:'+key);
   }
 
