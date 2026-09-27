@@ -649,6 +649,94 @@ const PAIRS={
   "missed missions":"misiones omitidas",
   "pending mission":"misión pendiente",
   "pending missions":"misiones pendientes",
+  "YOUR STORY":"TU HISTORIA",
+  "◈ YOUR STORY":"◈ TU HISTORIA",
+  "Name the era you are living and make it part of the run.":"Nombra la era que estás viviendo y hazla parte del recorrido.",
+  "Dashboard layout":"Diseño de Inicio",
+  "Search Premium Contracts":"Buscar Contratos Premium",
+  "Premium Contracts, linked missions and useful mission alerts.":"Contratos Premium, misiones vinculadas y alertas útiles de misiones.",
+  "No linked missions":"Sin misiones vinculadas",
+  "No linked tasks yet. Open Edit to link tasks.":"Todavía no hay tareas vinculadas. Abre Editar para vincular tareas.",
+  "Plan and edit missions directly from each date.":"Planea y edita misiones directamente desde cada fecha.",
+  "Open Dashboard":"Abrir Inicio",
+  "Weekly and monthly evidence from your actual mission history.":"Evidencia semanal y mensual basada en tu historial real de misiones.",
+  "Schedule and complete actions to reveal your build":"Programa y completa acciones para revelar tu build",
+  "This prevents the build from becoming only gym, only work, or only admin.":"Esto evita que la build se convierta solo en gym, solo trabajo o solo administración.",
+  "Connect related missions, decisions and Premium Contracts without turning everything into a weekly habit.":"Conecta misiones, decisiones y Contratos Premium relacionados sin convertir todo en un hábito semanal.",
+  "New project":"Nuevo proyecto",
+  "Keep the decision, the reason and the project it belongs to.":"Guarda la decisión, la razón y el proyecto al que pertenece.",
+  "Checks for repeated missions and Premium Contracts without deleting progress.":"Busca misiones y Contratos Premium repetidos sin eliminar progreso.",
+  "Exact duplicates are merged. Completion dates, linked contracts, schedules and Next Up references are preserved.":"Los duplicados exactos se fusionan. Se conservan fechas de finalización, contratos vinculados, horarios y referencias de Siguientes.",
+  "Controls automatic mission matching and the notification center.":"Controla la vinculación automática de misiones y el centro de notificaciones.",
+  "is the default: contracts without missions, contracts at risk, useful Next Up suggestions, overdue missions and daily planning reminders. Automatic links use titles, categories, descriptions and related keywords, while respecting links you manually rejected.":"es el valor predeterminado: contratos sin misiones, contratos en riesgo, sugerencias útiles de Siguientes, misiones vencidas y recordatorios de planificación diaria. Los vínculos automáticos usan títulos, categorías, descripciones y palabras relacionadas, respetando los vínculos que rechazaste manualmente.",
+  "Wallpaper worlds only. Original Dynamic Sky uses the same live six-stage pipeline as every other theme.":"Solo mundos de fondo. Cielo dinámico original usa el mismo sistema vivo de seis etapas que los demás temas.",
+  "Interface Typography":"Tipografía de la interfaz",
+  "Choose by era. Every card keeps its own permanent preview, so you can compare styles without selecting them first.":"Elige por era. Cada tarjeta mantiene su propia vista previa permanente para que compares estilos sin seleccionarlos primero.",
+  "Build the life you imagine · 0123":"Construye la vida que imaginas · 0123",
+  "Heavier industrial sans-serif kept distinct from the earlier condensed eras.":"Sans serif industrial más pesada, diferenciada de las eras condensadas anteriores.",
+  "Readable typewriter companion from the era instead of the extreme outlined cover title.":"Tipografía de máquina de escribir legible inspirada en la era, en lugar del título extremo delineado de la portada.",
+  "Settings sidebar":"Barra lateral de Configuración",
+  "Settings category navigation shell.":"Navegación por categorías de Configuración.",
+  "Next Up and Focus panels.":"Paneles de Siguientes y Enfoque.",
+  "Next Up / Focus":"Siguientes / Enfoque",
+  "Configure the same Focus timer used from the action dock.":"Configura el mismo temporizador de Enfoque que se usa desde el panel de acciones.",
+  "Open Focus controls":"Abrir controles de enfoque",
+  "A running timer is never silently restarted. New durations apply immediately when the timer is ready or paused.":"Un temporizador en ejecución nunca se reinicia silenciosamente. Las nuevas duraciones se aplican inmediatamente cuando está listo o en pausa.",
+  "Maximum Next Up missions":"Máximo de misiones en Siguientes",
+  "Dashboard missions are grouped into Morning, Afternoon and Night using the same clock logic as the background.":"Las misiones de Inicio se agrupan en Mañana, Tarde y Noche usando la misma lógica horaria del fondo.",
+  "Existing active missions were assigned by their title, description, category and linked project. A stage changed manually from a mission card is preserved.":"Las misiones activas existentes se asignaron según título, descripción, categoría y proyecto vinculado. Una etapa cambiada manualmente desde una tarjeta de misión se conserva.",
+  "Controls the new execution system without adding energy tags or completion notes.":"Controla el nuevo sistema de ejecución sin agregar etiquetas de energía ni notas de finalización.",
+  "Restart progress without deleting missions, categories, presets, settings, background sets or premium contracts.":"Reinicia el progreso sin eliminar misiones, categorías, presets, configuración, conjuntos de fondos ni Contratos Premium.",
+  "Current Mission, link warnings, Weekly Review and automatic recovery snapshots.":"Misión actual, advertencias de vínculos, Revisión semanal y snapshots automáticos de recuperación.",
+  "Current Mission dock":"Panel de Misión actual",
+  "Open Weekly Review":"Abrir Revisión semanal",
+  "Current build":"Build actual",
+  "I finish what is in front of me.":"Termino lo que tengo enfrente.",
+  "My thesis moves when I work on it.":"Mi tesis avanza cuando trabajo en ella.",
+  "Physical health":"Salud física",
+  "Education / thesis":"Educación / tesis",
+  "Career":"Carrera",
+  "Image / presence":"Imagen / presencia",
+  "Culture / languages":"Cultura / idiomas",
+  "Order / execution":"Orden / ejecución",
+  "Self-worth":"Amor propio",
+  "Emotional autonomy":"Autonomía emocional",
+  "Mental strength":"Fortaleza mental",
+  "Finances":"Finanzas",
+  "Uncategorized":"Sin categoría",
+  "Initiate":"Iniciado",
+  "Operator":"Operador",
+  "Specialist":"Especialista",
+  "Master":"Maestro",
+  "Legend":"Leyenda",
+  "First Contract":"Primer contrato",
+  "Rhythm":"Ritmo",
+  "Consistency":"Constancia",
+  "Discipline":"Disciplina",
+  "Machine":"Máquina",
+  "Institution":"Institución",
+  "Legacy":"Legado",
+  "Consistent Operator":"Operador constante",
+  "Elite Mode":"Modo élite",
+  "Life Architect":"Arquitecto de vida",
+  "Iron System":"Sistema de hierro",
+  "Mythic Executor":"Ejecutor mítico",
+  "Monthly Streak":"Racha mensual",
+  "Two-Month Streak":"Racha de dos meses",
+  "Hundred-Day Operator":"Operador de cien días",
+  "Full-Year System":"Sistema de año completo",
+  "Good morning":"Buenos días",
+  "Good noon":"Buen mediodía",
+  "Good afternoon":"Buena tarde",
+  "Good evening":"Buenas noches",
+  "Dawn":"Amanecer",
+  "Morning":"Mañana",
+  "Noon":"Mediodía",
+  "Afternoon":"Tarde",
+  "Night":"Noche",
+  "Late night":"Noche tardía",
+  "Today’s goals":"Metas de hoy",
+  "Goal reset":"Reinicio de metas",
 };
 const REVERSE=Object.fromEntries(Object.entries(PAIRS).map(([en,es])=>[es,en]));
 
@@ -672,6 +760,21 @@ function mapText(raw){
     return lead+dict[t]+tail;
   }
   let out=s;
+  if(language==='es'){
+    const catMap={'physical health':'salud física','education / thesis':'educación / tesis','career':'carrera','image / presence':'imagen / presencia','culture / languages':'cultura / idiomas','order / execution':'orden / ejecución','self-worth':'amor propio','emotional autonomy':'autonomía emocional','mental strength':'fortaleza mental'};
+    out=out.replace(new RegExp('Complete the weekly (.+?) challenge (\\d+) time(s)?\\.','gi'),(m,cat,n)=>'Completa el reto semanal de '+(catMap[String(cat).toLowerCase()]||cat)+' '+n+' '+(Number(n)===1?'vez':'veces')+'.');
+    out=out.replace(new RegExp('Complete (\\d+) (.+?) missions\\.','gi'),(m,n,cat)=>'Completa '+n+' misiones de '+(catMap[String(cat).toLowerCase()]||cat)+'.');
+    out=out.replace(new RegExp('Complete (\\d+) total missions\\.','gi'),(m,n)=>'Completa '+n+' misiones en total.');
+    out=out.replace(new RegExp('Complete at least one mission per day for (\\d+) consecutive days\\.','gi'),(m,n)=>'Completa al menos una misión por día durante '+n+' días consecutivos.');
+    out=out.replace(new RegExp('(\\d+\\/\\d+) distinctDays this week','gi'),'$1 días distintos esta semana');
+    out=out.replace(new RegExp('(\\d+\\/\\d+) count this week','gi'),'$1 conteo esta semana');
+    out=out.replace(new RegExp('(\\d+\\/\\d+) times this week','gi'),'$1 veces esta semana');
+    out=out.replace(new RegExp('linked tasks count automatically\\.','gi'),'las tareas vinculadas cuentan automáticamente.');
+    out=out.replace(new RegExp('“([^”]+)” has no active missions connected to it\\.','gi'),'“$1” no tiene misiones activas vinculadas.');
+    out=out.replace(new RegExp('Today \\+(\\d+) XP','gi'),'Hoy +$1 XP');
+    out=out.replace(new RegExp('This week ·','gi'),'Esta semana ·');
+    out=out.replace(new RegExp('Current week due so far · default','gi'),'Semana actual hasta ahora · predeterminado');
+  }
   const partial=language==='es'?[
     [/\bDelete mission\b/g,'Eliminar misión'],[/\bCurrent Mission\b/g,'Misión actual'],
     [/\bCompleted\b/g,'Completada'],[/\bToday\b/g,'Hoy'],[/\bTomorrow\b/g,'Mañana'],
