@@ -12,7 +12,7 @@ text=p.read_text(encoding='utf-8')
 required=(
     "const VERSION='3.0.209'",
     "window.__MICHELS_LIFE_BUILD__='3.0.209'",
-    "assets/michels_life_logo.png",
+    "assets/michels_life_logo.webp",
     "assets/michel_duarte_avatar.jpg",
     "['typography','Aa','Typography'",
     "data-mlv-typography-core",
