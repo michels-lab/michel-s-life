@@ -20,6 +20,14 @@ try{
   await page.evaluate(()=>window.LeftNavV30171.route('settings'));
   await page.waitForSelector('[data-v30171-setting="general"]',{timeout:10000});
   await page.click('[data-v30171-setting="general"]');
+  await page.waitForTimeout(300);
+  const i18nSettingsDebug=await page.evaluate(()=>({
+    buttons:[...document.querySelectorAll('[data-v30171-setting]')].map(x=>({setting:x.dataset.v30171Setting,cls:x.className,text:(x.textContent||'').trim().slice(0,80)})),
+    panes:[...document.querySelectorAll('[data-v30171-pane]')].map(x=>({pane:x.dataset.v30171Pane,cls:x.className,text:(x.textContent||'').trim().slice(0,120)})),
+    activeSettingsPanes:[...document.querySelectorAll('.v30171-settings-pane')].filter(x=>x.offsetParent!==null).map(x=>({pane:x.dataset.v30171Pane||'',cls:x.className})),
+    cards:document.querySelectorAll('[data-mlv-i18n-card]').length
+  }));
+  console.log('I18N_SETTINGS_DEBUG '+JSON.stringify(i18nSettingsDebug));
   await page.waitForSelector('.v30171-settings-pane.active [data-mlv-i18n-card]',{timeout:10000});
   await page.waitForTimeout(250);
 
