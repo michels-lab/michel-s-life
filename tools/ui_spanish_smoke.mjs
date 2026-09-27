@@ -88,7 +88,7 @@ try{
     const r=img.getBoundingClientRect();
     return {src:img.getAttribute('src')||'',w:img.naturalWidth,h:img.naturalHeight,cw:r.width,ch:r.height};
   });
-  ok(logo&&logo.src==='assets/michels_life_logo.jpg','Spanish build is not using the real celestial logo: '+JSON.stringify(logo));
+  ok(logo&&logo.src==='assets/michels_life_logo.png','Spanish build is not using the real celestial logo: '+JSON.stringify(logo));
   ok(logo.w>0&&logo.h>0&&logo.cw>=70&&logo.ch>=70,'Spanish build logo is broken or invisible: '+JSON.stringify(logo));
   const translationProbe=await page.evaluate(()=>({
     dashboard:window.MichelsLifeI18n.mapText('Dashboard'),
