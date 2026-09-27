@@ -32,8 +32,10 @@ jobs:
           curl -L --fail --retry 3 \
             "https://github.com/$RELEASES_REPO/releases/latest/download/AppBundle.zip" \
             -o artifacts/AppBundle.zip
+          python tools/enable_i18n.py --index src/MichelsLife/frontend/index.html
           python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
           python tools/replace_bundle_index.py --bundle artifacts/AppBundle.zip --index src/MichelsLife/frontend/index.html
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle.zip --source src/MichelsLife/frontend/i18n.js --arcname i18n.js
           python tools/inject_bundle_asset.py --bundle artifacts/AppBundle.zip --source branding/michel_duarte_avatar.jpg --arcname assets/michel_duarte_avatar.jpg
           python tools/inject_bundle_asset.py --bundle artifacts/AppBundle.zip --source branding/michels_life_logo.svg --arcname assets/michels_life_logo.svg
           python - <<'PY'
@@ -57,7 +59,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ui-smoke-v3.0.207
+          name: ui-smoke-v3.0.208
           path: |
             artifacts/ui-smoke
             /tmp/mlv-http.log
