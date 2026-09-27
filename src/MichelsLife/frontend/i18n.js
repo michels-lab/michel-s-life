@@ -827,6 +827,71 @@ const PAIRS={
   "Restore point warning":"Advertencia del punto de restauración",
   "Repair local data? Michel’s Life will create a restore point first, then normalize saved structures.":"¿Reparar los datos locales? Michel’s Life creará primero un punto de restauración y después normalizará las estructuras guardadas.",
   "Install the newer local executable? A restore point will be created first.":"¿Instalar el ejecutable local más reciente? Primero se creará un punto de restauración.",
+  "CURRENT CHAPTER":"CAPÍTULO ACTUAL",
+  "STORY CHAPTERS":"CAPÍTULOS DE HISTORIA",
+  "LEVEL":"NIVEL",
+  "TOTAL XP":"XP TOTAL",
+  "TODAY":"HOY",
+  "FOCUS":"ENFOQUE",
+  "POMODOROS":"POMODOROS",
+  "DAY":"DÍA",
+  "CURRENT BOSS":"JEFE ACTUAL",
+  "No active boss battle":"No hay un jefe activo",
+  "Choose in Projects":"Elegir en Proyectos",
+  "Open Story":"Abrir historia",
+  "Life Build":"Progreso de vida",
+  "Bosses & Quest Chains":"Jefes y cadenas de misiones",
+  "COMING NEXT":"SIGUIENTE",
+  "queued":"en cola",
+  "missions":"Misiones",
+  "Weekly review":"Revisión semanal",
+  "Revisión weekly":"Revisión semanal",
+  "Present":"Presente",
+  "Focus blocks":"Bloques de enfoque",
+  "Bosses":"Jefes",
+  "Story timeline":"Línea de tiempo",
+  "Main threads":"Temas principales",
+  "Projects worked":"Proyectos trabajados",
+  "No story events yet.":"Aún no hay eventos de historia.",
+  "No completed threads yet":"Aún no hay temas completados",
+  "Edit chapter":"Editar capítulo",
+  "Close chapter":"Cerrar capítulo",
+  "Delete moment":"Eliminar momento",
+  "January":"Enero",
+  "February":"Febrero",
+  "March":"Marzo",
+  "April":"Abril",
+  "May":"Mayo",
+  "June":"Junio",
+  "July":"Julio",
+  "August":"Agosto",
+  "September":"Septiembre",
+  "October":"Octubre",
+  "November":"Noviembre",
+  "December":"Diciembre",
+  "Deep winter":"Invierno profundo",
+  "Soft February":"Febrero suave",
+  "Early spring":"Inicio de primavera",
+  "Spring rain":"Lluvia de primavera",
+  "Full spring":"Primavera plena",
+  "Early summer":"Inicio de verano",
+  "High summer":"Pleno verano",
+  "Late summer":"Final de verano",
+  "Early autumn":"Inicio de otoño",
+  "Late autumn":"Final de otoño",
+  "Holiday season":"Temporada festiva",
+  "Cold light · clean start":"Luz fría · inicio limpio",
+  "Warmth · care · momentum":"Calidez · cuidado · impulso",
+  "New growth · fresh movement":"Nuevo crecimiento · movimiento fresco",
+  "Rain · reset · grow":"Lluvia · reinicio · crecimiento",
+  "Bloom · build · expand":"Florece · construye · expande",
+  "Bright days · open energy":"Días brillantes · energía abierta",
+  "Long light · full momentum":"Luz prolongada · impulso total",
+  "Warm light · finish the season strong":"Luz cálida · termina fuerte la temporada",
+  "Golden shift · sharpen the routine":"Transición dorada · afina la rutina",
+  "Night energy · sharper edges":"Energía nocturna · contornos más intensos",
+  "Amber light · close the year well":"Luz ámbar · cierra bien el año",
+  "Winter lights · year-end glow":"Luces de invierno · brillo de fin de año",
 };
 const REVERSE=Object.fromEntries(Object.entries(PAIRS).map(([en,es])=>[es,en]));
 
@@ -872,6 +937,31 @@ function mapText(raw){
     out=out.replace(new RegExp('Today \\+(\\d+) XP','gi'),'Hoy +$1 XP');
     out=out.replace(new RegExp('This week ·','gi'),'Esta semana ·');
     out=out.replace(new RegExp('Current week due so far · default','gi'),'Semana actual hasta ahora · predeterminado');
+    out=out.replace(/\bGood morning\b/gi,'Buenos días');
+    out=out.replace(/\bGood noon\b/gi,'Buen mediodía');
+    out=out.replace(/\bGood afternoon\b/gi,'Buenas tardes');
+    out=out.replace(/\bGood evening\b/gi,'Buenas noches');
+    out=out.replace(/\bLate night\b/gi,'Noche tardía');
+    out=out.replace(/\bCURRENT CHAPTER\b/g,'CAPÍTULO ACTUAL');
+    out=out.replace(/\bCHAPTER\s+([IVXLCDM]+)\b/g,'CAPÍTULO $1');
+    out=out.replace(/\bCURRENT BOSS\b/g,'JEFE ACTUAL');
+    out=out.replace(/\bCOMING NEXT\b/g,'SIGUIENTE');
+    out=out.replace(/\b(\d+)\s+queued\b/gi,'$1 en cola');
+    out=out.replace(/\bRevisión\s+weekly\b/gi,'Revisión semanal');
+    out=out.replace(/\bWeekly\s+Review\b/gi,'Revisión semanal');
+    out=out.replace(/\bweekly\b/gi,'semanal');
+    out=out.replace(/\bmissions\b/gi,'misiones');
+    const wd={Sun:'dom',Mon:'lun',Tue:'mar',Wed:'mié',Thu:'jue',Fri:'vie',Sat:'sáb'};
+    const mon={Jan:'ene',Feb:'feb',Mar:'mar',Apr:'abr',May:'may',Jun:'jun',Jul:'jul',Aug:'ago',Sep:'sep',Oct:'oct',Nov:'nov',Dec:'dic'};
+    out=out.replace(/\b(Sun|Mon|Tue|Wed|Thu|Fri|Sat)\b/g,m=>wd[m]||m);
+    out=out.replace(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b/g,m=>mon[m]||m);
+    out=out.replace(/\bNo active boss battle\b/gi,'No hay un jefe activo');
+    out=out.replace(/\bChoose in Projects\b/g,'Elegir en Proyectos');
+    out=out.replace(/\bOpen Story\b/g,'Abrir historia');
+    out=out.replace(/\bLife Build\b/g,'Progreso de vida');
+    out=out.replace(/\bBosses & Quest Chains\b/g,'Jefes y cadenas de misiones');
+    out=out.replace(/\bGolden shift · sharpen the routine\b/gi,'Transición dorada · afina la rutina');
+    out=out.replace(/\bDo not call the day lost while there is still leverage\.\b/gi,'No des el día por perdido mientras todavía haya margen.');
   }
   const partial=language==='es'?[
     [/\bDelete mission\b/g,'Eliminar misión'],[/\bCurrent Mission\b/g,'Misión actual'],
@@ -888,7 +978,10 @@ function mapText(raw){
     [/\bSettings\b/g,'Configuración'],[/\bNotifications\b/g,'Notificaciones'],
     [/\bDashboard\b/g,'Inicio'],[/\bThis week\b/g,'Esta semana'],[/\bNew mission\b/g,'Nueva misión'],
     [/\bDelete project\b/g,'Eliminar proyecto'],[/\bDelete archived chapter\b/g,'Eliminar capítulo archivado'],
-    [/\bRemove\b/g,'Quitar'],[/\bDelete\b/g,'Eliminar'],[/\bPremium contract\b/gi,'Contrato Premium']
+    [/\bRemove\b/g,'Quitar'],[/\bDelete\b/g,'Eliminar'],[/\bPremium contract\b/gi,'Contrato Premium'],
+    [/\bCURRENT CHAPTER\b/g,'CAPÍTULO ACTUAL'],[/\bCURRENT BOSS\b/g,'JEFE ACTUAL'],
+    [/\bTOTAL XP\b/g,'XP TOTAL'],[/\bFOCUS\b/g,'ENFOQUE'],[/\bDAY\b/g,'DÍA'],
+    [/\bCOMING NEXT\b/g,'SIGUIENTE']
   ]:[
     [/\bMisión actual\b/g,'Current Mission'],[/\bEliminar misión\b/g,'Delete mission'],
     [/\bCompletada\b/g,'Completed'],[/\bHoy\b/g,'Today'],[/\bMañana\b/g,'Tomorrow'],
