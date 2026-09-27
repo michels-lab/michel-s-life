@@ -20,7 +20,7 @@ try{
   await page.evaluate(()=>window.LeftNavV30171.route('settings'));
   await page.waitForSelector('[data-v30171-setting="general"]',{timeout:10000});
   await page.click('[data-v30171-setting="general"]');
-  await page.waitForSelector('[data-v30171-pane="general"].active [data-mlv-i18n-card]',{timeout:10000});
+  await page.waitForSelector('.v30171-settings-pane.active [data-mlv-i18n-card]',{timeout:10000});
   await page.waitForTimeout(250);
 
   const installerLanguage=await page.evaluate(()=>({
