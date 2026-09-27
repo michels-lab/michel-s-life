@@ -35,7 +35,7 @@ const ES={
   "Profile, time ambience and core behavior.":"Perfil, ambiente horario y comportamiento principal.",
   "Character name":"Nombre del personaje",
   "Background sets, wallpapers and visual worlds.":"Conjuntos de fondos, wallpapers y mundos visuales.",
-  "Choose the type style used across the interface.":"Elige el estilo tipográfico usado en toda la interfaz.",
+  "Choose the type style used across the interface.":"Elige el estilo de letra usado en toda la interfaz.",
   "Interface Typography":"Tipografía de la interfaz",
   "Glass, transparency, density and interface surfaces.":"Cristal, transparencia, densidad y superficies de la interfaz.",
   "Seasonal panel":"Panel estacional",
@@ -47,7 +47,7 @@ const ES={
   "Cloud-sync all Michel’s Life data and optionally connect Calendar.":"Sincroniza en la nube todos los datos de Michel’s Life y conecta Calendar opcionalmente.",
   "Export, import, recovery and maintenance tools.":"Herramientas de exportación, importación, recuperación y mantenimiento.",
   "Reset progress only":"Restablecer solo el progreso",
-  "Cinematic worlds used only by Current Chapter.":"Mundos cinematográficos usados solo por Capítulo actual.",
+  "Cinematic worlds used only by Current Chapter.":"Mundos cinemáticos usados solo por Capítulo actual.",
   "Chapter Scene Packs":"Paquetes de escenas de capítulo",
   "Developer, license and build information.":"Desarrollador, licencia e información de compilación.",
   "Developer · Michel’s Lab":"Desarrollador · Michel’s Lab",
@@ -255,7 +255,151 @@ const ES={
   "On":"Activado",
   "Off":"Desactivado",
   "Yes":"Sí",
-  "No":"No"
+  "No":"No",
+  "Settings category navigation shell.":"Navegación por categorías de Configuración.",
+  "Settings sidebar":"Barra lateral de Configuración",
+  "Time ambience":"Ambiente horario",
+  "Color presets, window palette, accents, Gold and text colors.":"Preajustes de color, paleta de ventana, acentos, dorado y colores de texto.",
+  "Color theme":"Tema de color",
+  "Pick a preset or create your own window palette.":"Elige un preajuste o crea tu propia paleta de ventana.",
+  "Accents":"Acentos",
+  "Window base":"Base de la ventana",
+  "Main text":"Texto principal",
+  "Secondary text":"Texto secundario",
+  "Live Preview":"Vista previa en vivo",
+  "Glass tint, borders and glow.":"Tinte del cristal, bordes y resplandor.",
+  "Atmosphere / glass tint":"Atmósfera / tinte del cristal",
+  "Main left navigation shell.":"Barra principal de navegación izquierda.",
+  "Large tab panels and Settings sections.":"Paneles grandes de pestañas y secciones de Configuración.",
+  "Main panel":"Panel principal",
+  "Main Panel":"Panel principal",
+  "Header / hero":"Encabezado / destacado",
+  "Header / Hero":"Encabezado / destacado",
+  "Inner card":"Tarjeta interna",
+  "Inner Card":"Tarjeta interna",
+  "Card":"Tarjeta",
+  "Sidebar":"Barra lateral",
+  "Dock":"Dock",
+  "Current Mission dock":"Dock de Misión actual",
+  "Current Chapter shade and top summary surfaces.":"Sombreado de Capítulo actual y superficies superiores de resumen.",
+  "Next Up / Focus":"Siguiente / Enfoque",
+  "Next Up and Focus panels.":"Paneles de Siguiente y Enfoque.",
+  "Mission / KPI / contract":"Misión / KPI / contrato",
+  "Missions, contracts, KPIs and nested cards.":"Misiones, contratos, KPI y tarjetas anidadas.",
+  "Use custom opacity":"Usar opacidad personalizada",
+  "Changes while you drag":"Cambia mientras arrastras",
+  "Every surface uses a true 0–100% range. The preview shows exactly which layer each slider controls.":"Cada superficie usa un rango real de 0–100 %. La vista previa muestra exactamente qué capa controla cada deslizador.",
+  "Canvas-driven animated month scene.":"Escena mensual animada mediante canvas.",
+  "Animated decoration off":"Decoración animada desactivada",
+  "Animated decoration on":"Decoración animada activada",
+  "Apply timer settings":"Aplicar configuración del temporizador",
+  "Apply to one target job":"Aplicar a una tarea objetivo",
+  "A running timer is never silently restarted. New durations apply immediately when the timer is ready or paused.":"Un temporizador en marcha nunca se reinicia silenciosamente. Las nuevas duraciones se aplican cuando está listo o en pausa.",
+  "Work min":"Min. de trabajo",
+  "Break min":"Min. de descanso",
+  "Work minutes":"Minutos de trabajo",
+  "Break minutes":"Minutos de descanso",
+  "Auto-start break":"Iniciar descanso automáticamente",
+  "Classic Pomodoro":"Pomodoro clásico",
+  "Deep work":"Trabajo profundo",
+  "Your own rhythm":"Tu propio ritmo",
+  "Open Focus controls":"Abrir controles de Enfoque",
+  "Recent Focus":"Enfoque reciente",
+  "No Focus blocks saved yet":"Aún no hay bloques de Enfoque guardados",
+  "Unassigned Focus":"Enfoque sin asignar",
+  "Focus mission":"Misión de enfoque",
+  "Choose how many missions can stay in your ordered queue.":"Elige cuántas misiones pueden permanecer en tu cola ordenada.",
+  "Maximum Next Up missions":"Máximo de misiones en Siguiente",
+  "Default is 6. The floating dock grows to a second row when needed.":"El valor predeterminado es 6. El dock flotante crece a una segunda fila cuando es necesario.",
+  "Keep Plan my day first":"Mantener Planificar mi día primero",
+  "Auto-open Today Plan after Plan my day":"Abrir automáticamente el Plan de hoy después de Planificar mi día",
+  "Once per new day, the matching mission is placed at #1 automatically.":"Una vez por cada nuevo día, la misión correspondiente se coloca automáticamente en el puesto #1.",
+  "Mission time of day":"Horario de la misión",
+  "Dashboard missions are grouped into Morning, Afternoon and Night using the same clock logic as the background.":"Las misiones del Panel se agrupan en Mañana, Tarde y Noche usando la misma lógica horaria que el fondo.",
+  "Morning":"Mañana",
+  "Afternoon":"Tarde",
+  "Night":"Noche",
+  "Dawn":"Amanecer",
+  "Noon":"Mediodía",
+  "Late night":"Noche avanzada",
+  "Automatic":"Automático",
+  "Manual":"Manual",
+  "Auto · Current Mission":"Auto · Misión actual",
+  "Execution, review & recovery":"Ejecución, revisión y recuperación",
+  "Current Mission, link warnings, Weekly Review and automatic recovery snapshots.":"Misión actual, advertencias de enlaces, Revisión semanal y copias automáticas de recuperación.",
+  "Controls the new execution system without adding energy tags or completion notes.":"Controla el nuevo sistema de ejecución sin añadir etiquetas de energía ni notas de finalización.",
+  "Excessive-link warning threshold":"Umbral de advertencia por exceso de enlaces",
+  "Weekly Review":"Revisión semanal",
+  "Open Weekly Review":"Abrir Revisión semanal",
+  "Recovery snapshots":"Copias de recuperación",
+  "Automatic snapshots":"Copias automáticas",
+  "The five newest states are retained.":"Se conservan los cinco estados más recientes.",
+  "Create snapshot now":"Crear copia ahora",
+  "Safe updates":"Actualizaciones seguras",
+  "Updates preserve the same data profile and create a restore point before replacing the app.":"Las actualizaciones conservan el mismo perfil de datos y crean un punto de restauración antes de reemplazar la app.",
+  "Check for updates":"Buscar actualizaciones",
+  "Detected update":"Actualización detectada",
+  "Choose newer EXE…":"Elegir EXE más reciente…",
+  "Backup & restore":"Copia de seguridad y restauración",
+  "Export Michel's Life":"Exportar Michel's Life",
+  "Import backup":"Importar copia de seguridad",
+  "Full Michel’s Life data, import and reset tools in one place.":"Todos los datos de Michel’s Life, importación y herramientas de restablecimiento en un solo lugar.",
+  "App folder + Downloads":"Carpeta de la app + Descargas",
+  "Local scan":"Búsqueda local",
+  "Open Maintenance":"Abrir mantenimiento",
+  "Reset app":"Restablecer app",
+  "Restart progress without deleting missions, categories, presets, settings, background sets or premium contracts.":"Reinicia el progreso sin eliminar misiones, categorías, preajustes, configuración, conjuntos de fondos ni contratos premium.",
+  "This clears completions, XP,, achievements and progress history. Missions keep their archived and hidden state.":"Esto elimina finalizaciones, XP, logros e historial de progreso. Las misiones conservan su estado archivado y oculto.",
+  "Mission XP balance":"Balance de XP de misiones",
+  "Mission XP is controlled only by difficulty. Individual mission XP fields are disabled.":"El XP de las misiones se controla únicamente por dificultad. Los campos individuales de XP están desactivados.",
+  "Save XP scale":"Guardar escala de XP",
+  "Easy":"Fácil",
+  "Hard":"Difícil",
+  "Intense":"Intensa",
+  "Boss":"Jefe",
+  "Current Chapter only. Artwork and ambient motion stay independent from the general Michel’s Life background.":"Solo para Capítulo actual. El arte y el movimiento ambiental permanecen independientes del fondo general de Michel’s Life.",
+  "Visual stage":"Etapa visual",
+  "No active chapter":"No hay capítulo activo",
+  "Reassign automatic stages":"Reasignar etapas automáticas",
+  "Existing active missions were assigned by their title, description, category and linked project. A stage changed manually from a mission card is preserved.":"Las misiones activas se asignaron según su título, descripción, categoría y proyecto vinculado. Una etapa cambiada manualmente desde una tarjeta de misión se conserva.",
+  "Current build":"Versión actual",
+  "Contact:":"Contacto:",
+  "Michel’s Life is created and maintained by Michel Duarte under Michel’s Lab. Independent software focused on productivity, life systems and personal tools.":"Michel’s Life es creado y mantenido por Michel Duarte bajo Michel’s Lab. Software independiente enfocado en productividad, sistemas de vida y herramientas personales.",
+  "Proprietary · Personal use":"Propietario · Uso personal",
+  "Choose by era. Every card keeps its own permanent preview, so you can compare styles without selecting them first.":"Elige por era. Cada tarjeta conserva su propia vista previa permanente para que puedas comparar estilos sin seleccionarlos primero.",
+  "Primary interface lettering.":"Tipografía principal de la interfaz.",
+  "Helper, labels and secondary lettering.":"Texto auxiliar, etiquetas y tipografía secundaria.",
+  "Wallpaper worlds only. Original Dynamic Sky uses the same live six-stage pipeline as every other theme.":"Solo mundos de fondo. Original Dynamic Sky usa el mismo sistema dinámico de seis etapas que los demás temas.",
+  "Michel’s Life original sky, changing automatically with the day.":"Cielo original de Michel’s Life, cambia automáticamente a lo largo del día.",
+  "Background photos":"Fotos de fondo",
+  "Default photo":"Foto predeterminada",
+  "Choose photo":"Elegir foto",
+  "Apply to one target job":"Aplicar a una tarea objetivo",
+  "Remove":"Eliminar",
+  "Compare":"Comparar",
+  "Skip":"Omitir",
+  "Ready":"Listo",
+  "Linked":"Vinculado",
+  "Direct":"Directo",
+  "Automatic snapshots":"Copias automáticas",
+  "Clear Next Up":"Limpiar Siguiente",
+  "Clean weak contract links":"Limpiar vínculos débiles de contratos",
+  "Undo last action":"Deshacer última acción",
+  "Save settings":"Guardar configuración",
+  "Save system settings":"Guardar configuración del sistema",
+  "Open":"Abrir",
+  "STATUS":"ESTADO",
+  "CURRENT PHASE":"FASE ACTUAL",
+  "APP":"APP",
+  "PRESET":"PREAJUSTE",
+  "Navigation":"Navegación",
+  "Planning, projects & focus":"Planificación, proyectos y enfoque",
+  "Story":"Historia",
+  "Work":"Trabajo",
+  "Soft":"Suave",
+  "Severe":"Severa",
+  "Custom":"Personalizado",
+  "Auto":"Auto"
 };
 
 const originalText=new WeakMap();
@@ -282,9 +426,20 @@ function shouldSkip(node){
 
 function translateTextNode(node){
   if(shouldSkip(node))return;
-  if(!originalText.has(node))originalText.set(node,node.nodeValue||'');
-  const base=originalText.get(node)||'';
-  node.nodeValue=language==='es'?translateValue(base):base;
+  const current=node.nodeValue||'';
+  const trimmed=current.trim();
+  if(language==='es'){
+    if(Object.prototype.hasOwnProperty.call(ES,trimmed)){
+      originalText.set(node,current);
+      node.nodeValue=translateValue(current);
+      return;
+    }
+    const base=originalText.get(node);
+    if(base&&current===translateValue(base))return;
+    return;
+  }
+  const base=originalText.get(node);
+  if(base&&current===translateValue(base))node.nodeValue=base;
 }
 
 function translateAttrs(el){
@@ -293,9 +448,17 @@ function translateAttrs(el){
   if(!originals){originals={};originalAttrs.set(el,originals)}
   for(const attr of ATTRS){
     if(!el.hasAttribute(attr))continue;
-    if(!(attr in originals))originals[attr]=el.getAttribute(attr)||'';
+    const current=el.getAttribute(attr)||'';
+    const trimmed=current.trim();
+    if(language==='es'){
+      if(Object.prototype.hasOwnProperty.call(ES,trimmed)){
+        originals[attr]=current;
+        el.setAttribute(attr,translateValue(current));
+      }
+      continue;
+    }
     const base=originals[attr];
-    el.setAttribute(attr,language==='es'?translateValue(base):base);
+    if(base&&current===translateValue(base))el.setAttribute(attr,base);
   }
 }
 
@@ -368,6 +531,10 @@ document.addEventListener('click',e=>{
 const observer=new MutationObserver(records=>{
   let needsCard=false;
   for(const r of records){
+    if(r.type==='characterData'){
+      translateTextNode(r.target);
+      continue;
+    }
     if(r.type==='attributes'){
       const el=r.target;
       if(el?.matches?.('[data-v30171-setting="general"],.v30171-settings-pane'))needsCard=true;
@@ -386,8 +553,8 @@ function start(){
   document.documentElement.dataset.mlvLanguage=language;
   translateTree(document.body);
   mountCard();
-  for(const delay of [120,350,800,1500,3000])setTimeout(mountCard,delay);
-  try{observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']})}catch(_){}
+  for(const delay of [120,350,800,1500,3000])setTimeout(()=>{translateTree(document.body);mountCard()},delay);
+  try{observer.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['class']})}catch(_){}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 
