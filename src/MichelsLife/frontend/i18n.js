@@ -827,14 +827,18 @@ function ensureLanguageControl(){
   sel.addEventListener('change',()=>setLanguage(sel.value));
   translateNode(card);
 }
+function refresh(root=document.body){
+  if(!root)return;
+  document.documentElement.lang=language;
+  translateNode(root);
+  ensureLanguageControl();
+  document.querySelectorAll('[data-mlv-language-select]').forEach(s=>s.value=language);
+}
 function setLanguage(next){
   if(next!=='en'&&next!=='es')return;
   language=next;
   try{localStorage.setItem(KEY,next)}catch(_){}
-  document.documentElement.lang=next;
-  translateNode(document.body);
-  ensureLanguageControl();
-  document.querySelectorAll('[data-mlv-language-select]').forEach(s=>s.value=next);
+  refresh(document.body);
   window.dispatchEvent(new CustomEvent('michelslife:languagechange',{detail:{language:next}}));
 }
 let queued=false;
@@ -850,11 +854,19 @@ const mo=new MutationObserver(records=>{
   });
 });
 function init(){
-  document.documentElement.lang=language;
-  translateNode(document.body);
-  ensureLanguageControl();
+  refresh(document.body);
   mo.observe(document.body,{childList:true,subtree:true,characterData:true});
 }
-window.MichelsLifeI18n={get language(){return language},setLanguage,getLanguage};
+let refreshTimer=0;
+function queueRefresh(){
+  clearTimeout(refreshTimer);
+  refreshTimer=setTimeout(()=>refresh(document.body),30);
+  setTimeout(()=>refresh(document.body),140);
+  setTimeout(()=>refresh(document.body),520);
+}
+document.addEventListener('click',queueRefresh,true);
+document.addEventListener('change',queueRefresh,true);
+window.addEventListener('michelslife:uiupdated',queueRefresh);
+window.MichelsLifeI18n={get language(){return language},setLanguage,getLanguage,refresh,mapText};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
