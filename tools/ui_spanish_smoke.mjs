@@ -75,13 +75,21 @@ try{
   await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
   await page.waitForFunction(()=>window.LeftNavV30171&&window.MichelsLifeI18n&&document.querySelector('#v30171Sidebar'),null,{timeout:60000});
   await page.evaluate(()=>window.MichelsLifeI18n.setLanguage('es'));
-  await page.waitForTimeout(800);
+  await page.waitForTimeout(500);
   ok(await page.evaluate(()=>document.documentElement.lang==='es'),'document language is not es');
+  const translationProbe=await page.evaluate(()=>({
+    dashboard:window.MichelsLifeI18n.mapText('Dashboard'),
+    layout:window.MichelsLifeI18n.mapText('Dashboard layout'),
+    affirmation:window.MichelsLifeI18n.mapText('Today I choose execution over fantasy.')
+  }));
+  ok(translationProbe.dashboard==='Inicio'&&translationProbe.layout==='Diseño de Inicio'&&translationProbe.affirmation==='Hoy elijo ejecución sobre fantasía.','Spanish dictionary probe failed: '+JSON.stringify(translationProbe));
 
   const routes=['dashboard','missions','contracts','calendar','stats','projects','achievements','affirmations','story','settings'];
   for(const route of routes){
     await page.evaluate(r=>window.LeftNavV30171.route(r),route);
-    await page.waitForTimeout(320);
+    await page.waitForTimeout(260);
+    await page.evaluate(()=>window.MichelsLifeI18n.refresh());
+    await page.waitForTimeout(90);
     await audit(route);
   }
 
@@ -93,13 +101,17 @@ try{
       const el=document.querySelector('[data-v30171-setting="'+k+'"]');
       if(el)el.click();
     },key);
-    await page.waitForTimeout(260);
+    await page.waitForTimeout(220);
+    await page.evaluate(()=>window.MichelsLifeI18n.refresh());
+    await page.waitForTimeout(80);
     await audit('settings:'+key);
   }
 
   // Affirmation bank: verify seeded defaults and the rotating status phrase are translated.
   await page.evaluate(()=>window.LeftNavV30171.route('affirmations'));
-  await page.waitForTimeout(600);
+  await page.waitForTimeout(350);
+  await page.evaluate(()=>window.MichelsLifeI18n.refresh());
+  await page.waitForTimeout(80);
   const affirmationTexts=await page.evaluate(()=>[...document.querySelectorAll('#tab-affirmations td:first-child,.affirmation')].map(x=>(x.textContent||'').trim()).filter(Boolean));
   const seededEnglish=affirmationTexts.filter(t=>/^(I |My |Evidence |Focused work|Today I )/.test(t));
   if(seededEnglish.length)findings.set('affirmation-bank',seededEnglish);
