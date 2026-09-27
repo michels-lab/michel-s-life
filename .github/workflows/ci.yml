@@ -32,3 +32,51 @@ jobs:
 
       - name: Microsoft Store packaging smoke tests
         run: python tools/store_smoke_test.py
+
+
+  windows-icon-smoke:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Materialize host source
+        shell: pwsh
+        run: python tools/materialize_host_source.py
+
+      - name: Generate Windows icon from selected celestial logo
+        shell: pwsh
+        run: |
+          choco install imagemagick --yes --no-progress
+          New-Item -ItemType Directory -Force 'src/MichelsLife/Assets' | Out-Null
+          $magick = Get-Command magick -ErrorAction SilentlyContinue
+          if (-not $magick) {
+            $exe = Get-ChildItem "$env:ProgramFiles\ImageMagick*" -Filter magick.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            if (-not $exe) { throw 'ImageMagick magick.exe not found.' }
+            $magickPath = $exe.FullName
+          } else {
+            $magickPath = $magick.Source
+          }
+          & $magickPath 'branding/michels_life_logo.jpg' -define icon:auto-resize=256,128,64,48,32,16 'src/MichelsLife/Assets/michels_life_icon.ico'
+          if ($LASTEXITCODE -ne 0) { throw 'Windows icon generation failed.' }
+
+      - name: Compile Windows host with embedded icon
+        shell: pwsh
+        run: |
+          dotnet build src/MichelsLife/MichelsLife.csproj -c Release
+          if ($LASTEXITCODE -ne 0) { throw 'Windows host compilation failed.' }
+          $exe = Get-ChildItem 'src/MichelsLife/bin/Release' -Filter MichelsLife.exe -Recurse | Select-Object -First 1
+          if (-not $exe) { throw 'Compiled MichelsLife.exe not found.' }
+          Add-Type -AssemblyName System.Drawing
+          $icon = [System.Drawing.Icon]::ExtractAssociatedIcon($exe.FullName)
+          if (-not $icon -or $icon.Width -lt 16 -or $icon.Height -lt 16) {
+            throw 'MichelsLife.exe does not expose a valid Windows application icon.'
+          }
+          Write-Host "Windows icon OK: $($icon.Width)x$($icon.Height)"
