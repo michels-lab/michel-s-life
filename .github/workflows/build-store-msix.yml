@@ -81,7 +81,7 @@ jobs:
             if (-not $exe) { throw 'ImageMagick magick.exe not found.' }
             $magickPath = $exe.FullName
           } else { $magickPath = $magick.Source }
-          & $magickPath -background none 'branding/michels_life_logo.svg' -define icon:auto-resize=256,128,64,48,32,16 'src/MichelsLife/Assets/michels_life_icon.ico'
+          & $magickPath -background none 'branding/michels_life_logo.jpg' -define icon:auto-resize=256,128,64,48,32,16 'src/MichelsLife/Assets/michels_life_icon.ico'
           if ($LASTEXITCODE -ne 0) { throw 'App icon generation failed.' }
 
       - name: Prepare Store frontend bundle from canonical source
@@ -94,7 +94,7 @@ jobs:
           python tools/replace_bundle_index.py --bundle src/MichelsLife/AppBundle.zip --index src/MichelsLife/frontend/index.html
           python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source src/MichelsLife/frontend/i18n.js --arcname i18n.js
           python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source branding/michel_duarte_avatar.jpg --arcname assets/michel_duarte_avatar.jpg
-          python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source branding/michels_life_logo.svg --arcname assets/michels_life_logo.svg
+          python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source branding/michels_life_logo.jpg --arcname assets/michels_life_logo.jpg
           python tools/append_store_overlay.py --index src/MichelsLife/frontend/index.html --overlay src/MichelsLife/AppPatches/store-msix.html
           python tools/replace_bundle_index.py --bundle src/MichelsLife/AppBundle.zip --index src/MichelsLife/frontend/index.html
 
