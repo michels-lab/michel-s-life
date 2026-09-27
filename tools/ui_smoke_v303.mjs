@@ -40,7 +40,7 @@ try{
       imgCenter:ir.left+ir.width/2,titleCenter:tr.left+tr.width/2,subCenter:sr.left+sr.width/2,brandCenter:br.left+br.width/2
     };
   });
-  ok(logo.src==='assets/michels_life_logo.png','sidebar is not using the real celestial logo asset');
+  ok(logo.src==='assets/michels_life_logo.webp','sidebar is not using the real celestial logo asset');
   ok(logo.w>20&&logo.h>20&&logo.cw>=80&&logo.ch>=80&&logo.display!=='none'&&logo.visibility!=='hidden'&&logo.opacity!=='0','celestial sidebar logo is not visibly rendered');
   console.log('BRAND_GEOMETRY '+JSON.stringify(logo));
   ok(logo.direction==='column','Michel’s Life brand is not stacked vertically: '+JSON.stringify(logo));
