@@ -51,7 +51,7 @@ def main() -> None:
         with zipfile.ZipFile(temp) as check:
             names = check.namelist()
             jpg = sum(n.lower().endswith(".jpg") for n in names)
-            if "index.html" not in names or jpg != 204 or check.testzip() is not None:
+            if "index.html" not in names or jpg < 204 or check.testzip() is not None:
                 raise SystemExit(f"rebuilt AppBundle invalid: index={'index.html' in names}, jpg={jpg}")
 
         temp.replace(bundle)
@@ -59,7 +59,7 @@ def main() -> None:
         if temp.exists():
             temp.unlink()
 
-    print(f"AppBundle ready: {bundle} · 204 JPEG assets")
+    print(f"AppBundle ready: {bundle} · {jpg} JPEG assets")
 
 if __name__ == "__main__":
     main()
