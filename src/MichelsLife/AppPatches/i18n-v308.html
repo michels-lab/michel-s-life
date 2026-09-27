@@ -302,7 +302,9 @@ function cardMarkup(){
 }
 
 function mountCard(){
-  const pane=document.querySelector('[data-v30171-pane="general"]');
+  const generalButton=document.querySelector('[data-v30171-setting="general"]');
+  const pane=document.querySelector('[data-v30171-pane="general"]')||
+    (generalButton?.classList.contains('active')?document.querySelector('.v30171-settings-pane.active'):null);
   if(!pane)return;
   let card=pane.querySelector('[data-mlv-i18n-card]');
   if(!card){
