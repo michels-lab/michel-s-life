@@ -406,8 +406,7 @@ const originalText=new WeakMap();
 const originalAttrs=new WeakMap();
 const ATTRS=['title','placeholder','aria-label','data-tooltip'];
 
-function translateValue(value){
-  if(language!=='es')return value;
+function spanishValue(value){
   const trimmed=String(value??'').trim();
   if(!trimmed)return value;
   if(Object.prototype.hasOwnProperty.call(ES,trimmed)){
@@ -416,6 +415,9 @@ function translateValue(value){
     return left+ES[trimmed]+right;
   }
   return value;
+}
+function translateValue(value){
+  return language==='es'?spanishValue(value):value;
 }
 
 function shouldSkip(node){
@@ -435,11 +437,11 @@ function translateTextNode(node){
       return;
     }
     const base=originalText.get(node);
-    if(base&&current===translateValue(base))return;
+    if(base&&current===spanishValue(base))return;
     return;
   }
   const base=originalText.get(node);
-  if(base&&current===translateValue(base))node.nodeValue=base;
+  if(base&&current===spanishValue(base))node.nodeValue=base;
 }
 
 function translateAttrs(el){
@@ -458,7 +460,7 @@ function translateAttrs(el){
       continue;
     }
     const base=originals[attr];
-    if(base&&current===translateValue(base))el.setAttribute(attr,base);
+    if(base&&current===spanishValue(base))el.setAttribute(attr,base);
   }
 }
 
