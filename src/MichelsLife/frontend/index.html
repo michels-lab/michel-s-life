@@ -1953,7 +1953,7 @@ applyV133Theme();try{renderAll()}catch(err){console.error('v13.3 English fixes e
     map.forEach(([a,b])=>{next=next.split(a).join(b)});
     if(next!==text)node.nodeValue=next;
   }
-  function translateVisibleDOM(root=document.body){
+  function translateVisibleDOM(root=document.body){try{if((localStorage.getItem('michelsLife.language.v1')||navigator.language||'').toLowerCase().startsWith('es'))return;}catch(_){} 
     const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(n){return n.nodeValue&&/[áéíóúñÁÉÍÓÚÑ]|Misiones|Metas|Configuración|pendientes|monedas|Semanal|Diaria|Única/.test(n.nodeValue)?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT}});
     const nodes=[]; while(walker.nextNode())nodes.push(walker.currentNode);
     nodes.forEach(translateTextNode);
@@ -3192,7 +3192,7 @@ body.v144-noon #v140-sky{
     el.innerHTML=`<div class="status-block"><div class="status-time">${time}</div><div class="status-greeting">${t.emoji} ${t.greeting}, Michel · ${date} · ${t.sub}</div></div><div class="status-metrics"><div class="status-chip"><small>Today’s goals</small><b>${goals.done}/${goals.total}</b></div><div class="status-chip"><small>Today’s missions</small><b>${doneMissions}/${missions.length}</b></div><div class="status-chip"><small>Week</small><b>${week.pct}%</b></div><div class="status-chip"><small>Goal reset</small><b>${reset} d</b></div></div><div class="status-stage"><b>${esc(t.quote)}</b><span>${esc(t.label)} · ${esc(t.sub)}</span></div>`;
   };
 
-  function translateVisibleText(root=document.body){
+  function translateVisibleText(root=document.body){try{if((localStorage.getItem('michelsLife.language.v1')||navigator.language||'').toLowerCase().startsWith('es'))return;}catch(_){} 
     const pairs=[
       ['Estadísticas','Statistics'],['Lectura compacta de actividad real, no adornos.','Activity overview'],
       ['Última hora','Last hour'],['Últimas 3 horas','Last 3 hours'],['Últimas 24 h','Last 24 h'],
@@ -3999,7 +3999,7 @@ textarea::placeholder{
     "monedas":"coins"
   };
 
-  function translateVisibleText(){
+  function translateVisibleText(){try{if((localStorage.getItem('michelsLife.language.v1')||navigator.language||'').toLowerCase().startsWith('es'))return;}catch(_){} 
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
       acceptNode(node){
         const p=node.parentElement;
@@ -6849,7 +6849,7 @@ header + #v176StatusPanel{
 
 
 <script id="v178-force-english-date-script">
-(function(){
+(function(){try{if((localStorage.getItem('michelsLife.language.v1')||navigator.language||'').toLowerCase().startsWith('es'))return;}catch(_){} 
   function englishDate(){
     return new Date().toLocaleDateString('en-US', {
       weekday:'short',
@@ -17131,7 +17131,7 @@ body.ml-theme-ui [data-tab-panel="dashboard"] .v132-contract{
 (function(){
   function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
 
-  function patchCoreEnglishLabels(){
+  function patchCoreEnglishLabels(){try{if((localStorage.getItem('michelsLife.language.v1')||navigator.language||'').toLowerCase().startsWith('es'))return;}catch(_){} 
     try{
       if(typeof DAY_NAMES!=='undefined' && Array.isArray(DAY_NAMES)){
         ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach((v,i)=>DAY_NAMES[i]=v);
@@ -17201,7 +17201,7 @@ body.ml-theme-ui [data-tab-panel="dashboard"] .v132-contract{
     return out;
   }
 
-  function englishSweep(root=document.body){
+  function englishSweep(root=document.body){try{if((localStorage.getItem('michelsLife.language.v1')||navigator.language||'').toLowerCase().startsWith('es'))return;}catch(_){} 
     patchCoreEnglishLabels();
     if(!root) return;
     try{
@@ -24637,7 +24637,7 @@ body.ml-theme-ui .app,body.ml-theme-ui #app,.app,#app{position:relative!importan
     selflove:['I speak to myself with respect.','I do not need to earn my own kindness.','I choose myself without abandoning my goals.','My worth is not decided by someone else’s attention.'],
     culture:['Learning expands the life available to me.','Every page and new word compounds.','Curiosity is part of my discipline.','I make room for ideas beyond my routine.']
   };
-  function translateState(){
+  function translateState(){try{if((localStorage.getItem('michelsLife.language.v1')||navigator.language||'').toLowerCase().startsWith('es'))return;}catch(_){} 
     if(typeof state==='undefined'||!state)return false;
     const before=JSON.stringify({m:(state.missions||[]).map(function(x){return [x&&x.name,x&&x.description,x&&x.notes,x&&x.subcategory,x&&x.priority];}),g:(state.goals||[]).map(function(x){return [x&&x.name,x&&x.description,x&&x.notes,x&&x.unit,x&&x.measure];}),a:(state.affirmations||[]).map(function(x){return x&&x.text;})});
     (state.missions||[]).forEach(function(m){['name','description','notes','subcategory','priority'].forEach(function(k){if(typeof m[k]==='string')m[k]=translateExact(m[k]);});if(m.name)m.canonical=titleKey(m.name);});
@@ -24650,7 +24650,7 @@ body.ml-theme-ui .app,body.ml-theme-ui #app,.app,#app{position:relative!importan
     if(before!==after)saveSafe();
     return before!==after;
   }
-  function englishSweep(root){
+  function englishSweep(root){try{if((localStorage.getItem('michelsLife.language.v1')||navigator.language||'').toLowerCase().startsWith('es'))return;}catch(_){} 
     root=root||document.body;if(!root)return;
     root.querySelectorAll('input,textarea,[title],[aria-label],option').forEach(function(el){['placeholder','title','aria-label'].forEach(function(attr){if(el.hasAttribute&&el.hasAttribute(attr)){const old=el.getAttribute(attr),next=translateExact(old);if(next!==old)el.setAttribute(attr,next);}});if(el.tagName==='OPTION'){const next=translateExact(el.textContent);if(next!==el.textContent)el.textContent=next;}});
     const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:function(node){const p=node.parentElement;if(!p||['SCRIPT','STYLE','NOSCRIPT','TEXTAREA'].includes(p.tagName))return NodeFilter.FILTER_REJECT;return /[áéíóúñ¿¡]|\b(Misiones|Misión|Metas|Meta|Contratos|Contrato|Configuración|Estadísticas|Logros|Afirmaciones|Calendario|Pendientes|Completada|Activa hoy|Inactiva|Archivar|Eliminar|Duplicar|Editar|Guardar|Hoy|Ayer|Mañana|Fácil|Difícil|Media|Alta|Baja|Crítica)\b/i.test(node.nodeValue||'')?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT;}});
