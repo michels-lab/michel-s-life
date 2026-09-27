@@ -892,6 +892,36 @@ const PAIRS={
   "Night energy · sharper edges":"Energía nocturna · contornos más intensos",
   "Amber light · close the year well":"Luz ámbar · cierra bien el año",
   "Winter lights · year-end glow":"Luces de invierno · brillo de fin de año",
+  "Focus Mode":"Modo enfoque",
+  "Earlier today":"Más temprano hoy",
+  "Positive affirmations":"Afirmaciones positivas",
+  "Listen, read or write affirmations intentionally.":"Escucha, lee o escribe afirmaciones con intención.",
+  "Premium contracts":"Contratos Premium",
+  "Cloud needs attention":"La nube necesita atención",
+  "Use category shortcuts to find missions fast and add them to today.":"Usa los accesos por categoría para encontrar misiones rápido y agregarlas a hoy.",
+  "Time of day":"Hora del día",
+  "History":"Historial",
+  "Monthly and annual completion history.":"Historial mensual y anual de completados.",
+  "Write what deserves to remain from this day.":"Escribe lo que merece permanecer de este día.",
+  "Only days with actual writing are kept.":"Solo se conservan los días que realmente tienen texto.",
+  "No entries yet. Your first written day will appear here.":"Aún no hay entradas. Tu primer día escrito aparecerá aquí.",
+  "Active days":"Días activos",
+  "Journal days":"Días de diario",
+  "Closest achievements":"Logros más cercanos",
+  "View achievements":"Ver logros",
+  "Contracts, mission health, focus history and safe recovery in one place.":"Contratos, estado de misiones, historial de enfoque y recuperación segura en un solo lugar.",
+  "completed this week":"completadas esta semana",
+  "No projects yet. Create one for your thesis, Michel’s Life, home improvements or job search.":"Aún no hay proyectos. Crea uno para tu tesis, Michel’s Life, mejoras del hogar o búsqueda de empleo.",
+  "A chapter is global. Missions, XP, bosses, achievements and Focus blocks completed during its dates are collected automatically. Close it when the era ends; its summary becomes historical.":"Un capítulo es global. Las misiones, XP, jefes, logros y bloques de enfoque completados durante sus fechas se recopilan automáticamente. Ciérralo cuando termine la era; su resumen quedará en el historial.",
+  "A chapter is global. misiones, XP, bosses, achievements and Focus blocks completed during its dates are collected automatically. Close it when the era ends; its summary becomes historical.":"Un capítulo es global. Las misiones, XP, jefes, logros y bloques de enfoque completados durante sus fechas se recopilan automáticamente. Ciérralo cuando termine la era; su resumen quedará en el historial.",
+  "SETTINGS":"CONFIGURACIÓN",
+  "This clears completions, XP,, achievements and progress history. missions keep their archived and hidden state.":"Esto borra completados, XP, logros e historial de progreso. Las misiones conservan su estado archivado y oculto.",
+  "Smart notifications & contract links":"Notificaciones inteligentes y vínculos de contratos",
+  "At risk":"En riesgo",
+  "Tight":"Ajustado",
+  "pending now":"pendientes ahora",
+  "pending from earlier":"pendientes anteriores",
+  "later today":"más tarde hoy",
 };
 const REVERSE=Object.fromEntries(Object.entries(PAIRS).map(([en,es])=>[es,en]));
 
@@ -962,6 +992,49 @@ function mapText(raw){
     out=out.replace(/\bBosses & Quest Chains\b/g,'Jefes y cadenas de misiones');
     out=out.replace(/\bGolden shift · sharpen the routine\b/gi,'Transición dorada · afina la rutina');
     out=out.replace(/\bDo not call the day lost while there is still leverage\.\b/gi,'No des el día por perdido mientras todavía haya margen.');
+    out=out.replace(/\bStart Chapter\s+([IVXLCDM]+)\b/gi,'Iniciar Capítulo $1');
+    out=out.replace(/\bFocus Mode\b/gi,'Modo enfoque');
+    out=out.replace(/\b(\d+)\s+today\b/gi,'$1 hoy');
+    out=out.replace(/\b(\d+)\s+pending now\b/gi,'$1 pendientes ahora');
+    out=out.replace(/\b(\d+)\s+pending from earlier\b/gi,'$1 pendientes anteriores');
+    out=out.replace(/\b(\d+)\s+later today\b/gi,'$1 más tarde hoy');
+    out=out.replace(/\bEarlier today\b/gi,'Más temprano hoy');
+    out=out.replace(/\bPositive affirmations\b/gi,'Afirmaciones positivas');
+    out=out.replace(/\bPremium contracts\b/gi,'Contratos Premium');
+    out=out.replace(/\bAt risk · needs (\d+) actions? in (\d+) days?\b/gi,'En riesgo · necesita $1 acciones en $2 días');
+    out=out.replace(/\bAt risk · needs (\d+) actions? in 1 day\b/gi,'En riesgo · necesita $1 acciones en 1 día');
+    out=out.replace(/\bTight · needs one action per day\b/gi,'Ajustado · necesita una acción por día');
+    out=out.replace(/\bCloud needs attention\b/gi,'La nube necesita atención');
+    out=out.replace(/\bTime of day\b/gi,'Hora del día');
+    out=out.replace(/\bActive days\b/gi,'Días activos');
+    out=out.replace(/\bJournal days\b/gi,'Días de diario');
+    out=out.replace(/\bClosest achievements\b/gi,'Logros más cercanos');
+    out=out.replace(/\bView achievements\b/gi,'Ver logros');
+    out=out.replace(/\b(\d+)\s+days\b/gi,'$1 días');
+    out=out.replace(/\bcompleted this week\b/gi,'completadas esta semana');
+    out=out.replace(/\bmission per day\b/gi,'misión por día');
+    out=out.replace(/\bper day\b/gi,'por día');
+    out=out.replace(/\bweek\b/gi,'semana');
+    out=out.replace(/\btoday\b/gi,'hoy');
+    out=out.replace(/\bSunday\b/g,'domingo');
+    out=out.replace(/\bMonday\b/g,'lunes');
+    out=out.replace(/\bTuesday\b/g,'martes');
+    out=out.replace(/\bWednesday\b/g,'miércoles');
+    out=out.replace(/\bThursday\b/g,'jueves');
+    out=out.replace(/\bFriday\b/g,'viernes');
+    out=out.replace(/\bSaturday\b/g,'sábado');
+    out=out.replace(/\bJanuary\b/g,'enero');
+    out=out.replace(/\bFebruary\b/g,'febrero');
+    out=out.replace(/\bMarch\b/g,'marzo');
+    out=out.replace(/\bApril\b/g,'abril');
+    out=out.replace(/\bMay\b/g,'mayo');
+    out=out.replace(/\bJune\b/g,'junio');
+    out=out.replace(/\bJuly\b/g,'julio');
+    out=out.replace(/\bAugust\b/g,'agosto');
+    out=out.replace(/\bSeptember\b/g,'septiembre');
+    out=out.replace(/\bOctober\b/g,'octubre');
+    out=out.replace(/\bNovember\b/g,'noviembre');
+    out=out.replace(/\bDecember\b/g,'diciembre');
   }
   const partial=language==='es'?[
     [/\bDelete mission\b/g,'Eliminar misión'],[/\bCurrent Mission\b/g,'Misión actual'],
