@@ -31,6 +31,22 @@ try{
   await page.waitForSelector('.v30171-settings-pane.active [data-mlv-i18n-card]',{timeout:10000});
   await page.waitForTimeout(250);
 
+  const i18nTextCatalog=await page.evaluate(()=>{
+    const roots=[document.querySelector('#v30171Sidebar'),...document.querySelectorAll('[data-v30171-pane]')].filter(Boolean);
+    const values=new Set();
+    for(const root of roots){
+      const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+      let n;
+      while((n=w.nextNode())){
+        if(n.parentElement?.closest('script,style,textarea,pre,code'))continue;
+        const s=(n.nodeValue||'').replace(/\s+/g,' ').trim();
+        if(s&&s.length<=180)values.add(s);
+      }
+    }
+    return [...values].sort((a,b)=>a.localeCompare(b));
+  });
+  console.log('I18N_TEXT_CATALOG '+JSON.stringify(i18nTextCatalog));
+
   const installerLanguage=await page.evaluate(()=>({
     language:window.MLVI18nV308?.language||'',
     htmlLang:document.documentElement.lang,
