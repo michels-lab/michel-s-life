@@ -11,7 +11,7 @@ PROGRAM=ROOT/'src/MichelsLife/Program.cs'
 GOOGLE=ROOT/'src/MichelsLife/GoogleCalendarService.cs'
 SECRETS=ROOT/'src/MichelsLife/BuildSecrets.cs'
 FRONTEND=ROOT/'src/MichelsLife/frontend/index.html'
-LOGO=ROOT/'branding/michels_life_logo.svg'
+LOGO=ROOT/'branding/michels_life_logo.jpg'
 AVATAR=ROOT/'branding/michel_duarte_avatar.jpg'
 PROFILE=ROOT/'branding/developer-profile.json'
 LICENSE=ROOT/'LICENSE.txt'
@@ -45,7 +45,7 @@ for key,value in {
 frontend=read(FRONTEND)
 for marker in (
     "const VERSION='3.0.208'",
-    "assets/michels_life_logo.svg",
+    "assets/michels_life_logo.jpg",
     "assets/michel_duarte_avatar.jpg",
     "['typography','Aa','Typography'",
     "midnights:{name:'Midnights'",
@@ -65,7 +65,7 @@ for stale in ('3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207'):
 workflow_text='\n'.join(read(p) for p in WORKFLOWS)
 for forbidden in ('build_frontend_v30202.py','AppPatches/v3.0.202.html','branding/michels_life_mark.svg'):
     assert forbidden not in workflow_text, f'legacy frontend build dependency remains: {forbidden}'
-for required in ('src/MichelsLife/frontend/index.html','branding/michels_life_logo.svg','assets/michels_life_logo.svg'):
+for required in ('src/MichelsLife/frontend/index.html','branding/michels_life_logo.jpg','assets/michels_life_logo.jpg'):
     assert required in workflow_text, f'canonical build dependency missing: {required}'
 
 security='\n'.join(read(p) for p in (PROGRAM,GOOGLE,SECRETS,FRONTEND,PROFILE,LICENSE))
