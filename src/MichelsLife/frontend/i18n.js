@@ -737,6 +737,36 @@ const PAIRS={
   "Late night":"Noche tardía",
   "Today’s goals":"Metas de hoy",
   "Goal reset":"Reinicio de metas",
+  "No linked tasks · This contract has no active missions linked to it.":"Sin tareas vinculadas · Este contrato no tiene misiones activas vinculadas.",
+  "Choose priorities for tomorrow.":"Elige las prioridades para mañana.",
+  "Weekly reset in":"Reinicio semanal en",
+  "Clear this week":"Limpiar esta semana",
+  "Wash/fold clothes once this week.":"Lavar/doblar ropa una vez esta semana.",
+  "Reset room and desk once this week.":"Ordenar habitación y escritorio una vez esta semana.",
+  "Buy or plan essentials once this week.":"Comprar o planear básicos una vez esta semana.",
+  "Check money and expenses once this week.":"Revisar dinero y gastos una vez esta semana.",
+  "Train 5 days this week":"Entrenar 5 días esta semana",
+  "Log gym weights 3 times this week":"Registrar pesos del gym 3 veces esta semana",
+  "I choose clarity over noise.":"Elijo claridad sobre ruido.",
+  "My professional future is built through real preparation.":"Mi futuro profesional se construye con preparación real.",
+  "I am capable of entering bigger rooms.":"Soy capaz de entrar a espacios más grandes.",
+  "Science does not require perfect conditions.":"La ciencia no requiere condiciones perfectas.",
+  "My body responds to repetition.":"Mi cuerpo responde a la repetición.",
+  "Every set counts.":"Cada serie cuenta.",
+  "I do not chase what drains me.":"No persigo lo que me drena.",
+  "Not reacting is also power.":"No reaccionar también es poder.",
+  "My peace is not negotiable.":"Mi paz no se negocia.",
+  "Order gives my energy a direction.":"El orden le da dirección a mi energía.",
+  "My environment supports my execution.":"Mi entorno apoya mi ejecución.",
+  "Every expense I track gives me more control.":"Cada gasto que registro me da más control.",
+  "Financial stability is built through repeated decisions.":"La estabilidad financiera se construye con decisiones repetidas.",
+  "I do not need to earn my own kindness.":"No necesito ganarme mi propia amabilidad.",
+  "My worth is not decided by someone else’s attention.":"Mi valor no lo decide la atención de otra persona.",
+  "Learning expands the life available to me.":"Aprender expande la vida que tengo disponible.",
+  "Every page and new word compounds.":"Cada página y cada palabra nueva se acumulan.",
+  "I make room for ideas beyond my routine.":"Hago espacio para ideas más allá de mi rutina.",
+  "I finish what is in front of me.":"Termino lo que tengo enfrente.",
+  "My thesis moves when I work on it.":"Mi tesis avanza cuando trabajo en ella.",
 };
 const REVERSE=Object.fromEntries(Object.entries(PAIRS).map(([en,es])=>[es,en]));
 
@@ -758,6 +788,14 @@ function mapText(raw){
   if(dict[t]){
     const lead=s.slice(0,s.indexOf(t)),tail=s.slice(s.indexOf(t)+t.length);
     return lead+dict[t]+tail;
+  }
+  if(language==='es'){
+    const decorated=t.match(/^([^A-Za-zÁÉÍÓÚÑáéíóúñ0-9]*)(.*?)(\s*[→←]?)$/);
+    if(decorated&&decorated[2]&&dict[decorated[2]]){
+      const translated=decorated[1]+dict[decorated[2]]+decorated[3];
+      const at=s.indexOf(t);
+      return s.slice(0,at)+translated+s.slice(at+t.length);
+    }
   }
   let out=s;
   if(language==='es'){
@@ -784,7 +822,11 @@ function mapText(raw){
     [/\bNew phrase\b/g,'Nueva frase'],[/\bOpen affirmations\b/g,'Abrir afirmaciones'],
     [/\bAdded to Next Up\b/g,'Agregada a Siguientes'],[/\bAdded to today\b/g,'Agregada a hoy'],
     [/\bDone today\b/g,'Hecho hoy'],[/\bDone this week\b/g,'Hecho esta semana'],
-    [/\bDue today\b/g,'Vence hoy'],[/\bPending today\b/g,'Pendientes de hoy']
+    [/\bDue today\b/g,'Vence hoy'],[/\bPending today\b/g,'Pendientes de hoy'],
+    [/\bAffirmation\b/g,'Afirmación'],[/\bMissions\b/g,'Misiones'],[/\bPremium Contracts\b/g,'Contratos Premium'],
+    [/\bStatistics\b/g,'Estadísticas'],[/\bProjects\b/g,'Proyectos'],[/\bAchievements\b/g,'Logros'],
+    [/\bSettings\b/g,'Configuración'],[/\bNotifications\b/g,'Notificaciones'],
+    [/\bDashboard\b/g,'Inicio'],[/\bThis week\b/g,'Esta semana'],[/\bNew mission\b/g,'Nueva misión']
   ]:[
     [/\bMisión actual\b/g,'Current Mission'],[/\bEliminar misión\b/g,'Delete mission'],
     [/\bCompletada\b/g,'Completed'],[/\bHoy\b/g,'Today'],[/\bMañana\b/g,'Tomorrow'],
