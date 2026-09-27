@@ -13,8 +13,28 @@ await page.addInitScript(()=>{
   try{localStorage.setItem('michelsLife.onboarding.v30200','done')}catch(_){}
 });
 try{
-  await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
-  await page.waitForFunction(()=>window.LeftNavV30171&&document.querySelector('#v30171Sidebar'),null,{timeout:60000});
+  const languageUrl=url+(url.includes('?')?'&':'?')+'installerLang=es';
+  await page.goto(languageUrl,{waitUntil:'domcontentloaded',timeout:60000});
+  await page.waitForFunction(()=>window.LeftNavV30171&&window.MLVI18nV308&&document.querySelector('#v30171Sidebar'),null,{timeout:60000});
+
+  const installerLanguage=await page.evaluate(()=>({
+    language:window.MLVI18nV308?.language||'',
+    htmlLang:document.documentElement.lang,
+    stored:localStorage.getItem('michelsLife.language.v308')||'',
+    hasSpanishSettings:(document.body.innerText||'').includes('Configuración'),
+    hasSpanishChoice:!!document.querySelector('[data-mlv-lang="es"].active')
+  }));
+  ok(installerLanguage.language==='es'&&installerLanguage.htmlLang==='es'&&installerLanguage.stored==='es','Installer Spanish choice was not persisted: '+JSON.stringify(installerLanguage));
+  ok(installerLanguage.hasSpanishSettings&&installerLanguage.hasSpanishChoice,'Spanish UI did not render after installer selection: '+JSON.stringify(installerLanguage));
+
+  await page.evaluate(()=>window.MLVI18nV308.set('en',true));
+  await page.waitForFunction(()=>window.MLVI18nV308?.language==='en'&&localStorage.getItem('michelsLife.language.v308')==='en');
+  const switchedEnglish=await page.evaluate(()=>({
+    htmlLang:document.documentElement.lang,
+    hasEnglishSettings:(document.body.innerText||'').includes('Settings'),
+    hasEnglishChoice:!!document.querySelector('[data-mlv-lang="en"].active')
+  }));
+  ok(switchedEnglish.htmlLang==='en'&&switchedEnglish.hasEnglishSettings&&switchedEnglish.hasEnglishChoice,'In-app English override failed: '+JSON.stringify(switchedEnglish));
 
   await page.evaluate(()=>{
     try{
@@ -162,7 +182,7 @@ try{
   await page.waitForTimeout(600);
   await page.screenshot({path:`${out}/05-dashboard.png`,fullPage:true});
 
-  console.log(JSON.stringify({logo,typographyRoute,typographyPaletteCheck,headingFonts,avatar,chapterTarget:target,typography:'midnights',cloudPopups:cloudCount},null,2));
+  console.log(JSON.stringify({installerLanguage,switchedEnglish,logo,typographyRoute,typographyPaletteCheck,headingFonts,avatar,chapterTarget:target,typography:'midnights',cloudPopups:cloudCount},null,2));
 } finally {
   await browser.close();
 }
