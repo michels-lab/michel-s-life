@@ -1202,7 +1202,6 @@ function mapText(raw){
     out=out.replace(/\bMedium\b/gi,'Media');
     out=out.replace(/\bHard\b/gi,'Difícil');
     out=out.replace(/\bBoss\b/gi,'Jefe');
-    out=out.replace(/\bComplete\b/gi,'Completar');
     out=out.replace(/\bNext\s*#\s*(\d+)\b/gi,'Siguiente #$1');
     out=out.replace(/\bImage\s*\/\s*Presence\b/gi,'Imagen / presencia');
     out=out.replace(/\bMental strength\b/gi,'Fortaleza mental');
