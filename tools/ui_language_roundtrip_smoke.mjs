@@ -120,6 +120,29 @@ try{
   ok(probe.mapBreakfast==='Breakfast'&&probe.mapLunch==='Lunch'&&probe.mapWork==='Work'&&probe.mapHome==='Home'&&probe.mapDinner==='Dinner'&&probe.mapAfter==='After',
     'Known Spanish system defaults were not normalized in English mode: '+JSON.stringify(probe));
 
+  const dynamicEnglishProbe=await page.evaluate(()=>{
+    const tr=window.MichelsLifeI18n.mapText;
+    const inputs=[
+      'Tienes 2 misiones pendientes de ayer.',
+      'Tienes 1 misión pendiente de ayer.',
+      'Muévelas a hoy sin crear duplicados.',
+      'Mover todas sin duplicados',
+      'Una acción enfocada basta para cambiar cómo se lee el día.',
+      '🌇 Buenas tardes, Michel · lun, sep 28 · Una acción enfocada basta para cambiar cómo se lee el día.'
+    ];
+    return inputs.map(input=>({input,output:tr(input)}));
+  });
+  const expectedEnglish=[
+    'You have 2 pending missions from yesterday.',
+    'You have 1 pending mission from yesterday.',
+    'Move them to today without creating duplicates.',
+    'Move all without duplicates',
+    'One focused action is enough to change the reading of today.',
+    '🌇 Good afternoon, Michel · Mon, Sep 28 · One focused action is enough to change the reading of today.'
+  ];
+  ok(JSON.stringify(dynamicEnglishProbe.map(x=>x.output))===JSON.stringify(expectedEnglish),
+    'Dynamic English round-trip probe failed:\n'+JSON.stringify(dynamicEnglishProbe,null,2));
+
   console.log('OK: Spanish controls fit and Spanish -> English round-trip leaves no system Spanish residue');
 } finally {
   await browser.close();
