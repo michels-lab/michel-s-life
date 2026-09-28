@@ -43,6 +43,7 @@ for key,value in {
     assert profile.get(key)==value, f'bad developer profile: {key}'
 
 subprocess.run([sys.executable,str(ROOT/'tools/bump_frontend_version.py'),'--index',str(FRONTEND)],check=True)
+subprocess.run([sys.executable,str(ROOT/'tools/enable_i18n.py'),'--index',str(FRONTEND)],check=True)
 frontend=read(FRONTEND)
 for marker in (
     "const VERSION='3.0.210'",
@@ -55,6 +56,7 @@ for marker in (
     "function focusPane()",
     "Focus & Timers settings",
     "michelsLife.typography.v303",
+    "<script data-mlv-language-guard=\"v1\">",
     "<script src=\"i18n.js\" data-mlv-i18n=\"v1\"></script>",
 ):
     assert marker in frontend, f'missing canonical frontend source: {marker}'
