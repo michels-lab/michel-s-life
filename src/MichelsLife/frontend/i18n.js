@@ -24,6 +24,9 @@ const PAIRS={
   "Cinematic worlds used only by Current Chapter.":"Mundos cinematográficos usados solo por Current Chapter.",
   "Developer, license and build information.":"Información del desarrollador, licencia y versión.",
   "Personal Progress System":"Sistema de progreso personal",
+  "Add":"Agregar","All":"Todos","Start":"Iniciar",
+  "Example: Laundry":"Ejemplo: Lavar ropa",
+  "Easy · 25 XP":"Fácil · 25 XP","Medium · 50 XP":"Media · 50 XP","Hard · 75 XP":"Difícil · 75 XP","Boss · 100 XP":"Jefe · 100 XP",
   "Current Mission":"Misión actual","Start mission":"Iniciar misión","Start as Current Mission":"Iniciar como misión actual",
   "Delete mission":"Eliminar misión","Edit":"Editar","Add today":"Agregar hoy","Tomorrow":"Mañana",
   "Not today":"Hoy no","Duplicate":"Duplicar","Archive":"Archivar","Completed":"Completada",
@@ -1090,6 +1093,12 @@ function mapText(raw){
     out=out.replace(/\bRevisión\s+weekly\b/gi,'Revisión semanal');
     out=out.replace(/\bWeekly\s+Review\b/gi,'Revisión semanal');
     out=out.replace(/\bweekly\b/gi,'semanal');
+    out=out.replace(/\bAdd\s+semanal\b/gi,'Agregar semanal');
+    out=out.replace(/\bSchedule\s+for\s+([A-Za-zÁÉÍÓÚÑáéíóúñ.]+)/gi,'Programar para $1');
+    out=out.replace(/\bEasy(?=\s*·\s*\d+\s*XP)/gi,'Fácil');
+    out=out.replace(/\bMedium(?=\s*·\s*\d+\s*XP)/gi,'Media');
+    out=out.replace(/\bHard(?=\s*·\s*\d+\s*XP)/gi,'Difícil');
+    out=out.replace(/\bBoss(?=\s*·\s*\d+\s*XP)/gi,'Jefe');
     out=out.replace(/\bmissions\b/gi,'misiones');
     const wd={Sun:'dom',Mon:'lun',Tue:'mar',Wed:'mié',Thu:'jue',Fri:'vie',Sat:'sáb'};
     const mon={Jan:'ene',Feb:'feb',Mar:'mar',Apr:'abr',May:'may',Jun:'jun',Jul:'jul',Aug:'ago',Sep:'sep',Oct:'oct',Nov:'nov',Dec:'dic'};
@@ -1194,6 +1203,18 @@ function translateNode(node){
     if(el.hasAttribute?.(attr)){
       const old=el.getAttribute(attr),next=mapText(old);
       if(next!==old)el.setAttribute(attr,next);
+    }
+  }
+  if(language==='es'){
+    if(el.matches?.('.v169-day-btn[data-day]')){
+      const initials=['D','L','M','X','J','V','S'];
+      const idx=Number(el.getAttribute('data-day'));
+      if(Number.isInteger(idx)&&idx>=0&&idx<7&&el.textContent!==initials[idx])el.textContent=initials[idx];
+    }else if(el.matches?.('.v137-day-chip')){
+      const siblings=el.parentElement?[...el.parentElement.children].filter(x=>x.matches?.('.v137-day-chip')):[];
+      const idx=siblings.indexOf(el);
+      const initials=['L','M','X','J','V','S','D'];
+      if(idx>=0&&idx<7&&el.textContent!==initials[idx])el.textContent=initials[idx];
     }
   }
   [...el.childNodes].forEach(translateNode);
