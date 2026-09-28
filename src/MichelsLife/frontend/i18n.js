@@ -1220,6 +1220,8 @@ function mapText(raw){
     out=out.replace(/\bCulture\b/gi,'Cultura');
     out=out.replace(/\bTrain\s+5\s+días\s+esta\s+semana\b/gi,'Entrenar 5 días esta semana');
     out=out.replace(/\bLog gym weights\s+3\s+times\s+esta\s+semana\b/gi,'Registrar cargas del gimnasio 3 veces esta semana');
+    out=out.replace(/I become impossible to ignore because I keep showing up\./gi,'Me vuelvo imposible de ignorar porque sigo apareciendo y cumpliendo.');
+    out=out.replace(/(\d+\/\d+)\s+(?:missions|misiones)\s+today\s*·\s*(?:Week|Semana)\s+(\d+)%\s*·\s*Reset\s+([^\n]*)/gi,'$1 misiones hoy · Semana $2% · Reinicio $3');
     out=out.replace(/\bWeek\b/gi,'Semana');
     out=out.replace(/\bNo linked misiones\b/gi,'Sin misiones vinculadas');
     out=out.replace(/has no active (?:missions|misiones) connected to it\./gi,'no tiene misiones activas vinculadas.');
@@ -1388,20 +1390,12 @@ function setLanguage(next){
   refresh(document.body);
   window.dispatchEvent(new CustomEvent('michelslife:languagechange',{detail:{language:next}}));
 }
-let mutationFrame=0;
-const pendingMutations=[];
 const mo=new MutationObserver(records=>{
-  pendingMutations.push(...records);
-  if(mutationFrame)return;
-  mutationFrame=requestAnimationFrame(()=>{
-    mutationFrame=0;
-    const batch=pendingMutations.splice(0,pendingMutations.length);
-    for(const r of batch){
-      if(r.type==='characterData'||r.type==='attributes')translateNode(r.target);
-      for(const n of r.addedNodes)translateNode(n);
-    }
-    ensureLanguageControl();
-  });
+  for(const r of records){
+    if(r.type==='characterData'||r.type==='attributes')translateNode(r.target);
+    for(const n of r.addedNodes)translateNode(n);
+  }
+  ensureLanguageControl();
 });
 function init(){
   refresh(document.body);
@@ -1421,7 +1415,7 @@ function init(){
         }
       }catch(_){}
     });
-  },120);
+  },500);
 }
 let refreshTimer=0;
 function queueRefresh(){
