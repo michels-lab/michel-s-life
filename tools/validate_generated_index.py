@@ -35,6 +35,7 @@ required=(
     "function setChapter(id)",
     "data-mlv184-chapter",
     "© 2026 Michel Duarte / Michel’s Lab. All rights reserved.",
+    '<script data-mlv-language-guard="v1">',
     '<script src="i18n.js" data-mlv-i18n="v1"></script>',
 )
 for marker in required:
