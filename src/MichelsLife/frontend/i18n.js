@@ -93,6 +93,16 @@ const PAIRS={
   "Disabled":"Desactivado",
   "Main growth direction":"Dirección principal de crecimiento",
   "Weighted build radar":"Radar ponderado de progreso",
+  "Full Michel’s Life data, import and reset tools in one place.":"Todos los datos de Michel’s Life, junto con las herramientas de importación y restablecimiento, en un solo lugar.",
+  "No stalking / no chasing":"No vigilar / no perseguir",
+  "Do not act from anxiety or seek validation.":"No actúes desde la ansiedad ni busques validación.",
+  "Emotional Autonomy":"Autonomía emocional",
+  "Emotional Autonomy: 0/10":"Autonomía emocional: 0/10",
+  "Physical health":"Salud física",
+  "Physical health: 0/10":"Salud física: 0/10",
+  "Train arms":"Entrenar brazos",
+  "Weekly premium fitness contract.":"Contrato premium semanal de acondicionamiento físico.",
+  "Close with intention, not chaos.":"Cierra con intención, no con caos.",
   "Unassigned Focus":"Enfoque sin asignar",
   "Ready":"Listo",
   "Recent Focus":"Enfoque reciente",
@@ -1265,6 +1275,11 @@ function mapText(raw){
     out=out.replace(/\bNext\s*#\s*(\d+)\b/gi,'Siguiente #$1');
     out=out.replace(/\bImage\s*\/\s*Presence\b/gi,'Imagen / presencia');
     out=out.replace(/\bMental strength\b/gi,'Fortaleza mental');
+    out=out.replace(/\bPhysical health\b/gi,'Salud física');
+    out=out.replace(/\bEmotional Autonomy\b/gi,'Autonomía emocional');
+    out=out.replace(/\bTrain arms\b/gi,'Entrenar brazos');
+    out=out.replace(/\bNo stalking\s*\/\s*no chasing\b/gi,'No vigilar / no perseguir');
+    out=out.replace(/\bClose with intention, not chaos\.\b/gi,'Cierra con intención, no con caos.');
     out=out.replace(/\bPositive affirmation\s+7\s+(?:days|días)\b/gi,'Afirmación positiva 7 días');
     out=out.replace(/\bPlan(?:ear)?\s+(?:the|el)\s+day\s+5\s+times\b/gi,'Planear el día 5 veces');
     out=out.replace(/\bLegs and glutes\s+2\s+times\s+per\s+(?:week|Semana)\b/gi,'Piernas y glúteos 2 veces por semana');
