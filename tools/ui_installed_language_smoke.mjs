@@ -31,18 +31,11 @@ async function openGeneralSettings(page){
 }
 
 async function chooseLanguageLikeUser(page,value){
-  await page.evaluate(value=>{
-    const btn=[...document.querySelectorAll('[data-mlv-language-choice]')].find(el=>{
-      const cs=getComputedStyle(el),r=el.getBoundingClientRect();
-      return el.getAttribute('data-mlv-language-choice')===value &&
-        cs.display!=='none'&&cs.visibility!=='hidden'&&r.width>0&&r.height>0;
-    });
-    if(!btn)throw new Error('visible language choice not found: '+value);
-    btn.dispatchEvent(new PointerEvent('pointerdown',{
-      bubbles:true,cancelable:true,pointerType:'mouse',isPrimary:true
-    }));
-  },value);
+  const btn=page.locator(`[data-mlv-language-choice="${value}"]:visible`).first();
+  await btn.waitFor({state:'visible',timeout:10000});
+  await btn.click();
 }
+
 
 const browser=await chromium.launch({headless:true});
 try{
@@ -102,6 +95,13 @@ try{
   }));
   ok(spanishProbe.dashboard==='Inicio'&&spanishProbe.settings==='Configuración',
     'Spanish UI did not apply after Settings selection: '+JSON.stringify(spanishProbe));
+
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>window.MichelsLifeI18n,null,{timeout:60000});
+  await page.waitForTimeout(900);
+  s=await state(page);
+  ok(s.language==='es'&&s.htmlLang==='es'&&s.stored==='es',
+    'User-selected Spanish did not survive reload: '+JSON.stringify(s));
 
   await page.close();
 
