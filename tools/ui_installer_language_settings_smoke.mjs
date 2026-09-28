@@ -15,8 +15,11 @@ await page.addInitScript(()=>{
     localStorage.setItem('michelsLife.onboarding.v30200','done');
   }catch(_){}
   try{
-    Object.defineProperty(navigator,'language',{configurable:true,get:()=> 'es-MX'});
-    Object.defineProperty(navigator,'languages',{configurable:true,get:()=> ['es-MX','es']});
+    // Match the installed Windows host: installer explicitly says Spanish,
+    // while the browser/OS locale itself may still be English.
+    window.__MICHELSLIFE_INSTALL_LANGUAGE__='es';
+    Object.defineProperty(navigator,'language',{configurable:true,get:()=> 'en-US'});
+    Object.defineProperty(navigator,'languages',{configurable:true,get:()=> ['en-US','en']});
   }catch(_){}
 });
 
