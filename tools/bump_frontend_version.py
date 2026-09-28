@@ -2,8 +2,8 @@
 from pathlib import Path
 import argparse
 
-TARGET_VERSION = "3.0.210"
-PREVIOUS_VERSION = "3.0.209"
+TARGET_VERSION = "3.0.211"
+PREVIOUS_VERSIONS = ("3.0.210", "3.0.209")
 
 REQUIRED = (
     f"const VERSION='{TARGET_VERSION}'",
@@ -20,24 +20,28 @@ def main():
     text = path.read_text(encoding="utf-8")
 
     if all(marker in text for marker in REQUIRED):
-        if PREVIOUS_VERSION in text:
-            raise SystemExit(f"frontend already has {TARGET_VERSION} markers but still contains stale {PREVIOUS_VERSION}")
+        stale = [v for v in PREVIOUS_VERSIONS if v in text]
+        if stale:
+            raise SystemExit(f"frontend already has {TARGET_VERSION} markers but still contains stale versions: {stale}")
         print(f"frontend already at v{TARGET_VERSION}")
         return
 
-    if PREVIOUS_VERSION not in text:
-        raise SystemExit(f"frontend contains neither complete v{TARGET_VERSION} markers nor source v{PREVIOUS_VERSION}")
+    present = [v for v in PREVIOUS_VERSIONS if v in text]
+    if not present:
+        raise SystemExit(f"frontend contains neither complete v{TARGET_VERSION} markers nor a supported source version: {PREVIOUS_VERSIONS}")
 
-    text = text.replace(PREVIOUS_VERSION, TARGET_VERSION)
+    for previous in PREVIOUS_VERSIONS:
+        text = text.replace(previous, TARGET_VERSION)
 
     missing = [marker for marker in REQUIRED if marker not in text]
     if missing:
         raise SystemExit(f"frontend version bump incomplete; missing: {missing}")
-    if PREVIOUS_VERSION in text:
-        raise SystemExit(f"stale frontend version remains: {PREVIOUS_VERSION}")
+    stale = [v for v in PREVIOUS_VERSIONS if v in text]
+    if stale:
+        raise SystemExit(f"stale frontend versions remain: {stale}")
 
     path.write_text(text, encoding="utf-8", newline="\n")
-    print(f"bumped canonical frontend {PREVIOUS_VERSION} -> {TARGET_VERSION}")
+    print(f"bumped canonical frontend {present} -> {TARGET_VERSION}")
 
 if __name__ == "__main__":
     main()
