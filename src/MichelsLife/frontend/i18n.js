@@ -1721,9 +1721,19 @@ function init(){
     });
   },500);
 }
-document.addEventListener('change',event=>{
+// Keep the language selector isolated from Settings/global capture listeners.
+// stopPropagation does not cancel the select's native default action.
+for(const eventName of ['pointerdown','mousedown','click']){
+  window.addEventListener(eventName,event=>{
+    if(event.target?.closest?.('[data-mlv-language-select]')){
+      event.stopPropagation();
+    }
+  },true);
+}
+window.addEventListener('change',event=>{
   const target=event.target;
   if(target?.matches?.('[data-mlv-language-select]')){
+    event.stopPropagation();
     setLanguage(target.value,{userInitiated:true});
   }
 },true);
