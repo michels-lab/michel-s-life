@@ -1,0 +1,156 @@
+import { chromium } from 'playwright';
+
+const url=process.env.MLV_UI_URL||'http://127.0.0.1:4173';
+function ok(v,m){if(!v)throw new Error(m)}
+
+const browser=await chromium.launch({headless:true});
+const page=await browser.newPage({viewport:{width:1600,height:1000},deviceScaleFactor:1});
+
+await page.addInitScript(()=>{
+  try{
+    localStorage.setItem('michelsLife.onboarding.v30200','done');
+    localStorage.setItem('michelsLife.language.v1','es');
+  }catch(_){}
+});
+
+const uiEnglish=/\b(add|apply|archive|back|backup|cancel|capture|choose|clear|close|completed|connect|continue|create|current|dashboard|data|day|delete|disconnect|done|download|edit|english|export|focus|general|history|import|language|level|mission|missions|month|new|next|notification|notifications|open|pending|previous|project|projects|quick|ready|remove|reset|restore|save|select|settings|start|status|stop|story|sync|theme|themes|today|tomorrow|upload|week|weekly|year|yesterday)\b/i;
+const dateEnglish=/\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday|january|february|march|april|may|june|july|august|september|october|november|december)\b/i;
+const properAllow=[
+  /Michel.?s Life/i,/Google/i,/OpenFOAM/i,/Python/i,/Instagram/i,/LinkedIn/i,/XP\b/i,/OAuth/i,/Drive/i,/Pomodoro/i,/JSON/i,/RPG/i,
+  /Midnights/i,/Born to Die/i,/Paradise/i,/Ultraviolence/i,/Honeymoon/i,/Lust for Life/i,/Norman Fucking Rockwell/i,
+  /Chemtrails Over the Country Club/i,/Blue Banisters/i,/Did You Know That There.?s a Tunnel Under Ocean Blvd/i,
+  /The Tortured Poets Department/i,/The Life of a Showgirl/i,/folklore/i,/evermore/i,/reputation/i,/RED\b/i
+];
+
+function suspicious(s){
+  s=String(s||'').replace(/\s+/g,' ').trim();
+  if(!s||properAllow.some(r=>r.test(s)))return false;
+  return uiEnglish.test(s)||dateEnglish.test(s);
+}
+
+async function auditSurface(label){
+  await page.waitForTimeout(180);
+  const data=await page.evaluate(()=>{
+    function visible(el){
+      const cs=getComputedStyle(el),r=el.getBoundingClientRect();
+      return cs.display!=='none'&&cs.visibility!=='hidden'&&Number(cs.opacity)!==0&&r.width>0&&r.height>0;
+    }
+    const strings=[];
+    const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+    while(walker.nextNode()){
+      const n=walker.currentNode,p=n.parentElement;
+      if(!p||/^(SCRIPT|STYLE|CODE|PRE)$/i.test(p.tagName)||!visible(p))continue;
+      const s=(n.nodeValue||'').replace(/\s+/g,' ').trim();
+      if(s)strings.push({kind:'text',value:s,tag:p.tagName,cls:p.className||''});
+    }
+    for(const el of [...document.querySelectorAll('button,input,select,option,label,[role="button"],[title],[aria-label],[placeholder]')]){
+      if(!visible(el))continue;
+      const vals=[
+        ['control',(el.textContent||'').replace(/\s+/g,' ').trim()],
+        ['placeholder',el.getAttribute('placeholder')||''],
+        ['title',el.getAttribute('title')||''],
+        ['aria',el.getAttribute('aria-label')||'']
+      ];
+      if(el.tagName==='INPUT'&&['button','submit','reset'].includes((el.type||'').toLowerCase())) vals.push(['value',el.value||'']);
+      for(const [kind,value] of vals)if(value)strings.push({kind,value,tag:el.tagName,cls:el.className||''});
+    }
+    return strings;
+  });
+  const bad=[];
+  for(const x of data){
+    if(suspicious(x.value))bad.push(x);
+  }
+  return [...new Map(bad.map(x=>[x.kind+'|'+x.value,x])).values()].slice(0,120);
+}
+
+try{
+  await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
+  await page.waitForFunction(()=>window.LeftNavV30171&&window.MichelsLifeI18n&&document.querySelector('#v30171Sidebar'),null,{timeout:60000});
+  await page.evaluate(()=>window.MichelsLifeI18n.setLanguage('es'));
+  await page.waitForTimeout(400);
+
+  const dateProbe=await page.evaluate(()=>{
+    const tr=window.MichelsLifeI18n.mapText;
+    return {
+      months:['January','February','March','April','May','June','July','August','September','October','November','December'].map(tr),
+      weekdays:['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].map(tr),
+      weekdayAbbr:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(tr),
+      compound:tr('Monday, September 28')
+    };
+  });
+  ok(JSON.stringify(dateProbe.months)===JSON.stringify(['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']),'Month coverage failed: '+JSON.stringify(dateProbe));
+  ok(JSON.stringify(dateProbe.weekdays)===JSON.stringify(['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo']),'Weekday coverage failed: '+JSON.stringify(dateProbe));
+  ok(JSON.stringify(dateProbe.weekdayAbbr)===JSON.stringify(['lun','mar','mié','jue','vie','sáb','dom']),'Weekday abbreviation coverage failed: '+JSON.stringify(dateProbe));
+  ok(dateProbe.compound==='Lunes, Septiembre 28','Compound Spanish date failed: '+JSON.stringify(dateProbe));
+
+  const findings=new Map();
+  const routes=['dashboard','missions','contracts','calendar','journal','stats','compare','weekly-review','projects','achievements','affirmations','story','settings'];
+  for(const route of routes){
+    await page.evaluate(r=>window.LeftNavV30171.route(r),route);
+    await page.waitForTimeout(260);
+    await page.evaluate(()=>window.MichelsLifeI18n.refresh());
+    const bad=await auditSurface(route);
+    if(bad.length)findings.set(route,bad);
+
+    if(route==='missions'){
+      const initials=await page.evaluate(()=>{
+        function visible(el){const cs=getComputedStyle(el),r=el.getBoundingClientRect();return cs.display!=='none'&&cs.visibility!=='hidden'&&Number(cs.opacity)!==0&&r.width>0&&r.height>0}
+        return [...document.querySelectorAll('button,[role="button"],label,span,div')]
+          .filter(visible)
+          .map(el=>(el.textContent||'').replace(/\s+/g,' ').trim())
+          .filter(x=>/^[A-Za-zÁÉÍÓÚÑáéíóúñ]$/.test(x));
+      });
+      const englishSeq=['M','T','W','T','F','S','S'];
+      for(let i=0;i<=initials.length-7;i++){
+        if(initials.slice(i,i+7).join('|')===englishSeq.join('|')){
+          findings.set('missions:weekday-initials',[{kind:'weekday-initials',value:initials.slice(i,i+7).join(' '),tag:'sequence',cls:''}]);
+          break;
+        }
+      }
+    }
+  }
+
+  await page.evaluate(()=>window.LeftNavV30171.route('settings'));
+  await page.waitForSelector('[data-v30171-setting]',{timeout:10000});
+  const settings=await page.evaluate(()=>[...document.querySelectorAll('[data-v30171-setting]')].map(x=>x.dataset.v30171Setting));
+  for(const key of settings){
+    await page.evaluate(k=>document.querySelector('[data-v30171-setting="'+k+'"]')?.click(),key);
+    await page.waitForTimeout(220);
+    await page.evaluate(()=>window.MichelsLifeI18n.refresh());
+    const bad=await auditSurface('settings:'+key);
+    if(bad.length)findings.set('settings:'+key,bad);
+  }
+
+  const modalLaunches=[
+    {route:'missions',texts:['Nueva misión','Agregar una misión rápida','Captura rápida']},
+    {route:'contracts',texts:['Agregar contrato','Nuevo contrato']},
+    {route:'affirmations',texts:['Nueva frase']}
+  ];
+  for(const group of modalLaunches){
+    await page.evaluate(r=>window.LeftNavV30171.route(r),group.route);
+    await page.waitForTimeout(250);
+    for(const label of group.texts){
+      const clicked=await page.evaluate(label=>{
+        const els=[...document.querySelectorAll('button,[role="button"]')];
+        const el=els.find(x=>(x.textContent||'').replace(/\s+/g,' ').trim()===label);
+        if(!el)return false; el.click(); return true;
+      },label);
+      if(!clicked)continue;
+      await page.waitForTimeout(180);
+      await page.evaluate(()=>window.MichelsLifeI18n.refresh());
+      const bad=await auditSurface(group.route+':dialog:'+label);
+      if(bad.length)findings.set(group.route+':dialog:'+label,bad);
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(100);
+    }
+  }
+
+  if(findings.size){
+    const report=[...findings.entries()].map(([k,v])=>'['+k+']\n'+v.map(x=>'  - '+x.kind+': '+x.value).join('\n')).join('\n\n');
+    throw new Error('Exhaustive Spanish UI audit found untranslated UI:\n'+report);
+  }
+
+  console.log('OK: exhaustive Spanish UI audit passed routes, Settings, controls, attributes, dialogs and full date vocabulary');
+} finally {
+  await browser.close();
+}
