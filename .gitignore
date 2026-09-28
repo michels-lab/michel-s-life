@@ -18,3 +18,5 @@ Backups/
 Updates/
 src/MichelsLife/Program.cs
 src/MichelsLife/GoogleCalendarService.cs
+local-release/
+local-secrets/
