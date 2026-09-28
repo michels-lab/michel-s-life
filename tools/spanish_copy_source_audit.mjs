@@ -29,6 +29,22 @@ if(accentHits.length) fail('Likely missing Spanish accents:',[...new Set(accentH
 const badFormatting=spanishValues.filter(v=>/\s{2,}|\s+[,.!?;:]|[,;:]\s*[,;:]/.test(v));
 if(badFormatting.length) fail('Spanish copy has suspicious spacing/punctuation:',[...new Set(badFormatting)]);
 
+const missingOpeningQuestion=spanishValues.filter(v=>v.includes('?')&&!v.includes('¿'));
+if(missingOpeningQuestion.length) fail('Spanish questions missing opening ¿:',[...new Set(missingOpeningQuestion)]);
+
+const missingOpeningExclamation=spanishValues.filter(v=>v.includes('!')&&!v.includes('¡'));
+if(missingOpeningExclamation.length) fail('Spanish exclamations missing opening ¡:',[...new Set(missingOpeningExclamation)]);
+
+const agreementErrors=[
+  /\bel misión\b/i,/\bla capítulo\b/i,/\bun misión\b/i,/\buna capítulo\b/i,
+  /\blas misión\b/i,/\blos misión\b/i,/\blas contrato\b/i,/\blos afirmación\b/i,
+  /\besta capítulo\b/i,/\beste misión\b/i,/\bmisiones principal\b/i,
+  /\bmisiones vinculada\b/i,/\btareas vinculado\b/i,/\bdatos actual\b/i,
+  /\bmisiones completado\b/i
+];
+const agreementHits=spanishValues.filter(v=>agreementErrors.some(rx=>rx.test(v)));
+if(agreementHits.length) fail('Likely Spanish agreement errors:',[...new Set(agreementHits)]);
+
 const awkward=[
   'muy reactivo',
   'completada solo',
