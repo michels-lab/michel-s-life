@@ -24,9 +24,42 @@ const PAIRS={
   "Cinematic worlds used only by Current Chapter.":"Mundos cinematográficos usados solo por Current Chapter.",
   "Developer, license and build information.":"Información del desarrollador, licencia y versión.",
   "Personal Progress System":"Sistema de progreso personal",
-  "Add":"Agregar","All":"Todos","Start":"Iniciar",
+  "Add":"Agregar","All":"Todos","Start":"Iniciar","Open":"Abrir","Clear":"Limpiar","Restore":"Restaurar",
+  "Pending":"Pendientes","completed":"completadas",
   "Example: Laundry":"Ejemplo: Lavar ropa",
   "Easy · 25 XP":"Fácil · 25 XP","Medium · 50 XP":"Media · 50 XP","Hard · 75 XP":"Difícil · 75 XP","Boss · 100 XP":"Jefe · 100 XP",
+  "Mission library":"Biblioteca de misiones",
+  "No linked missions":"Sin misiones vinculadas",
+  "Create mission":"Crear misión",
+  "Dismiss today":"Ocultar hoy",
+  "Times this mission has been completed this week.":"Veces que esta misión se ha completado esta semana.",
+  "Do not show this kind of notification":"No mostrar este tipo de notificación",
+  "Open Focus timer":"Abrir temporizador de enfoque",
+  "Premium Contracts, linked missions and useful mission alerts.":"Contratos Premium, misiones vinculadas y alertas útiles de misiones.",
+  "Month completed":"Mes completado",
+  "Give this day a title…":"Dale un título a este día…",
+  "Last month":"Mes pasado",
+  "Next best action":"Siguiente mejor acción",
+  "Backup / Export":"Respaldo / Exportar",
+  "Next balancing move":"Siguiente acción de equilibrio",
+  "Create snapshot":"Crear snapshot",
+  "Contracts completed":"Contratos completados",
+  "Mission health":"Estado de las misiones",
+  "Mission Health":"Estado de las misiones",
+  "No mission health problems detected.":"No se detectaron problemas en las misiones.",
+  "Next Up":"Siguientes",
+  "Start a new chapter":"Iniciar un nuevo capítulo",
+  "Start date":"Fecha de inicio",
+  "Start chapter":"Iniciar capítulo",
+  "Finish the degree. Build the next version.":"Termina la maestría. Construye la siguiente versión.",
+  "Click to choose a date":"Haz clic para elegir una fecha",
+  "Notification intensity":"Intensidad de notificaciones",
+  "Data cleanup":"Limpieza de datos",
+  "English-only interface and default content":"Idioma de la interfaz y contenido predeterminado",
+  "Type RESET to confirm":"Escribe RESET para confirmar",
+  "Essential only":"Solo esenciales",
+  "Balanced":"Equilibrado",
+  "Coach mode":"Modo coach",
   "Current Mission":"Misión actual","Start mission":"Iniciar misión","Start as Current Mission":"Iniciar como misión actual",
   "Delete mission":"Eliminar misión","Edit":"Editar","Add today":"Agregar hoy","Tomorrow":"Mañana",
   "Not today":"Hoy no","Duplicate":"Duplicar","Archive":"Archivar","Completed":"Completada",
@@ -1100,6 +1133,33 @@ function mapText(raw){
     out=out.replace(/\bHard(?=\s*·\s*\d+\s*XP)/gi,'Difícil');
     out=out.replace(/\bBoss(?=\s*·\s*\d+\s*XP)/gi,'Jefe');
     out=out.replace(/This clears completions,[^.]*progress history\.\s*(?:missions|misiones) keep their archived and hidden state\./gi,'Esto borra los completados, XP, logros y el historial de progreso. Las misiones conservan su estado archivado y oculto.');
+    out=out.replace(/\bAdd\s+a\s+Siguientes\b/gi,'Agregar a Siguientes');
+    out=out.replace(/\bAdd\s+decisión\b/gi,'Agregar decisión');
+    out=out.replace(/\bAdd\s+afirmación\b/gi,'Agregar afirmación');
+    out=out.replace(/\bHora del día\s+for\s+/gi,'Hora del día para ');
+    out=out.replace(/\bPlan\s+tomorrow\b/gi,'Planear mañana');
+    out=out.replace(/\bCurrent stage:\s*/gi,'Etapa actual: ');
+    out=out.replace(/\bNight\b/gi,'Noche');
+    out=out.replace(/\bWeek\b/gi,'Semana');
+    out=out.replace(/\bNo linked misiones\b/gi,'Sin misiones vinculadas');
+    out=out.replace(/has no active (?:missions|misiones) connected to it\./gi,'no tiene misiones activas vinculadas.');
+    out=out.replace(/\bAutomatic\s+semanal\s+status based on linked misiones and remaining opportunities\./gi,'Estado semanal automático basado en las misiones vinculadas y las oportunidades restantes.');
+    out=out.replace(/\bMission\s+Hora del día\b/gi,'Hora del día de la misión');
+    out=out.replace(/\bmission\b/gi,'misión');
+    out=out.replace(/\bNotifications\b/gi,'Notificaciones');
+    out=out.replace(/\bNotification\b/gi,'Notificación');
+    out=out.replace(/\bpending\b/gi,'pendientes');
+    out=out.replace(/\bcompleted\b/gi,'completadas');
+    out=out.replace(/\b(\d+)%\s+to\s+next\b/gi,'$1% para el siguiente nivel');
+    out=out.replace(/\bAdd a quick misión for today…\b/gi,'Agregar una misión rápida para hoy…');
+    out=out.replace(/\bAdd a quick misión for today\.\.\.\b/gi,'Agregar una misión rápida para hoy…');
+    out=out.replace(/\bCreate misión\b/gi,'Crear misión');
+    out=out.replace(/\bStart a new chapter\b/gi,'Iniciar un nuevo capítulo');
+    out=out.replace(/\bStart date\b/gi,'Fecha de inicio');
+    out=out.replace(/\bStart chapter\b/gi,'Iniciar capítulo');
+    out=out.replace(/\bClick to choose a date\b/gi,'Haz clic para elegir una fecha');
+    out=out.replace(/\bOpen Focus timer\b/gi,'Abrir temporizador de enfoque');
+    out=out.replace(/\bDo not show this kind of notificación\b/gi,'No mostrar este tipo de notificación');
     out=out.replace(/\bmissions\b/gi,'misiones');
     const wd={Sun:'dom',Mon:'lun',Tue:'mar',Wed:'mié',Thu:'jue',Fri:'vie',Sat:'sáb'};
     const mon={Jan:'ene',Feb:'feb',Mar:'mar',Apr:'abr',May:'may',Jun:'jun',Jul:'jul',Aug:'ago',Sep:'sep',Oct:'oct',Nov:'nov',Dec:'dic'};
