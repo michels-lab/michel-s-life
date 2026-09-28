@@ -95,18 +95,21 @@ try{
     if(route==='missions'){
       const initials=await page.evaluate(()=>{
         function visible(el){const cs=getComputedStyle(el),r=el.getBoundingClientRect();return cs.display!=='none'&&cs.visibility!=='hidden'&&Number(cs.opacity)!==0&&r.width>0&&r.height>0}
-        return [...document.querySelectorAll('button,[role="button"],label,span,div')]
-          .filter(visible)
-          .map(el=>(el.textContent||'').replace(/\s+/g,' ').trim())
-          .filter(x=>/^[A-Za-zÁÉÍÓÚÑáéíóúñ]$/.test(x));
-      });
-      const englishSeq=['M','T','W','T','F','S','S'];
-      for(let i=0;i<=initials.length-7;i++){
-        if(initials.slice(i,i+7).join('|')===englishSeq.join('|')){
-          findings.set('missions:weekday-initials',[{kind:'weekday-initials',value:initials.slice(i,i+7).join(' '),tag:'sequence',cls:''}]);
-          break;
+        const scheduled=[...document.querySelectorAll('.v169-day-btn[data-day]')].filter(visible).map(el=>({day:Number(el.dataset.day),text:(el.textContent||'').trim(),title:el.getAttribute('title')||''}));
+        const chipGroups=[];
+        const parents=[...new Set([...document.querySelectorAll('.v137-day-chip')].filter(visible).map(el=>el.parentElement).filter(Boolean))];
+        for(const p of parents){
+          const chips=[...p.children].filter(el=>el.matches?.('.v137-day-chip')&&visible(el)).map(el=>(el.textContent||'').trim());
+          if(chips.length>=7)chipGroups.push(chips.slice(0,7));
         }
-      }
+        return {scheduled,chipGroups};
+      });
+      const byDay=['D','L','M','X','J','V','S'];
+      const badScheduled=initials.scheduled.filter(x=>x.day>=0&&x.day<7&&x.text!==byDay[x.day]);
+      if(badScheduled.length)findings.set('missions:scheduled-weekday-initials',badScheduled.map(x=>({kind:'weekday-initial',value:'day '+x.day+': '+x.text+' ('+x.title+')',tag:'button',cls:'v169-day-btn'})));
+      const mondayFirst=['L','M','X','J','V','S','D'];
+      const badGroups=initials.chipGroups.filter(g=>g.join('|')!==mondayFirst.join('|'));
+      if(badGroups.length)findings.set('missions:repeat-weekday-initials',badGroups.map(g=>({kind:'weekday-initials',value:g.join(' '),tag:'button-group',cls:'v137-day-chip'})));
     }
   }
 
