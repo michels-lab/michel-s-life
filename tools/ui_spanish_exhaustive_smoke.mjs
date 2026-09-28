@@ -13,7 +13,7 @@ await page.addInitScript(()=>{
   }catch(_){}
 });
 
-const uiEnglish=/\b(add|after|all|and|apply|archive|available|back|backup|before|breakfast|build|cancel|capture|change|choose|clear|close|completed|connect|continue|create|current|dashboard|data|date|day|delete|description|dinner|disconnect|done|download|edit|english|error|export|failed|finish|focus|for|from|history|home|import|important|inactive|language|last|level|linked|loading|lunch|gold|bar|main|mission|missions|month|new|next|notification|notifications|of|offline|on|open|optional|pending|previous|priority|profile|project|projects|quick|ready|reason|remove|reset|restore|retry|save|select|settings|show|start|status|stop|story|sync|the|theme|themes|this|time|title|today|tomorrow|upload|use|view|week|weekly|with|work|year|yesterday|you|your)\b/i;
+const uiEnglish=/\b(add|after|all|and|apply|archive|available|back|backup|before|breakfast|build|cancel|capture|change|choose|clear|close|completed|connect|continue|create|current|dashboard|data|date|day|delete|description|dinner|disconnect|done|download|edit|english|error|export|failed|finish|focus|for|from|history|home|import|important|inactive|language|last|level|linked|loading|lunch|gold|bar|main|mission|missions|month|move|new|next|notification|notifications|of|offline|on|open|optional|pending|previous|priority|profile|project|projects|quick|ready|reason|remove|reset|restore|retry|save|select|settings|show|start|status|stop|story|sync|the|without|duplicates|duplicate|focused|enough|reading|theme|themes|this|time|title|today|tomorrow|upload|use|view|week|weekly|with|work|year|yesterday|you|your)\b/i;
 const dateEnglish=/\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday|january|february|march|april|may|june|july|august|september|october|november|december)\b/i;
 const properAllow=[
   /Michel.?s Life/i,/Attack on Titan/i,/Google/i,/OpenFOAM/i,/Python/i,/Instagram/i,/LinkedIn/i,/XP\b/i,/OAuth/i,/Drive/i,/Pomodoro/i,/JSON/i,/RPG/i,
@@ -83,6 +83,37 @@ try{
   ok(JSON.stringify(dateProbe.weekdays)===JSON.stringify(['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo']),'Weekday coverage failed: '+JSON.stringify(dateProbe));
   ok(JSON.stringify(dateProbe.weekdayAbbr)===JSON.stringify(['lun','mar','mié','jue','vie','sáb','dom']),'Weekday abbreviation coverage failed: '+JSON.stringify(dateProbe));
   ok(dateProbe.compound==='Lunes, Septiembre 28','Compound Spanish date failed: '+JSON.stringify(dateProbe));
+
+  // Deterministic probes for dynamic/composite copy that may not be visible on
+  // every CI run because it depends on time of day or yesterday's mission state.
+  const dynamicProbe=await page.evaluate(()=>{
+    const tr=window.MichelsLifeI18n.mapText;
+    const inputs=[
+      'You have 2 pending missions from yesterday.',
+      'You have 1 pending mission from yesterday.',
+      'You have 2 pendientes misiones from yesterday.',
+      'Move them to today without creating duplicates.',
+      'Move them to hoy without creating duplicates.',
+      'Move all without duplicates',
+      'One focused action is enough to change the reading of today.',
+      'One focused action is enough to change the reading of hoy.',
+      '🌇 Good afternoon, Michel · Mon, Sep 28 · One focused action is enough to change the reading of today.'
+    ];
+    return inputs.map(input=>({input,output:tr(input)}));
+  });
+  const expectedDynamic=[
+    'Tienes 2 misiones pendientes de ayer.',
+    'Tienes 1 misión pendiente de ayer.',
+    'Tienes 2 misiones pendientes de ayer.',
+    'Muévelas a hoy sin crear duplicados.',
+    'Muévelas a hoy sin crear duplicados.',
+    'Mover todas sin duplicados',
+    'Una acción enfocada basta para cambiar cómo se lee el día.',
+    'Una acción enfocada basta para cambiar cómo se lee el día.',
+    '🌇 Buenas tardes, Michel · lun, sep 28 · Una acción enfocada basta para cambiar cómo se lee el día.'
+  ];
+  ok(JSON.stringify(dynamicProbe.map(x=>x.output))===JSON.stringify(expectedDynamic),
+    'Dynamic Spanish translation probe failed:\n'+JSON.stringify(dynamicProbe,null,2));
 
   const findings=new Map();
   const routes=['dashboard','missions','contracts','calendar','journal','stats','compare','weekly-review','projects','achievements','affirmations','story','settings'];
