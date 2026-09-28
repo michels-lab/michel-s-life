@@ -152,7 +152,7 @@ const PAIRS=extractObject(src,'PAIRS');
       toSpanish.push({
         id:'category-missions-'+cat+'-'+n,
         input:`Complete ${n} ${cat} missions.`,
-        expected:`Completa ${n} misiones de ${esCat}.`
+        expected:`Completa ${n} ${n===1?'misión':'misiones'} de ${esCat}.`
       });
     }
   }
