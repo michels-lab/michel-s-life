@@ -28,6 +28,15 @@ for name in ('Program.cs','GoogleCalendarService.cs'):
         raise SystemExit(f'{name} still contains stale app version markers: {stale}')
     if name=='Program.cs' and f'CurrentAppVersion = new("{APP_VERSION}")' not in text:
         raise SystemExit(f'Program.cs missing CurrentAppVersion {APP_VERSION}')
+    if name=='Program.cs':
+        lines=text.splitlines()
+        needles=('WebView2','CoreWebView2','EnsureCoreWebView2','Navigate','Source =')
+        hits=[i for i,line in enumerate(lines) if any(n in line for n in needles)]
+        for i in hits[:30]:
+            lo=max(0,i-2); hi=min(len(lines),i+3)
+            print('HOST_CONTEXT', i+1)
+            for j in range(lo,hi):
+                print(f'{j+1:04d}: {lines[j]}')
     data=text.encode('utf-8')
     (ROOT/name).write_bytes(data)
     print('materialized',name)
