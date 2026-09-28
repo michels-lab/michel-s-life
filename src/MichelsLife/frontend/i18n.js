@@ -1162,6 +1162,19 @@ const PAIRS={
   "Organize the desk 3 times":"Organizar el escritorio 3 veces",
   "Review debt / savings 1 time":"Revisar deuda / ahorro 1 vez",
   "Take care of the marmot 1 time":"Cuidar a la marmota 1 vez",
+  "Journal entry":"Entrada de diario",
+  "Personal Journal":"Diario personal",
+  "Write freely…":"Escribe libremente…",
+  "Nothing saved yet":"Nada guardado aún",
+  "Saving…":"Guardando…",
+  "Nothing saved":"Nada guardado",
+  "word":"palabra",
+  "words":"palabras",
+  "Past entries":"Entradas anteriores",
+  "Open Journal entry":"Abrir entrada del diario",
+  "Seasonal panel":"Panel estacional",
+  "Canvas-driven animated month scene.":"Escena mensual animada mediante canvas.",
+  "Animated decoration off":"Decoración animada desactivada",
 };
 const SPANISH_SYSTEM_DEFAULTS={
   "Read 30 minutes at night 3 times":"Leer 30 minutos de noche 3 veces",
@@ -1935,21 +1948,8 @@ function setLanguage(next,{userInitiated=false}={}){
     restoreEnglishWeekdayInitials();
   }
 
-  const apply=()=>{
-    if(next==='en'){
-      restoreTranslatedNode(document.body);
-      restoreEnglishWeekdayInitials();
-      document.documentElement.lang='en';
-      ensureLanguageControl();
-      updateLanguageControls();
-    }else{
-      refresh(document.body);
-    }
-  };
-  apply();
-  setTimeout(apply,40);
-  setTimeout(apply,180);
-  setTimeout(apply,520);
+  document.documentElement.lang=next;
+  refresh(document.body);
   window.dispatchEvent(new CustomEvent('michelslife:languagechange',{detail:{language:next}}));
 }
 const mo=new MutationObserver(records=>{
@@ -1962,35 +1962,8 @@ const mo=new MutationObserver(records=>{
 function init(){
   refresh(document.body);
   mo.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['title','aria-label','placeholder']});
-  setInterval(()=>{
-    if(language!=='es')return;
-    const badge=document.getElementById('mlv197CloudBadge');
-    if(badge)translateNode(badge);
-
-    // Some live panels rewrite their labels after initial render. Re-translate only
-    // visible app surfaces so dynamic counters/statuses cannot fall back to English.
-    document.querySelectorAll('[id^="tab-"],[role="dialog"],.modal,.drawer').forEach(el=>{
-      try{
-        const cs=getComputedStyle(el),r=el.getBoundingClientRect();
-        if(cs.display!=='none'&&cs.visibility!=='hidden'&&Number(cs.opacity)!==0&&r.width>0&&r.height>0){
-          translateNode(el);
-          fitTranslatedControls(el);
-        }
-      }catch(_){}
-    });
-  },500);
 }
-let refreshTimer=0;
-function queueRefresh(event){
-  if(event?.target?.closest?.('[data-mlv-language-choice]'))return;
-  clearTimeout(refreshTimer);
-  refreshTimer=setTimeout(()=>refresh(document.body),30);
-  setTimeout(()=>refresh(document.body),140);
-  setTimeout(()=>refresh(document.body),520);
-}
-document.addEventListener('click',queueRefresh,true);
-document.addEventListener('change',queueRefresh,true);
-window.addEventListener('michelslife:uiupdated',queueRefresh);
+window.addEventListener('michelslife:uiupdated',()=>refresh(document.body));
 window.MichelsLifeI18n={get language(){return language},setLanguage,getLanguage,applyInstalledLanguage,refresh,mapText};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
