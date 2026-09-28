@@ -25,7 +25,9 @@ const properAllow=[
 function suspicious(s){
   s=String(s||'').replace(/\s+/g,' ').trim();
   if(!s||properAllow.some(r=>r.test(s)))return false;
-  return uiEnglish.test(s)||dateEnglish.test(s);
+  // RESET is an intentional literal confirmation command, not interface copy.
+  const scan=s.replace(/\bRESET\b/g,'');
+  return uiEnglish.test(scan)||dateEnglish.test(scan);
 }
 
 async function auditSurface(label){
