@@ -3,6 +3,7 @@
 if(window.MichelsLifeI18n)return;
 
 const KEY='michelsLife.language.v1';
+const USER_OVERRIDE_BASE_KEY='michelsLife.language.userOverrideBase.v1';
 const PAIRS={
   "Dashboard":"Inicio","Missions":"Misiones","Premium Contracts":"Contratos Premium","Calendar":"Calendario",
   "Statistics":"Estadísticas","Projects":"Proyectos","Achievements":"Logros","Affirmations":"Afirmaciones",
@@ -1147,8 +1148,18 @@ function installedDefault(){
   return n.startsWith('es')?'es':'en';
 }
 function getLanguage(){
-  try{const v=localStorage.getItem(KEY);if(v==='en'||v==='es')return v}catch(_){}
-  return installedDefault();
+  const installed=installedDefault();
+  try{
+    const stored=localStorage.getItem(KEY);
+    const overrideBase=localStorage.getItem(USER_OVERRIDE_BASE_KEY);
+    // A preference is trusted only when it was explicitly chosen by the user
+    // against the same installer/browser language. Old/stale localStorage from
+    // previous installations must not override a newly selected installer language.
+    if((stored==='en'||stored==='es')&&overrideBase===installed)return stored;
+    localStorage.setItem(KEY,installed);
+    localStorage.removeItem(USER_OVERRIDE_BASE_KEY);
+  }catch(_){}
+  return installed;
 }
 let language=getLanguage();
 
@@ -1533,7 +1544,6 @@ function ensureLanguageControl(){
   pane.prepend(card);
   const sel=card.querySelector('[data-mlv-language-select]');
   sel.value=language;
-  sel.addEventListener('change',()=>setLanguage(sel.value));
   translateNode(card);
 }
 function ensureTranslationFitStyles(){
@@ -1582,10 +1592,13 @@ function refresh(root=document.body){
   document.querySelectorAll('[data-mlv-language-select]').forEach(s=>s.value=language);
   requestAnimationFrame(()=>fitTranslatedControls(document));
 }
-function setLanguage(next){
+function setLanguage(next,{userInitiated=false}={}){
   if(next!=='en'&&next!=='es')return;
   language=next;
-  try{localStorage.setItem(KEY,next)}catch(_){}
+  try{
+    localStorage.setItem(KEY,next);
+    if(userInitiated)localStorage.setItem(USER_OVERRIDE_BASE_KEY,installedDefault());
+  }catch(_){}
 
   if(next==='en'){
     // Restore only values previously changed by this translation layer.
@@ -1643,6 +1656,13 @@ function init(){
     });
   },500);
 }
+document.addEventListener('change',event=>{
+  const target=event.target;
+  if(target?.matches?.('[data-mlv-language-select]')){
+    setLanguage(target.value,{userInitiated:true});
+  }
+},true);
+
 let refreshTimer=0;
 function queueRefresh(){
   clearTimeout(refreshTimer);
