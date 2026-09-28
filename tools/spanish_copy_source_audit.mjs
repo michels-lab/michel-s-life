@@ -35,15 +35,16 @@ const awkward=[
   'misiones Principal',
   'agregarlas a hoy',
   'Semana actual hasta ahora',
-  'Completado manual',
   'Contado hoy',
   'de la app',
   'la app',
   'Restablecer app',
   'App restablecida'
 ];
+const awkwardExact=new Set(['Completado manual']);
 const awkwardHits=[];
 for(const value of spanishValues){
+  if(awkwardExact.has(value)) awkwardHits.push(value);
   for(const phrase of awkward){
     if(value.includes(phrase)) awkwardHits.push(value);
   }
