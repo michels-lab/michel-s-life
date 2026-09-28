@@ -42,13 +42,25 @@ for name in ('Program.cs','GoogleCalendarService.cs'):
                 ? "es"
                 : "en";
             var installerLanguageJson = System.Text.Json.JsonSerializer.Serialize(installerLanguage);
-            await _webView.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(
-                $"window.__MICHELSLIFE_INSTALL_LANGUAGE__={installerLanguageJson};"
-            );
+            var installerLanguageScript =
+                $"window.__MICHELSLIFE_INSTALL_LANGUAGE__={installerLanguageJson};" +
+                $"window.MichelsLifeI18n&&window.MichelsLifeI18n.applyInstalledLanguage&&window.MichelsLifeI18n.applyInstalledLanguage({installerLanguageJson});";
+            await _webView.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(installerLanguageScript);
+            try
+            {
+                await _webView.CoreWebView2.ExecuteScriptAsync(installerLanguageScript);
+            }
+            catch
+            {
+                // The first document may not exist yet. The document-created script
+                // above will apply the installer language on the next navigation.
+            }
 '''
         text=text.replace(webview_anchor,webview_anchor+language_bridge)
         if '__MICHELSLIFE_INSTALL_LANGUAGE__' not in text:
             raise SystemExit('Program.cs installer-language bridge injection failed')
+        if 'applyInstalledLanguage' not in text or 'ExecuteScriptAsync(installerLanguageScript)' not in text:
+            raise SystemExit('Program.cs installer-language bridge is missing the late-document reconciliation path')
     data=text.encode('utf-8')
     (ROOT/name).write_bytes(data)
     print('materialized',name)
