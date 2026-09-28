@@ -1362,7 +1362,7 @@ function mapText(raw){
       const at=out.indexOf(trimmed);
       out=out.slice(0,at)+exactReverse+out.slice(at+trimmed.length);
     }
-    for(const [legacySpanish,canonicalEnglish] of Object.entries(ENGLISH_SYSTEM_DEFAULTS)){
+    for(const [legacySpanish,canonicalEnglish] of Object.entries(ENGLISH_SYSTEM_DEFAULTS).sort((a,b)=>b[0].length-a[0].length)){
       if(out.includes(legacySpanish))out=out.split(legacySpanish).join(canonicalEnglish);
     }
     out=restoreEnglishDateCopy(out);
@@ -1385,7 +1385,7 @@ function mapText(raw){
   if(language==='es'){
     out=normalizeDynamicSystemCopy(out,'es');
     out=replaceEmbeddedSystemPhrases(out,'es');
-    for(const [canonicalEnglish,spanishDefault] of Object.entries(SPANISH_SYSTEM_DEFAULTS)){
+    for(const [canonicalEnglish,spanishDefault] of Object.entries(SPANISH_SYSTEM_DEFAULTS).sort((a,b)=>b[0].length-a[0].length)){
       if(out.includes(canonicalEnglish))out=out.split(canonicalEnglish).join(spanishDefault);
     }
     out=out.replace(/\bAll\s+(\d+)\b/gi,'Todos $1');
