@@ -451,6 +451,9 @@ const PAIRS={
   "First Contract":"Primer contrato",
   "You have":"Tienes",
   "Move them to today without duplicating existing tasks.":"Muévelas a hoy sin duplicar tareas existentes.",
+  "Move them to today without creating duplicates.":"Muévelas a hoy sin crear duplicados.",
+  "Move all without duplicates":"Mover todas sin duplicados",
+  "Do not move anything":"No mover nada",
   "Choose which ones":"Elegir cuáles",
   "Today’s missions":"Misiones de hoy",
   "Today +":"Hoy +",
@@ -1179,6 +1182,77 @@ const SPANISH_SYSTEM_DEFAULTS={
 
 const REVERSE=Object.fromEntries(Object.entries(PAIRS).map(([en,es])=>[es,en]));
 
+// Long system phrases can appear inside a larger dynamic node (greeting + date +
+// message, counters + labels, etc.). Translate those phrases before individual
+// word substitutions so we never manufacture mixed-language sentences.
+const EMBEDDED_SYSTEM_PAIRS=Object.entries(PAIRS)
+  .filter(([en])=>/[.!?]/.test(en)||en.trim().split(/\s+/).length>=4)
+  .sort((a,b)=>b[0].length-a[0].length);
+
+function replaceEmbeddedSystemPhrases(value,targetLanguage){
+  let out=String(value);
+  const pairs=targetLanguage==='es'
+    ? EMBEDDED_SYSTEM_PAIRS
+    : EMBEDDED_SYSTEM_PAIRS.map(([en,es])=>[es,en]).sort((a,b)=>b[0].length-a[0].length);
+  for(const [from,to] of pairs){
+    if(from&&out.includes(from))out=out.split(from).join(to);
+  }
+  return out;
+}
+
+function normalizeDynamicSystemCopy(value,targetLanguage){
+  let out=String(value);
+  if(targetLanguage==='es'){
+    out=out.replace(
+      /(?:You have|Tienes)\s+(\d+)\s+(?:(?:pending|pendiente|pendientes)\s+)?(?:mission|missions|misión|misiones)\s+(?:from yesterday|de ayer)\.?/gi,
+      (_,n)=>`Tienes ${n} ${Number(n)===1?'misión pendiente':'misiones pendientes'} de ayer.`
+    );
+    out=out.replace(
+      /(?:Move them to|Muévelas a)\s+(?:today|hoy)\s+(?:without creating duplicates|without duplicating existing tasks|sin crear duplicados|sin duplicar tareas existentes)\.?/gi,
+      'Muévelas a hoy sin crear duplicados.'
+    );
+    out=out.replace(/(?:Move all|Mover todas)\s+(?:without duplicates|sin duplicados)/gi,'Mover todas sin duplicados');
+    out=out.replace(/(?:Do not move anything|No mover nada)/gi,'No mover nada');
+    // Repair already-corrupted mixed nodes from earlier translation passes.
+    out=out.replace(/One focused action is enough to change the reading of (?:today|hoy)\./gi,'Una acción enfocada basta para cambiar cómo se lee el día.');
+    return out;
+  }
+
+  out=out.replace(
+    /(?:Tienes|You have)\s+(\d+)\s+(?:(?:misión|misiones|mission|missions)\s+)?(?:pendiente|pendientes|pending)?\s*(?:de ayer|from yesterday)\.?/gi,
+    (_,n)=>`You have ${n} pending ${Number(n)===1?'mission':'missions'} from yesterday.`
+  );
+  out=out.replace(
+    /(?:Muévelas a|Move them to)\s+(?:hoy|today)\s+(?:sin crear duplicados|sin duplicar tareas existentes|without creating duplicates|without duplicating existing tasks)\.?/gi,
+    'Move them to today without creating duplicates.'
+  );
+  out=out.replace(/(?:Mover todas|Move all)\s+(?:sin duplicados|without duplicates)/gi,'Move all without duplicates');
+  out=out.replace(/(?:No mover nada|Do not move anything)/gi,'Do not move anything');
+  out=out.replace(/Una acción enfocada basta para cambiar cómo se lee el día\./gi,'One focused action is enough to change the reading of today.');
+  return out;
+}
+
+function restoreEnglishDateCopy(value){
+  let out=String(value);
+  const full=[
+    ['domingo','Sunday'],['lunes','Monday'],['martes','Tuesday'],['miércoles','Wednesday'],['jueves','Thursday'],['viernes','Friday'],['sábado','Saturday'],
+    ['enero','January'],['febrero','February'],['marzo','March'],['abril','April'],['mayo','May'],['junio','June'],['julio','July'],['agosto','August'],['septiembre','September'],['octubre','October'],['noviembre','November'],['diciembre','December']
+  ];
+  for(const [es,en] of full)out=out.replace(new RegExp('\\b'+es+'\\b','gi'),en);
+  const abbr=[
+    ['lun','Mon'],['mié','Wed'],['jue','Thu'],['vie','Fri'],['sáb','Sat'],['dom','Sun'],
+    ['ene','Jan'],['feb','Feb'],['abr','Apr'],['may','May'],['jun','Jun'],['jul','Jul'],['ago','Aug'],['sep','Sep'],['oct','Oct'],['nov','Nov'],['dic','Dec']
+  ];
+  for(const [es,en] of abbr)out=out.replace(new RegExp('\\b'+es+'\\b','gi'),en);
+  // "mar" is ambiguous: Tuesday when followed by a comma, March when followed by a date.
+  out=out.replace(/\bmar(?=\s*,)/gi,'Tue').replace(/\bmar(?=\s+\d)/gi,'Mar');
+  out=out.replace(/\bBuenos días\b/gi,'Good morning');
+  out=out.replace(/\bBuenas tardes\b/gi,'Good afternoon');
+  out=out.replace(/\bBuenas noches\b/gi,'Good evening');
+  out=out.replace(/\bNoche tardía\b/gi,'Late night');
+  return out;
+}
+
 // Narrow normalization for legacy/default system content that is already
 // Spanish in the base bundle. This is intentionally NOT a general reverse
 // translator, so user-authored Spanish remains untouched in English mode.
@@ -1269,21 +1343,22 @@ function mapText(raw){
   // arbitrary Spanish text, because it may be user-authored data. Only known
   // legacy/default system content is normalized back to its English source.
   if(language==='en'){
-    // Recover exact canonical English for known system labels even when the app
-    // rerendered them as fresh Spanish nodes and the WeakMap original was lost.
-    // Exact-match reversal avoids rewriting arbitrary user-authored Spanish prose.
-    const exactReverse=REVERSE[t]||ENGLISH_SYSTEM_DEFAULTS[t];
+    // Recover canonical English even when dynamic UI recreated a fresh node after
+    // Spanish mode. Normalize whole system sentences first, then embedded stock
+    // phrases, then exact labels and date/greeting vocabulary.
+    let out=normalizeDynamicSystemCopy(s,'en');
+    out=replaceEmbeddedSystemPhrases(out,'en');
+    const trimmed=out.trim();
+    const exactReverse=REVERSE[trimmed]||ENGLISH_SYSTEM_DEFAULTS[trimmed];
     if(exactReverse){
-      const at=s.indexOf(t);
-      return s.slice(0,at)+exactReverse+s.slice(at+t.length);
+      const at=out.indexOf(trimmed);
+      out=out.slice(0,at)+exactReverse+out.slice(at+trimmed.length);
     }
     for(const [legacySpanish,canonicalEnglish] of Object.entries(ENGLISH_SYSTEM_DEFAULTS)){
-      const at=s.indexOf(legacySpanish);
-      if(at>=0){
-        return s.slice(0,at)+canonicalEnglish+s.slice(at+legacySpanish.length);
-      }
+      if(out.includes(legacySpanish))out=out.split(legacySpanish).join(canonicalEnglish);
     }
-    return s;
+    out=restoreEnglishDateCopy(out);
+    return out;
   }
   const dict=PAIRS;
   if(dict[t]){
@@ -1300,6 +1375,8 @@ function mapText(raw){
   }
   let out=s;
   if(language==='es'){
+    out=normalizeDynamicSystemCopy(out,'es');
+    out=replaceEmbeddedSystemPhrases(out,'es');
     for(const [canonicalEnglish,spanishDefault] of Object.entries(SPANISH_SYSTEM_DEFAULTS)){
       if(out.includes(canonicalEnglish))out=out.split(canonicalEnglish).join(spanishDefault);
     }
