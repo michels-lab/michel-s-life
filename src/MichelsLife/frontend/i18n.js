@@ -1196,10 +1196,7 @@ const EMBEDDED_SYSTEM_PAIRS=Object.entries(PAIRS)
 const PAIR_KEYS_CASEFOLD=new Map(Object.keys(PAIRS).map(k=>[k.toLocaleLowerCase('en-US'),k]));
 
 function escapeI18nRegExp(value){
-  return String(value).replace(/[.*+?^$()|[\]\\]/g,'\\const EMBEDDED_SYSTEM_PAIRS=Object.entries(PAIRS)
-  .filter(([en])=>/[.!?]/.test(en)||en.trim().split(/\s+/).length>=4)
-  .sort((a,b)=>b[0].length-a[0].length);
-');
+  return String(value).replace(/[\\^$.*+?()[\]{}|]/g,'\\$&');
 }
 
 // Legacy UI can contain a known system sentence with only a few tokens already
