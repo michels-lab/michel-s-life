@@ -1262,6 +1262,8 @@ function mapText(raw){
     out=out.replace(/\bFocus\s+misión\b/gi,'Misión de enfoque');
     out=out.replace(/\bPlayer\b/g,'Jugador');
     out=out.replace(/\bavailable\b/gi,'disponible');
+    out=out.replace(/Controls active\s+semanal\s+day chips,/gi,'Controla los botones activos de los días semanales,');
+    out=out.replace(/\band premium badges\./gi,'y las insignias Premium.');
     out=out.replace(/I become impossible to ignore because I keep showing up\./gi,'Me vuelvo imposible de ignorar porque sigo apareciendo y cumpliendo.');
     out=out.replace(/(\d+\/\d+)\s+(?:missions|misiones)\s+today\s*·\s*(?:Week|Semana)\s+(\d+)%\s*·\s*Reset\s+([^\n]*)/gi,'$1 misiones hoy · Semana $2% · Reinicio $3');
     out=out.replace(/\bWeek\b/gi,'Semana');
