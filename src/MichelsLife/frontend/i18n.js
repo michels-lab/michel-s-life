@@ -1204,7 +1204,7 @@ function normalizeDynamicSystemCopy(value,targetLanguage){
   let out=String(value);
   if(targetLanguage==='es'){
     out=out.replace(
-      /(?:You have|Tienes)\s+(\d+)\s+(?:(?:pending|pendiente|pendientes)\s+)?(?:mission|missions|misión|misiones)\s+(?:from yesterday|de ayer)\.?/gi,
+      /(?:You have|Tienes)\s+(\d+)\s+(?:(?:pending|pendiente|pendientes)\s+)?(?:mission|missions|misión|misiones)(?:\s+(?:pending|pendiente|pendientes))?\s+(?:from yesterday|de ayer)\.?/gi,
       (_,n)=>`Tienes ${n} ${Number(n)===1?'misión pendiente':'misiones pendientes'} de ayer.`
     );
     out=out.replace(
@@ -1219,7 +1219,7 @@ function normalizeDynamicSystemCopy(value,targetLanguage){
   }
 
   out=out.replace(
-    /(?:Tienes|You have)\s+(\d+)\s+(?:(?:misión|misiones|mission|missions)\s+)?(?:pendiente|pendientes|pending)?\s*(?:de ayer|from yesterday)\.?/gi,
+    /(?:Tienes|You have)\s+(\d+)\s+(?:(?:pending|pendiente|pendientes)\s+)?(?:misión|misiones|mission|missions)(?:\s+(?:pending|pendiente|pendientes))?\s+(?:de ayer|from yesterday)\.?/gi,
     (_,n)=>`You have ${n} pending ${Number(n)===1?'mission':'missions'} from yesterday.`
   );
   out=out.replace(
@@ -1234,22 +1234,25 @@ function normalizeDynamicSystemCopy(value,targetLanguage){
 
 function restoreEnglishDateCopy(value){
   let out=String(value);
-  const full=[
-    ['domingo','Sunday'],['lunes','Monday'],['martes','Tuesday'],['miércoles','Wednesday'],['jueves','Thursday'],['viernes','Friday'],['sábado','Saturday'],
-    ['enero','January'],['febrero','February'],['marzo','March'],['abril','April'],['mayo','May'],['junio','June'],['julio','July'],['agosto','August'],['septiembre','September'],['octubre','October'],['noviembre','November'],['diciembre','December']
-  ];
-  for(const [es,en] of full)out=out.replace(new RegExp('\\b'+es+'\\b','gi'),en);
-  const abbr=[
-    ['lun','Mon'],['mié','Wed'],['jue','Thu'],['vie','Fri'],['sáb','Sat'],['dom','Sun'],
-    ['ene','Jan'],['feb','Feb'],['abr','Apr'],['may','May'],['jun','Jun'],['jul','Jul'],['ago','Aug'],['sep','Sep'],['oct','Oct'],['nov','Nov'],['dic','Dec']
-  ];
-  for(const [es,en] of abbr)out=out.replace(new RegExp('\\b'+es+'\\b','gi'),en);
-  // "mar" is ambiguous: Tuesday when followed by a comma, March when followed by a date.
-  out=out.replace(/\bmar(?=\s*,)/gi,'Tue').replace(/\bmar(?=\s+\d)/gi,'Mar');
   out=out.replace(/\bBuenos días\b/gi,'Good morning');
   out=out.replace(/\bBuenas tardes\b/gi,'Good afternoon');
   out=out.replace(/\bBuenas noches\b/gi,'Good evening');
   out=out.replace(/\bNoche tardía\b/gi,'Late night');
+
+  const fullDays={domingo:'Sunday',lunes:'Monday',martes:'Tuesday','miércoles':'Wednesday',jueves:'Thursday',viernes:'Friday','sábado':'Saturday'};
+  const fullMonths={enero:'January',febrero:'February',marzo:'March',abril:'April',mayo:'May',junio:'June',julio:'July',agosto:'August',septiembre:'September',octubre:'October',noviembre:'November',diciembre:'December'};
+  const shortDays={dom:'Sun',lun:'Mon',mar:'Tue','mié':'Wed',jue:'Thu',vie:'Fri','sáb':'Sat'};
+  const shortMonths={ene:'Jan',feb:'Feb',mar:'Mar',abr:'Apr',may:'May',jun:'Jun',jul:'Jul',ago:'Aug',sep:'Sep',oct:'Oct',nov:'Nov',dic:'Dec'};
+
+  // Replace only actual UI date shapes, not arbitrary Spanish words in user data.
+  out=out.replace(/\b(domingo|lunes|martes|miércoles|jueves|viernes|sábado)\s*,\s*(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+(\d{1,2})\b/gi,
+    (_,d,m,n)=>`${fullDays[d.toLowerCase()]}, ${fullMonths[m.toLowerCase()]} ${n}`);
+  out=out.replace(/\b(dom|lun|mar|mié|jue|vie|sáb)\s*,\s*(ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic)\s+(\d{1,2})\b/gi,
+    (_,d,m,n)=>`${shortDays[d.toLowerCase()]}, ${shortMonths[m.toLowerCase()]} ${n}`);
+
+  const trimmed=out.trim().toLowerCase();
+  if(fullDays[trimmed])return out.replace(out.trim(),fullDays[trimmed]);
+  if(fullMonths[trimmed])return out.replace(out.trim(),fullMonths[trimmed]);
   return out;
 }
 
