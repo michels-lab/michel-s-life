@@ -43,7 +43,19 @@ async function openGeneralSettings(){
   await page.waitForTimeout(450);
   const general=page.locator('[data-v30171-setting="general"]');
   if(await general.count())await general.first().click();
-  await page.waitForSelector('[data-mlv-language-select]',{timeout:20000});
+  await page.waitForSelector('[data-mlv-language-choice]',{timeout:20000});
+}
+
+async function chooseLanguage(value){
+  await page.evaluate(value=>{
+    const button=[...document.querySelectorAll('[data-mlv-language-choice]')].find(el=>{
+      const cs=getComputedStyle(el),r=el.getBoundingClientRect();
+      return el.getAttribute('data-mlv-language-choice')===value &&
+        cs.display!=='none'&&cs.visibility!=='hidden'&&r.width>0&&r.height>0;
+    });
+    if(!button)throw new Error('visible language choice not found: '+value);
+    button.click();
+  },value);
 }
 
 try{
@@ -58,8 +70,7 @@ try{
   await openGeneralSettings();
 
   // Change using the actual Settings control, not the JS API.
-  let select=page.locator('[data-mlv-language-select]').first();
-  await select.selectOption('en');
+  await chooseLanguage('en');
   await page.waitForTimeout(900);
   s=await state();
   ok(s.language==='en'&&s.htmlLang==='en'&&s.stored==='en'&&s.overrideBase==='es',
@@ -74,8 +85,7 @@ try{
     'Explicit English Settings preference did not survive reload: '+JSON.stringify(s));
 
   await openGeneralSettings();
-  select=page.locator('[data-mlv-language-select]').first();
-  await select.selectOption('es');
+  await chooseLanguage('es');
   await page.waitForTimeout(900);
   s=await state();
   ok(s.language==='es'&&s.htmlLang==='es'&&s.stored==='es'&&s.overrideBase==='es',
