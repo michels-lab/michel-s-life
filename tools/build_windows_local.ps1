@@ -244,8 +244,16 @@ try {
     $roboArgs = @($RepoRoot, $WorkRoot, "/MIR", "/NFL", "/NDL", "/NJH", "/NJS", "/NP")
     foreach ($d in $excludeDirs) { $roboArgs += @("/XD", (Join-Path $RepoRoot $d)) }
     $roboArgs += @("/XF", "*.pfx", "*.p12", ".env", "AppBundle.zip")
-    & robocopy.exe @roboArgs | Out-Null
-    if ($LASTEXITCODE -gt 7) { throw "Failed to create temporary build workspace. Robocopy exit code: $LASTEXITCODE" }
+    $hadNativePreference = Get-Variable PSNativeCommandUseErrorActionPreference -ErrorAction SilentlyContinue
+    if ($hadNativePreference) { $savedNativePreference = $PSNativeCommandUseErrorActionPreference; $PSNativeCommandUseErrorActionPreference = $false }
+    try {
+        & robocopy.exe @roboArgs | Out-Null
+        $roboExit = $LASTEXITCODE
+    }
+    finally {
+        if ($hadNativePreference) { $PSNativeCommandUseErrorActionPreference = $savedNativePreference }
+    }
+    if ($roboExit -gt 7) { throw "Failed to create temporary build workspace. Robocopy exit code: $roboExit" }
 
     Push-Location $WorkRoot
     try {
