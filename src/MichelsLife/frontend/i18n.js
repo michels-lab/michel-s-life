@@ -1060,7 +1060,7 @@ function mapText(raw){
     out=out.replace(new RegExp('This week ·','gi'),'Esta semana ·');
     out=out.replace(new RegExp('Current week due so far · default','gi'),'Semana actual hasta ahora · predeterminado');
     out=out.replace(/\bGood morning\b/gi,'Buenos días');
-    out=out.replace(/\bGood noon\b/gi,'Buen mediodía');
+    out=out.replace(/\bGood noon\b/gi,'Buenas tardes');
     out=out.replace(/\bGood afternoon\b/gi,'Buenas tardes');
     out=out.replace(/\bGood evening\b/gi,'Buenas noches');
     out=out.replace(/\bLate night\b/gi,'Noche tardía');
@@ -1082,7 +1082,9 @@ function mapText(raw){
     out=out.replace(/\bOpen Story\b/g,'Abrir historia');
     out=out.replace(/\bLife Build\b/g,'Progreso de vida');
     out=out.replace(/\bBosses & Quest Chains\b/g,'Jefes y cadenas de misiones');
-    out=out.replace(/\bGolden shift · sharpen the routine\b/gi,'Transición dorada · afina la rutina');
+    out=out.replace(/\bSeptember\b/gi,'Septiembre');
+    out=out.replace(/\bEarly\s+autumn\b/gi,'Inicio de otoño');
+    out=out.replace(/\bGolden\s+shift\s*·\s*sharpen\s+the\s+routine\b/gi,'Transición dorada · afina la rutina');
     out=out.replace(/\bDo not call the day lost while there is still leverage\.\b/gi,'No des el día por perdido mientras todavía haya margen.');
     out=out.replace(/\bStart Chapter\s+([IVXLCDM]+)\b/gi,'Iniciar Capítulo $1');
     out=out.replace(/\bFocus Mode\b/gi,'Modo enfoque');
