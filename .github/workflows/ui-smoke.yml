@@ -44,6 +44,9 @@ jobs:
               z.extractall('artifacts/ui-bundle')
           PY
 
+      - name: Audit Spanish source copy
+        run: node tools/spanish_copy_source_audit.mjs
+
       - name: Install Chromium test runtime
         run: |
           npm install --no-save playwright
