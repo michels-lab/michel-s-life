@@ -16911,7 +16911,7 @@ body.ml-theme-ui .v133-switch button.active,
 body.ml-theme-ui .filter-chip.active,
 body.ml-theme-ui .v168-tools button.active,
 body.ml-theme-ui .mission-filters button.active,
-body.ml-theme-ui button[aria-pressed="true"]{
+body.ml-theme-ui button[aria-pressed="true"]:not([data-mlv-language-choice]):not(.mlv303-font-card){
   background:linear-gradient(135deg,var(--ui-accent,#74f2a7),var(--ui-accent2,#75e4ff))!important;
   border-color:transparent!important;
   color:var(--ml-on-accent,#06120f)!important;
@@ -28684,9 +28684,32 @@ function createCanonicalSettingsShell(root){
  try{window.ModernNavV30168?.repairSettings?.()}catch(_){}
  const source=[];
  const seen=new Set();
+ const semanticSeen=new Map();
+ const semanticKey=el=>{
+   if(!(el instanceof Element)||!el.matches('.card,section.card,div.card'))return '';
+   const h=heading(el).replace(/\s+/g,' ').trim().toLowerCase();
+   const p=String(el.querySelector('.section-title p,p')?.textContent||'').replace(/\s+/g,' ').trim().toLowerCase();
+   const owner=String(el.dataset?.v30171Owner||'').trim().toLowerCase();
+   if(!h&&!owner)return '';
+   return owner+'|'+h+'|'+p;
+ };
+ const mergeDuplicate=(keep,dupe)=>{
+   if(!keep||!dupe)return;
+   const dest=keep.querySelector('.v30171-data-actions');
+   if(dest){
+     dupe.querySelectorAll('[data-v30116-action],[data-action]').forEach(node=>{
+       const key=node.getAttribute('data-v30116-action')||node.getAttribute('data-action')||'';
+       if(!key||!dest.querySelector('[data-v30116-action="'+CSS.escape(key)+'"],[data-action="'+CSS.escape(key)+'"]'))dest.appendChild(node);
+     });
+   }
+   dupe.remove();
+ };
  const add=el=>{
    if(!(el instanceof Element)||seen.has(el))return;
    if(el.matches('.v30171-settings-shell,[data-mlv-typography-core],[data-mlv-focus-core],[data-mlv-about-core],.v30171-pane-heading'))return;
+   const key=semanticKey(el);
+   if(key&&semanticSeen.has(key)){mergeDuplicate(semanticSeen.get(key),el);return}
+   if(key)semanticSeen.set(key,el);
    seen.add(el);source.push(el);
  };
  [...root.children].forEach(el=>{
@@ -28733,6 +28756,18 @@ function buildSettings(){
  if(!settingsShellIsCanonical(shell))shell=createCanonicalSettingsShell(root);
  absorbSettingsStrays(root);
  ensureSettingsCorePanels(root);
+ root.querySelectorAll('[data-v30171-pane]').forEach(pane=>{
+   const signatures=new Map();
+   [...pane.children].forEach(el=>{
+     if(!(el instanceof Element)||el.classList.contains('v30171-pane-heading')||!el.matches('.card,section.card,div.card'))return;
+     const h=heading(el).replace(/\s+/g,' ').trim().toLowerCase();
+     const p=String(el.querySelector('.section-title p,p')?.textContent||'').replace(/\s+/g,' ').trim().toLowerCase();
+     if(!h)return;
+     const key=h+'|'+p;
+     if(signatures.has(key)){el.remove();return}
+     signatures.set(key,el);
+   });
+ });
  const requested=SETTINGS.some(x=>x[0]===window.__mlvSettingsSectionLock)?window.__mlvSettingsSectionLock:savedSetting();
  activateSetting(requested,root);
  return true;
