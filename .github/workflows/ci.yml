@@ -30,6 +30,9 @@ jobs:
           python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
           node --check src/MichelsLife/frontend/i18n.js
 
+      - name: Spanish source copy audit
+        run: node tools/spanish_copy_source_audit.mjs
+
       - name: Generated bilingual system corpus audit
         run: node tools/ui_i18n_generated_corpus_smoke.mjs
 
