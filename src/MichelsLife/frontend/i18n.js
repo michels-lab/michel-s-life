@@ -1099,6 +1099,7 @@ function mapText(raw){
     out=out.replace(/\bMedium(?=\s*·\s*\d+\s*XP)/gi,'Media');
     out=out.replace(/\bHard(?=\s*·\s*\d+\s*XP)/gi,'Difícil');
     out=out.replace(/\bBoss(?=\s*·\s*\d+\s*XP)/gi,'Jefe');
+    out=out.replace(/This clears completions,[^.]*progress history\.\s*(?:missions|misiones) keep their archived and hidden state\./gi,'Esto borra los completados, XP, logros y el historial de progreso. Las misiones conservan su estado archivado y oculto.');
     out=out.replace(/\bmissions\b/gi,'misiones');
     const wd={Sun:'dom',Mon:'lun',Tue:'mar',Wed:'mié',Thu:'jue',Fri:'vie',Sat:'sáb'};
     const mon={Jan:'ene',Feb:'feb',Mar:'mar',Apr:'abr',May:'may',Jun:'jun',Jul:'jul',Aug:'ago',Sep:'sep',Oct:'oct',Nov:'nov',Dec:'dic'};
