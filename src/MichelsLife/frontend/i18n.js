@@ -1223,6 +1223,7 @@ function repairLegacyMixedSystemCopy(value){
     for(const [es,en] of tokenSet){
       candidate=candidate.replace(new RegExp('\\b'+escapeI18nRegExp(es)+'\\b','gi'),en);
     }
+    if(candidate===original)continue;
     const trimmed=candidate.trim();
     const canonical=PAIR_KEYS_CASEFOLD.get(trimmed.toLocaleLowerCase('en-US'));
     if(canonical){
