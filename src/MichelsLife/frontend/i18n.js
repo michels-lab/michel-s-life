@@ -28,6 +28,10 @@ const PAIRS={
   "Pending":"Pendientes","completed":"completadas",
   "Example: Laundry":"Ejemplo: Lavar ropa",
   "Easy · 25 XP":"Fácil · 25 XP","Medium · 50 XP":"Media · 50 XP","Hard · 75 XP":"Difícil · 75 XP","Boss · 100 XP":"Jefe · 100 XP",
+  "Easy":"Fácil","Medium":"Media","Hard":"Difícil","Boss":"Jefe","Complete":"Completar",
+  "Image / Presence":"Imagen / presencia",
+  "Review followers / following cleanup":"Revisar seguidores / depurar seguidos",
+  "Audit IG followers/following or cleanup list.":"Auditar seguidores/seguidos de IG o depurar la lista.",
   "Mission library":"Biblioteca de misiones",
   "No linked missions":"Sin misiones vinculadas",
   "Create mission":"Crear misión",
@@ -1143,7 +1147,11 @@ function mapText(raw){
   const s=String(raw);
   const t=s.trim();
   if(!t)return s;
-  const dict=language==='es'?PAIRS:REVERSE;
+  // English is the canonical application language. Never reverse-translate
+  // arbitrary Spanish text, because it may be user-authored data. Switching to
+  // English rebuilds the UI from canonical state instead.
+  if(language==='en')return s;
+  const dict=PAIRS;
   if(dict[t]){
     const lead=s.slice(0,s.indexOf(t)),tail=s.slice(s.indexOf(t)+t.length);
     return lead+dict[t]+tail;
@@ -1190,10 +1198,14 @@ function mapText(raw){
     out=out.replace(/\bweekly\b/gi,'semanal');
     out=out.replace(/\bAdd\s+semanal\b/gi,'Agregar semanal');
     out=out.replace(/\bSchedule\s+for\s+([A-Za-zÁÉÍÓÚÑáéíóúñ.]+)/gi,'Programar para $1');
-    out=out.replace(/\bEasy(?=\s*·\s*\d+\s*XP)/gi,'Fácil');
-    out=out.replace(/\bMedium(?=\s*·\s*\d+\s*XP)/gi,'Media');
-    out=out.replace(/\bHard(?=\s*·\s*\d+\s*XP)/gi,'Difícil');
-    out=out.replace(/\bBoss(?=\s*·\s*\d+\s*XP)/gi,'Jefe');
+    out=out.replace(/\bEasy\b/gi,'Fácil');
+    out=out.replace(/\bMedium\b/gi,'Media');
+    out=out.replace(/\bHard\b/gi,'Difícil');
+    out=out.replace(/\bBoss\b/gi,'Jefe');
+    out=out.replace(/\bComplete\b/gi,'Completar');
+    out=out.replace(/\bNext\s*#\s*(\d+)\b/gi,'Siguiente #$1');
+    out=out.replace(/\bImage\s*\/\s*Presence\b/gi,'Imagen / presencia');
+    out=out.replace(/\bMental strength\b/gi,'Fortaleza mental');
     out=out.replace(/This clears completions,[^.]*progress history\.\s*(?:missions|misiones) keep their archived and hidden state\./gi,'Esto borra los completados, XP, logros y el historial de progreso. Las misiones conservan su estado archivado y oculto.');
     out=out.replace(/\bAdd\s+a\s+Siguientes\b/gi,'Agregar a Siguientes');
     out=out.replace(/\bAdd\s+decisión\b/gi,'Agregar decisión');
@@ -1420,18 +1432,68 @@ function ensureLanguageControl(){
   sel.addEventListener('change',()=>setLanguage(sel.value));
   translateNode(card);
 }
+function ensureTranslationFitStyles(){
+  if(document.getElementById('mlv-i18n-fit-style'))return;
+  const style=document.createElement('style');
+  style.id='mlv-i18n-fit-style';
+  style.textContent=`
+    html[lang="es"] .mlv-i18n-fit{
+      white-space:normal!important;
+      overflow:visible!important;
+      text-overflow:clip!important;
+      overflow-wrap:anywhere!important;
+      word-break:normal!important;
+      height:auto!important;
+      min-height:2.45em!important;
+      max-width:100%!important;
+      line-height:1.12!important;
+      padding-top:.42em!important;
+      padding-bottom:.42em!important;
+    }
+  `;
+  document.head.appendChild(style);
+}
+function fitTranslatedControls(root=document){
+  if(language!=='es'||!root?.querySelectorAll)return;
+  ensureTranslationFitStyles();
+  const controls=[...root.querySelectorAll('button,[role="button"]')];
+  for(const el of controls){
+    el.classList.remove('mlv-i18n-fit');
+    const text=(el.textContent||'').replace(/\s+/g,' ').trim();
+    if(!text)continue;
+    try{
+      const cs=getComputedStyle(el),r=el.getBoundingClientRect();
+      if(cs.display==='none'||cs.visibility==='hidden'||r.width<=0||r.height<=0)continue;
+      if(el.scrollWidth>el.clientWidth+1||el.scrollHeight>el.clientHeight+1){
+        el.classList.add('mlv-i18n-fit');
+      }
+    }catch(_){}
+  }
+}
 function refresh(root=document.body){
   if(!root)return;
   document.documentElement.lang=language;
   translateNode(root);
   ensureLanguageControl();
   document.querySelectorAll('[data-mlv-language-select]').forEach(s=>s.value=language);
+  requestAnimationFrame(()=>fitTranslatedControls(document));
 }
 function setLanguage(next){
   if(next!=='en'&&next!=='es')return;
   language=next;
   try{localStorage.setItem(KEY,next)}catch(_){}
-  refresh(document.body);
+
+  // Rebuild from the application's canonical English state before applying any
+  // translation. This prevents Spanish DOM mutations from surviving when the
+  // user switches back to English.
+  try{window.renderAll?.()}catch(_){}
+  try{window.LeftNavV30171?.render?.()}catch(_){}
+
+  const apply=()=>refresh(document.body);
+  apply();
+  setTimeout(apply,40);
+  setTimeout(apply,180);
+  setTimeout(apply,520);
   window.dispatchEvent(new CustomEvent('michelslife:languagechange',{detail:{language:next}}));
 }
 const mo=new MutationObserver(records=>{
@@ -1456,6 +1518,7 @@ function init(){
         const cs=getComputedStyle(el),r=el.getBoundingClientRect();
         if(cs.display!=='none'&&cs.visibility!=='hidden'&&Number(cs.opacity)!==0&&r.width>0&&r.height>0){
           translateNode(el);
+          fitTranslatedControls(el);
         }
       }catch(_){}
     });
