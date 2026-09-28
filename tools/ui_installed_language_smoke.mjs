@@ -36,9 +36,16 @@ try{
   const page=await browser.newPage({viewport:{width:1500,height:980}});
   await page.addInitScript(()=>{
     try{
-      localStorage.removeItem('michelsLife.language.v1');
-      localStorage.removeItem('michelsLife.language.userOverrideBase.v1');
-      localStorage.setItem('michelsLife.onboarding.v30200','done');
+      // Seed a clean first launch only once. If the app recreates/navigates the
+      // document after a Settings language choice, do not erase that explicit
+      // user preference on the next document.
+      if(!sessionStorage.getItem('__mlvInstalledLanguageSmokeBootstrapped')){
+        localStorage.removeItem('michelsLife.language.v1');
+        localStorage.removeItem('michelsLife.language.userOverrideBase.v1');
+        localStorage.removeItem('michelsLife.language.installDefault.v1');
+        localStorage.setItem('michelsLife.onboarding.v30200','done');
+        sessionStorage.setItem('__mlvInstalledLanguageSmokeBootstrapped','1');
+      }
     }catch(_){}
     window.__MICHELSLIFE_INSTALL_LANGUAGE__='es';
     try{
