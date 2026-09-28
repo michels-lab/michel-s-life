@@ -36,6 +36,8 @@ const PAIRS={
   "Do not show this kind of notification":"No mostrar este tipo de notificación",
   "Open Focus timer":"Abrir temporizador de enfoque",
   "Premium Contracts, linked missions and useful mission alerts.":"Contratos Premium, misiones vinculadas y alertas útiles de misiones.",
+  "Grouped contract and mission signals.":"Señales agrupadas de contratos y misiones.",
+  "Hide Missions":"Ocultar misiones",
   "Month completed":"Mes completado",
   "Give this day a title…":"Dale un título a este día…",
   "Last month":"Mes pasado",
@@ -1139,7 +1141,14 @@ function mapText(raw){
     out=out.replace(/\bHora del día\s+for\s+/gi,'Hora del día para ');
     out=out.replace(/\bPlan\s+tomorrow\b/gi,'Planear mañana');
     out=out.replace(/\bCurrent stage:\s*/gi,'Etapa actual: ');
+    out=out.replace(/\bLate night\b/gi,'Noche tardía');
+    out=out.replace(/\bDawn\b/gi,'Amanecer');
+    out=out.replace(/\bMorning\b/gi,'Mañana');
+    out=out.replace(/\bNoon\b/gi,'Mediodía');
+    out=out.replace(/\bAfternoon\b/gi,'Tarde');
+    out=out.replace(/\bEvening\b/gi,'Noche');
     out=out.replace(/\bNight\b/gi,'Noche');
+    out=out.replace(/\bEdit\b/g,'Editar');
     out=out.replace(/\bWeek\b/gi,'Semana');
     out=out.replace(/\bNo linked misiones\b/gi,'Sin misiones vinculadas');
     out=out.replace(/has no active (?:missions|misiones) connected to it\./gi,'no tiene misiones activas vinculadas.');
