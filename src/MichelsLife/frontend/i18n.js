@@ -1164,6 +1164,11 @@ const PAIRS={
   "Take care of the marmot 1 time":"Cuidar a la marmota 1 vez",
 };
 const SPANISH_SYSTEM_DEFAULTS={
+  "Read 30 minutes at night 3 times":"Leer 30 minutos de noche 3 veces",
+  "Use home equipment 2 times":"Usar equipo de casa 2 veces",
+  "Prepare food 3 times":"Preparar comida 3 veces",
+  "Cardio or walking 2 times":"Cardio o caminata 2 veces",
+  "OpenFOAM / CFD 2 sessions":"OpenFOAM / CFD 2 sesiones",
   "Work min":"Min de trabajo",
   "Work on thesis 45 minutes":"Trabajar en la tesis 45 minutos",
   "Real progress on thesis, simulations or writing.":"Progreso real en la tesis, simulaciones o escritura.",
@@ -1315,8 +1320,11 @@ const ENGLISH_EMBEDDED_LEGACY_DEFAULTS={
   "Leer 30 minutos de noche 3 veces":"Read 30 minutes at night 3 times",
   "Read 30 minutos de noche 3 times":"Read 30 minutes at night 3 times",
   "Revisión weekly":"Weekly Review",
+  "Usar equipo de casa 2 veces":"Use home equipment 2 times",
   "Usar equipo de casa 2 times":"Use home equipment 2 times",
+  "Preparar comida 3 veces":"Prepare food 3 times",
   "Prepare comida 3 times":"Prepare food 3 times",
+  "Cardio o caminata 2 veces":"Cardio or walking 2 times",
   "Cardio o caminata 2 times":"Cardio or walking 2 times",
   "OpenFOAM / CFD 2 sesiones":"OpenFOAM / CFD 2 sessions",
   "Min de trabajo":"Work min",
