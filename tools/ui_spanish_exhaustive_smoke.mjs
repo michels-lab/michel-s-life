@@ -13,7 +13,7 @@ await page.addInitScript(()=>{
   }catch(_){}
 });
 
-const uiEnglish=/\b(add|apply|archive|back|backup|cancel|capture|choose|clear|close|completed|connect|continue|create|current|dashboard|data|day|delete|disconnect|done|download|edit|english|export|focus|general|history|import|language|level|mission|missions|month|new|next|notification|notifications|open|pending|previous|project|projects|quick|ready|remove|reset|restore|save|select|settings|start|status|stop|story|sync|theme|themes|today|tomorrow|upload|week|weekly|year|yesterday)\b/i;
+const uiEnglish=/\b(add|apply|archive|back|backup|cancel|capture|choose|clear|close|completed|connect|continue|create|current|dashboard|data|day|delete|disconnect|done|download|edit|english|export|focus|history|import|language|level|mission|missions|month|new|next|notification|notifications|open|pending|previous|project|projects|quick|ready|remove|reset|restore|save|select|settings|start|status|stop|story|sync|theme|themes|today|tomorrow|upload|week|weekly|year|yesterday)\b/i;
 const dateEnglish=/\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday|january|february|march|april|may|june|july|august|september|october|november|december)\b/i;
 const properAllow=[
   /Michel.?s Life/i,/Google/i,/OpenFOAM/i,/Python/i,/Instagram/i,/LinkedIn/i,/XP\b/i,/OAuth/i,/Drive/i,/Pomodoro/i,/JSON/i,/RPG/i,
