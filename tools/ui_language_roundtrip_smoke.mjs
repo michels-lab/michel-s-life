@@ -13,7 +13,7 @@ await page.addInitScript(()=>{
   }catch(_){}
 });
 
-const spanishSystem=/\b(inicio|misiones|contratos premium|calendario|diario|estadísticas|comparar|revisión semanal|proyectos|logros|afirmaciones|historia|configuración|mañana|noche|tarde|editar|hoy no|duplicar|archivar|vincular proyecto|poner como siguiente|fácil|media|difícil|fortaleza mental|imagen\s*\/\s*presencia|completar|siguiente\s*#\s*\d+|semana\s+\d+\/\d+)\b/i;
+const spanishSystem=/\b(inicio|misiones|misión|contratos premium|contrato|calendario|diario|estadísticas|comparar|revisión semanal|revisión|proyectos|proyecto|logros|afirmaciones|afirmación|historia|configuración|mañana|noche|tarde|hoy|ayer|semana|semanal|mes|año|editar|eliminar|guardar|cancelar|cerrar|restablecer|hoy no|duplicar|archivar|vincular proyecto|poner como siguiente|fácil|media|difícil|fortaleza mental|imagen\s*\/\s*presencia|completar|pendientes|completadas|siguiente\s*#\s*\d+|desayuno|comida|trabajo|casa|cena|después|hora del día|días activos|días de diario|lunes|martes|miércoles|jueves|viernes|sábado|domingo|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\b/i;
 
 function allowedSpanishInEnglish(s){
   return /^Español$/i.test(s)||/Michel.?s Life/i.test(s);
@@ -106,11 +106,19 @@ try{
     mapTomorrow:window.MichelsLifeI18n.mapText('Tomorrow'),
     mapEdit:window.MichelsLifeI18n.mapText('Edit'),
     mapMedium:window.MichelsLifeI18n.mapText('Medium'),
-    mapComplete:window.MichelsLifeI18n.mapText('Complete')
+    mapComplete:window.MichelsLifeI18n.mapText('Complete'),
+    mapBreakfast:window.MichelsLifeI18n.mapText('Desayuno'),
+    mapLunch:window.MichelsLifeI18n.mapText('Comida'),
+    mapWork:window.MichelsLifeI18n.mapText('Trabajo'),
+    mapHome:window.MichelsLifeI18n.mapText('Casa'),
+    mapDinner:window.MichelsLifeI18n.mapText('Cena'),
+    mapAfter:window.MichelsLifeI18n.mapText('Después')
   }));
   ok(probe.language==='en','i18n language state is not English');
   ok(probe.mapNight==='Night'&&probe.mapTomorrow==='Tomorrow'&&probe.mapEdit==='Edit'&&probe.mapMedium==='Medium'&&probe.mapComplete==='Complete',
     'English mapText is not canonical identity: '+JSON.stringify(probe));
+  ok(probe.mapBreakfast==='Breakfast'&&probe.mapLunch==='Lunch'&&probe.mapWork==='Work'&&probe.mapHome==='Home'&&probe.mapDinner==='Dinner'&&probe.mapAfter==='After',
+    'Known Spanish system defaults were not normalized in English mode: '+JSON.stringify(probe));
 
   console.log('OK: Spanish controls fit and Spanish -> English round-trip leaves no system Spanish residue');
 } finally {
