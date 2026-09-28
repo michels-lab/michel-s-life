@@ -654,7 +654,7 @@ const PAIRS={
   "Search linked tasks...":"Buscar tareas vinculadas...",
   "Never completed in more than 30 days.":"Sin completar en más de 30 días.",
   "Linked to":"Vinculada a",
-  "Scheduled every day but completed only":"Programada todos los días, pero completada solo",
+  "Scheduled every day but completed only":"Programada todos los días, pero solo se completó",
   "times in the last 14 days.":"veces en los últimos 14 días.",
   "Keep 30 days":"Conservar 30 días",
   "Export a backup and remove older snapshots.":"Exporta un respaldo y elimina instantáneas antiguas.",
