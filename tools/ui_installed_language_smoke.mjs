@@ -48,7 +48,8 @@ try{
 
   // Reproduce the user video: opening/clicking the select must not schedule a
   // stale refresh that forces the previous value back.
-  const sel=page.locator('[data-mlv-language-select]').first();
+  let sel=page.locator('[data-mlv-language-select]:visible').first();
+  await sel.waitFor({state:'visible',timeout:10000});
   await sel.click();
   await page.waitForTimeout(120);
   await sel.selectOption('en');
@@ -57,6 +58,8 @@ try{
   ok(s.language==='en'&&s.htmlLang==='en'&&s.stored==='en'&&s.selects.every(x=>x==='en'),
     'Settings reverted/failed after choosing English: '+JSON.stringify(s));
 
+  sel=page.locator('[data-mlv-language-select]:visible').first();
+  await sel.waitFor({state:'visible',timeout:10000});
   await sel.click();
   await page.waitForTimeout(120);
   await sel.selectOption('es');
