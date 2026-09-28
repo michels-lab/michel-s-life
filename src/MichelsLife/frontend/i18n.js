@@ -1435,7 +1435,18 @@ function translateNode(node){
 
     const current=node.nodeValue;
     const previous=translatedTextNodes.get(node);
-    if(previous&&current===previous.translated)return;
+
+    // Some legacy dynamic copy reaches its final Spanish form in more than one
+    // translation pass. Keep refining the translated value while preserving the
+    // original English value for exact restoration later.
+    if(previous&&current===previous.translated){
+      const refined=mapText(current);
+      if(refined!==current){
+        previous.translated=refined;
+        node.nodeValue=refined;
+      }
+      return;
+    }
 
     const next=mapText(current);
     if(next!==current){
@@ -1456,7 +1467,14 @@ function translateNode(node){
         const old=el.getAttribute(attr);
         let records=translatedAttributes.get(el);
         const prev=records?.get(attr);
-        if(prev&&old===prev.translated)continue;
+        if(prev&&old===prev.translated){
+          const refined=mapText(old);
+          if(refined!==old){
+            prev.translated=refined;
+            el.setAttribute(attr,refined);
+          }
+          continue;
+        }
         const next=mapText(old);
         if(next!==old){
           if(!records){records=new Map();translatedAttributes.set(el,records)}
