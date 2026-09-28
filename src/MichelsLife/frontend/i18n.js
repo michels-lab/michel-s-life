@@ -1311,6 +1311,24 @@ function restoreEnglishDateCopy(value){
 // Narrow normalization for legacy/default system content that is already
 // Spanish in the base bundle. This is intentionally NOT a general reverse
 // translator, so user-authored Spanish remains untouched in English mode.
+const ENGLISH_EMBEDDED_LEGACY_DEFAULTS={
+  "Leer 30 minutos de noche 3 veces":"Read 30 minutes at night 3 times",
+  "Read 30 minutos de noche 3 times":"Read 30 minutes at night 3 times",
+  "Revisión weekly":"Weekly Review",
+  "Usar equipo de casa 2 times":"Use home equipment 2 times",
+  "Prepare comida 3 times":"Prepare food 3 times",
+  "Cardio o caminata 2 times":"Cardio or walking 2 times",
+  "OpenFOAM / CFD 2 sesiones":"OpenFOAM / CFD 2 sessions",
+  "Min de trabajo":"Work min",
+  "Trabajar en la tesis 45 minutos":"Work on thesis 45 minutes",
+  "Progreso real en la tesis, simulaciones o escritura.":"Real progress on thesis, simulations or writing.",
+  "Trabajar en la tesis 5 bloques":"Work on thesis 5 blocks",
+  "Decoración animada activada":"Animated decoration on",
+  "Trabajo profundo":"Deep work",
+  "Minutos de trabajo":"Work minutes",
+  "Analizar todos los vínculos":"Analyze all links"
+};
+
 const ENGLISH_SYSTEM_DEFAULTS={
   "Leer 30 minutos de noche 3 veces":"Read 30 minutes at night 3 times",
   "Read 30 minutos de noche 3 times":"Read 30 minutes at night 3 times",
@@ -1403,6 +1421,9 @@ function mapText(raw){
     // phrases, then exact labels and date/greeting vocabulary.
     let out=normalizeDynamicSystemCopy(s,'en');
     out=replaceEmbeddedSystemPhrases(out,'en');
+    for(const [legacySpanish,canonicalEnglish] of Object.entries(ENGLISH_EMBEDDED_LEGACY_DEFAULTS).sort((a,b)=>b[0].length-a[0].length)){
+      if(out.includes(legacySpanish))out=out.split(legacySpanish).join(canonicalEnglish);
+    }
     const trimmed=out.trim();
     const exactReverse=REVERSE[trimmed]||ENGLISH_SYSTEM_DEFAULTS[trimmed];
     if(exactReverse){
