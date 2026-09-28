@@ -79,6 +79,11 @@ jobs:
           export MLV_UI_URL=http://127.0.0.1:4173
           node tools/ui_spanish_exhaustive_smoke.mjs
 
+      - name: Audit Spanish-English round trip and translated control overflow
+        run: |
+          export MLV_UI_URL=http://127.0.0.1:4173
+          node tools/ui_language_roundtrip_smoke.mjs
+
       - name: Audit Spanish Dashboard
         run: |
           export MLV_UI_URL=http://127.0.0.1:4173
