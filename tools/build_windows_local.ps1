@@ -30,9 +30,14 @@ function Refresh-ProcessPath {
 }
 
 function Invoke-Native([string]$File, [string[]]$Arguments) {
-    & $File @Arguments
-    if ($LASTEXITCODE -ne 0) {
-        throw "Command failed ($LASTEXITCODE): $File $($Arguments -join ' ')"
+    # External commands can emit objects/text into PowerShell's success pipeline.
+    # If this helper is called from a resolver function, that output would become
+    # part of the function's return value (for example winget's install log plus
+    # the magick.exe path). Send command output directly to the host instead.
+    & $File @Arguments | Out-Host
+    $exitCode = $LASTEXITCODE
+    if ($exitCode -ne 0) {
+        throw "Command failed ($exitCode): $File $($Arguments -join ' ')"
     }
 }
 
