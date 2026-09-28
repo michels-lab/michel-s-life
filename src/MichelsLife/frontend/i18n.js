@@ -1577,19 +1577,18 @@ function ensureLanguageControl(){
   const card=document.createElement('section');
   card.className='card';
   card.dataset.mlvLanguageCard='v1';
-  card.innerHTML='<div class="section-title"><div><h2 data-mlv-lang-title>Interface language</h2><p data-mlv-lang-help>Use the language selected during installation the first time Michel’s Life opens. You can change it here anytime.</p></div></div><label style="display:grid;gap:7px;max-width:320px;font-weight:700">Language<select data-mlv-language-select><option value="en">English</option><option value="es">Español</option></select></label>';
+  card.innerHTML='<div class="section-title"><div><h2 data-mlv-lang-title>Interface language</h2><p data-mlv-lang-help>Use the language selected during installation the first time Michel’s Life opens. You can change it here anytime.</p></div></div><div style="display:grid;gap:7px;max-width:320px;font-weight:700"><div>Language</div><div data-mlv-language-switch style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button type="button" data-mlv-language-choice="en" aria-pressed="false" style="min-height:42px">English</button><button type="button" data-mlv-language-choice="es" aria-pressed="false" style="min-height:42px">Español</button></div></div>';
   pane.prepend(card);
-  const sel=card.querySelector('[data-mlv-language-select]');
-  sel.value=language;
-  // The Settings shell has global click listeners that may rerender the pane.
-  // Keep native select interaction local so the dropdown cannot be destroyed
-  // between opening it and choosing a language.
-  sel.addEventListener('click',event=>event.stopPropagation());
-  sel.addEventListener('change',event=>{
-    event.stopPropagation();
-    setLanguage(sel.value,{userInitiated:true});
-  });
   translateNode(card);
+  updateLanguageControls();
+}
+function updateLanguageControls(){
+  document.querySelectorAll('[data-mlv-language-choice]').forEach(btn=>{
+    const active=btn.getAttribute('data-mlv-language-choice')===language;
+    btn.setAttribute('aria-pressed',active?'true':'false');
+    btn.style.outline=active?'2px solid currentColor':'';
+    btn.style.outlineOffset=active?'2px':'';
+  });
 }
 function ensureTranslationFitStyles(){
   if(document.getElementById('mlv-i18n-fit-style'))return;
@@ -1634,7 +1633,7 @@ function refresh(root=document.body){
   document.documentElement.lang=language;
   translateNode(root);
   ensureLanguageControl();
-  document.querySelectorAll('[data-mlv-language-select]').forEach(s=>s.value=language);
+  updateLanguageControls();
   requestAnimationFrame(()=>fitTranslatedControls(document));
 }
 function applyInstalledLanguage(next){
@@ -1682,7 +1681,7 @@ function setLanguage(next,{userInitiated=false}={}){
       restoreEnglishWeekdayInitials();
       document.documentElement.lang='en';
       ensureLanguageControl();
-      document.querySelectorAll('[data-mlv-language-select]').forEach(s=>s.value='en');
+      updateLanguageControls();
     }else{
       refresh(document.body);
     }
@@ -1721,26 +1720,20 @@ function init(){
     });
   },500);
 }
-// Keep the language selector isolated from Settings/global capture listeners.
-// stopPropagation does not cancel the select's native default action.
-for(const eventName of ['pointerdown','mousedown','click']){
-  window.addEventListener(eventName,event=>{
-    if(event.target?.closest?.('[data-mlv-language-select]')){
-      event.stopPropagation();
-    }
-  },true);
-}
-window.addEventListener('change',event=>{
-  const target=event.target;
-  if(target?.matches?.('[data-mlv-language-select]')){
-    event.stopPropagation();
-    setLanguage(target.value,{userInitiated:true});
-  }
+// Language choices apply immediately in window capture, before Settings/global
+// listeners can rerender the pane. This avoids the native <select> race where
+// the control could disappear between opening the menu and choosing a value.
+window.addEventListener('click',event=>{
+  const choice=event.target?.closest?.('[data-mlv-language-choice]');
+  if(!choice)return;
+  event.stopPropagation();
+  const next=choice.getAttribute('data-mlv-language-choice');
+  setLanguage(next,{userInitiated:true});
 },true);
 
 let refreshTimer=0;
 function queueRefresh(event){
-  if(event?.target?.closest?.('[data-mlv-language-select]'))return;
+  if(event?.target?.closest?.('[data-mlv-language-choice]'))return;
   clearTimeout(refreshTimer);
   refreshTimer=setTimeout(()=>refresh(document.body),30);
   setTimeout(()=>refresh(document.body),140);
