@@ -1193,6 +1193,55 @@ const REVERSE=Object.fromEntries(Object.entries(PAIRS).map(([en,es])=>[es,en]));
 const EMBEDDED_SYSTEM_PAIRS=Object.entries(PAIRS)
   .filter(([en])=>/[.!?]/.test(en)||en.trim().split(/\s+/).length>=4)
   .sort((a,b)=>b[0].length-a[0].length);
+const PAIR_KEYS_CASEFOLD=new Map(Object.keys(PAIRS).map(k=>[k.toLocaleLowerCase('en-US'),k]));
+
+function escapeI18nRegExp(value){
+  return String(value).replace(/[.*+?^$()|[\]\\]/g,'\\const EMBEDDED_SYSTEM_PAIRS=Object.entries(PAIRS)
+  .filter(([en])=>/[.!?]/.test(en)||en.trim().split(/\s+/).length>=4)
+  .sort((a,b)=>b[0].length-a[0].length);
+');
+}
+
+// Legacy UI can contain a known system sentence with only a few tokens already
+// translated. Reconstruct a candidate English sentence, but accept it ONLY when
+// it resolves to a known PAIRS entry. Arbitrary user-authored Spanish is left alone.
+function repairLegacyMixedSystemCopy(value){
+  const original=String(value);
+  const tokenSets=[
+    [
+      ['misiones','missions'],['misión','mission'],['hoy','today'],['ayer','yesterday'],
+      ['mañana','tomorrow'],['semanal','weekly'],['semana','week'],
+      ['completadas','completed'],['completada','completed'],
+      ['pendientes','pending'],['pendiente','pending']
+    ],
+    [
+      ['misiones','missions'],['misión','mission'],['hoy','today'],['ayer','yesterday'],
+      ['mañana','morning'],['semanal','weekly'],['semana','week'],
+      ['completadas','completed'],['completada','completed'],
+      ['pendientes','pending'],['pendiente','pending']
+    ]
+  ];
+  for(const tokenSet of tokenSets){
+    let candidate=original;
+    for(const [es,en] of tokenSet){
+      candidate=candidate.replace(new RegExp('\\b'+escapeI18nRegExp(es)+'\\b','gi'),en);
+    }
+    const trimmed=candidate.trim();
+    const canonical=PAIR_KEYS_CASEFOLD.get(trimmed.toLocaleLowerCase('en-US'));
+    if(canonical){
+      const at=candidate.indexOf(trimmed);
+      return candidate.slice(0,at)+PAIRS[canonical]+candidate.slice(at+trimmed.length);
+    }
+    const lower=candidate.toLocaleLowerCase('en-US');
+    for(const [en] of EMBEDDED_SYSTEM_PAIRS){
+      const at=lower.indexOf(en.toLocaleLowerCase('en-US'));
+      if(at>=0){
+        return candidate.slice(0,at)+en+candidate.slice(at+en.length);
+      }
+    }
+  }
+  return original;
+}
 
 function replaceEmbeddedSystemPhrases(value,targetLanguage){
   let out=String(value);
@@ -1383,6 +1432,7 @@ function mapText(raw){
   }
   let out=s;
   if(language==='es'){
+    out=repairLegacyMixedSystemCopy(out);
     out=normalizeDynamicSystemCopy(out,'es');
     out=replaceEmbeddedSystemPhrases(out,'es');
     for(const [canonicalEnglish,spanishDefault] of Object.entries(SPANISH_SYSTEM_DEFAULTS).sort((a,b)=>b[0].length-a[0].length)){
