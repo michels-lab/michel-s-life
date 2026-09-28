@@ -455,7 +455,7 @@ const PAIRS={
   "Unmark completed":"Desmarcar completada",
   "First Contract":"Primer contrato",
   "You have":"Tienes",
-  "Move them to today without duplicating existing tasks.":"Muévelas a hoy sin duplicar tareas existentes.",
+  "Move them to today without duplicating existing tasks.":"Muévelas a hoy sin crear duplicados.",
   "Move them to today without creating duplicates.":"Muévelas a hoy sin crear duplicados.",
   "Move all without duplicates":"Mover todas sin duplicados",
   "Do not move anything":"No mover nada",
