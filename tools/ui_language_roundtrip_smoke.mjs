@@ -13,7 +13,7 @@ await page.addInitScript(()=>{
   }catch(_){}
 });
 
-const spanishSystem=/\b(inicio|misiones|misión|contratos premium|contrato|calendario|diario|estadísticas|comparar|revisión semanal|revisión|proyectos|proyecto|logros|afirmaciones|afirmación|historia|configuración|mañana|noche|tarde|hoy|ayer|semana|semanal|mes|año|editar|eliminar|guardar|cancelar|cerrar|restablecer|hoy no|duplicar|archivar|vincular proyecto|poner como siguiente|fácil|media|difícil|fortaleza mental|imagen\s*\/\s*presencia|completar|pendientes|completadas|siguiente\s*#\s*\d+|desayuno|comida|trabajo|casa|cena|después|hora del día|días activos|días de diario|lunes|martes|miércoles|jueves|viernes|sábado|domingo|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\b/i;
+const spanishSystem=/\b(inicio|misiones|misión|contratos premium|contrato|calendario|diario|estadísticas|comparar|revisión semanal|revisión|proyectos|proyecto|logros|afirmaciones|afirmación|historia|configuración|mañana|noche|tarde|hoy|ayer|semana|semanal|mes|año|editar|eliminar|guardar|cancelar|cerrar|restablecer|hoy no|duplicar|archivar|vincular proyecto|poner como siguiente|fácil|media|difícil|fortaleza mental|imagen\s*\/\s*presencia|completar|pendientes|completadas|siguiente\s*#\s*\d+|desayuno|comida|trabajo|casa|cena|después|usar|sesiones|caminata|preparar|hora del día|días activos|días de diario|lunes|martes|miércoles|jueves|viernes|sábado|domingo|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\b/i;
 
 function allowedSpanishInEnglish(s){
   return /^Español$/i.test(s)||/Michel.?s Life/i.test(s);
