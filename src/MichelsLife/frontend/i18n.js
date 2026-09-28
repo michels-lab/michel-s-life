@@ -1135,6 +1135,13 @@ const PAIRS={
 };
 const REVERSE=Object.fromEntries(Object.entries(PAIRS).map(([en,es])=>[es,en]));
 
+// Narrow normalization for legacy/default system content that is already
+// Spanish in the base bundle. This is intentionally NOT a general reverse
+// translator, so user-authored Spanish remains untouched in English mode.
+const ENGLISH_SYSTEM_DEFAULTS={
+  "Leer 30 minutos de noche 3 veces":"Read 30 minutes at night 3 times"
+};
+
 function installedDefault(){
   const n=String(navigator.language||'').toLowerCase();
   return n.startsWith('es')?'es':'en';
@@ -1155,9 +1162,15 @@ function mapText(raw){
   const t=s.trim();
   if(!t)return s;
   // English is the canonical application language. Never reverse-translate
-  // arbitrary Spanish text, because it may be user-authored data. Switching to
-  // English rebuilds the UI from canonical state instead.
-  if(language==='en')return s;
+  // arbitrary Spanish text, because it may be user-authored data. Only known
+  // legacy/default system content is normalized back to its English source.
+  if(language==='en'){
+    if(ENGLISH_SYSTEM_DEFAULTS[t]){
+      const at=s.indexOf(t);
+      return s.slice(0,at)+ENGLISH_SYSTEM_DEFAULTS[t]+s.slice(at+t.length);
+    }
+    return s;
+  }
   const dict=PAIRS;
   if(dict[t]){
     const lead=s.slice(0,s.indexOf(t)),tail=s.slice(s.indexOf(t)+t.length);
@@ -1431,7 +1444,12 @@ function translateNode(node){
   if(node.nodeType===Node.TEXT_NODE){
     const p=node.parentElement;
     if(!p||/^(SCRIPT|STYLE|TEXTAREA|INPUT|CODE|PRE)$/i.test(p.tagName)||p.isContentEditable)return;
-    if(language==='en')return;
+    if(language==='en'){
+      const current=node.nodeValue;
+      const next=mapText(current);
+      if(next!==current)node.nodeValue=next;
+      return;
+    }
 
     const current=node.nodeValue;
     const previous=translatedTextNodes.get(node);
