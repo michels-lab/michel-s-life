@@ -1165,9 +1165,11 @@ function mapText(raw){
   // arbitrary Spanish text, because it may be user-authored data. Only known
   // legacy/default system content is normalized back to its English source.
   if(language==='en'){
-    if(ENGLISH_SYSTEM_DEFAULTS[t]){
-      const at=s.indexOf(t);
-      return s.slice(0,at)+ENGLISH_SYSTEM_DEFAULTS[t]+s.slice(at+t.length);
+    for(const [legacySpanish,canonicalEnglish] of Object.entries(ENGLISH_SYSTEM_DEFAULTS)){
+      const at=s.indexOf(legacySpanish);
+      if(at>=0){
+        return s.slice(0,at)+canonicalEnglish+s.slice(at+legacySpanish.length);
+      }
     }
     return s;
   }
