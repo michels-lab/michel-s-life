@@ -1155,6 +1155,21 @@ const PAIRS={
   "Review debt / savings 1 time":"Revisar deuda / ahorro 1 vez",
   "Take care of the marmot 1 time":"Cuidar a la marmota 1 vez",
 };
+const SPANISH_SYSTEM_DEFAULTS={
+  "Work min":"Min de trabajo",
+  "Work on thesis 45 minutes":"Trabajar en la tesis 45 minutos",
+  "Real progress on thesis, simulations or writing.":"Progreso real en la tesis, simulaciones o escritura.",
+  "Work on thesis 5 blocks":"Trabajar en la tesis 5 bloques",
+  "Read all":"Leer todo",
+  "Animated decoration on":"Decoración animada activada",
+  "Deep work":"Trabajo profundo",
+  "Work minutes":"Minutos de trabajo",
+  "Work":"Trabajo",
+  "Analyze all links":"Analizar todos los vínculos",
+  "Monumental walled-city landscapes across six stages.":"Paisajes monumentales de una ciudad amurallada a lo largo de seis etapas.",
+  "© 2026 Michel Duarte / Michel’s Lab. All rights reserved.":"© 2026 Michel Duarte / Michel’s Lab. Todos los derechos reservados."
+};
+
 const REVERSE=Object.fromEntries(Object.entries(PAIRS).map(([en,es])=>[es,en]));
 
 // Narrow normalization for legacy/default system content that is already
@@ -1173,7 +1188,19 @@ const ENGLISH_SYSTEM_DEFAULTS={
   "Usar equipo de casa 2 times":"Use home equipment 2 times",
   "Prepare comida 3 times":"Prepare food 3 times",
   "Cardio o caminata 2 times":"Cardio or walking 2 times",
-  "OpenFOAM / CFD 2 sesiones":"OpenFOAM / CFD 2 sessions"
+  "OpenFOAM / CFD 2 sesiones":"OpenFOAM / CFD 2 sessions",
+  "Min de trabajo":"Work min",
+  "Trabajar en la tesis 45 minutos":"Work on thesis 45 minutes",
+  "Progreso real en la tesis, simulaciones o escritura.":"Real progress on thesis, simulations or writing.",
+  "Trabajar en la tesis 5 bloques":"Work on thesis 5 blocks",
+  "Leer todo":"Read all",
+  "Decoración animada activada":"Animated decoration on",
+  "Trabajo profundo":"Deep work",
+  "Minutos de trabajo":"Work minutes",
+  "Trabajo":"Work",
+  "Analizar todos los vínculos":"Analyze all links",
+  "Paisajes monumentales de una ciudad amurallada a lo largo de seis etapas.":"Monumental walled-city landscapes across six stages.",
+  "© 2026 Michel Duarte / Michel’s Lab. Todos los derechos reservados.":"© 2026 Michel Duarte / Michel’s Lab. All rights reserved."
 };
 
 function installedDefault(){
@@ -1255,6 +1282,10 @@ function mapText(raw){
   }
   let out=s;
   if(language==='es'){
+    for(const [canonicalEnglish,spanishDefault] of Object.entries(SPANISH_SYSTEM_DEFAULTS)){
+      if(out.includes(canonicalEnglish))out=out.split(canonicalEnglish).join(spanishDefault);
+    }
+    out=out.replace(/\bAll\s+(\d+)\b/gi,'Todos $1');
     const catMap={'physical health':'salud física','education / thesis':'educación / tesis','career':'carrera','image / presence':'imagen / presencia','culture / languages':'cultura / idiomas','order / execution':'orden / ejecución','self-worth':'amor propio','emotional autonomy':'autonomía emocional','mental strength':'fortaleza mental'};
     out=out.replace(new RegExp('Complete the weekly (.+?) challenge (\\d+) time(s)?\\.','gi'),(m,cat,n)=>'Completa el reto semanal de '+(catMap[String(cat).toLowerCase()]||cat)+' '+n+' '+(Number(n)===1?'vez':'veces')+'.');
     out=out.replace(new RegExp('Complete (\\d+) (.+?) missions\\.','gi'),(m,n,cat)=>'Completa '+n+' misiones de '+(catMap[String(cat).toLowerCase()]||cat)+'.');
