@@ -2,6 +2,26 @@
 
 > Official development log for Michel's Life. Every meaningful app change must be recorded here before a version is considered complete. Entries should describe verified changes only and be grouped by version/date.
 
+## 3.0.211 — 2026-09-28 — Bilingual Round-trip Hardening
+
+### Language & localization
+- Fixed Spanish → English switching for freshly rerendered UI nodes by restoring known canonical English system labels even when their original DOM node no longer exists.
+- Added English normalization for system text, placeholders, tooltips and ARIA labels that could otherwise remain in Spanish after changing languages.
+- Removed remaining English copy from Spanish mode across focus, thesis, statistics, calendar, comparison, Gold, action and notification surfaces.
+- Normalized legacy mixed-language defaults such as `Revisión weekly`, `Usar equipo de casa 2 times`, `Prepare comida 3 times`, `Today vs ayer` and `Este mes vs mes pasado`.
+- Added exact bilingual handling for time-of-day/default labels including Breakfast/Desayuno, Lunch/Comida, Work/Trabajo, Home/Casa, Dinner/Cena and After/Después.
+
+### Settings & regression protection
+- Fixed duplicate Settings cards produced by repeated Settings reconstruction.
+- Prevented selected language and typography controls from inheriting the global dark-on-accent text override.
+- Strengthened the Spanish UI audit to detect full English phrases and functional vocabulary instead of relying on a short list of known strings.
+- Strengthened the Spanish → English round-trip audit to catch Spanish and mixed-language residue across all principal routes.
+- Verified Spanish UI, English round-trip, installer/Settings language behavior, Settings integrity and Spanish Dashboard together before the version bump.
+
+### Build / versioning
+- Bumped Michel's Life from **v3.0.210** to **v3.0.211** across the .NET project, generated host, installer, validators, frontend versioning and Windows workflows.
+- Kept the frontend bump compatible with either the v3.0.209 canonical source or a v3.0.210 generated source while rejecting stale version markers.
+
 ## 3.0.210 — 2026-09-28 — Bilingual Windows / Language Reliability
 
 ### Language & localization
