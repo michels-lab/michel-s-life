@@ -11844,6 +11844,7 @@ label:has(input[name="coins"]),
 
 <script id="v216-tabs-search-real-fix-script">
 (function(){
+  function tr(s){try{return window.MichelsLifeI18n?.mapText?.(String(s))||String(s)}catch(e){return String(s)}}
   function esc(s){
     try{ if(typeof escapeHtml==='function') return escapeHtml(s); }catch(e){}
     return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
@@ -11947,31 +11948,31 @@ label:has(input[name="coins"]),
     return norm([c.name,c.category,c.unit,catInfo(catKey(c)).name,linkedTasks(c).map(m=>m.name+' '+m.category+' '+m.subcategory).join(' ')].join(' '));
   }
   function linkedZone(c){
-    const tasks=linkedTasks(c),opp=opportunityDays(c),p=progress(c);
-    const status=!tasks.length?`<div class="v216-warning">No linked tasks yet. Open Edit to link tasks.</div>`:
-      (opp.length<Number(c.target||1)?`<div class="v216-warning">⚠️ Needs ${Number(c.target||1)} completions, but linked tasks are scheduled on only ${opp.length} day${opp.length===1?'':'s'}.</div>`:
-      `<div class="v216-ok">On track · ${Math.max(0,Number(c.target||1)-p.count)} left this week</div>`);
+    const tasks=linkedTasks(c),opp=opportunityDays(c),p=progress(c),target=Number(c.target||1);
+    const status=!tasks.length?`<div class="v216-warning">${esc(tr('No linked tasks yet. Open Edit to link tasks.'))}</div>`:
+      (opp.length<target?`<div class="v216-warning">⚠️ ${esc(tr('Needs'))} ${target} ${esc(tr('completions'))}, ${esc(tr('but linked tasks are scheduled on only'))} ${opp.length} ${esc(tr(opp.length===1?'day':'days'))}.</div>`:
+      `<div class="v216-ok">${esc(tr('On track'))} · ${Math.max(0,target-p.count)} ${esc(tr('left this week'))}</div>`);
     const rows=tasks.length?`<div>${tasks.slice(0,5).map(m=>{
       const ca=catInfo(catKey(m));
-      return `<div class="v216-linked-row"><span>🔗</span><span><b>${esc(m.name)}</b><small>${esc(ca.emoji+' '+ca.name)}</small></span><span class="v216-pill gold">linked</span></div>`;
-    }).join('')}${tasks.length>5?`<div class="v216-linked-row"><span>＋</span><span><b>${tasks.length-5} more</b><small>Open Edit to manage all.</small></span></div>`:''}</div>`:'';
-    return `<div class="v216-linked-zone"><div class="v216-linked-title"><span>Linked tasks</span><span>${tasks.length}</span></div>${rows}${status}</div>`;
+      return `<div class="v216-linked-row"><span>🔗</span><span><b>${esc(m.name)}</b><small>${esc(ca.emoji+' '+ca.name)}</small></span><span class="v216-pill gold">${esc(tr('linked'))}</span></div>`;
+    }).join('')}${tasks.length>5?`<div class="v216-linked-row"><span>＋</span><span><b>${tasks.length-5} ${esc(tr('more'))}</b><small>${esc(tr('Open Edit to manage all.'))}</small></span></div>`:''}</div>`:'';
+    return `<div class="v216-linked-zone"><div class="v216-linked-title"><span>${esc(tr('Linked tasks'))}</span><span>${tasks.length}</span></div>${rows}${status}</div>`;
   }
   function contractCard(c){
-    const p=progress(c),r=reward(c),ca=catInfo(catKey(c)),pct=Math.min(100,Math.round((p.count/(p.target||1))*100));
+    const p=progress(c),r=reward(c),ca=catInfo(catKey(c)),pct=Math.min(100,Math.round((p.count/(p.target||1))*100)),linkedCount=linkedTasks(c).length;
     return `<article class="v216-contract-card" data-contract-key="${esc(cKey(c))}" data-search="${esc(searchTextContract(c))}">
       <h3>${esc(ca.emoji)} ${esc(c.name)}</h3>
-      <p>${p.count}/${p.target} ${esc(c.unit||'distinctDays')} this week · linked tasks count automatically.</p>
+      <p>${p.count}/${p.target} ${esc(tr(c.unit||'distinctDays'))} ${esc(tr('this week'))} · ${esc(tr('linked tasks count automatically.'))}</p>
       <div class="v131-progress"><span style="width:${pct}%;background:linear-gradient(90deg,${ca.color||'#75e4ff'},#ffd166)"></span></div>
       <div class="v216-meta">
-        <span class="v216-pill gold">Today +${Number(r.xp||0)} XP</span>
-        <span class="v216-pill">Weekly bonus +${Number(r.bonusXp||0)} XP</span>
-        <span class="v216-pill">${linkedTasks(c).length} linked</span>
+        <span class="v216-pill gold">${esc(tr('Today'))} +${Number(r.xp||0)} XP</span>
+        <span class="v216-pill">${esc(tr('Weekly bonus'))} +${Number(r.bonusXp||0)} XP</span>
+        <span class="v216-pill">${linkedCount} ${esc(tr('linked'))}</span>
         <span class="v216-pill">${esc(ca.name)}</span>
       </div>
       <div class="v216-top-actions">
-        <button class="btn gold" onclick="v131CompleteContract('${esc(c.kind)}','${esc(c.id)}')">${p.today?'Counted today':'Manual complete'}</button>
-        <button class="btn" data-action="v194-edit-contract" data-contract="${esc(cKey(c))}">Edit</button>
+        <button class="btn gold" onclick="v131CompleteContract('${esc(c.kind)}','${esc(c.id)}')">${esc(tr(p.today?'Counted today':'Manual complete'))}</button>
+        <button class="btn" data-action="v194-edit-contract" data-contract="${esc(cKey(c))}">${esc(tr('Edit'))}</button>
       </div>
       ${linkedZone(c)}
     </article>`;
@@ -11981,33 +11982,33 @@ label:has(input[name="coins"]),
     const query=settings().v216ContractSearch||settings().v215ContractSearch||settings().v211ContractSearch||'';
     const all=getContracts(),cats=categoriesForContracts();
     const shown=activeCat==='all'?all:all.filter(c=>catKey(c)===activeCat);
-    const chips=`<button class="v216-filter-chip v30155-category-chip ${activeCat==='all'?'active':''}" data-v216-contract-cat="all"><span class="v30155-category-mark" aria-hidden="true"></span><span>All</span><span class="v216-count-pill v30155-category-count">${all.length}</span></button>`+
+    const chips=`<button class="v216-filter-chip v30155-category-chip ${activeCat==='all'?'active':''}" data-v216-contract-cat="all"><span class="v30155-category-mark" aria-hidden="true"></span><span>${esc(tr('All'))}</span><span class="v216-count-pill v30155-category-count">${all.length}</span></button>`+
       cats.map(c=>`<button class="v216-filter-chip v30155-category-chip ${activeCat===c.id?'active':''}" data-v216-contract-cat="${esc(c.id)}"><span class="v30155-category-mark" aria-hidden="true"></span><span>${esc(c.name)}</span><span class="v216-count-pill v30155-category-count">${c.count}</span></button>`).join('');
     const linkedTotal=shown.reduce((a,c)=>a+linkedTasks(c).length,0),done=shown.filter(c=>progress(c).count>=progress(c).target).length;
     return `<div class="v194-stack">
       <section class="card v194-hero">
         <div class="section-title">
-          <div><h2>Premium Contracts</h2><p>Filter by category. Search now reorders cards without re-rendering each key.</p></div>
-          <span class="pill hot">${shown.length}/${all.length} shown</span>
+          <div><h2>${esc(tr('Premium Contracts'))}</h2><p>${esc(tr('Filter by category. Search now reorders cards without re-rendering each key.'))}</p></div>
+          <span class="pill hot">${shown.length}/${all.length} ${esc(tr('shown'))}</span>
         </div>
         <div class="v216-search-panel">
-          <div class="v216-search-title"><b>Search Premium Contracts</b><span id="v216ContractSearchCount">Cards stay rendered</span></div>
+          <div class="v216-search-title"><b>${esc(tr('Search Premium Contracts'))}</b><span id="v216ContractSearchCount">${esc(tr('Cards stay rendered'))}</span></div>
           <div class="v216-search-row">
-            <input id="v216ContractSearch" placeholder="Search Premium Contract or linked task..." value="${esc(query)}">
-            <button class="btn ghost" data-action="v216-clear-contract-search">Clear</button>
+            <input id="v216ContractSearch" placeholder="${esc(tr('Search Premium Contract or linked task...'))}" value="${esc(query)}">
+            <button class="btn ghost" data-action="v216-clear-contract-search">${esc(tr('Clear'))}</button>
           </div>
           <div class="v216-chip-row">${chips}</div>
         </div>
         <div class="v194-kpis">
-          <div class="v194-kpi"><small>Shown</small><b>${shown.length}</b></div>
-          <div class="v194-kpi"><small>Completed</small><b>${done}</b></div>
-          <div class="v194-kpi"><small>Linked tasks</small><b>${linkedTotal}</b></div>
-          <div class="v194-kpi"><small>Category</small><b>${activeCat==='all'?'All':esc(catInfo(activeCat).emoji)}</b></div>
+          <div class="v194-kpi"><small>${esc(tr('Shown'))}</small><b>${shown.length}</b></div>
+          <div class="v194-kpi"><small>${esc(tr('Completed'))}</small><b>${done}</b></div>
+          <div class="v194-kpi"><small>${esc(tr('Linked tasks'))}</small><b>${linkedTotal}</b></div>
+          <div class="v194-kpi"><small>${esc(tr('Category'))}</small><b>${activeCat==='all'?esc(tr('All')):esc(catInfo(activeCat).emoji)}</b></div>
         </div>
       </section>
       <section class="card">
-        <div class="section-title"><div><h2>Contract board</h2><p>Matches move up. No Goals tab.</p></div></div>
-        ${shown.length?`<div class="v216-contract-grid">${shown.map(contractCard).join('')}</div>`:'<div class="v211-empty">No Premium Contracts found.</div>'}
+        <div class="section-title"><div><h2>${esc(tr('Contract board'))}</h2><p>${esc(tr('Matches move up. No Goals tab.'))}</p></div></div>
+        ${shown.length?`<div class="v216-contract-grid">${shown.map(contractCard).join('')}</div>`:`<div class="v211-empty">${esc(tr('No Premium Contracts found.'))}</div>`}
       </section>
     </div>`;
   }
@@ -12032,7 +12033,7 @@ label:has(input[name="coins"]),
     const count=document.getElementById('v216ContractSearchCount');
     if(count){
       const n=cards.filter(x=>x.match).length;
-      count.textContent=q?`${n} match${n===1?'':'es'} moved up`:`${cards.length} contracts`;
+      count.textContent=q?`${n} ${tr(n===1?'match moved up':'matches moved up')}`:`${cards.length} ${tr('contracts')}`;
     }
   }
 
@@ -12044,9 +12045,9 @@ label:has(input[name="coins"]),
     if(state.activeTab==='goals') state.activeTab='contracts';
     const primary=[['dashboard','Dashboard'],['missions','Missions'],['contracts','Premium Contracts'],['achievements','Achievements'],['stats','Stats']];
     const more=[['affirmations','Affirmations'],['calendar','Calendar'],['compare','Compare'],['pending','Pending'],['export','AI Export'],['settings','Settings']];
-    const main=primary.map(([id,name])=>`<button class="tab-btn ${state.activeTab===id?'active':''}" data-tab="${id}">${name}</button>`).join('');
+    const main=primary.map(([id,name])=>`<button class="tab-btn ${state.activeTab===id?'active':''}" data-tab="${id}">${esc(tr(name))}</button>`).join('');
     const activeMore=more.some(([id])=>id===state.activeTab);
-    wrap.innerHTML=main+`<select id="v131More" class="v131-more ${activeMore?'active':''}"><option value="">More</option>${more.map(([id,name])=>`<option value="${id}" ${state.activeTab===id?'selected':''}>${name}</option>`).join('')}</select>`;
+    wrap.innerHTML=main+`<select id="v131More" class="v131-more ${activeMore?'active':''}"><option value="">${esc(tr('More'))}</option>${more.map(([id,name])=>`<option value="${id}" ${state.activeTab===id?'selected':''}>${esc(tr(name))}</option>`).join('')}</select>`;
   };
   const oldRenderTab=window.renderTab;
   window.renderTab=function(id){
@@ -12060,10 +12061,10 @@ label:has(input[name="coins"]),
   function missionSearchPanel(){
     const q=settings().v216MissionSearch||settings().v215MissionSearch||settings().v211MissionSearch||'';
     return `<div class="v216-search-panel" id="v216MissionSearchPanel">
-      <div class="v216-search-title"><b>Search tasks / missions</b><span id="v216MissionSearchCount">Matches move up</span></div>
+      <div class="v216-search-title"><b>${esc(tr('Search tasks / missions'))}</b><span id="v216MissionSearchCount">${esc(tr('Matches move up'))}</span></div>
       <div class="v216-search-row">
-        <input id="v216MissionSearch" placeholder="Task name, category, note..." value="${esc(q)}">
-        <button class="btn ghost" data-action="v216-clear-mission-search">Clear</button>
+        <input id="v216MissionSearch" placeholder="${esc(tr('Task name, category, note...'))}" value="${esc(q)}">
+        <button class="btn ghost" data-action="v216-clear-mission-search">${esc(tr('Clear'))}</button>
       </div>
     </div>`;
   }
@@ -12142,7 +12143,7 @@ label:has(input[name="coins"]),
     const count=document.getElementById('v216MissionSearchCount');
     if(count){
       const n=cards.filter(x=>x.match).length;
-      count.textContent=q?`${n} match${n===1?'':'es'} moved up`:`${cards.length} tasks`;
+      count.textContent=q?`${n} ${tr(n===1?'match moved up':'matches moved up')}`:`${cards.length} ${tr('tasks')}`;
     }
   }
 
@@ -26287,6 +26288,8 @@ console.info("Michel's Life build "+VERSION+' Calendar phase 1 loaded');
 'use strict';
 if(window.CalendarV30135)return;
 const VERSION='3.0.136', CAL='data-v30135-cal';
+function tr(s){try{return window.MichelsLifeI18n?.mapText?.(String(s))||String(s)}catch(e){return String(s)}}
+function locale(){return (window.MichelsLifeI18n?.language||document.documentElement.lang)==='es'?'es-MX':'en-US'}
 function S(){state.settings=state.settings||{};return state.settings;}
 function esc(v){return String(v==null?'':v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
 function saveNow(){try{if(typeof save==='function')save();else if(typeof window.saveState==='function')window.saveState();}catch(e){console.error('v30135 save',e)}}
@@ -26299,8 +26302,8 @@ function monthKey(k){return String(k).slice(0,7)}
 function monthStart(mk){return mk+'-01'}
 function monthEnd(mk){const p=mk.split('-').map(Number),d=new Date(p[0],p[1],0,12);return key(d)}
 function shiftMonth(mk,n){const p=mk.split('-').map(Number),d=new Date(p[0],p[1]-1+n,1,12);return String(d.getFullYear())+'-'+String(d.getMonth()+1).padStart(2,'0')}
-function pretty(k,opt){try{return parse(k).toLocaleDateString(undefined,opt||{weekday:'long',month:'long',day:'numeric',year:'numeric'})}catch(e){return k}}
-function monthLabel(mk){try{return parse(mk+'-01').toLocaleDateString(undefined,{month:'long',year:'numeric'})}catch(e){return mk}}
+function pretty(k,opt){try{return parse(k).toLocaleDateString(locale(),opt||{weekday:'long',month:'long',day:'numeric',year:'numeric'})}catch(e){return k}}
+function monthLabel(mk){try{return parse(mk+'-01').toLocaleDateString(locale(),{month:'long',year:'numeric'})}catch(e){return mk}}
 function mission(id){return (state.missions||[]).find(m=>String(m&&m.id)===String(id))||null}
 function completionOn(m,k){return (m&&m.completions||[]).find(c=>String(c&&((c.date)||(c.at))||'').slice(0,10)===k)||null}
 function isCalendarOneOff(m){return !!(m&&(m.v30134CalendarOneOff||m.v30135CalendarOneOff)&&m.scheduledDate)}
@@ -26321,31 +26324,31 @@ function dayData(k){
   const xp=completed.reduce((a,m)=>{const c=completionOn(m,k);return a+Number(c&&c.xp||m.xp||0)},0);
   return {completed,skipped,due,pending,carry,oneoffs,recurring,xp};
 }
-function dots(ms){const set=new Set(ms.map(stageOf));return ['morning','afternoon','night'].filter(x=>set.has(x)).map(x=>'<i class="v30135-dot '+x+'" title="'+x+'"></i>').join('')}
+function dots(ms){const set=new Set(ms.map(stageOf));return ['morning','afternoon','night'].filter(x=>set.has(x)).map(x=>'<i class="v30135-dot '+x+'" title="'+esc(tr(x[0].toUpperCase()+x.slice(1)))+'"></i>').join('')}
 function statusActions(m,k,kind){
   const done=!!completionOn(m,k),future=k>today(),one=isCalendarOneOff(m),parts=[];
-  parts.push('<button class="btn ghost" type="button" '+CAL+'="edit" data-id="'+esc(m.id)+'" data-date="'+k+'">Edit</button>');
-  if(!future){parts.push('<button class="btn '+(done?'ghost':'primary')+'" type="button" '+CAL+'="'+(done?'undo':'complete')+'" data-id="'+esc(m.id)+'" data-date="'+k+'">'+(done?'Undo':'Complete')+'</button>')}
-  if(one)parts.push('<button class="btn danger" type="button" '+CAL+'="delete" data-id="'+esc(m.id)+'">Delete</button>');
+  parts.push('<button class="btn ghost" type="button" '+CAL+'="edit" data-id="'+esc(m.id)+'" data-date="'+k+'">'+esc(tr('Edit'))+'</button>');
+  if(!future){parts.push('<button class="btn '+(done?'ghost':'primary')+'" type="button" '+CAL+'="'+(done?'undo':'complete')+'" data-id="'+esc(m.id)+'" data-date="'+k+'">'+esc(tr(done?'Undo':'Complete'))+'</button>')}
+  if(one)parts.push('<button class="btn danger" type="button" '+CAL+'="delete" data-id="'+esc(m.id)+'">'+esc(tr('Delete'))+'</button>');
   return parts.join('');
 }
-function row(m,k,kind){const done=!!completionOn(m,k),stage=stageOf(m),meta=[catName(m),stage[0].toUpperCase()+stage.slice(1),Number(m.xp||0)+' XP'].join(' · ');return '<div class="v30135-row"><div class="v30135-row-main"><b>'+esc(m.name)+'</b><small>'+esc(meta)+(done?' · Completed':'')+(isCalendarOneOff(m)?' · One-off':' · Recurring')+'</small></div><div class="v30135-row-actions">'+statusActions(m,k,kind)+'</div></div>'}
-function list(title,items,k,kind,empty){return '<div class="v30135-section"><h3>'+esc(title)+' <span class="v30135-count">'+items.length+'</span></h3><div class="v30135-list">'+(items.length?items.map(m=>row(m,k,kind)).join(''):'<div class="v30135-empty">'+esc(empty||'Nothing here.')+'</div>')+'</div></div>'}
+function row(m,k,kind){const done=!!completionOn(m,k),stage=stageOf(m),meta=[catName(m),tr(stage[0].toUpperCase()+stage.slice(1)),Number(m.xp||0)+' XP'].join(' · ');return '<div class="v30135-row"><div class="v30135-row-main"><b>'+esc(m.name)+'</b><small>'+esc(meta)+(done?' · '+esc(tr('Completed')):'')+' · '+esc(tr(isCalendarOneOff(m)?'One-off':'Recurring'))+'</small></div><div class="v30135-row-actions">'+statusActions(m,k,kind)+'</div></div>'}
+function list(title,items,k,kind,empty){return '<div class="v30135-section"><h3>'+esc(tr(title))+' <span class="v30135-count">'+items.length+'</span></h3><div class="v30135-list">'+(items.length?items.map(m=>row(m,k,kind)).join(''):'<div class="v30135-empty">'+esc(tr(empty||'Nothing here.'))+'</div>')+'</div></div>'}
 function detail(k){
-  const x=dayData(k),t=today(),past=k<t,future=k>t,status=past?'Past':future?'Future':'Today';let body='';
+  const x=dayData(k),t=today(),past=k<t,future=k>t,status=tr(past?'Past':future?'Future':'Today');let body='';
   if(past){body+=list('Completed',x.completed,k,'past','No completed missions recorded.');body+=list('Missed',x.pending,k,'past','No missed missions.');body+=list('Not today',x.skipped,k,'past','Nothing was marked Not today.');body+=list('Carryover',x.carry,k,'past','Nothing was carried forward from this day.');}
   else if(future){body+=list('Scheduled Tasks',x.oneoffs,k,'future','No one-off tasks scheduled for this date.');body+=list('Recurring Missions',x.recurring,k,'future','No recurring missions land on this date.');}
   else{body+=list('Completed',x.completed,k,'today','Nothing completed yet.');body+=list('Pending today',x.pending,k,'today','Nothing pending.');body+=list('Not today',x.skipped,k,'today','Nothing hidden for today.');}
-  const actions=[];if(!past)actions.push('<button class="btn primary" type="button" '+CAL+'="new" data-date="'+k+'">+ Add task</button>');if(k===t)actions.push('<button class="btn ghost" type="button" '+CAL+'="dashboard">Open Dashboard</button>');
-  return '<div class="v30135-detail"><div class="v30135-detail-head"><div><small class="muted">'+status+'</small><h2 style="margin:2px 0 0">'+esc(pretty(k))+'</h2></div><div class="v30135-actions">'+actions.join('')+'</div></div><div class="v30135-kpis"><div class="v30135-kpi"><small>Completed</small><b>'+x.completed.length+'</b></div><div class="v30135-kpi"><small>'+(past?'Missed':'Pending')+'</small><b>'+x.pending.length+'</b></div><div class="v30135-kpi"><small>Not today</small><b>'+x.skipped.length+'</b></div><div class="v30135-kpi"><small>XP</small><b>'+x.xp+'</b></div></div>'+body+'</div>';
+  const actions=[];if(!past)actions.push('<button class="btn primary" type="button" '+CAL+'="new" data-date="'+k+'">+ '+esc(tr('Add task'))+'</button>');if(k===t)actions.push('<button class="btn ghost" type="button" '+CAL+'="dashboard">'+esc(tr('Open Dashboard'))+'</button>');
+  return '<div class="v30135-detail"><div class="v30135-detail-head"><div><small class="muted">'+esc(status)+'</small><h2 style="margin:2px 0 0">'+esc(pretty(k))+'</h2></div><div class="v30135-actions">'+actions.join('')+'</div></div><div class="v30135-kpis"><div class="v30135-kpi"><small>'+esc(tr('Completed'))+'</small><b>'+x.completed.length+'</b></div><div class="v30135-kpi"><small>'+esc(tr(past?'Missed':'Pending'))+'</small><b>'+x.pending.length+'</b></div><div class="v30135-kpi"><small>'+esc(tr('Not today'))+'</small><b>'+x.skipped.length+'</b></div><div class="v30135-kpi"><small>XP</small><b>'+x.xp+'</b></div></div>'+body+'</div>';
 }
 function monthStats(mk){let k=monthStart(mk),end=monthEnd(mk),completed=0,missed=0,xp=0,scheduled=0;while(k<=end){const x=dayData(k);completed+=x.completed.length;xp+=x.xp;if(k<today())missed+=x.pending.length;scheduled+=x.oneoffs.length;k=add(k,1)}return {completed,missed,xp,scheduled}}
-function calendarGrid(mk,selected){const first=parse(monthStart(mk)),last=parse(monthEnd(mk)),offset=(first.getDay()+6)%7,cells=[];for(let i=0;i<offset;i++)cells.push('<div></div>');for(let n=1;n<=last.getDate();n++){const k=mk+'-'+String(n).padStart(2,'0'),x=dayData(k),t=today(),cls=k===t?' today':k<t?' past':' future',missed=k<t?x.pending.length:0;cells.push('<div class="v30135-day'+cls+(k===selected?' selected':'')+'" '+CAL+'="select-day" data-date="'+k+'"><div class="v30135-daynum"><span>'+n+'</span>'+(x.oneoffs.length?'<span class="v30135-count">'+x.oneoffs.length+' scheduled</span>':'')+'</div><div class="v30135-stage-dots">'+dots(x.due)+'</div><div class="v30135-daymeta"><div class="v30135-dayline"><span>Completed</span><b>'+x.completed.length+'</b></div><div class="v30135-dayline"><span>'+(k<t?'Missed':'Due')+'</span><b>'+(k<t?missed:x.pending.length)+'</b></div><div class="v30135-dayline"><span>XP</span><b>'+x.xp+'</b></div></div></div>')}return '<div class="v30135-grid">'+['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(x=>'<div class="v30135-weekday">'+x+'</div>').join('')+cells.join('')+'</div>'}
-function agenda(mk){let k=monthStart(mk),end=monthEnd(mk),out=[];while(k<=end){const x=dayData(k);if(x.due.length||x.completed.length||x.skipped.length){const ids=new Set(),items=[];[...x.due,...x.completed,...x.skipped].forEach(m=>{if(m&&!ids.has(String(m.id))){ids.add(String(m.id));items.push(m)}});out.push('<div class="v30135-agenda-day"><div class="v30135-agenda-date"><b>'+esc(pretty(k,{weekday:'short',month:'short',day:'numeric'}))+'</b><span class="v30135-count">'+x.completed.length+'/'+x.due.length+' · '+x.xp+' XP</span></div><div class="v30135-list">'+items.map(m=>row(m,k,k>today()?'future':'agenda')).join('')+'</div></div>')}k=add(k,1)}return '<div class="v30135-agenda">'+(out.join('')||'<div class="v30135-empty">No scheduled activity in this month.</div>')+'</div>'}
-function history(){const now=monthKey(today()),months=[];for(let i=11;i>=0;i--){const mk=shiftMonth(now,-i),s=monthStats(mk);months.push('<div class="v30135-history-card"><b>'+esc(monthLabel(mk).replace(/ \\d{4}$/,''))+'</b><small>'+s.completed+' completed · '+s.xp+' XP</small></div>')}const y=Number(today().slice(0,4)),years=[];for(let i=4;i>=0;i--){const yy=y-i;let comp=0,xp=0;(state.missions||[]).forEach(m=>(m.completions||[]).forEach(c=>{if(String(c.date||c.at||'').slice(0,4)===String(yy)){comp++;xp+=Number(c.xp||m.xp||0)}}));years.push('<div class="v30135-history-card"><b>'+yy+'</b><small>'+comp+' completed · '+xp+' XP</small></div>')}return '<section class="card"><div class="section-title"><div><h2>History</h2><p>Monthly and annual completion history.</p></div></div><div class="v30135-history"><div><h3 style="font-size:11px">Last 12 months</h3><div class="v30135-history-grid">'+months.join('')+'</div></div><div><h3 style="font-size:11px">Last 5 years</h3><div class="v30135-history-grid" style="grid-template-columns:1fr">'+years.join('')+'</div></div></div></section>'}
-function renderCalendar135(){const s=S(),mk=s.v30135CalendarMonth||s.v30134CalendarMonth||monthKey(today()),sel=(s.v30135CalendarSelected&&monthKey(s.v30135CalendarSelected)===mk)?s.v30135CalendarSelected:((s.v30134CalendarSelected&&monthKey(s.v30134CalendarSelected)===mk)?s.v30134CalendarSelected:(mk===monthKey(today())?today():monthStart(mk))),view=s.v30135CalendarView||s.v30134CalendarView||'month',sum=monthStats(mk);s.v30135CalendarMonth=mk;s.v30135CalendarSelected=sel;s.v30135CalendarView=view;const main=view==='agenda'?agenda(mk):calendarGrid(mk,sel);return '<div class="v30135-calendar"><section class="card"><div class="v30135-toolbar"><div><h2 style="margin:0">Calendar</h2><p class="muted" style="margin:3px 0 0">Plan and edit missions directly from each date.</p></div><div class="v30135-nav"><button class="btn ghost" type="button" '+CAL+'="prev">←</button><button class="btn" type="button" '+CAL+'="today">Today</button><b style="min-width:150px;text-align:center">'+esc(monthLabel(mk))+'</b><button class="btn ghost" type="button" '+CAL+'="next">→</button></div><div class="v30135-view"><button class="btn '+(view==='month'?'primary':'ghost')+'" type="button" '+CAL+'="view" data-view="month">Month</button><button class="btn '+(view==='agenda'?'primary':'ghost')+'" type="button" '+CAL+'="view" data-view="agenda">Agenda</button></div></div><div class="v30135-kpis"><div class="v30135-kpi"><small>Month completed</small><b>'+sum.completed+'</b></div><div class="v30135-kpi"><small>Past missed</small><b>'+sum.missed+'</b></div><div class="v30135-kpi"><small>Scheduled one-offs</small><b>'+sum.scheduled+'</b></div><div class="v30135-kpi"><small>Month XP</small><b>'+sum.xp+'</b></div></div>'+main+(view==='month'?'<div style="margin-top:14px">'+detail(sel)+'</div>':'')+'</section>'+history()+'</div>'}
+function calendarGrid(mk,selected){const first=parse(monthStart(mk)),last=parse(monthEnd(mk)),offset=(first.getDay()+6)%7,cells=[];for(let i=0;i<offset;i++)cells.push('<div></div>');for(let n=1;n<=last.getDate();n++){const k=mk+'-'+String(n).padStart(2,'0'),x=dayData(k),t=today(),cls=k===t?' today':k<t?' past':' future',missed=k<t?x.pending.length:0;cells.push('<div class="v30135-day'+cls+(k===selected?' selected':'')+'" '+CAL+'="select-day" data-date="'+k+'"><div class="v30135-daynum"><span>'+n+'</span>'+(x.oneoffs.length?'<span class="v30135-count">'+x.oneoffs.length+' '+esc(tr('scheduled'))+'</span>':'')+'</div><div class="v30135-stage-dots">'+dots(x.due)+'</div><div class="v30135-daymeta"><div class="v30135-dayline"><span>'+esc(tr('Completed'))+'</span><b>'+x.completed.length+'</b></div><div class="v30135-dayline"><span>'+esc(tr(k<t?'Missed':'Due'))+'</span><b>'+(k<t?missed:x.pending.length)+'</b></div><div class="v30135-dayline"><span>XP</span><b>'+x.xp+'</b></div></div></div>')}return '<div class="v30135-grid">'+['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(x=>'<div class="v30135-weekday">'+esc(tr(x))+'</div>').join('')+cells.join('')+'</div>'}
+function agenda(mk){let k=monthStart(mk),end=monthEnd(mk),out=[];while(k<=end){const x=dayData(k);if(x.due.length||x.completed.length||x.skipped.length){const ids=new Set(),items=[];[...x.due,...x.completed,...x.skipped].forEach(m=>{if(m&&!ids.has(String(m.id))){ids.add(String(m.id));items.push(m)}});out.push('<div class="v30135-agenda-day"><div class="v30135-agenda-date"><b>'+esc(pretty(k,{weekday:'short',month:'short',day:'numeric'}))+'</b><span class="v30135-count">'+x.completed.length+'/'+x.due.length+' · '+x.xp+' XP</span></div><div class="v30135-list">'+items.map(m=>row(m,k,k>today()?'future':'agenda')).join('')+'</div></div>')}k=add(k,1)}return '<div class="v30135-agenda">'+(out.join('')||'<div class="v30135-empty">'+esc(tr('No scheduled activity in this month.'))+'</div>')+'</div>'}
+function history(){const now=monthKey(today()),months=[];for(let i=11;i>=0;i--){const mk=shiftMonth(now,-i),s=monthStats(mk);months.push('<div class="v30135-history-card"><b>'+esc(monthLabel(mk).replace(/ \d{4}$/,''))+'</b><small>'+s.completed+' '+esc(tr('completed'))+' · '+s.xp+' XP</small></div>')}const y=Number(today().slice(0,4)),years=[];for(let i=4;i>=0;i--){const yy=y-i;let comp=0,xp=0;(state.missions||[]).forEach(m=>(m.completions||[]).forEach(c=>{if(String(c.date||c.at||'').slice(0,4)===String(yy)){comp++;xp+=Number(c.xp||m.xp||0)}}));years.push('<div class="v30135-history-card"><b>'+yy+'</b><small>'+comp+' '+esc(tr('completed'))+' · '+xp+' XP</small></div>')}return '<section class="card"><div class="section-title"><div><h2>'+esc(tr('History'))+'</h2><p>'+esc(tr('Monthly and annual completion history.'))+'</p></div></div><div class="v30135-history"><div><h3 style="font-size:11px">'+esc(tr('Last 12 months'))+'</h3><div class="v30135-history-grid">'+months.join('')+'</div></div><div><h3 style="font-size:11px">'+esc(tr('Last 5 years'))+'</h3><div class="v30135-history-grid" style="grid-template-columns:1fr">'+years.join('')+'</div></div></div></section>'}
+function renderCalendar135(){const s=S(),mk=s.v30135CalendarMonth||s.v30134CalendarMonth||monthKey(today()),sel=(s.v30135CalendarSelected&&monthKey(s.v30135CalendarSelected)===mk)?s.v30135CalendarSelected:((s.v30134CalendarSelected&&monthKey(s.v30134CalendarSelected)===mk)?s.v30134CalendarSelected:(mk===monthKey(today())?today():monthStart(mk))),view=s.v30135CalendarView||s.v30134CalendarView||'month',sum=monthStats(mk);s.v30135CalendarMonth=mk;s.v30135CalendarSelected=sel;s.v30135CalendarView=view;const main=view==='agenda'?agenda(mk):calendarGrid(mk,sel);return '<div class="v30135-calendar"><section class="card"><div class="v30135-toolbar"><div><h2 style="margin:0">'+esc(tr('Calendar'))+'</h2><p class="muted" style="margin:3px 0 0">'+esc(tr('Plan and edit missions directly from each date.'))+'</p></div><div class="v30135-nav"><button class="btn ghost" type="button" '+CAL+'="prev">←</button><button class="btn" type="button" '+CAL+'="today">'+esc(tr('Today'))+'</button><b style="min-width:150px;text-align:center">'+esc(monthLabel(mk))+'</b><button class="btn ghost" type="button" '+CAL+'="next">→</button></div><div class="v30135-view"><button class="btn '+(view==='month'?'primary':'ghost')+'" type="button" '+CAL+'="view" data-view="month">'+esc(tr('Month'))+'</button><button class="btn '+(view==='agenda'?'primary':'ghost')+'" type="button" '+CAL+'="view" data-view="agenda">'+esc(tr('Agenda'))+'</button></div></div><div class="v30135-kpis"><div class="v30135-kpi"><small>'+esc(tr('Month completed'))+'</small><b>'+sum.completed+'</b></div><div class="v30135-kpi"><small>'+esc(tr('Past missed'))+'</small><b>'+sum.missed+'</b></div><div class="v30135-kpi"><small>'+esc(tr('Scheduled one-offs'))+'</small><b>'+sum.scheduled+'</b></div><div class="v30135-kpi"><small>'+esc(tr('Month XP'))+'</small><b>'+sum.xp+'</b></div></div>'+main+(view==='month'?'<div style="margin-top:14px">'+detail(sel)+'</div>':'')+'</section>'+history()+'</div>'}
 function categoryOptions(selected){try{return Object.entries(CATEGORIES||{}).map(([id,c])=>'<option value="'+esc(id)+'" '+(String(id)===String(selected)?'selected':'')+'>'+esc((c.emoji||'')+' '+(c.name||id))+'</option>').join('')}catch(e){return '<option value="order">Order</option>'}}
-function openOneOffEditor(k,m){const root=document.getElementById('modalRoot');if(!root)return;const edit=!!m,stage=stageOf(m||{}),diff=(m&&m.difficulty)||'medium',cat=(m&&m.category)||'order',xp=Number(m&&m.xp||30);root.innerHTML='<div class="modal-backdrop"><div class="modal"><div class="modal-head"><div><h2>'+(edit?'Edit scheduled task':'Add task to Calendar')+'</h2><p>'+(edit?'Change the task or move it to another date/stage.':'Create a one-off mission tied to this exact date.')+'</p></div><button class="icon-btn" type="button" '+CAL+'="close">×</button></div><form id="v30135OneOffForm" data-id="'+esc(m&&m.id||'')+'"><div class="v30135-modal-grid"><label>Name<input name="name" required value="'+esc(m&&m.name||'')+'" placeholder="Task name"></label><label>Date<input name="date" type="date" required value="'+esc(k)+'"></label><label>Category<select name="category">'+categoryOptions(cat)+'</select></label><label>Difficulty<select name="difficulty"><option value="easy" '+(diff==='easy'?'selected':'')+'>Easy</option><option value="medium" '+(diff==='medium'?'selected':'')+'>Medium</option><option value="hard" '+(diff==='hard'?'selected':'')+'>Hard</option></select></label><label>XP<input name="xp" type="number" min="0" step="5" value="'+xp+'"></label><label>Day stage<select name="stage"><option value="morning" '+(stage==='morning'?'selected':'')+'>Morning</option><option value="afternoon" '+(stage==='afternoon'?'selected':'')+'>Afternoon</option><option value="night" '+(stage==='night'?'selected':'')+'>Night</option></select></label></div><label style="margin-top:10px">Description<textarea name="description" placeholder="Optional">'+esc(m&&(m.description||m.desc)||'')+'</textarea></label><div class="actions" style="margin-top:14px"><button class="btn primary" type="submit">'+(edit?'Save changes':'Add task')+'</button><button class="btn ghost" type="button" '+CAL+'="close">Cancel</button></div></form></div></div>';setTimeout(()=>root.querySelector('input[name="name"]')?.focus(),30)}
+function openOneOffEditor(k,m){const root=document.getElementById('modalRoot');if(!root)return;const edit=!!m,stage=stageOf(m||{}),diff=(m&&m.difficulty)||'medium',cat=(m&&m.category)||'order',xp=Number(m&&m.xp||30);root.innerHTML='<div class="modal-backdrop"><div class="modal"><div class="modal-head"><div><h2>'+esc(tr(edit?'Edit scheduled task':'Add task to Calendar'))+'</h2><p>'+esc(tr(edit?'Change the task or move it to another date/stage.':'Create a one-off mission tied to this exact date.'))+'</p></div><button class="icon-btn" type="button" '+CAL+'="close">×</button></div><form id="v30135OneOffForm" data-id="'+esc(m&&m.id||'')+'"><div class="v30135-modal-grid"><label>'+esc(tr('Name'))+'<input name="name" required value="'+esc(m&&m.name||'')+'" placeholder="'+esc(tr('Task name'))+'"></label><label>'+esc(tr('Date'))+'<input name="date" type="date" required value="'+esc(k)+'"></label><label>'+esc(tr('Category'))+'<select name="category">'+categoryOptions(cat)+'</select></label><label>'+esc(tr('Difficulty'))+'<select name="difficulty"><option value="easy" '+(diff==='easy'?'selected':'')+'>'+esc(tr('Easy'))+'</option><option value="medium" '+(diff==='medium'?'selected':'')+'>'+esc(tr('Medium'))+'</option><option value="hard" '+(diff==='hard'?'selected':'')+'>'+esc(tr('Hard'))+'</option></select></label><label>XP<input name="xp" type="number" min="0" step="5" value="'+xp+'"></label><label>'+esc(tr('Day stage'))+'<select name="stage"><option value="morning" '+(stage==='morning'?'selected':'')+'>'+esc(tr('Morning'))+'</option><option value="afternoon" '+(stage==='afternoon'?'selected':'')+'>'+esc(tr('Afternoon'))+'</option><option value="night" '+(stage==='night'?'selected':'')+'>'+esc(tr('Night'))+'</option></select></label></div><label style="margin-top:10px">'+esc(tr('Description'))+'<textarea name="description" placeholder="'+esc(tr('Optional'))+'">'+esc(m&&(m.description||m.desc)||'')+'</textarea></label><div class="actions" style="margin-top:14px"><button class="btn primary" type="submit">'+esc(tr(edit?'Save changes':'Add task'))+'</button><button class="btn ghost" type="button" '+CAL+'="close">'+esc(tr('Cancel'))+'</button></div></form></div></div>';setTimeout(()=>root.querySelector('input[name="name"]')?.focus(),30)}
 function makeOneOff(form){const fd=new FormData(form),id=form.dataset.id||'',k=String(fd.get('date')||today()).slice(0,10),name=String(fd.get('name')||'').trim();if(!name)return;const diff=String(fd.get('difficulty')||'medium'),cat=String(fd.get('category')||'order'),stage=String(fd.get('stage')||'afternoon'),xp=Number(fd.get('xp')||30),day=parse(k).getDay(),desc=String(fd.get('description')||'');let m=id?mission(id):null;if(!m){try{m=makeMission(name,cat,'oneoff',diff,[day],{description:desc,deadline:k,xp:xp})}catch(e){m={id:'m_'+Date.now()+'_'+Math.random().toString(36).slice(2),name,category:cat,type:'oneoff',difficulty:diff,xp,coins:0,days:[day],deadline:k,createdAt:new Date().toISOString(),completions:[]}}state.missions.unshift(m)}m.name=name;m.category=cat;m.difficulty=diff;m.description=desc;m.desc=desc;m.type='oneoff';m.originalType='oneoff';m.oneTime=true;m.v30134CalendarOneOff=true;m.v30135CalendarOneOff=true;m.scheduledDate=k;m.date=k;m.due=k;m.deadline=k;m.days=[day];m.xp=xp;m.v30114DayStage=stage;m.dayStage=stage;m.timeOfDay=stage;m.autoArchiveAfterComplete=false;m.noSuggest=false;m.archived=false;m.hidden=false;const r=document.getElementById('modalRoot');if(r)r.innerHTML='';S().v30135CalendarSelected=k;S().v30135CalendarMonth=monthKey(k);saveNow();redraw()}
 function openEdit(m,k){if(!m)return;if(isCalendarOneOff(m))openOneOffEditor(String(m.scheduledDate||k).slice(0,10),m);else{try{if(typeof window.openMissionEditor==='function')window.openMissionEditor(m.id);else if(typeof openMissionEditor==='function')openMissionEditor(m.id);}catch(e){console.error('calendar edit',e)}}}
 function completeOn(m,k){if(!m||completionOn(m,k))return;if(k===today()){try{const fn=typeof window.completeMission==='function'?window.completeMission:(typeof completeMission==='function'?completeMission:null);if(fn){fn(m.id);return}}catch(e){console.error('calendar today complete',e)}}m.completions=m.completions||[];m.completions.push({id:'c_cal_'+Date.now()+'_'+Math.random().toString(36).slice(2),date:k,at:new Date().toISOString(),xp:Number(m.xp||0),coins:0,category:m.category,name:m.name});state.xp=Number(state.xp||0)+Number(m.xp||0);try{if(typeof checkAchievements==='function')checkAchievements()}catch(e){}saveNow();redraw()}
