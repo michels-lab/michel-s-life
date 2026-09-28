@@ -1168,7 +1168,12 @@ const ENGLISH_SYSTEM_DEFAULTS={
   "Trabajo":"Work",
   "Casa":"Home",
   "Cena":"Dinner",
-  "Después":"After"
+  "Después":"After",
+  "Revisión weekly":"Weekly Review",
+  "Usar equipo de casa 2 times":"Use home equipment 2 times",
+  "Prepare comida 3 times":"Prepare food 3 times",
+  "Cardio o caminata 2 times":"Cardio or walking 2 times",
+  "OpenFOAM / CFD 2 sesiones":"OpenFOAM / CFD 2 sessions"
 };
 
 function installedDefault(){
