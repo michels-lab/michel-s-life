@@ -1581,6 +1581,10 @@ function ensureLanguageControl(){
   pane.prepend(card);
   const sel=card.querySelector('[data-mlv-language-select]');
   sel.value=language;
+  // The Settings shell has global click listeners that may rerender the pane.
+  // Keep native select interaction local so the dropdown cannot be destroyed
+  // between opening it and choosing a language.
+  sel.addEventListener('click',event=>event.stopPropagation());
   sel.addEventListener('change',event=>{
     event.stopPropagation();
     setLanguage(sel.value,{userInitiated:true});
