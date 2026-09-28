@@ -1,6 +1,6 @@
-import { chromium } from 'playwright';
+import fs from 'node:fs';
+import vm from 'node:vm';
 
-const url=process.env.MLV_UI_URL||'http://127.0.0.1:4173';
 function ok(v,m){if(!v)throw new Error(m)}
 
 function extractObject(source,name){
@@ -31,33 +31,52 @@ function extractObject(source,name){
   throw new Error('Unclosed object '+name);
 }
 
-function chunks(xs,n=500){
-  const out=[];
-  for(let i=0;i<xs.length;i+=n)out.push(xs.slice(i,i+n));
-  return out;
-}
+const store=new Map([
+  ['michelsLife.onboarding.v30200','done'],
+  ['michelsLife.language.v1','en'],
+  ['michelsLife.installLanguage.v1','en'],
+  ['michelsLife.languageOverrideBase.v1','en']
+]);
+const localStorage={
+  getItem:k=>store.has(k)?store.get(k):null,
+  setItem:(k,v)=>store.set(k,String(v)),
+  removeItem:k=>store.delete(k)
+};
+const document={
+  readyState:'loading',
+  body:null,
+  documentElement:{lang:'en'},
+  addEventListener(){},
+  querySelector(){return null},
+  querySelectorAll(){return []},
+  getElementById(){return null},
+  createElement(){return {style:{},dataset:{},classList:{add(){},remove(){}},setAttribute(){},querySelectorAll(){return []}}},
+  head:{appendChild(){}}
+};
+const window={
+  __MICHELSLIFE_INSTALL_LANGUAGE__:'en',
+  dispatchEvent(){},
+  addEventListener(){}
+};
+class MutationObserver{constructor(){} observe(){}}
+class CustomEvent{constructor(type,init){this.type=type;this.detail=init?.detail}}
+const sandbox={
+  window,document,localStorage,
+  navigator:{language:'en'},
+  MutationObserver,CustomEvent,
+  requestAnimationFrame:()=>0,
+  setTimeout:()=>0,clearTimeout:()=>{},
+  setInterval:()=>0,clearInterval:()=>{},
+  console
+};
+sandbox.globalThis=sandbox;
+const src=fs.readFileSync(new URL('../src/MichelsLife/frontend/i18n.js',import.meta.url),'utf8');
+vm.runInNewContext(src,sandbox,{filename:'i18n.js'});
+const api=sandbox.window.MichelsLifeI18n;
+ok(api&&typeof api.mapText==='function','i18n API failed to initialize in logic harness');
 
-const browser=await chromium.launch({headless:true});
-const page=await browser.newPage({viewport:{width:1600,height:1000},deviceScaleFactor:1});
-
-await page.addInitScript(()=>{
-  try{
-    localStorage.setItem('michelsLife.onboarding.v30200','done');
-    localStorage.setItem('michelsLife.language.v1','en');
-  }catch(_){}
-});
-
-async function setLanguage(lang){
-  await page.evaluate(l=>window.MichelsLifeI18n.setLanguage(l),lang);
-  await page.waitForTimeout(80);
-}
-async function mapMany(inputs){
-  const out=[];
-  for(const batch of chunks(inputs)){
-    out.push(...await page.evaluate(arr=>arr.map(x=>window.MichelsLifeI18n.mapText(x)),batch));
-  }
-  return out;
-}
+function setLanguage(lang){ api.setLanguage(lang); }
+function mapMany(inputs){ return inputs.map(x=>api.mapText(x)); }
 function compareCases(label,cases,actual){
   const bad=[];
   for(let i=0;i<cases.length;i++){
@@ -69,29 +88,24 @@ function compareCases(label,cases,actual){
   ok(!bad.length,label+' failed '+bad.length+' examples (first 100):\n'+JSON.stringify(bad,null,2));
 }
 
-try{
-  await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
-  await page.waitForFunction(()=>window.MichelsLifeI18n&&window.LeftNavV30171,null,{timeout:60000});
-
-  const src=await (await fetch(new URL('i18n.js',url))).text();
-  const PAIRS=extractObject(src,'PAIRS');
+const PAIRS=extractObject(src,'PAIRS');
   const SPANISH_SYSTEM_DEFAULTS=extractObject(src,'SPANISH_SYSTEM_DEFAULTS');
   const ENGLISH_SYSTEM_DEFAULTS=extractObject(src,'ENGLISH_SYSTEM_DEFAULTS');
   const pairs=Object.entries(PAIRS);
 
   // 1) Every canonical static English phrase must map exactly to its Spanish pair.
-  await setLanguage('es');
+  setLanguage('es');
   const staticEsCases=pairs.map(([en,es],i)=>({id:'pair-es-'+i,input:en,expected:es}));
-  compareCases('Canonical EN -> ES dictionary',staticEsCases,await mapMany(staticEsCases.map(x=>x.input)));
+  compareCases('Canonical EN -> ES dictionary',staticEsCases,mapMany(staticEsCases.map(x=>x.input)));
 
   // 2) Every explicit system default must map exactly to Spanish.
   const defaultEsCases=Object.entries(SPANISH_SYSTEM_DEFAULTS).map(([en,es],i)=>({id:'default-es-'+i,input:en,expected:es}));
-  compareCases('System-default EN -> ES',defaultEsCases,await mapMany(defaultEsCases.map(x=>x.input)));
+  compareCases('System-default EN -> ES',defaultEsCases,mapMany(defaultEsCases.map(x=>x.input)));
 
   // 3) Long stock phrases must also translate when embedded in larger dynamic nodes.
   const longPairs=pairs.filter(([en])=>/[.!?]/.test(en)||en.trim().split(/\s+/).length>=4);
   const embeddedEsCases=longPairs.map(([en,es],i)=>({id:'embedded-es-'+i,input:'⟦ '+en+' ⟧',expected:'⟦ '+es+' ⟧'}));
-  compareCases('Embedded system EN -> ES',embeddedEsCases,await mapMany(embeddedEsCases.map(x=>x.input)));
+  compareCases('Embedded system EN -> ES',embeddedEsCases,mapMany(embeddedEsCases.map(x=>x.input)));
 
   const counts=[0,1,2,3,5,10,26,99];
   const toSpanish=[];
@@ -186,7 +200,7 @@ try{
     }
   }
 
-  compareCases('Generated/dynamic EN or mixed -> ES',toSpanish,await mapMany(toSpanish.map(x=>x.input)));
+  compareCases('Generated/dynamic EN or mixed -> ES',toSpanish,mapMany(toSpanish.map(x=>x.input)));
 
   // Build a complete Spanish corpus from the exact expected outputs above.
   const spanishCorpus=[...new Set([
@@ -197,9 +211,9 @@ try{
   ])];
 
   // 9) Switch to English. Every explicit reverse default must map exactly.
-  await setLanguage('en');
+  setLanguage('en');
   const defaultEnCases=Object.entries(ENGLISH_SYSTEM_DEFAULTS).map(([es,en],i)=>({id:'default-en-'+i,input:es,expected:en}));
-  compareCases('System-default ES -> EN',defaultEnCases,await mapMany(defaultEnCases.map(x=>x.input)));
+  compareCases('System-default ES -> EN',defaultEnCases,mapMany(defaultEnCases.map(x=>x.input)));
 
   // 10) Static Spanish values may be ambiguous (e.g. Mañana can mean Tomorrow or
   // Morning), so accept any canonical English key that maps to the same Spanish.
@@ -209,7 +223,7 @@ try{
     reverseGroups.get(es).add(en);
   }
   const staticEsValues=[...reverseGroups.keys()];
-  const staticEnActual=await mapMany(staticEsValues);
+  const staticEnActual=mapMany(staticEsValues);
   const staticReverseBad=[];
   for(let i=0;i<staticEsValues.length;i++){
     const es=staticEsValues[i],actual=staticEnActual[i],allowed=reverseGroups.get(es);
@@ -237,13 +251,13 @@ try{
       expected:`🌇 ${g}, Michel · ${d}, ${m} 28 · ${msg}`
     });
   }
-  compareCases('Generated ES -> EN',toEnglish,await mapMany(toEnglish.map(x=>x.input)));
+  compareCases('Generated ES -> EN',toEnglish,mapMany(toEnglish.map(x=>x.input)));
 
   // 12) Round-trip stability for the complete system corpus: after ES -> EN -> ES,
   // the Spanish system phrase must return byte-for-byte to its original Spanish.
-  const enFromSpanish=await mapMany(spanishCorpus);
-  await setLanguage('es');
-  const esAgain=await mapMany(enFromSpanish);
+  const enFromSpanish=mapMany(spanishCorpus);
+  setLanguage('es');
+  const esAgain=mapMany(enFromSpanish);
   const roundTripBad=[];
   for(let i=0;i<spanishCorpus.length;i++){
     if(esAgain[i]!==spanishCorpus[i]){
@@ -255,7 +269,7 @@ try{
 
   // 13) User-authored Spanish must not be opportunistically translated in English
   // merely because it contains a system word.
-  await setLanguage('en');
+  setLanguage('en');
   const userSamples=[
     'Mi proyecto de septiembre',
     'Cena con amigos',
@@ -266,7 +280,7 @@ try{
     'Casa nueva',
     'Revisión personal de octubre'
   ];
-  const userActual=await mapMany(userSamples);
+  const userActual=mapMany(userSamples);
   const userBad=userSamples.map((input,i)=>({input,actual:userActual[i]})).filter(x=>x.input!==x.actual);
   ok(!userBad.length,'English mode modified user-authored Spanish samples:\n'+JSON.stringify(userBad,null,2));
 
@@ -282,6 +296,3 @@ try{
     discoveredMessages:messages.length,
     totalAssertions:pairs.length+defaultEsCases.length+defaultEnCases.length+embeddedEsCases.length+toSpanish.length+toEnglish.length+spanishCorpus.length+userSamples.length
   },null,2));
-} finally {
-  await browser.close();
-}
