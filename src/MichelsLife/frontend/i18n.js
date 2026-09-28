@@ -62,12 +62,37 @@ const PAIRS={
   "Essential only":"Solo esenciales",
   "Balanced":"Equilibrado",
   "Coach mode":"Modo coach",
+  "Start Work":"Iniciar trabajo",
+  "Apply":"Aplicar",
+  "Auto · Current mission":"Automático · Misión actual",
+  "Auto · Current misión":"Automático · Misión actual",
+  "Auto-start break":"Iniciar descanso automáticamente",
+  "AI Export":"Exportar para IA",
+  "Linked tasks":"Tareas vinculadas",
+  "On track":"En curso",
+  "Important changes made inside the app.":"Cambios importantes realizados dentro de la app.",
+  "The five most recent recovery points.":"Los cinco puntos de recuperación más recientes.",
+  "Your life, archived as eras instead of a pile of tasks.":"Tu vida, archivada como eras en lugar de una pila de tareas.",
+  "Time ambience":"Ambiente horario",
+  "Use custom opacity":"Usar opacidad personalizada",
+  "Main panel":"Panel principal",
+  "Apply timer settings":"Aplicar ajustes del temporizador",
+  "Clear Next Up":"Limpiar Siguientes",
+  "Open Maintenance":"Abrir mantenimiento",
+  "Choose photo":"Elegir foto",
+  "Save system settings":"Guardar configuración del sistema",
+  "Create snapshot now":"Crear instantánea ahora",
+  "Choose newer EXE…":"Elegir un EXE más reciente…",
+  "Enabled":"Activado",
+  "Disabled":"Desactivado",
+  "Main growth direction":"Dirección principal de crecimiento",
+  "Weighted build radar":"Radar ponderado de progreso",
   "Current Mission":"Misión actual","Start mission":"Iniciar misión","Start as Current Mission":"Iniciar como misión actual",
   "Delete mission":"Eliminar misión","Edit":"Editar","Add today":"Agregar hoy","Tomorrow":"Mañana",
   "Not today":"Hoy no","Duplicate":"Duplicar","Archive":"Archivar","Completed":"Completada",
   "Save":"Guardar","Cancel":"Cancelar","Delete":"Eliminar","Close":"Cerrar","Reset":"Restablecer",
   "Save settings":"Guardar configuración","Save configuration":"Guardar configuración",
-  "Language":"Idioma","Interface language":"Idioma de la interfaz","English":"English","Spanish":"Español",
+  "Language":"Idioma","Interface language":"Idioma de la interfaz","English":"Inglés","Spanish":"Español",
   "Use the language selected during installation the first time Michel’s Life opens. You can change it here anytime.":"Usa el idioma elegido durante la instalación la primera vez que abre Michel’s Life. Puedes cambiarlo aquí cuando quieras.",
   "Today":"Hoy","Yesterday":"Ayer","Tomorrow":"Mañana","Week":"Semana","Month":"Mes","Year":"Año",
   "Coins":"Monedas","Streak":"Racha","Level":"Nivel","New mission":"Nueva misión","Shop":"Tienda",
@@ -1150,6 +1175,51 @@ function mapText(raw){
     out=out.replace(/\bEvening\b/gi,'Noche');
     out=out.replace(/\bNight\b/gi,'Noche');
     out=out.replace(/\bEdit\b/g,'Editar');
+    out=out.replace(/\bFocus\s*·/gi,'Enfoque ·');
+    out=out.replace(/\bStart Work\b/gi,'Iniciar trabajo');
+    out=out.replace(/\bAuto\s*·\s*Current\s+misión\b/gi,'Automático · Misión actual');
+    out=out.replace(/\bAuto-start break\b/gi,'Iniciar descanso automáticamente');
+    out=out.replace(/\bAI Export\b/gi,'Exportar para IA');
+    out=out.replace(/\bApply\b/gi,'Aplicar');
+    out=out.replace(/\bOn track\b/gi,'En curso');
+    out=out.replace(/(\d+)\s+left\s+this\s+Semana/gi,'$1 restantes esta semana');
+    out=out.replace(/\bthis\s+Semana\b/gi,'esta semana');
+    out=out.replace(/\bpendientes\s+now\b/gi,'pendientes ahora');
+    out=out.replace(/\bpendientes\s+from\s+earlier\b/gi,'pendientes anteriores');
+    out=out.replace(/\bLinked tasks\b/gi,'Tareas vinculadas');
+    out=out.replace(/(\d+)\s+linked\b/gi,'$1 vinculadas');
+    out=out.replace(/This contract has no active misiones linked to it\./gi,'Este contrato no tiene misiones activas vinculadas.');
+    out=out.replace(/\bYour life, archived as eras instead of a pile of tasks\.\b/gi,'Tu vida, archivada como eras en lugar de una pila de tareas.');
+    out=out.replace(/\bTime ambience\b/gi,'Ambiente horario');
+    out=out.replace(/\bUse custom opacity\b/gi,'Usar opacidad personalizada');
+    out=out.replace(/\bMain panel\b/gi,'Panel principal');
+    out=out.replace(/\bApply timer settings\b/gi,'Aplicar ajustes del temporizador');
+    out=out.replace(/\bClear Next Up\b/gi,'Limpiar Siguientes');
+    out=out.replace(/\bOpen Maintenance\b/gi,'Abrir mantenimiento');
+    out=out.replace(/\bChoose photo\b/gi,'Elegir foto');
+    out=out.replace(/\bSave system settings\b/gi,'Guardar configuración del sistema');
+    out=out.replace(/\bCreate snapshot now\b/gi,'Crear instantánea ahora');
+    out=out.replace(/\bChoose newer EXE…/gi,'Elegir un EXE más reciente…');
+    out=out.replace(/\bDefault is 6\. The floating dock grows to a second row when needed\./gi,'El valor predeterminado es 6. El panel flotante crece a una segunda fila cuando es necesario.');
+    out=out.replace(/\bKeep Plan my day first\b/gi,'Mantener «Planear mi día» primero');
+    out=out.replace(/\bOnce per new day, the matching misión is placed at #1 automatically\./gi,'Una vez por cada nuevo día, la misión correspondiente se coloca automáticamente en el puesto 1.');
+    out=out.replace(/\bAuto-open hoy Plan after Plan my day\b/gi,'Abrir automáticamente el plan de hoy después de «Planear mi día»');
+    out=out.replace(/\bEnabled\b/gi,'Activado');
+    out=out.replace(/\bDisabled\b/gi,'Desactivado');
+    out=out.replace(/\bRadar de build\b/gi,'Radar de progreso');
+    out=out.replace(/\brevelar tu build\b/gi,'revelar tu progreso');
+    out=out.replace(/\bla build\b/gi,'el progreso');
+    out=out.replace(/\bMain growth direction\b/gi,'Dirección principal de crecimiento');
+    out=out.replace(/\bWeighted build radar\b/gi,'Radar ponderado de progreso');
+    out=out.replace(/\bPhysical\b/gi,'Físico');
+    out=out.replace(/\bAcademic\b/gi,'Académico');
+    out=out.replace(/\bOrder\b/gi,'Orden');
+    out=out.replace(/\bPresence\b/gi,'Presencia');
+    out=out.replace(/\bFinance\b/gi,'Finanzas');
+    out=out.replace(/\bAutonomy\b/gi,'Autonomía');
+    out=out.replace(/\bCulture\b/gi,'Cultura');
+    out=out.replace(/\bTrain\s+5\s+días\s+esta\s+semana\b/gi,'Entrenar 5 días esta semana');
+    out=out.replace(/\bLog gym weights\s+3\s+times\s+esta\s+semana\b/gi,'Registrar cargas del gimnasio 3 veces esta semana');
     out=out.replace(/\bWeek\b/gi,'Semana');
     out=out.replace(/\bNo linked misiones\b/gi,'Sin misiones vinculadas');
     out=out.replace(/has no active (?:missions|misiones) connected to it\./gi,'no tiene misiones activas vinculadas.');
@@ -1351,7 +1421,7 @@ function init(){
         }
       }catch(_){}
     });
-  },300);
+  },120);
 }
 let refreshTimer=0;
 function queueRefresh(){
