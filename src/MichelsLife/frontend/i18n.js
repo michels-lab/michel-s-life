@@ -1173,7 +1173,8 @@ const SPANISH_SYSTEM_DEFAULTS={
   "This month vs last month":"Este mes vs mes pasado",
   "Last 12 months":"Últimos 12 meses",
   "Last 5 years":"Últimos 5 años",
-  "Undo last action":"Deshacer última acción"
+  "Undo last action":"Deshacer última acción",
+  "Do not call the day lost while there is still leverage.":"No des el día por perdido mientras todavía haya margen."
 };
 
 const REVERSE=Object.fromEntries(Object.entries(PAIRS).map(([en,es])=>[es,en]));
@@ -1216,7 +1217,8 @@ const ENGLISH_SYSTEM_DEFAULTS={
   "Últimos 5 años":"Last 5 years",
   "Deshacer última acción":"Undo last action",
   "Dorado":"Gold",
-  "dorado":"gold"
+  "dorado":"gold",
+  "No des el día por perdido mientras todavía haya margen.":"Do not call the day lost while there is still leverage."
 };
 
 function installedDefault(){
