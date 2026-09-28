@@ -179,7 +179,7 @@ const PAIRS={
   "New goal mission":"Nueva misión de meta",
   "Daily priority":"Prioridad diaria",
   "Daily priority disabled":"Prioridad diaria desactivada",
-  "Choose Main, Important and Optional missions":"Elige misiones Principal, Importantes y Opcionales",
+  "Choose Main, Important and Optional missions":"Elige misiones principales, importantes y opcionales",
   "Choose priorities for tomorrow.":"Elige las prioridades para mañana.",
   "Change project":"Cambiar proyecto",
   "Change or remove the linked project":"Cambiar o quitar el proyecto vinculado",
@@ -462,8 +462,8 @@ const PAIRS={
   "Two deep-work hours for thesis progress. Monday to Friday. This is a serious academic block.":"Dos horas de trabajo profundo para avanzar la tesis. De lunes a viernes. Es un bloque académico serio.",
   "New actions added":"Nuevas acciones agregadas",
   "Certifications and thesis blocks were added Monday to Friday.":"Se agregaron bloques de certificaciones y tesis de lunes a viernes.",
-  "Today only · very reactive":"Solo hoy · muy reactivo",
-  "Current week due so far · default":"Semana actual hasta ahora · predeterminado",
+  "Today only · very reactive":"Solo hoy · muy sensible a cambios",
+  "Current week due so far · default":"Semana actual hasta hoy · predeterminado",
   "Last 30 days · identity trend":"Últimos 30 días · tendencia de identidad",
   "Not enough scheduled actions":"No hay suficientes acciones programadas",
   "No scheduled load yet.":"Todavía no hay carga programada.",
@@ -471,8 +471,8 @@ const PAIRS={
   "Mission restored:":"Misión restaurada:",
   "Mission restored":"Misión restaurada",
   "Example: Certifications 5x/week":"Ejemplo: Certificaciones 5x/semana",
-  "Counted today":"Contado hoy",
-  "Manual complete":"Completado manual",
+  "Counted today":"Contabilizado hoy",
+  "Manual complete":"Completado manualmente",
   "Search Premium Contract or linked task...":"Buscar Contrato Premium o tarea vinculada...",
   "· linked tasks saved":"· tareas vinculadas guardadas",
   "Delete this Premium Contract permanently?":"¿Eliminar permanentemente este Contrato Premium?",
@@ -654,7 +654,7 @@ const PAIRS={
   "Search linked tasks...":"Buscar tareas vinculadas...",
   "Never completed in more than 30 days.":"Sin completar en más de 30 días.",
   "Linked to":"Vinculada a",
-  "Scheduled every day but completed only":"Programada todos los días pero completada solo",
+  "Scheduled every day but completed only":"Programada todos los días, pero completada solo",
   "times in the last 14 days.":"veces en los últimos 14 días.",
   "Keep 30 days":"Conservar 30 días",
   "Export a backup and remove older snapshots.":"Exporta un respaldo y elimina instantáneas antiguas.",
@@ -975,7 +975,7 @@ const PAIRS={
   "Listen, read or write affirmations intentionally.":"Escucha, lee o escribe afirmaciones con intención.",
   "Premium contracts":"Contratos Premium",
   "Cloud needs attention":"La nube necesita atención",
-  "Use category shortcuts to find missions fast and add them to today.":"Usa los accesos por categoría para encontrar misiones rápido y agregarlas a hoy.",
+  "Use category shortcuts to find missions fast and add them to today.":"Usa los accesos directos por categoría para encontrar misiones rápidamente y agregarlas a las de hoy.",
   "Time of day":"Hora del día",
   "History":"Historial",
   "Monthly and annual completion history.":"Historial mensual y anual de completados.",
@@ -1135,7 +1135,7 @@ function mapText(raw){
     out=out.replace(new RegExp('“([^”]+)” has no active missions connected to it\\.','gi'),'“$1” no tiene misiones activas vinculadas.');
     out=out.replace(new RegExp('Today \\+(\\d+) XP','gi'),'Hoy +$1 XP');
     out=out.replace(new RegExp('This week ·','gi'),'Esta semana ·');
-    out=out.replace(new RegExp('Current week due so far · default','gi'),'Semana actual hasta ahora · predeterminado');
+    out=out.replace(new RegExp('Current week due so far · default','gi'),'Semana actual hasta hoy · predeterminado');
     const fullWeekdays={Sunday:'Domingo',Monday:'Lunes',Tuesday:'Martes',Wednesday:'Miércoles',Thursday:'Jueves',Friday:'Viernes',Saturday:'Sábado'};
     const fullMonths={January:'Enero',February:'Febrero',March:'Marzo',April:'Abril',May:'Mayo',June:'Junio',July:'Julio',August:'Agosto',September:'Septiembre',October:'Octubre',November:'Noviembre',December:'Diciembre'};
     out=out.replace(/\b(Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday)\b/gi,m=>fullWeekdays[Object.keys(fullWeekdays).find(k=>k.toLowerCase()===m.toLowerCase())]||m);
