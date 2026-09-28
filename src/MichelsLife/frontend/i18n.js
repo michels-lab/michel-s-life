@@ -87,6 +87,41 @@ const PAIRS={
   "Disabled":"Desactivado",
   "Main growth direction":"Dirección principal de crecimiento",
   "Weighted build radar":"Radar ponderado de progreso",
+  "Unassigned Focus":"Enfoque sin asignar",
+  "Ready":"Listo",
+  "Recent Focus":"Enfoque reciente",
+  "No Focus blocks saved yet":"Aún no hay bloques de enfoque guardados",
+  "Focus mission":"Misión de enfoque",
+  "Focus misión":"Misión de enfoque",
+  "Player":"Jugador",
+  "Use":"Usar",
+  "available":"disponible",
+  "Pick a preset or create your own window palette.":"Elige un ajuste preestablecido o crea tu propia paleta de ventana.",
+  "Controls active weekly day chips, Premium Contracts and premium badges.":"Controla los botones de días semanales activos, los Contratos Premium y las insignias Premium.",
+  "Tall condensed sans-serif with a sharper, poster-like rhythm.":"Tipografía de palo seco, alta y condensada, con un ritmo más marcado similar al de un cartel.",
+  "Editorial Caslon-style serif with stronger contrast and bookish weight.":"Tipografía editorial con serifas al estilo Caslon, de mayor contraste y con una presencia más propia de libro.",
+  "Tall condensed italic display direction adapted for interface readability.":"Estilo de exhibición alto, condensado e inclinado, adaptado para mantener la legibilidad de la interfaz.",
+  "Narrow cinematic sans-serif using the era’s condensed visual language.":"Tipografía estrecha de palo seco con aire cinematográfico, basada en el lenguaje visual condensado de la era.",
+  "Geometric display direction with a cleaner, lighter interface treatment.":"Estilo geométrico de exhibición con un tratamiento de interfaz más limpio y ligero.",
+  "Elegant vintage serif with a restrained mid-century feel.":"Tipografía elegante con serifas, de aire clásico y carácter sobrio de mediados de siglo.",
+  "Classic Garamond-style book serif with warm, traditional proportions.":"Tipografía clásica con serifas al estilo Garamond, pensada para lectura y con proporciones cálidas y tradicionales.",
+  "High-contrast modern serif with heavier vertical emphasis.":"Tipografía moderna con serifas, de alto contraste y mayor énfasis vertical.",
+  "handwriting, script and blackletter-only eras are not used as full-interface presets. Display-heavy eras use a readable adaptation while keeping their own distinct visual direction.":"Las eras basadas únicamente en escritura manuscrita, caligráfica o gótica no se usan como ajustes preestablecidos para toda la interfaz. Las eras con tipografías muy decorativas usan una adaptación legible sin perder su identidad visual.",
+  "Real frame-by-frame motion for clouds, rain, leaves, petals, Halloween, snow and lights.":"Movimiento real fotograma a fotograma para nubes, lluvia, hojas, pétalos, Halloween, nieve y luces.",
+  "Every surface uses a true 0–100% range. The preview shows exactly which layer each slider controls.":"Cada superficie usa un rango real de 0 a 100 %. La vista previa muestra exactamente qué capa controla cada deslizador.",
+  "Main left navigation shell.":"Panel principal de navegación lateral izquierda.",
+  "Changes while you drag":"Cambia mientras arrastras",
+  "Your own rhythm":"Tu propio ritmo",
+  "CURRENT PHASE":"FASE ACTUAL",
+  "STATUS":"ESTADO",
+  "Next Up queue":"Cola de Siguientes",
+  "Planning, projects & focus":"Planificación, proyectos y enfoque",
+  "Optionally use your own photo for any time-of-day stage, instead of the default sky. This is an extra option on top of the default — leave a stage empty to keep the default look for it.":"Puedes usar tu propia foto en cualquier etapa del día en lugar del cielo predeterminado. Es una opción adicional: deja una etapa vacía para conservar su apariencia predeterminada.",
+  "Backup & restore":"Respaldo y restauración",
+  "The five newest states are retained.":"Se conservan los cinco estados más recientes.",
+  "Proprietary · Personal use":"Propietario · Uso personal",
+  "Free for personal use. Unauthorized copying, modification, redistribution, rebranding, resale, sublicensing, or claiming this software as your own is not permitted without prior written permission.":"Gratis para uso personal. No se permite copiar, modificar, redistribuir, cambiar la marca, revender, sublicenciar ni presentar este software como propio sin autorización previa por escrito.",
+  "Updates preserve the same data profile and create a restore point before replacing the app.":"Las actualizaciones conservan el mismo perfil de datos y crean un punto de restauración antes de reemplazar la aplicación.",
   "Current Mission":"Misión actual","Start mission":"Iniciar misión","Start as Current Mission":"Iniciar como misión actual",
   "Delete mission":"Eliminar misión","Edit":"Editar","Add today":"Agregar hoy","Tomorrow":"Mañana",
   "Not today":"Hoy no","Duplicate":"Duplicar","Archive":"Archivar","Completed":"Completada",
@@ -1220,6 +1255,13 @@ function mapText(raw){
     out=out.replace(/\bCulture\b/gi,'Cultura');
     out=out.replace(/\bTrain\s+5\s+días\s+esta\s+semana\b/gi,'Entrenar 5 días esta semana');
     out=out.replace(/\bLog gym weights\s+3\s+times\s+esta\s+semana\b/gi,'Registrar cargas del gimnasio 3 veces esta semana');
+    out=out.replace(/\bBuild early advantage while everything is quiet\./gi,'Aprovecha la calma para avanzar desde temprano.');
+    out=out.replace(/\bcomplete the next visible action\./gi,'completa la siguiente acción visible.');
+    out=out.replace(/\bon a (?:mission|misión) to build your queue\./gi,'en una misión para armar tu cola.');
+    out=out.replace(/\bDay,\s*Semana,\s*level and contracts\./gi,'Día, semana, nivel y contratos.');
+    out=out.replace(/\bFocus\s+misión\b/gi,'Misión de enfoque');
+    out=out.replace(/\bPlayer\b/g,'Jugador');
+    out=out.replace(/\bavailable\b/gi,'disponible');
     out=out.replace(/I become impossible to ignore because I keep showing up\./gi,'Me vuelvo imposible de ignorar porque sigo apareciendo y cumpliendo.');
     out=out.replace(/(\d+\/\d+)\s+(?:missions|misiones)\s+today\s*·\s*(?:Week|Semana)\s+(\d+)%\s*·\s*Reset\s+([^\n]*)/gi,'$1 misiones hoy · Semana $2% · Reinicio $3');
     out=out.replace(/\bWeek\b/gi,'Semana');
