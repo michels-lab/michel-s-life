@@ -85,7 +85,8 @@ try{
   // Exact failure mode from the real app: Spanish -> English without reload.
   await page.evaluate(()=>window.MichelsLifeI18n.setLanguage('en'));
   await page.waitForTimeout(900);
-  ok(document.documentElement.lang==='en','Document language did not switch to English');
+  const htmlLang=await page.evaluate(()=>document.documentElement.lang);
+  ok(htmlLang==='en','Document language did not switch to English: '+htmlLang);
 
   const residue=[];
   for(const route of routes){
