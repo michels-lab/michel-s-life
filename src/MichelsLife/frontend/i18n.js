@@ -1162,7 +1162,13 @@ const REVERSE=Object.fromEntries(Object.entries(PAIRS).map(([en,es])=>[es,en]));
 // translator, so user-authored Spanish remains untouched in English mode.
 const ENGLISH_SYSTEM_DEFAULTS={
   "Leer 30 minutos de noche 3 veces":"Read 30 minutes at night 3 times",
-  "Read 30 minutos de noche 3 times":"Read 30 minutes at night 3 times"
+  "Read 30 minutos de noche 3 times":"Read 30 minutes at night 3 times",
+  "Desayuno":"Breakfast",
+  "Comida":"Lunch",
+  "Trabajo":"Work",
+  "Casa":"Home",
+  "Cena":"Dinner",
+  "Después":"After"
 };
 
 function installedDefault(){
@@ -1213,6 +1219,14 @@ function mapText(raw){
   // arbitrary Spanish text, because it may be user-authored data. Only known
   // legacy/default system content is normalized back to its English source.
   if(language==='en'){
+    // Recover exact canonical English for known system labels even when the app
+    // rerendered them as fresh Spanish nodes and the WeakMap original was lost.
+    // Exact-match reversal avoids rewriting arbitrary user-authored Spanish prose.
+    const exactReverse=REVERSE[t]||ENGLISH_SYSTEM_DEFAULTS[t];
+    if(exactReverse){
+      const at=s.indexOf(t);
+      return s.slice(0,at)+exactReverse+s.slice(at+t.length);
+    }
     for(const [legacySpanish,canonicalEnglish] of Object.entries(ENGLISH_SYSTEM_DEFAULTS)){
       const at=s.indexOf(legacySpanish);
       if(at>=0){
@@ -1544,30 +1558,32 @@ function translateNode(node){
   const el=node;
   if(/^(SCRIPT|STYLE|CODE|PRE)$/i.test(el.tagName)||el.isContentEditable)return;
 
-  if(language==='es'){
-    for(const attr of ['title','aria-label','placeholder']){
-      if(el.hasAttribute?.(attr)){
-        const old=el.getAttribute(attr);
-        let records=translatedAttributes.get(el);
-        const prev=records?.get(attr);
-        if(prev&&old===prev.translated){
-          const refined=mapText(old);
-          if(refined!==old){
-            prev.translated=refined;
-            el.setAttribute(attr,refined);
-          }
-          continue;
-        }
-        const next=mapText(old);
-        if(next!==old){
-          if(!records){records=new Map();translatedAttributes.set(el,records)}
-          records.set(attr,{original:old,translated:next});
-          el.setAttribute(attr,next);
-        }else if(prev){
-          records.delete(attr);
-          if(!records.size)translatedAttributes.delete(el);
-        }
+  for(const attr of ['title','aria-label','placeholder']){
+    if(!el.hasAttribute?.(attr))continue;
+    const old=el.getAttribute(attr);
+    if(language==='en'){
+      const next=mapText(old);
+      if(next!==old)el.setAttribute(attr,next);
+      continue;
+    }
+    let records=translatedAttributes.get(el);
+    const prev=records?.get(attr);
+    if(prev&&old===prev.translated){
+      const refined=mapText(old);
+      if(refined!==old){
+        prev.translated=refined;
+        el.setAttribute(attr,refined);
       }
+      continue;
+    }
+    const next=mapText(old);
+    if(next!==old){
+      if(!records){records=new Map();translatedAttributes.set(el,records)}
+      records.set(attr,{original:old,translated:next});
+      el.setAttribute(attr,next);
+    }else if(prev){
+      records.delete(attr);
+      if(!records.size)translatedAttributes.delete(el);
     }
   }
   if(/^(TEXTAREA|INPUT)$/i.test(el.tagName))return;
