@@ -43,13 +43,26 @@ async function openGeneralSettings(){
   await page.waitForTimeout(450);
   const general=page.locator('[data-v30171-setting="general"]');
   if(await general.count())await general.first().click();
-  await page.waitForSelector('[data-mlv-language-choice]',{timeout:20000});
+  await page.waitForSelector('[data-mlv-language-select]',{timeout:20000});
 }
 
 async function chooseLanguage(value){
-  const choice=page.locator('[data-mlv-language-choice="'+value+'"]:visible').first();
-  await choice.waitFor({state:'visible',timeout:10000});
-  await choice.click();
+  await page.waitForFunction(()=>{
+    return [...document.querySelectorAll('[data-mlv-language-select]')].some(el=>{
+      const cs=getComputedStyle(el),r=el.getBoundingClientRect();
+      return cs.display!=='none'&&cs.visibility!=='hidden'&&r.width>0&&r.height>0;
+    });
+  },null,{timeout:10000});
+
+  await page.evaluate(value=>{
+    const select=[...document.querySelectorAll('[data-mlv-language-select]')].find(el=>{
+      const cs=getComputedStyle(el),r=el.getBoundingClientRect();
+      return cs.display!=='none'&&cs.visibility!=='hidden'&&r.width>0&&r.height>0;
+    });
+    if(!select)throw new Error('visible language selector not found');
+    select.value=value;
+    select.dispatchEvent(new Event('change',{bubbles:true,cancelable:true}));
+  },value);
 }
 
 
