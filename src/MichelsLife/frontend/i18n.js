@@ -1391,9 +1391,10 @@ function mapText(raw){
     out=out.replace(/\bAll\s+(\d+)\b/gi,'Todos $1');
     const catMap={'physical health':'salud física','education / thesis':'educación / tesis','career':'carrera','image / presence':'imagen / presencia','culture / languages':'cultura / idiomas','order / execution':'orden / ejecución','self-worth':'amor propio','emotional autonomy':'autonomía emocional','mental strength':'fortaleza mental'};
     out=out.replace(new RegExp('Complete the weekly (.+?) challenge (\\d+) time(s)?\\.','gi'),(m,cat,n)=>'Completa el reto semanal de '+(catMap[String(cat).toLowerCase()]||cat)+' '+n+' '+(Number(n)===1?'vez':'veces')+'.');
-    out=out.replace(new RegExp('Complete (\\d+) (.+?) missions\\.','gi'),(m,n,cat)=>'Completa '+n+' misiones de '+(catMap[String(cat).toLowerCase()]||cat)+'.');
-    out=out.replace(new RegExp('Complete (\\d+) total missions\\.','gi'),(m,n)=>'Completa '+n+' misiones en total.');
+    // Specific templates must run before generic category templates.
+    out=out.replace(new RegExp('Complete (\\d+) total missions\\.','gi'),(m,n)=>'Completa '+n+' '+(Number(n)===1?'misión':'misiones')+' en total.');
     out=out.replace(new RegExp('Complete at least one mission per day for (\\d+) consecutive days\\.','gi'),(m,n)=>'Completa al menos una misión por día durante '+n+' días consecutivos.');
+    out=out.replace(new RegExp('Complete (\\d+) (.+?) missions\\.','gi'),(m,n,cat)=>'Completa '+n+' '+(Number(n)===1?'misión':'misiones')+' de '+(catMap[String(cat).toLowerCase()]||cat)+'.');
     out=out.replace(new RegExp('(\\d+\\/\\d+) distinctDays this week','gi'),'$1 días distintos esta semana');
     out=out.replace(new RegExp('(\\d+\\/\\d+) count this week','gi'),'$1 conteo esta semana');
     out=out.replace(new RegExp('(\\d+\\/\\d+) times this week','gi'),'$1 veces esta semana');
@@ -1403,9 +1404,15 @@ function mapText(raw){
     out=out.replace(new RegExp('This week ·','gi'),'Esta semana ·');
     out=out.replace(new RegExp('Current week due so far · default','gi'),'Semana actual hasta hoy · predeterminado');
     const fullWeekdays={Sunday:'Domingo',Monday:'Lunes',Tuesday:'Martes',Wednesday:'Miércoles',Thursday:'Jueves',Friday:'Viernes',Saturday:'Sábado'};
-    const fullMonths={January:'Enero',February:'Febrero',March:'Marzo',April:'Abril',May:'Mayo',June:'Junio',July:'Julio',August:'Agosto',September:'Septiembre',October:'Octubre',November:'Noviembre',December:'Diciembre'};
+    const fullMonths={January:'Enero',February:'Febrero',March:'Marzo',April:'Abril',June:'Junio',July:'Julio',August:'Agosto',September:'Septiembre',October:'Octubre',November:'Noviembre',December:'Diciembre'};
     out=out.replace(/\b(Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday)\b/gi,m=>fullWeekdays[Object.keys(fullWeekdays).find(k=>k.toLowerCase()===m.toLowerCase())]||m);
-    out=out.replace(/\b(January|February|March|April|May|June|July|August|September|October|November|December)\b/gi,m=>fullMonths[Object.keys(fullMonths).find(k=>k.toLowerCase()===m.toLowerCase())]||m);
+    out=out.replace(/\b(January|February|March|April|June|July|August|September|October|November|December)\b/gi,m=>fullMonths[Object.keys(fullMonths).find(k=>k.toLowerCase()===m.toLowerCase())]||m);
+    // English "May" is both the full month and its abbreviation. Compact
+    // headers use "may"; standalone/full-date month names use "Mayo".
+    out=out.replace(/\bMay\b/g,(m,offset,whole)=>{
+      const before=whole.slice(Math.max(0,offset-12),offset);
+      return /\b(?:Sun|Mon|Tue|Wed|Thu|Fri|Sat)\s*,\s*$/.test(before)?'may':'Mayo';
+    });
     out=out.replace(/\bGood morning\b/gi,'Buenos días');
     out=out.replace(/\bGood noon\b/gi,'Buenas tardes');
     out=out.replace(/\bGood afternoon\b/gi,'Buenas tardes');
