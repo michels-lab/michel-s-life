@@ -10,17 +10,37 @@ async function state(page){
     stored:localStorage.getItem('michelsLife.language.v1'),
     overrideBase:localStorage.getItem('michelsLife.language.userOverrideBase.v1'),
     native:window.__MICHELSLIFE_INSTALL_LANGUAGE__||null,
-    choices:[...document.querySelectorAll('[data-mlv-language-choice]')].map(x=>({
-      value:x.getAttribute('data-mlv-language-choice'),
-      pressed:x.getAttribute('aria-pressed')
-    }))
+    selects:[...document.querySelectorAll('[data-mlv-language-select]')].map(x=>x.value)
   }));
 }
 
 async function chooseLanguageLikeUser(page,value){
-  const choice=page.locator('[data-mlv-language-choice="'+value+'"]:visible').first();
-  await choice.waitFor({state:'visible',timeout:10000});
-  await choice.click();
+  await page.waitForFunction(()=>{
+    return [...document.querySelectorAll('[data-mlv-language-select]')].some(el=>{
+      const cs=getComputedStyle(el),r=el.getBoundingClientRect();
+      return cs.display!=='none'&&cs.visibility!=='hidden'&&r.width>0&&r.height>0;
+    });
+  },null,{timeout:10000});
+
+  // Reproduce the real Settings control: click first, then choose a value.
+  await page.evaluate(()=>{
+    const select=[...document.querySelectorAll('[data-mlv-language-select]')].find(el=>{
+      const cs=getComputedStyle(el),r=el.getBoundingClientRect();
+      return cs.display!=='none'&&cs.visibility!=='hidden'&&r.width>0&&r.height>0;
+    });
+    if(!select)throw new Error('visible language selector not found before click');
+    select.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window}));
+  });
+  await page.waitForTimeout(120);
+  await page.evaluate(value=>{
+    const select=[...document.querySelectorAll('[data-mlv-language-select]')].find(el=>{
+      const cs=getComputedStyle(el),r=el.getBoundingClientRect();
+      return cs.display!=='none'&&cs.visibility!=='hidden'&&r.width>0&&r.height>0;
+    });
+    if(!select)throw new Error('visible language selector not found before change');
+    select.value=value;
+    select.dispatchEvent(new Event('change',{bubbles:true,cancelable:true}));
+  },value);
 }
 
 
@@ -57,24 +77,24 @@ try{
     'Installer Spanish did not win over English OS/browser: '+JSON.stringify(s));
 
   await page.evaluate(()=>window.LeftNavV30171.route('settings'));
-  await page.waitForSelector('[data-mlv-language-choice]',{timeout:10000});
+  await page.waitForSelector('[data-mlv-language-select]',{timeout:10000});
   await page.waitForTimeout(300);
   s=await state(page);
-  ok(s.choices.length===2&&s.choices.some(x=>x.value==='es'&&x.pressed==='true'),
-    'Settings language choices did not reflect installed Spanish: '+JSON.stringify(s));
+  ok(s.selects.length&&s.selects.every(x=>x==='es'),
+    'Settings selector did not reflect installed Spanish: '+JSON.stringify(s));
 
   // Reproduce the user video: opening/clicking the select must not schedule a
   // stale refresh that forces the previous value back.
   await chooseLanguageLikeUser(page,'en');
   await page.waitForTimeout(900);
   s=await state(page);
-  ok(s.language==='en'&&s.htmlLang==='en'&&s.stored==='en'&&s.choices.some(x=>x.value==='en'&&x.pressed==='true'),
+  ok(s.language==='en'&&s.htmlLang==='en'&&s.stored==='en'&&s.selects.length&&s.selects.every(x=>x==='en'),
     'Settings reverted/failed after choosing English: '+JSON.stringify(s));
 
   await chooseLanguageLikeUser(page,'es');
   await page.waitForTimeout(900);
   s=await state(page);
-  ok(s.language==='es'&&s.htmlLang==='es'&&s.stored==='es'&&s.choices.some(x=>x.value==='es'&&x.pressed==='true'),
+  ok(s.language==='es'&&s.htmlLang==='es'&&s.stored==='es'&&s.selects.length&&s.selects.every(x=>x==='es'),
     'Settings reverted/failed after choosing Spanish: '+JSON.stringify(s));
 
   const spanishProbe=await page.evaluate(()=>({
