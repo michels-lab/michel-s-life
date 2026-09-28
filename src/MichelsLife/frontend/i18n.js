@@ -578,6 +578,8 @@ const PAIRS={
   "· Not scheduled today":"· No programada hoy",
   "➜ Next #":"➜ Siguiente #",
   "Plan my day will be placed at #1 each new day.":"Planear mi día se colocará en #1 cada día nuevo.",
+  "Once per new day, the matching mission is placed at #1 automatically.":"Una vez por cada nuevo día, la misión correspondiente se coloca automáticamente en el puesto 1.",
+  "Auto-open Today Plan after Plan my day":"Abrir automáticamente el plan de hoy después de «Planear mi día»",
   "The queue will stay fully manual.":"La cola permanecerá completamente manual.",
   "Next Up missions":"Misiones siguientes",
   "Mission opened":"Misión abierta",
