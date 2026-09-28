@@ -8,15 +8,19 @@ const page=await browser.newPage({viewport:{width:1500,height:980},deviceScaleFa
 
 await page.addInitScript(()=>{
   try{
-    // Simulate a real reinstall: an older build left English in localStorage,
-    // but the newly selected installer/WebView2 language is Spanish.
-    localStorage.setItem('michelsLife.language.v1','en');
-    localStorage.removeItem('michelsLife.language.userOverrideBase.v1');
-    localStorage.setItem('michelsLife.onboarding.v30200','done');
+    // Simulate stale data only on the first document. sessionStorage survives
+    // reloads, so later reloads can test whether a Settings choice really
+    // persists instead of having the test overwrite it again.
+    if(!sessionStorage.getItem('__mlvInstallerLanguageTestBootstrapped')){
+      localStorage.setItem('michelsLife.language.v1','en');
+      localStorage.removeItem('michelsLife.language.userOverrideBase.v1');
+      localStorage.setItem('michelsLife.onboarding.v30200','done');
+      sessionStorage.setItem('__mlvInstallerLanguageTestBootstrapped','1');
+    }
   }catch(_){}
   try{
-    // Match the installed Windows host: installer explicitly says Spanish,
-    // while the browser/OS locale itself may still be English.
+    // Match the installed Windows host on every document: installer explicitly
+    // says Spanish while the browser/OS locale itself may still be English.
     window.__MICHELSLIFE_INSTALL_LANGUAGE__='es';
     Object.defineProperty(navigator,'language',{configurable:true,get:()=> 'en-US'});
     Object.defineProperty(navigator,'languages',{configurable:true,get:()=> ['en-US','en']});
