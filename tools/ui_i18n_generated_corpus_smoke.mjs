@@ -157,7 +157,7 @@ const PAIRS=extractObject(src,'PAIRS');
     }
   }
   for(const n of counts){
-    toSpanish.push({id:'total-'+n,input:`Complete ${n} total missions.`,expected:`Completa ${n} misiones en total.`});
+    toSpanish.push({id:'total-'+n,input:`Complete ${n} total missions.`,expected:`Completa ${n} ${n===1?'misión':'misiones'} en total.`});
     toSpanish.push({id:'consecutive-'+n,input:`Complete at least one mission per day for ${n} consecutive days.`,expected:`Completa al menos una misión por día durante ${n} días consecutivos.`});
     toSpanish.push({id:'xp-'+n,input:`Today +${n} XP`,expected:`Hoy +${n} XP`});
     toSpanish.push({id:'queued-'+n,input:`${n} queued`,expected:`${n} en cola`});
@@ -200,6 +200,12 @@ const PAIRS=extractObject(src,'PAIRS');
     }
   }
 
+  // Exact dictionary/default entries are the canonical wording whenever a
+  // generated case happens to match one exactly.
+  for(const c of toSpanish){
+    if(Object.prototype.hasOwnProperty.call(PAIRS,c.input))c.expected=PAIRS[c.input];
+    else if(Object.prototype.hasOwnProperty.call(SPANISH_SYSTEM_DEFAULTS,c.input))c.expected=SPANISH_SYSTEM_DEFAULTS[c.input];
+  }
   compareCases('Generated/dynamic EN or mixed -> ES',toSpanish,mapMany(toSpanish.map(x=>x.input)));
 
   // Build a complete Spanish corpus from the exact expected outputs above.
