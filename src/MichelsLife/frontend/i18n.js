@@ -1144,6 +1144,9 @@ const ENGLISH_SYSTEM_DEFAULTS={
 };
 
 function installedDefault(){
+  const native=String(window.__MICHELSLIFE_INSTALL_LANGUAGE__||'').trim().toLowerCase();
+  if(native==='es'||native.startsWith('spanish'))return 'es';
+  if(native==='en'||native.startsWith('english'))return 'en';
   const n=String(navigator.language||'').toLowerCase();
   return n.startsWith('es')?'es':'en';
 }
