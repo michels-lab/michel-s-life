@@ -3,6 +3,7 @@
 if(window.MichelsLifeI18n)return;
 
 const KEY='michelsLife.language.v1';
+const INSTALL_DEFAULT_KEY='michelsLife.language.installDefault.v1';
 const USER_OVERRIDE_BASE_KEY='michelsLife.language.userOverrideBase.v1';
 const PAIRS={
   "Dashboard":"Inicio","Missions":"Misiones","Premium Contracts":"Contratos Premium","Calendar":"Calendario",
@@ -1156,10 +1157,22 @@ const ENGLISH_SYSTEM_DEFAULTS={
 
 function installedDefault(){
   const native=String(window.__MICHELSLIFE_INSTALL_LANGUAGE__||'').trim().toLowerCase();
-  if(native==='es'||native.startsWith('spanish'))return 'es';
-  if(native==='en'||native.startsWith('english'))return 'en';
+  if(native==='es'||native.startsWith('spanish')){
+    try{localStorage.setItem(INSTALL_DEFAULT_KEY,'es')}catch(_){}
+    return 'es';
+  }
+  if(native==='en'||native.startsWith('english')){
+    try{localStorage.setItem(INSTALL_DEFAULT_KEY,'en')}catch(_){}
+    return 'en';
+  }
+  try{
+    const persisted=localStorage.getItem(INSTALL_DEFAULT_KEY);
+    if(persisted==='en'||persisted==='es')return persisted;
+  }catch(_){}
   const n=String(navigator.language||'').toLowerCase();
-  return n.startsWith('es')?'es':'en';
+  const fallback=n.startsWith('es')?'es':'en';
+  try{localStorage.setItem(INSTALL_DEFAULT_KEY,fallback)}catch(_){}
+  return fallback;
 }
 function getLanguage(){
   const installed=installedDefault();
@@ -1627,6 +1640,7 @@ function applyInstalledLanguage(next){
 
   let chosen=installed;
   try{
+    localStorage.setItem(INSTALL_DEFAULT_KEY,installed);
     const stored=localStorage.getItem(KEY);
     const overrideBase=localStorage.getItem(USER_OVERRIDE_BASE_KEY);
     if((stored==='en'||stored==='es')&&overrideBase===installed){
