@@ -56,9 +56,21 @@ try{
   const lines=await visibleText();
   const joined='\n'+lines.join('\n')+'\n';
 
-  const expected=['Inicio','Ayer','Mañana','Hoy','CAPÍTULO ACTUAL','NIVEL','XP TOTAL','ENFOQUE','DÍA'];
-  const missing=expected.filter(x=>!joined.includes(x));
-  ok(!missing.length,'Missing expected Spanish dashboard labels: '+missing.join(', '));
+  const expectedVisible=['Inicio','Ayer','Mañana','Hoy'];
+  const missingVisible=expectedVisible.filter(x=>!joined.includes(x));
+  ok(!missingVisible.length,'Missing always-visible Spanish dashboard labels: '+missingVisible.join(', '));
+
+  const probe=await page.evaluate(()=>({
+    chapter:window.MichelsLifeI18n.mapText('CURRENT CHAPTER'),
+    level:window.MichelsLifeI18n.mapText('LEVEL'),
+    xp:window.MichelsLifeI18n.mapText('TOTAL XP'),
+    focus:window.MichelsLifeI18n.mapText('FOCUS'),
+    day:window.MichelsLifeI18n.mapText('DAY')
+  }));
+  ok(
+    probe.chapter==='CAPÍTULO ACTUAL'&&probe.level==='NIVEL'&&probe.xp==='XP TOTAL'&&probe.focus==='ENFOQUE'&&probe.day==='DÍA',
+    'Dashboard translation probes failed: '+JSON.stringify(probe)
+  );
 
   const banned=[];
   for(const x of bannedSystem){
