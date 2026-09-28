@@ -10,24 +10,9 @@ GUARD_SCRIPT = r'''<script data-mlv-language-guard="v1">
   if(window.__MLV_LANGUAGE_GUARD__)return;
   window.__MLV_LANGUAGE_GUARD__=true;
 
-  // This runs before the app registers its global Settings listeners.
-  // It prevents a click on the language <select> from rerendering the pane
-  // before the native selection can emit its change event.
-  window.addEventListener('click',function(event){
-    var target=event.target;
-    if(target&&target.closest&&target.closest('[data-mlv-language-select]')){
-      event.stopImmediatePropagation();
-    }
-  },true);
-
-  // Handle the language change before any app-wide capture listener can
-  // replace the Settings pane. Do not preventDefault: the native select keeps
-  // its normal Windows/browser behaviour.
-  window.addEventListener('change',function(event){
-    var target=event.target;
-    if(!(target&&target.matches&&target.matches('[data-mlv-language-select]')))return;
-    event.stopImmediatePropagation();
-    var value=target.value;
+  function applyChoice(target){
+    var value=target&&target.getAttribute&&target.getAttribute('data-mlv-language-choice');
+    if(value!=='en'&&value!=='es')return;
     var apply=function(){
       if(window.MichelsLifeI18n&&window.MichelsLifeI18n.setLanguage){
         window.MichelsLifeI18n.setLanguage(value,{userInitiated:true});
@@ -36,6 +21,30 @@ GUARD_SCRIPT = r'''<script data-mlv-language-guard="v1">
       }
     };
     apply();
+  }
+
+  // Run before Settings/app-wide capture listeners so a language button cannot
+  // be rerendered away before its own handler executes.
+  window.addEventListener('pointerdown',function(event){
+    var target=event.target&&event.target.closest
+      ? event.target.closest('[data-mlv-language-choice]')
+      : null;
+    if(!target)return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    applyChoice(target);
+  },true);
+
+  // Keyboard activation gets the same early protection.
+  window.addEventListener('keydown',function(event){
+    if(event.key!=='Enter'&&event.key!==' ')return;
+    var target=event.target&&event.target.closest
+      ? event.target.closest('[data-mlv-language-choice]')
+      : null;
+    if(!target)return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    applyChoice(target);
   },true);
 })();
 </script>'''
