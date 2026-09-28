@@ -9,7 +9,7 @@ const PAIRS={
   "Dashboard":"Inicio","Missions":"Misiones","Premium Contracts":"Contratos Premium","Calendar":"Calendario",
   "Statistics":"Estadísticas","Projects":"Proyectos","Achievements":"Logros","Affirmations":"Afirmaciones",
   "Story":"Historia","Settings":"Configuración","Compare":"Comparar","Weekly Review":"Revisión semanal",
-  "General":"General","Themes":"Temas","Color Theme":"Tema de color","Typography":"Tipografía",
+  "General":"General","Themes":"Temas","Color Theme":"Tema de color","Typography":"Tipografía","Gold":"Dorado","gold":"dorado",
   "UI Customization":"Personalización de interfaz","Focus & Timers":"Enfoque y temporizadores",
   "Notifications":"Notificaciones","Planning & Next Up":"Planificación y siguientes",
   "Google":"Google","Data & Backup":"Datos y respaldo","Chapter Scenes":"Escenas de capítulos","About":"Acerca de",
@@ -1170,7 +1170,10 @@ const SPANISH_SYSTEM_DEFAULTS={
   "© 2026 Michel Duarte / Michel’s Lab. All rights reserved.":"© 2026 Michel Duarte / Michel’s Lab. Todos los derechos reservados.",
   "Last 14 days. The gold bar is today.":"Últimos 14 días. La barra dorada es hoy.",
   "Today vs yesterday":"Hoy vs ayer",
-  "This month vs last month":"Este mes vs mes pasado"
+  "This month vs last month":"Este mes vs mes pasado",
+  "Last 12 months":"Últimos 12 meses",
+  "Last 5 years":"Últimos 5 años",
+  "Undo last action":"Deshacer última acción"
 };
 
 const REVERSE=Object.fromEntries(Object.entries(PAIRS).map(([en,es])=>[es,en]));
@@ -1208,7 +1211,12 @@ const ENGLISH_SYSTEM_DEFAULTS={
   "Últimos 14 días. La barra dorada es hoy.":"Last 14 days. The gold bar is today.",
   "Today vs ayer":"Today vs yesterday",
   "Hoy vs ayer":"Today vs yesterday",
-  "Este mes vs mes pasado":"This month vs last month"
+  "Este mes vs mes pasado":"This month vs last month",
+  "Últimos 12 meses":"Last 12 months",
+  "Últimos 5 años":"Last 5 years",
+  "Deshacer última acción":"Undo last action",
+  "Dorado":"Gold",
+  "dorado":"gold"
 };
 
 function installedDefault(){
