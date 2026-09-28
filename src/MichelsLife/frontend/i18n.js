@@ -1568,6 +1568,10 @@ function ensureLanguageControl(){
   pane.prepend(card);
   const sel=card.querySelector('[data-mlv-language-select]');
   sel.value=language;
+  sel.addEventListener('change',event=>{
+    event.stopPropagation();
+    setLanguage(sel.value,{userInitiated:true});
+  });
   translateNode(card);
 }
 function ensureTranslationFitStyles(){
@@ -1615,6 +1619,25 @@ function refresh(root=document.body){
   ensureLanguageControl();
   document.querySelectorAll('[data-mlv-language-select]').forEach(s=>s.value=language);
   requestAnimationFrame(()=>fitTranslatedControls(document));
+}
+function applyInstalledLanguage(next){
+  const normalized=String(next||'').trim().toLowerCase();
+  const installed=normalized==='es'||normalized.startsWith('spanish')?'es':'en';
+  window.__MICHELSLIFE_INSTALL_LANGUAGE__=installed;
+
+  let chosen=installed;
+  try{
+    const stored=localStorage.getItem(KEY);
+    const overrideBase=localStorage.getItem(USER_OVERRIDE_BASE_KEY);
+    if((stored==='en'||stored==='es')&&overrideBase===installed){
+      chosen=stored;
+    }else{
+      localStorage.setItem(KEY,installed);
+      localStorage.removeItem(USER_OVERRIDE_BASE_KEY);
+    }
+  }catch(_){}
+
+  setLanguage(chosen,{userInitiated:false});
 }
 function setLanguage(next,{userInitiated=false}={}){
   if(next!=='en'&&next!=='es')return;
@@ -1688,7 +1711,8 @@ document.addEventListener('change',event=>{
 },true);
 
 let refreshTimer=0;
-function queueRefresh(){
+function queueRefresh(event){
+  if(event?.target?.closest?.('[data-mlv-language-select]'))return;
   clearTimeout(refreshTimer);
   refreshTimer=setTimeout(()=>refresh(document.body),30);
   setTimeout(()=>refresh(document.body),140);
@@ -1697,6 +1721,6 @@ function queueRefresh(){
 document.addEventListener('click',queueRefresh,true);
 document.addEventListener('change',queueRefresh,true);
 window.addEventListener('michelslife:uiupdated',queueRefresh);
-window.MichelsLifeI18n={get language(){return language},setLanguage,getLanguage,refresh,mapText};
+window.MichelsLifeI18n={get language(){return language},setLanguage,getLanguage,applyInstalledLanguage,refresh,mapText};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
