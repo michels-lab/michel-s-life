@@ -103,6 +103,18 @@ const PAIRS=extractObject(src,'PAIRS');
   const defaultEsCases=Object.entries(SPANISH_SYSTEM_DEFAULTS).map(([en,es],i)=>({id:'default-es-'+i,input:en,expected:es}));
   compareCases('System-default EN -> ES',defaultEsCases,mapMany(defaultEsCases.map(x=>x.input)));
 
+  const embeddedDefaultEsCases=[];
+  for(const [en,es] of Object.entries(SPANISH_SYSTEM_DEFAULTS)){
+    if(!/\s/.test(en))continue;
+    embeddedDefaultEsCases.push({id:'default-es-icon-'+en,input:'💪 '+en,expected:'💪 '+es});
+    embeddedDefaultEsCases.push({
+      id:'default-es-quoted-'+en,
+      input:'“'+en+'” has no active missions connected to it.',
+      expected:'“'+es+'” no tiene misiones activas vinculadas.'
+    });
+  }
+  compareCases('Embedded system-default EN -> ES',embeddedDefaultEsCases,mapMany(embeddedDefaultEsCases.map(x=>x.input)));
+
   // 3) Long stock phrases must also translate when embedded in larger dynamic nodes.
   const longPairs=pairs.filter(([en])=>/[.!?]/.test(en)||en.trim().split(/\s+/).length>=4);
   const embeddedEsCases=longPairs.map(([en,es],i)=>({id:'embedded-es-'+i,input:'⟦ '+en+' ⟧',expected:'⟦ '+es+' ⟧'}));
@@ -307,6 +319,7 @@ const PAIRS=extractObject(src,'PAIRS');
     ok:true,
     staticPairs:pairs.length,
     defaultsEs:defaultEsCases.length,
+    embeddedDefaultsEs:embeddedDefaultEsCases.length,
     defaultsEn:defaultEnCases.length,
     embeddedLegacyEn:embeddedLegacyEnCases.length,
     embeddedPhrases:embeddedEsCases.length,
@@ -314,5 +327,5 @@ const PAIRS=extractObject(src,'PAIRS');
     generatedEnglish:toEnglish.length,
     roundTripCorpus:spanishCorpus.length,
     discoveredMessages:messages.length,
-    totalAssertions:pairs.length+defaultEsCases.length+defaultEnCases.length+embeddedLegacyEnCases.length+embeddedEsCases.length+toSpanish.length+toEnglish.length+spanishCorpus.length+userSamples.length
+    totalAssertions:pairs.length+defaultEsCases.length+embeddedDefaultEsCases.length+defaultEnCases.length+embeddedLegacyEnCases.length+embeddedEsCases.length+toSpanish.length+toEnglish.length+spanishCorpus.length+userSamples.length
   },null,2));
