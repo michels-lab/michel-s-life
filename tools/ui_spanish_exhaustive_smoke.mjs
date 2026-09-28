@@ -41,7 +41,7 @@ async function auditSurface(label){
     const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
     while(walker.nextNode()){
       const n=walker.currentNode,p=n.parentElement;
-      if(!p||/^(SCRIPT|STYLE|CODE|PRE)$/i.test(p.tagName)||!visible(p))continue;
+      if(!p||/^(SCRIPT|STYLE|CODE|PRE)$/i.test(p.tagName))continue;
       const s=(n.nodeValue||'').replace(/\s+/g,' ').trim();
       if(s)strings.push({kind:'text',value:s,tag:p.tagName,cls:p.className||''});
     }
