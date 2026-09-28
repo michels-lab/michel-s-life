@@ -90,6 +90,7 @@ function compareCases(label,cases,actual){
 
 const PAIRS=extractObject(src,'PAIRS');
   const SPANISH_SYSTEM_DEFAULTS=extractObject(src,'SPANISH_SYSTEM_DEFAULTS');
+  const ENGLISH_EMBEDDED_LEGACY_DEFAULTS=extractObject(src,'ENGLISH_EMBEDDED_LEGACY_DEFAULTS');
   const ENGLISH_SYSTEM_DEFAULTS=extractObject(src,'ENGLISH_SYSTEM_DEFAULTS');
   const pairs=Object.entries(PAIRS);
 
@@ -221,6 +222,18 @@ const PAIRS=extractObject(src,'PAIRS');
   const defaultEnCases=Object.entries(ENGLISH_SYSTEM_DEFAULTS).map(([es,en],i)=>({id:'default-en-'+i,input:es,expected:en}));
   compareCases('System-default ES -> EN',defaultEnCases,mapMany(defaultEnCases.map(x=>x.input)));
 
+  const embeddedLegacyEnCases=[];
+  for(const [legacy,en] of Object.entries(ENGLISH_EMBEDDED_LEGACY_DEFAULTS)){
+    embeddedLegacyEnCases.push({id:'legacy-exact-'+legacy,input:legacy,expected:en});
+    embeddedLegacyEnCases.push({id:'legacy-icon-'+legacy,input:'💪 '+legacy,expected:'💪 '+en});
+    embeddedLegacyEnCases.push({
+      id:'legacy-quoted-'+legacy,
+      input:'“'+legacy+'” has no active missions connected to it.',
+      expected:'“'+en+'” has no active missions connected to it.'
+    });
+  }
+  compareCases('Embedded legacy defaults ES/mixed -> EN',embeddedLegacyEnCases,mapMany(embeddedLegacyEnCases.map(x=>x.input)));
+
   // 10) Static Spanish values may be ambiguous (e.g. Mañana can mean Tomorrow or
   // Morning), so accept any canonical English key that maps to the same Spanish.
   const reverseGroups=new Map();
@@ -295,10 +308,11 @@ const PAIRS=extractObject(src,'PAIRS');
     staticPairs:pairs.length,
     defaultsEs:defaultEsCases.length,
     defaultsEn:defaultEnCases.length,
+    embeddedLegacyEn:embeddedLegacyEnCases.length,
     embeddedPhrases:embeddedEsCases.length,
     generatedSpanish:toSpanish.length,
     generatedEnglish:toEnglish.length,
     roundTripCorpus:spanishCorpus.length,
     discoveredMessages:messages.length,
-    totalAssertions:pairs.length+defaultEsCases.length+defaultEnCases.length+embeddedEsCases.length+toSpanish.length+toEnglish.length+spanishCorpus.length+userSamples.length
+    totalAssertions:pairs.length+defaultEsCases.length+defaultEnCases.length+embeddedLegacyEnCases.length+embeddedEsCases.length+toSpanish.length+toEnglish.length+spanishCorpus.length+userSamples.length
   },null,2));
