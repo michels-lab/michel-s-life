@@ -1150,7 +1150,8 @@ const REVERSE=Object.fromEntries(Object.entries(PAIRS).map(([en,es])=>[es,en]));
 // Spanish in the base bundle. This is intentionally NOT a general reverse
 // translator, so user-authored Spanish remains untouched in English mode.
 const ENGLISH_SYSTEM_DEFAULTS={
-  "Leer 30 minutos de noche 3 veces":"Read 30 minutes at night 3 times"
+  "Leer 30 minutos de noche 3 veces":"Read 30 minutes at night 3 times",
+  "Read 30 minutos de noche 3 times":"Read 30 minutes at night 3 times"
 };
 
 function installedDefault(){
