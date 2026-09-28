@@ -1135,6 +1135,14 @@ const PAIRS={
   "Weekly contracts":"Contratos semanales",
   "Positive affirmation 7 days":"Afirmación positiva 7 días",
   "Plan the day 5 times":"Planear el día 5 veces",
+  "Legs and glutes 2 times per week":"Piernas y glúteos 2 veces por semana",
+  "Make the bed 7 days":"Tender la cama 7 días",
+  "Rest without guilt 1 time":"Descansar sin culpa 1 vez",
+  "Post or plan content 1 time":"Subir o planear contenido 1 vez",
+  "Review followers / following 1 time":"Revisar seguidores / seguidos 1 vez",
+  "Organize the desk 3 times":"Organizar el escritorio 3 veces",
+  "Review debt / savings 1 time":"Revisar deuda / ahorro 1 vez",
+  "Take care of the marmot 1 time":"Cuidar a la marmota 1 vez",
 };
 const REVERSE=Object.fromEntries(Object.entries(PAIRS).map(([en,es])=>[es,en]));
 
@@ -1245,6 +1253,14 @@ function mapText(raw){
     out=out.replace(/\bMental strength\b/gi,'Fortaleza mental');
     out=out.replace(/\bPositive affirmation\s+7\s+(?:days|días)\b/gi,'Afirmación positiva 7 días');
     out=out.replace(/\bPlan(?:ear)?\s+(?:the|el)\s+day\s+5\s+times\b/gi,'Planear el día 5 veces');
+    out=out.replace(/\bLegs and glutes\s+2\s+times\s+per\s+(?:week|Semana)\b/gi,'Piernas y glúteos 2 veces por semana');
+    out=out.replace(/\bMake the bed\s+7\s+(?:days|días)\b/gi,'Tender la cama 7 días');
+    out=out.replace(/\b(?:Rest without guilt|Descansar sin culpa)\s+1\s+time\b/gi,'Descansar sin culpa 1 vez');
+    out=out.replace(/\b(?:Post or plan content|Subir o planear contenido)\s+1\s+time\b/gi,'Subir o planear contenido 1 vez');
+    out=out.replace(/\bReview followers\s*\/\s*following\s+1\s+time\b/gi,'Revisar seguidores / seguidos 1 vez');
+    out=out.replace(/\bOrganize the desk\s+3\s+times\b/gi,'Organizar el escritorio 3 veces');
+    out=out.replace(/\b(?:Review debt \/ savings|Review deuda \/ ahorro)\s+1\s+time\b/gi,'Revisar deuda / ahorro 1 vez');
+    out=out.replace(/\b(?:Take care of the marmot|Cuidar a la marmota)\s+1\s+time\b/gi,'Cuidar a la marmota 1 vez');
     out=out.replace(/This clears completions,[^.]*progress history\.\s*(?:missions|misiones) keep their archived and hidden state\./gi,'Esto borra los completados, XP, logros y el historial de progreso. Las misiones conservan su estado archivado y oculto.');
     out=out.replace(/\bAdd\s+a\s+Siguientes\b/gi,'Agregar a Siguientes');
     out=out.replace(/\bAdd\s+decisión\b/gi,'Agregar decisión');
