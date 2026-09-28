@@ -857,6 +857,20 @@ const PAIRS={
   "Edit chapter":"Editar capítulo",
   "Close chapter":"Cerrar capítulo",
   "Delete moment":"Eliminar momento",
+  "Sunday":"Domingo",
+  "Monday":"Lunes",
+  "Tuesday":"Martes",
+  "Wednesday":"Miércoles",
+  "Thursday":"Jueves",
+  "Friday":"Viernes",
+  "Saturday":"Sábado",
+  "Sun":"dom",
+  "Mon":"lun",
+  "Tue":"mar",
+  "Wed":"mié",
+  "Thu":"jue",
+  "Fri":"vie",
+  "Sat":"sáb",
   "January":"Enero",
   "February":"Febrero",
   "March":"Marzo",
@@ -1059,6 +1073,10 @@ function mapText(raw){
     out=out.replace(new RegExp('Today \\+(\\d+) XP','gi'),'Hoy +$1 XP');
     out=out.replace(new RegExp('This week ·','gi'),'Esta semana ·');
     out=out.replace(new RegExp('Current week due so far · default','gi'),'Semana actual hasta ahora · predeterminado');
+    const fullWeekdays={Sunday:'Domingo',Monday:'Lunes',Tuesday:'Martes',Wednesday:'Miércoles',Thursday:'Jueves',Friday:'Viernes',Saturday:'Sábado'};
+    const fullMonths={January:'Enero',February:'Febrero',March:'Marzo',April:'Abril',May:'Mayo',June:'Junio',July:'Julio',August:'Agosto',September:'Septiembre',October:'Octubre',November:'Noviembre',December:'Diciembre'};
+    out=out.replace(/\b(Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday)\b/gi,m=>fullWeekdays[Object.keys(fullWeekdays).find(k=>k.toLowerCase()===m.toLowerCase())]||m);
+    out=out.replace(/\b(January|February|March|April|May|June|July|August|September|October|November|December)\b/gi,m=>fullMonths[Object.keys(fullMonths).find(k=>k.toLowerCase()===m.toLowerCase())]||m);
     out=out.replace(/\bGood morning\b/gi,'Buenos días');
     out=out.replace(/\bGood noon\b/gi,'Buenas tardes');
     out=out.replace(/\bGood afternoon\b/gi,'Buenas tardes');
