@@ -1167,7 +1167,10 @@ const SPANISH_SYSTEM_DEFAULTS={
   "Work":"Trabajo",
   "Analyze all links":"Analizar todos los vínculos",
   "Monumental walled-city landscapes across six stages.":"Paisajes monumentales de una ciudad amurallada a lo largo de seis etapas.",
-  "© 2026 Michel Duarte / Michel’s Lab. All rights reserved.":"© 2026 Michel Duarte / Michel’s Lab. Todos los derechos reservados."
+  "© 2026 Michel Duarte / Michel’s Lab. All rights reserved.":"© 2026 Michel Duarte / Michel’s Lab. Todos los derechos reservados.",
+  "Last 14 days. The gold bar is today.":"Últimos 14 días. La barra dorada es hoy.",
+  "Today vs yesterday":"Hoy vs ayer",
+  "This month vs last month":"Este mes vs mes pasado"
 };
 
 const REVERSE=Object.fromEntries(Object.entries(PAIRS).map(([en,es])=>[es,en]));
@@ -1200,7 +1203,12 @@ const ENGLISH_SYSTEM_DEFAULTS={
   "Trabajo":"Work",
   "Analizar todos los vínculos":"Analyze all links",
   "Paisajes monumentales de una ciudad amurallada a lo largo de seis etapas.":"Monumental walled-city landscapes across six stages.",
-  "© 2026 Michel Duarte / Michel’s Lab. Todos los derechos reservados.":"© 2026 Michel Duarte / Michel’s Lab. All rights reserved."
+  "© 2026 Michel Duarte / Michel’s Lab. Todos los derechos reservados.":"© 2026 Michel Duarte / Michel’s Lab. All rights reserved.",
+  "Last 14 days. La barra dorada es hoy.":"Last 14 days. The gold bar is today.",
+  "Últimos 14 días. La barra dorada es hoy.":"Last 14 days. The gold bar is today.",
+  "Today vs ayer":"Today vs yesterday",
+  "Hoy vs ayer":"Today vs yesterday",
+  "Este mes vs mes pasado":"This month vs last month"
 };
 
 function installedDefault(){
