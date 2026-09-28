@@ -14,6 +14,27 @@ async function state(page){
   }));
 }
 
+async function chooseLanguageLikeUser(page,value){
+  await page.evaluate(()=>{
+    const visible=[...document.querySelectorAll('[data-mlv-language-select]')].find(el=>{
+      const cs=getComputedStyle(el),r=el.getBoundingClientRect();
+      return cs.display!=='none'&&cs.visibility!=='hidden'&&r.width>0&&r.height>0;
+    });
+    if(!visible)throw new Error('visible language selector not found before click');
+    visible.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window}));
+  });
+  await page.waitForTimeout(120);
+  await page.evaluate(value=>{
+    const visible=[...document.querySelectorAll('[data-mlv-language-select]')].find(el=>{
+      const cs=getComputedStyle(el),r=el.getBoundingClientRect();
+      return cs.display!=='none'&&cs.visibility!=='hidden'&&r.width>0&&r.height>0;
+    });
+    if(!visible)throw new Error('visible language selector not found before change');
+    visible.value=value;
+    visible.dispatchEvent(new Event('change',{bubbles:true,cancelable:true}));
+  },value);
+}
+
 const browser=await chromium.launch({headless:true});
 try{
   // Real installed-app case: OS/browser English, installer explicitly Spanish.
@@ -48,21 +69,13 @@ try{
 
   // Reproduce the user video: opening/clicking the select must not schedule a
   // stale refresh that forces the previous value back.
-  let sel=page.locator('[data-mlv-language-select]:visible').first();
-  await sel.waitFor({state:'visible',timeout:10000});
-  await sel.click();
-  await page.waitForTimeout(120);
-  await sel.selectOption('en');
+  await chooseLanguageLikeUser(page,'en');
   await page.waitForTimeout(900);
   s=await state(page);
   ok(s.language==='en'&&s.htmlLang==='en'&&s.stored==='en'&&s.selects.every(x=>x==='en'),
     'Settings reverted/failed after choosing English: '+JSON.stringify(s));
 
-  sel=page.locator('[data-mlv-language-select]:visible').first();
-  await sel.waitFor({state:'visible',timeout:10000});
-  await sel.click();
-  await page.waitForTimeout(120);
-  await sel.selectOption('es');
+  await chooseLanguageLikeUser(page,'es');
   await page.waitForTimeout(900);
   s=await state(page);
   ok(s.language==='es'&&s.htmlLang==='es'&&s.stored==='es'&&s.selects.every(x=>x==='es'),
