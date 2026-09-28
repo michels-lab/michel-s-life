@@ -44,7 +44,6 @@ async function auditSurface(label){
       if(s)strings.push({kind:'text',value:s,tag:p.tagName,cls:p.className||''});
     }
     for(const el of [...document.querySelectorAll('button,input,select,option,label,[role="button"],[title],[aria-label],[placeholder]')]){
-      if(!visible(el))continue;
       const vals=[
         ['control',(el.textContent||'').replace(/\s+/g,' ').trim()],
         ['placeholder',el.getAttribute('placeholder')||''],
