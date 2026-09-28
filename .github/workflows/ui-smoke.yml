@@ -61,6 +61,11 @@ jobs:
           export MLV_UI_URL=http://127.0.0.1:4173
           node tools/ui_spanish_first_run_smoke.mjs
 
+      - name: Probe Spanish Missions controls
+        run: |
+          export MLV_UI_URL=http://127.0.0.1:4173
+          node tools/ui_spanish_missions_probe.mjs
+
       - name: Audit Spanish interface
         run: |
           export MLV_UI_URL=http://127.0.0.1:4173
