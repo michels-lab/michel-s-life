@@ -1143,6 +1143,11 @@ function getLanguage(){
 }
 let language=getLanguage();
 
+// Track only DOM values that this i18n layer actually changed. This lets us
+// restore canonical English exactly without reverse-translating user content.
+const translatedTextNodes=new WeakMap();
+const translatedAttributes=new WeakMap();
+
 function mapText(raw){
   const s=String(raw);
   const t=s.trim();
@@ -1385,25 +1390,85 @@ function mapText(raw){
   for(const [re,v] of partial)out=out.replace(re,v);
   return out;
 }
+function restoreTranslatedNode(node){
+  if(!node)return;
+  if(node.nodeType===Node.TEXT_NODE){
+    const rec=translatedTextNodes.get(node);
+    if(rec){
+      if(node.nodeValue===rec.translated)node.nodeValue=rec.original;
+      translatedTextNodes.delete(node);
+    }
+    return;
+  }
+  if(node.nodeType!==Node.ELEMENT_NODE)return;
+  const el=node;
+  const attrs=translatedAttributes.get(el);
+  if(attrs){
+    for(const [attr,rec] of attrs.entries()){
+      if(el.getAttribute(attr)===rec.translated)el.setAttribute(attr,rec.original);
+    }
+    translatedAttributes.delete(el);
+  }
+  [...el.childNodes].forEach(restoreTranslatedNode);
+}
+function restoreEnglishWeekdayInitials(){
+  const sundayFirst=['S','M','T','W','T','F','S'];
+  document.querySelectorAll('.v169-day-btn[data-day]').forEach(el=>{
+    const idx=Number(el.getAttribute('data-day'));
+    if(Number.isInteger(idx)&&idx>=0&&idx<7)el.textContent=sundayFirst[idx];
+  });
+  const mondayFirst=['M','T','W','T','F','S','S'];
+  const parents=[...new Set([...document.querySelectorAll('.v137-day-chip')].map(el=>el.parentElement).filter(Boolean))];
+  for(const p of parents){
+    const chips=[...p.children].filter(el=>el.matches?.('.v137-day-chip'));
+    chips.forEach((el,idx)=>{if(idx<7)el.textContent=mondayFirst[idx]});
+  }
+}
 function translateNode(node){
   if(!node)return;
   if(node.nodeType===Node.TEXT_NODE){
     const p=node.parentElement;
     if(!p||/^(SCRIPT|STYLE|TEXTAREA|INPUT|CODE|PRE)$/i.test(p.tagName)||p.isContentEditable)return;
-    const next=mapText(node.nodeValue);
-    if(next!==node.nodeValue)node.nodeValue=next;
+    if(language==='en')return;
+
+    const current=node.nodeValue;
+    const previous=translatedTextNodes.get(node);
+    if(previous&&current===previous.translated)return;
+
+    const next=mapText(current);
+    if(next!==current){
+      translatedTextNodes.set(node,{original:current,translated:next});
+      node.nodeValue=next;
+    }else if(previous){
+      translatedTextNodes.delete(node);
+    }
     return;
   }
   if(node.nodeType!==Node.ELEMENT_NODE)return;
   const el=node;
   if(/^(SCRIPT|STYLE|CODE|PRE)$/i.test(el.tagName)||el.isContentEditable)return;
-  for(const attr of ['title','aria-label','placeholder']){
-    if(el.hasAttribute?.(attr)){
-      const old=el.getAttribute(attr),next=mapText(old);
-      if(next!==old)el.setAttribute(attr,next);
+
+  if(language==='es'){
+    for(const attr of ['title','aria-label','placeholder']){
+      if(el.hasAttribute?.(attr)){
+        const old=el.getAttribute(attr);
+        let records=translatedAttributes.get(el);
+        const prev=records?.get(attr);
+        if(prev&&old===prev.translated)continue;
+        const next=mapText(old);
+        if(next!==old){
+          if(!records){records=new Map();translatedAttributes.set(el,records)}
+          records.set(attr,{original:old,translated:next});
+          el.setAttribute(attr,next);
+        }else if(prev){
+          records.delete(attr);
+          if(!records.size)translatedAttributes.delete(el);
+        }
+      }
     }
   }
   if(/^(TEXTAREA|INPUT)$/i.test(el.tagName))return;
+
   if(language==='es'){
     if(el.matches?.('.v169-day-btn[data-day]')){
       const initials=['D','L','M','X','J','V','S'];
@@ -1482,13 +1547,28 @@ function setLanguage(next){
   language=next;
   try{localStorage.setItem(KEY,next)}catch(_){}
 
-  // Rebuild from the application's canonical English state before applying any
-  // translation. This prevents Spanish DOM mutations from surviving when the
-  // user switches back to English.
+  if(next==='en'){
+    // Restore only values previously changed by this translation layer.
+    restoreTranslatedNode(document.body);
+    restoreEnglishWeekdayInitials();
+  }
+
+  // Re-render canonical application state where supported. Existing global
+  // surfaces are still handled by the provenance restoration above.
   try{window.renderAll?.()}catch(_){}
   try{window.LeftNavV30171?.render?.()}catch(_){}
 
-  const apply=()=>refresh(document.body);
+  const apply=()=>{
+    if(next==='en'){
+      restoreTranslatedNode(document.body);
+      restoreEnglishWeekdayInitials();
+      document.documentElement.lang='en';
+      ensureLanguageControl();
+      document.querySelectorAll('[data-mlv-language-select]').forEach(s=>s.value='en');
+    }else{
+      refresh(document.body);
+    }
+  };
   apply();
   setTimeout(apply,40);
   setTimeout(apply,180);
