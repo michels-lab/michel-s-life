@@ -95,6 +95,11 @@ jobs:
           export MLV_UI_URL=http://127.0.0.1:4173
           node tools/ui_installer_language_settings_smoke.mjs
 
+      - name: Audit Settings integrity and translated theme controls
+        run: |
+          export MLV_UI_URL=http://127.0.0.1:4173
+          node tools/ui_settings_integrity_smoke.mjs
+
       - name: Audit Spanish Dashboard
         run: |
           export MLV_UI_URL=http://127.0.0.1:4173
