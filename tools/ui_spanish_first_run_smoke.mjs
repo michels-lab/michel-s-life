@@ -9,11 +9,13 @@ const page=await browser.newPage({viewport:{width:1500,height:980},deviceScaleFa
 await page.addInitScript(()=>{
   try{
     localStorage.removeItem('michelsLife.language.v1');
+    localStorage.removeItem('michelsLife.language.userOverrideBase.v1');
     localStorage.removeItem('michelsLife.onboarding.v30200');
   }catch(_){}
+  window.__MICHELSLIFE_INSTALL_LANGUAGE__='es';
   try{
-    Object.defineProperty(navigator,'language',{configurable:true,get:()=> 'es-MX'});
-    Object.defineProperty(navigator,'languages',{configurable:true,get:()=> ['es-MX','es']});
+    Object.defineProperty(navigator,'language',{configurable:true,get:()=> 'en-US'});
+    Object.defineProperty(navigator,'languages',{configurable:true,get:()=> ['en-US','en']});
   }catch(_){}
 });
 
@@ -56,7 +58,7 @@ try{
     htmlLang:document.documentElement.lang,
     stored:localStorage.getItem('michelsLife.language.v1')
   }));
-  ok(state.language==='es','First run did not choose Spanish from es-MX: '+JSON.stringify(state));
+  ok(state.language==='es','First run did not choose Spanish from installer over English OS/browser: '+JSON.stringify(state));
   ok(state.htmlLang==='es','Document language is not Spanish on first run: '+JSON.stringify(state));
 
   const lines=await visibleLines();
@@ -75,7 +77,7 @@ try{
   }
   ok(!bad.length,'English first-run copy remains in Spanish mode: '+bad.join(', '));
 
-  console.log('OK: Spanish first run follows installer/browser es-MX language');
+  console.log('OK: Spanish first run follows installer language even when OS/browser is English');
   console.log(lines.join('\n'));
 } finally {
   await browser.close();
