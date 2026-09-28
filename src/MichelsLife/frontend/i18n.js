@@ -1269,13 +1269,14 @@ function translateNode(node){
   }
   if(node.nodeType!==Node.ELEMENT_NODE)return;
   const el=node;
-  if(/^(SCRIPT|STYLE|TEXTAREA|INPUT|CODE|PRE)$/i.test(el.tagName)||el.isContentEditable)return;
+  if(/^(SCRIPT|STYLE|CODE|PRE)$/i.test(el.tagName)||el.isContentEditable)return;
   for(const attr of ['title','aria-label','placeholder']){
     if(el.hasAttribute?.(attr)){
       const old=el.getAttribute(attr),next=mapText(old);
       if(next!==old)el.setAttribute(attr,next);
     }
   }
+  if(/^(TEXTAREA|INPUT)$/i.test(el.tagName))return;
   if(language==='es'){
     if(el.matches?.('.v169-day-btn[data-day]')){
       const initials=['D','L','M','X','J','V','S'];
@@ -1339,6 +1340,17 @@ function init(){
     if(language!=='es')return;
     const badge=document.getElementById('mlv197CloudBadge');
     if(badge)translateNode(badge);
+
+    // Some live panels rewrite their labels after initial render. Re-translate only
+    // visible app surfaces so dynamic counters/statuses cannot fall back to English.
+    document.querySelectorAll('[id^="tab-"],[role="dialog"],.modal,.drawer').forEach(el=>{
+      try{
+        const cs=getComputedStyle(el),r=el.getBoundingClientRect();
+        if(cs.display!=='none'&&cs.visibility!=='hidden'&&Number(cs.opacity)!==0&&r.width>0&&r.height>0){
+          translateNode(el);
+        }
+      }catch(_){}
+    });
   },300);
 }
 let refreshTimer=0;
