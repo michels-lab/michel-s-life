@@ -1138,6 +1138,7 @@ function mapText(raw){
     out=out.replace(/\bAdd\s+a\s+Siguientes\b/gi,'Agregar a Siguientes');
     out=out.replace(/\bAdd\s+decisión\b/gi,'Agregar decisión');
     out=out.replace(/\bAdd\s+afirmación\b/gi,'Agregar afirmación');
+    out=out.replace(/\bAdd\s+tarea\b/gi,'Agregar tarea');
     out=out.replace(/\bHora del día\s+for\s+/gi,'Hora del día para ');
     out=out.replace(/\bPlan\s+tomorrow\b/gi,'Planear mañana');
     out=out.replace(/\bCurrent stage:\s*/gi,'Etapa actual: ');
@@ -1325,7 +1326,7 @@ const mo=new MutationObserver(records=>{
     mutationFrame=0;
     const batch=pendingMutations.splice(0,pendingMutations.length);
     for(const r of batch){
-      if(r.type==='characterData')translateNode(r.target);
+      if(r.type==='characterData'||r.type==='attributes')translateNode(r.target);
       for(const n of r.addedNodes)translateNode(n);
     }
     ensureLanguageControl();
@@ -1333,7 +1334,7 @@ const mo=new MutationObserver(records=>{
 });
 function init(){
   refresh(document.body);
-  mo.observe(document.body,{childList:true,subtree:true,characterData:true});
+  mo.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['title','aria-label','placeholder']});
   setInterval(()=>{
     if(language!=='es')return;
     const badge=document.getElementById('mlv197CloudBadge');
