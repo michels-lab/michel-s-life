@@ -11,11 +11,36 @@ function fail(msg,items=[]){
   process.exitCode=1;
 }
 
-const pairRe=/"((?:\\.|[^"])*)"\s*:\s*"((?:\\.|[^"])*)"/g;
-const pairs=[];
-let m;
-while((m=pairRe.exec(src))) pairs.push([m[1],m[2]]);
+function extractObject(source,name){
+  const marker='const '+name+'=';
+  const at=source.indexOf(marker);
+  if(at<0)throw new Error('Missing '+name+' in i18n.js');
+  const start=source.indexOf('{',at+marker.length);
+  if(start<0)throw new Error('Missing object start for '+name);
+  let depth=0,quote='',escaped=false;
+  for(let i=start;i<source.length;i++){
+    const ch=source[i];
+    if(quote){
+      if(escaped){escaped=false;continue}
+      if(ch==='\\\\'){escaped=true;continue}
+      if(ch===quote)quote='';
+      continue;
+    }
+    if(ch==='"'||ch==="'"||ch==='`'){quote=ch;continue}
+    if(ch==='{')depth++;
+    else if(ch==='}'){
+      depth--;
+      if(depth===0){
+        const literal=source.slice(start,i+1);
+        return Function('"use strict"; return ('+literal+');')();
+      }
+    }
+  }
+  throw new Error('Unclosed object '+name);
+}
 
+const PAIRS=extractObject(src,'PAIRS');
+const pairs=Object.entries(PAIRS);
 const spanishValues=pairs.map(x=>x[1]);
 
 const bannedAnglicisms=/\b(app|apps|preset|presets|wallpaper|wallpapers|snapshot|snapshots|build|coach|gym|paper|papers|layout|preview|hover|badge|toast|timeline|feedback|checklist|dock|grid|card|cards|theme|themes|font|fonts|smart)\b/i;
