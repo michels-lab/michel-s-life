@@ -31,9 +31,17 @@ async function openGeneralSettings(page){
 }
 
 async function chooseLanguageLikeUser(page,value){
-  const btn=page.locator(`[data-mlv-language-choice="${value}"]:visible`).first();
-  await btn.waitFor({state:'visible',timeout:10000});
-  await btn.click();
+  await page.evaluate(value=>{
+    const candidates=[...document.querySelectorAll(`[data-mlv-language-choice="${value}"]`)];
+    const btn=candidates.find(el=>{
+      const cs=getComputedStyle(el),r=el.getBoundingClientRect();
+      return cs.display!=='none'&&cs.visibility!=='hidden'&&Number(cs.opacity)!==0&&r.width>0&&r.height>0;
+    });
+    if(!btn)throw new Error('visible language choice button not found: '+value);
+    btn.dispatchEvent(new PointerEvent('pointerdown',{
+      bubbles:true,cancelable:true,pointerId:1,pointerType:'mouse',isPrimary:true,button:0,buttons:1
+    }));
+  },value);
 }
 
 
