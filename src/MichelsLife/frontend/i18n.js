@@ -1133,6 +1133,8 @@ const PAIRS={
   "Type a command or mission…":"Escribe un comando o misión…",
   "Use up to two important and three optional missions.":"Usa hasta dos misiones importantes y tres opcionales.",
   "Weekly contracts":"Contratos semanales",
+  "Positive affirmation 7 days":"Afirmación positiva 7 días",
+  "Plan the day 5 times":"Planear el día 5 veces",
 };
 const REVERSE=Object.fromEntries(Object.entries(PAIRS).map(([en,es])=>[es,en]));
 
@@ -1241,6 +1243,8 @@ function mapText(raw){
     out=out.replace(/\bNext\s*#\s*(\d+)\b/gi,'Siguiente #$1');
     out=out.replace(/\bImage\s*\/\s*Presence\b/gi,'Imagen / presencia');
     out=out.replace(/\bMental strength\b/gi,'Fortaleza mental');
+    out=out.replace(/\bPositive affirmation\s+7\s+(?:days|días)\b/gi,'Afirmación positiva 7 días');
+    out=out.replace(/\bPlan(?:ear)?\s+(?:the|el)\s+day\s+5\s+times\b/gi,'Planear el día 5 veces');
     out=out.replace(/This clears completions,[^.]*progress history\.\s*(?:missions|misiones) keep their archived and hidden state\./gi,'Esto borra los completados, XP, logros y el historial de progreso. Las misiones conservan su estado archivado y oculto.');
     out=out.replace(/\bAdd\s+a\s+Siguientes\b/gi,'Agregar a Siguientes');
     out=out.replace(/\bAdd\s+decisión\b/gi,'Agregar decisión');
