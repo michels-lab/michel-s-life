@@ -1409,9 +1409,6 @@ function mapText(raw){
       const at=out.indexOf(trimmed);
       out=out.slice(0,at)+exactReverse+out.slice(at+trimmed.length);
     }
-    for(const [legacySpanish,canonicalEnglish] of Object.entries(ENGLISH_SYSTEM_DEFAULTS).sort((a,b)=>b[0].length-a[0].length)){
-      if(out.includes(legacySpanish))out=out.split(legacySpanish).join(canonicalEnglish);
-    }
     out=restoreEnglishDateCopy(out);
     return out;
   }
