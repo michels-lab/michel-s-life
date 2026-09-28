@@ -47,16 +47,11 @@ async function openGeneralSettings(){
 }
 
 async function chooseLanguage(value){
-  await page.evaluate(value=>{
-    const button=[...document.querySelectorAll('[data-mlv-language-choice]')].find(el=>{
-      const cs=getComputedStyle(el),r=el.getBoundingClientRect();
-      return el.getAttribute('data-mlv-language-choice')===value &&
-        cs.display!=='none'&&cs.visibility!=='hidden'&&r.width>0&&r.height>0;
-    });
-    if(!button)throw new Error('visible language choice not found: '+value);
-    button.click();
-  },value);
+  const choice=page.locator('[data-mlv-language-choice="'+value+'"]:visible').first();
+  await choice.waitFor({state:'visible',timeout:10000});
+  await choice.click();
 }
+
 
 try{
   await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
