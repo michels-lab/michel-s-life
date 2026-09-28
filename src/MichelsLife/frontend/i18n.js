@@ -1579,6 +1579,20 @@ function ensureLanguageControl(){
   card.dataset.mlvLanguageCard='v1';
   card.innerHTML='<div class="section-title"><div><h2 data-mlv-lang-title>Interface language</h2><p data-mlv-lang-help>Use the language selected during installation the first time Michel’s Life opens. You can change it here anytime.</p></div></div><div style="display:grid;gap:7px;max-width:320px;font-weight:700"><div>Language</div><div data-mlv-language-switch style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button type="button" data-mlv-language-choice="en" aria-pressed="false" style="min-height:42px">English</button><button type="button" data-mlv-language-choice="es" aria-pressed="false" style="min-height:42px">Español</button></div></div>';
   pane.prepend(card);
+  card.querySelectorAll('[data-mlv-language-choice]').forEach(btn=>{
+    const choose=event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      const next=btn.getAttribute('data-mlv-language-choice');
+      setLanguage(next,{userInitiated:true});
+    };
+    btn.addEventListener('pointerdown',choose);
+    btn.addEventListener('keydown',event=>{
+      if(event.key==='Enter'||event.key===' '){
+        choose(event);
+      }
+    });
+  });
   translateNode(card);
   updateLanguageControls();
 }
@@ -1670,11 +1684,6 @@ function setLanguage(next,{userInitiated=false}={}){
     restoreEnglishWeekdayInitials();
   }
 
-  // Re-render canonical application state where supported. Existing global
-  // surfaces are still handled by the provenance restoration above.
-  try{window.renderAll?.()}catch(_){}
-  try{window.LeftNavV30171?.render?.()}catch(_){}
-
   const apply=()=>{
     if(next==='en'){
       restoreTranslatedNode(document.body);
@@ -1720,17 +1729,6 @@ function init(){
     });
   },500);
 }
-// Language choices apply immediately in window capture, before Settings/global
-// listeners can rerender the pane. This avoids the native <select> race where
-// the control could disappear between opening the menu and choosing a value.
-window.addEventListener('click',event=>{
-  const choice=event.target?.closest?.('[data-mlv-language-choice]');
-  if(!choice)return;
-  event.stopPropagation();
-  const next=choice.getAttribute('data-mlv-language-choice');
-  setLanguage(next,{userInitiated:true});
-},true);
-
 let refreshTimer=0;
 function queueRefresh(event){
   if(event?.target?.closest?.('[data-mlv-language-choice]'))return;
