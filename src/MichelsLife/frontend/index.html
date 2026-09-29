@@ -28004,7 +28004,7 @@ function setFocusPanelExpanded(open){
 function toggleFocusPanel(){return setFocusPanelExpanded(!focusState().expanded)}
 function closeFocusPanel(){return setFocusPanelExpanded(false)}
 function updateFocusClock(){const f=focusState(),sec=Math.ceil(remaining(f)/1000);if(sec===lastSecond)return;lastSecond=sec;document.querySelectorAll('#v30162FocusDock [data-v30162-time]').forEach(el=>el.textContent=fmtTimer(remaining(f)));if(f.status==='running'&&remaining(f)<=0)finishPhase();if(f.status==='running'&&f.mode==='work'&&!f.linkedMissionId){const {cur,m}=currentInfo();if(cur&&m){f.linkedMissionId=String(cur.id);persist();document.querySelectorAll('#v30162FocusDock [data-v30162-link]').forEach(link=>link.textContent=m.name);}}}
-function enhanceFocusButtons(root=document){root.querySelectorAll&&root.querySelectorAll('[data-v30106-action="focus"]').forEach(b=>{b.removeAttribute('data-v30106-action');b.setAttribute('data-v30162-focus','open');b.textContent=/focus/i.test(b.textContent||'')?'Pomodoro':b.textContent;b.title='Open Pomodoro Focus Timer'});}
+function enhanceFocusButtons(root=document){root.querySelectorAll&&root.querySelectorAll('[data-v30106-action="focus"]').forEach(b=>{b.removeAttribute('data-v30106-action');b.setAttribute('data-v30162-focus','open');b.textContent=/focus/i.test(b.textContent||'')?'Pomodoro':b.textContent;b.title=tr('Open Pomodoro Focus Timer')});}
 
 /* ---------- Integration ---------- */
 const prevTabs=window.renderTabs;
@@ -28578,7 +28578,7 @@ function themeValue(key,css,fb){
 }
 function ensureTextControls(){
  const cards=[...document.querySelectorAll('#tab-settings .v133-theme-card')];const base=cards.find(c=>/windows|base/i.test(c.textContent||''))||cards[0];if(!base)return false;
- const rows=[['v133Atmosphere','Atmosphere / glass tint',themeValue('atmosphere','--glass-atmosphere','#75e4ff'),'Glass tint, borders and glow.'],['v133TextColor','Main text',themeValue('text','--text','#eef6ff'),'Primary interface lettering.'],['v133MutedTextColor','Secondary text',themeValue('muted','--muted','#dbe6f7'),'Helper, labels and secondary lettering.']];
+ const rows=[['v133Atmosphere',tr('Atmosphere / glass tint'),themeValue('atmosphere','--glass-atmosphere','#75e4ff'),tr('Glass tint, borders and glow.')],['v133TextColor',tr('Main text'),themeValue('text','--text','#eef6ff'),tr('Primary interface lettering.')],['v133MutedTextColor',tr('Secondary text'),themeValue('muted','--muted','#dbe6f7'),tr('Helper, labels and secondary lettering.')]];
  rows.forEach(([id,label,value,help])=>{if(document.getElementById(id))return;const el=document.createElement('label');el.className='v133-color-row v3042-color-row v30168-modern-row';el.innerHTML='<span>'+label+'</span><input type="color" id="'+id+'" value="'+value+'"><small class="muted" style="grid-column:1/-1">'+help+'</small>';base.appendChild(el)});return true;
 }
 function repairSettings(){
@@ -29439,12 +29439,12 @@ function focusApi(){return window.FocusStoryV30162||null}
 function quickApi(){return window.QuickCaptureV30175||null}
 function ensureDock(){
   let dock=document.getElementById('v30175ActionDock');
-  if(!dock){dock=document.createElement('div');dock.id='v30175ActionDock';dock.setAttribute('aria-label','Quick actions');document.body.appendChild(dock)}
+  if(!dock){dock=document.createElement('div');dock.id='v30175ActionDock';dock.setAttribute('aria-label',tr('Quick actions'));document.body.appendChild(dock)}
   let focus=document.getElementById('v30175FocusFab');
-  if(!focus){focus=document.createElement('button');focus.type='button';focus.id='v30175FocusFab';focus.className='v30175-action';focus.dataset.tip='Focus';focus.setAttribute('aria-label','Open Focus timer');focus.innerHTML=TIMER_ICON+'<span class="v30175-running-dot" aria-hidden="true"></span>';dock.appendChild(focus)}
+  if(!focus){focus=document.createElement('button');focus.type='button';focus.id='v30175FocusFab';focus.className='v30175-action';focus.dataset.tip=tr('Focus');focus.setAttribute('aria-label',tr('Open Focus timer'));focus.innerHTML=TIMER_ICON+'<span class="v30175-running-dot" aria-hidden="true"></span>';dock.appendChild(focus)}
   let quick=document.getElementById('v30106QuickFab');
   if(!quick){quick=document.createElement('button');quick.type='button';quick.id='v30106QuickFab';document.body.appendChild(quick)}
-  quick.id='v30106QuickFab';quick.className='v30175-action';quick.removeAttribute('data-v30106-action');quick.dataset.tip='Quick mission';quick.setAttribute('aria-label','Add a quick mission');quick.innerHTML=PLUS_ICON;
+  quick.id='v30106QuickFab';quick.className='v30175-action';quick.removeAttribute('data-v30106-action');quick.dataset.tip=tr('Quick mission');quick.setAttribute('aria-label',tr('Add a quick mission'));quick.innerHTML=PLUS_ICON;
   if(quick.parentElement!==dock)dock.appendChild(quick);
   if(focus.parentElement!==dock)dock.insertBefore(focus,dock.firstChild);
   if(focus.dataset.bound!=='1'){
