@@ -24082,7 +24082,7 @@ body.v3099-has-nextup-dock{
           ?changes+' '+(changes===1?'misión relevante vinculada automáticamente.':'misiones relevantes vinculadas automáticamente.')
           :changes+' relevant mission'+(changes===1?' was':'s were')+' linked automatically.';
       }else message=nText('No new strong matches were found.');
-      toastSafe(changes?'Contract links updated':'Contract links already current',message);
+      toastSafe(nText(changes?'Contract links updated':'Contract links already current'),message);
     }
     scheduleRefresh();
     return {changes:changes,considered:considered,details:details};
@@ -24243,7 +24243,7 @@ body.v3099-has-nextup-dock{
   function closeDrawer(){drawerOpen=false;document.querySelector('.v30102-drawer')?.classList.remove('open');document.querySelector('.v30102-drawer-backdrop')?.classList.remove('open');}
   function dismissNotice(id){var map=metaMap();map[id]=map[id]||{};map[id].dismissedDate=today();map[id].read=true;saveSafe();refreshNotifications();}
   function muteNotice(type){
-    if(!type)return;mutedTypes()[type]=true;saveSafe();refreshNotifications();toastSafe('Notification type muted','You can reset notification preferences in Settings.');
+    if(!type)return;mutedTypes()[type]=true;saveSafe();refreshNotifications();toastSafe(nText('Notification type muted'),nText('You can reset notification preferences in Settings.'));
   }
 
   function cardContractKey(card){
@@ -24290,12 +24290,12 @@ body.v3099-has-nextup-dock{
     state.missions.splice(index,1);removeFromNextUp(id);saveSafe();
     var card=button&&button.closest(DASH_CARD_SELECTORS);if(card){card.classList.add('v30102-deleting');setTimeout(function(){card.remove();},190);}else{try{if(typeof renderAll==='function')renderAll();}catch(error){}}
     showUndoToast(snapshot);
-    toastSafe('Mission deleted',snapshot.name+' · '+(nIsEs()?'Deshacer está disponible durante 9 segundos.':'Undo is available for 9 seconds.'));
+    toastSafe(nText('Mission deleted'),snapshot.name+' · '+(nIsEs()?'Deshacer está disponible durante 9 segundos.':'Undo is available for 9 seconds.'));
     scheduleRefresh();
   }
   function undoDelete(){
     if(!lastDeleted)return;clearTimeout(undoTimer);document.querySelector('.v30102-undo-toast')?.remove();
-    var idx=Math.max(0,Math.min((state.missions||[]).length,lastDeleted.index));state.missions.splice(idx,0,lastDeleted.mission);var name=lastDeleted.mission.name;lastDeleted=null;saveSafe();try{if(typeof renderAll==='function')renderAll();}catch(error){}toastSafe('Mission restored',name);scheduleRefresh();
+    var idx=Math.max(0,Math.min((state.missions||[]).length,lastDeleted.index));state.missions.splice(idx,0,lastDeleted.mission);var name=lastDeleted.mission.name;lastDeleted=null;saveSafe();try{if(typeof renderAll==='function')renderAll();}catch(error){}toastSafe(nText('Mission restored'),name);scheduleRefresh();
   }
 
   function taskCandidates(c){return regularTasks(c).map(function(m){var result=linkScore(c,m);return {mission:m,score:result.score,reasons:result.reasons,linked:keysOf(m).includes(cKey(c))};}).sort(function(a,b){return (b.linked-a.linked)||(b.score-a.score)||String(a.mission.name).localeCompare(String(b.mission.name));});}
@@ -24337,7 +24337,7 @@ body.v3099-has-nextup-dock{
     regularTasks(c).forEach(function(m){var result=linkScore(c,m);if(result.score>=5.5&&!isRejected(key,m.id)){var keys=keysOf(m);if(!keys.includes(key)){keys.push(key);setKeys(m,keys);added++;}}});
     settings().v30102AutoLinkSignature=analysisSignature();saveSafe();if(added){try{if(typeof renderAll==='function')renderAll();}catch(error){}}
     var msg=added?(nIsEs()?added+' '+(added===1?'misión vinculada a ':'misiones vinculadas a ')+c.name:added+' mission'+(added===1?'':'s')+' linked to '+c.name):(nIsEs()?'No hay nuevas coincidencias fuertes para '+c.name:'No new strong matches for '+c.name);
-    toastSafe(added?'Links added':'No new links',msg);scheduleRefresh();
+    toastSafe(nText(added?'Links added':'No new links'),msg);scheduleRefresh();
   }
 
   function injectSettings(){
@@ -29542,12 +29542,14 @@ const VERSION='3.0.182';
 function S(){state.settings=state.settings||{};const v=state.settings.v30176DashboardPanels;if(!v||typeof v!=='object')state.settings.v30176DashboardPanels={missions:true,premium:true};const x=state.settings.v30176DashboardPanels;if(x.missions===false&&x.premium===false)x.missions=true;return x}
 function persist(){try{if(typeof save==='function')save();else if(typeof window.saveState==='function')window.saveState()}catch(e){console.warn('v30176 save',e)}}
 function toastMsg(title,body){try{if(typeof toast==='function')return toast(title,body);if(typeof toastSafe==='function')return toastSafe(title,body)}catch(_){} }
+function tx(en,es){return window.mlvText?window.mlvText(en,es):(window.MichelsLifeI18n?.language==='es'?es:en)}
 function icon(){return '<svg class="v30176-layout-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v14H4zM13 5h7v14h-7z"></path></svg>'}
 function findGrid(){return document.querySelector('#tab-dashboard .v132-dashboard-grid')||((String(state?.activeTab||'')==='dashboard')?document.querySelector('#main .v132-dashboard-grid,.main .v132-dashboard-grid'):null)}
-function addHide(panel,key){if(!panel)return;panel.dataset.v30176Panel=key;const title=panel.querySelector(':scope > .section-title');if(!title||title.querySelector('.v30176-panel-hide'))return;const b=document.createElement('button');b.type='button';b.className='v30176-panel-hide';b.dataset.v30176Hide=key;b.title='Hide '+(key==='missions'?'Missions':'Premium Contracts');b.setAttribute('aria-label',b.title);b.textContent='−';title.appendChild(b)}
-function buildBar(grid){let bar=grid.previousElementSibling;if(!bar||!bar.classList.contains('v30176-dashboard-layoutbar')){bar=document.createElement('div');bar.className='v30176-dashboard-layoutbar';bar.innerHTML='<div class="v30176-layout-label">'+icon()+'<span>Dashboard layout</span></div><div class="v30176-layout-actions"><button type="button" class="v30176-panel-toggle" data-v30176-toggle="missions"><span class="v30176-toggle-dot"></span>Missions</button><button type="button" class="v30176-panel-toggle" data-v30176-toggle="premium"><span class="v30176-toggle-dot"></span>Premium Contracts</button></div>';grid.parentNode.insertBefore(bar,grid)}return bar}
-function apply(){const grid=findGrid();if(!grid)return false;const panels=[...grid.children].filter(x=>x.matches?.('.v132-panel'));const missions=panels[0],premium=panels[1];if(!missions||!premium)return false;addHide(missions,'missions');addHide(premium,'premium');const bar=buildBar(grid),cfg=S();grid.classList.toggle('v30176-missions-hidden',cfg.missions===false);grid.classList.toggle('v30176-premium-hidden',cfg.premium===false);grid.classList.toggle('v30176-solo',cfg.missions===false||cfg.premium===false);bar.querySelectorAll('[data-v30176-toggle]').forEach(b=>{const k=b.dataset.v30176Toggle;b.setAttribute('aria-pressed',cfg[k]===false?'false':'true');b.title=(cfg[k]===false?'Show ':'Hide ')+(k==='missions'?'Missions':'Premium Contracts')});return true}
-function setPanel(key,value){const cfg=S();if(!value){const other=key==='missions'?'premium':'missions';if(cfg[other]===false){toastMsg('Keep one panel visible','Show the other Dashboard panel before hiding this one.');return}}cfg[key]=!!value;persist();apply()}
+function panelName(key){return key==='missions'?tx('Missions','Misiones'):tx('Premium Contracts','Contratos Premium')}
+function addHide(panel,key){if(!panel)return;panel.dataset.v30176Panel=key;const title=panel.querySelector(':scope > .section-title');if(!title||title.querySelector('.v30176-panel-hide'))return;const b=document.createElement('button');b.type='button';b.className='v30176-panel-hide';b.dataset.v30176Hide=key;b.title=tx('Hide ','Ocultar ')+panelName(key);b.setAttribute('aria-label',b.title);b.textContent='−';title.appendChild(b)}
+function buildBar(grid){let bar=grid.previousElementSibling;if(!bar||!bar.classList.contains('v30176-dashboard-layoutbar')){bar=document.createElement('div');bar.className='v30176-dashboard-layoutbar';bar.dataset.mlvI18nOwned='source';bar.innerHTML='<div class="v30176-layout-label">'+icon()+'<span>'+tx('Dashboard layout','Diseño del inicio')+'</span></div><div class="v30176-layout-actions"><button type="button" class="v30176-panel-toggle" data-v30176-toggle="missions"><span class="v30176-toggle-dot"></span>'+tx('Missions','Misiones')+'</button><button type="button" class="v30176-panel-toggle" data-v30176-toggle="premium"><span class="v30176-toggle-dot"></span>'+tx('Premium Contracts','Contratos Premium')+'</button></div>';grid.parentNode.insertBefore(bar,grid)}return bar}
+function apply(){const grid=findGrid();if(!grid)return false;const panels=[...grid.children].filter(x=>x.matches?.('.v132-panel'));const missions=panels[0],premium=panels[1];if(!missions||!premium)return false;addHide(missions,'missions');addHide(premium,'premium');const bar=buildBar(grid),cfg=S();grid.classList.toggle('v30176-missions-hidden',cfg.missions===false);grid.classList.toggle('v30176-premium-hidden',cfg.premium===false);grid.classList.toggle('v30176-solo',cfg.missions===false||cfg.premium===false);bar.querySelectorAll('[data-v30176-toggle]').forEach(b=>{const k=b.dataset.v30176Toggle;b.setAttribute('aria-pressed',cfg[k]===false?'false':'true');b.title=(cfg[k]===false?tx('Show ','Mostrar '):tx('Hide ','Ocultar '))+panelName(k)});return true}
+function setPanel(key,value){const cfg=S();if(!value){const other=key==='missions'?'premium':'missions';if(cfg[other]===false){toastMsg(tx('Keep one panel visible','Mantén un panel visible'),tx('Show the other Dashboard panel before hiding this one.','Muestra el otro panel del inicio antes de ocultar éste.'));return}}cfg[key]=!!value;persist();apply()}
 function toggle(key){const cfg=S();setPanel(key,cfg[key]===false)}
 document.addEventListener('click',function(e){const t=e.target.closest?.('[data-v30176-toggle],[data-v30176-hide]');if(!t)return;e.preventDefault();e.stopPropagation();const k=t.dataset.v30176Toggle||t.dataset.v30176Hide;if(k==='missions'||k==='premium'){if(t.dataset.v30176Hide)setPanel(k,false);else toggle(k)}},true);
 const oldAll=window.renderAll;if(typeof oldAll==='function'&&!oldAll.__v30176){const wrapped=function(){const out=oldAll.apply(this,arguments);if(String(state?.activeTab||'')==='dashboard')requestAnimationFrame(apply);return out};wrapped.__v30176=true;window.renderAll=wrapped;try{renderAll=wrapped}catch(_){}}
@@ -29993,7 +29995,7 @@ function localMissions(){const out=[];for(const m of (state.missions||[])){if(!m
 function syncRange(){const a=new Date(),b=new Date();a.setHours(0,0,0,0);a.setDate(a.getDate()-45);b.setHours(23,59,59,999);b.setDate(b.getDate()+220);return {timeMin:a.toISOString(),timeMax:b.toISOString()}}
 async function syncNow(opts={}){
   if(runtime.busy)return runtime.lastResult;
-  if(!runtime.connected){if(!opts.silent)toastSafe('Google Calendar','Connect Google first.');return null}
+  if(!runtime.connected){if(!opts.silent)toastSafe(gText('Google Calendar'),gText('Connect Google first.'));return null}
   runtime.busy=true;runtime.error='';mountGoogleSettings();decorateCalendar();
   try{
     const s=settings(),range=syncRange();
@@ -30018,10 +30020,10 @@ async function syncNow(opts={}){
     decorateCalendar();return res;
   }catch(err){
     runtime.error=String(err?.message||err);
-    if(!opts.silent)toastSafe('Google Calendar',runtime.error);
+    if(!opts.silent)toastSafe(gText('Google Calendar'),runtime.error);
     mountGoogleSettings();return null;
   }finally{runtime.busy=false;mountGoogleSettings();decorateCalendar()}
-}){if(runtime.busy)return runtime.lastResult;if(!runtime.connected){if(!opts.silent)toastSafe('Google Calendar','Connect Google first.');return null}runtime.busy=true;runtime.error='';mountGoogleSettings();decorateCalendar();try{const s=settings(),range=syncRange();const res=await bridge('sync',{...range,pushLocalMissions:!!s.pushMissions,localMissions:s.pushMissions?localMissions():[]});s.events=Array.isArray(res?.events)?res.events:[];s.lastSync=res?.syncedAt||new Date().toISOString();s.lastSyncStats={googleEventCount:Number(res?.googleEventCount||0),managedEventCount:Number(res?.managedEventCount||0),pushedMissionCount:Number(res?.pushedMissionCount||0),createdMissionEvents:Number(res?.createdMissionEvents||0),updatedMissionEvents:Number(res?.updatedMissionEvents||0)};runtime.lastResult=res;saveSafe();if(!opts.silent)toastSafe('Google Calendar synced',`${s.lastSyncStats.googleEventCount} Google events · ${s.lastSyncStats.pushedMissionCount} dated missions checked.`);decorateCalendar();return res}catch(err){runtime.error=String(err?.message||err);if(!opts.silent)toastSafe('Google Calendar',runtime.error);mountGoogleSettings();return null}finally{runtime.busy=false;mountGoogleSettings();decorateCalendar()}}
+}){if(runtime.busy)return runtime.lastResult;if(!runtime.connected){if(!opts.silent)toastSafe(gText('Google Calendar'),gText('Connect Google first.'));return null}runtime.busy=true;runtime.error='';mountGoogleSettings();decorateCalendar();try{const s=settings(),range=syncRange();const res=await bridge('sync',{...range,pushLocalMissions:!!s.pushMissions,localMissions:s.pushMissions?localMissions():[]});s.events=Array.isArray(res?.events)?res.events:[];s.lastSync=res?.syncedAt||new Date().toISOString();s.lastSyncStats={googleEventCount:Number(res?.googleEventCount||0),managedEventCount:Number(res?.managedEventCount||0),pushedMissionCount:Number(res?.pushedMissionCount||0),createdMissionEvents:Number(res?.createdMissionEvents||0),updatedMissionEvents:Number(res?.updatedMissionEvents||0)};runtime.lastResult=res;saveSafe();if(!opts.silent)toastSafe(gText('Google Calendar synced'),gLocale()==='es-MX'?`${s.lastSyncStats.googleEventCount} eventos de Google · ${s.lastSyncStats.pushedMissionCount} misiones con fecha revisadas.`:`${s.lastSyncStats.googleEventCount} Google events · ${s.lastSyncStats.pushedMissionCount} dated missions checked.`);decorateCalendar();return res}catch(err){runtime.error=String(err?.message||err);if(!opts.silent)toastSafe(gText('Google Calendar'),runtime.error);mountGoogleSettings();return null}finally{runtime.busy=false;mountGoogleSettings();decorateCalendar()}}
 async function refreshStatus(opts={}){try{const x=await bridge('status');applyStatus(x);if(runtime.connected&&runtime.cloudReady&&opts.cloud!==false)await syncCloud('auto',{silent:true,initial:true});runtime.cloudInitialDone=true;installStorageWatch();scheduleCloudPoll();if(runtime.connected&&settings().autoSync&&opts.sync!==false)syncNow({silent:true});if(sessionStorage.getItem('mlv191CloudRestored')){sessionStorage.removeItem('mlv191CloudRestored');toastSafe('Michel’s Life Cloud','Your cloud data is loaded on this PC.')}}catch(err){runtime.bridgeAvailable=false;runtime.error=String(err?.message||err);runtime.cloudInitialDone=true;installStorageWatch();mountGoogleSettings()}}
 function dateKeyFromEvent(ev){const raw=String(ev?.start||'');if(ev?.allDay&&validDateKey(raw.slice(0,10)))return raw.slice(0,10);const d=new Date(raw);if(Number.isNaN(d.getTime()))return raw.slice(0,10);const p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`}
 function timeLabel(ev){
