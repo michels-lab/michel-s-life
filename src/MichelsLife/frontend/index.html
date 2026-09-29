@@ -23944,7 +23944,9 @@ body.v3099-has-nextup-dock{
   }
   function settings(){state.settings=state.settings||{};return state.settings;}
   function saveSafe(){try{if(typeof save==='function')save();else localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(state));}catch(error){console.error('v3.0.102 save error',error);}}
-  function toastSafe(title,message){try{if(typeof toast==='function')toast(title,message||'');}catch(error){}}
+  function toastSafe(title,message){
+    try{if(typeof toast==='function')toast(nText(title),nText(message||''));}catch(error){}
+  }
   function cKey(c){return c&&c.key?c.key:(c?c.kind+':'+c.id:'');}
   function catKey(x){return x&&((x.category)||(x.cat))||'order';}
   function catInfo(id){
@@ -24137,41 +24139,56 @@ body.v3099-has-nextup-dock{
   function noticeMode(){var mode=settings().v30102NotificationMode||'balanced';return ['essential','balanced','coach'].includes(mode)?mode:'balanced';}
   function notice(id,type,section,icon,title,message,extra){return Object.assign({id:id,type:type,section:section,icon:icon,title:title,message:message,actions:[],meta:[]},extra||{});}
   function buildNotifications(){
-    var mode=noticeMode(),list=[],wk=weekStart();
+    var mode=noticeMode(),list=[],wk=weekStart(),es=nIsEs();
     getContracts().forEach(function(c){
       var key=cKey(c),linked=linkedTasks(c),p=progress(c),remaining=Math.max(0,p.target-p.count),suggest=suggestedTask(c),cat=catInfo(catKey(c)),primary=false;
       if(!linked.length){
-        list.push(notice('no-links:'+key,'no-links','action','🔗','No linked missions','“'+c.name+'” has no active missions connected to it.',{contractKey:key,meta:[cat.emoji+' '+cat.name,'Action needed'],actions:[['review-links','Review links'],['create-linked','Create mission'],['dismiss','Dismiss today']]}));
+        list.push(notice(
+          'no-links:'+key,'no-links','action','🔗',nText('No linked missions'),
+          es?'“'+c.name+'” no tiene misiones activas vinculadas.':'“'+c.name+'” has no active missions connected to it.',
+          {contractKey:key,meta:[cat.emoji+' '+nText(cat.name),nText('Action needed')],actions:[['review-links','Review links'],['create-linked','Create mission'],['dismiss','Dismiss today']]}
+        ));
         return;
       }
-      var available=availableScheduledDays(c),calendar=daysLeftThisWeek();
+      var available=availableScheduledDays(c),calendar=daysLeftThisWeek(),realistic=Math.min(available,calendar);
       if(remaining>0&&(remaining>available||remaining>calendar)){
         primary=true;
-        list.push(notice('risk:'+wk+':'+key,'contract-risk','action','⚠️','Premium Contract at risk','“'+c.name+'” still needs '+remaining+' completion'+(remaining===1?'':'s')+' with only '+Math.min(available,calendar)+' realistic day'+(Math.min(available,calendar)===1?'':'s')+' left.',{contractKey:key,missionId:suggest&&suggest.id,meta:[p.count+'/'+p.target,'At risk'],actions:(suggest?[['add-next','Add mission to Next Up']]:[]).concat([['open-contract','Open contract'],['dismiss','Dismiss today']])}));
+        var riskMsg=es
+          ?'“'+c.name+'” todavía necesita '+remaining+' '+(remaining===1?'avance':'avances')+' y sólo '+(realistic===1?'queda ':'quedan ')+realistic+' '+(realistic===1?'día realista':'días realistas')+'.'
+          :'“'+c.name+'” still needs '+remaining+' completion'+(remaining===1?'':'s')+' with only '+realistic+' realistic day'+(realistic===1?'':'s')+' left.';
+        list.push(notice('risk:'+wk+':'+key,'contract-risk','action','⚠️',nText('Premium Contract at risk'),riskMsg,{contractKey:key,missionId:suggest&&suggest.id,meta:[p.count+'/'+p.target,nText('At risk')],actions:(suggest?[['add-next','Add mission to Next Up']]:[]).concat([['open-contract','Open contract'],['dismiss','Dismiss today']])}));
       }else if(remaining===1&&mode!=='essential'){
         primary=true;
-        list.push(notice('one-away:'+wk+':'+key,'one-away','progress','🏁','One mission away','Complete one linked mission to finish “'+c.name+'” this week.',{contractKey:key,missionId:suggest&&suggest.id,meta:[p.count+'/'+p.target,'Almost done'],actions:(suggest?[['add-next','Add to Next Up']]:[]).concat([['open-contract','Open contract']])}));
+        var oneMsg=es?'Completa una misión vinculada para terminar “'+c.name+'” esta semana.':'Complete one linked mission to finish “'+c.name+'” this week.';
+        list.push(notice('one-away:'+wk+':'+key,'one-away','progress','🏁',nText('One mission away'),oneMsg,{contractKey:key,missionId:suggest&&suggest.id,meta:[p.count+'/'+p.target,nText('Almost done')],actions:(suggest?[['add-next','Add to Next Up']]:[]).concat([['open-contract','Open contract']])}));
       }else if(p.count===0&&new Date(today()+'T12:00:00').getDay()>=3&&mode!=='essential'){
         primary=true;
-        list.push(notice('no-progress:'+wk+':'+key,'no-progress','suggestion','⏳','No progress yet','“'+c.name+'” has not advanced this week.',{contractKey:key,missionId:suggest&&suggest.id,meta:['0/'+p.target,'This week'],actions:(suggest?[['add-next','Add suggested mission']]:[]).concat([['open-contract','Review contract'],['dismiss','Dismiss today']])}));
+        var noneMsg=es?'“'+c.name+'” todavía no ha avanzado esta semana.':'“'+c.name+'” has not advanced this week.';
+        list.push(notice('no-progress:'+wk+':'+key,'no-progress','suggestion','⏳',nText('No progress yet'),noneMsg,{contractKey:key,missionId:suggest&&suggest.id,meta:['0/'+p.target,nText('This week')],actions:(suggest?[['add-next','Add suggested mission']]:[]).concat([['open-contract','Review contract'],['dismiss','Dismiss today']])}));
       }
       if(suggest&&!primary&&!nextUpIds().includes(String(suggest.id))&&mode!=='essential'&&remaining>0){
-        list.push(notice('suggest-next:'+today()+':'+key,'suggest-next','suggestion','➜','Suggested next mission','“'+suggest.name+'” can advance “'+c.name+'”.',{contractKey:key,missionId:suggest.id,meta:[cat.emoji+' '+cat.name,'Linked mission'],actions:[['add-next','Add to Next Up'],['open-mission','Open mission'],['dismiss','Dismiss today']]}));
+        var suggestMsg=es?'“'+suggest.name+'” puede hacer avanzar “'+c.name+'”.':'“'+suggest.name+'” can advance “'+c.name+'”.';
+        list.push(notice('suggest-next:'+today()+':'+key,'suggest-next','suggestion','➜',nText('Suggested next mission'),suggestMsg,{contractKey:key,missionId:suggest.id,meta:[cat.emoji+' '+nText(cat.name),nText('Linked mission')],actions:[['add-next','Add to Next Up'],['open-mission','Open mission'],['dismiss','Dismiss today']]}));
       }
       if(remaining===0&&mode==='coach'){
-        list.push(notice('complete:'+wk+':'+key,'contract-complete','progress','✅','Contract completed','“'+c.name+'” is complete for this week.',{contractKey:key,meta:[p.count+'/'+p.target,'Completed'],actions:[['open-contract','View contract']]}));
+        var completeMsg=es?'“'+c.name+'” está completo esta semana.':'“'+c.name+'” is complete for this week.';
+        list.push(notice('complete:'+wk+':'+key,'contract-complete','progress','✅',nText('Contract completed'),completeMsg,{contractKey:key,meta:[p.count+'/'+p.target,nText('Completed')],actions:[['open-contract','View contract']]}));
       }
     });
 
     var active=(state.missions||[]).filter(function(m){return m&&!m.archived&&!m.hidden&&!isContractMission(m)&&activeOn(m,today())&&!doneOn(m,today());});
     active.forEach(function(m){
-      if(m.deadline&&String(m.deadline)<today())list.push(notice('overdue:'+m.id,'mission-overdue','action','📅','Mission overdue','“'+m.name+'” passed its deadline on '+m.deadline+'.',{missionId:String(m.id),meta:[catInfo(catKey(m)).emoji+' '+catInfo(catKey(m)).name,'Overdue'],actions:[['add-next','Add to Next Up'],['open-mission','Open mission'],['dismiss','Dismiss today']]}));
+      if(m.deadline&&String(m.deadline)<today()){
+        var overdueMsg=es?'“'+m.name+'” venció el '+m.deadline+'.':'“'+m.name+'” passed its deadline on '+m.deadline+'.';
+        list.push(notice('overdue:'+m.id,'mission-overdue','action','📅',nText('Mission overdue'),overdueMsg,{missionId:String(m.id),meta:[nCategoryName(catKey(m)),nText('Overdue')],actions:[['add-next','Add to Next Up'],['open-mission','Open mission'],['dismiss','Dismiss today']]}));
+      }
     });
     var plan=active.find(function(m){return /\b(plan my day|plan the day|journal.*plan.*day|planear.*dia)\b/i.test(norm(m.name));});
-    if(plan&&new Date().getHours()>=10&&mode!=='essential')list.push(notice('plan-day:'+today(),'plan-day','suggestion','🗓️','Plan the day is still pending','Your daily planning mission has not been completed yet.',{missionId:String(plan.id),meta:['Daily priority','Pending'],actions:[['add-next','Keep it first'],['open-mission','Open mission'],['dismiss','Dismiss today']]}));
+    if(plan&&new Date().getHours()>=10&&mode!=='essential')list.push(notice('plan-day:'+today(),'plan-day','suggestion','🗓️',nText('Plan the day is still pending'),nText('Your daily planning mission has not been completed yet.'),{missionId:String(plan.id),meta:[nText('Daily priority'),nText('Pending')],actions:[['add-next','Keep it first'],['open-mission','Open mission'],['dismiss','Dismiss today']]}));
     if(!nextUpIds().length&&active.length&&mode==='coach'){
       var first=active.slice().sort(function(a,b){return Number(b.xp||0)-Number(a.xp||0);})[0];
-      list.push(notice('queue-empty:'+today(),'queue-empty','suggestion','📌','Next Up is empty','Choose the next mission so you do not lose the thread.',{missionId:String(first.id),meta:[active.length+' pending','Coach mode'],actions:[['add-next','Add a strong mission'],['dismiss','Dismiss today']]}));
+      var pendingMeta=es?active.length+' pendientes':active.length+' pending';
+      list.push(notice('queue-empty:'+today(),'queue-empty','suggestion','📌',nText('Next Up is empty'),nText('Choose the next mission so you do not lose the thread.'),{missionId:String(first.id),meta:[pendingMeta,nText('Coach mode')],actions:[['add-next','Add a strong mission'],['dismiss','Dismiss today']]}));
     }
     var filtered=list.filter(noticeAllowed);
     var priority={action:0,suggestion:1,progress:2};
@@ -24184,30 +24201,39 @@ body.v3099-has-nextup-dock{
 
   function markRead(id){var map=metaMap();map[id]=map[id]||{};map[id].read=true;map[id].readAt=new Date().toISOString();}
   function unreadCount(list){var map=metaMap();return list.filter(function(n){return !(map[n.id]&&map[n.id].read);}).length;}
-  function sectionLabel(section){return section==='action'?'Action needed':section==='suggestion'?'Suggestions':'Progress';}
+  function sectionLabel(section){
+    return nText(section==='action'?'Action needed':section==='suggestion'?'Suggestions':'Progress');
+  }
   function renderNotice(n){
-    var meta=metaMap()[n.id]||{},actions=(n.actions||[]).map(function(a){return '<button type="button" class="btn '+(a[0]==='review-links'||a[0]==='add-next'?'primary':'ghost')+'" data-v30102-notice-action="'+esc(a[0])+'" data-notice="'+esc(n.id)+'"'+(n.contractKey?' data-contract="'+esc(n.contractKey)+'"':'')+(n.missionId?' data-id="'+esc(n.missionId)+'"':'')+'>'+esc(a[1])+'</button>';}).join('');
-    return '<article class="v30102-notice '+esc(n.section)+' '+(!meta.read?'unread':'')+'"><div class="v30102-notice-top"><span class="v30102-notice-icon">'+esc(n.icon)+'</span><div><h3>'+esc(n.title)+'</h3><p>'+esc(n.message)+'</p></div></div>'+(n.meta&&n.meta.length?'<div class="v30102-notice-meta">'+n.meta.map(function(x){return '<span>'+esc(x)+'</span>';}).join('')+'</div>':'')+'<div class="v30102-notice-actions">'+actions+'<button type="button" class="btn ghost" data-v30102-notice-action="mute" data-notice="'+esc(n.id)+'" data-type="'+esc(n.type)+'" title="Do not show this kind of notification">Mute</button></div></article>';
+    var meta=metaMap()[n.id]||{},actions=(n.actions||[]).map(function(a){
+      return '<button type="button" class="btn '+(a[0]==='review-links'||a[0]==='add-next'?'primary':'ghost')+'" data-v30102-notice-action="'+esc(a[0])+'" data-notice="'+esc(n.id)+'"'+(n.contractKey?' data-contract="'+esc(n.contractKey)+'"':'')+(n.missionId?' data-id="'+esc(n.missionId)+'"':'')+'>'+nEsc(a[1])+'</button>';
+    }).join('');
+    return '<article class="v30102-notice '+esc(n.section)+' '+(!meta.read?'unread':'')+'" data-mlv-i18n-owned="source"><div class="v30102-notice-top"><span class="v30102-notice-icon">'+esc(n.icon)+'</span><div><h3>'+esc(n.title)+'</h3><p>'+esc(n.message)+'</p></div></div>'+(n.meta&&n.meta.length?'<div class="v30102-notice-meta">'+n.meta.map(function(x){return '<span>'+esc(nText(x))+'</span>';}).join('')+'</div>':'')+'<div class="v30102-notice-actions">'+actions+'<button type="button" class="btn ghost" data-v30102-notice-action="mute" data-notice="'+esc(n.id)+'" data-type="'+esc(n.type)+'" title="'+nEsc('Do not show this kind of notification')+'">'+nEsc('Mute')+'</button></div></article>';
   }
   function ensureBell(){
     var top=document.querySelector('.topbar');if(!top)return null;
     top.classList.add('v30102-topbar-ready');
     var slot=top.querySelector('.v30102-notification-slot');
-    if(!slot){slot=document.createElement('div');slot.className='v30102-notification-slot';slot.innerHTML='<button type="button" class="v30102-bell" data-v30102-action="toggle-drawer" aria-label="Open notifications" title="Notifications">🔔<span class="v30102-bell-badge">0</span></button>';top.appendChild(slot);}
-    return slot.querySelector('.v30102-bell');
+    if(!slot){slot=document.createElement('div');slot.className='v30102-notification-slot';top.appendChild(slot);}
+    var bell=slot.querySelector('.v30102-bell');
+    if(!bell){bell=document.createElement('button');bell.type='button';bell.className='v30102-bell';bell.dataset.v30102Action='toggle-drawer';bell.innerHTML='🔔<span class="v30102-bell-badge">0</span>';slot.appendChild(bell);}
+    bell.setAttribute('aria-label',nText('Open notifications'));bell.title=nText('Notifications');
+    return bell;
   }
   function ensureDrawer(){
     var backdrop=document.querySelector('.v30102-drawer-backdrop');
     if(!backdrop){backdrop=document.createElement('div');backdrop.className='v30102-drawer-backdrop';backdrop.dataset.v30102Action='close-drawer';document.body.appendChild(backdrop);}
     var drawer=document.querySelector('.v30102-drawer');
-    if(!drawer){drawer=document.createElement('aside');drawer.className='v30102-drawer';drawer.setAttribute('aria-label','Notifications');document.body.appendChild(drawer);}
+    if(!drawer){drawer=document.createElement('aside');drawer.className='v30102-drawer';document.body.appendChild(drawer);}
+    drawer.setAttribute('aria-label',nText('Notifications'));drawer.dataset.mlvI18nOwned='source';
     return drawer;
   }
   function renderDrawer(){
     var drawer=ensureDrawer(),list=cachedNotices,groups={action:[],suggestion:[],progress:[]};list.forEach(function(n){(groups[n.section]||groups.suggestion).push(n);});
     var unread=unreadCount(list);
-    var sections=['action','suggestion','progress'].map(function(section){var items=groups[section];if(!items.length)return '';return '<section><div class="v30102-section-title"><span>'+sectionLabel(section)+'</span><span>'+items.length+'</span></div><div class="v30102-section-list">'+items.map(renderNotice).join('')+'</div></section>';}).join('');
-    drawer.innerHTML='<div class="v30102-drawer-head"><div><h2>Notifications</h2><p>Premium Contracts, linked missions and useful mission alerts.</p></div><div class="v30102-drawer-head-actions"><button type="button" class="btn ghost" data-v30102-action="mark-all-read">Read all</button><button type="button" class="icon-btn" data-v30102-action="close-drawer">×</button></div></div><div class="v30102-summary"><div class="v30102-summary-item"><small>Unread</small><b>'+unread+'</b></div><div class="v30102-summary-item"><small>Action needed</small><b>'+groups.action.length+'</b></div><div class="v30102-summary-item"><small>Mode</small><b style="font-size:13px;text-transform:capitalize">'+esc(noticeMode())+'</b></div></div><div class="v30102-feed">'+(sections||'<div class="v30102-empty">You are caught up. No useful alerts right now.</div>')+'</div>';
+    var sections=['action','suggestion','progress'].map(function(section){var items=groups[section];if(!items.length)return '';return '<section><div class="v30102-section-title"><span>'+esc(sectionLabel(section))+'</span><span>'+items.length+'</span></div><div class="v30102-section-list">'+items.map(renderNotice).join('')+'</div></section>';}).join('');
+    var modeLabel={essential:'Essential only',balanced:'Balanced',coach:'Coach mode'}[noticeMode()]||noticeMode();
+    drawer.innerHTML='<div class="v30102-drawer-head"><div><h2>'+nEsc('Notifications')+'</h2><p>'+nEsc('Premium Contracts, linked missions and useful mission alerts.')+'</p></div><div class="v30102-drawer-head-actions"><button type="button" class="btn ghost" data-v30102-action="mark-all-read">'+nEsc('Read all')+'</button><button type="button" class="icon-btn" data-v30102-action="close-drawer">×</button></div></div><div class="v30102-summary"><div class="v30102-summary-item"><small>'+nEsc('Unread')+'</small><b>'+unread+'</b></div><div class="v30102-summary-item"><small>'+nEsc('Action needed')+'</small><b>'+groups.action.length+'</b></div><div class="v30102-summary-item"><small>'+nEsc('Mode')+'</small><b style="font-size:13px;text-transform:capitalize">'+nEsc(modeLabel)+'</b></div></div><div class="v30102-feed">'+(sections||'<div class="v30102-empty">'+nEsc('You are caught up. No useful alerts right now.')+'</div>')+'</div>';
     drawer.classList.toggle('open',drawerOpen);document.querySelector('.v30102-drawer-backdrop')?.classList.toggle('open',drawerOpen);
   }
   function refreshNotifications(){
@@ -24218,7 +24244,9 @@ body.v3099-has-nextup-dock{
   function openDrawer(){drawerOpen=true;refreshNotifications();}
   function closeDrawer(){drawerOpen=false;document.querySelector('.v30102-drawer')?.classList.remove('open');document.querySelector('.v30102-drawer-backdrop')?.classList.remove('open');}
   function dismissNotice(id){var map=metaMap();map[id]=map[id]||{};map[id].dismissedDate=today();map[id].read=true;saveSafe();refreshNotifications();}
-  function muteNotice(type){if(!type)return;mutedTypes()[type]=true;saveSafe();refreshNotifications();toastSafe('Notification type muted','You can reset notification preferences in Settings.');}
+  function muteNotice(type){
+    if(!type)return;mutedTypes()[type]=true;saveSafe();refreshNotifications();toastSafe('Notification type muted','You can reset notification preferences in Settings.');
+  }
 
   function cardContractKey(card){
     if(!card)return '';
@@ -24233,10 +24261,10 @@ body.v3099-has-nextup-dock{
     document.querySelectorAll(CONTRACT_SELECTORS).forEach(function(card){
       var key=cardContractKey(card),c=contractByKey(key);if(!c)return;
       card.setAttribute('data-contract-key',key);
-      var zone=card.querySelector('.v30102-contract-health');if(!zone){zone=document.createElement('div');zone.className='v30102-contract-health';card.appendChild(zone);}
+      var zone=card.querySelector('.v30102-contract-health');if(!zone){zone=document.createElement('div');zone.className='v30102-contract-health';zone.dataset.mlvI18nOwned='source';card.appendChild(zone);}
       var linked=linkedTasks(c),p=progress(c),remaining=Math.max(0,p.target-p.count),risk=remaining>0&&(remaining>availableScheduledDays(c)||remaining>daysLeftThisWeek());
-      var status=!linked.length?['no-links','⚠ No linked missions']:risk?['risk','⚠ At risk']:['good',remaining?'✓ On track':'✓ Completed'];
-      zone.innerHTML='<span class="v30102-health-pill '+status[0]+'">'+status[1]+'</span><button type="button" class="btn ghost" data-v30102-action="review-links" data-contract="'+esc(key)+'">Review links</button>'+(!linked.length?'<button type="button" class="btn primary" data-v30102-action="create-linked" data-contract="'+esc(key)+'">Create mission</button>':'')+'<button type="button" class="btn ghost" data-v30102-action="analyze-one" data-contract="'+esc(key)+'">Analyze</button>';
+      var status=!linked.length?['no-links','⚠ '+nText('No linked missions')]:risk?['risk','⚠ '+nText('At risk')]:['good',remaining?'✓ '+nText('On track'):'✓ '+nText('Completed')];
+      zone.innerHTML='<span class="v30102-health-pill '+status[0]+'">'+esc(status[1])+'</span><button type="button" class="btn ghost" data-v30102-action="review-links" data-contract="'+esc(key)+'">'+nEsc('Review links')+'</button>'+(!linked.length?'<button type="button" class="btn primary" data-v30102-action="create-linked" data-contract="'+esc(key)+'">'+nEsc('Create mission')+'</button>':'')+'<button type="button" class="btn ghost" data-v30102-action="analyze-one" data-contract="'+esc(key)+'">'+nEsc('Analyze')+'</button>';
     });
   }
 
@@ -24254,7 +24282,7 @@ body.v3099-has-nextup-dock{
   }
   function showUndoToast(mission){
     clearTimeout(undoTimer);document.querySelector('.v30102-undo-toast')?.remove();
-    var box=document.createElement('div');box.className='v30102-undo-toast';box.innerHTML='<span><b>Mission deleted</b>'+esc(mission.name||'Mission')+'</span><button type="button" class="btn primary" data-v30102-action="undo-delete">Undo</button>';document.body.appendChild(box);
+    var box=document.createElement('div');box.className='v30102-undo-toast';box.dataset.mlvI18nOwned='source';box.innerHTML='<span><b>'+nEsc('Mission deleted')+'</b>'+esc(mission.name||nText('Mission'))+'</span><button type="button" class="btn primary" data-v30102-action="undo-delete">'+nEsc('Undo')+'</button>';document.body.appendChild(box);
     undoTimer=setTimeout(function(){box.remove();lastDeleted=null;},9000);
   }
   function deleteTask(id,button){
@@ -24276,7 +24304,7 @@ body.v3099-has-nextup-dock{
     var c=contractByKey(contractKey);if(!c)return;
     var candidates=taskCandidates(c),root=document.getElementById('modalRoot');if(!root)return;
     var suggested=candidates.filter(function(x){return x.score>=5.5;}).length,linked=candidates.filter(function(x){return x.linked;}).length;
-    root.innerHTML='<div class="modal-backdrop"><div class="modal"><div class="modal-head"><div><h2>Review linked missions</h2><p>'+esc(catInfo(catKey(c)).emoji+' '+c.name)+'</p></div><button class="icon-btn" data-action="close-modal">×</button></div><form class="v30102-link-modal" id="v30102LinkForm" data-contract="'+esc(contractKey)+'"><div class="v30102-link-summary"><div class="v30102-link-stat"><small>Currently linked</small><b>'+linked+'</b></div><div class="v30102-link-stat"><small>Strong matches</small><b>'+suggested+'</b></div><div class="v30102-link-stat"><small>Available missions</small><b>'+candidates.length+'</b></div></div><div class="v217-note">Existing links are checked. Review the list and select any additional missions manually.</div><div class="v30102-link-list">'+(candidates.length?candidates.map(function(item){var m=item.mission,checked=item.linked;return '<label class="v30102-link-option"><input type="checkbox" name="mission" value="'+esc(m.id)+'" '+(checked?'checked':'')+'><span><b>'+esc(m.name)+'</b><small>'+esc(catInfo(catKey(m)).emoji+' '+catInfo(catKey(m)).name+(item.reasons.length?' · '+item.reasons.join(' · '):''))+'</small></span><span class="v30102-score">'+item.score.toFixed(1)+'</span></label>';}).join(''):'<div class="v30102-empty">No regular missions are available. Create one instead.</div>')+'</div><div class="actions"><button type="submit" class="btn primary">Save links</button><button type="button" class="btn" data-v30102-action="create-linked" data-contract="'+esc(contractKey)+'">Create mission</button><button type="button" class="btn ghost" data-action="close-modal">Cancel</button></div></form></div></div>';
+    root.innerHTML='<div class="modal-backdrop"><div class="modal" data-mlv-i18n-owned="source"><div class="modal-head"><div><h2>'+nEsc('Review linked missions')+'</h2><p>'+esc(catInfo(catKey(c)).emoji+' '+c.name)+'</p></div><button class="icon-btn" data-action="close-modal">×</button></div><form class="v30102-link-modal" id="v30102LinkForm" data-contract="'+esc(contractKey)+'"><div class="v30102-link-summary"><div class="v30102-link-stat"><small>'+nEsc('Currently linked')+'</small><b>'+linked+'</b></div><div class="v30102-link-stat"><small>'+nEsc('Strong matches')+'</small><b>'+suggested+'</b></div><div class="v30102-link-stat"><small>'+nEsc('Available missions')+'</small><b>'+candidates.length+'</b></div></div><div class="v217-note">'+nEsc('Existing links are checked. Review the list and select any additional missions manually.')+'</div><div class="v30102-link-list">'+(candidates.length?candidates.map(function(item){var m=item.mission,checked=item.linked;return '<label class="v30102-link-option"><input type="checkbox" name="mission" value="'+esc(m.id)+'" '+(checked?'checked':'')+'><span><b>'+esc(m.name)+'</b><small>'+esc(catInfo(catKey(m)).emoji+' '+nText(catInfo(catKey(m)).name)+(item.reasons.length?' · '+item.reasons.map(nText).join(' · '):''))+'</small></span><span class="v30102-score">'+item.score.toFixed(1)+'</span></label>';}).join(''):'<div class="v30102-empty">'+nEsc('No regular missions are available. Create one instead.')+'</div>')+'</div><div class="actions"><button type="submit" class="btn primary">'+nEsc('Save links')+'</button><button type="button" class="btn" data-v30102-action="create-linked" data-contract="'+esc(contractKey)+'">'+nEsc('Create mission')+'</button><button type="button" class="btn ghost" data-action="close-modal">'+nEsc('Cancel')+'</button></div></form></div></div>';
   }
   function saveLinkModal(form){
     var c=contractByKey(form.dataset.contract);if(!c)return;var key=cKey(c),selected=new Set(Array.from(form.querySelectorAll('input[name="mission"]:checked')).map(function(x){return String(x.value);}));
@@ -24285,8 +24313,9 @@ body.v3099-has-nextup-dock{
   }
   function openCreateLinked(contractKey){
     var c=contractByKey(contractKey);if(!c)return;var root=document.getElementById('modalRoot');if(!root)return;
-    var defaultName='Work on '+String(c.name||'Premium Contract').replace(/\b\d+\s*(times|days|veces|dias|días).*$/i,'').trim();
-    root.innerHTML='<div class="modal-backdrop"><div class="modal"><div class="modal-head"><div><h2>Create linked mission</h2><p>This mission will count toward '+esc(c.name)+'.</p></div><button class="icon-btn" data-action="close-modal">×</button></div><form id="v30102CreateLinkedForm" class="v30102-create-form" data-contract="'+esc(contractKey)+'"><div class="v30102-create-grid"><label>Mission name<input name="name" value="'+esc(defaultName)+'" required></label><label>Category<select name="category">'+Object.keys(CATEGORIES||{}).map(function(k){var ci=catInfo(k);return '<option value="'+esc(k)+'" '+(k===catKey(c)?'selected':'')+'>'+esc(ci.emoji+' '+ci.name)+'</option>';}).join('')+'</select></label></div><div class="v30102-create-grid"><label>Difficulty<select name="difficulty"><option value="easy">Easy · 10 XP</option><option value="medium" selected>Medium · 25 XP</option><option value="hard">Hard · 50 XP</option></select></label><label>Repeat<select name="repeat"><option value="daily" selected>Every day</option><option value="weekdays">Monday–Friday</option><option value="today">Today only</option></select></label></div><label>Description<textarea name="description" placeholder="What exactly counts as progress?"></textarea></label><div class="actions"><button type="submit" class="btn primary">Create and link</button><button type="button" class="btn ghost" data-action="close-modal">Cancel</button></div></form></div></div>';
+    var base=String(c.name||'Premium Contract').replace(/\b\d+\s*(times|days|veces|dias|días).*$/i,'').trim();
+    var defaultName=(nIsEs()?'Trabajar en ':'Work on ')+base;
+    root.innerHTML='<div class="modal-backdrop"><div class="modal" data-mlv-i18n-owned="source"><div class="modal-head"><div><h2>'+nEsc('Create linked mission')+'</h2><p>'+(nIsEs()?'Esta misión contará para ':'This mission will count toward ')+esc(c.name)+'.</p></div><button class="icon-btn" data-action="close-modal">×</button></div><form id="v30102CreateLinkedForm" class="v30102-create-form" data-contract="'+esc(contractKey)+'"><div class="v30102-create-grid"><label>'+nEsc('Mission name')+'<input name="name" value="'+esc(defaultName)+'" required></label><label>'+nEsc('Category')+'<select name="category">'+Object.keys(CATEGORIES||{}).map(function(k){var ci=catInfo(k);return '<option value="'+esc(k)+'" '+(k===catKey(c)?'selected':'')+'>'+esc(ci.emoji+' '+nText(ci.name))+'</option>';}).join('')+'</select></label></div><div class="v30102-create-grid"><label>'+nEsc('Difficulty')+'<select name="difficulty"><option value="easy">'+nEsc('Easy')+' · 10 XP</option><option value="medium" selected>'+nEsc('Medium')+' · 25 XP</option><option value="hard">'+nEsc('Hard')+' · 50 XP</option></select></label><label>'+nEsc('Repeat')+'<select name="repeat"><option value="daily" selected>'+nEsc('Every day')+'</option><option value="weekdays">'+nEsc('Monday–Friday')+'</option><option value="today">'+nEsc('Today only')+'</option></select></label></div><label>'+nEsc('Description')+'<textarea name="description" placeholder="'+nEsc('What exactly counts as progress?')+'"></textarea></label><div class="actions"><button type="submit" class="btn primary">'+nEsc('Create and link')+'</button><button type="button" class="btn ghost" data-action="close-modal">'+nEsc('Cancel')+'</button></div></form></div></div>';
   }
   function createLinkedMission(form){
     var c=contractByKey(form.dataset.contract);if(!c)return;var fd=new FormData(form),name=String(fd.get('name')||'').trim();if(!name){toastSafe('Missing name','Write a mission name.');return;}
@@ -24307,12 +24336,15 @@ body.v3099-has-nextup-dock{
   function analyzeOne(key){
     var c=contractByKey(key);if(!c)return;var added=0;
     regularTasks(c).forEach(function(m){var result=linkScore(c,m);if(result.score>=5.5&&!isRejected(key,m.id)){var keys=keysOf(m);if(!keys.includes(key)){keys.push(key);setKeys(m,keys);added++;}}});
-    settings().v30102AutoLinkSignature=analysisSignature();saveSafe();if(added){try{if(typeof renderAll==='function')renderAll();}catch(error){}}toastSafe(added?'Links added':'No new links',added?added+' mission'+(added===1?'':'s')+' linked to '+c.name:'No new strong matches for '+c.name);scheduleRefresh();
+    settings().v30102AutoLinkSignature=analysisSignature();saveSafe();if(added){try{if(typeof renderAll==='function')renderAll();}catch(error){}}
+    var msg=added?(nIsEs()?added+' '+(added===1?'misión vinculada a ':'misiones vinculadas a ')+c.name:added+' mission'+(added===1?'':'s')+' linked to '+c.name):(nIsEs()?'No hay nuevas coincidencias fuertes para '+c.name:'No new strong matches for '+c.name);
+    toastSafe(added?'Links added':'No new links',msg);scheduleRefresh();
   }
 
   function injectSettings(){
     if(state.activeTab!=='settings')return;var main=document.getElementById('main');if(!main||main.querySelector('.v30102-settings-card'))return;
-    var card=document.createElement('section');card.className='card v30102-settings-card';card.innerHTML='<div class="section-title"><div><h2>Smart notifications & contract links</h2><p>Controls automatic mission matching and the notification center.</p></div><span class="pill hot">v3.0.102</span></div><div class="v30102-settings-grid"><label>Notification intensity<select id="v30102NotificationMode"><option value="essential" '+(noticeMode()==='essential'?'selected':'')+'>Essential only</option><option value="balanced" '+(noticeMode()==='balanced'?'selected':'')+'>Balanced</option><option value="coach" '+(noticeMode()==='coach'?'selected':'')+'>Coach mode</option></select></label><div class="v30102-settings-actions"><button type="button" class="btn primary" data-v30102-action="analyze-all">Analyze all links</button><button type="button" class="btn ghost" data-v30102-action="reset-notification-mutes">Reset muted alerts</button></div></div><div class="v30102-settings-note"><b>Balanced</b> is the default: contracts without missions, contracts at risk, useful Next Up suggestions, overdue missions and daily planning reminders. Automatic links use titles, categories, descriptions and related keywords, while respecting links you manually rejected.</div>';
+    var card=document.createElement('section');card.className='card v30102-settings-card';card.dataset.mlvI18nOwned='source';
+    card.innerHTML='<div class="section-title"><div><h2>'+nEsc('Smart notifications & contract links')+'</h2><p>'+nEsc('Controls automatic mission matching and the notification center.')+'</p></div><span class="pill hot">v3.0.102</span></div><div class="v30102-settings-grid"><label>'+nEsc('Notification intensity')+'<select id="v30102NotificationMode"><option value="essential" '+(noticeMode()==='essential'?'selected':'')+'>'+nEsc('Essential only')+'</option><option value="balanced" '+(noticeMode()==='balanced'?'selected':'')+'>'+nEsc('Balanced')+'</option><option value="coach" '+(noticeMode()==='coach'?'selected':'')+'>'+nEsc('Coach mode')+'</option></select></label><div class="v30102-settings-actions"><button type="button" class="btn primary" data-v30102-action="analyze-all">'+nEsc('Analyze all links')+'</button><button type="button" class="btn ghost" data-v30102-action="reset-notification-mutes">'+nEsc('Reset muted alerts')+'</button></div></div><div class="v30102-settings-note"><b>'+nEsc('Balanced')+'</b> '+nEsc('is the default: contracts without missions, contracts at risk, useful Next Up suggestions, overdue missions and daily planning reminders. Automatic links use titles, categories, descriptions and related keywords, while respecting links you manually rejected.')+'</div>';
     main.appendChild(card);
   }
 
@@ -24379,6 +24411,7 @@ body.v3099-has-nextup-dock{
   }
 
   window.v30102SmartContracts={analyze:analyzeLinks,notifications:buildNotifications,openNotifications:openDrawer,reviewLinks:openLinkModal};
+  window.addEventListener('michelslife:languagechange',function(){scheduleRefresh();var card=document.querySelector('.v30102-settings-card');if(card)card.remove();injectSettings();});
   function boot(){
     settings().v30102NotificationMode=settings().v30102NotificationMode||'balanced';
     /* v3.0.116: legacy automatic linker disabled; conservative link hygiene runs later. */ afterRender();setTimeout(afterRender,260);setTimeout(afterRender,900);
@@ -24723,6 +24756,11 @@ const UNDO_KEY='ml_v30105_undo_stack';
 const CARD_SEL='.v132-mission,.v137-mission,.v131-mission,.quest-card,.mission-card,.v135-card,.v140-card,[data-mission-card]';
 let enhanceTimer=0,currentTimer=0,captureBusy=false;
 function esc(v){try{if(typeof escapeHtml==='function')return escapeHtml(v);}catch(e){}return String(v==null?'':v).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));}
+  function nText(value){try{return window.MichelsLifeI18n?.mapText?.(String(value))||String(value);}catch(error){return String(value);}}
+  function nEsc(value){return esc(nText(value));}
+  function nIsEs(){return (window.MichelsLifeI18n?.language||document.documentElement.lang)==='es';}
+  function nCategoryName(id){var c=catInfo(id);return c.emoji+' '+nText(c.name);}
+
 function tr(v){try{return window.MichelsLifeI18n?.mapText?.(String(v))||String(v)}catch(e){return String(v)}}
 function locale(){return (window.MichelsLifeI18n?.language||document.documentElement.lang)==='es'?'es-MX':'en-US'}
 function localDateTime(v){try{return new Date(v).toLocaleString(locale())}catch(e){return String(v||'')}}
