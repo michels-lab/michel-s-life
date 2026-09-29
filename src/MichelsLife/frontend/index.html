@@ -10844,22 +10844,22 @@ label:has(input[name="coins"]),
     const created=m.createdAt ? String(m.createdAt).slice(0,10) : '—';
     const type=m.originalType || m.type || 'mission';
 
-    return `<article class="v169-archive-card" data-id="${esc(m.id)}">
+    return `<article class="v169-archive-card" data-id="${esc(m.id)}" data-mlv-i18n-owned="source">
       <div>
         <h3>${esc(m.name)}</h3>
         ${((m.description||m.notes)&&String(m.description||m.notes)!=='Weekly planned mission.')?`<p>${esc(m.description||m.notes)}</p>`:''}
         <div class="v169-archive-meta">
-          <span class="v169-archive-chip" style="border-color:${c.color}55;color:${c.color}">${c.emoji} ${esc(c.name)}</span>
-          <span class="v169-archive-chip">${esc(type)}</span>
-          <span class="v169-archive-chip">${esc(d.name||m.difficulty||'Medium')}</span>
+          <span class="v169-archive-chip" style="border-color:${c.color}55;color:${c.color}">${c.emoji} ${esc(tr(c.name))}</span>
+          <span class="v169-archive-chip">${esc(tr(type==='oneoff'?'One-off':type==='daily'?'Daily':type==='weekly'?'Weekly':type==='boss'?'Boss':'Mission'))}</span>
+          <span class="v169-archive-chip">${esc(tr(d.name||m.difficulty||'Medium'))}</span>
           <span class="v169-archive-chip">+${xp(m)} XP</span>
-          <span class="v169-archive-chip">${completions(m)} completions</span>
-          <span class="v169-archive-chip">Created ${esc(created)}</span>
+          <span class="v169-archive-chip">${completions(m)} ${esc(tr('completions'))}</span>
+          <span class="v169-archive-chip">${esc(tr('Created'))} ${esc(created)}</span>
         </div>
       </div>
       <div class="v169-archive-actions">
-        <button class="v169-restore-btn" data-action="v169-restore-mission" data-id="${esc(m.id)}">Restore</button>
-        <button class="v169-edit-btn" data-action="edit-mission" data-id="${esc(m.id)}">Edit</button>
+        <button class="v169-restore-btn" data-action="v169-restore-mission" data-id="${esc(m.id)}">${esc(tr('Restore'))}</button>
+        <button class="v169-edit-btn" data-action="edit-mission" data-id="${esc(m.id)}">${esc(tr('Edit'))}</button>
       </div>
     </article>`;
   }
@@ -10871,12 +10871,12 @@ label:has(input[name="coins"]),
     return `<section class="card v169-archived-view">
       <div class="section-title">
         <div>
-          <h2>Archived missions</h2>
-          <p>Tasks you archived. Restore anything you want back in Missions.</p>
+          <h2>${esc(tr('Archived missions'))}</h2>
+          <p>${esc(tr('Tasks you archived. Restore anything you want back in Missions.'))}</p>
         </div>
         <div class="actions">
-          <button class="btn primary" data-action="new-mission">New mission</button>
-          <button class="btn" onclick="state.activeTab='dashboard';renderAll()">Dashboard</button>
+          <button class="btn primary" data-action="new-mission">${esc(tr('New mission'))}</button>
+          <button class="btn" onclick="state.activeTab='dashboard';renderAll()">${esc(tr('Dashboard'))}</button>
         </div>
       </div>
 
@@ -10884,12 +10884,12 @@ label:has(input[name="coins"]),
       ${archivedCategoryShortcuts()}
 
       <div class="v169-archive-summary">
-        <span class="v169-archive-pill">🗄️ ${total} archived</span>
-        <span class="v169-archive-pill">Visible filter: ${esc(archiveCat())}</span>
+        <span class="v169-archive-pill">🗄️ ${total} ${esc(tr('archived'))}</span>
+        <span class="v169-archive-pill">${esc(tr('Visible filter:'))} ${esc(tr(archiveCat()))}</span>
       </div>
 
       <div class="v169-archive-list">
-        ${list.length ? list.map(archivedCard).join('') : `<div class="v169-empty-archive">No archived missions in this view.</div>`}
+        ${list.length ? list.map(archivedCard).join('') : `<div class="v169-empty-archive">${esc(tr('No archived missions in this view.'))}</div>`}
       </div>
     </section>`;
   }
@@ -12927,34 +12927,34 @@ label:has(input[name="coins"]),
 
   function statusForTemplate(t){
     const rec=scheduledFor(t.id);
-    if(!rec) return {kind:'none',label:'Not scheduled'};
+    if(!rec) return {kind:'none',label:tr('Not scheduled')};
     const m=(state.missions||[]).find(x=>String(x.id)===String(rec.missionId)||(String(x.weeklyPlannerTemplateId)===String(t.id)&&String(x.weeklyPlannerWeek)===String(weekKey())));
     const done=m&&typeof isCompleted==='function'?isCompleted(m,rec.date):(m?.completions||[]).some(c=>c.date===rec.date);
-    if(done) return {kind:'done',label:'Done this week'};
-    if(rec.date<todayKey()) return {kind:'missed',label:'Missed — reschedule'};
-    if(rec.date===todayKey()) return {kind:'scheduled',label:'Due today'};
-    return {kind:'scheduled',label:'Scheduled for '+WEEKDAY_SHORT[rec.day]};
+    if(done) return {kind:'done',label:tr('Done this week')};
+    if(rec.date<todayKey()) return {kind:'missed',label:tr('Missed — reschedule')};
+    if(rec.date===todayKey()) return {kind:'scheduled',label:tr('Due today')};
+    return {kind:'scheduled',label:tr('Scheduled for')+' '+tr(WEEKDAY_SHORT[rec.day])};
   }
 
   function renderWeeklyPlanner(){
     syncScheduledMissions();
     const p=ensurePlanner();
     const templates=p.templates.map(normalizeTemplate).filter(t=>!t.archived);
-    const cats=window.categoryOptions?window.categoryOptions('order'):'<option value="order">Order / execution</option>';
-    const diffs=window.difficultyOptions?window.difficultyOptions('medium'):'<option value="medium">Medium</option>';
+    const cats=window.categoryOptions?window.categoryOptions('order'):'<option value="order">'+esc(tr('Order / execution'))+'</option>';
+    const diffs=window.difficultyOptions?window.difficultyOptions('medium'):'<option value="medium">'+esc(tr('Medium'))+'</option>';
 
     return `<section class="v169-weekly-planner">
       <div class="v169-weekly-head">
-        <div><h2>Weekly Planner</h2></div>
-        <span class="pill hot">${templates.length} templates</span>
+        <div><h2>${esc(tr('Weekly Planner'))}</h2></div>
+        <span class="pill hot">${templates.length} ${esc(tr('templates'))}</span>
       </div>
       <form class="v169-weekly-form" id="v169WeeklyForm">
-        <input name="name" placeholder="Example: Laundry">
+        <input name="name" placeholder="${esc(tr('Example: Laundry'))}">
         <select name="category">${cats}</select>
         <select name="difficulty">${diffs}</select>
-        <button class="btn primary" type="submit">Add weekly</button>
+        <button class="btn primary" type="submit">${esc(tr('Add weekly'))}</button>
       </form>
-      <div class="v169-weekly-list">${templates.length?templates.map(renderWeeklyTemplate).join(''):'<div class="v169-empty">No weekly templates yet.</div>'}</div>
+      <div class="v169-weekly-list">${templates.length?templates.map(renderWeeklyTemplate).join(''):`<div class="v169-empty">${esc(tr('No weekly templates yet.'))}</div>`}</div>
     </section>`;
   }
 
@@ -12964,19 +12964,21 @@ label:has(input[name="coins"]),
     const xp=Number(t.xp||d.xp||35);
     const rec=scheduledFor(t.id);
     const status=statusForTemplate(t);
+    const isEs=(window.MichelsLifeI18n?.language||document.documentElement.lang)==='es';
+    const dayInitials=isEs?['D','L','M','X','J','V','S']:WEEKDAY_ONE;
 
     const dayButtons=WEEKDAY_SHORT.map((label,i)=>{
       const active=rec&&Number(rec.day)===i;
-      return `<button class="v169-day-btn ${active?'active':''}" data-action="v251-weekly-schedule" data-template="${esc(t.id)}" data-day="${i}" title="Schedule for ${label}">${WEEKDAY_ONE[i]}</button>`;
+      return `<button class="v169-day-btn ${active?'active':''}" data-action="v251-weekly-schedule" data-template="${esc(t.id)}" data-day="${i}" title="${esc(tr('Scheduled for')+' '+tr(label))}">${dayInitials[i]}</button>`;
     }).join('');
 
-    return `<article class="v169-weekly-template">
+    return `<article class="v169-weekly-template" data-mlv-i18n-owned="source">
       <div>
         <h3>📅 ${esc(t.name)}</h3>
         ${t.description?`<p>${esc(t.description)}</p>`:''}
         <div class="v169-weekly-meta">
-          <span class="v169-chip" style="border-color:${c.color||'#75e4ff'}55;color:${c.color||'#75e4ff'}">${c.emoji||'📅'} ${esc(c.name||'Order / execution')}</span>
-          <span class="v169-chip">${esc(d.name||'Medium')}</span>
+          <span class="v169-chip" style="border-color:${c.color||'#75e4ff'}55;color:${c.color||'#75e4ff'}">${c.emoji||'📅'} ${esc(tr(c.name||'Order / execution'))}</span>
+          <span class="v169-chip">${esc(tr(d.name||'Medium'))}</span>
           <span class="v169-chip">+${xp} XP</span>
           <span class="v169-chip ${status.kind}">${esc(status.label)}</span>
         </div>
@@ -12984,9 +12986,9 @@ label:has(input[name="coins"]),
       <div>
         <div class="v169-day-row">${dayButtons}</div>
         <div class="v169-template-actions">
-          <button class="v169-small-btn" data-action="v251-weekly-edit" data-template="${esc(t.id)}">Edit</button>
-          <button class="v169-small-btn ${rec?'':'muted'}" data-action="v251-weekly-clear" data-template="${esc(t.id)}">${rec?'Clear this week':'Clear this week'}</button>
-          <button class="v169-small-btn danger" data-action="v251-weekly-archive" data-template="${esc(t.id)}">Archive</button>
+          <button class="v169-small-btn" data-action="v251-weekly-edit" data-template="${esc(t.id)}">${esc(tr('Edit'))}</button>
+          <button class="v169-small-btn ${rec?'':'muted'}" data-action="v251-weekly-clear" data-template="${esc(t.id)}">${esc(tr('Clear this week'))}</button>
+          <button class="v169-small-btn danger" data-action="v251-weekly-archive" data-template="${esc(t.id)}">${esc(tr('Archive'))}</button>
         </div>
       </div>
     </article>`;
@@ -24916,7 +24918,20 @@ function currentElapsed(){const c=current();return c?Number(c.elapsedMs||0)+(c.s
 function logActivity(label,detail,kind='system'){S().v30105Activity=Array.isArray(S().v30105Activity)?S().v30105Activity:[];S().v30105Activity.unshift({id:'a'+Date.now()+Math.random(),at:new Date().toISOString(),label,detail:detail||'',kind});S().v30105Activity=S().v30105Activity.slice(0,100);saveSafe();}
 function scheduledStreak(m){let count=0,started=false;for(let i=0;i<180;i++){const key=addDate(today(),-i);if(!scheduledOn(m,key))continue;if(i===0&&!doneOn(m,key))continue;started=true;if(doneOn(m,key))count++;else break;}return started?count:0;}
 function completionRate(m,days=30){let scheduled=0,done=0;for(let i=1;i<=days;i++){const key=addDate(today(),-i);if(scheduledOn(m,key)){scheduled++;if(doneOn(m,key))done++;}}return {scheduled,done,rate:scheduled?done/scheduled:1};}
-function calibrationIssues(){const now=Date.now();return tasks().filter(m=>!m.v30106CalibrationMuteUntil||Date.parse(m.v30106CalibrationMuteUntil)<now).map(m=>{const r=completionRate(m,30);let reason='';if(r.scheduled>=5&&r.rate<.3)reason='Completed only '+r.done+' of '+r.scheduled+' scheduled sessions.';else if(/work on|improve|study|thesis|project|organize/i.test(m.name||'')&&String(m.name||'').split(/\s+/).length<5)reason='The mission may be too broad to start easily.';if(!reason)return null;return {m,r,reason};}).filter(Boolean);}
+function calibrationIssues(){
+  const now=Date.now();
+  return tasks().filter(m=>!m.v30106CalibrationMuteUntil||Date.parse(m.v30106CalibrationMuteUntil)<now).map(m=>{
+    const r=completionRate(m,30);let reasonKind='';
+    if(r.scheduled>=5&&r.rate<.3)reasonKind='lowCompletion';
+    else if(/work on|improve|study|thesis|project|organize/i.test(m.name||'')&&String(m.name||'').split(/\s+/).length<5)reasonKind='tooBroad';
+    if(!reasonKind)return null;
+    return {m,r,reasonKind};
+  }).filter(Boolean);
+}
+function calibrationReasonText(x){
+  if(x.reasonKind==='lowCompletion')return tr('Completed only')+' '+x.r.done+' '+tr('of')+' '+x.r.scheduled+' '+tr('scheduled sessions.');
+  return tr('The mission may be too broad to start easily.');
+}
 function createProject(data){const p={id:'p_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),name:data.name||'New project',description:data.description||'',notes:data.notes||'',status:data.status||'active',targetDate:data.targetDate||'',missionIds:[...new Set((data.missionIds||[]).map(String))],contractKeys:[...new Set((data.contractKeys||[]).map(String))],createdAt:new Date().toISOString()};projects().unshift(p);p.missionIds.forEach(id=>{const m=mission(id);if(m)m.v30106ProjectId=p.id;});saveSafe();logActivity('Project created',p.name,'project');return p;}
 function renderProjects(){
   const ps=projects().filter(p=>p.status!=='deleted');
@@ -24932,8 +24947,39 @@ function heatData(year,category){const map={};tasks(true).forEach(m=>{if(categor
 function renderHeatmap(){const year=Number(S().v30106HeatYear||new Date().getFullYear()),category=S().v30106HeatCategory||'all',data=heatData(year,category),start=new Date(year,0,1,12),end=new Date(year,11,31,12),lead=start.getDay(),cells=[],max=Math.max(0,...Object.values(data).map(Number));for(let i=0;i<lead;i++)cells.push('<span></span>');let total=0,active=0;for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){const key=localDate(d),count=data[key]||0;total+=count;if(count)active++;const level=count?Math.min(4,Math.ceil(count/Math.max(1,max)*4)):0;cells.push('<span class="v30106-heat-cell" data-level="'+level+'" title="'+key+' · '+count+' completions"></span>');}const cats='<option value="all">All categories</option>'+Object.entries(typeof CATEGORIES!=='undefined'?CATEGORIES:{}).map(([k,c])=>'<option value="'+esc(k)+'" '+(category===k?'selected':'')+'>'+esc((c.emoji||'')+' '+c.name)+'</option>').join('');return '<div><section class="card"><div class="section-title"><div><h2>Annual Heatmap</h2><p>Scheduled work becomes visible as a year of evidence.</p></div></div><div class="v30106-heat-toolbar"><label>Year<input id="v30106HeatYear" type="number" min="2020" max="2100" value="'+year+'"></label><label>Category<select id="v30106HeatCategory">'+cats+'</select></label><button class="btn primary" data-v30106-action="refresh-heatmap">Apply</button><div class="v30106-heat-legend"><span>Less</span><i class="v30106-heat-cell" data-level="1"></i><i class="v30106-heat-cell" data-level="2"></i><i class="v30106-heat-cell" data-level="3"></i><i class="v30106-heat-cell" data-level="4"></i><span>More</span></div></div></section><section class="card"><div class="v30106-chip-row"><span class="pill">'+total+' completions</span><span class="pill">'+active+' active days</span><span class="pill">Best day: '+max+'</span></div><div class="v30106-heat-scroll"><div class="v30106-heat-grid">'+cells.join('')+'</div></div></section></div>';}
 function shutdownCandidates(){return tasks().filter(m=>scheduledOn(m,today())&&!doneOn(m,today()));}
 function renderShutdown(){const pending=shutdownCandidates(),done=tasks().filter(m=>scheduledOn(m,today())&&doneOn(m,today())),tom=addDate(today(),1),next=new Set(nextIds());const rows=pending.map(m=>'<label class="v30106-row"><div><input type="checkbox" name="shutdownMove" value="'+esc(m.id)+'" '+(next.has(String(m.id))?'checked':'')+'> <b>'+esc(m.name)+'</b><p class="muted">'+esc(catInfo(m.category).emoji+' '+catInfo(m.category).name)+'</p></div><span class="pill">Move to '+tom+'</span></label>').join('');return '<div><section class="card v30106-shutdown-hero"><div><h2>Daily Shutdown</h2><p class="muted">Close today, choose what moves, and leave tomorrow with a clear first action.</p></div><div class="v30106-shutdown-kpi"><small>Completed</small><b>'+done.length+'</b></div><div class="v30106-shutdown-kpi"><small>Pending</small><b>'+pending.length+'</b></div><div class="v30106-shutdown-kpi"><small>Tomorrow</small><b>'+tom.slice(5)+'</b></div></section><form id="v30106ShutdownForm"><section class="card"><div class="section-title"><div><h2>Move intentionally</h2><p>Selected missions will be scheduled for tomorrow and removed from the rest of today.</p></div></div><div class="v30106-shutdown-list">'+(rows||'<div class="v30105-empty">Nothing pending. Today can close clean.</div>')+'</div><div class="v30106-section"><label>First mission tomorrow<select name="first"><option value="">Choose after selecting missions</option>'+pending.map(m=>'<option value="'+esc(m.id)+'">'+esc(m.name)+'</option>').join('')+'</select></label></div><div class="actions"><button class="btn primary" type="submit">Finish shutdown</button><button class="btn ghost" type="button" data-v30106-action="open-plan" data-tomorrow="1">Plan tomorrow instead</button></div></section></form></div>';}
-function maintenanceReport(){const ids=new Set((state.missions||[]).map(m=>String(m.id))),issues=[];const dup=(state.missions||[]).map(m=>String(m.id)).filter((x,i,a)=>a.indexOf(x)!==i);if(dup.length)issues.push({type:'bad',name:'Duplicate mission IDs',detail:dup.length+' duplicate IDs detected.'});const orphanNext=nextIds().filter(id=>!ids.has(id));if(orphanNext.length)issues.push({type:'warn',name:'Orphan Next Up references',detail:orphanNext.length+' missing missions.'});let orphanDeps=0;tasks(true).forEach(m=>(m.v30106DependsOn||[]).forEach(id=>{if(!ids.has(String(id)))orphanDeps++;}));if(orphanDeps)issues.push({type:'warn',name:'Orphan dependencies',detail:orphanDeps+' missing dependency references.'});let orphanProject=0;projects().forEach(p=>(p.missionIds||[]).forEach(id=>{if(!ids.has(String(id)))orphanProject++;}));if(orphanProject)issues.push({type:'warn',name:'Orphan project links',detail:orphanProject+' missing task references.'});const cur=current();if(cur&&!ids.has(String(cur.id)))issues.push({type:'warn',name:'Orphan Current Mission',detail:'The active timer points to a missing mission.'});if(!issues.length)issues.push({type:'ok',name:'Runtime references',detail:'No orphan or duplicate references found.'});return issues;}
-function renderMaintenance(){const issues=maintenanceReport(),cal=calibrationIssues();const rows=issues.map(x=>'<div class="v30106-row"><div><b class="v30106-maint-'+x.type+'">'+esc(x.name)+'</b><p class="muted">'+esc(x.detail)+'</p></div></div>').join('');const cals=cal.map(x=>'<div class="v30106-row"><div><b>'+esc(x.m.name)+'</b><p class="muted">'+esc(x.reason)+'</p><small>'+Math.round(x.r.rate*100)+'% completion rate over scheduled opportunities</small></div><div class="v30106-row-actions"><button class="btn" data-v30106-action="make-easier" data-id="'+esc(x.m.id)+'">Make easier</button><button class="btn ghost" data-v30106-action="mute-calibration" data-id="'+esc(x.m.id)+'">Keep 30 days</button></div></div>').join('');return '<div><section class="card"><div class="section-title"><div><h2>Maintenance</h2><p>Safe reference cleanup, difficulty calibration and internal health checks.</p></div><span class="pill hot">v'+VERSION+'</span></div><div class="actions"><button class="btn primary" data-v30106-action="safe-cleanup">Run safe cleanup</button><button class="btn" data-v30106-action="run-self-test">Run self-test</button><button class="btn ghost" data-v30106-action="open-settings">Open Settings cleanup</button></div><div class="v30106-section"><b>Technical note</b><p class="muted">Project linking is handled directly from Dashboard mission cards. The old mission-splitting workflow has been removed.</p></div></section><section class="card"><div class="section-title"><div><h2>Runtime health</h2></div><span class="pill">'+issues.length+'</span></div><div class="v30106-maint-list">'+rows+'</div></section><section class="card"><div class="section-title"><div><h2>Difficulty calibration</h2><p>Suggestions are based on the mission’s scheduled completion rate, not on unscheduled rest days.</p></div><span class="pill hot">'+cal.length+'</span></div><div class="v30106-calibration-list">'+(cals||'<div class="v30105-empty">No missions need calibration right now.</div>')+'</div></section></div>';}
+function maintenanceReport(){
+  const ids=new Set((state.missions||[]).map(m=>String(m.id))),issues=[];
+  const dup=(state.missions||[]).map(m=>String(m.id)).filter((x,i,a)=>a.indexOf(x)!==i);
+  if(dup.length)issues.push({type:'bad',kind:'duplicateMissionIds',count:dup.length});
+  const orphanNext=nextIds().filter(id=>!ids.has(id));
+  if(orphanNext.length)issues.push({type:'warn',kind:'orphanNext',count:orphanNext.length});
+  let orphanDeps=0;
+  tasks(true).forEach(m=>(m.v30106DependsOn||[]).forEach(id=>{if(!ids.has(String(id)))orphanDeps++;}));
+  if(orphanDeps)issues.push({type:'warn',kind:'orphanDeps',count:orphanDeps});
+  let orphanProject=0;
+  projects().forEach(p=>(p.missionIds||[]).forEach(id=>{if(!ids.has(String(id)))orphanProject++;}));
+  if(orphanProject)issues.push({type:'warn',kind:'orphanProject',count:orphanProject});
+  const cur=current();
+  if(cur&&!ids.has(String(cur.id)))issues.push({type:'warn',kind:'orphanCurrent'});
+  if(!issues.length)issues.push({type:'ok',kind:'runtimeReferences'});
+  return issues;
+}
+function maintenanceIssueCopy(x){
+  switch(x.kind){
+    case 'duplicateMissionIds':return {name:tr('Duplicate mission IDs'),detail:x.count+' '+tr(x.count===1?'duplicate ID detected.':'duplicate IDs detected.')};
+    case 'orphanNext':return {name:tr('Orphan Next Up references'),detail:x.count+' '+tr(x.count===1?'missing mission.':'missing missions.')};
+    case 'orphanDeps':return {name:tr('Orphan dependencies'),detail:x.count+' '+tr(x.count===1?'missing dependency reference.':'missing dependency references.')};
+    case 'orphanProject':return {name:tr('Orphan project links'),detail:x.count+' '+tr(x.count===1?'missing task reference.':'missing task references.')};
+    case 'orphanCurrent':return {name:tr('Orphan Current Mission'),detail:tr('The active timer points to a missing mission.')};
+    default:return {name:tr('Runtime references'),detail:tr('No orphan or duplicate references found.')};
+  }
+}
+function renderMaintenance(){
+  const issues=maintenanceReport(),cal=calibrationIssues();
+  const rows=issues.map(x=>{const copy=maintenanceIssueCopy(x);return '<div class="v30106-row"><div><b class="v30106-maint-'+x.type+'">'+esc(copy.name)+'</b><p class="muted">'+esc(copy.detail)+'</p></div></div>';}).join('');
+  const cals=cal.map(x=>'<div class="v30106-row"><div><b>'+esc(x.m.name)+'</b><p class="muted">'+esc(calibrationReasonText(x))+'</p><small>'+Math.round(x.r.rate*100)+'% '+esc(tr('completion rate over scheduled opportunities'))+'</small></div><div class="v30106-row-actions"><button class="btn" data-v30106-action="make-easier" data-id="'+esc(x.m.id)+'">'+esc(tr('Make easier'))+'</button><button class="btn ghost" data-v30106-action="mute-calibration" data-id="'+esc(x.m.id)+'">'+esc(tr('Keep 30 days'))+'</button></div></div>').join('');
+  return '<div data-mlv-i18n-owned="source"><section class="card"><div class="section-title"><div><h2>'+esc(tr('Maintenance'))+'</h2><p>'+esc(tr('Safe reference cleanup, difficulty calibration and internal health checks.'))+'</p></div><span class="pill hot">v'+VERSION+'</span></div><div class="actions"><button class="btn primary" data-v30106-action="safe-cleanup">'+esc(tr('Run safe cleanup'))+'</button><button class="btn" data-v30106-action="run-self-test">'+esc(tr('Run self-test'))+'</button><button class="btn ghost" data-v30106-action="open-settings">'+esc(tr('Open Settings cleanup'))+'</button></div><div class="v30106-section"><b>'+esc(tr('Technical note'))+'</b><p class="muted">'+esc(tr('Project linking is handled directly from Dashboard mission cards. The old mission-splitting workflow has been removed.'))+'</p></div></section><section class="card"><div class="section-title"><div><h2>'+esc(tr('Runtime health'))+'</h2></div><span class="pill">'+issues.length+'</span></div><div class="v30106-maint-list">'+rows+'</div></section><section class="card"><div class="section-title"><div><h2>'+esc(tr('Difficulty calibration'))+'</h2><p>'+esc(tr('Suggestions are based on the mission’s scheduled completion rate, not on unscheduled rest days.'))+'</p></div><span class="pill hot">'+cal.length+'</span></div><div class="v30106-calibration-list">'+(cals||'<div class="v30105-empty">'+esc(tr('No missions need calibration right now.'))+'</div>')+'</div></section></div>';
+}
 
 function openProjectEditor(id){const p=id?project(id):null,root=document.getElementById('modalRoot');if(!root)return;const currentP=p||{id:'',name:'',description:'',notes:'',status:'active',targetDate:'',missionIds:[],contractKeys:[]},selected=new Set((currentP.missionIds||[]).map(String));root.innerHTML='<div class="modal-backdrop"><div class="modal"><div class="modal-head"><div><h2>'+(p?'Edit project':'New project')+'</h2><p>Projects organize outcomes; missions remain the executable actions.</p></div><button class="icon-btn" data-action="close-modal">×</button></div><form id="v30106ProjectForm" data-id="'+esc(currentP.id)+'"><div class="v30106-editor-grid"><label>Name<input name="name" value="'+esc(currentP.name)+'" required></label><label>Status<select name="status"><option value="active" '+(currentP.status==='active'?'selected':'')+'>Active</option><option value="paused" '+(currentP.status==='paused'?'selected':'')+'>Paused</option><option value="completed" '+(currentP.status==='completed'?'selected':'')+'>Completed</option></select></label><label>Target date<input name="targetDate" type="date" value="'+esc(currentP.targetDate||'')+'"></label><label>Description<input name="description" value="'+esc(currentP.description||'')+'"></label></div><label>Notes<textarea name="notes">'+esc(currentP.notes||'')+'</textarea></label><div class="v30106-section"><b>Linked missions</b><div class="v30106-link-list">'+tasks().map(m=>'<label class="v30106-link-option"><input type="checkbox" name="mission" value="'+esc(m.id)+'" '+(selected.has(String(m.id))?'checked':'')+'><span><b>'+esc(m.name)+'</b><small>'+esc(catInfo(m.category).emoji+' '+catInfo(m.category).name)+'</small></span></label>').join('')+'</div></div><div class="actions"><button class="btn primary" type="submit">Save project</button>'+(p?'<button class="btn danger" type="button" data-v30106-action="delete-project" data-id="'+esc(p.id)+'">Delete project</button>':'')+'<button class="btn ghost" type="button" data-action="close-modal">Cancel</button></div></form></div></div>';}
 function saveProjectForm(form){const fd=new FormData(form),id=form.dataset.id,p=id?project(id):null,data={name:String(fd.get('name')||'').trim(),status:String(fd.get('status')||'active'),targetDate:String(fd.get('targetDate')||''),description:String(fd.get('description')||''),notes:String(fd.get('notes')||''),missionIds:fd.getAll('mission').map(String)};if(!data.name)return;if(p){Object.assign(p,data);tasks(true).forEach(m=>{if(String(m.v30106ProjectId||'')===p.id&&!data.missionIds.includes(String(m.id)))delete m.v30106ProjectId;});data.missionIds.forEach(mid=>{const m=mission(mid);if(m)m.v30106ProjectId=p.id;});logActivity('Project updated',p.name,'project');}else createProject(data);saveSafe();document.getElementById('modalRoot').innerHTML='';renderAll();toastSafe('Project saved',data.name);}
