@@ -1762,6 +1762,14 @@ const PAIRS={
   "Danger zone":"Zona de peligro",
   "Goals are fully editable: name, target, counting method, keywords, days and category.":"Las metas son totalmente editables: nombre, objetivo, forma de conteo, palabras clave, días y categoría.",
   "Decide later":"Decidir después",
+  "Deep night":"Madrugada profunda",
+  "Today I turn intention into evidence.":"Hoy convierto intención en evidencia.",
+  "It was not counted twice.":"No se contó dos veces.",
+  "Give the mission a name.":"Ponle nombre a la misión.",
+  "Write the quick task.":"Escribe la tarea rápida.",
+  "Quick task created":"Tarea rápida creada",
+  "copy":"copia",
+  "Carryover processed":"Pendientes procesados",
 };
 const SPANISH_SYSTEM_DEFAULTS={
   "Read 30 minutes at night 3 times":"Leer 30 minutos de noche 3 veces",
