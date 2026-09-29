@@ -25379,6 +25379,8 @@ html.v30111-rendering #tabs *{transition:none!important;animation:none!important
   }
   function settings(){state.settings=state.settings||{};return state.settings;}
   function esc(value){return String(value??'').replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch];});}
+  function tx(en,es){return window.mlvText?window.mlvText(en,es):en;}
+  function stageLabel(stage){return stage==='morning'?tx('Morning','Mañana'):stage==='afternoon'?tx('Afternoon','Tarde'):tx('Night','Noche');}
   function saveNow(){try{if(typeof save==='function')save();else localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(state));}catch(error){console.error('v3.0.114 save error',error);}}
   function queueSave(){if(saveQueued)return;saveQueued=true;setTimeout(function(){saveQueued=false;saveNow();},0);}
   function toastSafe(title,message){try{if(typeof toast==='function')toast(title,message);}catch(error){}}
@@ -25473,19 +25475,19 @@ html.v30111-rendering #tabs *{transition:none!important;animation:none!important
       }catch(error){return true;}
     });
   }
-  function stageOptions(stage){return VALID.map(function(x){return '<option value="'+x+'" '+(x===stage?'selected':'')+'>'+LABELS[x]+'</option>';}).join('');}
+  function stageOptions(stage){return VALID.map(function(x){return '<option value="'+x+'" '+(x===stage?'selected':'')+'>'+esc(stageLabel(x))+'</option>';}).join('');}
   function addStageControl(card,m){
     if(!card||!m)return;
     card.dataset.v30114MissionId=String(m.id);
     card.querySelectorAll('.v30114-stage-control,.v30114-earlier-pill').forEach(function(x){x.remove();});
     const pills=card.querySelector('.v131-pills,.quest-state,.pills,.chips');
     if(pills){
-      const label=document.createElement('label');label.className='v30114-stage-control';label.title='Time of day';
-      label.innerHTML='<span>◷</span><select class="v30114-stage-select" data-v30114-stage="1" data-id="'+esc(m.id)+'" aria-label="Time of day for '+esc(m.name)+'">'+stageOptions(stageOf(m))+'</select>';
+      const label=document.createElement('label');label.className='v30114-stage-control';label.title=tx('Time of day','Hora del día');
+      label.innerHTML='<span>◷</span><select class="v30114-stage-select" data-v30114-stage="1" data-id="'+esc(m.id)+'" aria-label="'+esc(tx('Time of day for','Hora del día para'))+' '+esc(m.name)+'">'+stageOptions(stageOf(m))+'</select>';
       pills.appendChild(label);
       const cur=currentStage();
       if(INDEX[stageOf(m)]<INDEX[cur]&&!doneToday(m)){
-        const earlier=document.createElement('span');earlier.className='v131-pill v30114-earlier-pill';earlier.textContent='Earlier today';pills.appendChild(earlier);
+        const earlier=document.createElement('span');earlier.className='v131-pill v30114-earlier-pill';earlier.textContent=tx('Earlier today','Más temprano hoy');pills.appendChild(earlier);
       }
     }
   }
@@ -25498,10 +25500,10 @@ html.v30111-rendering #tabs *{transition:none!important;animation:none!important
   function buildGroup(stage,cards){
     const section=document.createElement('section');section.className='v30114-stage-group'+(stage===currentStage()?' current':'');section.dataset.v30114Group=stage;
     const pending=cards.filter(function(card){const m=missionById(missionIdFromCard(card));return m&&!doneToday(m);}).length;
-    section.innerHTML='<div class="v30114-stage-head"><div class="v30114-stage-title"><span>'+ICONS[stage]+'</span><b>'+LABELS[stage]+'</b><small>'+(stage===currentStage()?'Current stage':'')+'</small></div><span class="v30114-stage-count">'+pending+' pending · '+cards.length+' total</span></div><div class="v30114-stage-list"></div>';
+    section.innerHTML='<div class="v30114-stage-head"><div class="v30114-stage-title"><span>'+ICONS[stage]+'</span><b>'+esc(stageLabel(stage))+'</b><small>'+(stage===currentStage()?esc(tx('Current stage','Etapa actual')):'')+'</small></div><span class="v30114-stage-count">'+pending+' '+esc(tx('pending','pendientes'))+' · '+cards.length+' '+esc(tx('total','total'))+'</span></div><div class="v30114-stage-list"></div>';
     const list=section.querySelector('.v30114-stage-list');
     if(cards.length)cards.forEach(function(card){list.appendChild(card);});
-    else list.innerHTML='<div class="v30114-stage-empty">No missions in this stage.</div>';
+    else list.innerHTML='<div class="v30114-stage-empty">'+esc(tx('No missions in this stage.','No hay misiones en esta etapa.'))+'</div>';
     return section;
   }
   function summaryHtml(){
@@ -25509,7 +25511,7 @@ html.v30111-rendering #tabs *{transition:none!important;animation:none!important
     const now=missions.filter(function(m){return stageOf(m)===cur;}).length;
     const earlier=missions.filter(function(m){return INDEX[stageOf(m)]<INDEX[cur];}).length;
     const later=missions.filter(function(m){return INDEX[stageOf(m)]>INDEX[cur];}).length;
-    return '<div class="v30114-day-summary" data-v30114-summary="1"><strong>Current stage: '+ICONS[cur]+' '+LABELS[cur]+'</strong><span>'+now+' pending now · '+earlier+' pending from earlier · '+later+' later today</span></div>';
+    return '<div class="v30114-day-summary" data-v30114-summary="1" data-mlv-i18n-owned="source"><strong>'+esc(tx('Current stage:','Etapa actual:'))+' '+ICONS[cur]+' '+esc(stageLabel(cur))+'</strong><span>'+now+' '+esc(tx('pending now','pendientes ahora'))+' · '+earlier+' '+esc(tx('pending from earlier','pendientes anteriores'))+' · '+later+' '+esc(tx('later today','más tarde hoy'))+'</span></div>';
   }
   function groupDashboardList(list){
     if(!list)return;
@@ -25598,7 +25600,7 @@ html.v30111-rendering #tabs *{transition:none!important;animation:none!important
       setStage(m,target.value,true);saveNow();
       document.querySelectorAll('[data-v30114-stage="1"][data-id="'+CSS.escape(String(m.id))+'"]').forEach(function(sel){if(sel!==target)sel.value=target.value;});
       if(document.getElementById('tab-dashboard'))regroupVisibleDashboard();
-      toastSafe('Time of day updated',m.name+' → '+LABELS[target.value]);
+      toastSafe(tx('Time of day updated','Hora del día actualizada'),m.name+' → '+stageLabel(target.value));
     }
   },true);
 
@@ -25608,7 +25610,7 @@ html.v30111-rendering #tabs *{transition:none!important;animation:none!important
     event.preventDefault();event.stopPropagation();
     const changed=migrateStages(true);saveNow();
     try{if(typeof renderAll==='function')renderAll();}catch(error){}
-    toastSafe('Mission stages reassigned',changed+' automatic assignment'+(changed===1?'':'s')+' updated.');
+    toastSafe(tx('Mission stages reassigned','Etapas de misión reasignadas'),changed+' '+tx(changed===1?'automatic assignment updated.':'automatic assignments updated.',changed===1?'asignación automática actualizada.':'asignaciones automáticas actualizadas.'));
   },true);
 
   /* Inject the stage selector into the existing edit modal without a broad DOM observer. */
@@ -25619,7 +25621,7 @@ html.v30111-rendering #tabs *{transition:none!important;animation:none!important
     setTimeout(function(){
       const form=document.getElementById('missionEditForm');if(!form||form.querySelector('[name="v30114DayStage"]'))return;
       const m=missionById(id||form.dataset.id);if(!m)return;
-      const label=document.createElement('label');label.innerHTML='Time of day<select name="v30114DayStage">'+stageOptions(stageOf(m))+'</select>';
+      const label=document.createElement('label');label.innerHTML=esc(tx('Time of day','Hora del día'))+'<select name="v30114DayStage">'+stageOptions(stageOf(m))+'</select>';
       const grid=form.querySelector('.form-grid,.v133-form-grid,.mission-edit-grid');if(grid)grid.appendChild(label);else form.insertBefore(label,form.firstChild);
     },0);
   },true);
@@ -25740,6 +25742,8 @@ html.v30111-rendering #tabs *{transition:none!important;animation:none!important
   window.__v30115CurrentStagePhraseLoaded=true;
   const VERSION='3.0.115',STAGES=['morning','afternoon','night'];
   const LABEL={morning:'Morning',afternoon:'Afternoon',night:'Night'};
+  function tx(en,es){return window.mlvText?window.mlvText(en,es):en;}
+  function stageLabel(stage){return stage==='morning'?tx('Morning','Mañana'):stage==='afternoon'?tx('Afternoon','Tarde'):tx('Night','Noche');}
   const ICON={morning:'☀️',afternoon:'🌤️',night:'🌙'};
   function S(){state.settings=state.settings||{};return state.settings;}
   function persist(){try{if(typeof save==='function')save();else if(typeof saveState==='function')saveState();}catch(error){console.error('v3.0.115 save error',error);}}
@@ -25773,11 +25777,11 @@ html.v30111-rendering #tabs *{transition:none!important;animation:none!important
       const rows=buckets[stage].sort(function(a,b){return a.rank[0]-b.rank[0]||a.rank[1]-b.rank[1]||a.rank[2]-b.rank[2];}).map(function(x){return x.card;});
       const section=document.createElement('section');section.className='v30115-mission-stage-group'+(window.v30114TimeOfDay&&window.v30114TimeOfDay.current&&window.v30114TimeOfDay.current()===stage?' current':'')+(activeFilter!=='all'&&activeFilter!==stage?' v30115-stage-hidden':'');section.dataset.stage=stage;
       const pending=rows.filter(function(card){const m=mission(idFromCard(card));return m&&!done(m);}).length;
-      section.innerHTML='<div class="v30115-mission-stage-head"><div class="v30115-mission-stage-title"><span>'+ICON[stage]+'</span><b>'+LABEL[stage]+'</b></div><span class="v30115-mission-stage-count">'+pending+' pending · '+rows.length+' total</span></div><div class="v30115-mission-stage-list"></div>';
-      const target=section.querySelector('.v30115-mission-stage-list');if(rows.length)rows.forEach(function(card){target.appendChild(card);});else target.innerHTML='<div class="v30115-stage-empty">No missions in this stage.</div>';
+      section.innerHTML='<div class="v30115-mission-stage-head"><div class="v30115-mission-stage-title"><span>'+ICON[stage]+'</span><b>'+stageLabel(stage)+'</b></div><span class="v30115-mission-stage-count">'+pending+' '+tx('pending','pendientes')+' · '+rows.length+' '+tx('total','total')+'</span></div><div class="v30115-mission-stage-list"></div>';
+      const target=section.querySelector('.v30115-mission-stage-list');if(rows.length)rows.forEach(function(card){target.appendChild(card);});else target.innerHTML='<div class="v30115-stage-empty">'+tx('No missions in this stage.','No hay misiones en esta etapa.')+'</div>';
       wrap.appendChild(section);
     });
-    const filter=document.createElement('div');filter.className='v30115-mission-filter';filter.innerHTML='<span>Time of day</span>'+[['all','All'],['morning','☀️ Morning'],['afternoon','🌤️ Afternoon'],['night','🌙 Night']].map(function(x){return '<button type="button" class="v30115-stage-filter '+(activeFilter===x[0]?'active':'')+'" data-v30115-filter="'+x[0]+'">'+x[1]+'</button>';}).join('');
+    const filter=document.createElement('div');filter.className='v30115-mission-filter';filter.innerHTML='<span>'+tx('Time of day','Hora del día')+'</span>'+[['all',tx('All','Todas')],['morning','☀️ '+stageLabel('morning')],['afternoon','🌤️ '+stageLabel('afternoon')],['night','🌙 '+stageLabel('night')]].map(function(x){return '<button type="button" class="v30115-stage-filter '+(activeFilter===x[0]?'active':'')+'" data-v30115-filter="'+x[0]+'">'+x[1]+'</button>';}).join('');
     list.className='v30115-missions-grouped';list.replaceChildren(wrap);list.insertAdjacentElement('beforebegin',filter);
     return t.innerHTML;
   }
