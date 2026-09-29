@@ -1730,6 +1730,13 @@ const PAIRS={
   "planning":"planificación",
   "cleaning":"limpieza",
   "home":"casa",
+  "Action cancelled.":"Acción cancelada.",
+  "Synced.":"Sincronizado.",
+  "Google integration requires the Windows WebView2 build of Michel's Life.":"La integración con Google requiere la compilación de Michel’s Life para Windows con WebView2.",
+  "Untitled event":"Evento sin título",
+  "Sync":"Sincronizar",
+  "Open ↗":"Abrir ↗",
+  "more events in Google Calendar":"eventos más en Google Calendar",
 };
 const SPANISH_SYSTEM_DEFAULTS={
   "Read 30 minutes at night 3 times":"Leer 30 minutos de noche 3 veces",
