@@ -29785,44 +29785,80 @@ const runtime={hasCredentials:false,connected:false,cloudReady:false,account:'',
 let seq=0, autoTimer=null, cloudPollTimer=null, cloudSaveTimer=null, decorateTimer=null, mounting=false, storageWatchInstalled=false;
 const pending=new Map();
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function gText(v){try{return window.MichelsLifeI18n?.mapText?.(String(v))||String(v)}catch(_){return String(v)}}
+function gEsc(v){return esc(gText(v))}
+function gLocale(){return (window.MichelsLifeI18n?.language||document.documentElement.lang)==='es'?'es-MX':'en-US'}
 function settings(){state.settings=state.settings||{};const s=state.settings.v30190Google=state.settings.v30190Google||{};if(typeof s.showEvents!=='boolean')s.showEvents=true;if(typeof s.pushMissions!=='boolean')s.pushMissions=false;if(typeof s.autoSync!=='boolean')s.autoSync=true;if(typeof s.cloudAutoSync!=='boolean')s.cloudAutoSync=true;if(!Array.isArray(s.events))s.events=[];return s}
 function saveSafe(){try{if(typeof save==='function')save()}catch(_){} }
-function toastSafe(title,msg){runtime.notice=[title,msg].filter(Boolean).join(' — ');try{console.log(title,msg||'')}catch(_){}mountGoogleSettings()}
+function toastSafe(title,msg){
+  runtime.notice=[title,msg].filter(Boolean).map(gText).join(' — ');
+  try{console.log(title,msg||'')}catch(_){}
+  mountGoogleSettings();
+}
 function bridge(action,payload={}){return new Promise((resolve,reject)=>{if(!window.chrome?.webview?.postMessage){reject(new Error('Google integration requires the Windows WebView2 build of Michel\'s Life.'));return}const requestId='gcal-'+Date.now()+'-'+(++seq);pending.set(requestId,{resolve,reject,action,timer:setTimeout(()=>{pending.delete(requestId);reject(new Error('Google Calendar request timed out.'))},270000)});window.chrome.webview.postMessage({channel:CHANNEL,requestId,action,payload})})}
 function applyStatus(x){if(!x)return;runtime.hasCredentials=!!x.hasCredentials;runtime.connected=!!x.connected;runtime.cloudReady=!!x.cloudReady;runtime.account=x.account||'';runtime.credentialProject=x.credentialProject||'';runtime.storageFolder=x.storageFolder||'';runtime.cloudLastSync=x.cloudLastSync||runtime.cloudLastSync||'';runtime.error='';mountGoogleSettings();decorateCalendar();scheduleAutoSync();scheduleCloudPoll()}
 if(window.chrome?.webview?.addEventListener){window.chrome.webview.addEventListener('message',ev=>{const d=ev?.data;if(!d||d.channel!==RESPONSE)return;const p=pending.get(d.requestId);if(!p)return;clearTimeout(p.timer);pending.delete(d.requestId);if(d.ok)p.resolve(d.payload);else p.reject(new Error(d.error||'Google Calendar request failed.'))})}
-function statusLabel(){if(runtime.busy||runtime.cloudBusy)return ['busy','Connecting…'];if(runtime.error||runtime.cloudError)return ['error','Needs attention'];if(runtime.connected&&runtime.cloudReady)return ['connected','Connected'];if(runtime.connected&&!runtime.cloudReady)return ['','Reconnect'];return ['','Ready to connect']}
-function lastSyncText(){const s=settings(),raw=s.lastSync;if(!raw)return 'Never';const d=new Date(raw);return Number.isNaN(d.getTime())?String(raw):d.toLocaleString()}
-function cloudLastSyncText(){const raw=runtime.cloudLastSync;if(!raw)return 'Never';const d=new Date(raw);return Number.isNaN(d.getTime())?String(raw):d.toLocaleString()}
-function googleConfirmCopy(){const a=runtime.confirmAction;if(a==='disconnect')return ['Disconnect Google?','Your cloud save and Google Calendar events will not be deleted.'];if(a==='cloud-upload'||a==='cloud-conflict-local')return ['Overwrite the cloud copy?','This PC will become the master copy and replace the Michel’s Life save in Google Drive.'];if(a==='cloud-download'||a==='cloud-conflict-cloud')return ['Replace this PC with the cloud copy?','A local safety backup will be created first, then Google Drive will replace this PC’s Michel’s Life data.'];return null}
-function googlePaneHTML(){const s=settings(),[cls,label]=statusLabel(),account=runtime.account||'—',project=runtime.credentialProject||'—',cloudState=!runtime.connected?'Disconnected':runtime.cloudReady?'Ready':'Needs reconnect',confirmCopy=googleConfirmCopy();return `<section class="card mlv190-google-card" data-mlv190-google-card>
-<div class="mlv190-google-head"><div class="mlv190-google-brand"><span class="mlv190-google-logo">G</span><div><h2 style="margin:0">Google</h2><p class="muted" style="margin:3px 0 0">Sync your complete Michel’s Life between PCs with Google Drive. Calendar remains optional.</p></div></div><span class="mlv190-google-badge ${cls}">${label}</span></div>
-${runtime.busy?`<div class="mlv204-google-state busy"><b>Connecting to Google…</b><br>Finish sign-in in your browser. This panel will update automatically.</div>`:''}
-${runtime.notice&&!runtime.busy?`<div class="mlv204-google-state notice">${esc(runtime.notice)}</div>`:''}
-<div class="mlv190-google-status-grid"><div><small>Google account</small><b title="${esc(account)}">${esc(account)}</b></div><div><small>Cloud Sync</small><b class="${runtime.cloudReady?'mlv191-cloud-ok':runtime.connected?'mlv191-cloud-warn':''}">${esc(cloudState)}</b></div><div><small>Sign-in</small><b>${runtime.connected?'Linked':'Google OAuth'}</b></div></div>
-<div class="mlv190-google-actions"><button class="btn primary" type="button" data-mlv190-google="connect" ${(!runtime.connected||!runtime.cloudReady)&&!runtime.busy?'':'disabled'}>${runtime.busy?'Connecting…':runtime.connected&&!runtime.cloudReady?'Reconnect Google':'Connect Google'}</button><button class="btn danger" type="button" data-mlv190-google="disconnect" ${runtime.connected&&!runtime.busy?'':'disabled'}>Disconnect</button></div>
-${confirmCopy?`<div class="mlv191-cloud-conflict"><b>${esc(confirmCopy[0])}</b><p>${esc(confirmCopy[1])}</p><div class="mlv191-cloud-actions"><button class="btn danger" type="button" data-mlv190-google="confirm-yes">Confirm</button><button class="btn ghost" type="button" data-mlv190-google="confirm-no">Cancel</button></div></div>`:''}
+function statusLabel(){
+  if(runtime.busy||runtime.cloudBusy)return ['busy',gText('Connecting…')];
+  if(runtime.error||runtime.cloudError)return ['error',gText('Needs attention')];
+  if(runtime.connected&&runtime.cloudReady)return ['connected',gText('Connected')];
+  if(runtime.connected&&!runtime.cloudReady)return ['',gText('Reconnect')];
+  return ['',gText('Ready to connect')];
+}
+function lastSyncText(){
+  const s=settings(),raw=s.lastSync;
+  if(!raw)return gText('Never');
+  const d=new Date(raw);
+  return Number.isNaN(d.getTime())?String(raw):d.toLocaleString(gLocale());
+}
+function cloudLastSyncText(){
+  const raw=runtime.cloudLastSync;
+  if(!raw)return gText('Never');
+  const d=new Date(raw);
+  return Number.isNaN(d.getTime())?String(raw):d.toLocaleString(gLocale());
+}
+function googleConfirmCopy(){
+  const a=runtime.confirmAction;
+  if(a==='disconnect')return [gText('Disconnect Google?'),gText('Your cloud save and Google Calendar events will not be deleted.')];
+  if(a==='cloud-upload'||a==='cloud-conflict-local')return [gText('Overwrite the cloud copy?'),gText('This PC will become the master copy and replace the Michel’s Life save in Google Drive.')];
+  if(a==='cloud-download'||a==='cloud-conflict-cloud')return [gText('Replace this PC with the cloud copy?'),gText('A local safety backup will be created first, then Google Drive will replace this PC’s Michel’s Life data.')];
+  return null;
+}
+function googlePaneHTML(){
+  const s=settings(),[cls,label]=statusLabel(),account=runtime.account||'—',
+    cloudState=gText(!runtime.connected?'Disconnected':runtime.cloudReady?'Ready':'Needs reconnect'),
+    confirmCopy=googleConfirmCopy();
+  return `<section class="card mlv190-google-card" data-mlv190-google-card data-mlv-i18n-owned="source">
+<div class="mlv190-google-head"><div class="mlv190-google-brand"><span class="mlv190-google-logo">G</span><div><h2 style="margin:0">Google</h2><p class="muted" style="margin:3px 0 0">${gEsc('Sync your complete Michel’s Life between PCs with Google Drive. Calendar remains optional.')}</p></div></div><span class="mlv190-google-badge ${cls}">${esc(label)}</span></div>
+${runtime.busy?`<div class="mlv204-google-state busy"><b>${gEsc('Connecting to Google…')}</b><br>${gEsc('Finish sign-in in your browser. This panel will update automatically.')}</div>`:''}
+${runtime.notice&&!runtime.busy?`<div class="mlv204-google-state notice">${gEsc(runtime.notice)}</div>`:''}
+<div class="mlv190-google-status-grid"><div><small>${gEsc('Google account')}</small><b title="${esc(account)}">${esc(account)}</b></div><div><small>${gEsc('Cloud Sync')}</small><b class="${runtime.cloudReady?'mlv191-cloud-ok':runtime.connected?'mlv191-cloud-warn':''}">${esc(cloudState)}</b></div><div><small>${gEsc('Sign-in')}</small><b>${gEsc(runtime.connected?'Linked':'Google OAuth')}</b></div></div>
+<div class="mlv190-google-actions"><button class="btn primary" type="button" data-mlv190-google="connect" ${(!runtime.connected||!runtime.cloudReady)&&!runtime.busy?'':'disabled'}>${gEsc(runtime.busy?'Connecting…':runtime.connected&&!runtime.cloudReady?'Reconnect Google':'Connect Google')}</button><button class="btn danger" type="button" data-mlv190-google="disconnect" ${runtime.connected&&!runtime.busy?'':'disabled'}>${gEsc('Disconnect')}</button></div>
+${confirmCopy?`<div class="mlv191-cloud-conflict"><b>${esc(confirmCopy[0])}</b><p>${esc(confirmCopy[1])}</p><div class="mlv191-cloud-actions"><button class="btn danger" type="button" data-mlv190-google="confirm-yes">${gEsc('Confirm')}</button><button class="btn ghost" type="button" data-mlv190-google="confirm-no">${gEsc('Cancel')}</button></div></div>`:''}
 <div class="mlv191-cloud-block">
-<div class="mlv191-cloud-head"><div><h3>Michel’s Life Cloud Sync</h3><p>Journal, daily tasks, missions, Premium Contracts, stats, chapters, settings, history, progress and the complete restorable local state.</p></div><span class="mlv190-google-badge ${runtime.cloudReady?'connected':''}">${runtime.cloudBusy?'Syncing…':runtime.cloudAction?esc(runtime.cloudAction):runtime.cloudReady?'Ready':'Offline'}</span></div>
-<div class="mlv190-google-status-grid"><div><small>Last cloud sync</small><b>${esc(cloudLastSyncText())}</b></div><div><small>Automatic</small><b>${s.cloudAutoSync?'On':'Off'}</b></div><div><small>Storage</small><b>Private Google Drive app data</b></div></div>
-<div class="mlv191-cloud-actions"><button class="btn primary" type="button" data-mlv190-google="cloud-sync" ${runtime.cloudReady&&!runtime.cloudBusy?'':'disabled'}>Sync Michel’s Life now</button><button class="btn ghost" type="button" data-mlv190-google="cloud-upload" ${runtime.cloudReady&&!runtime.cloudBusy?'':'disabled'}>Keep this PC → Cloud</button><button class="btn ghost" type="button" data-mlv190-google="cloud-download" ${runtime.cloudReady&&!runtime.cloudBusy?'':'disabled'}>Use Cloud → This PC</button></div>
-<label class="mlv190-google-option" style="margin-top:10px"><input type="checkbox" data-mlv190-google-option="cloudAutoSync" ${s.cloudAutoSync?'checked':''}><span><b>Keep all Michel’s Life data synced automatically</b><small>Uploads about 30 seconds after you stop making changes, checks Drive every 10 minutes, and checks again after returning to the app.</small></span></label>
-${runtime.cloudConflict?`<div class="mlv191-cloud-conflict"><b>Cloud conflict</b><p>${esc(runtime.cloudConflict.message||'Both copies changed.')}</p><div class="mlv191-cloud-actions"><button class="btn" data-mlv190-google="cloud-conflict-local">Keep this PC</button><button class="btn" data-mlv190-google="cloud-conflict-cloud">Use cloud</button></div></div>`:''}
-${runtime.cloudError?`<div class="mlv190-google-error">${esc(runtime.cloudError)}</div>`:''}
+<div class="mlv191-cloud-head"><div><h3>${gEsc('Michel’s Life Cloud Sync')}</h3><p>${gEsc('Journal, daily tasks, missions, Premium Contracts, stats, chapters, settings, history, progress and the complete restorable local state.')}</p></div><span class="mlv190-google-badge ${runtime.cloudReady?'connected':''}">${gEsc(runtime.cloudBusy?'Syncing…':runtime.cloudAction?runtime.cloudAction:runtime.cloudReady?'Ready':'Offline')}</span></div>
+<div class="mlv190-google-status-grid"><div><small>${gEsc('Last cloud sync')}</small><b>${esc(cloudLastSyncText())}</b></div><div><small>${gEsc('Automatic')}</small><b>${gEsc(s.cloudAutoSync?'On':'Off')}</b></div><div><small>${gEsc('Storage')}</small><b>${gEsc('Private Google Drive app data')}</b></div></div>
+<div class="mlv191-cloud-actions"><button class="btn primary" type="button" data-mlv190-google="cloud-sync" ${runtime.cloudReady&&!runtime.cloudBusy?'':'disabled'}>${gEsc('Sync Michel’s Life now')}</button><button class="btn ghost" type="button" data-mlv190-google="cloud-upload" ${runtime.cloudReady&&!runtime.cloudBusy?'':'disabled'}>${gEsc('Keep this PC → Cloud')}</button><button class="btn ghost" type="button" data-mlv190-google="cloud-download" ${runtime.cloudReady&&!runtime.cloudBusy?'':'disabled'}>${gEsc('Use Cloud → This PC')}</button></div>
+<label class="mlv190-google-option" style="margin-top:10px"><input type="checkbox" data-mlv190-google-option="cloudAutoSync" ${s.cloudAutoSync?'checked':''}><span><b>${gEsc('Keep all Michel’s Life data synced automatically')}</b><small>${gEsc('Uploads about 30 seconds after you stop making changes, checks Drive every 10 minutes, and checks again after returning to the app.')}</small></span></label>
+${runtime.cloudConflict?`<div class="mlv191-cloud-conflict"><b>${gEsc('Cloud conflict')}</b><p>${gEsc(runtime.cloudConflict.message||'Both copies changed.')}</p><div class="mlv191-cloud-actions"><button class="btn" data-mlv190-google="cloud-conflict-local">${gEsc('Keep this PC')}</button><button class="btn" data-mlv190-google="cloud-conflict-cloud">${gEsc('Use cloud')}</button></div></div>`:''}
+${runtime.cloudError?`<div class="mlv190-google-error">${gEsc(runtime.cloudError)}</div>`:''}
 </div>
 <div class="mlv190-google-options">
-<label class="mlv190-google-option"><input type="checkbox" data-mlv190-google-option="showEvents" ${s.showEvents?'checked':''}><span><b>Show Google Calendar events inside Michel’s Life</b><small>Optional. Google events stay separate from missions and do not earn XP.</small></span></label>
-<label class="mlv190-google-option"><input type="checkbox" data-mlv190-google-option="pushMissions" ${s.pushMissions?'checked':''}><span><b>Send dated Michel’s Life missions to Google Calendar</b><small>Optional. Only missions with a concrete date are sent and tagged to avoid duplicates.</small></span></label>
-<label class="mlv190-google-option"><input type="checkbox" data-mlv190-google-option="autoSync" ${s.autoSync?'checked':''}><span><b>Auto-sync Calendar every 15 minutes</b><small>Only affects Google Calendar events. Your Michel’s Life data uses Cloud Sync above.</small></span></label>
+<label class="mlv190-google-option"><input type="checkbox" data-mlv190-google-option="showEvents" ${s.showEvents?'checked':''}><span><b>${gEsc('Show Google Calendar events inside Michel’s Life')}</b><small>${gEsc('Optional. Google events stay separate from missions and do not earn XP.')}</small></span></label>
+<label class="mlv190-google-option"><input type="checkbox" data-mlv190-google-option="pushMissions" ${s.pushMissions?'checked':''}><span><b>${gEsc('Send dated Michel’s Life missions to Google Calendar')}</b><small>${gEsc('Optional. Only missions with a concrete date are sent and tagged to avoid duplicates.')}</small></span></label>
+<label class="mlv190-google-option"><input type="checkbox" data-mlv190-google-option="autoSync" ${s.autoSync?'checked':''}><span><b>${gEsc('Auto-sync Calendar every 15 minutes')}</b><small>${gEsc('Only affects Google Calendar events. Your Michel’s Life data uses Cloud Sync above.')}</small></span></label>
 </div>
-<div class="mlv190-google-actions"><button class="btn" type="button" data-mlv190-google="sync" ${runtime.connected&&!runtime.busy?'':'disabled'}>Sync Calendar now</button><button class="btn ghost" type="button" data-mlv190-google="open">Open Google Calendar</button></div>
-${runtime.error?`<div class="mlv190-google-error">${esc(runtime.error)}</div>`:''}
-<div class="mlv190-google-note"><strong>Google sign-in:</strong> press <b>Connect Google</b>, finish authorization in your browser, then return to Michel’s Life. Status and errors stay in this panel.</div>
-</section>`}
+<div class="mlv190-google-actions"><button class="btn" type="button" data-mlv190-google="sync" ${runtime.connected&&!runtime.busy?'':'disabled'}>${gEsc('Sync Calendar now')}</button><button class="btn ghost" type="button" data-mlv190-google="open">${gEsc('Open Google Calendar')}</button></div>
+${runtime.error?`<div class="mlv190-google-error">${gEsc(runtime.error)}</div>`:''}
+<div class="mlv190-google-note"><strong>${gEsc('Google sign-in:')}</strong> ${gEsc('press Connect Google, finish authorization in your browser, then return to Michel’s Life. Status and errors stay in this panel.')}</div>
+</section>`;
+}
 function mountGoogleSettings(){if(mounting)return;mounting=true;try{if(String(state?.activeTab||'')!=='settings')return;const pane=document.querySelector('[data-v30171-pane="google"]');if(!pane)return;const s=settings(),sig=JSON.stringify([runtime.hasCredentials,runtime.connected,runtime.cloudReady,runtime.account,runtime.busy,runtime.cloudBusy,runtime.error,runtime.cloudError,runtime.cloudAction,runtime.cloudLastSync,runtime.cloudConflict?.message||'',runtime.notice,runtime.confirmAction,s.showEvents,s.pushMissions,s.autoSync,s.cloudAutoSync,s.lastSync||'']);let card=pane.querySelector('[data-mlv190-google-card]');if(card&&card.dataset.mlv190Sig===sig)return;const html=googlePaneHTML(),t=document.createElement('template');t.innerHTML=html;const next=t.content.firstElementChild;if(!next)return;next.dataset.mlv190Sig=sig;if(!card)pane.appendChild(next);else card.replaceWith(next)}finally{mounting=false}}
 function captureCloudBackup(){const ls={};for(const [k,v] of Object.entries(localStorage)){if(!String(k).startsWith('michelsLife.internal.'))ls[k]=v}return JSON.stringify({app:"Michel's Life",type:'cloud-sync',cloudPayloadVersion:1,version:BUILD,state:JSON.parse(JSON.stringify(state)),localStorage:ls})}
 async function applyCloudRestore(res){if(!res?.backupJson)throw new Error('Google Drive returned no Michel’s Life cloud data.');const backup=JSON.parse(res.backupJson),ls=backup.localStorage&&typeof backup.localStorage==='object'?backup.localStorage:null,incoming=backup.state&&typeof backup.state==='object'?backup.state:null;if(!ls&&!incoming)throw new Error('Cloud save is not restorable.');runtime.restoring=true;clearTimeout(cloudSaveTimer);try{localStorage.clear();if(ls)for(const [k,v] of Object.entries(ls))localStorage.setItem(k,String(v));if(incoming)localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(incoming));await bridge('cloudAccept',{hash:res.remoteHash||res.localHash||'',remoteModifiedAt:res.remoteModifiedAt||null});sessionStorage.setItem('mlv191CloudRestored','1');location.reload()}finally{runtime.restoring=false}}
-function cloudActionLabel(a){return ({created:'Cloud save created',uploaded:'Uploaded',downloaded:'Restored from cloud',noop:'Up to date',conflict:'Conflict'})[a]||a||''}
+function cloudActionLabel(a){
+  return gText(({created:'Cloud save created',uploaded:'Uploaded',downloaded:'Restored from cloud',noop:'Up to date',conflict:'Conflict'})[a]||a||'');
+}
 async function syncCloud(mode='auto',opts={}){if(runtime.cloudBusy)return null;if(!runtime.connected){if(!opts.silent)toastSafe('Michel’s Life Cloud','Connect Google first.');return null}if(!runtime.cloudReady){runtime.cloudError='Reconnect Google once to grant Google Drive Cloud Sync permission.';mountGoogleSettings();if(!opts.silent)toastSafe('Michel’s Life Cloud',runtime.cloudError);return null}runtime.cloudBusy=true;runtime.cloudError='';mountGoogleSettings();try{const backupJson=captureCloudBackup();const res=await bridge('cloudSync',{backupJson,localChangedAt:runtime.lastDirtyAt,mode});runtime.cloudAction=cloudActionLabel(res?.action);runtime.cloudLastSync=new Date().toISOString();if(res?.conflict){runtime.cloudConflict=res;if(!opts.silent)toastSafe('Cloud conflict','Both this PC and Google Drive changed. Choose which copy to keep in Settings → Google.');mountGoogleSettings();return res}runtime.cloudConflict=null;if(res?.requiresRestore){await applyCloudRestore(res);return res}runtime.lastDirtyAt=null;if(!opts.silent)toastSafe('Michel’s Life Cloud',res?.message||runtime.cloudAction||'Synced.');return res}catch(err){runtime.cloudError=String(err?.message||err);if(!opts.silent)toastSafe('Michel’s Life Cloud',runtime.cloudError);return null}finally{runtime.cloudBusy=false;mountGoogleSettings()}}
 function scheduleCloudSave(){if(!runtime.cloudInitialDone||runtime.restoring||!settings().cloudAutoSync||!runtime.connected||!runtime.cloudReady)return;clearTimeout(cloudSaveTimer);cloudSaveTimer=setTimeout(()=>{cloudSaveTimer=null;syncCloud('auto',{silent:true})},30000)}
 function onLocalMutation(){if(runtime.restoring||!runtime.cloudInitialDone)return;const at=new Date().toISOString();runtime.lastDirtyAt=at;bridge('cloudDirty',{changedAt:at}).catch(()=>{});scheduleCloudSave()}
@@ -30137,17 +30173,28 @@ const ACTIVITY_KEY='michelsLife.internal.activity.v30198';
 let seq=0,lastCloudStamp='',lastCloudLogAt=0;
 const pending=new Map();
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function mText(v){try{return window.MichelsLifeI18n?.mapText?.(String(v))||String(v)}catch(_){return String(v)}}
+function mEsc(v){return esc(mText(v))}
+function mLocale(){return (window.MichelsLifeI18n?.language||document.documentElement.lang)==='es'?'es-MX':'en-US'}
 function activity(){try{const v=JSON.parse(localStorage.getItem(ACTIVITY_KEY)||'[]');return Array.isArray(v)?v:[]}catch(_){return[]}}
 function putActivity(rows){try{localStorage.setItem(ACTIVITY_KEY,JSON.stringify(rows.slice(0,12)))}catch(_){}}
 function logActivity(title,detail=''){const rows=activity();rows.unshift({title:String(title||'Activity'),detail:String(detail||''),at:new Date().toISOString()});putActivity(rows);mountDataTools()}
-function fmt(v){const d=new Date(v);return Number.isNaN(d.getTime())?String(v||''):d.toLocaleString()}
-function notify(title,msg='',opts={}){try{return window.MLV197Reliability?.notification?.(title,msg,opts)||window.toast?.(title,msg)}catch(_){return null}}
+function fmt(v){
+  const d=new Date(v);
+  return Number.isNaN(d.getTime())?String(v||''):d.toLocaleString(mLocale());
+}
+function notify(title,msg='',opts={}){
+  try{return window.MLV197Reliability?.notification?.(mText(title),mText(msg),opts)||window.toast?.(mText(title),mText(msg))}catch(_){return null}
+}){try{return window.MLV197Reliability?.notification?.(title,msg,opts)||window.toast?.(title,msg)}catch(_){return null}}
 function bridge(action,payload={}){return new Promise((resolve,reject)=>{if(!window.chrome?.webview?.postMessage){reject(new Error('This action requires the Windows app.'));return}const requestId='mlv198-'+Date.now()+'-'+(++seq);const timer=setTimeout(()=>{pending.delete(requestId);reject(new Error('Local recovery request timed out.'))},120000);pending.set(requestId,{resolve,reject,timer});window.chrome.webview.postMessage({channel:CHANNEL,requestId,action,payload})})}
 if(window.chrome?.webview?.addEventListener){window.chrome.webview.addEventListener('message',ev=>{const d=ev?.data;if(!d||d.channel!==RESPONSE)return;const p=pending.get(d.requestId);if(!p)return;clearTimeout(p.timer);pending.delete(d.requestId);if(d.ok)p.resolve(d.payload);else p.reject(new Error(d.error||'Recovery request failed.'))})}
 function capture(){try{return window.GoogleCloudV30192?.capture?.()||window.GoogleCloudV30191?.capture?.()||''}catch(_){return''}}
 function dataPane(){return document.querySelector('[data-v30171-pane="data"]')}
 function removeLegacyPersonalUI(){document.querySelectorAll('.v30112-settings-card,[data-v30112-action="restore-instagram"],[data-v3062-reset-card],[data-v3063-reset-card]').forEach(el=>{const card=el.closest?.('.v30112-settings-card');(card||el).remove()})}
-function cardHTML(){const rows=activity().slice(0,8);return `<section class="card mlv198-maintenance-card" data-mlv198-maintenance><div class="section-title"><div><h2>Recovery & maintenance</h2><p>Generic safety tools for this installation.</p></div><span class="pill">v${VERSION}</span></div><div class="mlv198-maintenance-actions"><button class="btn" type="button" data-mlv198-action="restore-point">Create restore point now</button><button class="btn ghost" type="button" data-mlv198-action="repair">Repair local data</button></div><div class="mlv198-maintenance-note">Automatic restore points are also created before resets, imports and cloud-history restores. Repair local data normalizes saved structures without intentionally deleting missions or progress.</div><div class="section-title" style="margin-top:14px"><div><h3 style="margin:0">Recent technical activity</h3><p>Short device-local log for sync and recovery diagnostics.</p></div><button class="btn ghost" type="button" data-mlv198-action="clear-log">Clear</button></div><div class="mlv198-activity-list">${rows.length?rows.map(x=>`<div class="mlv198-activity-row"><div><b>${esc(x.title)}</b><small>${esc(x.detail||'')}</small></div><time>${esc(fmt(x.at))}</time></div>`).join(''):'<div class="mlv197-empty">No technical activity recorded yet.</div>'}</div></section>`}
+function cardHTML(){
+  const rows=activity().slice(0,8);
+  return `<section class="card mlv198-maintenance-card" data-mlv198-maintenance data-mlv-i18n-owned="source"><div class="section-title"><div><h2>${mEsc('Recovery & maintenance')}</h2><p>${mEsc('Generic safety tools for this installation.')}</p></div><span class="pill">v${VERSION}</span></div><div class="mlv198-maintenance-actions"><button class="btn" type="button" data-mlv198-action="restore-point">${mEsc('Create restore point now')}</button><button class="btn ghost" type="button" data-mlv198-action="repair">${mEsc('Repair local data')}</button></div><div class="mlv198-maintenance-note">${mEsc('Automatic restore points are also created before resets, imports and cloud-history restores. Repair local data normalizes saved structures without intentionally deleting missions or progress.')}</div><div class="section-title" style="margin-top:14px"><div><h3 style="margin:0">${mEsc('Recent technical activity')}</h3><p>${mEsc('Short device-local log for sync and recovery diagnostics.')}</p></div><button class="btn ghost" type="button" data-mlv198-action="clear-log">${mEsc('Clear')}</button></div><div class="mlv198-activity-list">${rows.length?rows.map(x=>`<div class="mlv198-activity-row"><div><b>${mEsc(x.title)}</b><small>${mEsc(x.detail||'')}</small></div><time>${esc(fmt(x.at))}</time></div>`).join(''):`<div class="mlv197-empty">${mEsc('No technical activity recorded yet.')}</div>`}</div></section>`;
+}
 function mountDataTools(){removeLegacyPersonalUI();if(String(window.state?.activeTab||'')!=='settings')return;const pane=dataPane();if(!pane)return;let old=pane.querySelector('[data-mlv198-maintenance]');const t=document.createElement('template');t.innerHTML=cardHTML();const next=t.content.firstElementChild;if(!next)return;if(old)old.replaceWith(next);else pane.appendChild(next)}
 async function createRestorePoint(reason='manual'){const backupJson=capture();if(!backupJson)throw new Error('Could not capture the current Michel’s Life state.');return bridge('createRestorePoint',{backupJson,reason})}
 async function repair(){await createRestorePoint('before_local_repair');try{if(typeof migrate==='function'){const next=migrate(JSON.parse(JSON.stringify(state)));if(next&&typeof next==='object')state=next}state.settings=state.settings&&typeof state.settings==='object'?state.settings:{};state.missions=Array.isArray(state.missions)?state.missions:[];state.goals=Array.isArray(state.goals)?state.goals:[];state.history=Array.isArray(state.history)?state.history:[];state.achievements=Array.isArray(state.achievements)?state.achievements:[];state.missions.forEach(m=>{if(!Array.isArray(m.completions))m.completions=[];if(!Array.isArray(m.days))m.days=[]});if(typeof save==='function')save();if(typeof renderAll==='function')renderAll();logActivity('Local data repaired','Saved structures normalized after creating a restore point.');notify('Local data repaired','A restore point was created first.')}catch(err){throw err}}
@@ -30350,7 +30397,7 @@ function completeOnboarding(empty=false){
   saveSafe();
   o?.remove();
   try{renderAll?.()}catch(_){}
-  notify('Setup complete','Your Michel’s Life board is ready.');
+  notify(uiText('Setup complete'),uiText('Your Michel’s Life board is ready.'));
   if(openGoogle){
     try{
       state.activeTab='settings';
@@ -30374,7 +30421,7 @@ document.addEventListener('click',e=>{
     onboardingStep=Math.min(2,onboardingStep+1);mountOnboarding(true);
   }else if(a==='finish'){
     completeOnboarding(false);
-  }else if(a==='empty'&&confirm('Start with an empty board? You can create missions and contracts later.')){
+  }else if(a==='empty'&&confirm(uiText('Start with an empty board? You can create missions and contracts later.'))){
     completeOnboarding(true);
   }
 },true);
@@ -30473,22 +30520,22 @@ function mountUpdate(){
   next.dataset.sig=sig;
   if(old)old.replaceWith(next);else p.appendChild(next);
 }
-async function checkUpdates(){
+async async function checkUpdates(){
   updateBusy=true;mountUpdate();
   try{updateState=await bridge('updateStatus')}
-  catch(err){notify('Update check',String(err?.message||err),{kind:'error',persistent:true})}
+  catch(err){notify(uiText('Update check'),String(err?.message||err),{kind:'error',persistent:true})}
   finally{updateBusy=false;mountUpdate()}
   return updateState;
 }
-async function installUpdate(candidatePath=''){
-  if(!confirm('Install a newer Michel’s Life build? A restore point will be created before the current EXE is replaced.'))return;
+async async function installUpdate(candidatePath=''){
+  if(!confirm(uiText('Install a newer Michel’s Life build? A restore point will be created before the current EXE is replaced.')))return;
   try{
     const backupJson=capture();
-    if(!backupJson)throw new Error('Could not create the required pre-update restore point. Update cancelled.');
+    if(!backupJson)throw new Error(uiText('Could not create the required pre-update restore point. Update cancelled.'));
     const res=await bridge('installUpdate',{backupJson,candidatePath});
     if(res?.cancelled)return;
-    notify('Update prepared',`v${res?.toVersion||'new'} is ready. Michel’s Life will restart automatically.`,{persistent:true});
-  }catch(err){notify('Update failed',String(err?.message||err),{kind:'error',persistent:true})}
+    notify(uiText('Update prepared'),`v${res?.toVersion||uiText('new')} ${uiText('is ready. Michel’s Life will restart automatically.')}`,{persistent:true});
+  }catch(err){notify(uiText('Update failed'),String(err?.message||err),{kind:'error',persistent:true})}
 }
 document.addEventListener('click',async e=>{
   const b=e.target.closest?.('[data-mlv200-update-action]');
