@@ -28854,18 +28854,20 @@ function renderNav(){
  enforceBrandLockup(side);
  let wrap=side.querySelector('#v30171PrimaryNav');if(!wrap){wrap=document.createElement('nav');wrap.id='v30171PrimaryNav';wrap.className='v30171-primary-nav';side.appendChild(wrap)}
  if(!wrap)return;
- const signature='mlv185-nav-v1';
+ wrap.dataset.mlvI18nOwned='source';
+ const lang=window.MichelsLifeI18n?.language||document.documentElement.lang||'en';
+ const signature='mlv185-nav-v2|'+lang;
  if(wrap.dataset.structure!==signature){
    const main=[];
    main.push(navButton('dashboard','⌂','Dashboard',''));
-   main.push('<button type="button" class="tab-btn v30171-nav-btn v3093-day-tab v30171-day-btn" data-v3093-open="yesterday">← Yesterday</button>');
-   main.push('<button type="button" class="tab-btn v30171-nav-btn v3093-day-tab v30171-day-btn" data-v3093-open="tomorrow">Tomorrow →</button>');
-   main.push('<button type="button" class="tab-btn v30171-nav-btn v30171-today-tab v30171-day-btn" data-v30171-day="today">• Today</button>');
+   main.push('<button type="button" class="tab-btn v30171-nav-btn v3093-day-tab v30171-day-btn" data-v3093-open="yesterday">← '+esc(tr('Yesterday'))+'</button>');
+   main.push('<button type="button" class="tab-btn v30171-nav-btn v3093-day-tab v30171-day-btn" data-v3093-open="tomorrow">'+esc(tr('Tomorrow'))+' →</button>');
+   main.push('<button type="button" class="tab-btn v30171-nav-btn v30171-today-tab v30171-day-btn" data-v30171-day="today">• '+esc(tr('Today'))+'</button>');
    for(const [id,ico,label] of MAIN.slice(1,4))main.push(navButton(id,ico,label,''));
    main.push(navButton('journal','✎','Journal','mlv184-journal-nav'));
    main.push('<div class="v30171-nav-divider"></div>');
    main.push(navButton('stats','▥','Statistics',''));
-   for(const [id,label] of STAT_CHILD)main.push('<button type="button" class="tab-btn v30171-nav-btn v30171-subtab" data-tab="'+id+'">'+label+'</button>');
+   for(const [id,label] of STAT_CHILD)main.push('<button type="button" class="tab-btn v30171-nav-btn v30171-subtab" data-tab="'+id+'">'+esc(tr(label))+'</button>');
    for(const [id,ico,label] of MAIN.slice(5,9))main.push(navButton(id,ico,label,''));
    main.push('<div class="v30171-nav-divider"></div>');
    main.push(navButton('settings','⚙','Settings',''));
@@ -28953,7 +28955,7 @@ function applyTypography(id,persist=true){
    const on=b.dataset.mlvFontPreset===id;
    b.classList.toggle('selected',on);
    b.setAttribute('aria-pressed',on?'true':'false');
-   const st=b.querySelector('.mlv303-font-state');if(st)st.textContent=on?'✓ SELECTED':'PREVIEW';
+   const st=b.querySelector('.mlv303-font-state');if(st)st.textContent=on?'✓ '+tr('SELECTED'):tr('PREVIEW');
  });
  return id;
 }
@@ -28962,14 +28964,14 @@ function typographyPane(){
  const card=([id,p])=>{
    const selected=id===current;
    return '<button type="button" class="mlv303-font-card '+(selected?'selected':'')+'" data-mlv-font-preset="'+id+'" aria-pressed="'+(selected?'true':'false')+'">'+
-     '<span class="mlv303-font-preview"><span class="mlv303-font-sample">Aa</span><span class="mlv303-font-word">Michel’s Life</span><span class="mlv303-font-line">Build the life you imagine · 0123</span></span>'+
-     '<span class="mlv303-font-copy"><b>'+esc(p.name)+'</b><small>'+esc(p.source)+'</small><em>'+esc(p.desc)+'</em></span>'+
-     '<span class="mlv303-font-state">'+(selected?'✓ SELECTED':'PREVIEW')+'</span>'+
+     '<span class="mlv303-font-preview"><span class="mlv303-font-sample">Aa</span><span class="mlv303-font-word">Michel’s Life</span><span class="mlv303-font-line">'+esc(tr('Build the life you imagine'))+' · 0123</span></span>'+
+     '<span class="mlv303-font-copy"><b>'+esc(p.name)+'</b><small>'+esc(tr(p.source))+'</small><em>'+esc(tr(p.desc))+'</em></span>'+
+     '<span class="mlv303-font-state">'+(selected?'✓ '+esc(tr('SELECTED')):esc(tr('PREVIEW')))+'</span>'+
    '</button>';
  };
- return '<section class="card mlv303-font-panel" data-mlv-typography-core data-v30171-owner="typography"><div class="section-title"><div><h2>Interface Typography</h2><p>Choose by era. Every card keeps its own permanent preview, so you can compare styles without selecting them first.</p></div><span class="pill hot">Midnights default</span></div>'+
+ return '<section class="card mlv303-font-panel" data-mlv-typography-core data-v30171-owner="typography" data-mlv-i18n-owned="source"><div class="section-title"><div><h2>'+esc(tr('Interface Typography'))+'</h2><p>'+esc(tr('Choose by era. Every card keeps its own permanent preview, so you can compare styles without selecting them first.'))+'</p></div><span class="pill hot">'+esc(tr('Midnights default'))+'</span></div>'+
    '<div class="mlv303-font-grid mlv303-era-grid">'+Object.entries(MLV303_TYPOGRAPHY).map(card).join('')+'</div>'+
-   '<p class="mlv303-font-note"><b>Interface rule:</b> handwriting, script and blackletter-only eras are not used as full-interface presets. Display-heavy eras use a readable adaptation while keeping their own distinct visual direction.</p></section>';
+   '<p class="mlv303-font-note"><b>'+esc(tr('Interface rule:'))+'</b> '+esc(tr('Handwriting, script and blackletter-only eras are not used as full-interface presets. Display-heavy eras use a readable adaptation while keeping their own distinct visual direction.'))+'</p></section>';
 }
 function focusPane(){
  let f=null;try{f=window.FocusStoryV30162?.focusState?.()||null}catch(_){}
@@ -28978,17 +28980,17 @@ function focusPane(){
  const preset=String(f?.preset||'25/5');
  const status=f?.status==='running'?'Running':f?.status==='paused'?'Paused':'Ready';
  const mode=f?.mode==='break'?'Break':'Work';
- return '<section class="card mlv304-focus-settings" data-mlv-focus-core data-v30171-owner="focus">'+
-   '<div class="section-title"><div><h2>Pomodoro Focus Timer</h2><p>Configure the same Focus timer used from the action dock.</p></div><span class="pill">'+esc(status)+'</span></div>'+
+ return '<section class="card mlv304-focus-settings" data-mlv-focus-core data-v30171-owner="focus" data-mlv-i18n-owned="source">'+
+   '<div class="section-title"><div><h2>'+esc(tr('Pomodoro Focus Timer'))+'</h2><p>'+esc(tr('Configure the same Focus timer used from the action dock.'))+'</p></div><span class="pill">'+esc(tr(status))+'</span></div>'+
    '<div class="mlv304-focus-presets">'+
-     '<button type="button" class="'+(preset==='25/5'?'selected':'')+'" data-mlv-focus-preset="25/5"><b>25 / 5</b><small>Classic Pomodoro</small></button>'+
-     '<button type="button" class="'+(preset==='50/10'?'selected':'')+'" data-mlv-focus-preset="50/10"><b>50 / 10</b><small>Deep work</small></button>'+
-     '<button type="button" class="'+(preset==='custom'?'selected':'')+'" data-mlv-focus-preset="custom"><b>Custom</b><small>Your own rhythm</small></button>'+
+     '<button type="button" class="'+(preset==='25/5'?'selected':'')+'" data-mlv-focus-preset="25/5"><b>25 / 5</b><small>'+esc(tr('Classic Pomodoro'))+'</small></button>'+
+     '<button type="button" class="'+(preset==='50/10'?'selected':'')+'" data-mlv-focus-preset="50/10"><b>50 / 10</b><small>'+esc(tr('Deep work'))+'</small></button>'+
+     '<button type="button" class="'+(preset==='custom'?'selected':'')+'" data-mlv-focus-preset="custom"><b>'+esc(tr('Custom'))+'</b><small>'+esc(tr('Your own rhythm'))+'</small></button>'+
    '</div>'+
-   '<div class="mlv304-focus-fields"><label><span>Work minutes</span><input type="number" min="1" max="180" step="1" value="'+work+'" data-mlv-focus-work></label><label><span>Break minutes</span><input type="number" min="1" max="60" step="1" value="'+rest+'" data-mlv-focus-break></label></div>'+
-   '<div class="mlv304-focus-summary"><div><small>CURRENT PHASE</small><b>'+esc(mode)+'</b></div><div><small>STATUS</small><b>'+esc(status)+'</b></div><div><small>PRESET</small><b>'+esc(preset==='custom'?'Custom':preset)+'</b></div></div>'+
-   '<div class="mlv304-focus-actions"><button type="button" class="btn primary" data-mlv-focus-action="apply">Apply timer settings</button><button type="button" class="btn" data-mlv-focus-action="open">Open Focus controls</button></div>'+
-   '<p class="mlv304-focus-note">A running timer is never silently restarted. New durations apply immediately when the timer is ready or paused.</p></section>';
+   '<div class="mlv304-focus-fields"><label><span>'+esc(tr('Work minutes'))+'</span><input type="number" min="1" max="180" step="1" value="'+work+'" data-mlv-focus-work></label><label><span>'+esc(tr('Break minutes'))+'</span><input type="number" min="1" max="60" step="1" value="'+rest+'" data-mlv-focus-break></label></div>'+
+   '<div class="mlv304-focus-summary"><div><small>'+esc(tr('CURRENT PHASE'))+'</small><b>'+esc(tr(mode))+'</b></div><div><small>'+esc(tr('STATUS'))+'</small><b>'+esc(tr(status))+'</b></div><div><small>'+esc(tr('PRESET'))+'</small><b>'+esc(tr(preset==='custom'?'Custom':preset))+'</b></div></div>'+
+   '<div class="mlv304-focus-actions"><button type="button" class="btn primary" data-mlv-focus-action="apply">'+esc(tr('Apply timer settings'))+'</button><button type="button" class="btn" data-mlv-focus-action="open">'+esc(tr('Open Focus controls'))+'</button></div>'+
+   '<p class="mlv304-focus-note">'+esc(tr('A running timer is never silently restarted. New durations apply immediately when the timer is ready or paused.'))+'</p></section>';
 }
 function ensureSettingsCorePanels(root){
  if(!root)return;
@@ -29026,12 +29028,13 @@ function applyFocusSettings(preset,workValue,breakValue){
 }
 
 
-function aboutPane(){return `<section class="card mlvdev-card" data-mlv-about-core data-mlv-developer data-v30171-owner="about"><div class="mlvdev-main"><div class="mlvdev-avatar-wrap"><img class="mlvdev-avatar" src="assets/michel_duarte_avatar.jpg" alt="Michel Duarte"></div><div class="mlvdev-info"><div class="mlvdev-title"><h2>Michel Duarte</h2><p>Developer · Michel’s Lab</p></div><div class="mlvdev-copy">Michel’s Life is created and maintained by Michel Duarte under Michel’s Lab. Independent software focused on productivity, life systems and personal tools.</div><div class="mlvdev-contact">Contact: <a href="mailto:realmichelduarte@gmail.com">realmichelduarte@gmail.com</a></div><div class="mlvdev-socials"><a class="mlvdev-social" href="https://www.instagram.com/realmichelduarte/" target="_blank" rel="noopener noreferrer"><span><strong>Instagram</strong><small>@realmichelduarte</small></span></a><a class="mlvdev-social" href="https://www.facebook.com/realmichelduarte" target="_blank" rel="noopener noreferrer"><span><strong>Facebook</strong><small>realmichelduarte</small></span></a><a class="mlvdev-social" href="https://www.linkedin.com/in/realmichelduart/" target="_blank" rel="noopener noreferrer"><span><strong>LinkedIn</strong><small>realmichelduart</small></span></a><a class="mlvdev-social" href="https://github.com/realmichelduarte" target="_blank" rel="noopener noreferrer"><span><strong>GitHub</strong><small>realmichelduarte</small></span></a><a class="mlvdev-social" href="mailto:realmichelduarte@gmail.com" target="_blank" rel="noopener noreferrer"><span><strong>Email</strong><small>realmichelduarte@gmail.com</small></span></a></div><div class="mlvdev-meta"><div><small>APP</small><b>Michel’s Life</b></div><div><small>VERSION</small><b>v3.0.209</b></div><div><small>LICENSE</small><b>Proprietary · Personal use</b></div></div><div class="mlvdev-legal">Free for personal use. Unauthorized copying, modification, redistribution, rebranding, resale, sublicensing, or claiming this software as your own is not permitted without prior written permission.<span class="mlvdev-copyright">© 2026 Michel Duarte / Michel’s Lab. All rights reserved.</span></div></div></div></section>`}
+function aboutPane(){return '<section class="card mlvdev-card" data-mlv-about-core data-mlv-developer data-v30171-owner="about" data-mlv-i18n-owned="source"><div class="mlvdev-main"><div class="mlvdev-avatar-wrap"><img class="mlvdev-avatar" src="assets/michel_duarte_avatar.jpg" alt="Michel Duarte"></div><div class="mlvdev-info"><div class="mlvdev-title"><h2>Michel Duarte</h2><p>'+esc(tr('Developer'))+' · Michel’s Lab</p></div><div class="mlvdev-copy">'+esc(tr('Michel’s Life is created and maintained by Michel Duarte under Michel’s Lab. Independent software focused on productivity, life systems and personal tools.'))+'</div><div class="mlvdev-contact">'+esc(tr('Contact'))+': <a href="mailto:realmichelduarte@gmail.com">realmichelduarte@gmail.com</a></div><div class="mlvdev-socials"><a class="mlvdev-social" href="https://www.instagram.com/realmichelduarte/" target="_blank" rel="noopener noreferrer"><span><strong>Instagram</strong><small>@realmichelduarte</small></span></a><a class="mlvdev-social" href="https://www.facebook.com/realmichelduarte" target="_blank" rel="noopener noreferrer"><span><strong>Facebook</strong><small>realmichelduarte</small></span></a><a class="mlvdev-social" href="https://www.linkedin.com/in/realmichelduart/" target="_blank" rel="noopener noreferrer"><span><strong>LinkedIn</strong><small>realmichelduart</small></span></a><a class="mlvdev-social" href="https://github.com/realmichelduarte" target="_blank" rel="noopener noreferrer"><span><strong>GitHub</strong><small>realmichelduarte</small></span></a><a class="mlvdev-social" href="mailto:realmichelduarte@gmail.com" target="_blank" rel="noopener noreferrer"><span><strong>Email</strong><small>realmichelduarte@gmail.com</small></span></a></div><div class="mlvdev-meta"><div><small>'+esc(tr('APP'))+'</small><b>Michel’s Life</b></div><div><small>'+esc(tr('VERSION'))+'</small><b>v3.0.209</b></div><div><small>'+esc(tr('LICENSE'))+'</small><b>'+esc(tr('Proprietary · Personal use'))+'</b></div></div><div class="mlvdev-legal">'+esc(tr('Free for personal use. Unauthorized copying, modification, redistribution, rebranding, resale, sublicensing, or claiming this software as your own is not permitted without prior written permission.'))+'<span class="mlvdev-copyright">'+esc(tr('© 2026 Michel Duarte / Michel’s Lab. All rights reserved.'))+'</span></div></div></div></section>'}
 function moveDataActions(panes){
  const general=panes.general,data=panes.data;if(!general||!data)return;
  const buttons=[...general.querySelectorAll('[data-v30116-action="export-unified"],[data-action="export-json"],[data-action="export-backup"],[data-action="import-json"],[data-action="import-backup"],[data-action="reset-app"]')];
- if(!buttons.length)return;
- let card=data.querySelector('.v30171-data-card');if(!card){card=document.createElement('section');card.className='card v30171-data-card';card.innerHTML='<div class="section-title"><div><h2>Backup & restore</h2><p>Full Michel’s Life data, import and reset tools in one place.</p></div></div><div class="v30171-data-actions"></div>';data.appendChild(card)}
+ let card=data.querySelector('.v30171-data-card');
+ if(!card){card=document.createElement('section');card.className='card v30171-data-card';card.dataset.mlvI18nOwned='source';card.innerHTML='<div class="section-title"><div><h2></h2><p></p></div></div><div class="v30171-data-actions"></div>';data.appendChild(card)}
+ const h=card.querySelector('h2'),p=card.querySelector('.section-title p');if(h)h.textContent=tr('Backup & restore');if(p)p.textContent=tr('Full Michel’s Life data, import and reset tools in one place.');
  const actions=card.querySelector('.v30171-data-actions');buttons.forEach(b=>actions.appendChild(b));
 }
 function extractNested(root,candidates){
@@ -29199,6 +29202,7 @@ document.addEventListener('click',function(e){
 },true);
 let mq=0;const mo=new MutationObserver(()=>{clearTimeout(mq);mq=setTimeout(()=>{if(String(state?.activeTab||'')==='settings'){forceSettingsMain();buildSettings()}},70)});try{const main=document.getElementById('main');if(main)mo.observe(main,{childList:true,subtree:true})}catch(_){}
 
+window.addEventListener('michelslife:languagechange',()=>{try{const nav=document.getElementById('v30171PrimaryNav');if(nav)nav.dataset.structure='';renderNav();const root=document.getElementById('tab-settings');if(root){root.querySelector('[data-mlv-typography-core]')?.remove();root.querySelector('[data-mlv-focus-core]')?.remove();root.querySelector('[data-mlv-about-core]')?.remove();ensureSettingsCorePanels(root);moveDataActions(Object.fromEntries([...root.querySelectorAll('[data-v30171-pane]')].map(p=>[p.dataset.v30171Pane,p])));buildSettings();}}catch(_){}});
 applyTypography(typographyCurrent(),false);
 window.MLVTypographyV303={version:'3.0.209',presets:MLV303_TYPOGRAPHY,current:typographyCurrent,apply:applyTypography};
 setTimeout(enhance,0);setTimeout(enhance,350);setTimeout(enhance,950);

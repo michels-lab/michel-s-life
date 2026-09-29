@@ -1842,6 +1842,10 @@ const PAIRS={
   "Focus link":"Vínculo de Focus",
   "Pomodoro will link to":"Pomodoro se vinculará a",
   "Pomodoro will use Current Mission":"Pomodoro usará la Misión actual",
+  "Handwriting, script and blackletter-only eras are not used as full-interface presets. Display-heavy eras use a readable adaptation while keeping their own distinct visual direction.":"Las eras de escritura manual, script o blackletter no se usan como presets para toda la interfaz. Las eras más decorativas usan una adaptación legible sin perder su dirección visual propia.",
+  "Build the life you imagine":"Construye la vida que imaginas",
+  "Developer":"Desarrollador",
+  "Contact":"Contacto",
 };
 const SPANISH_SYSTEM_DEFAULTS={
   "Read 30 minutes at night 3 times":"Leer 30 minutos de noche 3 veces",
