@@ -30450,7 +30450,7 @@ function fmt(v){
 }
 function notify(title,msg='',opts={}){
   try{return window.MLV197Reliability?.notification?.(mText(title),mText(msg),opts)||window.toast?.(mText(title),mText(msg))}catch(_){return null}
-}){try{return window.MLV197Reliability?.notification?.(title,msg,opts)||window.toast?.(title,msg)}catch(_){return null}}
+}
 function bridge(action,payload={}){return new Promise((resolve,reject)=>{if(!window.chrome?.webview?.postMessage){reject(new Error('This action requires the Windows app.'));return}const requestId='mlv198-'+Date.now()+'-'+(++seq);const timer=setTimeout(()=>{pending.delete(requestId);reject(new Error('Local recovery request timed out.'))},120000);pending.set(requestId,{resolve,reject,timer});window.chrome.webview.postMessage({channel:CHANNEL,requestId,action,payload})})}
 if(window.chrome?.webview?.addEventListener){window.chrome.webview.addEventListener('message',ev=>{const d=ev?.data;if(!d||d.channel!==RESPONSE)return;const p=pending.get(d.requestId);if(!p)return;clearTimeout(p.timer);pending.delete(d.requestId);if(d.ok)p.resolve(d.payload);else p.reject(new Error(d.error||'Recovery request failed.'))})}
 function capture(){try{return window.GoogleCloudV30192?.capture?.()||window.GoogleCloudV30191?.capture?.()||''}catch(_){return''}}
@@ -30788,14 +30788,14 @@ function mountUpdate(){
   next.dataset.sig=sig;
   if(old)old.replaceWith(next);else p.appendChild(next);
 }
-async async function checkUpdates(){
+async function checkUpdates(){
   updateBusy=true;mountUpdate();
   try{updateState=await bridge('updateStatus')}
   catch(err){notify(uiText('Update check'),String(err?.message||err),{kind:'error',persistent:true})}
   finally{updateBusy=false;mountUpdate()}
   return updateState;
 }
-async async function installUpdate(candidatePath=''){
+async function installUpdate(candidatePath=''){
   if(!confirm(uiText('Install a newer Michel’s Life build? A restore point will be created before the current EXE is replaced.')))return;
   try{
     const backupJson=capture();
@@ -30922,7 +30922,7 @@ function bridge(action,payload={}){
     pending.set(requestId,{resolve,reject,timer});
     window.chrome.webview.postMessage({channel:CHANNEL,requestId,action,payload});
   });
-}){return new Promise((resolve,reject)=>{if(!window.chrome?.webview?.postMessage){reject(new Error('This action requires the Windows app.'));return}const requestId='mlv201-'+Date.now()+'-'+(++seq);const timer=setTimeout(()=>{pending.delete(requestId);reject(new Error('Backup Timeline request timed out.'))},120000);pending.set(requestId,{resolve,reject,timer});window.chrome.webview.postMessage({channel:CHANNEL,requestId,action,payload})})}
+}
 if(window.chrome?.webview?.addEventListener)window.chrome.webview.addEventListener('message',ev=>{const d=ev?.data;if(!d||d.channel!==RESPONSE)return;const p=pending.get(d.requestId);if(!p)return;clearTimeout(p.timer);pending.delete(d.requestId);d.ok?p.resolve(d.payload):p.reject(new Error(d.error||btBi('Backup Timeline request failed.','Falló la solicitud de la Línea de copias.')))});
 function notify(title,msg='',opts={}){
   try{return window.MLV197Reliability?.notification?.(btText(title),btText(msg),opts)||window.toast?.(btText(title),btText(msg))}catch(_){}
