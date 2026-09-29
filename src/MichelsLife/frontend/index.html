@@ -30640,35 +30640,123 @@ const VERSION='3.0.209',CHANNEL='michels-life-google-calendar',RESPONSE='michels
 let seq=0,busy=false,lastLoad=0,localOverview={restorePoints:[],currentDeviceName:''},cloudOverview={backups:[],devices:[],currentDeviceId:'',currentDeviceName:''},selected=null;
 const pending=new Map();
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function btText(v){try{return window.MichelsLifeI18n?.mapText?.(String(v))||String(v)}catch(_){return String(v)}}
+function btIsEs(){return (window.MichelsLifeI18n?.language||document.documentElement.lang)==='es'}
+function btLocale(){return btIsEs()?'es-MX':'en-US'}
+function btEsc(v){return esc(btText(v))}
 function bridge(action,payload={}){return new Promise((resolve,reject)=>{if(!window.chrome?.webview?.postMessage){reject(new Error('This action requires the Windows app.'));return}const requestId='mlv201-'+Date.now()+'-'+(++seq);const timer=setTimeout(()=>{pending.delete(requestId);reject(new Error('Backup Timeline request timed out.'))},120000);pending.set(requestId,{resolve,reject,timer});window.chrome.webview.postMessage({channel:CHANNEL,requestId,action,payload})})}
 if(window.chrome?.webview?.addEventListener)window.chrome.webview.addEventListener('message',ev=>{const d=ev?.data;if(!d||d.channel!==RESPONSE)return;const p=pending.get(d.requestId);if(!p)return;clearTimeout(p.timer);pending.delete(d.requestId);d.ok?p.resolve(d.payload):p.reject(new Error(d.error||'Backup Timeline request failed.'))});
-function notify(title,msg='',opts={}){try{return window.MLV197Reliability?.notification?.(title,msg,opts)||window.toast?.(title,msg)}catch(_){}}
+function notify(title,msg='',opts={}){
+  try{return window.MLV197Reliability?.notification?.(btText(title),btText(msg),opts)||window.toast?.(btText(title),btText(msg))}catch(_){}
+}){try{return window.MLV197Reliability?.notification?.(title,msg,opts)||window.toast?.(title,msg)}catch(_){}}
 function capture(){try{return window.GoogleCloudV30192?.capture?.()||window.GoogleCloudV30191?.capture?.()||''}catch(_){return''}}
 function pane(){return document.querySelector('[data-v30171-pane="data"]')}
 function runtime(){return window.GoogleCloudV30192?.runtime||window.GoogleCloudV30191?.runtime||window.GoogleCalendarV30190?.runtime||{}}
 function fmtBytes(v){const n=Number(v||0);if(!Number.isFinite(n)||n<=0)return '—';if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';return (n/1048576).toFixed(1)+' MB'}
 function dateOf(v){const d=new Date(v);return Number.isNaN(d.getTime())?null:d}
 function dayKey(v){const d=dateOf(v);if(!d)return 'unknown';return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
-function dayLabel(v){const d=dateOf(v);if(!d)return 'Unknown date';const now=new Date(),a=new Date(now.getFullYear(),now.getMonth(),now.getDate()),b=new Date(d.getFullYear(),d.getMonth(),d.getDate()),diff=Math.round((a-b)/86400000);if(diff===0)return 'Today';if(diff===1)return 'Yesterday';return d.toLocaleDateString([],{month:'short',day:'numeric',year:d.getFullYear()===now.getFullYear()?undefined:'numeric'})}
-function timeLabel(v){const d=dateOf(v);return d?d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):'Unknown time'}
-function reasonLabel(raw=''){const r=String(raw||'').toLowerCase();if(r==='manual')return 'Manual restore point';if(r.includes('before_update'))return 'Before app update';if(r.includes('before_local_timeline_restore'))return 'Before timeline restore';if(r.includes('before_cloud_history_restore')||r.includes('before_history_restore'))return 'Before cloud restore';if(r.includes('before_manual_upload'))return 'Before manual cloud upload';if(r.includes('before_auto_upload'))return 'Automatic cloud safety copy';if(r.includes('before_newer_local_upload'))return 'Before newer PC upload';if(r.includes('before_local_repair'))return 'Before local data repair';if(r.includes('reset_progress'))return 'Before progress reset';if(r.includes('reset_app'))return 'Before app reset';if(r.includes('import'))return 'Before backup import';if(r.startsWith('before_'))return 'Before '+r.slice(7).replace(/[_-]+/g,' ');return r?r.replace(/[_-]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase()):'Restore point'}
-function summaryText(x){const bits=[];if(x.missionCount!=null)bits.push(`${Number(x.missionCount)} missions`);if(x.journalCount!=null)bits.push(`${Number(x.journalCount)} journal entr${Number(x.journalCount)===1?'y':'ies'}`);if(x.completedCount!=null)bits.push(`${Number(x.completedCount)} completions`);return bits.join(' · ')}
+function dayLabel(v){
+  const d=dateOf(v);
+  if(!d)return btText('Unknown date');
+  const now=new Date(),a=new Date(now.getFullYear(),now.getMonth(),now.getDate()),b=new Date(d.getFullYear(),d.getMonth(),d.getDate()),diff=Math.round((a-b)/86400000);
+  if(diff===0)return btText('Today');
+  if(diff===1)return btText('Yesterday');
+  return d.toLocaleDateString(btLocale(),{month:'short',day:'numeric',year:d.getFullYear()===now.getFullYear()?undefined:'numeric'});
+}
+function timeLabel(v){
+  const d=dateOf(v);
+  return d?d.toLocaleTimeString(btLocale(),{hour:'numeric',minute:'2-digit'}):btText('Unknown time');
+}
+function reasonLabel(raw=''){
+  const r=String(raw||'').toLowerCase();
+  if(r==='manual')return btText('Manual restore point');
+  if(r.includes('before_update'))return btText('Before app update');
+  if(r.includes('before_local_timeline_restore'))return btText('Before timeline restore');
+  if(r.includes('before_cloud_history_restore')||r.includes('before_history_restore'))return btText('Before cloud restore');
+  if(r.includes('before_manual_upload'))return btText('Before manual cloud upload');
+  if(r.includes('before_auto_upload'))return btText('Automatic cloud safety copy');
+  if(r.includes('before_newer_local_upload'))return btText('Before newer PC upload');
+  if(r.includes('before_local_repair'))return btText('Before local data repair');
+  if(r.includes('reset_progress'))return btText('Before progress reset');
+  if(r.includes('reset_app'))return btText('Before app reset');
+  if(r.includes('import'))return btText('Before backup import');
+  if(r.startsWith('before_')){
+    const clean=r.slice(7).replace(/[_-]+/g,' ');
+    return btIsEs()?'Antes de '+clean:('Before '+clean);
+  }
+  if(!r)return btText('Restore point');
+  return r.replace(/[_-]+/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+}
+function summaryText(x){
+  const bits=[],es=btIsEs(),missions=Number(x.missionCount),journals=Number(x.journalCount),completed=Number(x.completedCount);
+  if(x.missionCount!=null)bits.push(es?`${missions} ${missions===1?'misión':'misiones'}`:`${missions} ${missions===1?'mission':'missions'}`);
+  if(x.journalCount!=null)bits.push(es?`${journals} ${journals===1?'entrada de diario':'entradas de diario'}`:`${journals} journal entr${journals===1?'y':'ies'}`);
+  if(x.completedCount!=null)bits.push(es?`${completed} ${completed===1?'completada':'completadas'}`:`${completed} completion${completed===1?'':'s'}`);
+  return bits.join(' · ');
+}
 function currentSummary(){let journal=null;try{const j=JSON.parse(localStorage.getItem('michelsLife.journal.v30184')||'{}');if(j&&typeof j==='object'&&!Array.isArray(j))journal=Object.keys(j).length}catch(_){}const missions=Array.isArray(state?.missions)?state.missions:[];let completed=0;for(const m of missions)completed+=Array.isArray(m?.completions)?m.completions.length:0;return {missionCount:missions.length,journalCount:journal,completedCount:completed,version:VERSION}}
 function deviceMap(){const m={};for(const d of (cloudOverview.devices||[]))if(d?.deviceId)m[String(d.deviceId)]=String(d.deviceName||d.deviceId);return m}
-function items(){const out=[];for(const x of (localOverview.restorePoints||[]))out.push({...x,source:'local',key:'local:'+x.fileName,deviceName:x.deviceName||localOverview.currentDeviceName||'This PC'});const dm=deviceMap();for(const x of (cloudOverview.backups||[]))out.push({...x,source:'cloud',key:'cloud:'+x.fileId,deviceName:dm[String(x.sourceDeviceId||'')]||x.sourceDeviceId||'Google Drive',version:x.appVersion||x.version||''});return out.sort((a,b)=>(dateOf(b.createdAt)?.getTime()||0)-(dateOf(a.createdAt)?.getTime()||0))}
+function items(){
+  const out=[];
+  for(const x of (localOverview.restorePoints||[]))out.push({...x,source:'local',key:'local:'+x.fileName,deviceName:x.deviceName||localOverview.currentDeviceName||btText('This PC')});
+  const dm=deviceMap();
+  for(const x of (cloudOverview.backups||[]))out.push({...x,source:'cloud',key:'cloud:'+x.fileId,deviceName:dm[String(x.sourceDeviceId||'')]||x.sourceDeviceId||'Google Drive',version:x.appVersion||x.version||''});
+  return out.sort((a,b)=>(dateOf(b.createdAt)?.getTime()||0)-(dateOf(a.createdAt)?.getTime()||0));
+}
 function groupItems(rows){const groups=[];for(const x of rows){const k=dayKey(x.createdAt);let g=groups.find(z=>z.key===k);if(!g){g={key:k,label:dayLabel(x.createdAt),rows:[]};groups.push(g)}g.rows.push(x)}return groups}
-function itemHTML(x){const sum=summaryText(x),ver=x.version?`v${esc(x.version)}`:'Version unavailable';return `<div class="mlv201-item ${x.source==='cloud'?'cloud':''}"><div><div class="mlv201-item-title"><b>${esc(reasonLabel(x.reason))}</b><span class="mlv201-source ${x.source==='cloud'?'cloud':''}">${x.source==='cloud'?'Google Drive':'This PC'}</span></div><span class="mlv201-meta">${esc(timeLabel(x.createdAt))} · ${esc(x.deviceName||'Unknown device')} · ${ver} · ${esc(fmtBytes(x.size))}</span><span class="mlv201-summary">${sum?esc(sum):'Content summary unavailable for this legacy backup.'}</span></div><button class="btn ghost" type="button" data-mlv201-restore="${esc(x.key)}">Restore</button></div>`}
-function cardHTML(){const rows=items(),groups=groupItems(rows),connected=!!runtime().connected&&!!runtime().cloudReady;return `<section class="card mlv201-timeline-card" data-mlv201-timeline><div class="section-title"><div><h2>Backup Timeline</h2><p>Local restore points and Google Drive history in one chronological view.</p></div><div class="mlv201-timeline-toolbar"><span class="pill">${rows.length} saved states</span><button class="btn ghost" type="button" data-mlv201-refresh ${busy?'disabled':''}>${busy?'Refreshing…':'Refresh'}</button></div></div><div class="mlv201-timeline-note">Every restore first saves your current state. ${connected?'Drive history is connected.':'Connect Google in Settings → Google to include Drive history.'}</div><div class="mlv201-timeline">${groups.length?groups.map(g=>`<div class="mlv201-day"><div class="mlv201-day-label">${esc(g.label)}</div><div class="mlv201-day-items">${g.rows.map(itemHTML).join('')}</div></div>`).join(''):'<div class="mlv201-empty">No restore points yet. Michel’s Life will add them automatically before risky operations, or you can create one manually below.</div>'}</div></section>`}
-function ensureOverlay(){let o=document.getElementById('mlv201RestoreOverlay');if(o)return o;o=document.createElement('div');o.id='mlv201RestoreOverlay';o.innerHTML='<div class="mlv201-restore-card"><h3>Restore this saved state?</h3><p data-mlv201-modal-copy></p><div class="mlv201-compare"><div class="mlv201-compare-box"><small>Current state</small><b>Right now</b><span data-mlv201-current-summary></span></div><div class="mlv201-compare-box"><small>Selected backup</small><b data-mlv201-selected-title></b><span data-mlv201-selected-summary></span></div></div><div class="mlv201-restore-warning"><b>Safety first:</b> Michel’s Life will create a new restore point of your current state before loading the selected backup.</div><div class="mlv201-restore-actions"><button class="btn ghost" type="button" data-mlv201-modal="cancel">Cancel</button><button class="btn primary" type="button" data-mlv201-modal="restore">Restore saved state</button></div></div>';document.body.appendChild(o);return o}
-function openRestore(x){selected=x;const o=ensureOverlay(),cur=currentSummary();o.querySelector('[data-mlv201-modal-copy]').textContent=`You are about to return Michel’s Life to ${dateOf(x.createdAt)?.toLocaleString()||'this saved state'}.`;o.querySelector('[data-mlv201-current-summary]').textContent=summaryText(cur)||'Current summary unavailable.';o.querySelector('[data-mlv201-selected-title]').textContent=reasonLabel(x.reason);o.querySelector('[data-mlv201-selected-summary]').textContent=(summaryText(x)||'Legacy backup · summary unavailable')+` · ${x.deviceName||'Unknown device'}`;o.classList.add('show')}
+function itemHTML(x){
+  const sum=summaryText(x),ver=x.version?`v${esc(x.version)}`:btEsc('Version unavailable');
+  return `<div class="mlv201-item ${x.source==='cloud'?'cloud':''}" data-mlv-i18n-owned="source"><div><div class="mlv201-item-title"><b>${esc(reasonLabel(x.reason))}</b><span class="mlv201-source ${x.source==='cloud'?'cloud':''}">${x.source==='cloud'?'Google Drive':btEsc('This PC')}</span></div><span class="mlv201-meta">${esc(timeLabel(x.createdAt))} · ${esc(x.deviceName||btText('Unknown device'))} · ${ver} · ${esc(fmtBytes(x.size))}</span><span class="mlv201-summary">${sum?esc(sum):btEsc('Content summary unavailable for this legacy backup.')}</span></div><button class="btn ghost" type="button" data-mlv201-restore="${esc(x.key)}">${btEsc('Restore')}</button></div>`;
+}
+function cardHTML(){
+  const rows=items(),groups=groupItems(rows),connected=!!runtime().connected&&!!runtime().cloudReady;
+  const saved=btIsEs()?`${rows.length} ${rows.length===1?'estado guardado':'estados guardados'}`:`${rows.length} saved state${rows.length===1?'':'s'}`;
+  return `<section class="card mlv201-timeline-card" data-mlv201-timeline data-mlv-i18n-owned="source"><div class="section-title"><div><h2>${btEsc('Backup Timeline')}</h2><p>${btEsc('Local restore points and Google Drive history in one chronological view.')}</p></div><div class="mlv201-timeline-toolbar"><span class="pill">${esc(saved)}</span><button class="btn ghost" type="button" data-mlv201-refresh ${busy?'disabled':''}>${btEsc(busy?'Refreshing…':'Refresh')}</button></div></div><div class="mlv201-timeline-note">${btEsc('Every restore first saves your current state.')} ${btEsc(connected?'Drive history is connected.':'Connect Google in Settings → Google to include Drive history.')}</div><div class="mlv201-timeline">${groups.length?groups.map(g=>`<div class="mlv201-day"><div class="mlv201-day-label">${esc(g.label)}</div><div class="mlv201-day-items">${g.rows.map(itemHTML).join('')}</div></div>`).join(''):`<div class="mlv201-empty">${btEsc('No restore points yet. Michel’s Life will add them automatically before risky operations, or you can create one manually below.')}</div>`}</div></section>`;
+}
+function ensureOverlay(){
+  let o=document.getElementById('mlv201RestoreOverlay');
+  if(o)return o;
+  o=document.createElement('div');o.id='mlv201RestoreOverlay';
+  o.innerHTML=`<div class="mlv201-restore-card" data-mlv-i18n-owned="source"><h3>${btEsc('Restore this saved state?')}</h3><p data-mlv201-modal-copy></p><div class="mlv201-compare"><div class="mlv201-compare-box"><small>${btEsc('Current state')}</small><b>${btEsc('Right now')}</b><span data-mlv201-current-summary></span></div><div class="mlv201-compare-box"><small>${btEsc('Selected backup')}</small><b data-mlv201-selected-title></b><span data-mlv201-selected-summary></span></div></div><div class="mlv201-restore-warning"><b>${btEsc('Safety first:')}</b> ${btEsc('Michel’s Life will create a new restore point of your current state before loading the selected backup.')}</div><div class="mlv201-restore-actions"><button class="btn ghost" type="button" data-mlv201-modal="cancel">${btEsc('Cancel')}</button><button class="btn primary" type="button" data-mlv201-modal="restore">${btEsc('Restore saved state')}</button></div></div>`;
+  document.body.appendChild(o);
+  return o;
+}
+function openRestore(x){
+  selected=x;const o=ensureOverlay(),cur=currentSummary(),d=dateOf(x.createdAt);
+  const when=d?d.toLocaleString(btLocale()):btText('this saved state');
+  o.querySelector('[data-mlv201-modal-copy]').textContent=btIsEs()?`Estás a punto de regresar Michel’s Life a ${when}.`:`You are about to return Michel’s Life to ${when}.`;
+  o.querySelector('[data-mlv201-current-summary]').textContent=summaryText(cur)||btText('Current summary unavailable.');
+  o.querySelector('[data-mlv201-selected-title]').textContent=reasonLabel(x.reason);
+  o.querySelector('[data-mlv201-selected-summary]').textContent=(summaryText(x)||btText('Legacy backup · summary unavailable'))+' · '+(x.deviceName||btText('Unknown device'));
+  o.classList.add('show');
+}
 function closeRestore(){selected=null;document.getElementById('mlv201RestoreOverlay')?.classList.remove('show')}
 function applyBackupJson(backupJson,cloudMeta=null,uploadAfter=false){const backup=JSON.parse(backupJson),ls=backup.localStorage&&typeof backup.localStorage==='object'?backup.localStorage:null,incoming=backup.state&&typeof backup.state==='object'?backup.state:null;if(!ls&&!incoming)throw new Error('The selected backup is not restorable.');localStorage.clear();if(ls)for(const [k,v] of Object.entries(ls))localStorage.setItem(k,String(v));if(incoming)localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(incoming));if(uploadAfter)sessionStorage.setItem('mlv201UploadRestoredLocal','1');sessionStorage.setItem('mlv201TimelineRestored','1');if(cloudMeta){return bridge('cloudAccept',{hash:cloudMeta.remoteHash||cloudMeta.localHash||'',remoteModifiedAt:cloudMeta.remoteModifiedAt||null}).then(()=>location.reload())}location.reload()}
-async function doRestore(){if(!selected)return;const x=selected,button=document.querySelector('[data-mlv201-modal="restore"]');try{if(button){button.disabled=true;button.textContent='Restoring…'}const backupJson=capture();if(!backupJson)throw new Error('Could not capture the current state for the required safety backup.');if(x.source==='cloud'){const res=await bridge('cloudRestoreBackup',{fileId:x.fileId,backupJson});await applyBackupJson(res.backupJson,res,false)}else{const res=await bridge('restoreLocalPoint',{fileName:x.fileName,backupJson});applyBackupJson(res.backupJson,null,true)}}catch(err){if(button){button.disabled=false;button.textContent='Restore saved state'}notify('Restore failed',String(err?.message||err),{kind:'error',persistent:true})}}
+async async function doRestore(){
+  if(!selected)return;
+  const x=selected,button=document.querySelector('[data-mlv201-modal="restore"]');
+  try{
+    if(button){button.disabled=true;button.textContent=btText('Restoring…')}
+    const backupJson=capture();
+    if(!backupJson)throw new Error(btText('Could not capture the current state for the required safety backup.'));
+    if(x.source==='cloud'){
+      const res=await bridge('cloudRestoreBackup',{fileId:x.fileId,backupJson});
+      await applyBackupJson(res.backupJson,res,false);
+    }else{
+      const res=await bridge('restoreLocalPoint',{fileName:x.fileName,backupJson});
+      applyBackupJson(res.backupJson,null,true);
+    }
+  }catch(err){
+    if(button){button.disabled=false;button.textContent=btText('Restore saved state')}
+    notify('Restore failed',String(err?.message||err),{kind:'error',persistent:true});
+  }
+}
 function mount(){if(String(state?.activeTab||'')!=='settings')return;const p=pane();if(!p)return;const old=p.querySelector('[data-mlv201-timeline]'),tmp=document.createElement('template');tmp.innerHTML=cardHTML();const next=tmp.content.firstElementChild;if(!next)return;if(old)old.replaceWith(next);else{const maintenance=p.querySelector('[data-mlv198-maintenance]');maintenance?p.insertBefore(next,maintenance):p.appendChild(next)}}
 async function refresh(force=false){if(busy)return;if(!force&&Date.now()-lastLoad<30000){mount();return}busy=true;mount();try{localOverview=await bridge('restorePointOverview');const r=runtime();if(r.connected&&r.cloudReady){try{cloudOverview=await bridge('cloudOverview')}catch(err){cloudOverview={backups:[],devices:[]};notify('Backup Timeline','Local restore points loaded, but Drive history could not be refreshed: '+String(err?.message||err),{kind:'error'})}}else cloudOverview={backups:[],devices:[]};lastLoad=Date.now()}catch(err){notify('Backup Timeline',String(err?.message||err),{kind:'error',persistent:true})}finally{busy=false;mount()}}
 document.addEventListener('click',async e=>{const refreshBtn=e.target.closest?.('[data-mlv201-refresh]');if(refreshBtn){e.preventDefault();e.stopPropagation();await refresh(true);return}const restore=e.target.closest?.('[data-mlv201-restore]');if(restore){e.preventDefault();e.stopPropagation();const x=items().find(z=>z.key===restore.dataset.mlv201Restore);if(x)openRestore(x);return}const modal=e.target.closest?.('[data-mlv201-modal]');if(modal){e.preventDefault();e.stopPropagation();if(modal.dataset.mlv201Modal==='cancel')closeRestore();else if(modal.dataset.mlv201Modal==='restore')await doRestore();return}if(e.target.closest?.('[data-v30171-setting="data"]'))setTimeout(()=>refresh(true),120)},true);
 setInterval(()=>{if(String(state?.activeTab||'')==='settings'&&pane()?.classList.contains('active'))mount()},2500);
 setTimeout(()=>{mount();if(String(state?.activeTab||'')==='settings'&&pane()?.classList.contains('active'))refresh(false)},700);
+window.addEventListener('michelslife:languagechange',()=>{document.getElementById('mlv201RestoreOverlay')?.remove();mount()});
 if(sessionStorage.getItem('mlv201TimelineRestored')){sessionStorage.removeItem('mlv201TimelineRestored');setTimeout(()=>notify('Backup restored','Michel’s Life loaded the selected saved state.'),900)}
 if(sessionStorage.getItem('mlv201UploadRestoredLocal')){sessionStorage.removeItem('mlv201UploadRestoredLocal');setTimeout(async()=>{try{const api=window.GoogleCloudV30192||window.GoogleCloudV30191;if(api?.runtime?.connected&&api?.runtime?.cloudReady){await api.sync?.('upload',{silent:false});notify('Cloud updated','The restored local state is now the current Google Drive copy.')}}catch(err){notify('Cloud update after restore',String(err?.message||err),{kind:'error',persistent:true})}},2600)}
 window.MLV201BackupTimeline={version:VERSION,refresh,mount,items};
