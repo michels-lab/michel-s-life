@@ -66,11 +66,17 @@ def main():
         text = text[:pos] + '\n' + GUARD_SCRIPT + text[pos:]
         changed = True
 
-    if LOADER_MARKER not in text:
-        if '</body>' not in text:
-            raise SystemExit('index.html has no </body> marker')
-        text = text.replace('</body>', LOADER_MARKER + '\n</body>', 1)
+    # i18n must be available before inline UI renderers execute. Keep a
+    # single synchronous loader in <head>; a body-end loader causes first-paint
+    # language churn and forces the MutationObserver to repair already-rendered UI.
+    if LOADER_MARKER in text:
+        text = text.replace(LOADER_MARKER, '')
         changed = True
+    head_close = re.search(r'</head\s*>', text, flags=re.I)
+    if not head_close:
+        raise SystemExit('index.html has no </head> marker for i18n loader')
+    text = text[:head_close.start()] + LOADER_MARKER + '\n' + text[head_close.start():]
+    changed = True
 
     if changed:
         path.write_text(text, encoding='utf-8', newline='\n')
