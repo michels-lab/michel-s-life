@@ -25841,6 +25841,8 @@ html.v30111-rendering #tabs *{transition:none!important;animation:none!important
 
   function S(){state.settings=state.settings||{};return state.settings;}
   function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
+  function tx(en,es){return window.mlvText?window.mlvText(en,es):en}
+  function diffLabel(k){return {easy:tx('Easy','Fácil'),medium:tx('Medium','Media'),hard:tx('Hard','Difícil'),boss:tx('Boss','Jefe')}[k]||k}
   function norm(v){return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9@]+/g,' ').replace(/\s+/g,' ').trim();}
   function saveNow(){try{if(typeof save==='function')save();else localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(state));}catch(e){console.error('v3.0.116 save',e)}}
   function queueSave(){if(saveQueued)return;saveQueued=true;setTimeout(()=>{saveQueued=false;saveNow();},0)}
@@ -25880,7 +25882,7 @@ html.v30111-rendering #tabs *{transition:none!important;animation:none!important
   }
   window.difficultyOptions=function(sel='medium'){
     const selected=canonicalDiff(sel),sc=scale();
-    return ['easy','medium','hard','boss'].map(k=>'<option value="'+k+'" '+(selected===k?'selected':'')+'>'+DIFF_LABEL[k]+' · '+sc[k]+' XP</option>').join('');
+    return ['easy','medium','hard','boss'].map(k=>'<option value="'+k+'" '+(selected===k?'selected':'')+'>'+esc(diffLabel(k))+' · '+sc[k]+' XP</option>').join('');
   };
   try{difficultyOptions=window.difficultyOptions}catch(e){}
 
@@ -25889,7 +25891,7 @@ html.v30111-rendering #tabs *{transition:none!important;animation:none!important
     const diff=form.querySelector('select[name="difficulty"]'),xp=form.querySelector('input[name="xp"]');
     if(diff){diff.innerHTML=window.difficultyOptions(diff.value||'medium');}
     if(xp){xp.value=xpFor(diff?diff.value:'medium');const label=xp.closest('label');if(label)label.style.display='none';}
-    const note=form.querySelector('.v155-edit-grid-note,.edit-grid-note');if(note)note.textContent='XP is assigned automatically from mission difficulty. Change the difficulty to change the reward.';
+    const note=form.querySelector('.v155-edit-grid-note,.edit-grid-note');if(note)note.textContent=tx('XP is assigned automatically from mission difficulty. Change the difficulty to change the reward.','El XP se asigna automáticamente según la dificultad de la misión. Cambia la dificultad para cambiar la recompensa.');
   }
   const prevMissionEditForm=window.missionEditForm;
   if(typeof prevMissionEditForm==='function'){
@@ -25903,7 +25905,7 @@ html.v30111-rendering #tabs *{transition:none!important;animation:none!important
   }
   const prevOpenEditor=window.openMissionEditor;
   if(typeof prevOpenEditor==='function'){
-    window.openMissionEditor=function(){const out=prevOpenEditor.apply(this,arguments);const form=document.getElementById('missionEditForm');hideEditableXp(form);const p=document.querySelector('#modalRoot .modal-head p');if(p)p.textContent='Edit schedule, category, status and difficulty. XP is automatic from difficulty.';return out;};
+    window.openMissionEditor=function(){const out=prevOpenEditor.apply(this,arguments);const form=document.getElementById('missionEditForm');hideEditableXp(form);const p=document.querySelector('#modalRoot .modal-head p');if(p)p.textContent=tx('Edit schedule, category, status and difficulty. XP is automatic from difficulty.','Edita horario, categoría, estado y dificultad. El XP se asigna automáticamente según la dificultad.');return out;};
     try{openMissionEditor=window.openMissionEditor}catch(e){}
   }
   window.addEventListener('change',function(e){
@@ -25920,11 +25922,11 @@ html.v30111-rendering #tabs *{transition:none!important;animation:none!important
   function todayKey(){try{return typeof dateKey==='function'?dateKey():new Date().toISOString().slice(0,10)}catch(e){return new Date().toISOString().slice(0,10)}}
   function doneToday(m){try{return typeof isCompleted==='function'?!!isCompleted(m,todayKey()):(m.completions||[]).some(c=>String(c&&c.date||c&&c.at||'').slice(0,10)===todayKey())}catch(e){return false}}
   function activeToday(m){if(!m||m.archived||m.hidden)return false;try{return typeof isActiveOn==='function'?!!isActiveOn(m,todayKey()):true}catch(e){return true}}
-  function diffSelect(m){const d=canonicalDiff(m.difficulty);return '<select class="v30116-diff-control" data-v30116-diff="1" data-id="'+esc(m.id)+'" data-diff="'+d+'" title="Change difficulty and XP reward">'+window.difficultyOptions(d)+'</select>';}
+  function diffSelect(m){const d=canonicalDiff(m.difficulty);return '<select class="v30116-diff-control" data-v30116-diff="1" data-id="'+esc(m.id)+'" data-diff="'+d+'" title="'+esc(tx('Change difficulty and XP reward','Cambiar dificultad y recompensa de XP'))+'">'+window.difficultyOptions(d)+'</select>';}
   function decorateCard(card){const m=mission(missionId(card));if(!m||card.querySelector('[data-v30116-diff="1"]'))return;const target=card.querySelector('.v131-pills,.quest-state,.pills,.chips');if(target)target.insertAdjacentHTML('beforeend',diffSelect(m));}
   function decorateHtml(html){const t=document.createElement('template');t.innerHTML=String(html||'');t.content.querySelectorAll('article.v132-mission,article.mission-card,article.quest-card').forEach(decorateCard);return t.innerHTML;}
   function forecastData(){const out={morning:0,afternoon:0,night:0,total:0};(state.missions||[]).forEach(m=>{if(!activeToday(m)||doneToday(m))return;const st=STAGES.includes(stageOf(m))?stageOf(m):'afternoon';out[st]+=Number(m.xp||xpFor(m.difficulty));out.total+=Number(m.xp||xpFor(m.difficulty));});return out;}
-  function forecastHtml(){const f=forecastData();return '<span class="v30116-xp-forecast" data-v30116-forecast="1"><b>'+f.total+' XP available</b><span>Morning '+f.morning+'</span><span>Afternoon '+f.afternoon+'</span><span>Night '+f.night+'</span></span>';}
+  function forecastHtml(){const f=forecastData();return '<span class="v30116-xp-forecast" data-v30116-forecast="1" data-mlv-i18n-owned="source"><b>'+f.total+' '+esc(tx('XP available','XP disponibles'))+'</b><span>'+esc(tx('Morning','Mañana'))+' '+f.morning+'</span><span>'+esc(tx('Afternoon','Tarde'))+' '+f.afternoon+'</span><span>'+esc(tx('Night','Noche'))+' '+f.night+'</span></span>';}
   function addForecast(html){const t=document.createElement('template');t.innerHTML=String(html||'');const s=t.content.querySelector('[data-v30114-summary="1"]');if(s&&!s.querySelector('[data-v30116-forecast="1"]'))s.insertAdjacentHTML('beforeend',forecastHtml());return t.innerHTML;}
   function refreshForecast(){const n=document.querySelector('[data-v30116-forecast="1"]');if(!n)return;const t=document.createElement('template');t.innerHTML=forecastHtml();n.replaceWith(t.content.firstElementChild);}
 
@@ -25951,7 +25953,7 @@ html.v30111-rendering #tabs *{transition:none!important;animation:none!important
   window.addEventListener('change',function(e){
     const sel=e.target&&e.target.closest&&e.target.closest('[data-v30116-diff="1"]');if(!sel)return;
     e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();const m=mission(sel.dataset.id);if(!m)return;
-    m.difficulty=canonicalDiff(sel.value);m.xp=xpFor(m.difficulty);if(m.difficulty==='boss')m.boss=true;else if(m.type!=='boss'&&canonicalDiff(m.difficulty)!=='boss')m.boss=false;queueSave();updateVisibleReward(m.id,m);toastSafe('Difficulty updated',m.name+' · '+DIFF_LABEL[m.difficulty]+' · '+m.xp+' XP');
+    m.difficulty=canonicalDiff(sel.value);m.xp=xpFor(m.difficulty);if(m.difficulty==='boss')m.boss=true;else if(m.type!=='boss'&&canonicalDiff(m.difficulty)!=='boss')m.boss=false;queueSave();updateVisibleReward(m.id,m);toastSafe(tx('Difficulty updated','Dificultad actualizada'),m.name+' · '+diffLabel(m.difficulty)+' · '+m.xp+' XP');
   },true);
 
   /* Conservative one-time cleanup for the over-linked contract state created by the old broad matcher. */
