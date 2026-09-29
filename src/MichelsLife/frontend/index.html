@@ -30534,7 +30534,7 @@ async async function installUpdate(candidatePath=''){
     if(!backupJson)throw new Error(uiText('Could not create the required pre-update restore point. Update cancelled.'));
     const res=await bridge('installUpdate',{backupJson,candidatePath});
     if(res?.cancelled)return;
-    notify(uiText('Update prepared'),`v${res?.toVersion||uiText('new')} ${uiText('is ready. Michel’s Life will restart automatically.')}`,{persistent:true});
+    const versionLabel=res?.toVersion?'v'+res.toVersion:uiText('New build');notify(uiText('Update prepared'),`${versionLabel} ${uiText('is ready. Michel’s Life will restart automatically.')}`,{persistent:true});
   }catch(err){notify(uiText('Update failed'),String(err?.message||err),{kind:'error',persistent:true})}
 }
 document.addEventListener('click',async e=>{
