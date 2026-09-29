@@ -1250,7 +1250,11 @@ function ensureGoals(){
 function goalCategoryOptions(sel=''){return Object.entries(CATEGORIES).map(([k,c])=>`<option value="${k}" ${sel===k?'selected':''}>${c.emoji} ${c.name}</option>`).join('')}
 function goalMeasureOptions(sel='count'){return [['count','Contar completados'],['distinctDays','Contar días distintos']].map(([v,l])=>`<option value="${v}" ${sel===v?'selected':''}>${l}</option>`).join('')}
 function goalPeriodOptions(sel='week'){return [['week','Semana'],['month','Mes']].map(([v,l])=>`<option value="${v}" ${sel===v?'selected':''}>${l}</option>`).join('')}
-function openGoalEditor(id=null){ensureGoals(); const g=id?state.goals.find(x=>x.id===id):{id:'',name:'',desc:'',cat:'mental',type:'weekly',diff:'medium',target:3,measure:'count',period:'week',days:[1,2,3,4,5],keywords:[],archived:false,active:true}; $('#modalRoot').innerHTML=`<div class="modal-backdrop"><div class="modal wide"><div class="modal-head"><div><h2>${id?'Editar meta':'Nueva meta'}</h2><p>Ahora las metas son totalmente editables: nombre, objetivo, forma de conteo, keywords, días y categoría.</p></div><button class="icon-btn" data-action="close-modal">×</button></div>${goalEditForm(g,id?'edit':'new')}</div></div>`;}
+function openGoalEditor(id=null){
+  ensureGoals();
+  const g=id?state.goals.find(x=>x.id===id):{id:'',name:'',desc:'',cat:'mental',type:'weekly',diff:'medium',target:3,measure:'count',period:'week',days:[1,2,3,4,5],keywords:[],archived:false,active:true};
+  $('#modalRoot').innerHTML=`<div class="modal-backdrop" data-mlv-i18n-owned="source"><div class="modal wide"><div class="modal-head"><div><h2>${escapeHtml(tr(id?'Edit goal':'New goal'))}</h2><p>${escapeHtml(tr('Goals are fully editable: name, target, counting method, keywords, days and category.'))}</p></div><button class="icon-btn" data-action="close-modal">×</button></div>${goalEditForm(g,id?'edit':'new')}</div></div>`;
+}
 function goalEditForm(g,mode='edit'){return `<form id="goalEditForm" data-mode="${mode}" data-id="${g.id||''}"><div class="goal-edit-grid"><label>Nombre<input name="name" value="${escapeHtml(g.name||'')}" placeholder="Ej. Leer 30 minutos 4 veces"></label><label>Categoría<select name="cat">${goalCategoryOptions(g.cat)}</select></label><label>Tipo<select name="type">${typeOptions(g.type||'weekly')}</select></label><label>Dificultad<select name="diff">${difficultyOptions(g.diff||'medium')}</select></label><label>Objetivo<input name="target" type="number" min="1" value="${Number(g.target||1)}"></label><label>Medición<select name="measure">${goalMeasureOptions(g.measure||'count')}</select></label><label>Periodo<select name="period">${goalPeriodOptions(g.period||'week')}</select></label><label>Activa<select name="active"><option value="true" ${(g.active!==false)?'selected':''}>Sí</option><option value="false" ${g.active===false?'selected':''}>No</option></select></label></div><div class="goal-edit-stack"><label>Descripción<textarea name="desc">${escapeHtml(g.desc||'')}</textarea></label><label>Keywords para detectar progreso (separadas por coma)<input name="keywords" value="${escapeHtml((g.keywords||[]).join(', '))}" placeholder="leer 30, libro, tesis"></label><div><b>Días sugeridos / repetición</b><p class="tiny muted" style="margin:4px 0 8px">Sirven como referencia visual y para cuando conviertes la meta en misión.</p>${dayCheckboxes(g.days||[1,2,3,4,5],'goalDays')}</div><div class="days"><label class="day-chip"><input type="checkbox" name="archived" ${g.archived?'checked':''}> <strong>Archivada</strong></label></div></div><div class="actions" style="margin-top:16px"><button class="btn primary" type="submit">Guardar meta</button><button class="btn ghost" type="button" data-action="close-modal">Cancelar</button></div></form>`}
 function saveGoalEdit(form){ensureGoals(); const fd=new FormData(form); const id=form.dataset.id || uid('g'); const days=$$('input[name="goalDays"]:checked',form).map(i=>Number(i.value)); const goal={id,name:(fd.get('name')||'Meta nueva').trim(),desc:(fd.get('desc')||'').trim(),cat:fd.get('cat')||'mental',type:fd.get('type')||'weekly',diff:fd.get('diff')||'medium',target:Math.max(1,Number(fd.get('target')||1)),measure:fd.get('measure')||'count',period:fd.get('period')||'week',days:days.length?days:[1,2,3,4,5],keywords:String(fd.get('keywords')||'').split(',').map(s=>s.trim()).filter(Boolean),archived:fd.get('archived')==='on',active:fd.get('active')!=='false'}; const idx=state.goals.findIndex(g=>g.id===id); if(idx>=0) state.goals[idx]={...state.goals[idx],...goal}; else state.goals.unshift(goal); log(idx>=0?'goal_edit':'goal_create',(idx>=0?'Meta editada: ':'Meta creada: ')+goal.name,{goalId:id,category:goal.cat}); save(); closeModal(); toast(idx>=0?'Meta actualizada':'Meta creada',goal.name); renderAll(); }
 function duplicateGoal(id){ensureGoals(); const g=state.goals.find(x=>x.id===id); if(!g) return; const copy={...g,id:uid('g'),name:g.name+' (copia)'}; state.goals.unshift(copy); log('goal_duplicate','Meta duplicada: '+g.name,{goalId:copy.id,category:copy.cat}); save(); toast('Meta duplicada',copy.name); renderAll(); }
@@ -11985,7 +11989,7 @@ label:has(input[name="coins"]),
       `<div class="v216-ok">${esc(tr('On track'))} · ${Math.max(0,target-p.count)} ${esc(tr('left this week'))}</div>`);
     const rows=tasks.length?`<div>${tasks.slice(0,5).map(m=>{
       const ca=catInfo(catKey(m));
-      return `<div class="v216-linked-row"><span>🔗</span><span><b>${esc(m.name)}</b><small>${esc(ca.emoji+' '+ca.name)}</small></span><span class="v216-pill gold">${esc(tr('linked'))}</span></div>`;
+      return `<div class="v216-linked-row"><span>🔗</span><span><b>${esc(m.name)}</b><small>${esc(ca.emoji+' '+tr(ca.name))}</small></span><span class="v216-pill gold">${esc(tr('linked'))}</span></div>`;
     }).join('')}${tasks.length>5?`<div class="v216-linked-row"><span>＋</span><span><b>${tasks.length-5} ${esc(tr('more'))}</b><small>${esc(tr('Open Edit to manage all.'))}</small></span></div>`:''}</div>`:'';
     return `<div class="v216-linked-zone"><div class="v216-linked-title"><span>${esc(tr('Linked tasks'))}</span><span>${tasks.length}</span></div>${rows}${status}</div>`;
   }
@@ -12470,51 +12474,47 @@ label:has(input[name="coins"]),
   function openPremiumContractEditor(key){
     const c=contractByKey(key);
     if(!c){
-      try{ toast('Could not open contract editor','Contract key not found.'); }catch(e){}
+      try{ toast(tr('Could not open contract editor'),tr('Contract key not found.')); }catch(e){}
       console.warn('v2.1.7 contract not found',key,getContracts());
       return;
     }
     const p=progress(c), tasks=linkedTasks(c), opp=opportunityDays(c), ca=catInfo(catKey(c));
     const root=document.getElementById('modalRoot');
     if(!root) return;
-    root.innerHTML=`<div class="modal-backdrop"><div class="modal">
+    root.innerHTML=`<div class="modal-backdrop" data-mlv-i18n-owned="source"><div class="modal">
       <div class="modal-head">
-        <div><h2>Edit Premium Contract</h2><p>${esc(ca.emoji+' '+c.name)}</p></div>
+        <div><h2>${esc(tr('Edit Premium Contract'))}</h2><p>${esc(ca.emoji+' '+c.name)}</p></div>
         <button class="icon-btn" data-action="close-modal">×</button>
       </div>
       <form id="v217ContractEditForm" class="v217-edit-form" data-contract="${esc(cKey(c))}">
         <div class="v217-stat-grid">
-          <div class="v217-stat"><small>Progress</small><b>${p.count}/${p.target}</b></div>
-          <div class="v217-stat"><small>Linked tasks</small><b>${tasks.length}</b></div>
-          <div class="v217-stat"><small>Scheduled days</small><b>${opp.length}</b></div>
+          <div class="v217-stat"><small>${esc(tr('Progress'))}</small><b>${p.count}/${p.target}</b></div>
+          <div class="v217-stat"><small>${esc(tr('Linked tasks'))}</small><b>${tasks.length}</b></div>
+          <div class="v217-stat"><small>${esc(tr('Scheduled days'))}</small><b>${opp.length}</b></div>
         </div>
-
         <div class="v217-section">
-          <div class="v217-section-title"><span>Contract details</span></div>
+          <div class="v217-section-title"><span>${esc(tr('Contract details'))}</span></div>
           <div class="v217-form-grid">
-            <label>Name<input name="name" value="${esc(c.name)}"></label>
-            <label>Category<select name="category">${categoryOptions(catKey(c))}</select></label>
-            <label>Weekly target<input name="target" type="number" min="1" step="1" value="${Number(c.target||1)}"></label>
-            <label>Unit<input name="unit" value="${esc(c.unit||'distinctDays')}"></label>
+            <label>${esc(tr('Name'))}<input name="name" value="${esc(c.name)}"></label>
+            <label>${esc(tr('Category'))}<select name="category">${categoryOptions(catKey(c))}</select></label>
+            <label>${esc(tr('Weekly target'))}<input name="target" type="number" min="1" step="1" value="${Number(c.target||1)}"></label>
+            <label>${esc(tr('Unit'))}<input name="unit" value="${esc(c.unit||'distinctDays')}"></label>
           </div>
-          <label>Description<textarea name="description">${esc(c.source?.description||c.source?.desc||'')}</textarea></label>
+          <label>${esc(tr('Description'))}<textarea name="description">${esc(c.source?.description||c.source?.desc||'')}</textarea></label>
         </div>
-
         <div class="v217-section">
-          <div class="v217-section-title"><span>Linked tasks</span><span>${tasks.length} selected</span></div>
-          <div class="v217-note">Select every task that should count toward this Premium Contract. This works from Dashboard and from the Premium Contracts tab.</div>
+          <div class="v217-section-title"><span>${esc(tr('Linked tasks'))}</span><span>${tasks.length} ${esc(tr('selected'))}</span></div>
+          <div class="v217-note">${esc(tr('Select every task that should count toward this Premium Contract. This works from Dashboard and from the Premium Contracts tab.'))}</div>
           ${taskPickerForContract(c)}
         </div>
-
         <div class="v217-danger">
-          <div class="v217-danger-title">Danger zone</div>
-          <div class="v217-danger-copy">Delete this Premium Contract only if it is duplicated, wrong, or no longer belongs in your system.</div>
-          <button class="btn danger v217-delete-danger" type="button" data-action="v217-delete-contract" data-contract="${esc(cKey(c))}">Delete premium contract permanently</button>
+          <div class="v217-danger-title">${esc(tr('Danger zone'))}</div>
+          <div class="v217-danger-copy">${esc(tr('Delete this Premium Contract only if it is duplicated, wrong, or no longer belongs in your system.'))}</div>
+          <button class="btn danger v217-delete-danger" type="button" data-action="v217-delete-contract" data-contract="${esc(cKey(c))}">${esc(tr('Delete premium contract permanently'))}</button>
         </div>
-
         <div class="actions">
-          <button class="btn primary" type="submit">Save contract</button>
-          <button class="btn ghost" type="button" data-action="close-modal">Cancel</button>
+          <button class="btn primary" type="submit">${esc(tr('Save contract'))}</button>
+          <button class="btn ghost" type="button" data-action="close-modal">${esc(tr('Cancel'))}</button>
         </div>
       </form>
     </div></div>`;
@@ -23178,10 +23178,12 @@ function v3096RefreshArchiveCounters(){
   function closeDialog(){var old=document.querySelector('.v3098-dialog-backdrop');if(old)old.remove();}
   function showReplaceDialog(newId){
     closeDialog();
+    const t=v=>{try{return window.MichelsLifeI18n?.mapText?.(String(v))||String(v)}catch(_){return String(v)}};
     var newcomer=missionById(newId),list=ids();
     var backdrop=document.createElement('div');
     backdrop.className='v3098-dialog-backdrop';
-    backdrop.innerHTML='<div class="v3098-dialog" role="dialog" aria-modal="true" aria-label="Replace a Next Up mission"><h3>Next Up is full</h3><p>Choose which mission to replace with <b>'+esc(newcomer?newcomer.name:'this mission')+'</b>.</p><div class="v3098-replace-list">'+list.map(function(id,index){var m=missionById(id);return '<button class="btn v3098-replace-option" data-action="v3098-replace-next" data-old-id="'+esc(id)+'" data-new-id="'+esc(newId)+'"><b>#'+(index+1)+'</b>&nbsp; '+esc(m?m.name:'Mission')+'</button>';}).join('')+'</div><div class="v3098-dialog-footer"><button class="btn ghost" data-action="v3098-close-dialog">Cancel</button></div></div>';
+    backdrop.dataset.mlvI18nOwned='source';
+    backdrop.innerHTML='<div class="v3098-dialog" role="dialog" aria-modal="true" aria-label="'+esc(t('Replace a Next Up mission'))+'"><h3>'+esc(t('Next Up is full'))+'</h3><p>'+esc(t('Choose which mission to replace with'))+' <b>'+esc(newcomer?newcomer.name:t('this mission'))+'</b>.</p><div class="v3098-replace-list">'+list.map(function(id,index){var m=missionById(id);return '<button class="btn v3098-replace-option" data-action="v3098-replace-next" data-old-id="'+esc(id)+'" data-new-id="'+esc(newId)+'"><b>#'+(index+1)+'</b>&nbsp; '+esc(m?m.name:t('Mission'))+'</button>';}).join('')+'</div><div class="v3098-dialog-footer"><button class="btn ghost" data-action="v3098-close-dialog">'+esc(t('Cancel'))+'</button></div></div>';
     document.body.appendChild(backdrop);
     var first=backdrop.querySelector('.v3098-replace-option');if(first)first.focus();
   }
@@ -25066,7 +25068,10 @@ function openProjectEditor(id){
   root.innerHTML='<div class="modal-backdrop" data-mlv-i18n-owned="source"><div class="modal"><div class="modal-head"><div><h2>'+esc(tr(p?'Edit project':'New project'))+'</h2><p>'+esc(tr('Projects organize outcomes; missions remain the executable actions.'))+'</p></div><button class="icon-btn" data-action="close-modal">×</button></div><form id="v30106ProjectForm" data-id="'+esc(currentP.id)+'"><div class="v30106-editor-grid"><label>'+esc(tr('Name'))+'<input name="name" value="'+esc(currentP.name)+'" required></label><label>'+esc(tr('Status'))+'<select name="status"><option value="active" '+(currentP.status==='active'?'selected':'')+'>'+esc(tr('Active'))+'</option><option value="paused" '+(currentP.status==='paused'?'selected':'')+'>'+esc(tr('Paused'))+'</option><option value="completed" '+(currentP.status==='completed'?'selected':'')+'>'+esc(tr('Completed'))+'</option></select></label><label>'+esc(tr('Target date'))+'<input name="targetDate" type="date" value="'+esc(currentP.targetDate||'')+'"></label><label>'+esc(tr('Description'))+'<input name="description" value="'+esc(currentP.description||'')+'"></label></div><label>'+esc(tr('Notes'))+'<textarea name="notes">'+esc(currentP.notes||'')+'</textarea></label><div class="v30106-section"><b>'+esc(tr('Linked missions'))+'</b><div class="v30106-link-list">'+taskRows+'</div></div><div class="actions"><button class="btn primary" type="submit">'+esc(tr('Save project'))+'</button>'+(p?'<button class="btn danger" type="button" data-v30106-action="delete-project" data-id="'+esc(p.id)+'">'+esc(tr('Delete project'))+'</button>':'')+'<button class="btn ghost" type="button" data-action="close-modal">'+esc(tr('Cancel'))+'</button></div></form></div></div>';
 }
 function saveProjectForm(form){const fd=new FormData(form),id=form.dataset.id,p=id?project(id):null,data={name:String(fd.get('name')||'').trim(),status:String(fd.get('status')||'active'),targetDate:String(fd.get('targetDate')||''),description:String(fd.get('description')||''),notes:String(fd.get('notes')||''),missionIds:fd.getAll('mission').map(String)};if(!data.name)return;if(p){Object.assign(p,data);tasks(true).forEach(m=>{if(String(m.v30106ProjectId||'')===p.id&&!data.missionIds.includes(String(m.id)))delete m.v30106ProjectId;});data.missionIds.forEach(mid=>{const m=mission(mid);if(m)m.v30106ProjectId=p.id;});logActivity('Project updated',p.name,'project');}else createProject(data);saveSafe();document.getElementById('modalRoot').innerHTML='';renderAll();toastSafe('Project saved',data.name);}
-function openDecision(projectId='',text='',sourceInboxId=''){const root=document.getElementById('modalRoot');if(!root)return;root.innerHTML='<div class="modal-backdrop"><div class="modal"><div class="modal-head"><div><h2>Add decision</h2><p>Record what was decided and why.</p></div><button class="icon-btn" data-action="close-modal">×</button></div><form id="v30106DecisionForm" data-inbox="'+esc(sourceInboxId)+'"><label>Decision<input name="title" value="'+esc(text)+'" required></label><label>Reason<textarea name="reason" required></textarea></label><label>Project<select name="project"><option value="">General</option>'+projects().map(p=>'<option value="'+esc(p.id)+'" '+(String(projectId)===String(p.id)?'selected':'')+'>'+esc(p.name)+'</option>').join('')+'</select></label><div class="actions"><button class="btn primary" type="submit">Save decision</button><button class="btn ghost" type="button" data-action="close-modal">Cancel</button></div></form></div></div>';}
+function openDecision(projectId='',text='',sourceInboxId=''){
+  const root=document.getElementById('modalRoot');if(!root)return;
+  root.innerHTML='<div class="modal-backdrop" data-mlv-i18n-owned="source"><div class="modal"><div class="modal-head"><div><h2>'+esc(tr('Add decision'))+'</h2><p>'+esc(tr('Record what was decided and why.'))+'</p></div><button class="icon-btn" data-action="close-modal">×</button></div><form id="v30106DecisionForm" data-inbox="'+esc(sourceInboxId)+'"><label>'+esc(tr('Decision'))+'<input name="title" value="'+esc(text)+'" required></label><label>'+esc(tr('Reason'))+'<textarea name="reason" required></textarea></label><label>'+esc(tr('Project'))+'<select name="project"><option value="">'+esc(tr('General'))+'</option>'+projects().map(p=>'<option value="'+esc(p.id)+'" '+(String(projectId)===String(p.id)?'selected':'')+'>'+esc(p.name)+'</option>').join('')+'</select></label><div class="actions"><button class="btn primary" type="submit">'+esc(tr('Save decision'))+'</button><button class="btn ghost" type="button" data-action="close-modal">'+esc(tr('Cancel'))+'</button></div></form></div></div>';
+}
 function openQuickCapture(){const root=document.getElementById('modalRoot');if(!root)return;root.innerHTML='<div class="modal-backdrop"><div class="modal"><div class="modal-head"><div><h2>Quick Capture</h2><p>Get it out of your head without stopping your current work.</p></div><button class="icon-btn" data-action="close-modal">×</button></div><form id="v30106QuickForm"><label>Capture<input name="text" autofocus required placeholder="What do you need to remember?"></label><label>Save as<select name="kind"><option value="mission">Mission</option><option value="project">Project</option><option value="decision">Decision</option></select></label><div class="actions"><button class="btn primary" type="submit">Save</button><button class="btn ghost" type="button" data-action="close-modal">Cancel</button></div></form></div></div>';setTimeout(()=>root.querySelector('input')?.focus(),30);}
 function openMissionProjectLink(id){const m=mission(id),root=document.getElementById('modalRoot');if(!m||!root)return;const currentProject=project(m.v30106ProjectId);root.innerHTML='<div class="modal-backdrop"><div class="modal"><div class="modal-head"><div><h2>Link mission to project</h2><p>'+esc(m.name)+'</p></div><button class="icon-btn" data-action="close-modal">×</button></div><form id="v30107ProjectLinkForm" data-id="'+esc(m.id)+'"><div class="v30106-section"><label>Existing project<select name="project"><option value="">No project</option>'+projects().filter(p=>p.status!=='deleted').map(p=>'<option value="'+esc(p.id)+'" '+(String(m.v30106ProjectId||'')===String(p.id)?'selected':'')+'>'+esc(p.name)+'</option>').join('')+'</select></label><div class="v30106-section"><b>Create a new project instead</b><p class="muted">Optional. Writing a name here creates the project and links this mission immediately.</p><input name="newProject" placeholder="New project name"></div>'+(currentProject?'<div class="v30106-note">Currently linked to <b>'+esc(currentProject.name)+'</b>.</div>':'<div class="v30106-note">This mission is not linked to a project yet.</div>')+'</div><div class="actions"><button class="btn primary" type="submit">Save project link</button><button class="btn ghost" type="button" data-action="close-modal">Cancel</button></div></form></div></div>';}
 function saveMissionProjectLink(form){const m=mission(form.dataset.id);if(!m)return;const fd=new FormData(form),newName=String(fd.get('newProject')||'').trim();let projectId=String(fd.get('project')||'');if(newName){const created=createProject({name:newName,description:'Created from Dashboard for '+m.name+'.',missionIds:[String(m.id)]});projectId=created.id;}projects().forEach(p=>{p.missionIds=[...new Set((p.missionIds||[]).map(String).filter(mid=>mid!==String(m.id)))];});if(projectId){const p=project(projectId);if(p){p.missionIds=[...new Set([...(p.missionIds||[]).map(String),String(m.id)])];m.v30106ProjectId=p.id;}}else delete m.v30106ProjectId;saveSafe();document.getElementById('modalRoot').innerHTML='';enhanceCards();const linked=project(projectId);toastSafe(linked?'Project linked':'Project unlinked',linked?m.name+' → '+linked.name:m.name);logActivity(linked?'Mission linked to project':'Mission unlinked from project',linked?m.name+' → '+linked.name:m.name,'project');}
@@ -26643,7 +26648,7 @@ function history(){
 }
 function renderCalendar135(){const s=S(),mk=s.v30135CalendarMonth||s.v30134CalendarMonth||monthKey(today()),sel=(s.v30135CalendarSelected&&monthKey(s.v30135CalendarSelected)===mk)?s.v30135CalendarSelected:((s.v30134CalendarSelected&&monthKey(s.v30134CalendarSelected)===mk)?s.v30134CalendarSelected:(mk===monthKey(today())?today():monthStart(mk))),view=s.v30135CalendarView||s.v30134CalendarView||'month',sum=monthStats(mk);s.v30135CalendarMonth=mk;s.v30135CalendarSelected=sel;s.v30135CalendarView=view;const main=view==='agenda'?agenda(mk):calendarGrid(mk,sel);return '<div class="v30135-calendar"><section class="card"><div class="v30135-toolbar"><div><h2 style="margin:0">'+esc(tr('Calendar'))+'</h2><p class="muted" style="margin:3px 0 0">'+esc(tr('Plan and edit missions directly from each date.'))+'</p></div><div class="v30135-nav"><button class="btn ghost" type="button" '+CAL+'="prev">←</button><button class="btn" type="button" '+CAL+'="today">'+esc(tr('Today'))+'</button><b style="min-width:150px;text-align:center">'+esc(monthLabel(mk))+'</b><button class="btn ghost" type="button" '+CAL+'="next">→</button></div><div class="v30135-view"><button class="btn '+(view==='month'?'primary':'ghost')+'" type="button" '+CAL+'="view" data-view="month">'+esc(tr('Month'))+'</button><button class="btn '+(view==='agenda'?'primary':'ghost')+'" type="button" '+CAL+'="view" data-view="agenda">'+esc(tr('Agenda'))+'</button></div></div><div class="v30135-kpis"><div class="v30135-kpi"><small>'+esc(tr('Month completed'))+'</small><b>'+sum.completed+'</b></div><div class="v30135-kpi"><small>'+esc(tr('Past missed'))+'</small><b>'+sum.missed+'</b></div><div class="v30135-kpi"><small>'+esc(tr('Scheduled one-offs'))+'</small><b>'+sum.scheduled+'</b></div><div class="v30135-kpi"><small>'+esc(tr('Month XP'))+'</small><b>'+sum.xp+'</b></div></div>'+main+(view==='month'?'<div style="margin-top:14px">'+detail(sel)+'</div>':'')+'</section>'+history()+'</div>'}
 function categoryOptions(selected){try{return Object.entries(CATEGORIES||{}).map(([id,c])=>'<option value="'+esc(id)+'" '+(String(id)===String(selected)?'selected':'')+'>'+esc((c.emoji||'')+' '+(c.name||id))+'</option>').join('')}catch(e){return '<option value="order">Order</option>'}}
-function openOneOffEditor(k,m){const root=document.getElementById('modalRoot');if(!root)return;const edit=!!m,stage=stageOf(m||{}),diff=(m&&m.difficulty)||'medium',cat=(m&&m.category)||'order',xp=Number(m&&m.xp||30);root.innerHTML='<div class="modal-backdrop"><div class="modal"><div class="modal-head"><div><h2>'+esc(tr(edit?'Edit scheduled task':'Add task to Calendar'))+'</h2><p>'+esc(tr(edit?'Change the task or move it to another date/stage.':'Create a one-off mission tied to this exact date.'))+'</p></div><button class="icon-btn" type="button" '+CAL+'="close">×</button></div><form id="v30135OneOffForm" data-id="'+esc(m&&m.id||'')+'"><div class="v30135-modal-grid"><label>'+esc(tr('Name'))+'<input name="name" required value="'+esc(m&&m.name||'')+'" placeholder="'+esc(tr('Task name'))+'"></label><label>'+esc(tr('Date'))+'<input name="date" type="date" required value="'+esc(k)+'"></label><label>'+esc(tr('Category'))+'<select name="category">'+categoryOptions(cat)+'</select></label><label>'+esc(tr('Difficulty'))+'<select name="difficulty"><option value="easy" '+(diff==='easy'?'selected':'')+'>'+esc(tr('Easy'))+'</option><option value="medium" '+(diff==='medium'?'selected':'')+'>'+esc(tr('Medium'))+'</option><option value="hard" '+(diff==='hard'?'selected':'')+'>'+esc(tr('Hard'))+'</option></select></label><label>XP<input name="xp" type="number" min="0" step="5" value="'+xp+'"></label><label>'+esc(tr('Day stage'))+'<select name="stage"><option value="morning" '+(stage==='morning'?'selected':'')+'>'+esc(tr('Morning'))+'</option><option value="afternoon" '+(stage==='afternoon'?'selected':'')+'>'+esc(tr('Afternoon'))+'</option><option value="night" '+(stage==='night'?'selected':'')+'>'+esc(tr('Night'))+'</option></select></label></div><label style="margin-top:10px">'+esc(tr('Description'))+'<textarea name="description" placeholder="'+esc(tr('Optional'))+'">'+esc(m&&(m.description||m.desc)||'')+'</textarea></label><div class="actions" style="margin-top:14px"><button class="btn primary" type="submit">'+esc(tr(edit?'Save changes':'Add task'))+'</button><button class="btn ghost" type="button" '+CAL+'="close">'+esc(tr('Cancel'))+'</button></div></form></div></div>';setTimeout(()=>root.querySelector('input[name="name"]')?.focus(),30)}
+function openOneOffEditor(k,m){const root=document.getElementById('modalRoot');if(!root)return;const edit=!!m,stage=stageOf(m||{}),diff=(m&&m.difficulty)||'medium',cat=(m&&m.category)||'order',xp=Number(m&&m.xp||30);root.innerHTML='<div class="modal-backdrop" data-mlv-i18n-owned="source"><div class="modal"><div class="modal-head"><div><h2>'+esc(tr(edit?'Edit scheduled task':'Add task to Calendar'))+'</h2><p>'+esc(tr(edit?'Change the task or move it to another date/stage.':'Create a one-off mission tied to this exact date.'))+'</p></div><button class="icon-btn" type="button" '+CAL+'="close">×</button></div><form id="v30135OneOffForm" data-id="'+esc(m&&m.id||'')+'"><div class="v30135-modal-grid"><label>'+esc(tr('Name'))+'<input name="name" required value="'+esc(m&&m.name||'')+'" placeholder="'+esc(tr('Task name'))+'"></label><label>'+esc(tr('Date'))+'<input name="date" type="date" required value="'+esc(k)+'"></label><label>'+esc(tr('Category'))+'<select name="category">'+categoryOptions(cat)+'</select></label><label>'+esc(tr('Difficulty'))+'<select name="difficulty"><option value="easy" '+(diff==='easy'?'selected':'')+'>'+esc(tr('Easy'))+'</option><option value="medium" '+(diff==='medium'?'selected':'')+'>'+esc(tr('Medium'))+'</option><option value="hard" '+(diff==='hard'?'selected':'')+'>'+esc(tr('Hard'))+'</option></select></label><label>XP<input name="xp" type="number" min="0" step="5" value="'+xp+'"></label><label>'+esc(tr('Day stage'))+'<select name="stage"><option value="morning" '+(stage==='morning'?'selected':'')+'>'+esc(tr('Morning'))+'</option><option value="afternoon" '+(stage==='afternoon'?'selected':'')+'>'+esc(tr('Afternoon'))+'</option><option value="night" '+(stage==='night'?'selected':'')+'>'+esc(tr('Night'))+'</option></select></label></div><label style="margin-top:10px">'+esc(tr('Description'))+'<textarea name="description" placeholder="'+esc(tr('Optional'))+'">'+esc(m&&(m.description||m.desc)||'')+'</textarea></label><div class="actions" style="margin-top:14px"><button class="btn primary" type="submit">'+esc(tr(edit?'Save changes':'Add task'))+'</button><button class="btn ghost" type="button" '+CAL+'="close">'+esc(tr('Cancel'))+'</button></div></form></div></div>';setTimeout(()=>root.querySelector('input[name="name"]')?.focus(),30)}
 function makeOneOff(form){const fd=new FormData(form),id=form.dataset.id||'',k=String(fd.get('date')||today()).slice(0,10),name=String(fd.get('name')||'').trim();if(!name)return;const diff=String(fd.get('difficulty')||'medium'),cat=String(fd.get('category')||'order'),stage=String(fd.get('stage')||'afternoon'),xp=Number(fd.get('xp')||30),day=parse(k).getDay(),desc=String(fd.get('description')||'');let m=id?mission(id):null;if(!m){try{m=makeMission(name,cat,'oneoff',diff,[day],{description:desc,deadline:k,xp:xp})}catch(e){m={id:'m_'+Date.now()+'_'+Math.random().toString(36).slice(2),name,category:cat,type:'oneoff',difficulty:diff,xp,coins:0,days:[day],deadline:k,createdAt:new Date().toISOString(),completions:[]}}state.missions.unshift(m)}m.name=name;m.category=cat;m.difficulty=diff;m.description=desc;m.desc=desc;m.type='oneoff';m.originalType='oneoff';m.oneTime=true;m.v30134CalendarOneOff=true;m.v30135CalendarOneOff=true;m.scheduledDate=k;m.date=k;m.due=k;m.deadline=k;m.days=[day];m.xp=xp;m.v30114DayStage=stage;m.dayStage=stage;m.timeOfDay=stage;m.autoArchiveAfterComplete=false;m.noSuggest=false;m.archived=false;m.hidden=false;const r=document.getElementById('modalRoot');if(r)r.innerHTML='';S().v30135CalendarSelected=k;S().v30135CalendarMonth=monthKey(k);saveNow();redraw()}
 function openEdit(m,k){if(!m)return;if(isCalendarOneOff(m))openOneOffEditor(String(m.scheduledDate||k).slice(0,10),m);else{try{if(typeof window.openMissionEditor==='function')window.openMissionEditor(m.id);else if(typeof openMissionEditor==='function')openMissionEditor(m.id);}catch(e){console.error('calendar edit',e)}}}
 function completeOn(m,k){if(!m||completionOn(m,k))return;if(k===today()){try{const fn=typeof window.completeMission==='function'?window.completeMission:(typeof completeMission==='function'?completeMission:null);if(fn){fn(m.id);return}}catch(e){console.error('calendar today complete',e)}}m.completions=m.completions||[];m.completions.push({id:'c_cal_'+Date.now()+'_'+Math.random().toString(36).slice(2),date:k,at:new Date().toISOString(),xp:Number(m.xp||0),coins:0,category:m.category,name:m.name});state.xp=Number(state.xp||0)+Number(m.xp||0);try{if(typeof checkAchievements==='function')checkAchievements()}catch(e){}saveNow();redraw()}
@@ -27953,7 +27958,7 @@ function renderFocusDock(){
   const statusText=f.status==='running'?tr('Running'):f.status==='paused'?tr('Paused'):tr('Ready');
   const actionText=(f.status==='running'?tr('Pause'):f.status==='paused'?tr('Resume'):tr('Start'))+' '+(f.mode==='work'?tr('Work'):tr('Break'));
   root.innerHTML=`<div class="v30173-focus-wrap" data-mode="${f.mode}">
-    <button type="button" class="v30173-focus-trigger" data-v30162-focus="expand" aria-expanded="${f.expanded?'true':'false'}" aria-label="${esc(openClose)}" title="${esc(f.expanded?tr('Close Focus controls'):'Focus · '+fmtTimer(r))}">
+    <button type="button" class="v30173-focus-trigger" data-v30162-focus="expand" aria-expanded="${f.expanded?'true':'false'}" aria-label="${esc(openClose)}" title="${esc(f.expanded?tr('Close Focus controls'):tr('Focus')+' · '+fmtTimer(r))}">
       <span class="v30173-focus-trigger-icon">⏱</span><b data-v30162-time>${fmtTimer(r)}</b><span class="v30173-focus-trigger-chevron">${f.expanded?'⌄':'⌃'}</span>
     </button>
     <div class="v30162-focus-panel v30173-focus-panel ${f.expanded?'v30162-open':''}">
@@ -30167,6 +30172,7 @@ let seq=0,overview={backups:[],devices:[],currentDeviceId:'',currentDeviceName:'
 const pending=new Map();
 
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function relText(v){try{return window.MichelsLifeI18n?.mapText?.(String(v))||String(v)}catch(_){return String(v)}}
 function bridge(action,payload={}){
   return new Promise((resolve,reject)=>{
     if(!window.chrome?.webview?.postMessage){reject(new Error('This action requires the Windows WebView2 app.'));return}
@@ -30209,8 +30215,8 @@ function updateBadge(){
 function ensureConflictModal(){
   let o=document.getElementById('mlv197CloudConflictOverlay');
   if(o)return o;
-  o=document.createElement('div');o.id='mlv197CloudConflictOverlay';
-  o.innerHTML='<div class="mlv197-conflict-card"><h3>Cloud conflict</h3><p data-mlv197-conflict-text>Both this PC and Google Drive changed. Choose which copy becomes the master.</p><div class="mlv197-conflict-actions"><button class="btn primary" type="button" data-mlv197-conflict="local">Keep this PC</button><button class="btn" type="button" data-mlv197-conflict="cloud">Use cloud</button><button class="btn ghost" type="button" data-mlv197-conflict="later">Decide later</button></div></div>';
+  o=document.createElement('div');o.id='mlv197CloudConflictOverlay';o.dataset.mlvI18nOwned='source';
+  o.innerHTML='<div class="mlv197-conflict-card"><h3>'+esc(relText('Cloud conflict'))+'</h3><p data-mlv197-conflict-text>'+esc(relText('Both this PC and Google Drive changed. Choose which copy becomes the master.'))+'</p><div class="mlv197-conflict-actions"><button class="btn primary" type="button" data-mlv197-conflict="local">'+esc(relText('Keep this PC'))+'</button><button class="btn" type="button" data-mlv197-conflict="cloud">'+esc(relText('Use cloud'))+'</button><button class="btn ghost" type="button" data-mlv197-conflict="later">'+esc(relText('Decide later'))+'</button></div></div>';
   document.body.appendChild(o);
   o.addEventListener('click',async e=>{
     const b=e.target.closest?.('[data-mlv197-conflict]');if(!b)return;
@@ -30219,10 +30225,10 @@ function ensureConflictModal(){
     const r=rt();if(!r.cloudConflict){o.classList.remove('show');return}
     try{
       o.classList.remove('show');
-      if(choice==='local'){notification('Michel’s Life Cloud','Keeping this PC and saving the previous cloud version in backup history.',{persistent:true});await api().sync('upload')}
-      else{notification('Michel’s Life Cloud','Loading the cloud copy. A local restore point is being created first.',{persistent:true});await api().sync('download')}
+      if(choice==='local'){notification(relText('Michel’s Life Cloud'),relText('Keeping this PC and saving the previous cloud version in backup history.'),{persistent:true});await api().sync('upload')}
+      else{notification(relText('Michel’s Life Cloud'),relText('Loading the cloud copy. A local restore point is being created first.'),{persistent:true});await api().sync('download')}
       setTimeout(refreshOverview,700);
-    }catch(err){notification('Cloud error',String(err?.message||err),{kind:'error',persistent:true})}
+    }catch(err){notification(relText('Cloud error'),String(err?.message||err),{kind:'error',persistent:true})}
   });
   return o;
 }
@@ -30230,7 +30236,7 @@ function updateConflictModal(){
   const r=rt(),o=ensureConflictModal();
   if(r.cloudConflict){
     const sig=String(r.cloudConflict.localHash||'')+'|'+String(r.cloudConflict.remoteHash||'')+'|'+String(r.cloudConflict.message||'');
-    const p=o.querySelector('[data-mlv197-conflict-text]');if(p)p.textContent=r.cloudConflict.message||'Both this PC and Google Drive changed. Choose which copy becomes the master.';
+    const p=o.querySelector('[data-mlv197-conflict-text]');if(p)p.textContent=r.cloudConflict.message||relText('Both this PC and Google Drive changed. Choose which copy becomes the master.');
     if(sig!==dismissedConflictSig)o.classList.add('show');
   }else{dismissedConflictSig='';o.classList.remove('show')}
 }
