@@ -30799,7 +30799,25 @@ async async function doRestore(){
   }
 }
 function mount(){if(String(state?.activeTab||'')!=='settings')return;const p=pane();if(!p)return;const old=p.querySelector('[data-mlv201-timeline]'),tmp=document.createElement('template');tmp.innerHTML=cardHTML();const next=tmp.content.firstElementChild;if(!next)return;if(old)old.replaceWith(next);else{const maintenance=p.querySelector('[data-mlv198-maintenance]');maintenance?p.insertBefore(next,maintenance):p.appendChild(next)}}
-async function refresh(force=false){if(busy)return;if(!force&&Date.now()-lastLoad<30000){mount();return}busy=true;mount();try{localOverview=await bridge('restorePointOverview');const r=runtime();if(r.connected&&r.cloudReady){try{cloudOverview=await bridge('cloudOverview')}catch(err){cloudOverview={backups:[],devices:[]};notify('Backup Timeline','Local restore points loaded, but Drive history could not be refreshed: '+String(err?.message||err),{kind:'error'})}}else cloudOverview={backups:[],devices:[]};lastLoad=Date.now()}catch(err){notify('Backup Timeline',String(err?.message||err),{kind:'error',persistent:true})}finally{busy=false;mount()}}
+async async function refresh(force=false){
+  if(busy)return;
+  if(!force&&Date.now()-lastLoad<30000){mount();return}
+  busy=true;mount();
+  try{
+    localOverview=await bridge('restorePointOverview');
+    const r=runtime();
+    if(r.connected&&r.cloudReady){
+      try{cloudOverview=await bridge('cloudOverview')}
+      catch(err){
+        cloudOverview={backups:[],devices:[]};
+        notify('Backup Timeline',btText('Local restore points loaded, but Drive history could not be refreshed:')+' '+String(err?.message||err),{kind:'error'});
+      }
+    }else cloudOverview={backups:[],devices:[]};
+    lastLoad=Date.now();
+  }catch(err){
+    notify('Backup Timeline',String(err?.message||err),{kind:'error',persistent:true});
+  }finally{busy=false;mount()}
+}
 document.addEventListener('click',async e=>{const refreshBtn=e.target.closest?.('[data-mlv201-refresh]');if(refreshBtn){e.preventDefault();e.stopPropagation();await refresh(true);return}const restore=e.target.closest?.('[data-mlv201-restore]');if(restore){e.preventDefault();e.stopPropagation();const x=items().find(z=>z.key===restore.dataset.mlv201Restore);if(x)openRestore(x);return}const modal=e.target.closest?.('[data-mlv201-modal]');if(modal){e.preventDefault();e.stopPropagation();if(modal.dataset.mlv201Modal==='cancel')closeRestore();else if(modal.dataset.mlv201Modal==='restore')await doRestore();return}if(e.target.closest?.('[data-v30171-setting="data"]'))setTimeout(()=>refresh(true),120)},true);
 setInterval(()=>{if(String(state?.activeTab||'')==='settings'&&pane()?.classList.contains('active'))mount()},2500);
 setTimeout(()=>{mount();if(String(state?.activeTab||'')==='settings'&&pane()?.classList.contains('active'))refresh(false)},700);
