@@ -1280,6 +1280,8 @@ const PAIRS={
   "Past missed":"Perdidas anteriores",
   "Scheduled one-offs":"Únicas programadas",
   "Month XP":"XP del mes",
+  "Past = history · Today = Dashboard · Future = scheduled tasks.":"Pasado = historial · Hoy = Inicio · Futuro = tareas programadas.",
+  "Schedule task":"Programar tarea",
   "Edit scheduled task":"Editar tarea programada",
   "Name":"Nombre",
   "Task name":"Nombre de la tarea",
