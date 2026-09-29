@@ -2587,6 +2587,9 @@ body{
   function canon(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim()}
   function today(){return typeof dateKey==='function'?dateKey():new Date().toISOString().slice(0,10)}
   function e(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+  function tx(en,es){return window.mlvText?window.mlvText(en,es):(window.MichelsLifeI18n?.language==='es'?es:en)}
+  function sys(v){try{return window.MichelsLifeI18n?.mapText?.(String(v))||String(v)}catch(_){return String(v)}}
+  function isEs(){return window.mlvLanguage?window.mlvLanguage()==='es':window.MichelsLifeI18n?.language==='es'}
   function cat(id){return CATEGORIES[id]||{name:id||'Other',emoji:'•',color:'#75e4ff'}}
   function diff(id){return DIFF[id]||DIFF.medium||{name:'Medium',xp:25,coins:0}}
   function done(m){return isCompleted(m,today())}
@@ -2595,12 +2598,12 @@ body{
 
   function timeTheme(){
     const h=new Date().getHours();
-    if(h<8) return {cls:'dawn',label:'Dawn',greeting:'Good morning',bgA:'#bfeaff',bgB:'#f7c3d7',bgC:'#f8d66d',accent:'#4ab7ff',accent2:'#ff9fbd',gold:'#ffd166',orb:'rgba(255,232,176,.78)',orbX:'82%',orbY:'20%',orbSize:'48px',starA:.32,starB:.22,starC:.28,glow1:'rgba(96,185,255,.22)',glow2:'rgba(255,159,189,.22)'};
-    if(h<12) return {cls:'morning',label:'Morning',greeting:'Good morning',bgA:'#d5f2ff',bgB:'#9cccf5',bgC:'#ffe3a3',accent:'#2ea7ff',accent2:'#ffd1dc',gold:'#ffd166',orb:'rgba(255,226,154,.88)',orbX:'84%',orbY:'15%',orbSize:'54px',starA:.10,starB:.06,starC:.08,glow1:'rgba(80,190,255,.18)',glow2:'rgba(255,209,102,.18)'};
-    if(h<15) return {cls:'noon',label:'Noon',greeting:'Good noon',bgA:'#bdefff',bgB:'#4f9ee8',bgC:'#0b2b5d',accent:'#3ddcff',accent2:'#ffd166',gold:'#ffcf5f',orb:'rgba(255,244,190,.96)',orbX:'78%',orbY:'12%',orbSize:'62px',starA:.06,starB:.04,starC:.05,glow1:'rgba(61,220,255,.20)',glow2:'rgba(255,209,102,.16)'};
-    if(h<19) return {cls:'afternoon',label:'Afternoon',greeting:'Good afternoon',bgA:'#4a1634',bgB:'#c7633e',bgC:'#ffb05c',accent:'#ff9f5a',accent2:'#ffd166',gold:'#ffe29a',orb:'rgba(255,159,90,.84)',orbX:'82%',orbY:'23%',orbSize:'58px',starA:.12,starB:.08,starC:.10,glow1:'rgba(255,159,90,.20)',glow2:'rgba(167,121,255,.18)'};
-    if(h<23) return {cls:'night',label:'Night',greeting:'Good evening',bgA:'#050816',bgB:'#0a1737',bgC:'#02040a',accent:'#75e4ff',accent2:'#a779ff',gold:'#ffd166',orb:'rgba(238,244,255,.72)',orbX:'82%',orbY:'16%',orbSize:'54px',starA:.88,starB:.62,starC:.72,glow1:'rgba(120,233,255,.16)',glow2:'rgba(167,121,255,.14)'};
-    return {cls:'late',label:'Late night',greeting:'Late night',bgA:'#02040b',bgB:'#071129',bgC:'#010208',accent:'#9db4ff',accent2:'#75e4ff',gold:'#ffd166',orb:'rgba(220,230,255,.62)',orbX:'84%',orbY:'17%',orbSize:'48px',starA:.92,starB:.70,starC:.82,glow1:'rgba(157,180,255,.16)',glow2:'rgba(120,233,255,.12)'};
+    if(h<8) return {cls:'dawn',label:tx('Dawn','Amanecer'),greeting:tx('Good morning','Buenos días'),bgA:'#bfeaff',bgB:'#f7c3d7',bgC:'#f8d66d',accent:'#4ab7ff',accent2:'#ff9fbd',gold:'#ffd166',orb:'rgba(255,232,176,.78)',orbX:'82%',orbY:'20%',orbSize:'48px',starA:.32,starB:.22,starC:.28,glow1:'rgba(96,185,255,.22)',glow2:'rgba(255,159,189,.22)'};
+    if(h<12) return {cls:'morning',label:tx('Morning','Mañana'),greeting:tx('Good morning','Buenos días'),bgA:'#d5f2ff',bgB:'#9cccf5',bgC:'#ffe3a3',accent:'#2ea7ff',accent2:'#ffd1dc',gold:'#ffd166',orb:'rgba(255,226,154,.88)',orbX:'84%',orbY:'15%',orbSize:'54px',starA:.10,starB:.06,starC:.08,glow1:'rgba(80,190,255,.18)',glow2:'rgba(255,209,102,.18)'};
+    if(h<15) return {cls:'noon',label:tx('Noon','Mediodía'),greeting:tx('Good afternoon','Buenas tardes'),bgA:'#bdefff',bgB:'#4f9ee8',bgC:'#0b2b5d',accent:'#3ddcff',accent2:'#ffd166',gold:'#ffcf5f',orb:'rgba(255,244,190,.96)',orbX:'78%',orbY:'12%',orbSize:'62px',starA:.06,starB:.04,starC:.05,glow1:'rgba(61,220,255,.20)',glow2:'rgba(255,209,102,.16)'};
+    if(h<19) return {cls:'afternoon',label:tx('Afternoon','Tarde'),greeting:tx('Good afternoon','Buenas tardes'),bgA:'#4a1634',bgB:'#c7633e',bgC:'#ffb05c',accent:'#ff9f5a',accent2:'#ffd166',gold:'#ffe29a',orb:'rgba(255,159,90,.84)',orbX:'82%',orbY:'23%',orbSize:'58px',starA:.12,starB:.08,starC:.10,glow1:'rgba(255,159,90,.20)',glow2:'rgba(167,121,255,.18)'};
+    if(h<23) return {cls:'night',label:tx('Night','Noche'),greeting:tx('Good evening','Buenas noches'),bgA:'#050816',bgB:'#0a1737',bgC:'#02040a',accent:'#75e4ff',accent2:'#a779ff',gold:'#ffd166',orb:'rgba(238,244,255,.72)',orbX:'82%',orbY:'16%',orbSize:'54px',starA:.88,starB:.62,starC:.72,glow1:'rgba(120,233,255,.16)',glow2:'rgba(167,121,255,.14)'};
+    return {cls:'late',label:tx('Late night','Noche tardía'),greeting:tx('Late night','Noche tardía'),bgA:'#02040b',bgB:'#071129',bgC:'#010208',accent:'#9db4ff',accent2:'#75e4ff',gold:'#ffd166',orb:'rgba(220,230,255,.62)',orbX:'84%',orbY:'17%',orbSize:'48px',starA:.92,starB:.70,starC:.82,glow1:'rgba(157,180,255,.16)',glow2:'rgba(120,233,255,.12)'};
   }
   function ensureSky(){
     let sky=document.getElementById('v140-sky');
@@ -2614,7 +2617,7 @@ body{
     ['v25-sky-layer','v27-sky-layer','v1381-stable-sky'].forEach(id=>{const old=document.getElementById(id); if(old){old.style.display='none';old.style.visibility='hidden';old.style.opacity='0'}});
   }
   window.activeStage=function(){const t=timeTheme();return {id:t.cls,name:t.label,emoji:t.cls==='afternoon'?'🌇':t.cls==='night'||t.cls==='late'?'🌙':t.cls==='dawn'?'🌅':'☀️'}};
-  window.greetingV11=function(){const t=timeTheme();return {main:t.greeting,sub:t.cls==='dawn'?'build early advantage':t.cls==='afternoon'?'second window of the day':t.cls==='night'?'clean close, no chaos':'execute with calm focus',tone:activeStage().emoji}}
+  window.greetingV11=function(){const t=timeTheme();return {main:t.greeting,sub:t.cls==='dawn'?tx('build early advantage','construye ventaja desde temprano'):t.cls==='afternoon'?tx('second window of the day','segunda ventana del día'):t.cls==='night'?tx('clean close, no chaos','cierre limpio, sin caos'):tx('execute with calm focus','ejecuta con enfoque tranquilo'),tone:activeStage().emoji}}
 
   function ensureMissionBank(){
     state.settings=state.settings||{};
@@ -2639,9 +2642,15 @@ body{
   function missionCat(){state.settings=state.settings||{};return state.settings.v140MissionCat||'all'}
   window.v140SetMissionMode=function(mode){state.settings=state.settings||{};state.settings.v140MissionMode=mode;save();renderAll()}
   window.v140SetMissionCat=function(cat){state.settings=state.settings||{};state.settings.v140MissionCat=cat; const quick=document.getElementById('v131QuickCat'); if(quick&&cat!=='all')quick.value=cat; save();renderAll()}
-  window.v140AddToToday=function(id){const m=state.missions.find(x=>x.id===id); if(!m)return; m.v140TodayOnlyDates=m.v140TodayOnlyDates||[]; if(!m.v140TodayOnlyDates.includes(today()))m.v140TodayOnlyDates.push(today()); save(); toast&&toast('Added to today',m.name); renderAll()}
-  function categoryShortcuts(){const cur=missionCat();return `<div class="v140-cat-shortcuts"><button class="v140-shortcut ${cur==='all'?'active':''}" onclick="v140SetMissionCat('all')">All</button>${Object.entries(CATEGORIES).map(([id,c])=>`<button class="v140-shortcut ${cur===id?'active':''}" onclick="v140SetMissionCat('${id}')">${c.emoji} ${c.name}</button>`).join('')}</div>`}
-  function modeToggle(){const m=missionMode();return `<div class="v140-library-toggle"><button class="v140-toggle-btn ${m==='today'?'active':''}" onclick="v140SetMissionMode('today')">Today</button><button class="v140-toggle-btn ${m==='library'?'active':''}" onclick="v140SetMissionMode('library')">Mission library</button></div>`}
+  window.v140AddToToday=function(id){const m=state.missions.find(x=>x.id===id); if(!m)return; m.v140TodayOnlyDates=m.v140TodayOnlyDates||[]; if(!m.v140TodayOnlyDates.includes(today()))m.v140TodayOnlyDates.push(today()); save(); toast&&toast(tx('Added to today','Añadida a hoy'),m.name); renderAll()}
+  function categoryShortcuts(){
+    const cur=missionCat();
+    return `<div class="v140-cat-shortcuts"><button class="v140-shortcut ${cur==='all'?'active':''}" onclick="v140SetMissionCat('all')">${e(tx('All','Todas'))}</button>${Object.entries(CATEGORIES).map(([id,c])=>`<button class="v140-shortcut ${cur===id?'active':''}" onclick="v140SetMissionCat('${id}')">${c.emoji} ${e(sys(c.name))}</button>`).join('')}</div>`
+  }
+  function modeToggle(){
+    const m=missionMode();
+    return `<div class="v140-library-toggle"><button class="v140-toggle-btn ${m==='today'?'active':''}" onclick="v140SetMissionMode('today')">${e(tx('Today','Hoy'))}</button><button class="v140-toggle-btn ${m==='library'?'active':''}" onclick="v140SetMissionMode('library')">${e(tx('Mission library','Biblioteca de misiones'))}</button></div>`
+  }
   function visibleMissionSource(){let list=missionMode()==='library'?libraryList():todayActiveList(); const c=missionCat(); if(c!=='all')list=list.filter(m=>m.category===c); return list}
 
   function goalContracts(){const arr=[];(state.goals||[]).forEach(g=>{if(g.archived||g.noSuggest)return;const cat=g.category||g.cat;if(g.frequency==='weekly'||g.period==='week'||g.type==='weekly'||String(g.name||'').toLowerCase().includes('week'))arr.push({kind:'goal',id:g.id,name:g.name,category:cat,target:Number(g.target||5),unit:g.unit||g.measure||'times'})});state.missions.forEach(m=>{if(m.archived||m.hidden||m.noSuggest)return;if(m.type==='weekly'||Number(m.weeklyTarget)>0||/\b\d+\s*(times|days|veces|dias|días).*week|semana/i.test(m.name)){const mt=String(m.name).match(/\b(\d+)\s*(times|days|veces|dias|días)/i);arr.push({kind:'mission',id:m.id,name:m.name,category:m.category,target:Number(m.weeklyTarget||m.target||(mt?mt[1]:(m.days||[]).length||3)),unit:'times'})}});const seen=new Set();return arr.filter(x=>{const k=canon(x.name);if(seen.has(k))return false;seen.add(k);return true})}
@@ -2649,55 +2658,71 @@ body{
   function reward(contract){const val=(contract.target>=7?30:contract.target>=5?24:contract.target>=3?18:14)+(contract.kind==='goal'?8:0),co=Math.round(val*.45);return {xp:val,coins:co,bonusXp:Math.round(val*1.8),bonusCoins:Math.round(co*2)}}
   function resetInfo(){const start=startOfWeek(),next=addDays(start,7),days=Math.max(0,Math.ceil((new Date(next+'T00:00:00')-new Date())/86400000));return {next,days}}
   window.v140EditContract=function(kind,id){if(kind==='goal'&&typeof openGoalEditor==='function')return openGoalEditor(id); if(kind==='mission'&&typeof openMissionEditor==='function')return openMissionEditor(id)}
-  function renderAllContracts(){const arr=goalContracts(),reset=resetInfo();if(!arr.length)return '<div class="v131-empty">No weekly contracts yet. Create a weekly goal or a mission like “5 times a week”.</div>';return `<div class="v132-reset">⏳ Weekly reset in <b>${reset.days}</b> day${reset.days===1?'':'s'} · ${reset.next}</div><div class="v132-contract-list">${arr.map(contract=>{const p=cprog(contract),r=reward(contract),ca=cat(contract.category),pct=Math.min(100,Math.round(p.count/p.target*100));return `<article class="v132-contract"><h3>${ca.emoji} ${e(contract.name)}</h3><p>${p.count}/${p.target} ${e(contract.unit||'times')} this week</p><div class="v131-progress"><span style="width:${pct}%;background:linear-gradient(90deg,${ca.color},var(--v140-gold))"></span></div><div class="v131-pills"><span class="v131-pill gold">Today +${r.xp} XP</span><span class="v131-pill">Weekly bonus +${r.bonusXp} XP</span></div><div class="v140-contract-actions"><button class="btn gold" onclick="v131CompleteContract('${contract.kind}','${contract.id}')">${p.today?'Done today':'Done today'}</button><button class="btn" onclick="v140EditContract('${contract.kind}','${contract.id}')">Edit</button></div></article>`}).join('')}</div>`}
+  function renderAllContracts(){
+    const arr=goalContracts(),reset=resetInfo();
+    if(!arr.length)return '<div class="v131-empty">'+e(tx('No weekly contracts yet. Create a weekly goal or a mission like “5 times a week”.','Aún no hay contratos semanales. Crea una meta semanal o una misión como “5 veces por semana”.'))+'</div>';
+    return `<div class="v132-reset">⏳ ${e(tx('Weekly reset in','Reinicio semanal en'))} <b>${reset.days}</b> ${e(tx(reset.days===1?'day':'days',reset.days===1?'día':'días'))} · ${reset.next}</div><div class="v132-contract-list">${arr.map(contract=>{const p=cprog(contract),r=reward(contract),ca=cat(contract.category),pct=Math.min(100,Math.round(p.count/p.target*100)),unit=sys(contract.unit||tx('times','veces'));return `<article class="v132-contract"><h3>${ca.emoji} ${e(contract.name)}</h3><p>${p.count}/${p.target} ${e(unit)} ${e(tx('this week','esta semana'))}</p><div class="v131-progress"><span style="width:${pct}%;background:linear-gradient(90deg,${ca.color},var(--v140-gold))"></span></div><div class="v131-pills"><span class="v131-pill gold">${e(tx('Today','Hoy'))} +${r.xp} XP</span><span class="v131-pill">${e(tx('Weekly bonus','Bono semanal'))} +${r.bonusXp} XP</span></div><div class="v140-contract-actions"><button class="btn gold" onclick="v131CompleteContract('${contract.kind}','${contract.id}')">${e(tx('Done today','Hecho hoy'))}</button><button class="btn" onclick="v140EditContract('${contract.kind}','${contract.id}')">${e(tx('Edit','Editar'))}</button></div></article>`}).join('')}</div>`
+  }
 
   function completionCount(category=null){return state.missions.reduce((a,m)=>a+(m.completions||[]).filter(c=>!category||m.category===category).length,0)}
   function weeklyCount(category=null){return (state.history||[]).filter(h=>/v131_bonus_|v132_bonus_|weekly_bonus|weekly.*complete|contract.*complete/i.test(String(h.type)+' '+String(h.description))&&(!category||h.category===category)).length}
-  function linkedAchievement(m){const count=completionCount(m.category), tiers=[10,25,50,100,250], target=tiers.find(t=>count<t)||250, ca=cat(m.category);let links=`<span class="v137-ach-link next">${ca.emoji} ${ca.name}: ${count}/${target}</span>`; if(m.type==='weekly'||m.weeklyTarget) {const wc=weeklyCount(m.category), wt=[1,5,10,25,50,100,200].find(t=>wc<t)||200;links+=`<span class="v137-ach-link weekly">🏆 Weekly: ${wc}/${wt}</span>`} return `<div class="v137-linked-achievements">${links}</div>`}
+  function linkedAchievement(m){
+    const count=completionCount(m.category),tiers=[10,25,50,100,250],target=tiers.find(t=>count<t)||250,ca=cat(m.category);
+    let links=`<span class="v137-ach-link next">${ca.emoji} ${e(sys(ca.name))}: ${count}/${target}</span>`;
+    if(m.type==='weekly'||m.weeklyTarget){const wc=weeklyCount(m.category),wt=[1,5,10,25,50,100,200].find(t=>wc<t)||200;links+=`<span class="v137-ach-link weekly">🏆 ${e(tx('Weekly','Semanal'))}: ${wc}/${wt}</span>`}
+    return `<div class="v137-linked-achievements">${links}</div>`
+  }
   function repeatDays(m){
     let selected=Array.isArray(m.days)?m.days.map(Number).filter(n=>Number.isFinite(n)):[];
-    const n=String(m.name||'').toLowerCase();
-    const desc=String(m.description||m.notes||'').toLowerCase();
-    const isWeekly=(m.type==='weekly'||m.weeklyTarget||/weekly|contract/.test(desc));
-    const isPhysical=(m.category==='physical'||/train|workout|fitness|gym/.test(n+' '+desc));
-    if(!selected.length && isPhysical && isWeekly) selected=[1,2,3,4,5,6];
-    else if(!selected.length && isWeekly) selected=[1,2,3,4,5];
-    else if(!selected.length && m.type==='daily') selected=[0,1,2,3,4,5,6];
-
+    const n=String(m.name||'').toLowerCase(),desc=String(m.description||m.notes||'').toLowerCase();
+    const isWeekly=(m.type==='weekly'||m.weeklyTarget||/weekly|contract/.test(desc)),isPhysical=(m.category==='physical'||/train|workout|fitness|gym/.test(n+' '+desc));
+    if(!selected.length&&isPhysical&&isWeekly)selected=[1,2,3,4,5,6];else if(!selected.length&&isWeekly)selected=[1,2,3,4,5];else if(!selected.length&&m.type==='daily')selected=[0,1,2,3,4,5,6];
     const activeStyle='background:linear-gradient(135deg,var(--ml-accent,var(--v140-accent,var(--accent,#75e4ff))),var(--ml-accent2,var(--v140-accent2,var(--accent2,#a779ff))))!important;border-color:transparent!important;box-shadow:0 8px 18px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.20)!important;';
     const offStyle='background:linear-gradient(180deg,rgba(255,255,255,.032),rgba(255,255,255,.012))!important;border-color:rgba(255,255,255,.12)!important;box-shadow:none!important;';
-    const todayStyle='outline:2px solid var(--ml-gold,var(--v140-gold,var(--gold,#ffd166)))!important;outline-offset:2px!important;';
-    const todayDay=new Date().getDay();
-    const labels=[[1,'M','Mon'],[2,'T','Tue'],[3,'W','Wed'],[4,'T','Thu'],[5,'F','Fri'],[6,'S','Sat'],[0,'S','Sun']];
-    return `<div class="v137-repeat-days">${labels.map(([v,l,f])=>{
-      const on=selected.includes(v);
-      const style=(on?activeStyle:offStyle)+(v===todayDay?todayStyle:'');
-      return `<button class="v137-day-chip ${on?'active':''}" style="${style}" data-action="v137-toggle-day" data-id="${m.id}" data-day="${v}" title="Repeat: ${f}">${l}</button>`;
-    }).join('')}</div>`
+    const todayStyle='outline:2px solid var(--ml-gold,var(--v140-gold,var(--gold,#ffd166)))!important;outline-offset:2px!important;',todayDay=new Date().getDay();
+    const labels=isEs()?[[1,'L','lunes'],[2,'M','martes'],[3,'X','miércoles'],[4,'J','jueves'],[5,'V','viernes'],[6,'S','sábado'],[0,'D','domingo']]:[[1,'M','Monday'],[2,'T','Tuesday'],[3,'W','Wednesday'],[4,'T','Thursday'],[5,'F','Friday'],[6,'S','Saturday'],[0,'S','Sunday']];
+    return `<div class="v137-repeat-days">${labels.map(([v,l,f])=>{const on=selected.includes(v),style=(on?activeStyle:offStyle)+(v===todayDay?todayStyle:'');return `<button class="v137-day-chip ${on?'active':''}" style="${style}" data-action="v137-toggle-day" data-id="${m.id}" data-day="${v}" title="${e(tx('Repeat','Repetir'))}: ${e(f)}">${l}</button>`}).join('')}</div>`
   }
   function actionButtons(m){
-    const isDone=done(m), active=(isActiveOn(m,today())||(m.v140TodayOnlyDates||[]).includes(today()));
-    const projectList=(state.settings&&Array.isArray(state.settings.v30106Projects))?state.settings.v30106Projects:[];
-    const linkedProject=projectList.find(p=>String(p.id)===String(m.v30106ProjectId||''));
-    const nextIds=(state.settings&&Array.isArray(state.settings.nextUpMissionIds))?state.settings.nextUpMissionIds.map(String):((state.settings&&Array.isArray(state.settings.v3098NextUpIds))?state.settings.v3098NextUpIds.map(String):[]);
-    const nextIndex=nextIds.indexOf(String(m.id));
-    const nextButton=!isDone?`<button class="v135-action ghost v3098-set-next ${nextIndex>=0?'v3098-active':''}" type="button" data-action="v3098-toggle-next" data-id="${m.id}" title="${nextIndex>=0?'Remove from Next Up':'Add to Next Up'}">${nextIndex>=0?'Next #'+(nextIndex+1):'Set next'}</button>`:'';
-    const projectButton=state.activeTab==='dashboard'
-      ? `<button class="v135-action ghost" type="button" data-v30106-action="link-project" data-id="${m.id}" title="${linkedProject?'Change or remove the linked project':'Link this mission to a project'}">${linkedProject?'Change project':'Link project'}</button>`
-      : '';
-    return `<div class="v135-actions v30111-actions"><button class="v135-action ${isDone?'':'primary'}" data-action="${isDone?'undo':'complete'}" data-id="${m.id}">${isDone?'Unmark':'Complete'}</button>${nextButton}<button class="v135-action" data-action="v133-edit" data-id="${m.id}">Edit</button>${!active?`<button class="v135-action v140-add-today" onclick="v140AddToToday('${m.id}')">Add today</button>`:`<button class="v135-action" data-action="v131-postpone" data-id="${m.id}">Tomorrow</button>`}<button class="v135-action ghost" data-action="v131-not-today" data-id="${m.id}">Not today</button><button class="v135-action ghost" data-action="duplicate" data-id="${m.id}">Duplicate</button><button class="v135-action danger" data-action="archive" data-id="${m.id}">Archive</button>${projectButton}<button class="v30115-start-icon" type="button" data-cm131-action="start" data-id="${m.id}" aria-label="Start mission" title="Start as Current Mission"></button><button class="v30111-trash" type="button" data-v30102-action="delete-task" data-id="${m.id}" aria-label="Delete mission" title="Delete mission"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-2 6h10l-.7 11H7.7L7 9Zm3 2v7h2v-7h-2Zm4 0v7h2v-7h-2Z"/></svg></button></div>`
+    const isDone=done(m),active=(isActiveOn(m,today())||(m.v140TodayOnlyDates||[]).includes(today()));
+    const projectList=(state.settings&&Array.isArray(state.settings.v30106Projects))?state.settings.v30106Projects:[],linkedProject=projectList.find(p=>String(p.id)===String(m.v30106ProjectId||''));
+    const nextIds=(state.settings&&Array.isArray(state.settings.nextUpMissionIds))?state.settings.nextUpMissionIds.map(String):((state.settings&&Array.isArray(state.settings.v3098NextUpIds))?state.settings.v3098NextUpIds.map(String):[]),nextIndex=nextIds.indexOf(String(m.id));
+    const nextButton=!isDone?`<button class="v135-action ghost v3098-set-next ${nextIndex>=0?'v3098-active':''}" type="button" data-action="v3098-toggle-next" data-id="${m.id}" title="${e(nextIndex>=0?tx('Remove from Next Up','Quitar de Siguiente'):tx('Add to Next Up','Agregar a Siguiente'))}">${e(nextIndex>=0?tx('Next #','Siguiente #')+(nextIndex+1):tx('Set next','Poner siguiente'))}</button>`:'';
+    const projectButton=state.activeTab==='dashboard'?`<button class="v135-action ghost" type="button" data-v30106-action="link-project" data-id="${m.id}" title="${e(linkedProject?tx('Change or remove the linked project','Cambiar o quitar el proyecto vinculado'):tx('Link this mission to a project','Vincular esta misión a un proyecto'))}">${e(linkedProject?tx('Change project','Cambiar proyecto'):tx('Link project','Vincular proyecto'))}</button>`:'';
+    return `<div class="v135-actions v30111-actions"><button class="v135-action ${isDone?'':'primary'}" data-action="${isDone?'undo':'complete'}" data-id="${m.id}">${e(isDone?tx('Unmark','Desmarcar'):tx('Complete','Completar'))}</button>${nextButton}<button class="v135-action" data-action="v133-edit" data-id="${m.id}">${e(tx('Edit','Editar'))}</button>${!active?`<button class="v135-action v140-add-today" onclick="v140AddToToday('${m.id}')">${e(tx('Add today','Agregar hoy'))}</button>`:`<button class="v135-action" data-action="v131-postpone" data-id="${m.id}">${e(tx('Tomorrow','Mañana'))}</button>`}<button class="v135-action ghost" data-action="v131-not-today" data-id="${m.id}">${e(tx('Not today','No hoy'))}</button><button class="v135-action ghost" data-action="duplicate" data-id="${m.id}">${e(tx('Duplicate','Duplicar'))}</button><button class="v135-action danger" data-action="archive" data-id="${m.id}">${e(tx('Archive','Archivar'))}</button>${projectButton}<button class="v30115-start-icon" type="button" data-cm131-action="start" data-id="${m.id}" aria-label="${e(tx('Start mission','Iniciar misión'))}" title="${e(tx('Start as Current Mission','Iniciar como Misión actual'))}"></button><button class="v30111-trash" type="button" data-v30102-action="delete-task" data-id="${m.id}" aria-label="${e(tx('Delete mission','Eliminar misión'))}" title="${e(tx('Delete mission','Eliminar misión'))}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-2 6h10l-.7 11H7.7L7 9Zm3 2v7h2v-7h-2Zm4 0v7h2v-7h-2Z"/></svg></button></div>`
   }
-  function missionCard(m){const isDone=done(m),ca=cat(m.category),di=diff(m.difficulty);return `<article class="v132-mission v137-mission ${isDone?'done':''}"><button class="v132-check" data-action="${isDone?'undo':'complete'}" data-id="${m.id}">${isDone?'✓':''}</button><div><h3>${e(m.name)}</h3>${((m.description||m.notes)&&String(m.description||m.notes)!=='Weekly planned mission.')?`<p>${e(m.description||m.notes)}</p>`:''}<div class="v131-pills"><span class="v131-pill" style="border-color:${ca.color}44;color:${ca.color}">${ca.emoji} ${e(ca.name)}</span><span class="v131-pill ${m.boss?'bad':''}">${m.boss?'Boss':di.name}</span><span class="v131-pill gold">+${xp(m)} XP</span><span class="v131-pill gold">${coins(m)} 🪙</span>${isDone?'<span class="v131-pill good">Completed</span>':''}</div><div class="v137-mission-extra">${repeatDays(m)}${linkedAchievement(m)}</div></div>${actionButtons(m)}</article>`}
+  function missionCard(m){
+    const isDone=done(m),ca=cat(m.category),di=diff(m.difficulty);
+    return `<article class="v132-mission v137-mission ${isDone?'done':''}"><button class="v132-check" data-action="${isDone?'undo':'complete'}" data-id="${m.id}">${isDone?'✓':''}</button><div><h3>${e(m.name)}</h3>${((m.description||m.notes)&&String(m.description||m.notes)!=='Weekly planned mission.')?`<p>${e(m.description||m.notes)}</p>`:''}<div class="v131-pills"><span class="v131-pill" style="border-color:${ca.color}44;color:${ca.color}">${ca.emoji} ${e(sys(ca.name))}</span><span class="v131-pill ${m.boss?'bad':''}">${e(m.boss?tx('Boss','Jefe'):sys(di.name))}</span><span class="v131-pill gold">+${xp(m)} XP</span><span class="v131-pill gold">${coins(m)} 🪙</span>${isDone?`<span class="v131-pill good">${e(tx('Completed','Completada'))}</span>`:''}</div><div class="v137-mission-extra">${repeatDays(m)}${linkedAchievement(m)}</div></div>${actionButtons(m)}</article>`
+  }
   function mode(){state.settings=state.settings||{};return state.settings.v133Mode||'all'}
   function filterStatus(list){const m=mode(); if(m==='pending')return list.filter(x=>!done(x)); if(m==='completed')return list.filter(done); return list}
-  function switcher(list){const total=list.length,doneN=list.filter(done).length,pending=total-doneN,m=mode();return `<div class="v133-switch"><button class="${m==='all'?'active':''}" onclick="v133SetMode('all')">All ${total}</button><button class="${m==='pending'?'active':''}" onclick="v133SetMode('pending')">Pending ${pending}</button><button class="${m==='completed'?'active':''}" onclick="v133SetMode('completed')">Completed ${doneN}</button></div>`}
-  function missionList(list){const shown=filterStatus(list);return `${switcher(list)}<div class="v132-all-list">${shown.length?shown.map(missionCard).join(''):'<div class="v131-empty">No missions in this view.</div>'}</div>`}
-  function quick(){return `<div class="v131-quick"><input id="v131QuickName" placeholder="Add a quick mission for today…"><select id="v131QuickCat">${categoryOptions(missionCat()==='all'?'':missionCat())}</select><select id="v131QuickDiff">${difficultyOptions()}</select><button class="btn primary" onclick="v131QuickAdd()">Add</button></div>`}
+  function switcher(list){
+    const total=list.length,doneN=list.filter(done).length,pending=total-doneN,m=mode();
+    return `<div class="v133-switch"><button data-v254-mode="all" class="${m==='all'?'active':''}" onclick="v133SetMode('all')">${e(tx('All','Todas'))} ${total}</button><button data-v254-mode="pending" class="${m==='pending'?'active':''}" onclick="v133SetMode('pending')">${e(tx('Pending','Pendientes'))} ${pending}</button><button data-v254-mode="completed" class="${m==='completed'?'active':''}" onclick="v133SetMode('completed')">${e(tx('Completed','Completadas'))} ${doneN}</button></div>`
+  }
+  function missionList(list){
+    const shown=filterStatus(list);
+    return `${switcher(list)}<div class="v132-all-list">${shown.length?shown.map(missionCard).join(''):`<div class="v131-empty">${e(tx('No missions in this view.','No hay misiones en esta vista.'))}</div>`}</div>`
+  }
+  function quick(){
+    return `<div class="v131-quick"><input id="v131QuickName" placeholder="${e(tx('Add a quick mission for today…','Agrega una misión rápida para hoy…'))}"><select id="v131QuickCat">${categoryOptions(missionCat()==='all'?'':missionCat())}</select><select id="v131QuickDiff">${difficultyOptions()}</select><button class="btn primary" onclick="v131QuickAdd()">${e(tx('Add','Agregar'))}</button></div>`
+  }
 
-  function statsPanel(active,doneList,week,lvl){const dayXp=doneList.reduce((a,m)=>a+xp(m),0),dayCoins=doneList.reduce((a,m)=>a+coins(m),0),pct=active.length?Math.round(doneList.length/active.length*100):0;return `<div class="v132-big-progress"><h3>Today’s progress</h3><p>${doneList.length}/${active.length} missions · ${dayXp} XP</p><div class="v131-progress"><span style="width:${pct}%"></span></div></div><div class="v132-stats-grid"><div class="v132-stat"><small>Week</small><b>${week.pct}%</b><span>${week.completed} completed</span></div><div class="v132-stat"><small>Level</small><b>${lvl.level}</b><span>${lvl.pct}% to next</span></div><div class="v132-stat"><small>Contracts</small><b>${goalContracts().length}</b><span>weekly</span></div><div class="v132-stat"><small>Coins</small><b>${state.coins}</b><span>available</span></div></div>`}
+  function statsPanel(active,doneList,week,lvl){
+    const dayXp=doneList.reduce((a,m)=>a+xp(m),0),pct=active.length?Math.round(doneList.length/active.length*100):0;
+    return `<div class="v132-big-progress"><h3>${e(tx('Today’s progress','Progreso de hoy'))}</h3><p>${doneList.length}/${active.length} ${e(tx('missions','misiones'))} · ${dayXp} XP</p><div class="v131-progress"><span style="width:${pct}%"></span></div></div><div class="v132-stats-grid"><div class="v132-stat"><small>${e(tx('Week','Semana'))}</small><b>${week.pct}%</b><span>${week.completed} ${e(tx('completed','completadas'))}</span></div><div class="v132-stat"><small>${e(tx('Level','Nivel'))}</small><b>${lvl.level}</b><span>${lvl.pct}% ${e(tx('to next','para el siguiente nivel'))}</span></div><div class="v132-stat"><small>${e(tx('Contracts','Contratos'))}</small><b>${goalContracts().length}</b><span>${e(tx('weekly','semanales'))}</span></div><div class="v132-stat"><small>${e(tx('Coins','Monedas'))}</small><b>${state.coins}</b><span>${e(tx('available','disponibles'))}</span></div></div>`
+  }
 
-  window.renderDashboard=function(){ensureSky();const st=activeStage(),lvl=calcLevel(state.xp),active=todayActiveList(),doneList=active.filter(done),pending=active.filter(m=>!done(m)),week=periodStats(startOfWeek(),today()),carry=getCarryover();return `<div class="v131-stack">${carry.length?`<div class="banner"><b>You have ${carry.length} pending mission${carry.length===1?'':'s'} from yesterday.</b><p class="muted">Move them to today without creating duplicates.</p><div class="actions"><button class="btn gold" data-action="move-all-carry">Move all without duplicates</button><button class="btn ghost" data-tab="pending">Choose which ones</button></div></div>`:''}<section class="card v131-hero"><div class="v131-hero-title"><div><h2>${st.emoji} Today</h2><p>${st.name}</p></div><span class="pill hot">${rankForLevel(lvl.level)}</span></div><div class="v131-kpis"><div class="v131-kpi"><small>Today’s missions</small><b>${doneList.length}/${active.length}</b><span>${pending.length} pending</span></div><div class="v131-kpi"><small>Contracts</small><b>${goalContracts().length}</b><span>active</span></div><div class="v131-kpi"><small>Level</small><b>${lvl.level}</b><span>${lvl.pct}% to next</span></div><div class="v131-kpi"><small>Week</small><b>${week.pct}%</b><span>${week.completed} completed</span></div></div></section><div class="v132-dashboard-grid"><section class="card v132-panel"><div class="section-title"><div><h2>Today’s to-do</h2></div><span class="pill gold">${pending.length} pending</span></div>${quick()}${missionList(active)}</section><section class="card v132-panel"><div class="section-title"><div><h2>Premium contracts</h2></div></div>${renderAllContracts()}</section><section class="card v132-panel v132-stats-panel"><div class="section-title"><div><h2>Statistics</h2><p>Day, week, level and contracts.</p></div></div>${statsPanel(active,doneList,week,lvl)}</section></div></div>`}
-  window.renderMissions=function(){ensureSky();const list=visibleMissionSource();return `<section class="card"><div class="section-title"><div><h2>Missions</h2><p>Use category shortcuts to find missions fast and add them to today.</p></div><div class="actions"><button class="btn primary" data-action="new-mission">New mission</button><button class="btn" onclick="state.activeTab='dashboard';renderAll()">Dashboard</button></div></div>${categoryShortcuts()}${modeToggle()}${quick()}${missionList(list)}</section>`}
+  window.renderDashboard=function(){
+    ensureSky();
+    const st=activeStage(),lvl=calcLevel(state.xp),active=todayActiveList(),doneList=active.filter(done),pending=active.filter(m=>!done(m)),week=periodStats(startOfWeek(),today()),carry=getCarryover();
+    return `<div class="v131-stack">${carry.length?`<div class="banner"><b>${e(tx('You have','Tienes'))} ${carry.length} ${e(tx(carry.length===1?'pending mission from yesterday.':'pending missions from yesterday.',carry.length===1?'misión pendiente de ayer.':'misiones pendientes de ayer.'))}</b><p class="muted">${e(tx('Move them to today without creating duplicates.','Muévelas a hoy sin crear duplicados.'))}</p><div class="actions"><button class="btn gold" data-action="move-all-carry">${e(tx('Move all without duplicates','Mover todas sin duplicados'))}</button><button class="btn ghost" data-tab="pending">${e(tx('Choose which ones','Elegir cuáles'))}</button></div></div>`:''}<section class="card v131-hero"><div class="v131-hero-title"><div><h2>${st.emoji} ${e(tx('Today','Hoy'))}</h2><p>${e(st.name)}</p></div><span class="pill hot">${e(sys(rankForLevel(lvl.level)))}</span></div><div class="v131-kpis"><div class="v131-kpi"><small>${e(tx('Today’s missions','Misiones de hoy'))}</small><b>${doneList.length}/${active.length}</b><span>${pending.length} ${e(tx('pending','pendientes'))}</span></div><div class="v131-kpi"><small>${e(tx('Contracts','Contratos'))}</small><b>${goalContracts().length}</b><span>${e(tx('active','activos'))}</span></div><div class="v131-kpi"><small>${e(tx('Level','Nivel'))}</small><b>${lvl.level}</b><span>${lvl.pct}% ${e(tx('to next','para el siguiente nivel'))}</span></div><div class="v131-kpi"><small>${e(tx('Week','Semana'))}</small><b>${week.pct}%</b><span>${week.completed} ${e(tx('completed','completadas'))}</span></div></div></section><div class="v132-dashboard-grid"><section class="card v132-panel"><div class="section-title"><div><h2>${e(tx('Today’s to-do','Pendientes de hoy'))}</h2></div><span class="pill gold">${pending.length} ${e(tx('pending','pendientes'))}</span></div>${quick()}${missionList(active)}</section><section class="card v132-panel"><div class="section-title"><div><h2>${e(tx('Premium contracts','Contratos premium'))}</h2></div></div>${renderAllContracts()}</section><section class="card v132-panel v132-stats-panel"><div class="section-title"><div><h2>${e(tx('Statistics','Estadísticas'))}</h2><p>${e(tx('Day, week, level and contracts.','Día, semana, nivel y contratos.'))}</p></div></div>${statsPanel(active,doneList,week,lvl)}</section></div></div>`
+  }
+  window.renderMissions=function(){
+    ensureSky();const list=visibleMissionSource();
+    return `<section class="card"><div class="section-title"><div><h2>${e(tx('Missions','Misiones'))}</h2><p>${e(tx('Use category shortcuts to find missions fast and add them to today.','Usa los accesos por categoría para encontrar misiones rápido y agregarlas a hoy.'))}</p></div><div class="actions"><button class="btn primary" data-action="new-mission">${e(tx('New mission','Nueva misión'))}</button><button class="btn" onclick="state.activeTab='dashboard';renderAll()">${e(tx('Dashboard','Inicio'))}</button></div></div>${categoryShortcuts()}${modeToggle()}${quick()}${missionList(list)}</section>`
+  }
   window.renderCharacterTab=function(){ensureSky();const active=todayActiveList(),doneM=active.filter(done),week=periodStats(startOfWeek(),today()),lvl=calcLevel(state.xp);return `<section class="card"><div class="section-title"><div><h2>Build</h2><p>No avatar. Progress, achievements and execution.</p></div><button class="btn gold" data-tab="shop">View badges</button></div>${statsPanel(active,doneM,week,lvl)}</section>`}
 
   const oldRenderAll=window.renderAll;
@@ -13422,7 +13447,7 @@ label:has(input[name="coins"]),
     const dm = dashboardMode();
     document.querySelectorAll('#tab-dashboard .v133-switch button').forEach(btn=>{
       const t = norm(btn.textContent || '');
-      const bm = t.startsWith('pending') ? 'pending' : (t.startsWith('completed') ? 'completed' : 'all');
+      const bm = btn.dataset.v254Mode || (t.startsWith('pending')||t.startsWith('pendient') ? 'pending' : ((t.startsWith('completed')||t.startsWith('complet')) ? 'completed' : 'all'));
       const active = bm === dm;
       btn.classList.toggle('active', active);
       btn.classList.toggle('v254-active', active);
@@ -13431,7 +13456,7 @@ label:has(input[name="coins"]),
     const mm = missionsMode();
     document.querySelectorAll('#tab-missions .v133-switch button').forEach(btn=>{
       const t = norm(btn.textContent || '');
-      const bm = t.startsWith('pending') ? 'pending' : (t.startsWith('completed') ? 'completed' : 'all');
+      const bm = btn.dataset.v254Mode || (t.startsWith('pending')||t.startsWith('pendient') ? 'pending' : ((t.startsWith('completed')||t.startsWith('complet')) ? 'completed' : 'all'));
       const active = bm === mm;
       btn.classList.toggle('active', active);
       btn.classList.toggle('v254-active', active);
@@ -13443,9 +13468,8 @@ label:has(input[name="coins"]),
     if(!btn) return;
 
     const t = norm(btn.textContent || '');
-    if(!t.startsWith('all') && !t.startsWith('pending') && !t.startsWith('completed')) return;
-
-    const mode = t.startsWith('pending') ? 'pending' : (t.startsWith('completed') ? 'completed' : 'all');
+    const mode = btn.dataset.v254Mode || (t.startsWith('pending')||t.startsWith('pendient') ? 'pending' : ((t.startsWith('completed')||t.startsWith('complet')) ? 'completed' : ((t.startsWith('all')||t.startsWith('todas')) ? 'all' : '')));
+    if(!mode) return;
 
     if(btn.closest('#tab-dashboard')){
       ev.preventDefault();
