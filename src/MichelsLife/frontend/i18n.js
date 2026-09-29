@@ -1551,6 +1551,9 @@ const PAIRS={
   "This progress changes the weight of the day.":"Este avance cambia el peso del día.",
   "Defeating a Boss Quest counts twice: for the result and for the courage.":"Derrotar una boss quest cuenta doble: por resultado y por valentía.",
   "Resistance was beaten with evidence.":"La resistencia se venció con evidencia.",
+  "Interface rule:":"Regla de interfaz:",
+  "Michel’s Life is created and maintained by Michel Duarte under Michel’s Lab. Independent software focused on productivity, life systems and personal tools.":"Michel’s Life es creada y mantenida por Michel Duarte bajo Michel’s Lab. Software independiente enfocado en productividad, sistemas de vida y herramientas personales.",
+  "Email":"Correo",
 };
 const SPANISH_SYSTEM_DEFAULTS={
   "Read 30 minutes at night 3 times":"Leer 30 minutos de noche 3 veces",
