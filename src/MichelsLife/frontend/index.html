@@ -24085,7 +24085,15 @@ body.v3099-has-nextup-dock{
     settings().v30102LastAnalysisAt=new Date().toISOString();
     saveSafe();
     if(options.render!==false&&changes){try{if(typeof renderAll==='function')renderAll();}catch(error){}}
-    if(options.toast!==false)toastSafe(changes?'Contract links updated':'Contract links already current',changes?changes+' relevant mission'+(changes===1?' was':'s were')+' linked automatically.':'No new strong matches were found.');
+    if(options.toast!==false){
+      var message;
+      if(changes){
+        message=nIsEs()
+          ?changes+' '+(changes===1?'misión relevante vinculada automáticamente.':'misiones relevantes vinculadas automáticamente.')
+          :changes+' relevant mission'+(changes===1?' was':'s were')+' linked automatically.';
+      }else message=nText('No new strong matches were found.');
+      toastSafe(changes?'Contract links updated':'Contract links already current',message);
+    }
     scheduleRefresh();
     return {changes:changes,considered:considered,details:details};
   }
@@ -24291,7 +24299,8 @@ body.v3099-has-nextup-dock{
     lastDeleted={mission:snapshot,index:index,at:Date.now()};
     state.missions.splice(index,1);removeFromNextUp(id);saveSafe();
     var card=button&&button.closest(DASH_CARD_SELECTORS);if(card){card.classList.add('v30102-deleting');setTimeout(function(){card.remove();},190);}else{try{if(typeof renderAll==='function')renderAll();}catch(error){}}
-    showUndoToast(snapshot);toastSafe('Mission deleted',snapshot.name+' · Undo is available for 9 seconds.');
+    showUndoToast(snapshot);
+    toastSafe('Mission deleted',snapshot.name+' · '+(nIsEs()?'Deshacer está disponible durante 9 segundos.':'Undo is available for 9 seconds.'));
     scheduleRefresh();
   }
   function undoDelete(){
