@@ -22127,7 +22127,7 @@ html body .v169-day-btn{
   function localComplete(id){
     const m=mission(id);if(!m)return;
     const key=todayKey();
-    if(completed(m)){try{toast('Already completed','It was not counted twice.')}catch(e){}return}
+    if(completed(m)){try{toast(tx('Already completed','Ya completada'),tx('It was not counted twice.','No se contó dos veces.'))}catch(e){}return}
     const comp={id:(typeof uid==='function'?uid('c'):'c_'+Date.now()),date:key,at:(typeof nowISO==='function'?nowISO():new Date().toISOString()),xp:Number(m.xp||0),coins:0,category:m.category,name:m.name};
     m.completions=m.completions||[];m.completions.push(comp);m.archived=false;m.hidden=false;
     state.xp=Number(state.xp||0)+Number(m.xp||0);
@@ -23141,7 +23141,7 @@ function v3096RefreshArchiveCounters(){
       var pill=card.querySelector('.v3098-next-pill');
       if(index>=0&&pills){
         if(!pill){pill=document.createElement('span');pill.className='v131-pill v3098-next-pill';pills.appendChild(pill);}
-        pill.textContent='➜ Next #'+(index+1);
+        pill.textContent='➜ '+tx('Next','Siguiente')+' #'+(index+1);pill.dataset.mlvI18nOwned='source';
       }else if(pill){pill.remove();}
     });
   }
@@ -24473,6 +24473,8 @@ body.ml-theme-ui .app,body.ml-theme-ui #app,.app,#app{position:relative!importan
 </style>
 <script id="v30103-theme-dedupe-english-script">
 (function(){
+  function uiBi(en,es){return (window.MichelsLifeI18n?.language||document.documentElement.lang)==='es'?es:en}
+
   'use strict';
   if(window.__v30103Loaded)return;
   window.__v30103Loaded=true;
@@ -24693,7 +24695,7 @@ body.ml-theme-ui .app,body.ml-theme-ui #app,.app,#app{position:relative!importan
     });
     replaceIds(alias);appSettings().v30103LastDuplicateCleanup={at:new Date().toISOString(),missions:removedM,contracts:removedC};
     if(removedM||removedC)saveSafe();
-    if(showToast)toastSafe('Duplicate check complete',(removedM||removedC)?(removedM+' duplicate mission'+(removedM===1?'':'s')+' and '+removedC+' duplicate contract'+(removedC===1?'':'s')+' cleaned up.'):'No duplicate missions or Premium Contracts were found.');
+    if(showToast){const body=(removedM||removedC)?(uiBi('Cleaned: ','Limpieza: ')+removedM+' '+(removedM===1?uiBi('duplicate mission','misión duplicada'):uiBi('duplicate missions','misiones duplicadas'))+' '+uiBi('and','y')+' '+removedC+' '+(removedC===1?uiBi('duplicate contract','contrato duplicado'):uiBi('duplicate contracts','contratos duplicados'))+'.'):uiBi('No duplicate missions or Premium Contracts were found.','No se encontraron misiones ni Contratos Premium duplicados.');toastSafe(uiBi('Duplicate check complete','Revisión de duplicados completada'),body);}
     return {missions:removedM,contracts:removedC};
   }
 
@@ -24750,7 +24752,7 @@ body.ml-theme-ui .app,body.ml-theme-ui #app,.app,#app{position:relative!importan
     translateState();const result=cleanupDuplicates(false);backgroundLayer();applyBackground(true);
     if(state&&state.activeTab==='settings')repairSettings();englishSweep(document.body);injectCleanupCard();
     setTimeout(function(){if(state&&state.activeTab==='settings')repairSettings();},180);
-    if(result.missions||result.contracts)toastSafe('Duplicate data cleaned',result.missions+' duplicate mission'+(result.missions===1?'':'s')+' and '+result.contracts+' duplicate contract'+(result.contracts===1?'':'s')+' were merged safely.');
+    if(result.missions||result.contracts)toastSafe(uiBi('Duplicate data cleaned','Datos duplicados limpiados'),result.missions+' '+(result.missions===1?uiBi('duplicate mission','misión duplicada'):uiBi('duplicate missions','misiones duplicadas'))+' '+uiBi('and','y')+' '+result.contracts+' '+(result.contracts===1?uiBi('duplicate contract','contrato duplicado'):uiBi('duplicate contracts','contratos duplicados'))+' '+uiBi('were merged safely.','se fusionaron de forma segura.'));
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
   window.addEventListener('load',function(){maintenance();},{once:true});
@@ -26892,6 +26894,8 @@ input[type="date"][data-v30136-date-picker="1"]{
 </style>
 <script id="v30136-click-date-picker-script">
 (function(){
+function tx(en,es){return window.mlvText?window.mlvText(en,es):(window.MichelsLifeI18n?.language==='es'?es:en)}
+
 'use strict';
 if(window.DatePickerV30136)return;
 const VERSION='3.0.136';
@@ -26899,7 +26903,7 @@ function isDateInput(el){return !!(el&&el.matches&&el.matches('input[type="date"
 function prepare(el){
   if(!isDateInput(el))return;
   el.dataset.v30136DatePicker='1';
-  if(!el.title)el.title='Click to choose a date';
+  if(!el.title)el.title=tx('Click to choose a date','Haz clic para elegir una fecha');
   el.setAttribute('aria-haspopup','dialog');
 }
 function prepareAll(root){
@@ -30598,6 +30602,7 @@ const ACTIVITY_KEY='michelsLife.internal.activity.v30198';
 let seq=0,lastCloudStamp='',lastCloudLogAt=0;
 const pending=new Map();
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function mBi(en,es){return (window.MichelsLifeI18n?.language||document.documentElement.lang)==='es'?es:en}
 function mText(v){try{return window.MichelsLifeI18n?.mapText?.(String(v))||String(v)}catch(_){return String(v)}}
 function mEsc(v){return esc(mText(v))}
 function mLocale(){return (window.MichelsLifeI18n?.language||document.documentElement.lang)==='es'?'es-MX':'en-US'}
@@ -30622,7 +30627,7 @@ function cardHTML(){
 }
 function mountDataTools(){removeLegacyPersonalUI();if(String(window.state?.activeTab||'')!=='settings')return;const pane=dataPane();if(!pane)return;let old=pane.querySelector('[data-mlv198-maintenance]');const t=document.createElement('template');t.innerHTML=cardHTML();const next=t.content.firstElementChild;if(!next)return;if(old)old.replaceWith(next);else pane.appendChild(next)}
 async function createRestorePoint(reason='manual'){const backupJson=capture();if(!backupJson)throw new Error('Could not capture the current Michel’s Life state.');return bridge('createRestorePoint',{backupJson,reason})}
-async function repair(){await createRestorePoint('before_local_repair');try{if(typeof migrate==='function'){const next=migrate(JSON.parse(JSON.stringify(state)));if(next&&typeof next==='object')state=next}state.settings=state.settings&&typeof state.settings==='object'?state.settings:{};state.missions=Array.isArray(state.missions)?state.missions:[];state.goals=Array.isArray(state.goals)?state.goals:[];state.history=Array.isArray(state.history)?state.history:[];state.achievements=Array.isArray(state.achievements)?state.achievements:[];state.missions.forEach(m=>{if(!Array.isArray(m.completions))m.completions=[];if(!Array.isArray(m.days))m.days=[]});if(typeof save==='function')save();if(typeof renderAll==='function')renderAll();logActivity('Local data repaired','Saved structures normalized after creating a restore point.');notify('Local data repaired','A restore point was created first.')}catch(err){throw err}}
+async function repair(){await createRestorePoint('before_local_repair');try{if(typeof migrate==='function'){const next=migrate(JSON.parse(JSON.stringify(state)));if(next&&typeof next==='object')state=next}state.settings=state.settings&&typeof state.settings==='object'?state.settings:{};state.missions=Array.isArray(state.missions)?state.missions:[];state.goals=Array.isArray(state.goals)?state.goals:[];state.history=Array.isArray(state.history)?state.history:[];state.achievements=Array.isArray(state.achievements)?state.achievements:[];state.missions.forEach(m=>{if(!Array.isArray(m.completions))m.completions=[];if(!Array.isArray(m.days))m.days=[]});if(typeof save==='function')save();if(typeof renderAll==='function')renderAll();logActivity(mBi('Local data repaired','Datos locales reparados'),mBi('Saved structures normalized after creating a restore point.','Las estructuras guardadas se normalizaron después de crear un punto de restauración.'));notify(mBi('Local data repaired','Datos locales reparados'),mBi('A restore point was created first.','Primero se creó un punto de restauración.'))}catch(err){throw err}}
 document.addEventListener('click',async e=>{const b=e.target.closest?.('[data-mlv198-action]');if(!b)return;const a=b.dataset.mlv198Action;e.preventDefault();e.stopPropagation();try{if(a==='restore-point'){b.disabled=true;const r=await createRestorePoint('manual');logActivity('Restore point created',r?.fileName||'Local safety copy created.');notify('Restore point created',r?.fileName||'Local safety copy created.')}else if(a==='repair'){if(!confirm(mText('Repair local data? Michel’s Life will create a restore point first, then normalize saved structures.')))return;b.disabled=true;await repair()}else if(a==='clear-log'){putActivity([]);mountDataTools()}}catch(err){notify('Recovery tool',String(err?.message||err),{kind:'error',persistent:true})}finally{b.disabled=false}return},true);
 document.addEventListener('click',e=>{const a=e.target.closest?.('[data-action]')?.dataset?.action;if(a==='v3064-reset-progress-only'||a==='v3063-reset-progress-only')logActivity('Progress reset requested','Statistics/progress reset; mission archive and hidden states are preserved.');const c=e.target.closest?.('[data-mlv197-conflict]')?.dataset?.mlv197Conflict;if(c==='local')logActivity('Cloud conflict resolved','This PC was selected.');if(c==='cloud')logActivity('Cloud conflict resolved','Cloud copy was selected.');if(e.target.closest?.('[data-mlv197-restore-backup]'))logActivity('Cloud history restore requested','A historical Drive backup was selected.')},true);
 setInterval(()=>{removeLegacyPersonalUI();mountDataTools();const r=window.GoogleCloudV30192?.runtime||window.GoogleCloudV30191?.runtime||{};const stamp=String(r.cloudLastSync||'');if(stamp&&stamp!==lastCloudStamp){lastCloudStamp=stamp;if(Date.now()-lastCloudLogAt>5*60*1000){lastCloudLogAt=Date.now();logActivity('Cloud sync completed',fmt(stamp))}}},1800);
