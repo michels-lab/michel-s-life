@@ -20647,13 +20647,15 @@ body.ml-theme-ui .v169-day-btn{
 
   function S(){try{state.settings=state.settings||{};return state.settings}catch(e){return {}}}
   function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+  function tx(en,es){return window.mlvText?window.mlvText(en,es):(window.MichelsLifeI18n?.language==='es'?es:en)}
+  function isEs(){return window.mlvLanguage?window.mlvLanguage()==='es':window.MichelsLifeI18n?.language==='es'}
   function toastSafe(t,m){try{toast(t,m||'')}catch(e){}}
   function saveSafe(){try{save()}catch(e){}}
   function renderSafe(){try{renderAll()}catch(e){}}
   function keyToday(){return typeof dateKey==='function'?dateKey():new Date().toISOString().slice(0,10)}
   function keyAdd(key,n){if(typeof addDays==='function')return addDays(key,n);const d=new Date(key+'T12:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
-  function catObj(id){return (window.CATEGORIES&&CATEGORIES[id])||{emoji:'✦',name:id||'Other'}}
-  function diffLabel(m){try{return (DIFF[m.difficulty]||{}).name||m.difficulty||'Medium'}catch(e){return m?.difficulty||'Medium'}}
+  function catObj(id){return (window.CATEGORIES&&CATEGORIES[id])||{emoji:'✦',name:id||tx('Other','Otra')}}
+  function diffLabel(m){try{return tx((DIFF[m.difficulty]||{}).name||m.difficulty||'Medium',m.difficulty==='easy'?'Fácil':m.difficulty==='hard'?'Difícil':m.difficulty==='boss'?'Jefe':'Media')}catch(e){return m?.difficulty||tx('Medium','Media')}}
   function uidSafe(p){try{return uid(p)}catch(e){return p+'_'+Date.now()+'_'+Math.random().toString(16).slice(2)}}
   function nowSafe(){try{return nowISO()}catch(e){return new Date().toISOString()}}
   function logSafe(a,b,c){try{log(a,b,c||{})}catch(e){}}
@@ -20729,38 +20731,24 @@ body.ml-theme-ui .v169-day-btn{
   }
   function dayTextCard(){
     const v=dayText();
-    return `<div class="card v3064-settings-card" data-v3064-day-text-card="1">
-      <h2>Day chip text color</h2>
-      <p class="muted">Change the letter color of the day chips. The premium chip background stays the same.</p>
+    return `<div class="card v3064-settings-card" data-v3064-day-text-card="1" data-mlv-i18n-owned="source">
+      <h2>${esc(tx('Day chip text color','Color del texto de los días'))}</h2>
+      <p class="muted">${esc(tx('Change the letter color of the day chips. The premium chip background stays the same.','Cambia sólo el color de las letras de los días. El fondo premium de los chips permanece igual.'))}</p>
       <div class="v3064-settings-grid">
+        <div class="v3064-mini-panel"><div class="v3064-control-row"><label><b>${esc(tx('Active day text','Texto de día activo'))}</b><div class="v3064-help">${esc(tx('Letters on scheduled/active days.','Letras en días programados/activos.'))}</div></label><input id="v3064DayTextActive" type="color" value="${esc(v.active)}"></div></div>
         <div class="v3064-mini-panel">
-          <div class="v3064-control-row">
-            <label><b>Active day text</b><div class="v3064-help">Letters on scheduled/active days.</div></label>
-            <input id="v3064DayTextActive" type="color" value="${esc(v.active)}">
-          </div>
-        </div>
-        <div class="v3064-mini-panel">
-          <div class="v3064-control-row">
-            <label><b>Inactive day text</b><div class="v3064-help">Letters on darker off-days.</div></label>
-            <input id="v3064DayTextInactive" type="color" value="${esc(v.inactive)}">
-          </div>
-          <div class="v3064-control-row">
-            <label><b>Inactive text opacity</b><div class="v3064-help">How visible off-day letters are.</div></label>
-            <div><input id="v3064DayTextInactiveAlpha" type="range" min="10" max="100" step="1" value="${v.inactiveAlpha}"><div class="v3064-help" data-v3064-day-alpha>${v.inactiveAlpha}%</div></div>
-          </div>
+          <div class="v3064-control-row"><label><b>${esc(tx('Inactive day text','Texto de día inactivo'))}</b><div class="v3064-help">${esc(tx('Letters on darker off-days.','Letras en los días inactivos más oscuros.'))}</div></label><input id="v3064DayTextInactive" type="color" value="${esc(v.inactive)}"></div>
+          <div class="v3064-control-row"><label><b>${esc(tx('Inactive text opacity','Opacidad del texto inactivo'))}</b><div class="v3064-help">${esc(tx('How visible off-day letters are.','Qué tan visibles son las letras de los días inactivos.'))}</div></label><div><input id="v3064DayTextInactiveAlpha" type="range" min="10" max="100" step="1" value="${v.inactiveAlpha}"><div class="v3064-help" data-v3064-day-alpha>${v.inactiveAlpha}%</div></div></div>
         </div>
       </div>
     </div>`;
   }
   function resetCard(){
-    return `<div class="card v3064-settings-card v3064-danger" data-v3064-reset-card="1">
-      <h2>Reset progress only</h2>
-      <p class="muted">Restart progress without deleting missions, categories, presets, settings, background sets or premium contracts.</p>
-      <div class="v3064-help">This clears completions, XP, coins, achievements and progress history. Missions keep their archived and hidden state.</div>
-      <div class="v3064-reset-row">
-        <input id="v3064ResetProgressConfirm" placeholder="Type RESET to confirm">
-        <button class="btn red" data-action="v3064-reset-progress-only">Reset progress only</button>
-      </div>
+    return `<div class="card v3064-settings-card v3064-danger" data-v3064-reset-card="1" data-mlv-i18n-owned="source">
+      <h2>${esc(tx('Reset progress only','Restablecer sólo el progreso'))}</h2>
+      <p class="muted">${esc(tx('Restart progress without deleting missions, categories, presets, settings, background sets or premium contracts.','Reinicia el progreso sin borrar misiones, categorías, presets, configuración, fondos ni contratos premium.'))}</p>
+      <div class="v3064-help">${esc(tx('This clears completions, XP, coins, achievements and progress history. Missions keep their archived and hidden state.','Esto borra completados, XP, monedas, logros e historial de progreso. Las misiones conservan su estado archivado y oculto.'))}</div>
+      <div class="v3064-reset-row"><input id="v3064ResetProgressConfirm" placeholder="${esc(tx('Type RESET to confirm','Escribe RESET para confirmar'))}"><button class="btn red" data-action="v3064-reset-progress-only">${esc(tx('Reset progress only','Restablecer sólo el progreso'))}</button></div>
     </div>`;
   }
   function injectSettings(force=false){
@@ -20774,18 +20762,13 @@ body.ml-theme-ui .v169-day-btn{
   }
   function resetProgressOnly(){
     const input=document.getElementById('v3064ResetProgressConfirm');
-    if((input?.value||'').trim()!=='RESET'){
-      toastSafe('Confirmation needed','Type RESET first.');
-      return;
-    }
+    if((input?.value||'').trim()!=='RESET'){toastSafe(tx('Confirmation needed','Confirmación necesaria'),tx('Type RESET first.','Escribe RESET primero.'));return}
     const count=(state.missions||[]).length;
     (state.missions||[]).forEach(m=>{m.completions=[]});
-    state.xp=0; state.coins=0; state.totalCoinsEarned=0; state.achievements=[]; state.history=[];
+    state.xp=0;state.coins=0;state.totalCoinsEarned=0;state.achievements=[];state.history=[];
     try{(state.goals||[]).forEach(g=>{if(Array.isArray(g.completions))g.completions=[];if(Array.isArray(g.history))g.history=[]})}catch(e){}
-    logSafe('reset_progress_only','Progress reset while keeping missions',{missions:count});
-    saveSafe();
-    toastSafe('Progress reset','Missions kept: '+count);
-    renderSafe();
+    logSafe('reset_progress_only',tx('Progress reset while keeping missions','Progreso restablecido conservando las misiones'),{missions:count});
+    saveSafe();toastSafe(tx('Progress reset','Progreso restablecido'),tx('Missions kept: ','Misiones conservadas: ')+count);renderSafe();
   }
 
   /* ---------- topbar fixed buttons ---------- */
@@ -20793,17 +20776,11 @@ body.ml-theme-ui .v169-day-btn{
     return document.querySelector('.topbar')||document.querySelector('header')||document.querySelector('nav');
   }
   function addTopButtons(){
-    const top=topbar();
-    if(!top)return;
-    let box=top.querySelector('.v3064-day-switcher');
-    if(!box){
-      box=document.createElement('div');
-      box.className='v3064-day-switcher';
-      box.innerHTML='<button class="btn ghost" data-v3064-open-day="yesterday">Yesterday</button><button class="btn ghost" data-v3064-open-day="tomorrow">Tomorrow</button>';
-      top.appendChild(box);
-    }
-    const mode=document.body?.dataset.v3064Virtual||'';
-    box.querySelectorAll('[data-v3064-open-day]').forEach(b=>b.classList.toggle('active',b.dataset.v3064OpenDay===mode));
+    const top=topbar();if(!top)return;let box=top.querySelector('.v3064-day-switcher');
+    if(!box){box=document.createElement('div');box.className='v3064-day-switcher';top.appendChild(box)}
+    box.dataset.mlvI18nOwned='source';
+    box.innerHTML='<button class="btn ghost" data-v3064-open-day="yesterday">'+esc(tx('Yesterday','Ayer'))+'</button><button class="btn ghost" data-v3064-open-day="tomorrow">'+esc(tx('Tomorrow','Mañana'))+'</button>';
+    const mode=document.body?.dataset.v3064Virtual||'';box.querySelectorAll('[data-v3064-open-day]').forEach(b=>b.classList.toggle('active',b.dataset.v3064OpenDay===mode));
   }
 
   /* ---------- virtual page without trapping user ---------- */
@@ -20842,50 +20819,17 @@ body.ml-theme-ui .v169-day-btn{
     }).sort((a,b)=>(isDone(a,key)?1:0)-(isDone(b,key)?1:0)||Number(!!b.fixed)-Number(!!a.fixed)||Number(b.xp||0)-Number(a.xp||0)||String(a.name).localeCompare(String(b.name)));
   }
   function strip(m){
-    const names=['S','M','T','W','T','F','S'];
-    const days=Array.isArray(m.days)?m.days:[];
+    const names=isEs()?['D','L','M','X','J','V','S']:['S','M','T','W','T','F','S'],days=Array.isArray(m.days)?m.days:[];
     return `<div class="quest-days">${names.map((n,i)=>`<span class="day-mini ${days.includes(i)?'on':''}">${n}</span>`).join('')}</div>`;
   }
   function item(m,key,mode){
-    const done=isDone(m,key); const c=catObj(m.category);
-    return `<div class="v3064-day-item">
-      <div>
-        <div class="v3064-day-title">${esc(m.name)}</div>
-        ${m.description||m.notes?`<div class="muted tiny" style="margin-top:4px">${esc(m.description||m.notes)}</div>`:''}
-        <div class="v3064-day-meta">
-          <span class="pill">${c.emoji} ${esc(c.name)}</span>
-          <span class="pill">${esc(diffLabel(m))}</span>
-          <span class="pill">+${Number(m.xp||0)} XP</span>
-          ${m.fixed?'<span class="pill">📌 Fixed</span>':''}
-          ${done?'<span class="pill good">Completed</span>':mode==='tomorrow'?'<span class="pill">Planned</span>':'<span class="pill hot">Pending</span>'}
-        </div>
-        ${strip(m)}
-      </div>
-      <div class="v3064-day-actions">
-        ${mode==='yesterday'
-          ? `${done?`<button class="btn ghost" data-action="v3064-undo-date" data-id="${m.id}" data-date="${key}">Undo yesterday</button>`:`<button class="btn green" data-action="v3064-complete-date" data-id="${m.id}" data-date="${key}">Done yesterday</button>`}<button class="btn" data-action="v3064-move-today" data-id="${m.id}">Move to today</button>`
-          : `<button class="btn" data-action="v3064-skip-tomorrow" data-id="${m.id}">Skip tomorrow</button><button class="btn ghost" data-action="v3064-move-today" data-id="${m.id}">Also do today</button>`}
-      </div>
-    </div>`;
+    const done=isDone(m,key),c=catObj(m.category),fixed=m.fixed?`<span class="pill">📌 ${esc(tx('Fixed','Fija'))}</span>`:'';
+    const status=done?`<span class="pill good">${esc(tx('Completed','Completada'))}</span>`:mode==='tomorrow'?`<span class="pill">${esc(tx('Planned','Planeada'))}</span>`:`<span class="pill hot">${esc(tx('Pending','Pendiente'))}</span>`;
+    return `<div class="v3064-day-item" data-mlv-i18n-owned="source"><div><div class="v3064-day-title">${esc(m.name)}</div>${m.description||m.notes?`<div class="muted tiny" style="margin-top:4px">${esc(m.description||m.notes)}</div>`:''}<div class="v3064-day-meta"><span class="pill">${c.emoji} ${esc(window.MichelsLifeI18n?.mapText?.(c.name)||c.name)}</span><span class="pill">${esc(diffLabel(m))}</span><span class="pill">+${Number(m.xp||0)} XP</span>${fixed}${status}</div>${strip(m)}</div><div class="v3064-day-actions">${mode==='yesterday'?`${done?`<button class="btn ghost" data-action="v3064-undo-date" data-id="${m.id}" data-date="${key}">${esc(tx('Undo yesterday','Deshacer ayer'))}</button>`:`<button class="btn green" data-action="v3064-complete-date" data-id="${m.id}" data-date="${key}">${esc(tx('Done yesterday','Hecha ayer'))}</button>`}<button class="btn" data-action="v3064-move-today" data-id="${m.id}">${esc(tx('Move to today','Mover a hoy'))}</button>`:`<button class="btn" data-action="v3064-skip-tomorrow" data-id="${m.id}">${esc(tx('Skip tomorrow','Omitir mañana'))}</button><button class="btn ghost" data-action="v3064-move-today" data-id="${m.id}">${esc(tx('Also do today','También hacer hoy'))}</button>`}</div></div>`;
   }
   function virtualHtml(mode){
-    const key=mode==='yesterday'?keyAdd(keyToday(),-1):keyAdd(keyToday(),1);
-    const list=missionsFor(key);
-    const done=list.filter(m=>isDone(m,key)).length;
-    return `<div class="card v3064-day-card">
-      <div class="section-title">
-        <div><h2>${mode==='yesterday'?'🕰️ Yesterday':'🔮 Tomorrow'}</h2><p>${key} · ${mode==='yesterday'?'Optional catch-up for tasks you actually did.':'Preview what is planned for the next day.'}</p></div>
-        <span class="pill">${done}/${list.length} completed</span>
-      </div>
-      <div class="v3064-day-toolbar">
-        <div>
-          <button class="btn ghost" data-v3064-back-today="1">Back to Today</button>
-          <button class="btn ghost" data-v3064-open-day="${mode==='yesterday'?'tomorrow':'yesterday'}">${mode==='yesterday'?'Tomorrow':'Yesterday'}</button>
-        </div>
-        ${mode==='yesterday'&&list.some(m=>!isDone(m,key))?`<button class="btn gold" data-action="v3064-complete-all-yesterday" data-date="${key}">Mark all visible done yesterday</button>`:''}
-      </div>
-      ${list.length?`<div class="v3064-day-list">${list.map(m=>item(m,key,mode)).join('')}</div>`:'<div class="v3064-empty">No missions planned for this day.</div>'}
-    </div>`;
+    const key=mode==='yesterday'?keyAdd(keyToday(),-1):keyAdd(keyToday(),1),list=missionsFor(key),done=list.filter(m=>isDone(m,key)).length,isYesterday=mode==='yesterday';
+    return `<div class="card v3064-day-card" data-mlv-i18n-owned="source"><div class="section-title"><div><h2>${isYesterday?'🕰️ '+esc(tx('Yesterday','Ayer')):'🔮 '+esc(tx('Tomorrow','Mañana'))}</h2><p>${key} · ${esc(isYesterday?tx('Optional catch-up for tasks you actually did.','Recuperación opcional para tareas que realmente hiciste.'):tx('Preview what is planned for the next day.','Vista previa de lo planeado para el día siguiente.'))}</p></div><span class="pill">${done}/${list.length} ${esc(tx('completed','completadas'))}</span></div><div class="v3064-day-toolbar"><div><button class="btn ghost" data-v3064-back-today="1">${esc(tx('Back to Today','Volver a hoy'))}</button><button class="btn ghost" data-v3064-open-day="${isYesterday?'tomorrow':'yesterday'}">${esc(isYesterday?tx('Tomorrow','Mañana'):tx('Yesterday','Ayer'))}</button></div>${isYesterday&&list.some(m=>!isDone(m,key))?`<button class="btn gold" data-action="v3064-complete-all-yesterday" data-date="${key}">${esc(tx('Mark all visible done yesterday','Marcar todas las visibles como hechas ayer'))}</button>`:''}</div>${list.length?`<div class="v3064-day-list">${list.map(m=>item(m,key,mode)).join('')}</div>`:`<div class="v3064-empty">${esc(tx('No missions planned for this day.','No hay misiones planeadas para este día.'))}</div>`}</div>`;
   }
   function openVirtual(mode){
     const host=pageHost();
@@ -20908,13 +20852,13 @@ body.ml-theme-ui .v169-day-btn{
   }
   function completeDate(id,key){
     const m=(state.missions||[]).find(x=>String(x.id)===String(id)); if(!m)return;
-    if(isDone(m,key)){toastSafe('Already completed',m.name+' was already done on '+key);return}
+    if(isDone(m,key)){toastSafe(tx('Already completed','Ya completada'),m.name+' '+tx('was already done on','ya estaba hecha el')+' '+key);return}
     m.completions=m.completions||[];
     m.completions.push({id:uidSafe('c'),date:key,at:nowSafe(),xp:m.xp,coins:0,category:m.category,name:m.name});
     state.xp=Number(state.xp||0)+Number(m.xp||0);
     logSafe('complete','Mission completed for '+key+': '+m.name,{missionId:m.id,category:m.category,xp:m.xp,date:key});
     try{checkAchievements()}catch(e){}
-    saveSafe(); toastSafe('Marked done',m.name+' · '+key); openVirtual('yesterday');
+    saveSafe(); toastSafe(tx('Marked done','Marcada como hecha'),m.name+' · '+key); openVirtual('yesterday');
   }
   function undoDate(id,key){
     const m=(state.missions||[]).find(x=>String(x.id)===String(id)); if(!m)return;
@@ -20923,7 +20867,7 @@ body.ml-theme-ui .v169-day-btn{
     const c=m.completions.splice(idx,1)[0];
     state.xp=Math.max(0,Number(state.xp||0)-Number(c.xp||0));
     state.coins=Math.max(0,Number(state.coins||0)-Number(c.coins||0));
-    saveSafe(); toastSafe('Unchecked',m.name+' · '+key); openVirtual('yesterday');
+    saveSafe(); toastSafe(tx('Unchecked','Desmarcada'),m.name+' · '+key); openVirtual('yesterday');
   }
   function moveToday(id){
     const m=(state.missions||[]).find(x=>String(x.id)===String(id)); if(!m)return;
@@ -20931,14 +20875,14 @@ body.ml-theme-ui .v169-day-btn{
     m.v140TodayOnlyDates=m.v140TodayOnlyDates||[];
     if(!m.v140TodayOnlyDates.includes(k))m.v140TodayOnlyDates.push(k);
     m.v131SkipDates=(m.v131SkipDates||[]).filter(x=>x!==k);
-    saveSafe(); toastSafe('Moved to today',m.name);
+    saveSafe(); toastSafe(tx('Moved to today','Movida a hoy'),m.name);
   }
   function skipTomorrow(id){
     const m=(state.missions||[]).find(x=>String(x.id)===String(id)); if(!m)return;
     const k=keyAdd(keyToday(),1);
     m.v131SkipDates=m.v131SkipDates||[];
     if(!m.v131SkipDates.includes(k))m.v131SkipDates.push(k);
-    saveSafe(); toastSafe('Skipped tomorrow',m.name); openVirtual('tomorrow');
+    saveSafe(); toastSafe(tx('Skipped tomorrow','Omitida mañana'),m.name); openVirtual('tomorrow');
   }
 
   /* ---------- stats flash fix (without replacing while user interacts) ---------- */
@@ -21002,7 +20946,7 @@ body.ml-theme-ui .v169-day-btn{
           m.completions.push({id:uidSafe('c'),date:key,at:nowSafe(),xp:m.xp,coins:0,category:m.category,name:m.name});
           state.xp=Number(state.xp||0)+Number(m.xp||0);
         });
-        saveSafe(); toastSafe('Yesterday updated','Visible missions marked done.'); openVirtual('yesterday'); return;
+        saveSafe(); toastSafe(tx('Yesterday updated','Ayer actualizado'),tx('Visible missions marked done.','Misiones visibles marcadas como hechas.')); openVirtual('yesterday'); return;
       }
     }
     setTimeout(()=>{forceDayText();fixStatsColors();},120);
@@ -25612,7 +25556,7 @@ html.v30111-rendering #tabs *{transition:none!important;animation:none!important
   function settingsCardHtml(){
     const counts={morning:0,afternoon:0,night:0};
     (state.missions||[]).filter(function(m){return m&&!m.archived&&!m.hidden;}).forEach(function(m){counts[stageOf(m)]++;});
-    return '<section class="card v30114-settings-card"><div class="section-title"><div><h2>Mission time of day</h2><p>Dashboard missions are grouped into Morning, Afternoon and Night using the same clock logic as the background.</p></div><span class="pill hot">v'+VERSION+'</span></div><div class="v30114-settings-row"><span class="pill">☀️ Morning '+counts.morning+'</span><span class="pill">🌤️ Afternoon '+counts.afternoon+'</span><span class="pill">🌙 Night '+counts.night+'</span><button type="button" class="btn primary" data-v30114-action="reassign">Reassign automatic stages</button></div><div class="v30114-settings-note">Existing active missions were assigned by their title, description, category and linked project. A stage changed manually from a mission card is preserved.</div></section>';
+    return '<section class="card v30114-settings-card" data-mlv-i18n-owned="source"><div class="section-title"><div><h2>'+esc(tx('Mission time of day','Hora del día de las misiones'))+'</h2><p>'+esc(tx('Dashboard missions are grouped into Morning, Afternoon and Night using the same clock logic as the background.','Las misiones del Inicio se agrupan en Mañana, Tarde y Noche usando la misma lógica horaria que el fondo.'))+'</p></div><span class="pill hot">v'+VERSION+'</span></div><div class="v30114-settings-row"><span class="pill">☀️ '+esc(stageLabel('morning'))+' '+counts.morning+'</span><span class="pill">🌤️ '+esc(stageLabel('afternoon'))+' '+counts.afternoon+'</span><span class="pill">🌙 '+esc(stageLabel('night'))+' '+counts.night+'</span><button type="button" class="btn primary" data-v30114-action="reassign">'+esc(tx('Reassign automatic stages','Reasignar etapas automáticas'))+'</button></div><div class="v30114-settings-note">'+esc(tx('Existing active missions were assigned by their title, description, category and linked project. A stage changed manually from a mission card is preserved.','Las misiones activas existentes se asignaron según su título, descripción, categoría y proyecto vinculado. Una etapa cambiada manualmente desde una tarjeta de misión se conserva.'))+'</div></section>';
   }
 
   /* Wrap final renderers once, so controls and grouping exist in the initial HTML rather than appearing later. */
@@ -26104,26 +26048,29 @@ html.v30111-rendering #tabs *{transition:none!important;animation:none!important
     if(oldAnalyze){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();const key=oldAnalyze.dataset.contract||'';const added=strictAdd(key);toastSafe(added?'Strong links added':'Links already clean',added?added+' conservative link'+(added===1?' was':'s were')+' added.':'No new strong matches were found.');return;}
     const btn=e.target&&e.target.closest&&e.target.closest('[data-v30116-action]');if(!btn)return;const a=btn.dataset.v30116Action;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
     if(a==='save-xp-scale'){
-      const card=btn.closest('.v30116-xp-settings'),next={};['easy','medium','hard','boss'].forEach(k=>{const n=Math.round(Number(card.querySelector('[data-v30116-xp="'+k+'"]')?.value));next[k]=Number.isFinite(n)&&n>0?n:DEFAULT_SCALE[k]});S().v30116XpScale=next;applyScaleToDIFF();const count=normalizeAll(false);queueSave();toastSafe('XP scale updated',count+' mission/template value'+(count===1?'':'s')+' synchronized. Historical XP was not changed.');return;
+      const card=btn.closest('.v30116-xp-settings'),next={};['easy','medium','hard','boss'].forEach(k=>{const n=Math.round(Number(card.querySelector('[data-v30116-xp="'+k+'"]')?.value));next[k]=Number.isFinite(n)&&n>0?n:DEFAULT_SCALE[k]});S().v30116XpScale=next;applyScaleToDIFF();const count=normalizeAll(false);queueSave();toastSafe(tx('XP scale updated','Escala de XP actualizada'),count+' '+tx(count===1?'mission/template value synchronized.':'mission/template values synchronized.',count===1?'valor de misión/plantilla sincronizado.':'valores de misión/plantilla sincronizados.')+' '+tx('Historical XP was not changed.','El XP histórico no cambió.'));return;
     }
-    if(a==='clean-links'){const r=cleanWeakLinks(true);strictAdd('');queueSave();toastSafe('Contract links cleaned',r.removed+' weak or stale link'+(r.removed===1?'':'s')+' removed.');return;}
+    if(a==='clean-links'){const r=cleanWeakLinks(true);strictAdd('');queueSave();toastSafe(tx('Contract links cleaned','Vínculos de contratos limpiados'),r.removed+' '+tx(r.removed===1?'weak or stale link removed.':'weak or stale links removed.',r.removed===1?'vínculo débil u obsoleto eliminado.':'vínculos débiles u obsoletos eliminados.'));return;}
     if(a==='export-unified'){exportUnified();return;}
   },true);
 
-  function xpSettingsCard(){const sc=scale();return '<section class="card v30116-xp-settings"><div class="section-title"><div><h2>Mission XP balance</h2><p>Mission XP is controlled only by difficulty. Individual mission XP fields are disabled.</p></div><span class="pill hot">v'+VERSION+'</span></div><div class="v30116-xp-grid">'+['easy','medium','hard','boss'].map(k=>'<label>'+DIFF_LABEL[k]+'<input type="number" min="1" step="1" data-v30116-xp="'+k+'" value="'+sc[k]+'"></label>').join('')+'</div><div class="actions"><button type="button" class="btn primary" data-v30116-action="save-xp-scale">Save XP scale</button><button type="button" class="btn ghost" data-v30116-action="clean-links">Clean weak contract links</button></div><div class="v30116-note">Default balance: Easy 25 · Medium 50 · Hard 75 · Boss 100. Updating the scale changes future mission rewards and current mission values, but never rewrites XP already earned in completion history.</div></section>';}
+  function xpSettingsCard(){
+    const sc=scale();
+    return '<section class="card v30116-xp-settings" data-mlv-i18n-owned="source"><div class="section-title"><div><h2>'+esc(tx('Mission XP balance','Balance de XP de misiones'))+'</h2><p>'+esc(tx('Mission XP is controlled only by difficulty. Individual mission XP fields are disabled.','El XP de las misiones se controla únicamente por dificultad. Los campos individuales de XP están desactivados.'))+'</p></div><span class="pill hot">v'+VERSION+'</span></div><div class="v30116-xp-grid">'+['easy','medium','hard','boss'].map(k=>'<label>'+esc(diffLabel(k))+'<input type="number" min="1" step="1" data-v30116-xp="'+k+'" value="'+sc[k]+'"></label>').join('')+'</div><div class="actions"><button type="button" class="btn primary" data-v30116-action="save-xp-scale">'+esc(tx('Save XP scale','Guardar escala de XP'))+'</button><button type="button" class="btn ghost" data-v30116-action="clean-links">'+esc(tx('Clean weak contract links','Limpiar vínculos débiles de contratos'))+'</button></div><div class="v30116-note">'+esc(tx('Default balance: Easy 25 · Medium 50 · Hard 75 · Boss 100. Updating the scale changes future mission rewards and current mission values, but never rewrites XP already earned in completion history.','Balance predeterminado: Fácil 25 · Media 50 · Difícil 75 · Jefe 100. Actualizar la escala cambia las recompensas futuras y los valores actuales de las misiones, pero nunca reescribe el XP ya ganado en el historial de completado.'))+'</div></section>';
+  }
   function stripOldExports(html){const t=document.createElement('template');t.innerHTML=String(html||'');t.content.querySelectorAll('[data-action="export-json"],[data-action="export-backup"],[data-action="export-analysis"],[data-action="export-history"],[data-action="export-character"]').forEach(x=>x.remove());const saveBtn=t.content.querySelector('[data-action="save-settings"]');if(saveBtn)saveBtn.insertAdjacentHTML('afterend','<button type="button" class="btn gold" data-v30116-action="export-unified">Export Michel\'s Life</button>');return t.innerHTML;}
   const baseSettings=window.renderSettings;
   if(typeof baseSettings==='function'){
     window.renderSettings=function(){ensureMigration();return stripOldExports(baseSettings.apply(this,arguments))+xpSettingsCard();};
     try{renderSettings=window.renderSettings}catch(e){}
   }
-  window.renderExport=function(){ensureMigration();return '<div class="card v30116-export-card"><div class="section-title"><div><h2>Export Michel\'s Life</h2><p>One JSON now contains the full restorable backup and the AI analysis together.</p></div><span class="pill hot">Unified</span></div><div class="actions"><button type="button" class="btn primary" data-v30116-action="export-unified">Export Michel\'s Life JSON</button><button type="button" class="btn ghost" data-action="import-backup">Import JSON</button></div><div class="v30116-note" style="margin-top:12px">This is the only export format. The same file can be shared for analysis or imported later as a full backup.</div></div>';};
+  window.renderExport=function(){return '<div class="card v30116-export-card" data-mlv-i18n-owned="source"><div class="section-title"><div><h2>'+esc(tx("Export Michel's Life","Exportar Michel's Life"))+'</h2><p>'+esc(tx('One JSON now contains the full restorable backup and the AI analysis together.','Un solo JSON contiene ahora la copia restaurable completa y el análisis de IA.'))+'</p></div><span class="pill hot">'+esc(tx('Unified','Unificado'))+'</span></div><div class="actions"><button type="button" class="btn primary" data-v30116-action="export-unified">'+esc(tx("Export Michel's Life JSON","Exportar JSON de Michel's Life"))+'</button><button type="button" class="btn ghost" data-action="import-backup">'+esc(tx('Import JSON','Importar JSON'))+'</button></div><div class="v30116-note" style="margin-top:12px">'+esc(tx('This is the only export format. The same file can be shared for analysis or imported later as a full backup.','Este es el único formato de exportación. El mismo archivo puede compartirse para análisis o importarse después como una copia completa.'))+'</div></div>';};
   try{renderExport=window.renderExport}catch(e){}
 
   function clone(v){try{return structuredClone(v)}catch(e){return JSON.parse(JSON.stringify(v))}}
   function stamp(){const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'_'+p(d.getHours())+'-'+p(d.getMinutes())}
   function download(name,text){const blob=new Blob([text],{type:'application/json;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
-  function exportUnified(){ensureMigration();normalizeAll(false);saveNow();let analysis=null;try{if(typeof buildAnalysis==='function')analysis=buildAnalysis('analysis')}catch(e){console.error('v3.0.116 analysis export',e)}const localStorageData={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k!==null)localStorageData[k]=localStorage.getItem(k)}}catch(e){}const payload={app:'Michel’s Life',type:'unified-export',version:VERSION,exportedAt:new Date().toISOString(),xpScale:clone(scale()),state:clone(state),analysis:analysis?clone(analysis):null,localStorage:localStorageData};download('michels_life_export_'+stamp()+'.json',JSON.stringify(payload,null,2));toastSafe('Export complete','Full backup + AI analysis saved in one JSON file.');}
+  function exportUnified(){ensureMigration();normalizeAll(false);saveNow();let analysis=null;try{if(typeof buildAnalysis==='function')analysis=buildAnalysis('analysis')}catch(e){console.error('v3.0.116 analysis export',e)}const localStorageData={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k!==null)localStorageData[k]=localStorage.getItem(k)}}catch(e){}const payload={app:'Michel’s Life',type:'unified-export',version:VERSION,exportedAt:new Date().toISOString(),xpScale:clone(scale()),state:clone(state),analysis:analysis?clone(analysis):null,localStorage:localStorageData};download('michels_life_export_'+stamp()+'.json',JSON.stringify(payload,null,2));toastSafe(tx('Export complete','Exportación completa'),tx('Full backup + AI analysis saved in one JSON file.','Copia completa + análisis de IA guardados en un solo archivo JSON.'));}
 
   ensureMigration();normalizeAll(true);
   window.v30116={xpFor,scale,normalizeAll,cleanWeakLinks,strictAdd,exportUnified};
