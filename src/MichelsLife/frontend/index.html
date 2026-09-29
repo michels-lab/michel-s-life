@@ -29915,17 +29915,95 @@ function validDateKey(v){return /^\d{4}-\d{2}-\d{2}$/.test(String(v||''))}
 function missionDate(m){for(const k of ['scheduledDate','date','due','deadline']){const v=String(m?.[k]||'').slice(0,10);if(validDateKey(v))return v}return ''}
 function localMissions(){const out=[];for(const m of (state.missions||[])){if(!m||m.archived||m.hidden)continue;const date=missionDate(m);if(!date)continue;out.push({missionId:String(m.id||''),title:String(m.name||m.title||'Mission'),date,notes:String(m.description||m.notes||'')})}return out}
 function syncRange(){const a=new Date(),b=new Date();a.setHours(0,0,0,0);a.setDate(a.getDate()-45);b.setHours(23,59,59,999);b.setDate(b.getDate()+220);return {timeMin:a.toISOString(),timeMax:b.toISOString()}}
-async function syncNow(opts={}){if(runtime.busy)return runtime.lastResult;if(!runtime.connected){if(!opts.silent)toastSafe('Google Calendar','Connect Google first.');return null}runtime.busy=true;runtime.error='';mountGoogleSettings();decorateCalendar();try{const s=settings(),range=syncRange();const res=await bridge('sync',{...range,pushLocalMissions:!!s.pushMissions,localMissions:s.pushMissions?localMissions():[]});s.events=Array.isArray(res?.events)?res.events:[];s.lastSync=res?.syncedAt||new Date().toISOString();s.lastSyncStats={googleEventCount:Number(res?.googleEventCount||0),managedEventCount:Number(res?.managedEventCount||0),pushedMissionCount:Number(res?.pushedMissionCount||0),createdMissionEvents:Number(res?.createdMissionEvents||0),updatedMissionEvents:Number(res?.updatedMissionEvents||0)};runtime.lastResult=res;saveSafe();if(!opts.silent)toastSafe('Google Calendar synced',`${s.lastSyncStats.googleEventCount} Google events · ${s.lastSyncStats.pushedMissionCount} dated missions checked.`);decorateCalendar();return res}catch(err){runtime.error=String(err?.message||err);if(!opts.silent)toastSafe('Google Calendar',runtime.error);mountGoogleSettings();return null}finally{runtime.busy=false;mountGoogleSettings();decorateCalendar()}}
+async function syncNow(opts={}){
+  if(runtime.busy)return runtime.lastResult;
+  if(!runtime.connected){if(!opts.silent)toastSafe('Google Calendar','Connect Google first.');return null}
+  runtime.busy=true;runtime.error='';mountGoogleSettings();decorateCalendar();
+  try{
+    const s=settings(),range=syncRange();
+    const res=await bridge('sync',{...range,pushLocalMissions:!!s.pushMissions,localMissions:s.pushMissions?localMissions():[]});
+    s.events=Array.isArray(res?.events)?res.events:[];
+    s.lastSync=res?.syncedAt||new Date().toISOString();
+    s.lastSyncStats={
+      googleEventCount:Number(res?.googleEventCount||0),
+      managedEventCount:Number(res?.managedEventCount||0),
+      pushedMissionCount:Number(res?.pushedMissionCount||0),
+      createdMissionEvents:Number(res?.createdMissionEvents||0),
+      updatedMissionEvents:Number(res?.updatedMissionEvents||0)
+    };
+    runtime.lastResult=res;saveSafe();
+    if(!opts.silent){
+      const a=s.lastSyncStats.googleEventCount,b=s.lastSyncStats.pushedMissionCount;
+      const msg=gLocale()==='es-MX'
+        ?a+' '+(a===1?'evento de Google':'eventos de Google')+' · '+b+' '+(b===1?'misión con fecha revisada':'misiones con fecha revisadas')
+        :a+' Google event'+(a===1?'':'s')+' · '+b+' dated mission'+(b===1?'':'s')+' checked';
+      toastSafe('Google Calendar synced',msg+'.');
+    }
+    decorateCalendar();return res;
+  }catch(err){
+    runtime.error=String(err?.message||err);
+    if(!opts.silent)toastSafe('Google Calendar',runtime.error);
+    mountGoogleSettings();return null;
+  }finally{runtime.busy=false;mountGoogleSettings();decorateCalendar()}
+}){if(runtime.busy)return runtime.lastResult;if(!runtime.connected){if(!opts.silent)toastSafe('Google Calendar','Connect Google first.');return null}runtime.busy=true;runtime.error='';mountGoogleSettings();decorateCalendar();try{const s=settings(),range=syncRange();const res=await bridge('sync',{...range,pushLocalMissions:!!s.pushMissions,localMissions:s.pushMissions?localMissions():[]});s.events=Array.isArray(res?.events)?res.events:[];s.lastSync=res?.syncedAt||new Date().toISOString();s.lastSyncStats={googleEventCount:Number(res?.googleEventCount||0),managedEventCount:Number(res?.managedEventCount||0),pushedMissionCount:Number(res?.pushedMissionCount||0),createdMissionEvents:Number(res?.createdMissionEvents||0),updatedMissionEvents:Number(res?.updatedMissionEvents||0)};runtime.lastResult=res;saveSafe();if(!opts.silent)toastSafe('Google Calendar synced',`${s.lastSyncStats.googleEventCount} Google events · ${s.lastSyncStats.pushedMissionCount} dated missions checked.`);decorateCalendar();return res}catch(err){runtime.error=String(err?.message||err);if(!opts.silent)toastSafe('Google Calendar',runtime.error);mountGoogleSettings();return null}finally{runtime.busy=false;mountGoogleSettings();decorateCalendar()}}
 async function refreshStatus(opts={}){try{const x=await bridge('status');applyStatus(x);if(runtime.connected&&runtime.cloudReady&&opts.cloud!==false)await syncCloud('auto',{silent:true,initial:true});runtime.cloudInitialDone=true;installStorageWatch();scheduleCloudPoll();if(runtime.connected&&settings().autoSync&&opts.sync!==false)syncNow({silent:true});if(sessionStorage.getItem('mlv191CloudRestored')){sessionStorage.removeItem('mlv191CloudRestored');toastSafe('Michel’s Life Cloud','Your cloud data is loaded on this PC.')}}catch(err){runtime.bridgeAvailable=false;runtime.error=String(err?.message||err);runtime.cloudInitialDone=true;installStorageWatch();mountGoogleSettings()}}
 function dateKeyFromEvent(ev){const raw=String(ev?.start||'');if(ev?.allDay&&validDateKey(raw.slice(0,10)))return raw.slice(0,10);const d=new Date(raw);if(Number.isNaN(d.getTime()))return raw.slice(0,10);const p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`}
-function timeLabel(ev){if(ev?.allDay)return 'All day';const d=new Date(ev?.start||'');if(Number.isNaN(d.getTime()))return '';return d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}
+function timeLabel(ev){
+  if(ev?.allDay)return gText('All day');
+  const d=new Date(ev?.start||'');
+  if(Number.isNaN(d.getTime()))return '';
+  return d.toLocaleTimeString(gLocale(),{hour:'numeric',minute:'2-digit'});
+}
 function eventsForDate(k){if(!settings().showEvents)return[];return (settings().events||[]).filter(e=>dateKeyFromEvent(e)===k)}
-function eventLink(ev,compact=false){const title=esc(ev.title||'Untitled event'),href=esc(ev.htmlLink||'https://calendar.google.com/');return `<a class="mlv190-google-chip" href="${href}" target="_blank" rel="noreferrer" title="${title}"><span class="g">G</span><span class="txt">${compact?'':esc(timeLabel(ev))+(timeLabel(ev)?' · ':'')}${title}</span></a>`}
+function eventLink(ev,compact=false){
+  const title=esc(ev.title||gText('Untitled event')),href=esc(ev.htmlLink||'https://calendar.google.com/'),time=timeLabel(ev);
+  return `<a class="mlv190-google-chip" href="${href}" target="_blank" rel="noreferrer" title="${title}" data-mlv-i18n-owned="source"><span class="g">G</span><span class="txt">${compact?'':esc(time)+(time?' · ':'')}${title}</span></a>`;
+}
 function monthKeyFromState(){const s=state.settings||{},v=String(s.v30135CalendarMonth||s.v30134CalendarMonth||'');if(/^\d{4}-\d{2}$/.test(v))return v;const d=new Date(),p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}`}
-function decorateMonthCells(){document.querySelectorAll('.v30135-day[data-date],.v30134-day[data-date]').forEach(day=>{day.querySelector(':scope > .mlv190-google-cell')?.remove();const k=day.dataset.date,events=eventsForDate(k);if(!events.length)return;const box=document.createElement('div');box.className='mlv190-google-cell';box.innerHTML=events.slice(0,2).map(e=>eventLink(e,true)).join('')+(events.length>2?`<span class="mlv190-google-more">+${events.length-2} more Google event${events.length-2===1?'':'s'}</span>`:'');day.appendChild(box)})}
-function decorateWeek(){document.querySelectorAll('.v30137-week-day').forEach(day=>{day.querySelector(':scope > .mlv190-week-google')?.remove();const stage=day.querySelector('[data-v30137-week-date]'),k=stage?.dataset?.v30137WeekDate;if(!k)return;const events=eventsForDate(k);if(!events.length)return;const box=document.createElement('div');box.className='mlv190-week-google';box.innerHTML=events.slice(0,3).map(e=>eventLink(e,false)).join('')+(events.length>3?`<span class="mlv190-google-more">+${events.length-3} more</span>`:'');const head=day.querySelector('.v30137-week-day-head');if(head)head.insertAdjacentElement('afterend',box);else day.prepend(box)})}
-function decorateGoogleAgenda(){const root=document.querySelector('.v30135-calendar');if(!root)return;root.querySelector(':scope > .mlv190-google-agenda')?.remove();if(!settings().showEvents)return;const mk=monthKeyFromState(),events=(settings().events||[]).filter(e=>dateKeyFromEvent(e).startsWith(mk)).sort((a,b)=>String(a.start).localeCompare(String(b.start)));if(!events.length)return;const card=document.createElement('section');card.className='card mlv190-google-agenda';card.innerHTML=`<div class="section-title"><div><h2>Google Calendar</h2><p>${events.length} external event${events.length===1?'':'s'} in this month · separate from Michel’s Life missions.</p></div><span class="pill">G</span></div><div class="mlv190-google-agenda-list">${events.slice(0,12).map(e=>`<a class="mlv190-google-event-row" href="${esc(e.htmlLink||'https://calendar.google.com/')}" target="_blank" rel="noreferrer"><span class="mlv190-google-event-time">${esc(dateKeyFromEvent(e).slice(5))}${timeLabel(e)?' · '+esc(timeLabel(e)):''}</span><span class="mlv190-google-event-title">${esc(e.title||'Untitled event')}</span><span class="mlv190-google-event-open">Open ↗</span></a>`).join('')}${events.length>12?`<div class="tiny muted">+${events.length-12} more events in Google Calendar</div>`:''}</div>`;root.appendChild(card)}
-function decorateSyncButton(){const calendar=document.querySelector('.v30135-calendar,.v30137-week');if(!calendar)return;calendar.querySelectorAll('[data-mlv190-calendar-sync]').forEach(x=>x.remove());if(!runtime.connected)return;const host=calendar.querySelector('.v30135-view,.v30137-week-views,.v30135-nav,.v30137-week-nav');if(!host)return;const b=document.createElement('button');b.type='button';b.className='btn ghost mlv190-google-calendar-sync';b.dataset.mlv190CalendarSync='1';b.textContent=runtime.busy?'G Syncing…':'G Sync';b.disabled=runtime.busy;host.appendChild(b)}
+function decorateMonthCells(){
+  document.querySelectorAll('.v30135-day[data-date],.v30134-day[data-date]').forEach(day=>{
+    day.querySelector(':scope > .mlv190-google-cell')?.remove();
+    const k=day.dataset.date,events=eventsForDate(k);if(!events.length)return;
+    const box=document.createElement('div');box.className='mlv190-google-cell';box.dataset.mlvI18nOwned='source';
+    const more=events.length-2;
+    const moreText=gLocale()==='es-MX'?('+'+more+' '+(more===1?'evento más de Google':'eventos más de Google')):('+'+more+' more Google event'+(more===1?'':'s'));
+    box.innerHTML=events.slice(0,2).map(e=>eventLink(e,true)).join('')+(events.length>2?`<span class="mlv190-google-more">${esc(moreText)}</span>`:'');
+    day.appendChild(box);
+  });
+}
+function decorateWeek(){
+  document.querySelectorAll('.v30137-week-day').forEach(day=>{
+    day.querySelector(':scope > .mlv190-week-google')?.remove();
+    const stage=day.querySelector('[data-v30137-week-date]'),k=stage?.dataset?.v30137WeekDate;if(!k)return;
+    const events=eventsForDate(k);if(!events.length)return;
+    const box=document.createElement('div');box.className='mlv190-week-google';box.dataset.mlvI18nOwned='source';
+    const more=events.length-3;
+    const moreText=gLocale()==='es-MX'?('+'+more+' más'):('+'+more+' more');
+    box.innerHTML=events.slice(0,3).map(e=>eventLink(e,false)).join('')+(events.length>3?`<span class="mlv190-google-more">${esc(moreText)}</span>`:'');
+    const head=day.querySelector('.v30137-week-day-head');if(head)head.insertAdjacentElement('afterend',box);else day.prepend(box);
+  });
+}
+function decorateGoogleAgenda(){
+  const root=document.querySelector('.v30135-calendar');if(!root)return;
+  root.querySelector(':scope > .mlv190-google-agenda')?.remove();
+  if(!settings().showEvents)return;
+  const mk=monthKeyFromState(),events=(settings().events||[]).filter(e=>dateKeyFromEvent(e).startsWith(mk)).sort((a,b)=>String(a.start).localeCompare(String(b.start)));
+  if(!events.length)return;
+  const card=document.createElement('section');card.className='card mlv190-google-agenda';card.dataset.mlvI18nOwned='source';
+  const intro=gLocale()==='es-MX'
+    ?events.length+' '+(events.length===1?'evento externo':'eventos externos')+' este mes · '+(events.length===1?'separado':'separados')+' de las misiones de Michel’s Life.'
+    :events.length+' external event'+(events.length===1?'':'s')+' in this month · separate from Michel’s Life missions.';
+  card.innerHTML=`<div class="section-title"><div><h2>Google Calendar</h2><p>${esc(intro)}</p></div><span class="pill">G</span></div><div class="mlv190-google-agenda-list">${events.slice(0,12).map(e=>`<a class="mlv190-google-event-row" href="${esc(e.htmlLink||'https://calendar.google.com/')}" target="_blank" rel="noreferrer"><span class="mlv190-google-event-time">${esc(dateKeyFromEvent(e).slice(5))}${timeLabel(e)?' · '+esc(timeLabel(e)):''}</span><span class="mlv190-google-event-title">${esc(e.title||gText('Untitled event'))}</span><span class="mlv190-google-event-open">${gText('Open ↗')}</span></a>`).join('')}${events.length>12?`<div class="tiny muted">+${events.length-12} ${gText('more events in Google Calendar')}</div>`:''}</div>`;
+  root.appendChild(card);
+}
+function decorateSyncButton(){
+  const calendar=document.querySelector('.v30135-calendar,.v30137-week');if(!calendar)return;
+  calendar.querySelectorAll('[data-mlv190-calendar-sync]').forEach(x=>x.remove());
+  if(!runtime.connected)return;
+  const host=calendar.querySelector('.v30135-view,.v30137-week-views,.v30135-nav,.v30137-week-nav');if(!host)return;
+  const b=document.createElement('button');b.type='button';b.className='btn ghost mlv190-google-calendar-sync';b.dataset.mlv190CalendarSync='1';b.dataset.mlvI18nOwned='source';
+  b.textContent='G '+gText(runtime.busy?'Syncing…':'Sync');b.disabled=runtime.busy;host.appendChild(b);
+}
 function decorateCalendar(){clearTimeout(decorateTimer);decorateTimer=setTimeout(()=>{if(String(state?.activeTab||'')!=='calendar')return;decorateMonthCells();decorateWeek();decorateGoogleAgenda();decorateSyncButton()},20)}
 function scheduleAutoSync(){clearInterval(autoTimer);autoTimer=null;if(runtime.connected&&settings().autoSync){autoTimer=setInterval(()=>syncNow({silent:true}),15*60*1000)}}
 document.addEventListener('click',async e=>{const b=e.target.closest?.('[data-mlv190-google]');if(b){e.preventDefault();e.stopPropagation();let a=b.dataset.mlv190Google,confirmed=false;try{
