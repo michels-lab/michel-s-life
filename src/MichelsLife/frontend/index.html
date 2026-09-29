@@ -9604,7 +9604,7 @@ input[name="coins"],
     if(!m) return;
     const key=todayKey();
     if(isMissionDone(m,key)){
-      if(typeof toast==='function') toast('Already completed','It was not counted twice.');
+      if(typeof toast==='function') toast(tx('Already completed','Ya completada'),tx('It was not counted twice.','No se contó dos veces.'));
       return;
     }
     const comp={id:(typeof uid==='function'?uid('c'):'c_'+Date.now()),date:key,at:(typeof nowISO==='function'?nowISO():new Date().toISOString()),xp:m.xp,coins:0,category:m.category,name:m.name,linkedGoalId:m.linkedGoalId||''};
@@ -13112,7 +13112,7 @@ label:has(input[name="coins"]),
           if(pills){
             const sp=document.createElement('span');
             sp.className='v169-weekly-marker';
-            sp.textContent='Due today';
+            sp.textContent=tr('Due today');
             pills.appendChild(sp);
           }
         }
@@ -13200,7 +13200,7 @@ label:has(input[name="coins"]),
       });
 
       safeSave();
-      try{ if(typeof toast==='function') toast('Weekly mission added',name); }catch(e){}
+      try{ if(typeof toast==='function') toast(tr('Weekly mission added'),name); }catch(e){}
       safeRender();
     }
 
@@ -14175,7 +14175,7 @@ body.v255-render-lock #tab-missions{
 
       const count=weekCount(m);
       const target=weeklyTarget(m);
-      const text=target>0?`🔥 Week ${count}/${target}`:`🔥 Week ${count}`;
+      const text=target>0?`🔥 ${tx('Week','Semana')} ${count}/${target}`:`🔥 ${tx('Week','Semana')} ${count}`;
 
       let chip=card.querySelector('.v264-week-chip');
       if(!chip){
@@ -14186,7 +14186,7 @@ body.v255-render-lock #tab-missions{
         else (card.querySelector('h3')?.parentElement||card).appendChild(chip);
       }
       chip.textContent=text;
-      chip.title='Times this mission has been completed this week.';
+      chip.title=tx('Times this mission has been completed this week.','Veces que esta misión se ha completado esta semana.');
     });
   }
 
@@ -14238,6 +14238,7 @@ body.v255-render-lock #tab-missions{
 
 <script id="v269-fixed-sort-source-script">
 (function(){
+  function tx(en,es){return window.mlvText?window.mlvText(en,es):(window.MichelsLifeI18n?.language==='es'?es:en)}
   function settings(){
     state.settings = state.settings || {};
     return state.settings;
@@ -14318,7 +14319,7 @@ body.v255-render-lock #tab-missions{
       if(fixed && !card.querySelector('.v269-fixed-pill')){
         const pill = document.createElement('span');
         pill.className = 'v131-pill v269-fixed-pill';
-        pill.textContent = '📌 Fixed';
+        pill.textContent = '📌 '+tx('Fixed','Fija');
         const pills = card.querySelector('.v131-pills,.pills,.chips,.quest-state');
         if(pills) pills.appendChild(pill);
       }
@@ -15076,6 +15077,8 @@ body.ml-theme-ui .v309-search-muted{
 
 <script id="v3090-search-bar-fixed-completed-script">
 (function(){
+  function tx(en,es){return window.mlvText?window.mlvText(en,es):(window.MichelsLifeI18n?.language==='es'?es:en)}
+
   const SKY_DATA = {"dawn":"sky/original/dawn.jpg","morning":"sky/original/morning.jpg","noon":"sky/original/noon.jpg","afternoon":"sky/original/afternoon.jpg","night":"sky/original/night.jpg","late":"sky/original/late.jpg"};
   const KEY='michelsLifeTheme.v3000';
   const COLOR_INPUTS=['v133Bg','v133Panel','v133Card','v133Accent','v133Accent2','v133Gold'];
@@ -15303,7 +15306,7 @@ body.ml-theme-ui .v309-search-muted{
     const countId=isTask?'v213DashboardTaskSearchCount':'v213DashboardContractSearchCount';
     const clear=isTask?'v213-clear-task-search':'v213-clear-contract-search';
     const label=isTask?'Search tasks / missions':'Search Premium Contracts';
-    const placeholder=isTask?'Task name, category, note...':'Contract name, linked task, category...';
+    const placeholder=isTask?tx('Task name, category, note...','Nombre de tarea, categoría, nota...'):tx('Contract name, linked task, category...','Nombre de contrato, tarea vinculada, categoría...');
     const s=settings();
     const value=isTask ? (s.v213DashboardTaskSearch||s.v212DashboardTaskSearch||'') : (s.v213DashboardContractSearch||s.v212DashboardContractSearch||'');
     let panel=document.getElementById(panelId);
@@ -15407,7 +15410,7 @@ body.ml-theme-ui .v309-search-muted{
         x.card.style.removeProperty('order');
         x.card.classList.remove('v309-search-hit','v309-search-muted');
       });
-      if(count) count.textContent=`${cards.length} ${kind==='contract'?'contracts':'tasks'}`;
+      if(count) count.textContent=cards.length+' '+(kind==='contract'?tx('contracts','contratos'):tx('tasks','tareas'));
       return;
     }
 
@@ -15924,6 +15927,8 @@ body.ml-theme-ui [data-tab-panel="contracts"] .v216-contract-card{
 
 <script id="v3130-presets-only-settings-script">
 (function(){
+  function tx(en,es){return window.mlvText?window.mlvText(en,es):(window.MichelsLifeI18n?.language==='es'?es:en)}
+
   const KEY='michelsLifeTheme.v3000';
   const PALETTES={
     cyan:{bg:'#060913',shell:'#101829',panel:'#101829',card:'#111827',control:'#060913',accent:'#75e4ff',accent2:'#a779ff',gold:'#ffd166'},
@@ -16141,7 +16146,7 @@ body.ml-theme-ui [data-tab-panel="contracts"] .v216-contract-card{
       setTimeout(()=>{
         apply(pal,key,true);
         fixPremiumLayout();
-        try{toast('Theme saved',key+' palette applied.');}catch(e){}
+        try{toast(tx('Theme saved','Tema guardado'),key+' '+tx('palette applied.','paleta aplicada.'));}catch(e){}
       },0);
       return;
     }
@@ -16286,6 +16291,8 @@ body.ml-theme-ui .shop-card:hover{
 
 <script id="v3014-custom-backgrounds-script">
 (function(){
+  function tx(en,es){return window.mlvText?window.mlvText(en,es):(window.MichelsLifeI18n?.language==='es'?es:en)}
+
   function settings(){
     state.settings = state.settings || {};
     if(!state.settings.customBackgrounds) state.settings.customBackgrounds = {};
@@ -16439,7 +16446,7 @@ body.ml-theme-ui .shop-card:hover{
       try{ if(typeof save==='function') save(); }catch(e){}
       applyBackgroundForCurrentStage();
       ensureBgCard();
-      try{ toast('Background saved', stage+' now uses your photo.'); }catch(e){}
+      try{ toast(tx('Background saved','Fondo guardado'),stage+' '+tx('now uses your photo.','ahora usa tu foto.')); }catch(e){}
     });
   });
 
@@ -16454,7 +16461,7 @@ body.ml-theme-ui .shop-card:hover{
       try{ if(typeof save==='function') save(); }catch(e){}
       applyBackgroundForCurrentStage();
       ensureBgCard();
-      try{ toast('Background reset', stage+' is back to the default photo.'); }catch(e){}
+      try{ toast(tx('Background reset','Fondo restablecido'),stage+' '+tx('is back to the default photo.','volvió a la foto predeterminada.')); }catch(e){}
     }
   });
 
@@ -18844,6 +18851,8 @@ body.ml-theme-ui .v3044-help{
 
 <script id="v3044-stable-day-chips-no-flicker-script">
 (function(){
+  function tx(en,es){return window.mlvText?window.mlvText(en,es):(window.MichelsLifeI18n?.language==='es'?es:en)}
+
   const THEME_KEY='michelsLifeTheme.v3000';
   const PREM_KEY='michelsLife.premiumColor.v3044';
   const DEF_PREM='#66a1ff';
@@ -18915,7 +18924,7 @@ body.ml-theme-ui .v3044-help{
     acc.appendChild(row);
     const help=document.createElement('div');
     help.className='v3044-help';
-    help.textContent='Controls active weekly day chips, premium contracts and premium badges.';
+    help.textContent=tx('Controls active weekly day chips, premium contracts and premium badges.','Controla los chips de días semanales activos, los Contratos Premium y las insignias premium.');
     acc.appendChild(help);
   }
   function important(el,prop,val){ if(el) el.style.setProperty(prop,val,'important'); }
@@ -19257,6 +19266,8 @@ body.ml-theme-ui .v131-mission.completed{
 
 <script id="v3047-real-completed-bottom-fix-script">
 (function(){
+  function tx(en,es){return window.mlvText?window.mlvText(en,es):(window.MichelsLifeI18n?.language==='es'?es:en)}
+
   function todayKey(){
     try{ if(typeof dateKey==='function') return dateKey(); }catch(e){}
     return new Date().toISOString().slice(0,10);
@@ -19326,7 +19337,7 @@ body.ml-theme-ui .v131-mission.completed{
     if(!m) return oldComplete&&oldComplete(id);
 
     const key=todayKey();
-    try{ if(typeof isCompleted==='function' && isCompleted(m,key)){ toast&&toast('Already completed','It was not counted twice.'); return; } }catch(e){}
+    try{ if(typeof isCompleted==='function' && isCompleted(m,key)){ toast&&toast(tx('Already completed','Ya completada'),tx('It was not counted twice.','No se contó dos veces.')); return; } }catch(e){}
 
     const comp={id:(typeof uid==='function'?uid('c'):'c_'+Date.now()),date:key,at:(typeof nowISO==='function'?nowISO():new Date().toISOString()),xp:m.xp,coins:0,category:m.category,name:m.name};
     m.completions=m.completions||[];
@@ -19335,7 +19346,7 @@ body.ml-theme-ui .v131-mission.completed{
     m.hidden=false;
     state.xp=Number(state.xp||0)+Number(m.xp||0);
     try{ if(typeof log==='function') log('complete','Mission completed: '+m.name,{missionId:m.id,category:m.category,xp:m.xp}); }catch(e){}
-    try{ if(typeof toast==='function') toast('Mission completed',m.name+' · +'+m.xp+' XP'); }catch(e){}
+    try{ if(typeof toast==='function') toast(tx('Mission completed','Misión completada'),m.name+' · +'+m.xp+' XP'); }catch(e){}
     try{ if(typeof checkAchievements==='function') checkAchievements(); }catch(e){}
     ensureCompletedVisible();
     try{ if(typeof save==='function') save(); }catch(e){}
@@ -21960,6 +21971,8 @@ html body .v169-day-btn{
 </style>
 <script id="v3084-fast-boot-local-actions-script">
 (function(){
+  function tx(en,es){return window.mlvText?window.mlvText(en,es):(window.MichelsLifeI18n?.language==='es'?es:en)}
+
   'use strict';
   const CHIP_SEL='.quest-days .day-mini,.mission-days .day-dot,.v137-repeat-days .v137-day-chip,.v170-days-row .v170-day-chip,.days .day-chip,.ml-day-chip,.v169-day-btn';
   const CARD_SEL='.v132-mission.v137-mission,.v132-mission,.v131-mission,.quest-card,.mini-row,article';
@@ -22060,7 +22073,7 @@ html body .v169-day-btn{
     const pills=card.querySelector('.v131-pills');
     if(pills){
       let donePill=pills.querySelector('.v3083-completed-pill');
-      if(isDone&&!donePill){donePill=document.createElement('span');donePill.className='v131-pill good v3083-completed-pill';donePill.textContent='Completed';pills.appendChild(donePill)}
+      if(isDone&&!donePill){donePill=document.createElement('span');donePill.className='v131-pill good v3083-completed-pill';donePill.textContent=tx('Completed','Completada');pills.appendChild(donePill)}
       if(!isDone&&donePill)donePill.remove();
     }
     const parent=card.parentElement;
@@ -22122,7 +22135,7 @@ html body .v169-day-btn{
     try{checkAchievements()}catch(e){}
     try{save()}catch(e){}
     refreshMission(id);
-    try{toast('Mission completed',m.name+' · +'+Number(m.xp||0)+' XP')}catch(e){}
+    try{toast(tx('Mission completed','Misión completada'),m.name+' · +'+Number(m.xp||0)+' XP')}catch(e){}
   }
   function localUndo(id){
     const m=mission(id);if(!m||!(m.completions||[]).length)return;
@@ -22135,7 +22148,7 @@ html body .v169-day-btn{
     try{log('undo','Mission unmarked: '+m.name,{missionId:m.id,category:m.category,xp:-Number(c?.xp||0)})}catch(e){}
     try{save()}catch(e){}
     refreshMission(id);
-    try{toast('Mission unmarked',m.name)}catch(e){}
+    try{toast(tx('Mission unmarked','Misión desmarcada'),m.name)}catch(e){}
   }
   function localToggleDay(id,day){
     const m=mission(id);if(!m)return;
@@ -22534,11 +22547,11 @@ function v3096ArchiveMissionLocal(id,button){
     mission=(state.missions||[]).find(function(item){return String(item.id)===String(id);})||null;
   }catch(error){mission=null;}
   if(!mission){
-    try{toast('Archive failed','The mission could not be found.');}catch(error){}
+    try{toast(tx('Archive failed','Falló el archivado'),tx('The mission could not be found.','No se pudo encontrar la misión.'));}catch(error){}
     return false;
   }
   if(mission.archived){
-    try{toast('Already archived',mission.name||'Mission');}catch(error){}
+    try{toast(tx('Already archived','Ya archivada'),mission.name||tx('Mission','Misión'));}catch(error){}
     return true;
   }
 
@@ -22549,7 +22562,7 @@ function v3096ArchiveMissionLocal(id,button){
     if(typeof save==='function')save();
   }catch(error){
     mission.archived=false;
-    try{toast('Archive failed','The change could not be saved.');}catch(_error){}
+    try{toast(tx('Archive failed','Falló el archivado'),tx('The change could not be saved.','No se pudo guardar el cambio.'));}catch(_error){}
     console.error('v3.0.96 archive save error',error);
     return false;
   }
@@ -22564,6 +22577,8 @@ function v3096ArchiveMissionLocal(id,button){
     card.style.setProperty('max-height',height+'px','important');
     card.style.setProperty('will-change','opacity,transform,max-height','important');
     requestAnimationFrame(function(){
+  function tx(en,es){return window.mlvText?window.mlvText(en,es):(window.MichelsLifeI18n?.language==='es'?es:en)}
+
       card.classList.add('v3096-archiving');
       setTimeout(function(){
         if(card&&card.parentNode)card.parentNode.removeChild(card);
@@ -22637,6 +22652,8 @@ function v3096RefreshArchiveCounters(){
 </style>
 <script id="v3097-instant-single-click-archive-script">
 (function(){
+  function tx(en,es){return window.mlvText?window.mlvText(en,es):(window.MichelsLifeI18n?.language==='es'?es:en)}
+
   'use strict';
   var SELECTOR='[data-action="archive"]';
   var CARD_SELECTOR='.v132-mission,.v137-mission,.v131-mission,.quest-card,.mini-row,.v135-card,.mission-card,.v140-card,.v169-archived-card,article,tr,[data-mission-card]';
@@ -22656,7 +22673,7 @@ function v3096RefreshArchiveCounters(){
         mission.archived=false;
         mission.hidden=false;
         console.error('v3.0.97 archive persistence error',error);
-        try{toast('Archive failed','The task was restored because it could not be saved.');}catch(_error){}
+        try{toast(tx('Archive failed','Falló el archivado'),tx('The task was restored because it could not be saved.','La tarea se restauró porque no se pudo guardar.'));}catch(_error){}
         try{
           if(card&&card.isConnected){
             card.classList.remove('v3096-archiving');
@@ -22679,7 +22696,7 @@ function v3096RefreshArchiveCounters(){
   function archiveInstant(id,button){
     var mission=missionById(id);
     if(!mission){
-      try{toast('Archive failed','The mission could not be found.');}catch(error){}
+      try{toast(tx('Archive failed','Falló el archivado'),tx('The mission could not be found.','No se pudo encontrar la misión.'));}catch(error){}
       return false;
     }
     if(mission.archived)return true;
