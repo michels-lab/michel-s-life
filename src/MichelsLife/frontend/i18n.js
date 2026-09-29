@@ -1843,6 +1843,8 @@ function mapText(raw){
 function restoreTranslatedNode(node){
   if(!node)return;
   if(node.nodeType===Node.TEXT_NODE){
+    const owner=node.parentElement?.closest?.('[data-mlv-i18n-owned="source"]');
+    if(owner)return;
     const rec=translatedTextNodes.get(node);
     if(rec){
       if(node.nodeValue===rec.translated)node.nodeValue=rec.original;
@@ -1852,6 +1854,7 @@ function restoreTranslatedNode(node){
   }
   if(node.nodeType!==Node.ELEMENT_NODE)return;
   const el=node;
+  if(el.closest?.('[data-mlv-i18n-owned="source"]'))return;
   const attrs=translatedAttributes.get(el);
   if(attrs){
     for(const [attr,rec] of attrs.entries()){
@@ -1878,7 +1881,7 @@ function translateNode(node){
   if(!node)return;
   if(node.nodeType===Node.TEXT_NODE){
     const p=node.parentElement;
-    if(!p||/^(SCRIPT|STYLE|TEXTAREA|INPUT|CODE|PRE)$/i.test(p.tagName)||p.isContentEditable)return;
+    if(!p||p.closest?.('[data-mlv-i18n-owned="source"]')||/^(SCRIPT|STYLE|TEXTAREA|INPUT|CODE|PRE)$/i.test(p.tagName)||p.isContentEditable)return;
     if(language==='en'){
       const current=node.nodeValue;
       const next=mapText(current);
@@ -1912,7 +1915,7 @@ function translateNode(node){
   }
   if(node.nodeType!==Node.ELEMENT_NODE)return;
   const el=node;
-  if(/^(SCRIPT|STYLE|CODE|PRE)$/i.test(el.tagName)||el.isContentEditable)return;
+  if(el.closest?.('[data-mlv-i18n-owned="source"]')||/^(SCRIPT|STYLE|CODE|PRE)$/i.test(el.tagName)||el.isContentEditable)return;
 
   for(const attr of ['title','aria-label','placeholder']){
     if(!el.hasAttribute?.(attr))continue;
