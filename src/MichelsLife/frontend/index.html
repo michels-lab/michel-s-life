@@ -7979,14 +7979,17 @@ header + #v176StatusPanel{
 
 <script id="v187-manual-stage-authority-script">
 (function(){
-  // v18.7 — Manual Visual stage gets absolute authority.
-  // No old time/dawn script is allowed to override a manual stage.
+  'use strict';
+  // v18.7 — single authority for visual stage and status copy.
+  // Text is rendered in the active language at the source; i18n never has to
+  // rewrite the live status banner after it is painted.
 
-  const STAGES = ['dawn','morning','noon','afternoon','night','late'];
-  const LABELS = {dawn:'Dawn',morning:'Morning',noon:'Noon',afternoon:'Afternoon',night:'Night',late:'Late night'};
-  const EMOJI = {dawn:'🌅',morning:'☀️',noon:'🔆',afternoon:'🌇',night:'🌙',late:'🌌'};
+  const STAGES=['dawn','morning','noon','afternoon','night','late'];
+  const LABELS_EN={dawn:'Dawn',morning:'Morning',noon:'Noon',afternoon:'Afternoon',night:'Night',late:'Late night'};
+  const LABELS_ES={dawn:'Amanecer',morning:'Mañana',noon:'Mediodía',afternoon:'Tarde',night:'Noche',late:'Noche tardía'};
+  const EMOJI={dawn:'🌅',morning:'☀️',noon:'🔆',afternoon:'🌇',night:'🌙',late:'🌌'};
 
-  const VARS = {
+  const VARS={
     dawn:{'--v140-bgA':'#06112a','--v140-bgB':'#14335f','--v140-bgC':'#f0b07d','--v140-accent':'#4ab7ff','--v140-accent2':'#ff9fbd','--v140-gold':'#ffd166'},
     morning:{'--v140-bgA':'#cfefff','--v140-bgB':'#97cef5','--v140-bgC':'#ffdca5','--v140-accent':'#2ea7ff','--v140-accent2':'#ffd1dc','--v140-gold':'#ffd166'},
     noon:{'--v140-bgA':'#c9f3ff','--v140-bgB':'#67b8f0','--v140-bgC':'#2d75bd','--v140-accent':'#3ddcff','--v140-accent2':'#ffd166','--v140-gold':'#ffcf5f'},
@@ -7995,45 +7998,69 @@ header + #v176StatusPanel{
     late:{'--v140-bgA':'#02040b','--v140-bgB':'#071129','--v140-bgC':'#010208','--v140-accent':'#9db4ff','--v140-accent2':'#75e4ff','--v140-gold':'#ffd166'}
   };
 
-  const COMMANDS = {
+  const COMMANDS_EN={
     soft:{dawn:'Start gently. One clean action is enough to open the day.',morning:'Choose one useful action and let the day open.',noon:'Pause, choose one thing, and recover momentum.',afternoon:'There is still room for one meaningful action.',night:'Close the day with one small clean action.',late:'Keep it low stimulation. One small reset is enough.'},
     direct:{dawn:'Start before the day gets loud.',morning:'Win the morning with one real action.',noon:'Recover progress before the day drifts.',afternoon:'Second window. One strong action still changes the day.',night:'Close clean. Reduce tomorrow’s noise.',late:'Low stimulation. Small useful action.'},
     intense:{dawn:'Attack early. Build proof before the world wakes up.',morning:'No decoration. Pick the hardest useful mission and move.',noon:'Do not let the day become noise. Execute now.',afternoon:'No more drifting. Choose the mission that changes the score.',night:'Close strong. Earn the feeling before you rest.',late:'Discipline now protects tomorrow. Do the final reset.'}
   };
+  const COMMANDS_ES={
+    soft:{dawn:'Empieza con calma. Una acción limpia basta para abrir el día.',morning:'Elige una acción útil y deja que el día arranque.',noon:'Haz una pausa, elige una cosa y recupera el impulso.',afternoon:'Todavía hay espacio para una acción significativa.',night:'Cierra el día con una pequeña acción limpia.',late:'Mantén baja la estimulación. Un pequeño reinicio es suficiente.'},
+    direct:{dawn:'Empieza antes de que el día se vuelva ruidoso.',morning:'Gana la mañana con una acción real.',noon:'Recupera progreso antes de que el día se desvíe.',afternoon:'Segunda oportunidad. Una acción fuerte todavía cambia el día.',night:'Cierra limpio. Reduce el ruido de mañana.',late:'Baja estimulación. Una pequeña acción útil.'},
+    intense:{dawn:'Ataca temprano. Construye evidencia antes de que el mundo despierte.',morning:'Sin adornos. Elige la misión útil más difícil y avanza.',noon:'No dejes que el día se vuelva ruido. Ejecuta ahora.',afternoon:'Deja de ir a la deriva. Elige la misión que cambia el marcador.',night:'Cierra fuerte. Gánate la sensación antes de descansar.',late:'La disciplina de ahora protege mañana. Haz el último reinicio.'}
+  };
+  const SUB_EN={
+    dawn:'Build early advantage while everything is quiet.',
+    morning:'Pick the highest-XP mission and create momentum.',
+    noon:'One focused action is enough to change the reading of today.',
+    afternoon:'Do not call the day lost while there is still leverage.',
+    night:'Complete one useful mission and leave evidence.',
+    late:'Close with intention, not chaos.'
+  };
+  const SUB_ES={
+    dawn:'Construye ventaja temprano mientras todo está en calma.',
+    morning:'Elige la misión con más XP y crea impulso.',
+    noon:'Una acción enfocada basta para cambiar cómo se lee el día.',
+    afternoon:'No des el día por perdido mientras todavía haya margen.',
+    night:'Completa una misión útil y deja evidencia.',
+    late:'Cierra con intención, no con caos.'
+  };
+
+  function lang(){
+    try{
+      const v=window.mlvLanguage?.()||window.MichelsLifeI18n?.language||document.documentElement.lang;
+      return v==='es'?'es':'en';
+    }catch(_){return 'en'}
+  }
+  function tx(en,es){return lang()==='es'?es:en}
+  function label(id){return (lang()==='es'?LABELS_ES:LABELS_EN)[id]||id}
+  function intensityLabel(id){
+    const es={soft:'Suave',direct:'Directo',intense:'Intenso'};
+    const en={soft:'Soft',direct:'Direct',intense:'Intense'};
+    return (lang()==='es'?es:en)[id]||id;
+  }
+  function setText(el,value){if(el&&el.textContent!==value)el.textContent=value}
 
   function settings(){
-    state.settings = state.settings || {};
-    if(!state.settings.manualStage) state.settings.manualStage = 'auto';
-    if(typeof state.settings.dynamicTime !== 'boolean') state.settings.dynamicTime = true;
-    if(!state.settings.messageIntensity) state.settings.messageIntensity = 'direct';
+    state.settings=state.settings||{};
+    if(!state.settings.manualStage)state.settings.manualStage='auto';
+    if(typeof state.settings.dynamicTime!=='boolean')state.settings.dynamicTime=true;
+    if(!state.settings.messageIntensity)state.settings.messageIntensity='direct';
     return state.settings;
   }
-
   function normalizeIntensity(v){
     v=String(v||'direct').toLowerCase();
-    if(v==='directa') return 'direct';
-    return ['soft','direct','intense'].includes(v) ? v : 'direct';
+    if(v==='directa'||v==='directo')return 'direct';
+    if(v==='suave')return 'soft';
+    if(v==='intenso'||v==='intensa')return 'intense';
+    return ['soft','direct','intense'].includes(v)?v:'direct';
   }
-
   function timeStage(){
     const h=new Date().getHours();
-    if(h<5) return 'late';
-    if(h<8) return 'dawn';
-    if(h<12) return 'morning';
-    if(h<15) return 'noon';
-    if(h<19) return 'afternoon';
-    if(h<23) return 'night';
-    return 'late';
+    if(h<5)return 'late';if(h<8)return 'dawn';if(h<12)return 'morning';
+    if(h<15)return 'noon';if(h<19)return 'afternoon';if(h<23)return 'night';return 'late';
   }
-
-  function isManual(){
-    const s=settings();
-    return s.dynamicTime===false && STAGES.includes(String(s.manualStage||''));
-  }
-
-  function effective(){
-    return isManual() ? String(settings().manualStage) : timeStage();
-  }
+  function isManual(){const s=settings();return s.dynamicTime===false&&STAGES.includes(String(s.manualStage||''))}
+  function effective(){return isManual()?String(settings().manualStage):timeStage()}
 
   function setBodyStage(id){
     document.body.classList.remove(
@@ -8042,141 +8069,95 @@ header + #v176StatusPanel{
       'v144-dawn','v144-morning','v144-noon','v144-afternoon','v144-night','v144-late'
     );
     document.body.classList.add('stage-'+id,'v140-'+id,'v144-'+id);
-
     Object.entries(VARS[id]||{}).forEach(([k,v])=>document.documentElement.style.setProperty(k,String(v)));
-
-    document.documentElement.dataset.v187Stage = id;
-    document.body.dataset.v187ManualStage = isManual() ? 'true' : 'false';
+    document.documentElement.dataset.v187Stage=id;
+    document.body.dataset.v187ManualStage=isManual()?'true':'false';
   }
 
   function command(){
-    const mode=normalizeIntensity(settings().messageIntensity);
-    const id=effective();
-    return (COMMANDS[mode]&&COMMANDS[mode][id]) || COMMANDS.direct[id] || 'Execute the next visible action.';
+    const mode=normalizeIntensity(settings().messageIntensity),id=effective(),table=lang()==='es'?COMMANDS_ES:COMMANDS_EN;
+    return (table[mode]&&table[mode][id])||table.direct[id]||tx('Execute the next visible action.','Ejecuta la siguiente acción visible.');
   }
-
   function greeting(){
-    const id=effective();
-    const main=id==='night'?'Good evening':id==='late'?'Late night':id==='afternoon'?'Good afternoon':id==='noon'?'Good noon':'Good morning';
-    const sub={
-      dawn:'Build early advantage while everything is quiet.',
-      morning:'Pick the highest-XP mission and create momentum.',
-      noon:'One focused action is enough to change the reading of today.',
-      afternoon:'Do not call the day lost while there is still leverage.',
-      night:'Complete one useful mission and leave evidence.',
-      late:'Close with intention, not chaos.'
-    }[id] || command();
+    const id=effective(),es=lang()==='es';
+    const main=es
+      ?(id==='night'?'Buenas noches':id==='late'?'Noche tardía':id==='afternoon'?'Buenas tardes':id==='noon'?'Buen mediodía':'Buenos días')
+      :(id==='night'?'Good evening':id==='late'?'Late night':id==='afternoon'?'Good afternoon':id==='noon'?'Good noon':'Good morning');
+    const sub=(es?SUB_ES:SUB_EN)[id]||command();
     return {main,sub,tone:EMOJI[id]||'✨'};
   }
 
   function applyAuthoritativeStage(){
     const id=effective();
     setBodyStage(id);
-
-    const cmd=document.getElementById('v176Command');
-    const cmdSub=document.getElementById('v176CommandSub');
-    const greet=document.getElementById('v176Greeting');
-
-    if(cmd) cmd.textContent=command();
-    if(cmdSub) cmdSub.textContent=`${LABELS[id]||id} · complete the next visible action.`;
+    const cmd=document.getElementById('v176Command'),cmdSub=document.getElementById('v176CommandSub'),greet=document.getElementById('v176Greeting');
+    setText(cmd,command());
+    setText(cmdSub,label(id)+' · '+tx('complete the next visible action.','completa la siguiente acción visible.'));
     if(greet){
-      const g=greeting();
-      const date=new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
-      greet.textContent=`${g.tone} ${g.main}, ${state.settings?.characterName||'Player'} · ${date} · ${g.sub}`;
+      const g=greeting(),locale=lang()==='es'?'es-MX':'en-US';
+      const date=new Date().toLocaleDateString(locale,{weekday:'short',month:'short',day:'numeric'});
+      const who=state.settings?.characterName||tx('Player','Jugador');
+      setText(greet,g.tone+' '+g.main+', '+who+' · '+date+' · '+g.sub);
     }
   }
 
-  // Override old public functions so old render calls cannot force time stage.
-  window.activeStage=function(){
-    const id=effective();
-    return {id,name:LABELS[id]||id,emoji:EMOJI[id]||'✨'};
-  };
+  window.activeStage=function(){const id=effective();return {id,name:label(id),emoji:EMOJI[id]||'✨'}};
   window.applyStage=applyAuthoritativeStage;
   window.getSmartMessage=command;
   window.greetingV11=greeting;
 
-  // Stop old dawn/moon enforcement from overriding manual stage:
-  // if manual is on, any later body class mutation is immediately corrected.
   let correcting=false;
   function correctSoon(){
-    if(correcting) return;
+    if(correcting)return;
     correcting=true;
     requestAnimationFrame(()=>{
       correcting=false;
       const id=effective();
-      if(!document.body.classList.contains('v140-'+id) || document.body.dataset.v187ManualStage !== (isManual()?'true':'false')){
-        applyAuthoritativeStage();
-      }
+      if(!document.body.classList.contains('v140-'+id)||document.body.dataset.v187ManualStage!==(isManual()?'true':'false'))applyAuthoritativeStage();
     });
   }
-
-  const observer=new MutationObserver(()=>{
-    if(isManual()) correctSoon();
-  });
-
   function bindObserver(){/* v3.0.113: stage changes are event-driven; body-class observer retired. */}
 
   function fixControlUI(){
-    const dyn=document.getElementById('setDynamic');
-    const stage=document.getElementById('setStage');
-    const intensity=document.getElementById('setIntensity');
-    const s=settings();
-
+    const dyn=document.getElementById('setDynamic'),stage=document.getElementById('setStage'),intensity=document.getElementById('setIntensity'),s=settings(),language=lang();
     if(stage){
-      const desired=s.manualStage||'auto';
-      if(!stage.dataset.v187Fixed){
-        stage.innerHTML=['auto',...STAGES].map(v=>`<option value="${v}">${v==='auto'?'Auto':LABELS[v]}</option>`).join('');
-        stage.dataset.v187Fixed='1';
+      const desired=s.manualStage||'auto',signature=language+'|stages';
+      if(stage.dataset.v187Fixed!==signature){
+        stage.innerHTML=['auto',...STAGES].map(v=>'<option value="'+v+'">'+(v==='auto'?tx('Auto','Automático'):label(v))+'</option>').join('');
+        stage.dataset.v187Fixed=signature;
       }
       stage.value=desired;
     }
-
-    if(dyn) dyn.value=s.dynamicTime===false?'false':'true';
-
+    if(dyn)dyn.value=s.dynamicTime===false?'false':'true';
     if(intensity){
-      if(!intensity.dataset.v187Fixed){
-        intensity.innerHTML=['soft','direct','intense'].map(v=>`<option value="${v}">${v[0].toUpperCase()+v.slice(1)}</option>`).join('');
-        intensity.dataset.v187Fixed='1';
+      const signature=language+'|intensity';
+      if(intensity.dataset.v187Fixed!==signature){
+        intensity.innerHTML=['soft','direct','intense'].map(v=>'<option value="'+v+'">'+intensityLabel(v)+'</option>').join('');
+        intensity.dataset.v187Fixed=signature;
       }
       intensity.value=normalizeIntensity(s.messageIntensity);
     }
-
-    document.querySelectorAll('label').forEach(label=>{
-      const node=Array.from(label.childNodes).find(n=>n.nodeType===3);
-      if(node && /Monthstages|Monthsages|Mensajes/i.test(node.nodeValue||'')){
-        node.nodeValue='Messages ';
-      }
+    document.querySelectorAll('label').forEach(labelEl=>{
+      const node=Array.from(labelEl.childNodes).find(n=>n.nodeType===3);
+      if(node&&/Monthstages|Monthsages|Mensajes|Messages/i.test(node.nodeValue||''))node.nodeValue=tx('Messages ','Mensajes ');
     });
   }
 
   function applyControlChange(ev){
-    const el=ev.target;
-    if(!el || !['setStage','setDynamic','setIntensity'].includes(el.id)) return;
-
+    const el=ev.target;if(!el||!['setStage','setDynamic','setIntensity'].includes(el.id))return;
     const s=settings();
-
     if(el.id==='setStage'){
-      s.manualStage=el.value||'auto';
-      s.dynamicTime=s.manualStage==='auto';
-      const dyn=document.getElementById('setDynamic');
-      if(dyn) dyn.value=s.dynamicTime?'true':'false';
+      s.manualStage=el.value||'auto';s.dynamicTime=s.manualStage==='auto';
+      const dyn=document.getElementById('setDynamic');if(dyn)dyn.value=s.dynamicTime?'true':'false';
     }
-
     if(el.id==='setDynamic'){
       s.dynamicTime=el.value==='true';
-      if(s.dynamicTime) s.manualStage='auto';
-      else if(!STAGES.includes(s.manualStage)) s.manualStage=timeStage();
-      const stage=document.getElementById('setStage');
-      if(stage) stage.value=s.manualStage;
+      if(s.dynamicTime)s.manualStage='auto';else if(!STAGES.includes(s.manualStage))s.manualStage=timeStage();
+      const stage=document.getElementById('setStage');if(stage)stage.value=s.manualStage;
     }
-
-    if(el.id==='setIntensity'){
-      s.messageIntensity=normalizeIntensity(el.value);
-    }
-
+    if(el.id==='setIntensity')s.messageIntensity=normalizeIntensity(el.value);
     try{if(typeof save==='function')save()}catch(e){}
-    fixControlUI();
-    applyAuthoritativeStage();
+    fixControlUI();applyAuthoritativeStage();
   }
 
   document.addEventListener('change',applyControlChange,true);
@@ -8185,14 +8166,13 @@ header + #v176StatusPanel{
   const oldRenderAll=window.renderAll;
   window.renderAll=function(){
     const result=typeof oldRenderAll==='function'?oldRenderAll.apply(this,arguments):undefined;
-    requestAnimationFrame(()=>{fixControlUI();applyAuthoritativeStage();});
+    requestAnimationFrame(()=>{fixControlUI();applyAuthoritativeStage()});
     return result;
   };
 
-  document.addEventListener('DOMContentLoaded',()=>{bindObserver();requestAnimationFrame(()=>{fixControlUI();applyAuthoritativeStage();});},{once:true});
-
-  // No constant sky repaint. Only correct class mutations while manual stage is active.
-  try{setTimeout(()=>{bindObserver();fixControlUI();applyAuthoritativeStage();},0)}catch(e){console.error('v18.7 manual stage authority error',e)}
+  window.addEventListener('michelslife:languagechange',()=>{fixControlUI();applyAuthoritativeStage()});
+  document.addEventListener('DOMContentLoaded',()=>{bindObserver();requestAnimationFrame(()=>{fixControlUI();applyAuthoritativeStage()})},{once:true});
+  try{setTimeout(()=>{bindObserver();fixControlUI();applyAuthoritativeStage()},0)}catch(e){console.error('v18.7 manual stage authority error',e)}
 })();
 </script>
 
