@@ -1770,6 +1770,13 @@ const PAIRS={
   "Quick task created":"Tarea rápida creada",
   "copy":"copia",
   "Carryover processed":"Pendientes procesados",
+  "CURRENT MISSION":"MISIÓN ACTUAL",
+  "PAUSED":"PAUSADA",
+  "IN PROGRESS":"EN PROGRESO",
+  "Current Mission started":"Misión actual iniciada",
+  "Current Mission stopped":"Misión actual detenida",
+  "timer restarted at 00:00":"temporizador reiniciado en 00:00",
+  "focused":"enfocado",
 };
 const SPANISH_SYSTEM_DEFAULTS={
   "Read 30 minutes at night 3 times":"Leer 30 minutos de noche 3 veces",
