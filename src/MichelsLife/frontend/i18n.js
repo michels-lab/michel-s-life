@@ -8,6 +8,9 @@ const USER_OVERRIDE_BASE_KEY='michelsLife.language.userOverrideBase.v1';
 const PAIRS={
   "Dashboard":"Inicio","Missions":"Misiones","Premium Contracts":"Contratos Premium","Calendar":"Calendario",
   "Statistics":"Estadísticas","Projects":"Proyectos","Achievements":"Logros","Affirmations":"Afirmaciones",
+  "Bronze":"Bronce","Silver":"Plata","Platinum":"Platino","Mythic":"Mítico",
+  "Weekly":"Semanal","Milestone":"Hito","left":"restantes",
+  "Badges":"Insignias","Collection":"Colección","No achievements unlocked yet.":"Aún no hay logros desbloqueados.","Streaks":"Rachas",
   "Story":"Historia","Settings":"Configuración","Compare":"Comparar","Weekly Review":"Revisión semanal",
   "General":"General","Themes":"Temas","Color Theme":"Tema de color","Typography":"Tipografía","Gold":"Dorado","gold":"dorado",
   "UI Customization":"Personalización de interfaz","Focus & Timers":"Enfoque y temporizadores",
