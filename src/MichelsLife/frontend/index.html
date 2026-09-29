@@ -3200,6 +3200,7 @@ body.v144-noon #v140-sky{
 <script id="v144-english-quotes-afternoon-script">
 (function(){
   function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+  function tx(en,es){return window.mlvText?window.mlvText(en,es):en}
   function nowHour(){return new Date().getHours()}
   function dayKey(){return typeof dateKey==='function'?dateKey():new Date().toISOString().slice(0,10)}
   function v144Theme(){
@@ -3249,30 +3250,6 @@ body.v144-noon #v140-sky{
     el.innerHTML=`<div class="status-block"><div class="status-time">${time}</div><div class="status-greeting">${t.emoji} ${t.greeting}, Michel · ${date} · ${t.sub}</div></div><div class="status-metrics"><div class="status-chip"><small>Today’s goals</small><b>${goals.done}/${goals.total}</b></div><div class="status-chip"><small>Today’s missions</small><b>${doneMissions}/${missions.length}</b></div><div class="status-chip"><small>Week</small><b>${week.pct}%</b></div><div class="status-chip"><small>Goal reset</small><b>${reset} d</b></div></div><div class="status-stage"><b>${esc(t.quote)}</b><span>${esc(t.label)} · ${esc(t.sub)}</span></div>`;
   };
 
-  function translateVisibleText(root=document.body){try{if((localStorage.getItem('michelsLife.language.v1')||navigator.language||'').toLowerCase().startsWith('es'))return;}catch(_){} 
-    const pairs=[
-      ['Estadísticas','Statistics'],['Lectura compacta de actividad real, no adornos.','Activity overview'],
-      ['Última hora','Last hour'],['Últimas 3 horas','Last 3 hours'],['Últimas 24 h','Last 24 h'],
-      ['Hoy','Today'],['Semana','Week'],['Mes','Month'],['Progreso por categoría','Progress by category'],
-      ['Radar de build','Build radar'],['Últimos 14 días','Last 14 days'],['Misiones más recurrentes','Most recurrent missions'],
-      ['Misiones más olvidadas','Most missed missions'],['misiones','missions'],['XP acumulados','XP accumulated'],
-      ['The larger the shape, the more balanced and advanced your build is.','The larger the shape, the more balanced and advanced your build is.'],
-      ['Afirmaciones','Affirmations'],['Favoritas, ocultables y editables.','Favorite, hideable and editable.'],['Agregar afirmación','Add affirmation'],
-      ['Afirmación','Affirmation'],['Categoría','Category'],['Estado','Status'],['Acciones','Actions'],['Oculta','Hidden'],['Visible','Visible'],['Mostrar','Show'],['Ocultar','Hide'],['Favorita','Favorite'],
-      ['Misión completada','Mission completed'],['Misión desmarcada','Mission unmarked'],['No se contó dos veces.','It was not counted twice.'],['monedas','coins']
-    ];
-    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(n){
-      const p=n.parentElement; if(!p||['SCRIPT','STYLE'].includes(p.tagName)) return NodeFilter.FILTER_REJECT;
-      return /[áéíóúñÁÉÍÓÚÑ]|Últim|Estadísticas|Lectura compacta|Misiones más|Progreso por|Radar de build|Mes|Semana|Hoy|Afirmaciones|monedas/.test(n.nodeValue)?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT;
-    }});
-    const nodes=[]; while(walker.nextNode()) nodes.push(walker.currentNode);
-    nodes.forEach(n=>{
-      let s=n.nodeValue;
-      pairs.forEach(([a,b])=>{s=s.split(a).join(b)});
-      n.nodeValue=s;
-    });
-  }
-
   window.renderStats=function(){
     const counts=categoryCounts(), xps=categoryXp();
     const now=new Date();
@@ -3280,7 +3257,7 @@ body.v144-noon #v140-sky{
     const recent=state.history.filter(h=>h.type==='complete');
     const lastHour=recent.filter(h=>h.at>=h1).length, last3=recent.filter(h=>h.at>=h3).length, last24=recent.filter(h=>h.at>=h24).length;
     const todayStats=periodStats(dayKey(),dayKey()), week=periodStats(startOfWeek(),dayKey()), month=periodStats(new Date().toISOString().slice(0,7)+'-01',dayKey());
-    return `<div class="grid"><div class="card"><div class="section-title"><div><h2>Statistics</h2><p>Activity overview.</p></div></div><div class="stat-hero-grid"><div class="stat-hero"><small>Last hour</small><b>${lastHour}</b></div><div class="stat-hero"><small>Last 3 hours</small><b>${last3}</b></div><div class="stat-hero"><small>Last 24 h</small><b>${last24}</b></div><div class="stat-hero"><small>Today</small><b>${todayStats.completed}</b></div><div class="stat-hero"><small>Week</small><b>${week.completed}</b></div><div class="stat-hero"><small>Month</small><b>${month.completed}</b></div></div></div><div class="chart-grid"><div class="chart-card"><h2>Progress by category</h2>${categoryBarChart(counts,xps)}</div><div class="chart-card"><h2>Build radar</h2>${radarChart(counts)}</div></div><div class="chart-card"><h2>Last 14 days</h2>${dailySparkline(14)}</div><div class="grid cols-2"><div class="card"><h2>Most recurrent missions</h2>${renderMissionList(state.missions.slice().sort((a,b)=>(b.completions?.length||0)-(a.completions?.length||0)).slice(0,6))}</div><div class="card"><h2>Most missed missions</h2>${renderMissionList(state.missions.slice().sort((a,b)=>missedCount(b)-missedCount(a)).slice(0,6))}</div></div></div>`;
+    return `<div class="grid" data-mlv-i18n-owned="source"><div class="card"><div class="section-title"><div><h2>${esc(tx('Statistics','Estadísticas'))}</h2><p>${esc(tx('Activity overview.','Resumen de actividad.'))}</p></div></div><div class="stat-hero-grid"><div class="stat-hero"><small>${esc(tx('Last hour','Última hora'))}</small><b>${lastHour}</b></div><div class="stat-hero"><small>${esc(tx('Last 3 hours','Últimas 3 horas'))}</small><b>${last3}</b></div><div class="stat-hero"><small>${esc(tx('Last 24 h','Últimas 24 h'))}</small><b>${last24}</b></div><div class="stat-hero"><small>${esc(tx('Today','Hoy'))}</small><b>${todayStats.completed}</b></div><div class="stat-hero"><small>${esc(tx('Week','Semana'))}</small><b>${week.completed}</b></div><div class="stat-hero"><small>${esc(tx('Month','Mes'))}</small><b>${month.completed}</b></div></div></div><div class="chart-grid"><div class="chart-card"><h2>${esc(tx('Progress by category','Progreso por categoría'))}</h2>${categoryBarChart(counts,xps)}</div><div class="chart-card"><h2>${esc(tx('Build radar','Radar de progreso'))}</h2>${radarChart(counts)}</div></div><div class="chart-card"><h2>${esc(tx('Last 14 days','Últimos 14 días'))}</h2>${dailySparkline(14)}</div><div class="grid cols-2"><div class="card"><h2>${esc(tx('Most recurrent missions','Misiones más recurrentes'))}</h2>${renderMissionList(state.missions.slice().sort((a,b)=>(b.completions?.length||0)-(a.completions?.length||0)).slice(0,6))}</div><div class="card"><h2>${esc(tx('Most missed missions','Misiones más olvidadas'))}</h2>${renderMissionList(state.missions.slice().sort((a,b)=>missedCount(b)-missedCount(a)).slice(0,6))}</div></div></div>`;
   };
 
   const previousRenderAll=window.renderAll;
