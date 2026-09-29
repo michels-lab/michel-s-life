@@ -30290,6 +30290,14 @@ function relBi(en,es){return window.mlvText?window.mlvText(en,es):(window.Michel
 function relEsc(en,es){return esc(relBi(en,es))}
 function bridge(action,payload={}){
   return new Promise((resolve,reject)=>{
+    if(!window.chrome?.webview?.postMessage){reject(new Error(relBi('This action requires the Windows WebView2 app.','Esta acción requiere la app de Windows con WebView2.')));return}
+    const requestId='mlv197-'+Date.now()+'-'+(++seq);
+    const timer=setTimeout(()=>{pending.delete(requestId);reject(new Error(relBi('Cloud request timed out.','La solicitud a la nube agotó el tiempo de espera.')))},270000);
+    pending.set(requestId,{resolve,reject,timer});
+    window.chrome.webview.postMessage({channel:CHANNEL,requestId,action,payload});
+  });
+}){
+  return new Promise((resolve,reject)=>{
     if(!window.chrome?.webview?.postMessage){reject(new Error('This action requires the Windows WebView2 app.'));return}
     const requestId='mlv197-'+Date.now()+'-'+(++seq);
     const timer=setTimeout(()=>{pending.delete(requestId);reject(new Error('Cloud request timed out.'))},270000);
@@ -30302,7 +30310,7 @@ if(window.chrome?.webview?.addEventListener){
     const d=ev?.data;if(!d||d.channel!==RESPONSE)return;
     const p=pending.get(d.requestId);if(!p)return;
     clearTimeout(p.timer);pending.delete(d.requestId);
-    if(d.ok)p.resolve(d.payload);else p.reject(new Error(d.error||'Cloud request failed.'));
+    if(d.ok)p.resolve(d.payload);else p.reject(new Error(d.error||relBi('Cloud request failed.','Falló la solicitud a la nube.')));
   });
 }
 
@@ -30367,7 +30375,16 @@ function fmtDate(v){
   return Number.isNaN(d.getTime())?String(v):d.toLocaleString(locale)
 }
 function fmtBytes(n){n=Number(n||0);if(!n)return '—';if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';return (n/1048576).toFixed(1)+' MB'}
-function reasonLabel(v){return ({before_manual_upload:'Before manual upload',before_auto_upload:'Automatic restore point',before_newer_local_upload:'Before newer-PC upload',before_history_restore:'Before history restore'})[v]||'Cloud restore point'}
+function reasonLabel(v){
+  const map={
+    before_manual_upload:['Before manual upload','Antes de la carga manual'],
+    before_auto_upload:['Automatic restore point','Punto de restauración automático'],
+    before_newer_local_upload:['Before newer-PC upload','Antes de cargar desde una PC más reciente'],
+    before_history_restore:['Before history restore','Antes de restaurar desde el historial']
+  };
+  const pair=map[v]||['Cloud restore point','Punto de restauración en la nube'];
+  return relBi(pair[0],pair[1]);
+}
 
 function reliabilityHTML(){
   const backups=Array.isArray(overview.backups)?overview.backups:[],devices=Array.isArray(overview.devices)?overview.devices:[];
@@ -30948,11 +30965,21 @@ function btText(v){try{return window.MichelsLifeI18n?.mapText?.(String(v))||Stri
 function btIsEs(){return (window.MichelsLifeI18n?.language||document.documentElement.lang)==='es'}
 function btLocale(){return btIsEs()?'es-MX':'en-US'}
 function btEsc(v){return esc(btText(v))}
-function bridge(action,payload={}){return new Promise((resolve,reject)=>{if(!window.chrome?.webview?.postMessage){reject(new Error('This action requires the Windows app.'));return}const requestId='mlv201-'+Date.now()+'-'+(++seq);const timer=setTimeout(()=>{pending.delete(requestId);reject(new Error('Backup Timeline request timed out.'))},120000);pending.set(requestId,{resolve,reject,timer});window.chrome.webview.postMessage({channel:CHANNEL,requestId,action,payload})})}
-if(window.chrome?.webview?.addEventListener)window.chrome.webview.addEventListener('message',ev=>{const d=ev?.data;if(!d||d.channel!==RESPONSE)return;const p=pending.get(d.requestId);if(!p)return;clearTimeout(p.timer);pending.delete(d.requestId);d.ok?p.resolve(d.payload):p.reject(new Error(d.error||'Backup Timeline request failed.'))});
+function btBi(en,es){return btIsEs()?String(es):String(en)}
+function btBiEsc(en,es){return esc(btBi(en,es))}
+function bridge(action,payload={}){
+  return new Promise((resolve,reject)=>{
+    if(!window.chrome?.webview?.postMessage){reject(new Error(btBi('This action requires the Windows app.','Esta acción requiere la app de Windows.')));return}
+    const requestId='mlv201-'+Date.now()+'-'+(++seq);
+    const timer=setTimeout(()=>{pending.delete(requestId);reject(new Error(btBi('Backup Timeline request timed out.','La solicitud de la Línea de copias agotó el tiempo de espera.')))},120000);
+    pending.set(requestId,{resolve,reject,timer});
+    window.chrome.webview.postMessage({channel:CHANNEL,requestId,action,payload});
+  });
+}){return new Promise((resolve,reject)=>{if(!window.chrome?.webview?.postMessage){reject(new Error('This action requires the Windows app.'));return}const requestId='mlv201-'+Date.now()+'-'+(++seq);const timer=setTimeout(()=>{pending.delete(requestId);reject(new Error('Backup Timeline request timed out.'))},120000);pending.set(requestId,{resolve,reject,timer});window.chrome.webview.postMessage({channel:CHANNEL,requestId,action,payload})})}
+if(window.chrome?.webview?.addEventListener)window.chrome.webview.addEventListener('message',ev=>{const d=ev?.data;if(!d||d.channel!==RESPONSE)return;const p=pending.get(d.requestId);if(!p)return;clearTimeout(p.timer);pending.delete(d.requestId);d.ok?p.resolve(d.payload):p.reject(new Error(d.error||btBi('Backup Timeline request failed.','Falló la solicitud de la Línea de copias.')))});
 function notify(title,msg='',opts={}){
   try{return window.MLV197Reliability?.notification?.(btText(title),btText(msg),opts)||window.toast?.(btText(title),btText(msg))}catch(_){}
-}){try{return window.MLV197Reliability?.notification?.(title,msg,opts)||window.toast?.(title,msg)}catch(_){}}
+}
 function capture(){try{return window.GoogleCloudV30192?.capture?.()||window.GoogleCloudV30191?.capture?.()||''}catch(_){return''}}
 function pane(){return document.querySelector('[data-v30171-pane="data"]')}
 function runtime(){return window.GoogleCloudV30192?.runtime||window.GoogleCloudV30191?.runtime||window.GoogleCalendarV30190?.runtime||{}}
@@ -30976,10 +31003,12 @@ function reasonLabel(v){
     before_manual_upload:['Before manual upload','Antes de la carga manual'],
     before_auto_upload:['Automatic restore point','Punto de restauración automático'],
     before_newer_local_upload:['Before newer-PC upload','Antes de cargar desde una PC más reciente'],
-    before_history_restore:['Before history restore','Antes de restaurar desde el historial']
+    before_history_restore:['Before history restore','Antes de restaurar desde el historial'],
+    before_cloud_history_restore:['Before cloud restore','Antes de restaurar desde la nube'],
+    before_local_timeline_restore:['Before timeline restore','Antes de restaurar desde la línea de tiempo']
   };
-  const pair=map[v]||['Cloud restore point','Punto de restauración en la nube'];
-  return relBi(pair[0],pair[1]);
+  const pair=map[v]||['Restore point','Punto de restauración'];
+  return btBi(pair[0],pair[1]);
 }
 function summaryText(x){
   const bits=[],es=btIsEs(),missions=Number(x.missionCount),journals=Number(x.journalCount),completed=Number(x.completedCount);
@@ -31025,8 +31054,8 @@ function openRestore(x){
   o.classList.add('show');
 }
 function closeRestore(){selected=null;document.getElementById('mlv201RestoreOverlay')?.classList.remove('show')}
-function applyBackupJson(backupJson,cloudMeta=null,uploadAfter=false){const backup=JSON.parse(backupJson),ls=backup.localStorage&&typeof backup.localStorage==='object'?backup.localStorage:null,incoming=backup.state&&typeof backup.state==='object'?backup.state:null;if(!ls&&!incoming)throw new Error('The selected backup is not restorable.');localStorage.clear();if(ls)for(const [k,v] of Object.entries(ls))localStorage.setItem(k,String(v));if(incoming)localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(incoming));if(uploadAfter)sessionStorage.setItem('mlv201UploadRestoredLocal','1');sessionStorage.setItem('mlv201TimelineRestored','1');if(cloudMeta){return bridge('cloudAccept',{hash:cloudMeta.remoteHash||cloudMeta.localHash||'',remoteModifiedAt:cloudMeta.remoteModifiedAt||null}).then(()=>location.reload())}location.reload()}
-async async function doRestore(){
+function applyBackupJson(backupJson,cloudMeta=null,uploadAfter=false){const backup=JSON.parse(backupJson),ls=backup.localStorage&&typeof backup.localStorage==='object'?backup.localStorage:null,incoming=backup.state&&typeof backup.state==='object'?backup.state:null;if(!ls&&!incoming)throw new Error(btBi('The selected backup is not restorable.','La copia seleccionada no se puede restaurar.'));localStorage.clear();if(ls)for(const [k,v] of Object.entries(ls))localStorage.setItem(k,String(v));if(incoming)localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(incoming));if(uploadAfter)sessionStorage.setItem('mlv201UploadRestoredLocal','1');sessionStorage.setItem('mlv201TimelineRestored','1');if(cloudMeta){return bridge('cloudAccept',{hash:cloudMeta.remoteHash||cloudMeta.localHash||'',remoteModifiedAt:cloudMeta.remoteModifiedAt||null}).then(()=>location.reload())}location.reload()}
+async function doRestore(){
   if(!selected)return;
   const x=selected,button=document.querySelector('[data-mlv201-modal="restore"]');
   try{
@@ -31042,11 +31071,11 @@ async async function doRestore(){
     }
   }catch(err){
     if(button){button.disabled=false;button.textContent=btText('Restore saved state')}
-    notify('Restore failed',String(err?.message||err),{kind:'error',persistent:true});
+    notify(btBi('Restore failed','Falló la restauración'),String(err?.message||err),{kind:'error',persistent:true});
   }
 }
 function mount(){if(String(state?.activeTab||'')!=='settings')return;const p=pane();if(!p)return;const old=p.querySelector('[data-mlv201-timeline]'),tmp=document.createElement('template');tmp.innerHTML=cardHTML();const next=tmp.content.firstElementChild;if(!next)return;if(old)old.replaceWith(next);else{const maintenance=p.querySelector('[data-mlv198-maintenance]');maintenance?p.insertBefore(next,maintenance):p.appendChild(next)}}
-async async function refresh(force=false){
+async function refresh(force=false){
   if(busy)return;
   if(!force&&Date.now()-lastLoad<30000){mount();return}
   busy=true;mount();
@@ -31057,20 +31086,20 @@ async async function refresh(force=false){
       try{cloudOverview=await bridge('cloudOverview')}
       catch(err){
         cloudOverview={backups:[],devices:[]};
-        notify('Backup Timeline',btText('Local restore points loaded, but Drive history could not be refreshed:')+' '+String(err?.message||err),{kind:'error'});
+        notify(btBi('Backup Timeline','Línea de copias'),btBi('Local restore points loaded, but Drive history could not be refreshed:','Se cargaron los puntos de restauración locales, pero no se pudo actualizar el historial de Drive:')+' '+String(err?.message||err),{kind:'error'});
       }
     }else cloudOverview={backups:[],devices:[]};
     lastLoad=Date.now();
   }catch(err){
-    notify('Backup Timeline',String(err?.message||err),{kind:'error',persistent:true});
+    notify(btBi('Backup Timeline','Línea de copias'),String(err?.message||err),{kind:'error',persistent:true});
   }finally{busy=false;mount()}
 }
 document.addEventListener('click',async e=>{const refreshBtn=e.target.closest?.('[data-mlv201-refresh]');if(refreshBtn){e.preventDefault();e.stopPropagation();await refresh(true);return}const restore=e.target.closest?.('[data-mlv201-restore]');if(restore){e.preventDefault();e.stopPropagation();const x=items().find(z=>z.key===restore.dataset.mlv201Restore);if(x)openRestore(x);return}const modal=e.target.closest?.('[data-mlv201-modal]');if(modal){e.preventDefault();e.stopPropagation();if(modal.dataset.mlv201Modal==='cancel')closeRestore();else if(modal.dataset.mlv201Modal==='restore')await doRestore();return}if(e.target.closest?.('[data-v30171-setting="data"]'))setTimeout(()=>refresh(true),120)},true);
 setInterval(()=>{if(String(state?.activeTab||'')==='settings'&&pane()?.classList.contains('active'))mount()},2500);
 setTimeout(()=>{mount();if(String(state?.activeTab||'')==='settings'&&pane()?.classList.contains('active'))refresh(false)},700);
 window.addEventListener('michelslife:languagechange',()=>{document.getElementById('mlv201RestoreOverlay')?.remove();mount()});
-if(sessionStorage.getItem('mlv201TimelineRestored')){sessionStorage.removeItem('mlv201TimelineRestored');setTimeout(()=>notify('Backup restored','Michel’s Life loaded the selected saved state.'),900)}
-if(sessionStorage.getItem('mlv201UploadRestoredLocal')){sessionStorage.removeItem('mlv201UploadRestoredLocal');setTimeout(async()=>{try{const api=window.GoogleCloudV30192||window.GoogleCloudV30191;if(api?.runtime?.connected&&api?.runtime?.cloudReady){await api.sync?.('upload',{silent:false});notify('Cloud updated','The restored local state is now the current Google Drive copy.')}}catch(err){notify('Cloud update after restore',String(err?.message||err),{kind:'error',persistent:true})}},2600)}
+if(sessionStorage.getItem('mlv201TimelineRestored')){sessionStorage.removeItem('mlv201TimelineRestored');setTimeout(()=>notify(btBi('Backup restored','Copia restaurada'),btBi('Michel’s Life loaded the selected saved state.','Michel’s Life cargó el estado guardado seleccionado.')),900)}
+if(sessionStorage.getItem('mlv201UploadRestoredLocal')){sessionStorage.removeItem('mlv201UploadRestoredLocal');setTimeout(async()=>{try{const api=window.GoogleCloudV30192||window.GoogleCloudV30191;if(api?.runtime?.connected&&api?.runtime?.cloudReady){await api.sync?.('upload',{silent:false});notify(btBi('Cloud updated','Nube actualizada'),btBi('The restored local state is now the current Google Drive copy.','El estado local restaurado ahora es la copia actual de Google Drive.'))}}catch(err){notify(btBi('Cloud update after restore','Actualización de nube tras restaurar'),String(err?.message||err),{kind:'error',persistent:true})}},2600)}
 window.MLV201BackupTimeline={version:VERSION,refresh,mount,items};
 })();
 </script>
@@ -31087,23 +31116,20 @@ if(window.MLV202ReleaseReadiness)return;
 const VERSION='3.0.209',CHANNEL='michels-life-google-calendar',RESPONSE='michels-life-google-calendar-response';
 let seq=0,diag=null,diagBusy=false,update=null,updateBusy=false;const pending=new Map();
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function rrText(en,es){return window.mlvText?window.mlvText(en,es):(window.MichelsLifeI18n?.language==='es'?es:en)}
+function rrEsc(en,es){return esc(rrText(en,es))}
+function rrDynamic(v){try{return window.MichelsLifeI18n?.mapText?.(String(v))||String(v)}catch(_){return String(v)}}
 function notify(t,m='',o={}){try{return window.MLV197Reliability?.notification?.(t,m,o)||window.toast?.(t,m)}catch(_){}}
 function bridge(action,payload={}){
   return new Promise((resolve,reject)=>{
     if(!window.chrome?.webview?.postMessage){reject(new Error(rrText('This action requires the Windows app.','Esta acción requiere la app de Windows.')));return}
-    const requestId='mlv202-'+Date.now()+'-'+(++seq),timer=setTimeout(()=>{pending.delete(requestId);reject(new Error(rrText('Request timed out.','La solicitud agotó el tiempo de espera.')))},120000);
-    pending.set(requestId,{resolve,reject,timer});window.chrome.webview.postMessage({channel:CHANNEL,requestId,action,payload})
-  })
-}){
-  return new Promise((resolve,reject)=>{
-    if(!window.chrome?.webview?.postMessage){reject(new Error(relBi('This action requires the Windows WebView2 app.','Esta acción requiere la app de Windows con WebView2.')));return}
-    const requestId='mlv197-'+Date.now()+'-'+(++seq);
-    const timer=setTimeout(()=>{pending.delete(requestId);reject(new Error(relBi('Cloud request timed out.','La solicitud a la nube agotó el tiempo de espera.')))},270000);
+    const requestId='mlv202-'+Date.now()+'-'+(++seq);
+    const timer=setTimeout(()=>{pending.delete(requestId);reject(new Error(rrText('Request timed out.','La solicitud agotó el tiempo de espera.')))},120000);
     pending.set(requestId,{resolve,reject,timer});
     window.chrome.webview.postMessage({channel:CHANNEL,requestId,action,payload});
   });
-}){return new Promise((resolve,reject)=>{if(!window.chrome?.webview?.postMessage){reject(new Error('This action requires the Windows app.'));return}const requestId='mlv202-'+Date.now()+'-'+(++seq),timer=setTimeout(()=>{pending.delete(requestId);reject(new Error('Request timed out.'))},120000);pending.set(requestId,{resolve,reject,timer});window.chrome.webview.postMessage({channel:CHANNEL,requestId,action,payload})})}
-if(window.chrome?.webview?.addEventListener)window.chrome.webview.addEventListener('message',ev=>{const d=ev?.data;if(!d||d.channel!==RESPONSE)return;const p=pending.get(d.requestId);if(!p)return;clearTimeout(p.timer);pending.delete(d.requestId);d.ok?p.resolve(d.payload):p.reject(new Error(d.error||'Request failed.'))});
+}
+if(window.chrome?.webview?.addEventListener)window.chrome.webview.addEventListener('message',ev=>{const d=ev?.data;if(!d||d.channel!==RESPONSE)return;const p=pending.get(d.requestId);if(!p)return;clearTimeout(p.timer);pending.delete(d.requestId);d.ok?p.resolve(d.payload):p.reject(new Error(d.error||rrText('Request failed.','La solicitud falló.')))});
 function capture(){try{return window.GoogleCloudV30192?.capture?.()||window.GoogleCloudV30191?.capture?.()||''}catch(_){return''}}
 function dataPane(){return document.querySelector('[data-v30171-pane="data"]')}function aboutPane(){return document.querySelector('[data-v30171-pane="about"]')}
 function applyBackupJson(raw){
@@ -31131,7 +31157,7 @@ function mount(){if(String(state?.activeTab||'')!=='settings')return;const d=dat
 async function runDiag(){diagBusy=true;mount();try{diag=await bridge('diagnostics',{backupJson:capture()})}catch(e){notify(rrText('Diagnostics','Diagnósticos'),String(e?.message||e),{kind:'error',persistent:true})}finally{diagBusy=false;mount()}}
 async function checkUpdate(){updateBusy=true;mount();try{update=await bridge('updateStatus')}catch(e){notify(rrText('Update check','Comprobación de actualizaciones'),String(e?.message||e),{kind:'error',persistent:true})}finally{updateBusy=false;mount()}}
 async function installOnline(){const u=update||await checkUpdate();if(!u?.onlineAvailable)return;if(!confirm(rrText(`Install Michel’s Life v${u.onlineVersion} from GitHub? A restore point will be created first.`,`¿Instalar Michel’s Life v${u.onlineVersion} desde GitHub? Primero se creará un punto de restauración.`)))return;const backupJson=capture();if(!backupJson)throw new Error(rrText('Could not capture current state.','No se pudo capturar el estado actual.'));const r=await bridge('installOnlineUpdate',{backupJson,downloadUrl:u.onlineDownloadUrl,checksumUrl:u.onlineChecksumUrl,version:u.onlineVersion});notify(rrText('Update prepared','Actualización preparada'),rrText(`v${r?.toVersion||u.onlineVersion} verified and ready. Michel’s Life will restart.`,`v${r?.toVersion||u.onlineVersion} verificada y lista. Michel’s Life se reiniciará.`),{persistent:true})}
-async function installLocal(path=''){if(!confirm(rrText('Install the newer local executable? A restore point will be created first.','¿Instalar el ejecutable local más reciente? Primero se creará un punto de restauración.')))return;const backupJson=capture();if(!backupJson)throw new Error('Could not capture current state.');await bridge('installUpdate',{backupJson,candidatePath:path})}
+async function installLocal(path=''){if(!confirm(rrText('Install the newer local executable? A restore point will be created first.','¿Instalar el ejecutable local más reciente? Primero se creará un punto de restauración.')))return;const backupJson=capture();if(!backupJson)throw new Error(rrText('Could not capture current state.','No se pudo capturar el estado actual.'));await bridge('installUpdate',{backupJson,candidatePath:path})}
 document.addEventListener('click',async e=>{const b=e.target.closest?.('[data-mlv202-action]');if(!b)return;e.preventDefault();e.stopPropagation();const a=b.dataset.mlv202Action;try{if(a==='diagnostics')await runDiag();else if(a==='diagnostic-report'){const r=await bridge('createDiagnosticReport',{backupJson:capture()});notify(rrText('Diagnostic snapshot saved','Captura de diagnóstico guardada'),r?.fileName||rrText('Saved locally.','Guardada localmente.'))}else if(a==='open-diagnostics')await bridge('openDiagnosticsFolder');else if(a==='export-portable'){const raw=capture();if(!raw)throw new Error(rrText('Could not capture current state.','No se pudo capturar el estado actual.'));const r=await bridge('exportPortable',{backupJson:raw});if(!r?.cancelled)notify(rrText('Portable backup exported','Copia portátil exportada'),r?.fileName||rrText('Saved.','Guardada.'))}else if(a==='import-portable'){const r=await bridge('importPortable');if(r?.cancelled)return;if(!confirm(rrText(`Import ${r.fileName||'this backup'}? The current state will be saved first.`,`¿Importar ${r.fileName||'esta copia'}? Primero se guardará el estado actual.`)))return;const cur=capture();if(cur)await bridge('createRestorePoint',{backupJson:cur,reason:'before_portable_import'});applyBackupJson(r.backupJson)}else if(a==='check-update')await checkUpdate();else if(a==='install-online')await installOnline();else if(a==='install-local'){const u=update||await checkUpdate();if(u?.candidatePath)await installLocal(u.candidatePath)}else if(a==='choose-local')await installLocal('')}catch(err){notify('Michel’s Life',String(err?.message||err),{kind:'error',persistent:true})}},true);
 const mo=new MutationObserver(()=>{clearTimeout(mo._t);mo._t=setTimeout(mount,100)});try{mo.observe(document.body,{childList:true,subtree:true})}catch(_){}
 document.addEventListener('click',e=>{if(e.target.closest?.('[data-v30171-setting="data"],[data-v30171-setting="about"]'))setTimeout(()=>{mount();if(e.target.closest?.('[data-v30171-setting="about"]')&&!update)checkUpdate()},140)},true);
