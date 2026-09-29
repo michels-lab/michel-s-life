@@ -1738,6 +1738,16 @@ const PAIRS={
   "Open ↗":"Abrir ↗",
   "more events in Google Calendar":"eventos más en Google Calendar",
   "Halloween":"Halloween",
+  "Inactive":"Inactiva",
+  "Reward":"Recompensa",
+  "Times":"Veces",
+  "Done":"Hecha",
+  "Full independent editing: days, type, XP, linked goal, category and status.":"Edición completa e independiente: días, tipo, XP, meta vinculada, categoría y estado.",
+  "Projects organize outcomes; missions remain the executable actions.":"Los proyectos organizan resultados; las misiones siguen siendo las acciones ejecutables.",
+  "Target date":"Fecha objetivo",
+  "Save project":"Guardar proyecto",
+  "Schedule one-off":"Programar tarea única",
+  "accumulated":"acumulado",
 };
 const SPANISH_SYSTEM_DEFAULTS={
   "Read 30 minutes at night 3 times":"Leer 30 minutos de noche 3 veces",
