@@ -1266,23 +1266,100 @@ function ensureGoals(){
   if(changed) save();
   return state.goals;
 }
-function goalCategoryOptions(sel=''){return Object.entries(CATEGORIES).map(([k,c])=>`<option value="${k}" ${sel===k?'selected':''}>${c.emoji} ${c.name}</option>`).join('')}
-function goalMeasureOptions(sel='count'){return [['count','Contar completados'],['distinctDays','Contar días distintos']].map(([v,l])=>`<option value="${v}" ${sel===v?'selected':''}>${l}</option>`).join('')}
-function goalPeriodOptions(sel='week'){return [['week','Semana'],['month','Mes']].map(([v,l])=>`<option value="${v}" ${sel===v?'selected':''}>${l}</option>`).join('')}
+function goalText(en,es){return window.mlvText?window.mlvText(en,es):(window.MichelsLifeI18n?.language==='es'?es:en)}
+function goalIsEs(){return window.mlvLanguage?window.mlvLanguage()==='es':window.MichelsLifeI18n?.language==='es'}
+function goalCategoryOptions(sel=''){return Object.entries(CATEGORIES).map(([k,x])=>`<option value="${k}" ${sel===k?'selected':''}>${x.emoji} ${escapeHtml(tr(x.name))}</option>`).join('')}
+function goalMeasureOptions(sel='count'){
+  return [
+    ['count',goalText('Count completions','Contar completados')],
+    ['distinctDays',goalText('Count distinct days','Contar días distintos')]
+  ].map(([v,l])=>`<option value="${v}" ${sel===v?'selected':''}>${escapeHtml(l)}</option>`).join('')
+}
+function goalPeriodOptions(sel='week'){
+  return [['week',goalText('Week','Semana')],['month',goalText('Month','Mes')]]
+    .map(([v,l])=>`<option value="${v}" ${sel===v?'selected':''}>${escapeHtml(l)}</option>`).join('')
+}
 function openGoalEditor(id=null){
   ensureGoals();
   const g=id?state.goals.find(x=>x.id===id):{id:'',name:'',desc:'',cat:'mental',type:'weekly',diff:'medium',target:3,measure:'count',period:'week',days:[1,2,3,4,5],keywords:[],archived:false,active:true};
   $('#modalRoot').innerHTML=`<div class="modal-backdrop" data-mlv-i18n-owned="source"><div class="modal wide"><div class="modal-head"><div><h2>${escapeHtml(tr(id?'Edit goal':'New goal'))}</h2><p>${escapeHtml(tr('Goals are fully editable: name, target, counting method, keywords, days and category.'))}</p></div><button class="icon-btn" data-action="close-modal">×</button></div>${goalEditForm(g,id?'edit':'new')}</div></div>`;
 }
-function goalEditForm(g,mode='edit'){return `<form id="goalEditForm" data-mode="${mode}" data-id="${g.id||''}"><div class="goal-edit-grid"><label>Nombre<input name="name" value="${escapeHtml(g.name||'')}" placeholder="Ej. Leer 30 minutos 4 veces"></label><label>Categoría<select name="cat">${goalCategoryOptions(g.cat)}</select></label><label>Tipo<select name="type">${typeOptions(g.type||'weekly')}</select></label><label>Dificultad<select name="diff">${difficultyOptions(g.diff||'medium')}</select></label><label>Objetivo<input name="target" type="number" min="1" value="${Number(g.target||1)}"></label><label>Medición<select name="measure">${goalMeasureOptions(g.measure||'count')}</select></label><label>Periodo<select name="period">${goalPeriodOptions(g.period||'week')}</select></label><label>Activa<select name="active"><option value="true" ${(g.active!==false)?'selected':''}>Sí</option><option value="false" ${g.active===false?'selected':''}>No</option></select></label></div><div class="goal-edit-stack"><label>Descripción<textarea name="desc">${escapeHtml(g.desc||'')}</textarea></label><label>Keywords para detectar progreso (separadas por coma)<input name="keywords" value="${escapeHtml((g.keywords||[]).join(', '))}" placeholder="leer 30, libro, tesis"></label><div><b>Días sugeridos / repetición</b><p class="tiny muted" style="margin:4px 0 8px">Sirven como referencia visual y para cuando conviertes la meta en misión.</p>${dayCheckboxes(g.days||[1,2,3,4,5],'goalDays')}</div><div class="days"><label class="day-chip"><input type="checkbox" name="archived" ${g.archived?'checked':''}> <strong>Archivada</strong></label></div></div><div class="actions" style="margin-top:16px"><button class="btn primary" type="submit">Guardar meta</button><button class="btn ghost" type="button" data-action="close-modal">Cancelar</button></div></form>`}
-function saveGoalEdit(form){ensureGoals(); const fd=new FormData(form); const id=form.dataset.id || uid('g'); const days=$$('input[name="goalDays"]:checked',form).map(i=>Number(i.value)); const goal={id,name:(fd.get('name')||'Meta nueva').trim(),desc:(fd.get('desc')||'').trim(),cat:fd.get('cat')||'mental',type:fd.get('type')||'weekly',diff:fd.get('diff')||'medium',target:Math.max(1,Number(fd.get('target')||1)),measure:fd.get('measure')||'count',period:fd.get('period')||'week',days:days.length?days:[1,2,3,4,5],keywords:String(fd.get('keywords')||'').split(',').map(s=>s.trim()).filter(Boolean),archived:fd.get('archived')==='on',active:fd.get('active')!=='false'}; const idx=state.goals.findIndex(g=>g.id===id); if(idx>=0) state.goals[idx]={...state.goals[idx],...goal}; else state.goals.unshift(goal); log(idx>=0?'goal_edit':'goal_create',(idx>=0?'Meta editada: ':'Meta creada: ')+goal.name,{goalId:id,category:goal.cat}); save(); closeModal(); toast(idx>=0?'Meta actualizada':'Meta creada',goal.name); renderAll(); }
-function duplicateGoal(id){ensureGoals(); const g=state.goals.find(x=>x.id===id); if(!g) return; const copy={...g,id:uid('g'),name:g.name+' (copia)'}; state.goals.unshift(copy); log('goal_duplicate','Meta duplicada: '+g.name,{goalId:copy.id,category:copy.cat}); save(); toast('Meta duplicada',copy.name); renderAll(); }
-function archiveGoal(id){const g=state.goals.find(x=>x.id===id); if(!g) return; g.archived=!g.archived; log('goal_archive',(g.archived?'Meta archivada: ':'Meta reactivada: ')+g.name,{goalId:id,category:g.cat}); save(); toast(g.archived?'Meta archivada':'Meta reactivada',g.name); renderAll(); }
+function goalEditForm(g,mode='edit'){
+  const t=goalText;
+  return `<form id="goalEditForm" data-mode="${mode}" data-id="${g.id||''}" data-mlv-i18n-owned="source"><div class="goal-edit-grid">
+    <label>${escapeHtml(t('Name','Nombre'))}<input name="name" value="${escapeHtml(g.name||'')}" placeholder="${escapeHtml(t('E.g. Read 30 minutes 4 times','Ej. Leer 30 minutos 4 veces'))}"></label>
+    <label>${escapeHtml(t('Category','Categoría'))}<select name="cat">${goalCategoryOptions(g.cat)}</select></label>
+    <label>${escapeHtml(t('Type','Tipo'))}<select name="type">${typeOptions(g.type||'weekly')}</select></label>
+    <label>${escapeHtml(t('Difficulty','Dificultad'))}<select name="diff">${difficultyOptions(g.diff||'medium')}</select></label>
+    <label>${escapeHtml(t('Target','Objetivo'))}<input name="target" type="number" min="1" value="${Number(g.target||1)}"></label>
+    <label>${escapeHtml(t('Measurement','Medición'))}<select name="measure">${goalMeasureOptions(g.measure||'count')}</select></label>
+    <label>${escapeHtml(t('Period','Periodo'))}<select name="period">${goalPeriodOptions(g.period||'week')}</select></label>
+    <label>${escapeHtml(t('Active','Activa'))}<select name="active"><option value="true" ${(g.active!==false)?'selected':''}>${escapeHtml(t('Yes','Sí'))}</option><option value="false" ${g.active===false?'selected':''}>${escapeHtml(t('No','No'))}</option></select></label>
+  </div><div class="goal-edit-stack">
+    <label>${escapeHtml(t('Description','Descripción'))}<textarea name="desc">${escapeHtml(g.desc||'')}</textarea></label>
+    <label>${escapeHtml(t('Keywords for detecting progress (comma-separated)','Keywords para detectar progreso (separadas por coma)'))}<input name="keywords" value="${escapeHtml((g.keywords||[]).join(', '))}" placeholder="${escapeHtml(t('read 30, book, thesis','leer 30, libro, tesis'))}"></label>
+    <div><b>${escapeHtml(t('Suggested days / repetition','Días sugeridos / repetición'))}</b><p class="tiny muted" style="margin:4px 0 8px">${escapeHtml(t('They are a visual reference and are also used when you convert the goal into a mission.','Sirven como referencia visual y para cuando conviertes la meta en misión.'))}</p>${dayCheckboxes(g.days||[1,2,3,4,5],'goalDays')}</div>
+    <div class="days"><label class="day-chip"><input type="checkbox" name="archived" ${g.archived?'checked':''}> <strong>${escapeHtml(t('Archived','Archivada'))}</strong></label></div>
+  </div><div class="actions" style="margin-top:16px"><button class="btn primary" type="submit">${escapeHtml(t('Save goal','Guardar meta'))}</button><button class="btn ghost" type="button" data-action="close-modal">${escapeHtml(t('Cancel','Cancelar'))}</button></div></form>`
+}
+function saveGoalEdit(form){
+  ensureGoals();const fd=new FormData(form),id=form.dataset.id||uid('g'),days=$$('input[name="goalDays"]:checked',form).map(i=>Number(i.value));
+  const goal={id,name:(fd.get('name')||goalText('New goal','Meta nueva')).trim(),desc:(fd.get('desc')||'').trim(),cat:fd.get('cat')||'mental',type:fd.get('type')||'weekly',diff:fd.get('diff')||'medium',target:Math.max(1,Number(fd.get('target')||1)),measure:fd.get('measure')||'count',period:fd.get('period')||'week',days:days.length?days:[1,2,3,4,5],keywords:String(fd.get('keywords')||'').split(',').map(s=>s.trim()).filter(Boolean),archived:fd.get('archived')==='on',active:fd.get('active')!=='false'};
+  const idx=state.goals.findIndex(g=>g.id===id);if(idx>=0)state.goals[idx]={...state.goals[idx],...goal};else state.goals.unshift(goal);
+  log(idx>=0?'goal_edit':'goal_create',(idx>=0?goalText('Goal edited: ','Meta editada: '):goalText('Goal created: ','Meta creada: '))+goal.name,{goalId:id,category:goal.cat});
+  save();closeModal();toast(idx>=0?goalText('Goal updated','Meta actualizada'):goalText('Goal created','Meta creada'),goal.name);renderAll()
+}
+function duplicateGoal(id){
+  ensureGoals();const g=state.goals.find(x=>x.id===id);if(!g)return;
+  const copy={...g,id:uid('g'),name:g.name+' ('+goalText('copy','copia')+')'};state.goals.unshift(copy);
+  log('goal_duplicate',goalText('Goal duplicated: ','Meta duplicada: ')+g.name,{goalId:copy.id,category:copy.cat});
+  save();toast(goalText('Goal duplicated','Meta duplicada'),copy.name);renderAll()
+}
+function archiveGoal(id){
+  const g=state.goals.find(x=>x.id===id);if(!g)return;g.archived=!g.archived;
+  log('goal_archive',(g.archived?goalText('Goal archived: ','Meta archivada: '):goalText('Goal reactivated: ','Meta reactivada: '))+g.name,{goalId:id,category:g.cat});
+  save();toast(g.archived?goalText('Goal archived','Meta archivada'):goalText('Goal reactivated','Meta reactivada'),g.name);renderAll()
+}
 function goalDateRange(g){const now=dateKey(); if(g.period==='month'){const monthStart=now.slice(0,8)+'01'; return [monthStart, now]} return [goalWeekStart(), now]}
-function goalStatusText(g,p){const left=Math.max(0,p.target-p.value); const days=daysUntilGoalReset(); const unit=g.period==='month'?'mes':'semana'; if(p.done)return {cls:'good',text:`Completada este ${unit}. ${g.period==='week'?`Se reinicia automáticamente en ${days} día${days===1?'':'s'}.`:'Se recalculará al iniciar el próximo mes.'}`}; if(g.period==='month'){ if(p.value===0) return {cls:'warn',text:'Aún va en cero este mes. Una acción hoy ya empieza a mover la meta.'}; return {cls:'warn',text:`Vas ${p.value}/${p.target}. Faltan ${left} antes de cerrar el mes.`}; } if(days<=1)return {cls:'bad',text:`Falta ${left}. Se reinicia muy pronto; rescata una acción hoy.`}; if(p.value===0)return {cls:'warn',text:`Aún va en cero. Quedan ${days} días antes del reinicio semanal.`}; return {cls:'warn',text:`Vas ${p.value}/${p.target}. Faltan ${left}; el conteo se reinicia en ${days} días.`}}
-function renderGoals(){const goals=ensureGoals().filter(g=>g.active!==false&&!g.archived); const groups={}; goals.forEach(g=>{(groups[g.cat]||(groups[g.cat]=[])).push(g)}); const days=daysUntilGoalReset(); const total=goals.length; return `<div class="card"><div class="section-title"><div><h2>Metas</h2><p>Ahora son totalmente editables y muestran progreso real. Puedes crear, editar, duplicar, archivar y convertir cada meta en misión.</p></div><span class="pill hot">${total} metas activas</span></div><div class="goal-control-bar"><div class="week-clock">Semana actual: <b>${goalWeekStart()}</b> → <b>${goalWeekEnd()}</b> · se reinicia en <b>${days}</b> día${days===1?'':'s'}</div><div class="actions"><button class="btn" data-action="goal-new">Nueva meta</button><button class="btn" data-action="goal-refresh">Actualizar conteos</button><button class="btn ghost" data-action="goals-restore">Restaurar sugeridas</button></div></div>${Object.entries(groups).map(([cat,items])=>`<div class="goal-section-title v6"><b>${CATEGORIES[cat]?.emoji||'✦'} ${CATEGORIES[cat]?.name||cat}</b><span>${items.length} metas</span></div><div class="goal-board v7">${items.map(g=>renderGoalCardV7(g)).join('')}</div>`).join('')}<div class="card" style="margin-top:14px"><h3 style="margin:0 0 6px">Metas archivadas</h3><div class="tiny muted" style="margin-bottom:10px">Las puedes reactivar cuando quieras.</div>${renderArchivedGoals()}</div></div>`}
-function renderArchivedGoals(){const list=ensureGoals().filter(g=>g.archived); if(!list.length) return '<div class="empty">No hay metas archivadas.</div>'; return `<div class="list">${list.map(g=>`<div class="mini-row"><div><b>${escapeHtml(g.name)}</b><div class="tiny muted">${escapeHtml(CATEGORIES[g.cat]?.name||g.cat)} · objetivo ${g.target}</div></div><div class="actions"><button class="btn" data-action="goal-edit" data-id="${g.id}">Editar</button><button class="btn green" data-action="goal-archive" data-id="${g.id}">Reactivar</button></div></div>`).join('')}</div>`}
-function renderGoalCardV7(g){const p=goalProgress(g), st=goalStatusText(g,p); const checks=Array.from({length:Math.min(g.target,10)},(_,i)=>`<span class="goal-dot ${i<p.value?'done':''}">${i+1}</span>`).join('')+(g.target>10?`<span class="goal-dot ${p.done?'done':''}">+${g.target-10}</span>`:''); const range=g.period==='month'?'Meta mensual':'Meta semanal'; return `<div class="goal-card v7 cat-${g.cat}"><div class="goal-top"><div><h3>${escapeHtml(g.name)}</h3><div class="goal-sub">${escapeHtml(g.desc||'Sin descripción')}</div></div><span class="quest-badge">${CATEGORIES[g.cat]?.emoji||'✦'}</span></div><div class="goal-mini-meta"><span class="pill">${range}</span><span class="pill">${DIFF[g.diff]?.name||g.diff}</span><span class="pill">${g.measure==='distinctDays'?'Por días':'Por acciones'}</span></div><div class="goal-quickfacts"><div><small>Progreso</small><b>${p.value}/${p.target}</b></div><div><small>Tipo</small><b>${g.type==='weekly'?'Semanal':g.type==='daily'?'Diaria':g.type==='oneoff'?'Única':'Boss'}</b></div><div><small>Días</small><b>${(g.days||[]).map(i=>DAY_NAMES[i][0]).join(' · ')}</b></div></div><div class="goal-progress"><div class="goal-progress-head"><span>Checklist</span><b>${p.pct}%</b></div><div class="goal-track"><span style="width:${p.pct}%"></span></div></div><div class="goal-checks">${checks}</div><div class="goal-status ${st.cls}">${st.text}</div><div class="goal-actions v7"><button class="btn primary" data-action="goal-to-mission" data-name="${escapeHtml(g.name.replace(/\s+\d+\s*(días|veces|sesiones)?(\s*esta semana)?/i,''))}" data-cat="${g.cat}" data-type="${g.type}" data-diff="${g.diff}" data-days="${(g.days||[]).join(',')}">Convertir en misión</button><button class="btn" data-action="goal-edit" data-id="${g.id}">Editar meta</button><button class="btn ghost" data-action="goal-duplicate" data-id="${g.id}">Duplicar</button><button class="btn ghost" data-action="goal-archive" data-id="${g.id}">${g.archived?'Reactivar':'Archivar'}</button></div></div>`}
+function goalStatusText(g,p){
+  const left=Math.max(0,p.target-p.value),days=daysUntilGoalReset(),isMonth=g.period==='month';
+  if(p.done){
+    if(isMonth)return {cls:'good',text:goalText('Completed this month. It will recalculate when the next month begins.','Completada este mes. Se recalculará al iniciar el próximo mes.')};
+    return {cls:'good',text:goalText(
+      `Completed this week. It resets automatically in ${days} day${days===1?'':'s'}.`,
+      `Completada esta semana. Se reinicia automáticamente en ${days} día${days===1?'':'s'}.`
+    )}
+  }
+  if(isMonth){
+    if(p.value===0)return {cls:'warn',text:goalText('Still at zero this month. One action today starts moving the goal.','Aún va en cero este mes. Una acción hoy ya empieza a mover la meta.')};
+    return {cls:'warn',text:goalText(`You are at ${p.value}/${p.target}. ${left} left before the month closes.`,`Vas ${p.value}/${p.target}. Faltan ${left} antes de cerrar el mes.`)}
+  }
+  if(days<=1)return {cls:'bad',text:goalText(`${left} left. It resets very soon; rescue one action today.`,`Falta ${left}. Se reinicia muy pronto; rescata una acción hoy.`)};
+  if(p.value===0)return {cls:'warn',text:goalText(`Still at zero. ${days} days remain before the weekly reset.`,`Aún va en cero. Quedan ${days} días antes del reinicio semanal.`)};
+  return {cls:'warn',text:goalText(`You are at ${p.value}/${p.target}. ${left} left; the count resets in ${days} days.`,`Vas ${p.value}/${p.target}. Faltan ${left}; el conteo se reinicia en ${days} días.`)}
+}
+function renderGoals(){
+  const goals=ensureGoals().filter(g=>g.active!==false&&!g.archived),groups={};goals.forEach(g=>{(groups[g.cat]||(groups[g.cat]=[])).push(g)});
+  const days=daysUntilGoalReset(),total=goals.length,t=goalText;
+  return `<div class="card" data-mlv-i18n-owned="source"><div class="section-title"><div><h2>${escapeHtml(t('Goals','Metas'))}</h2><p>${escapeHtml(t('Goals are fully editable and show real progress. Create, edit, duplicate, archive or convert any goal into a mission.','Las metas son totalmente editables y muestran progreso real. Puedes crear, editar, duplicar, archivar o convertir cualquier meta en misión.'))}</p></div><span class="pill hot">${total} ${escapeHtml(t(total===1?'active goal':'active goals',total===1?'meta activa':'metas activas'))}</span></div>
+  <div class="goal-control-bar"><div class="week-clock">${escapeHtml(t('Current week:','Semana actual:'))} <b>${goalWeekStart()}</b> → <b>${goalWeekEnd()}</b> · ${escapeHtml(t('resets in','se reinicia en'))} <b>${days}</b> ${escapeHtml(t(days===1?'day':'days',days===1?'día':'días'))}</div><div class="actions"><button class="btn" data-action="goal-new">${escapeHtml(t('New goal','Nueva meta'))}</button><button class="btn" data-action="goal-refresh">${escapeHtml(t('Refresh counts','Actualizar conteos'))}</button><button class="btn ghost" data-action="goals-restore">${escapeHtml(t('Restore suggestions','Restaurar sugeridas'))}</button></div></div>
+  ${Object.entries(groups).map(([cat,items])=>`<div class="goal-section-title v6"><b>${CATEGORIES[cat]?.emoji||'✦'} ${escapeHtml(tr(CATEGORIES[cat]?.name||cat))}</b><span>${items.length} ${escapeHtml(t(items.length===1?'goal':'goals',items.length===1?'meta':'metas'))}</span></div><div class="goal-board v7">${items.map(g=>renderGoalCardV7(g)).join('')}</div>`).join('')}
+  <div class="card" style="margin-top:14px"><h3 style="margin:0 0 6px">${escapeHtml(t('Archived goals','Metas archivadas'))}</h3><div class="tiny muted" style="margin-bottom:10px">${escapeHtml(t('You can reactivate them whenever you want.','Las puedes reactivar cuando quieras.'))}</div>${renderArchivedGoals()}</div></div>`
+}
+function renderArchivedGoals(){
+  const list=ensureGoals().filter(g=>g.archived),t=goalText;
+  if(!list.length)return '<div class="empty">'+escapeHtml(t('No archived goals.','No hay metas archivadas.'))+'</div>';
+  return `<div class="list">${list.map(g=>`<div class="mini-row"><div><b>${escapeHtml(g.name)}</b><div class="tiny muted">${escapeHtml(tr(CATEGORIES[g.cat]?.name||g.cat))} · ${escapeHtml(t('target','objetivo'))} ${g.target}</div></div><div class="actions"><button class="btn" data-action="goal-edit" data-id="${g.id}">${escapeHtml(t('Edit','Editar'))}</button><button class="btn green" data-action="goal-archive" data-id="${g.id}">${escapeHtml(t('Reactivate','Reactivar'))}</button></div></div>`).join('')}</div>`
+}
+function renderGoalCardV7(g){
+  const p=goalProgress(g),st=goalStatusText(g,p),t=goalText;
+  const checks=Array.from({length:Math.min(g.target,10)},(_,i)=>`<span class="goal-dot ${i<p.value?'done':''}">${i+1}</span>`).join('')+(g.target>10?`<span class="goal-dot ${p.done?'done':''}">+${g.target-10}</span>`:'');
+  const range=g.period==='month'?t('Monthly goal','Meta mensual'):t('Weekly goal','Meta semanal');
+  const measure=g.measure==='distinctDays'?t('By days','Por días'):t('By actions','Por acciones');
+  const type=g.type==='weekly'?t('Weekly','Semanal'):g.type==='daily'?t('Daily','Diaria'):g.type==='oneoff'?t('One-off','Única'):t('Boss','Boss');
+  const initials=goalIsEs()?['D','L','M','X','J','V','S']:['S','M','T','W','T','F','S'];
+  return `<div class="goal-card v7 cat-${g.cat}" data-mlv-i18n-owned="source"><div class="goal-top"><div><h3>${escapeHtml(g.name)}</h3><div class="goal-sub">${escapeHtml(g.desc||t('No description','Sin descripción'))}</div></div><span class="quest-badge">${CATEGORIES[g.cat]?.emoji||'✦'}</span></div><div class="goal-mini-meta"><span class="pill">${escapeHtml(range)}</span><span class="pill">${escapeHtml(tr(DIFF[g.diff]?.name||g.diff))}</span><span class="pill">${escapeHtml(measure)}</span></div><div class="goal-quickfacts"><div><small>${escapeHtml(t('Progress','Progreso'))}</small><b>${p.value}/${p.target}</b></div><div><small>${escapeHtml(t('Type','Tipo'))}</small><b>${escapeHtml(type)}</b></div><div><small>${escapeHtml(t('Days','Días'))}</small><b>${(g.days||[]).map(i=>initials[i]||'?').join(' · ')}</b></div></div><div class="goal-progress"><div class="goal-progress-head"><span>${escapeHtml(t('Checklist','Checklist'))}</span><b>${p.pct}%</b></div><div class="goal-track"><span style="width:${p.pct}%"></span></div></div><div class="goal-checks">${checks}</div><div class="goal-status ${st.cls}">${escapeHtml(st.text)}</div><div class="goal-actions v7"><button class="btn primary" data-action="goal-to-mission" data-name="${escapeHtml(g.name.replace(/\s+\d+\s*(días|days|veces|times|sesiones|sessions)?(\s*(esta|this)\s+(semana|week))?/i,''))}" data-cat="${g.cat}" data-type="${g.type}" data-diff="${g.diff}" data-days="${(g.days||[]).join(',')}">${escapeHtml(t('Convert to mission','Convertir en misión'))}</button><button class="btn" data-action="goal-edit" data-id="${g.id}">${escapeHtml(t('Edit goal','Editar meta'))}</button><button class="btn ghost" data-action="goal-duplicate" data-id="${g.id}">${escapeHtml(t('Duplicate','Duplicar'))}</button><button class="btn ghost" data-action="goal-archive" data-id="${g.id}">${escapeHtml(g.archived?t('Reactivate','Reactivar'):t('Archive','Archivar'))}</button></div></div>`
+}
 function renderAvatar(){
  const lv=visualLevels(),eq=state.equipped,st=activeStage();
  const dominant=rankCategories()[0]?.[0]||'physical';
@@ -1318,7 +1395,7 @@ document.addEventListener('click',e=>{
   if(a==='goal-edit'){openGoalEditor(id); return;}
   if(a==='goal-duplicate'){duplicateGoal(id); return;}
   if(a==='goal-archive'){archiveGoal(id); return;}
-  if(a==='goals-restore'){ if(confirm('¿Restaurar todas las metas sugeridas? Esto reemplaza tu lista actual de metas.')){state.goals=[...suggestedGoalsV7(), ...suggestedGoalsV8Extra()]; save(); toast('Metas restauradas','Se cargó la biblioteca sugerida con extras v8.'); renderAll();} return; }
+  if(a==='goals-restore'){ if(confirm(goalText('Restore all suggested goals? This replaces your current goal list.','¿Restaurar todas las metas sugeridas? Esto reemplaza tu lista actual de metas.'))){state.goals=[...suggestedGoalsV7(), ...suggestedGoalsV8Extra()]; save(); toast(goalText('Goals restored','Metas restauradas'),goalText('The suggested goal library was loaded.','Se cargó la biblioteca de metas sugeridas.')); renderAll();} return; }
 });
 
 document.addEventListener('submit',e=>{ if(e.target.id==='goalEditForm'){ e.preventDefault(); saveGoalEdit(e.target); } });
