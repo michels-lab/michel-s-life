@@ -22338,6 +22338,9 @@ window.__michelsLifeBackgroundSetsV3088=['naruto-world','attack-on-titan'];
   const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
 
   function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+  function tx(en,es){return window.mlvText?window.mlvText(en,es):(window.MichelsLifeI18n?.language==='es'?es:en)}
+  function sys(v){try{return window.MichelsLifeI18n?.mapText?.(String(v))||String(v)}catch(_){return String(v)}}
+  function isEs(){return (window.MichelsLifeI18n?.language||document.documentElement.lang)==='es'}
   function today(){try{return dateKey()}catch(e){return new Date().toISOString().slice(0,10)}}
   function add(k,n){try{return addDays(k,n)}catch(e){const d=new Date(k+'T12:00:00');d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}}
   function key(which){return add(today(),which==='yesterday'?-1:1)}
@@ -22371,13 +22374,13 @@ window.__michelsLifeBackgroundSetsV3088=['naruto-world','attack-on-titan'];
       String(a.name||'').localeCompare(String(b.name||''))
     );
   }
-  function dayStrip(m){const names=['S','M','T','W','T','F','S'],days=(m.days||[]).map(Number);return `<div class="quest-days">${names.map((n,i)=>`<span class="day-mini ${days.includes(i)?'on':''}">${n}</span>`).join('')}</div>`}
+  function dayStrip(m){const names=isEs()?['D','L','M','X','J','V','S']:['S','M','T','W','T','F','S'],days=(m.days||[]).map(Number);return `<div class="quest-days">${names.map((n,i)=>`<span class="day-mini ${days.includes(i)?'on':''}">${n}</span>`).join('')}</div>`}
   function card(m,which){
     const k=key(which),done=completedOn(m,k),c=category(m);
     const actions=which==='yesterday'
-      ? `<button class="btn ${done?'ghost':'green'}" data-v3093-action="${done?'undo':'complete'}" data-id="${esc(m.id)}">${done?'Undo yesterday':'Done yesterday'}</button><button class="btn" data-v3093-action="move-today" data-id="${esc(m.id)}">Move to today</button>`
-      : `<button class="btn" data-v3093-action="skip-tomorrow" data-id="${esc(m.id)}">Skip tomorrow</button><button class="btn ghost" data-v3093-action="move-today" data-id="${esc(m.id)}">Also do today</button>`;
-    return `<article class="v3093-item ${done?'completed':''}" data-v3093-card="${esc(m.id)}" data-done="${done?'1':'0'}"><div><div class="v3093-title">${esc(m.name)}</div>${m.description||m.notes?`<div class="muted tiny" style="margin-top:4px">${esc(m.description||m.notes)}</div>`:''}<div class="v3093-meta"><span class="pill">${c.emoji} ${esc(c.name)}</span><span class="pill">${esc(difficulty(m))}</span><span class="pill">+${Number(m.xp||0)} XP</span>${m.fixed?'<span class="pill">📌 Fixed</span>':''}<span class="pill ${done?'good':'hot'}" data-v3093-status>${done?'Completed':which==='tomorrow'?'Planned':'Pending'}</span></div>${dayStrip(m)}</div><div class="v3093-actions">${actions}</div></article>`;
+      ? `<button class="btn ${done?'ghost':'green'}" data-v3093-action="${done?'undo':'complete'}" data-id="${esc(m.id)}">${esc(done?tx('Undo yesterday','Deshacer ayer'):tx('Done yesterday','Completar ayer'))}</button><button class="btn" data-v3093-action="move-today" data-id="${esc(m.id)}">${esc(tx('Move to today','Mover a hoy'))}</button>`
+      : `<button class="btn" data-v3093-action="skip-tomorrow" data-id="${esc(m.id)}">${esc(tx('Skip tomorrow','Omitir mañana'))}</button><button class="btn ghost" data-v3093-action="move-today" data-id="${esc(m.id)}">${esc(tx('Also do today','Hacer también hoy'))}</button>`;
+    return `<article class="v3093-item ${done?'completed':''}" data-v3093-card="${esc(m.id)}" data-done="${done?'1':'0'}" data-mlv-i18n-owned="source"><div><div class="v3093-title">${esc(m.name)}</div>${m.description||m.notes?`<div class="muted tiny" style="margin-top:4px">${esc(m.description||m.notes)}</div>`:''}<div class="v3093-meta"><span class="pill">${c.emoji} ${esc(sys(c.name))}</span><span class="pill">${esc(sys(difficulty(m)))}</span><span class="pill">+${Number(m.xp||0)} XP</span>${m.fixed?'<span class="pill">📌 '+esc(tx('Fixed','Fija'))+'</span>':''}<span class="pill ${done?'good':'hot'}" data-v3093-status>${esc(done?tx('Completed','Completada'):which==='tomorrow'?tx('Planned','Planeada'):tx('Pending','Pendiente'))}</span></div>${dayStrip(m)}</div><div class="v3093-actions">${actions}</div></article>`;
   }
 
   function removeLegacy(){
@@ -22392,8 +22395,9 @@ window.__michelsLifeBackgroundSetsV3088=['naruto-world','attack-on-titan'];
     const tabs=$('#tabs');if(!tabs)return;
     let y=tabs.querySelector('[data-v3093-open="yesterday"]');
     let t=tabs.querySelector('[data-v3093-open="tomorrow"]');
-    if(!y){y=document.createElement('button');y.type='button';y.className='tab-btn v3093-day-tab';y.dataset.v3093Open='yesterday';y.textContent='Yesterday'}
-    if(!t){t=document.createElement('button');t.type='button';t.className='tab-btn v3093-day-tab';t.dataset.v3093Open='tomorrow';t.textContent='Tomorrow'}
+    if(!y){y=document.createElement('button');y.type='button';y.className='tab-btn v3093-day-tab';y.dataset.v3093Open='yesterday'}
+    if(!t){t=document.createElement('button');t.type='button';t.className='tab-btn v3093-day-tab';t.dataset.v3093Open='tomorrow'}
+    y.textContent=tx('Yesterday','Ayer');t.textContent=tx('Tomorrow','Mañana');y.dataset.mlvI18nOwned='source';t.dataset.mlvI18nOwned='source';
     const dashboard=tabs.querySelector('[data-tab="dashboard"]');
     if(dashboard){dashboard.insertAdjacentElement('afterend',y);y.insertAdjacentElement('afterend',t)}
     else{tabs.prepend(t);tabs.prepend(y)}
@@ -22412,7 +22416,7 @@ window.__michelsLifeBackgroundSetsV3088=['naruto-world','attack-on-titan'];
     ensureTabs();
     const k=key(which),arr=list(which),doneCount=arr.filter(m=>completedOn(m,k)).length,main=$('#main');
     if(!main)return;
-    main.innerHTML=`<div class="v3093-day-page" data-v3093-page="${which}" data-filter="all"><section class="card v3093-hero"><div class="section-title"><div><h2>${which==='yesterday'?'🕰️ Yesterday':'🔮 Tomorrow'}</h2><p>${k} · ${which==='yesterday'?'Review and close yesterday without reloading the app.':'Preview and adjust tomorrow without reloading the app.'}</p></div><span class="pill" data-v3093-count>${doneCount}/${arr.length} completed</span></div><div class="v3093-toolbar"><div class="v3093-toolbar-group"><button class="btn ghost" data-tab="dashboard">Back to Today</button><button class="btn ${which==='yesterday'?'primary':'ghost'}" data-v3093-open="yesterday">Yesterday</button><button class="btn ${which==='tomorrow'?'primary':'ghost'}" data-v3093-open="tomorrow">Tomorrow</button></div><div class="v3093-filter-group"><button class="btn active" data-v3093-filter="all">All <span data-v3093-all>${arr.length}</span></button><button class="btn" data-v3093-filter="pending">Pending <span data-v3093-pending>${arr.length-doneCount}</span></button><button class="btn" data-v3093-filter="completed">Completed <span data-v3093-completed>${doneCount}</span></button>${which==='yesterday'&&doneCount<arr.length?'<button class="btn gold" data-v3093-action="complete-all">Mark all done</button>':''}</div></div></section>${arr.length?`<div class="v3093-list">${arr.map(m=>card(m,which)).join('')}</div>`:'<div class="v3093-empty">No missions planned for this day.</div>'}</div>`;
+    main.innerHTML=`<div class="v3093-day-page" data-v3093-page="${which}" data-filter="all" data-mlv-i18n-owned="source"><section class="card v3093-hero"><div class="section-title"><div><h2>${which==='yesterday'?'🕰️ '+esc(tx('Yesterday','Ayer')):'🔮 '+esc(tx('Tomorrow','Mañana'))}</h2><p>${k} · ${esc(which==='yesterday'?tx('Review and close yesterday without reloading the app.','Revisa y cierra ayer sin recargar la app.'):tx('Preview and adjust tomorrow without reloading the app.','Previsualiza y ajusta mañana sin recargar la app.'))}</p></div><span class="pill" data-v3093-count>${doneCount}/${arr.length} ${esc(tx('completed','completadas'))}</span></div><div class="v3093-toolbar"><div class="v3093-toolbar-group"><button class="btn ghost" data-tab="dashboard">${esc(tx('Back to Today','Volver a Hoy'))}</button><button class="btn ${which==='yesterday'?'primary':'ghost'}" data-v3093-open="yesterday">${esc(tx('Yesterday','Ayer'))}</button><button class="btn ${which==='tomorrow'?'primary':'ghost'}" data-v3093-open="tomorrow">${esc(tx('Tomorrow','Mañana'))}</button></div><div class="v3093-filter-group"><button class="btn active" data-v3093-filter="all">${esc(tx('All','Todas'))} <span data-v3093-all>${arr.length}</span></button><button class="btn" data-v3093-filter="pending">${esc(tx('Pending','Pendientes'))} <span data-v3093-pending>${arr.length-doneCount}</span></button><button class="btn" data-v3093-filter="completed">${esc(tx('Completed','Completadas'))} <span data-v3093-completed>${doneCount}</span></button>${which==='yesterday'&&doneCount<arr.length?'<button class="btn gold" data-v3093-action="complete-all">'+esc(tx('Mark all done','Marcar todas como hechas'))+'</button>':''}</div></div></section>${arr.length?`<div class="v3093-list">${arr.map(m=>card(m,which)).join('')}</div>`:'<div class="v3093-empty">'+esc(tx('No missions planned for this day.','No hay misiones planeadas para este día.'))+'</div>'}</div>`;
     document.body.dataset.v3093Day=which;markTabs();applyFilter('all');
     if(resetScroll)try{window.scrollTo(0,0)}catch(e){}
   }
@@ -22427,7 +22431,7 @@ window.__michelsLifeBackgroundSetsV3088=['naruto-world','attack-on-titan'];
   function updateCounts(){
     const page=$('[data-v3093-page]');if(!page)return;
     const cards=$$('[data-v3093-card]',page),doneCount=cards.filter(c=>c.dataset.done==='1').length;
-    const count=$('[data-v3093-count]',page);if(count)count.textContent=doneCount+'/'+cards.length+' completed';
+    const count=$('[data-v3093-count]',page);if(count)count.textContent=doneCount+'/'+cards.length+' '+tx('completed','completadas');
     const all=$('[data-v3093-all]',page),pending=$('[data-v3093-pending]',page),completed=$('[data-v3093-completed]',page);
     if(all)all.textContent=cards.length;if(pending)pending.textContent=cards.length-doneCount;if(completed)completed.textContent=doneCount;
     applyFilter(filter);
@@ -22439,22 +22443,22 @@ window.__michelsLifeBackgroundSetsV3088=['naruto-world','attack-on-titan'];
   function patch(id,done){
     const el=document.querySelector(`[data-v3093-card="${CSS.escape(String(id))}"]`);if(!el)return;
     el.dataset.done=done?'1':'0';el.classList.toggle('completed',done);
-    const status=$('[data-v3093-status]',el);if(status){status.textContent=done?'Completed':mode==='tomorrow'?'Planned':'Pending';status.classList.toggle('good',done);status.classList.toggle('hot',!done&&mode==='yesterday')}
-    const btn=el.querySelector('[data-v3093-action="complete"],[data-v3093-action="undo"]');if(btn){btn.dataset.v3093Action=done?'undo':'complete';btn.textContent=done?'Undo yesterday':'Done yesterday';btn.classList.toggle('green',!done);btn.classList.toggle('ghost',done)}
+    const status=$('[data-v3093-status]',el);if(status){status.textContent=done?tx('Completed','Completada'):mode==='tomorrow'?tx('Planned','Planeada'):tx('Pending','Pendiente');status.classList.toggle('good',done);status.classList.toggle('hot',!done&&mode==='yesterday')}
+    const btn=el.querySelector('[data-v3093-action="complete"],[data-v3093-action="undo"]');if(btn){btn.dataset.v3093Action=done?'undo':'complete';btn.textContent=done?tx('Undo yesterday','Deshacer ayer'):tx('Done yesterday','Completar ayer');btn.classList.toggle('green',!done);btn.classList.toggle('ghost',done)}
     reorder(el,done);updateCounts();
   }
   function complete(id){
     const m=mission(id),k=key('yesterday');if(!m||completedOn(m,k))return;
-    m.completions=m.completions||[];m.completions.push({id:uidNow(),date:k,at:now(),xp:m.xp,coins:0,category:m.category,name:m.name});state.xp=Number(state.xp||0)+Number(m.xp||0);patch(id,true);saveNow();toastNow('Marked done',m.name+' · '+k);
+    m.completions=m.completions||[];m.completions.push({id:uidNow(),date:k,at:now(),xp:m.xp,coins:0,category:m.category,name:m.name});state.xp=Number(state.xp||0)+Number(m.xp||0);patch(id,true);saveNow();toastNow(tx('Marked done','Marcada como hecha'),m.name+' · '+k);
   }
   function undo(id){
     const m=mission(id),k=key('yesterday');if(!m)return;
     const i=(m.completions||[]).map(c=>c&&c.date).lastIndexOf(k);if(i<0)return;
-    const c=m.completions.splice(i,1)[0]||{};state.xp=Math.max(0,Number(state.xp||0)-Number(c.xp||0));state.coins=Math.max(0,Number(state.coins||0)-Number(c.coins||0));patch(id,false);saveNow();toastNow('Unchecked',m.name+' · '+k);
+    const c=m.completions.splice(i,1)[0]||{};state.xp=Math.max(0,Number(state.xp||0)-Number(c.xp||0));state.coins=Math.max(0,Number(state.coins||0)-Number(c.coins||0));patch(id,false);saveNow();toastNow(tx('Unchecked','Desmarcada'),m.name+' · '+k);
   }
-  function moveToday(id){const m=mission(id);if(!m)return;const k=today();m.v140TodayOnlyDates=m.v140TodayOnlyDates||[];if(!m.v140TodayOnlyDates.includes(k))m.v140TodayOnlyDates.push(k);m.v131SkipDates=(m.v131SkipDates||[]).filter(x=>x!==k);saveNow();toastNow('Added to today',m.name)}
-  function skipTomorrow(id){const m=mission(id);if(!m)return;const k=key('tomorrow');m.v131SkipDates=m.v131SkipDates||[];if(!m.v131SkipDates.includes(k))m.v131SkipDates.push(k);saveNow();const el=document.querySelector(`[data-v3093-card="${CSS.escape(String(id))}"]`);if(el)el.remove();updateCounts();toastNow('Skipped tomorrow',m.name)}
-  function completeAll(){const page=$('[data-v3093-page="yesterday"]');if(!page)return;$$('[data-v3093-card][data-done="0"]',page).forEach(el=>{const id=el.dataset.v3093Card,m=mission(id),k=key('yesterday');if(!m||completedOn(m,k))return;m.completions=m.completions||[];m.completions.push({id:uidNow(),date:k,at:now(),xp:m.xp,coins:0,category:m.category,name:m.name});state.xp=Number(state.xp||0)+Number(m.xp||0);patch(id,true)});saveNow();toastNow('Yesterday updated','Visible missions marked done.')}
+  function moveToday(id){const m=mission(id);if(!m)return;const k=today();m.v140TodayOnlyDates=m.v140TodayOnlyDates||[];if(!m.v140TodayOnlyDates.includes(k))m.v140TodayOnlyDates.push(k);m.v131SkipDates=(m.v131SkipDates||[]).filter(x=>x!==k);saveNow();toastNow(tx('Added to today','Agregada a hoy'),m.name)}
+  function skipTomorrow(id){const m=mission(id);if(!m)return;const k=key('tomorrow');m.v131SkipDates=m.v131SkipDates||[];if(!m.v131SkipDates.includes(k))m.v131SkipDates.push(k);saveNow();const el=document.querySelector(`[data-v3093-card="${CSS.escape(String(id))}"]`);if(el)el.remove();updateCounts();toastNow(tx('Skipped tomorrow','Omitida mañana'),m.name)}
+  function completeAll(){const page=$('[data-v3093-page="yesterday"]');if(!page)return;$$('[data-v3093-card][data-done="0"]',page).forEach(el=>{const id=el.dataset.v3093Card,m=mission(id),k=key('yesterday');if(!m||completedOn(m,k))return;m.completions=m.completions||[];m.completions.push({id:uidNow(),date:k,at:now(),xp:m.xp,coins:0,category:m.category,name:m.name});state.xp=Number(state.xp||0)+Number(m.xp||0);patch(id,true)});saveNow();toastNow(tx('Yesterday updated','Ayer actualizado'),tx('Visible missions marked done.','Las misiones visibles se marcaron como hechas.'))}
 
   /* Exit before the legacy click/change navigation pipeline runs. */
   document.addEventListener('pointerdown',function(ev){
@@ -22961,6 +22965,8 @@ function v3096RefreshArchiveCounters(){
     try{if(typeof escapeHtml==='function')return escapeHtml(String(value==null?'':value));}catch(error){}
     return String(value==null?'':value).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];});
   }
+  function tx(en,es){return window.mlvText?window.mlvText(en,es):(window.MichelsLifeI18n?.language==='es'?es:en)}
+  function sys(v){try{return window.MichelsLifeI18n?.mapText?.(String(v))||String(v)}catch(_){return String(v)}}
   function categoryInfo(m){
     try{
       var c=(window.CATEGORIES||CATEGORIES||{})[m.category];
@@ -23004,45 +23010,45 @@ function v3096RefreshArchiveCounters(){
     var j=Math.max(0,Math.min(list.length-1,i+delta));
     if(i===j)return;
     var item=list.splice(i,1)[0];list.splice(j,0,item);
-    setIds(list,{title:'Next Up reordered',body:'Mission moved to position '+(j+1)+'.'});
+    setIds(list,{title:tx('Next Up reordered','Next Up reordenado'),body:tx('Mission moved to position ','Misión movida a la posición ')+(j+1)+'.'});
   }
   function remove(id,quiet){
     var m=missionById(id),list=ids().filter(function(x){return x!==String(id);});
-    setIds(list,quiet?null:{title:'Removed from Next Up',body:m?m.name:'Mission'});
+    setIds(list,quiet?null:{title:tx('Removed from Next Up','Eliminada de Next Up'),body:m?m.name:tx('Mission','Misión')});
   }
   function add(id){
     id=String(id||'');
     var m=missionById(id),list=ids();
-    if(!eligible(m)){safeToast('Cannot add to Next Up','Only pending, visible missions can be queued.');return;}
+    if(!eligible(m)){safeToast(tx('Cannot add to Next Up','No se puede agregar a Next Up'),tx('Only pending, visible missions can be queued.','Sólo se pueden poner en cola misiones pendientes y visibles.'));return;}
     if(list.includes(id)){remove(id,false);return;}
     if(list.length>=maxSlots()){showReplaceDialog(id);return;}
     list.push(id);
-    setIds(list,{title:'Added to Next Up',body:'#'+list.length+' · '+m.name});
+    setIds(list,{title:tx('Added to Next Up','Agregada a Next Up'),body:'#'+list.length+' · '+m.name});
   }
   function replace(oldId,newId){
     var list=ids(),index=list.indexOf(String(oldId)),m=missionById(newId);
     if(index<0||!eligible(m))return;
     list[index]=String(newId);
     closeDialog();
-    setIds(list,{title:'Next Up updated',body:'#'+(index+1)+' · '+m.name});
+    setIds(list,{title:tx('Next Up updated','Next Up actualizado'),body:'#'+(index+1)+' · '+m.name});
   }
 
   function blockHtml(context){
     var list=ids(),max=maxSlots();
     var rows=list.map(function(id,index){
       var m=missionById(id),c=categoryInfo(m),scheduled=activeToday(m);
-      return '<div class="v3098-nextup-row" draggable="true" data-v3098-next-id="'+esc(id)+'">'+
-        '<div class="v3098-nextup-number" title="Drag to reorder">'+(index+1)+'</div>'+
-        '<div class="v3098-nextup-copy"><b>'+esc(m.name)+'</b><span>'+esc(c.emoji+' '+c.name)+' · '+Number(m.xp||0)+' XP'+(scheduled?'':' · Not scheduled today')+'</span></div>'+
+      return '<div class="v3098-nextup-row" draggable="true" data-v3098-next-id="'+esc(id)+'" data-mlv-i18n-owned="source">'+
+        '<div class="v3098-nextup-number" title="'+esc(tx('Drag to reorder','Arrastra para reordenar'))+'">'+(index+1)+'</div>'+
+        '<div class="v3098-nextup-copy"><b>'+esc(m.name)+'</b><span>'+esc(c.emoji+' '+sys(c.name))+' · '+Number(m.xp||0)+' XP'+(scheduled?'':' · '+tx('Not scheduled today','No programada hoy'))+'</span></div>'+
         '<div class="v3098-nextup-actions">'+
-          '<button class="btn ghost v3098-move" data-action="v3098-move-up" data-id="'+esc(id)+'" '+(index===0?'disabled':'')+' title="Move up">↑</button>'+
-          '<button class="btn ghost v3098-move" data-action="v3098-move-down" data-id="'+esc(id)+'" '+(index===list.length-1?'disabled':'')+' title="Move down">↓</button>'+
-          '<button class="btn primary" data-action="complete" data-id="'+esc(id)+'">Complete</button>'+
-          '<button class="btn ghost" data-action="v3098-remove-next" data-id="'+esc(id)+'">Remove</button>'+
+          '<button class="btn ghost v3098-move" data-action="v3098-move-up" data-id="'+esc(id)+'" '+(index===0?'disabled':'')+' title="'+esc(tx('Move up','Subir'))+'">↑</button>'+
+          '<button class="btn ghost v3098-move" data-action="v3098-move-down" data-id="'+esc(id)+'" '+(index===list.length-1?'disabled':'')+' title="'+esc(tx('Move down','Bajar'))+'">↓</button>'+
+          '<button class="btn primary" data-action="complete" data-id="'+esc(id)+'">'+esc(tx('Complete','Completar'))+'</button>'+
+          '<button class="btn ghost" data-action="v3098-remove-next" data-id="'+esc(id)+'">'+esc(tx('Remove','Quitar'))+'</button>'+
         '</div></div>';
     }).join('');
-    return '<div class="section-title"><div class="v3098-nextup-heading"><span class="v3098-nextup-icon">➜</span><div><h2>Next Up</h2><p>Your ordered mission queue. Finish one without losing the thread.</p></div></div><span class="pill gold">'+list.length+' / '+max+'</span></div>'+
-      '<div class="v3098-nextup-list">'+(rows||'<div class="v3098-empty">Use <b>Set next</b> on a mission to build your queue.</div>')+'</div>';
+    return '<div class="section-title" data-mlv-i18n-owned="source"><div class="v3098-nextup-heading"><span class="v3098-nextup-icon">➜</span><div><h2>Next Up</h2><p>'+esc(tx('Your ordered mission queue. Finish one without losing the thread.','Tu cola ordenada de misiones. Termina una sin perder el hilo.'))+'</p></div></div><span class="pill gold">'+list.length+' / '+max+'</span></div>'+
+      '<div class="v3098-nextup-list">'+(rows||'<div class="v3098-empty">'+esc(tx('Use Set next on a mission to build your queue.','Usa Establecer siguiente en una misión para construir tu cola.'))+'</div>')+'</div>';
   }
   function ensureBlock(tabId){
     var root=document.getElementById('tab-'+tabId);
@@ -23096,8 +23102,8 @@ function v3096RefreshArchiveCounters(){
       }
       button.dataset.id=id;
       button.classList.toggle('v3098-active',index>=0);
-      button.textContent=index>=0?'Next #'+(index+1):'Set next';
-      button.title=index>=0?'Remove from Next Up':'Add to Next Up';
+      button.textContent=index>=0?'Next #'+(index+1):tx('Set next','Establecer siguiente');
+      button.title=index>=0?tx('Remove from Next Up','Quitar de Next Up'):tx('Add to Next Up','Agregar a Next Up');
       if(index>=0){
         button.style.setProperty('background-image','linear-gradient(135deg,var(--gold,#ffd166),var(--accent,#75e4ff))','important');
         button.style.setProperty('background-color','var(--gold,#ffd166)','important');
@@ -23131,8 +23137,9 @@ function v3096RefreshArchiveCounters(){
       card.className='card v3098-settings-card';
       root.insertBefore(card,root.firstChild);
     }
-    card.innerHTML='<div class="section-title"><div><h2>Next Up queue</h2><p>Choose how many missions can stay in your ordered queue.</p></div><span class="pill gold">'+ids().length+' queued</span></div>'+
-      '<div class="v3098-settings-grid"><div class="v30100-settings-stack"><label>Maximum Next Up missions<select id="v3098NextUpMax"><option value="1">1 mission</option><option value="2">2 missions</option><option value="3">3 missions</option><option value="4">4 missions</option><option value="5">5 missions</option><option value="6">6 missions</option></select><p>Default is 6. The floating dock grows to a second row when needed.</p></label><label class="v30100-auto-plan"><input id="v30100AutoPlanDay" type="checkbox" '+(settings().nextUpAutoPlanDay?'checked':'')+'><span><b>Keep Plan my day first</b><small>Once per new day, the matching mission is placed at #1 automatically.</small></span></label></div><button class="btn ghost" data-action="v3098-clear-next" '+(ids().length?'':'disabled')+'>Clear Next Up</button></div>';
+    card.dataset.mlvI18nOwned='source';
+    card.innerHTML='<div class="section-title"><div><h2>'+esc(tx('Next Up queue','Cola Next Up'))+'</h2><p>'+esc(tx('Choose how many missions can stay in your ordered queue.','Elige cuántas misiones pueden permanecer en tu cola ordenada.'))+'</p></div><span class="pill gold">'+ids().length+' '+esc(tx('queued','en cola'))+'</span></div>'+
+      '<div class="v3098-settings-grid"><div class="v30100-settings-stack"><label>'+esc(tx('Maximum Next Up missions','Máximo de misiones en Next Up'))+'<select id="v3098NextUpMax"><option value="1">1 '+esc(tx('mission','misión'))+'</option><option value="2">2 '+esc(tx('missions','misiones'))+'</option><option value="3">3 '+esc(tx('missions','misiones'))+'</option><option value="4">4 '+esc(tx('missions','misiones'))+'</option><option value="5">5 '+esc(tx('missions','misiones'))+'</option><option value="6">6 '+esc(tx('missions','misiones'))+'</option></select><p>'+esc(tx('Default is 6. The floating dock grows to a second row when needed.','El valor predeterminado es 6. El dock flotante crece a una segunda fila cuando es necesario.'))+'</p></label><label class="v30100-auto-plan"><input id="v30100AutoPlanDay" type="checkbox" '+(settings().nextUpAutoPlanDay?'checked':'')+'><span><b>'+esc(tx('Keep Plan my day first','Mantener Plan my day primero'))+'</b><small>'+esc(tx('Once per new day, the matching mission is placed at #1 automatically.','Una vez por cada día nuevo, la misión correspondiente se coloca automáticamente en el puesto #1.'))+'</small></span></label></div><button class="btn ghost" data-action="v3098-clear-next" '+(ids().length?'':'disabled')+'>'+esc(tx('Clear Next Up','Vaciar Next Up'))+'</button></div>';
     var select=card.querySelector('#v3098NextUpMax');
     if(select)select.value=String(maxSlots());
   }
@@ -23147,7 +23154,7 @@ function v3096RefreshArchiveCounters(){
   function closeDialog(){var old=document.querySelector('.v3098-dialog-backdrop');if(old)old.remove();}
   function showReplaceDialog(newId){
     closeDialog();
-    const t=v=>{try{return window.MichelsLifeI18n?.mapText?.(String(v))||String(v)}catch(_){return String(v)}};
+    const t=sys;
     var newcomer=missionById(newId),list=ids();
     var backdrop=document.createElement('div');
     backdrop.className='v3098-dialog-backdrop';
@@ -23166,7 +23173,7 @@ function v3096RefreshArchiveCounters(){
     else if(action==='v3098-remove-next')remove(button.dataset.id,false);
     else if(action==='v3098-move-up')move(button.dataset.id,-1);
     else if(action==='v3098-move-down')move(button.dataset.id,1);
-    else if(action==='v3098-clear-next')setIds([],{title:'Next Up cleared',body:'The queue is empty.'});
+    else if(action==='v3098-clear-next')setIds([],{title:tx('Next Up cleared','Next Up vaciado'),body:tx('The queue is empty.','La cola está vacía.')});
     else if(action==='v3098-replace-next')replace(button.dataset.oldId,button.dataset.newId);
     else if(action==='v3098-close-dialog')closeDialog();
   },true);
@@ -23178,7 +23185,7 @@ function v3096RefreshArchiveCounters(){
       var value=Math.max(MAX_MIN,Math.min(MAX_MAX,Number(event.target.value)||6));
       settings().nextUpMax=value;
       var list=ids().slice(0,value);
-      setIds(list,{title:'Next Up limit changed',body:'Up to '+value+' mission'+(value===1?'':'s')+'.'});
+      setIds(list,{title:tx('Next Up limit changed','Límite de Next Up actualizado'),body:tx('Up to ','Hasta ')+value+' '+(value===1?tx('mission','misión'):tx('missions','misiones'))+'.'});
       return;
     }
     if(event.target.id==='v30100AutoPlanDay'){
@@ -23189,7 +23196,7 @@ function v3096RefreshArchiveCounters(){
       cleanQueue();
       refreshAll();
       schedulePersist();
-      safeToast(s.nextUpAutoPlanDay?'Daily priority enabled':'Daily priority disabled',s.nextUpAutoPlanDay?'Plan my day will be placed at #1 each new day.':'The queue will stay fully manual.');
+      safeToast(s.nextUpAutoPlanDay?tx('Daily priority enabled','Prioridad diaria activada'):tx('Daily priority disabled','Prioridad diaria desactivada'),s.nextUpAutoPlanDay?tx('Plan my day will be placed at #1 each new day.','Plan my day se colocará en el puesto #1 cada día nuevo.'):tx('The queue will stay fully manual.','La cola permanecerá completamente manual.'));
     }
   },true);
 
@@ -23213,7 +23220,7 @@ function v3096RefreshArchiveCounters(){
     event.preventDefault();
     var targetId=String(row.dataset.v3098NextId||''),list=ids();
     var from=list.indexOf(dragMissionId),to=list.indexOf(targetId);
-    if(from>=0&&to>=0&&from!==to){var item=list.splice(from,1)[0];list.splice(to,0,item);setIds(list,{title:'Next Up reordered',body:'Mission moved to position '+(to+1)+'.'});}
+    if(from>=0&&to>=0&&from!==to){var item=list.splice(from,1)[0];list.splice(to,0,item);setIds(list,{title:tx('Next Up reordered','Next Up reordenado'),body:tx('Mission moved to position ','Misión movida a la posición ')+(to+1)+'.'});}
     dragMissionId='';
     document.querySelectorAll('.v3098-dragging,.v3098-drop-target').forEach(function(el){el.classList.remove('v3098-dragging','v3098-drop-target');});
   },true);
