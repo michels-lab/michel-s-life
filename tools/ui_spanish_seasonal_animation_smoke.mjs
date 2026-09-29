@@ -89,7 +89,7 @@ try{
   const english=await sampleFrames(page,'English interval',3850,350);
   assertCopy(english,'en');
   ok(english[0].frame>frameBeforeEnglish,
-    'Switching Spanish -> English reset/stalled the seasonal frame counter: '+JSON.stringify({frameBeforeEnglish,english:first=english[0]}));
+    'Switching Spanish -> English reset/stalled the seasonal frame counter: '+JSON.stringify({frameBeforeEnglish,englishFirst:english[0]}));
 
   const frameBeforeSpanish=english.at(-1).frame;
   await page.evaluate(()=>window.MichelsLifeI18n.setLanguage('es',{userInitiated:true}));
@@ -97,7 +97,7 @@ try{
   const spanishAfter=await sampleFrames(page,'Spanish round-trip >3s interval',3850,350);
   assertCopy(spanishAfter,'es');
   ok(spanishAfter[0].frame>frameBeforeSpanish,
-    'Switching English -> Spanish reset/stalled the seasonal frame counter: '+JSON.stringify({frameBeforeSpanish,spanishAfter:first=spanishAfter[0]}));
+    'Switching English -> Spanish reset/stalled the seasonal frame counter: '+JSON.stringify({frameBeforeSpanish,spanishAfterFirst:spanishAfter[0]}));
 
   const finalState=await snapshot(page);
   ok(finalState.canvasSame,'Seasonal canvas object changed during language round trip: '+JSON.stringify(finalState));
