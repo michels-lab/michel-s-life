@@ -10938,24 +10938,13 @@ label:has(input[name="coins"]),
   }
 
   function archivedCategoryShortcuts(){
-    const cur=archiveCat();
-    const counts=archiveCounts();
-    return `<div class="v140-cat-shortcuts v169-archive-cats">
-      ${archivedCategories().map(id=>{
-        const c=id==='all'?{emoji:'✨',name:'All'}:cat(id);
-        return `<button class="v140-shortcut ${cur===id?'active':''}" data-action="v169-archived-cat" data-category="${esc(id)}">${c.emoji} ${esc(c.name)} ${counts[id]||0}</button>`;
-      }).join('')}
-    </div>`;
+    const cur=archiveCat(),counts=archiveCounts();
+    return `<div class="v140-cat-shortcuts v169-archive-cats">${archivedCategories().map(id=>{const c=id==='all'?{emoji:'✨',name:'All'}:cat(id);return `<button class="v140-shortcut ${cur===id?'active':''}" data-action="v169-archived-cat" data-category="${esc(id)}">${c.emoji} ${esc(tr(c.name))} ${counts[id]||0}</button>`}).join('')}</div>`;
   }
 
   function modeToggle(){
-    const view=archivedView();
-    const oldMode=(state.settings && state.settings.v140MissionMode) || 'today';
-    return `<div class="v140-library-toggle">
-      <button class="v140-toggle-btn ${view!=='archived' && oldMode==='today'?'active':''}" data-action="v169-missions-view" data-view="today">Today</button>
-      <button class="v140-toggle-btn ${view!=='archived' && oldMode==='library'?'active':''}" data-action="v169-missions-view" data-view="library">Mission library</button>
-      <button class="v169-toggle-archived ${view==='archived'?'active':''}" data-action="v169-missions-view" data-view="archived">Archived ${archiveCounts().all||0}</button>
-    </div>`;
+    const view=archivedView(),oldMode=(state.settings&&state.settings.v140MissionMode)||'today';
+    return `<div class="v140-library-toggle"><button class="v140-toggle-btn ${view!=='archived'&&oldMode==='today'?'active':''}" data-action="v169-missions-view" data-view="today">${esc(tr('Today'))}</button><button class="v140-toggle-btn ${view!=='archived'&&oldMode==='library'?'active':''}" data-action="v169-missions-view" data-view="library">${esc(tr('Mission library'))}</button><button class="v169-toggle-archived ${view==='archived'?'active':''}" data-action="v169-missions-view" data-view="archived">${esc(tr('Archived'))} ${archiveCounts().all||0}</button></div>`;
   }
 
   function archivedCard(m){
@@ -11015,18 +11004,10 @@ label:has(input[name="coins"]),
   }
 
   function decorateOldMissionToggle(){
-    if(archivedView()==='archived') return;
-    const root=document.querySelector('#main, main, .main') || document;
-    const toggle=root.querySelector('.v140-library-toggle');
-    if(!toggle || toggle.querySelector('[data-view="archived"]')) return;
-
-    const btn=document.createElement('button');
-    btn.type='button';
-    btn.className='v169-toggle-archived';
-    btn.dataset.action='v169-missions-view';
-    btn.dataset.view='archived';
-    btn.textContent='Archived ' + (archiveCounts().all || 0);
-    toggle.appendChild(btn);
+    if(archivedView()==='archived')return;
+    const root=document.querySelector('#main, main, .main')||document,toggle=root.querySelector('.v140-library-toggle');
+    if(!toggle||toggle.querySelector('[data-view="archived"]'))return;
+    const btn=document.createElement('button');btn.type='button';btn.className='v169-toggle-archived';btn.dataset.action='v169-missions-view';btn.dataset.view='archived';btn.textContent=tr('Archived')+' '+(archiveCounts().all||0);toggle.appendChild(btn);
   }
 
   const oldRenderMissions=window.renderMissions;
@@ -11077,8 +11058,8 @@ label:has(input[name="coins"]),
         // Keep restored one-time tasks in library; do not force them back onto today unless edited.
         m.type=m.originalType || 'oneoff';
       }
-      try{ if(typeof log==='function') log('restore','Mission restored: '+m.name,{missionId:m.id,category:m.category}); }catch(e){}
-      try{ if(typeof toast==='function') toast('Mission restored',m.name); }catch(e){}
+      try{ if(typeof log==='function') log('restore',tr('Mission restored:')+' '+m.name,{missionId:m.id,category:m.category}); }catch(e){}
+      try{ if(typeof toast==='function') toast(tr('Mission restored'),m.name); }catch(e){}
       try{ if(typeof save==='function') save(); }catch(e){}
       try{ if(typeof renderAll==='function') renderAll(); }catch(e){}
       return;
@@ -13090,8 +13071,8 @@ label:has(input[name="coins"]),
 
     return `<article class="v169-weekly-template" data-mlv-i18n-owned="source">
       <div>
-        <h3>📅 ${esc(t.name)}</h3>
-        ${t.description?`<p>${esc(t.description)}</p>`:''}
+        <h3>📅 ${esc(tr(t.name))}</h3>
+        ${t.description?`<p>${esc(tr(t.description))}</p>`:''}
         <div class="v169-weekly-meta">
           <span class="v169-chip" style="border-color:${c.color||'#75e4ff'}55;color:${c.color||'#75e4ff'}">${c.emoji||'📅'} ${esc(tr(c.name||'Order / execution'))}</span>
           <span class="v169-chip">${esc(tr(d.name||'Medium'))}</span>
@@ -13164,46 +13145,9 @@ label:has(input[name="coins"]),
   try{renderDashboard=window.renderDashboard;}catch(e){}
 
   function openWeeklyEdit(templateId){
-    const t=templateById(templateId);
-    if(!t) return;
-
+    const t=templateById(templateId);if(!t)return;
     const modal=ensureModalRoot();
-    modal.innerHTML=`
-      <div class="modal-backdrop">
-        <div class="modal">
-          <div class="modal-head">
-            <div>
-              <h2>Edit weekly planner action</h2>
-              <p>Change the template. If it is scheduled this week, the Dashboard mission updates too.</p>
-            </div>
-            <button class="icon-btn" data-action="close-modal">×</button>
-          </div>
-
-          <form id="v251WeeklyEditForm" data-template="${esc(templateId)}">
-            <div class="v251-weekly-edit-grid">
-              <label class="full">Name
-                <input name="name" value="${esc(t.name||'')}" required>
-              </label>
-              <label>Category
-                <select name="category">${window.categoryOptions?categoryOptions(t.category||'order'):'<option value="order">Order / execution</option>'}</select>
-              </label>
-              <label>Difficulty
-                <select name="difficulty">${window.difficultyOptions?difficultyOptions(t.difficulty||'medium'):'<option value="medium">Medium</option>'}</select>
-              </label>
-              <label>XP
-                <input type="number" name="xp" min="0" step="1" value="${Number(t.xp||35)}">
-              </label>
-              <label class="full">Description
-                <textarea name="description">${esc(t.description||'')}</textarea>
-              </label>
-            </div>
-            <div class="v251-weekly-edit-actions">
-              <button class="btn" type="button" data-action="close-modal">Cancel</button>
-              <button class="btn primary" type="submit">Save weekly action</button>
-            </div>
-          </form>
-        </div>
-      </div>`;
+    modal.innerHTML=`<div class="modal-backdrop" data-mlv-i18n-owned="source"><div class="modal"><div class="modal-head"><div><h2>${esc(tr('Edit weekly planner action'))}</h2><p>${esc(tr('Change the template. If it is scheduled this week, the Dashboard mission updates too.'))}</p></div><button class="icon-btn" data-action="close-modal">×</button></div><form id="v251WeeklyEditForm" data-template="${esc(templateId)}"><div class="v251-weekly-edit-grid"><label class="full">${esc(tr('Name'))}<input name="name" value="${esc(t.name||'')}" required></label><label>${esc(tr('Category'))}<select name="category">${window.categoryOptions?categoryOptions(t.category||'order'):'<option value="order">'+esc(tr('Order / execution'))+'</option>'}</select></label><label>${esc(tr('Difficulty'))}<select name="difficulty">${window.difficultyOptions?difficultyOptions(t.difficulty||'medium'):'<option value="medium">'+esc(tr('Medium'))+'</option>'}</select></label><label>XP<input type="number" name="xp" min="0" step="1" value="${Number(t.xp||35)}"></label><label class="full">${esc(tr('Description'))}<textarea name="description">${esc(t.description||'')}</textarea></label></div><div class="v251-weekly-edit-actions"><button class="btn" type="button" data-action="close-modal">${esc(tr('Cancel'))}</button><button class="btn primary" type="submit">${esc(tr('Save weekly action'))}</button></div></form></div></div>`;
   }
 
   function saveWeeklyEdit(form){
@@ -13224,7 +13168,7 @@ label:has(input[name="coins"]),
     const modal=document.getElementById('modalRoot');
     if(modal) modal.innerHTML='';
 
-    try{ if(typeof toast==='function') toast('Weekly action updated',t.name); }catch(e){}
+    try{ if(typeof toast==='function') toast(tr('Weekly action updated'),t.name); }catch(e){}
     safeRender();
   }
 
@@ -13236,7 +13180,7 @@ label:has(input[name="coins"]),
       const fd=new FormData(ev.target);
       const name=String(fd.get('name')||'').trim();
       if(!name){
-        try{ if(typeof toast==='function') toast('Missing name','Write a weekly mission name.'); }catch(e){}
+        try{ if(typeof toast==='function') toast(tr('Missing name'),tr('Write a weekly mission name.')); }catch(e){}
         return;
       }
 
@@ -13659,6 +13603,7 @@ body.v255-render-lock #tab-missions{
   function norm(s){
     return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim();
   }
+  function tx(en,es){return window.mlvText?window.mlvText(en,es):(window.MichelsLifeI18n?.language==='es'?es:en)}
   function settings(){ state.settings=state.settings||{}; return state.settings; }
   function missionKey(m){
     if(!m) return '';
@@ -13723,18 +13668,14 @@ body.v255-render-lock #tab-missions{
     return removed.length;
   }
   function deleteMissionPermanent(id){
-    const m=findMission(id);
-    if(!m) return;
-    if(!confirm('¿Eliminar permanentemente esta misión?\n\n'+(m.name||'')+'\n\nEsto la borra de verdad y no debe volver a aparecer al abrir la app.')) return;
-    rememberDeleted(m);
-    cleanWeeklyRefs(m);
-    state.missions=(state.missions||[]).filter(x=>String(x.id)!==String(id));
-    try{ if(typeof log==='function') log('delete','Misión eliminada permanentemente: '+(m.name||''),{missionId:id,category:m.category,permanent:true}); }catch(e){}
-    try{ if(typeof toast==='function') toast('Misión eliminada permanentemente',m.name||''); }catch(e){}
-    saveDeleted();
-    try{ if(typeof save==='function') save(); }catch(e){}
-    const modal=document.getElementById('modalRoot'); if(modal) modal.innerHTML='';
-    try{ if(typeof renderAll==='function') renderAll(); }catch(e){}
+    const m=findMission(id);if(!m)return;
+    if(!confirm(tx('Permanently delete this mission?','¿Eliminar permanentemente esta misión?')+'\n\n'+(m.name||'')+'\n\n'+tx('This truly deletes it and it must not reappear when the app opens.','Esto la borra de verdad y no debe volver a aparecer al abrir la app.')))return;
+    rememberDeleted(m);cleanWeeklyRefs(m);state.missions=(state.missions||[]).filter(x=>String(x.id)!==String(id));
+    try{if(typeof log==='function')log('delete',tx('Mission permanently deleted: ','Misión eliminada permanentemente: ')+(m.name||''),{missionId:id,category:m.category,permanent:true})}catch(e){}
+    try{if(typeof toast==='function')toast(tx('Mission permanently deleted','Misión eliminada permanentemente'),m.name||'')}catch(e){}
+    saveDeleted();try{if(typeof save==='function')save()}catch(e){}
+    const modal=document.getElementById('modalRoot');if(modal)modal.innerHTML='';
+    try{if(typeof renderAll==='function')renderAll()}catch(e){}
   }
 
   function addDeleteToMissionEdit(){
@@ -13745,7 +13686,7 @@ body.v255-render-lock #tab-missions{
     let actions=form.querySelector('.actions,.modal-actions,.dialog-actions');
     if(!actions){ actions=document.createElement('div'); actions.className='actions'; form.appendChild(actions); }
     const btn=document.createElement('button');
-    btn.type='button'; btn.className='btn red v260-delete-mission-btn'; btn.dataset.action='v260-delete-mission'; btn.dataset.id=id; btn.textContent='Eliminar misión';
+    btn.type='button'; btn.className='btn red v260-delete-mission-btn'; btn.dataset.action='v260-delete-mission'; btn.dataset.id=id; btn.textContent=tx('Delete mission','Eliminar misión');
     actions.insertBefore(btn,actions.firstChild);
   }
   function archivedViewActive(){
@@ -13779,7 +13720,7 @@ body.v255-render-lock #tab-missions{
       let actions=anchor.closest('.quest-actions,.actions,.v132-actions,.v131-actions');
       if(!actions){ actions=document.createElement('div'); actions.className='v260-delete-holder'; card.appendChild(actions); }
       const btn=document.createElement('button');
-      btn.type='button'; btn.className='btn red v260-delete-mission-btn'; btn.dataset.action='v260-delete-mission'; btn.dataset.id=id; btn.textContent='Eliminar permanentemente';
+      btn.type='button'; btn.className='btn red v260-delete-mission-btn'; btn.dataset.action='v260-delete-mission'; btn.dataset.id=id; btn.textContent=tx('Delete permanently','Eliminar permanentemente');
       actions.appendChild(btn);
     });
   }
