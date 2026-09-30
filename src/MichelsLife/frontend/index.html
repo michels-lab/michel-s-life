@@ -1982,6 +1982,7 @@ applyV133Theme();try{renderAll()}catch(err){console.error('v13.3 English fixes e
 <script id="v134-ambitious-achievements-script">
 (function(){
   function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+  const tx=(en,es)=>window.mlvText?window.mlvText(en,es):en;
   function cat(id){return CATEGORIES[id]||{name:id||'Any',emoji:'✦',color:'#75e4ff'}}
   function missionCompletions(category=null){
     return (state.missions||[]).reduce((acc,m)=>acc+(m.completions||[]).filter(c=>!category||m.category===category).length,0);
@@ -2088,13 +2089,13 @@ applyV133Theme();try{renderAll()}catch(err){console.error('v13.3 English fixes e
   function achievementFilters(){
     const cats=['academic','physical','career','autonomy','order','presence','finance','culture'];
     const f=window.v134AchFilter||'all';
-    return `<div class="v134-ach-filter">
-      <button class="${f==='all'?'active':''}" onclick="v134SetAchievementFilter('all')">All</button>
-      <button class="${f==='unlocked'?'active':''}" onclick="v134SetAchievementFilter('unlocked')">Unlocked</button>
-      <button class="${f==='weekly'?'active':''}" onclick="v134SetAchievementFilter('weekly')">Weekly contracts</button>
-      <button class="${f==='missions'?'active':''}" onclick="v134SetAchievementFilter('missions')">Mission totals</button>
-      <button class="${f==='streaks'?'active':''}" onclick="v134SetAchievementFilter('streaks')">Streaks</button>
-      ${cats.map(k=>`<button class="${f==='cat:'+k?'active':''}" onclick="v134SetAchievementFilter('cat:${k}')">${cat(k).emoji} ${cat(k).name}</button>`).join('')}
+    return `<div class="v134-ach-filter" data-mlv-i18n-owned="source">
+      <button class="${f==='all'?'active':''}" onclick="v134SetAchievementFilter('all')">${esc(tr('All'))}</button>
+      <button class="${f==='unlocked'?'active':''}" onclick="v134SetAchievementFilter('unlocked')">${esc(tr('Unlocked'))}</button>
+      <button class="${f==='weekly'?'active':''}" onclick="v134SetAchievementFilter('weekly')">${esc(tr('Weekly contracts'))}</button>
+      <button class="${f==='missions'?'active':''}" onclick="v134SetAchievementFilter('missions')">${esc(tr('Mission totals'))}</button>
+      <button class="${f==='streaks'?'active':''}" onclick="v134SetAchievementFilter('streaks')">${esc(tr('Streaks'))}</button>
+      ${cats.map(k=>`<button class="${f==='cat:'+k?'active':''}" onclick="v134SetAchievementFilter('cat:${k}')">${cat(k).emoji} ${esc(tr(cat(k).name))}</button>`).join('')}
     </div>`;
   }
   function renderAchievementsV134(list=filteredAchievements()){
@@ -2116,40 +2117,17 @@ applyV133Theme();try{renderAll()}catch(err){console.error('v13.3 English fixes e
   }
   window.renderAchievements=function(){
     const c=counts();
-    return `<div class="card"><div class="section-title"><div><h2>Achievements</h2><p></p></div><span class="pill hot">${c.unlocked}/${c.all}</span></div>${achievementFilters()}${renderAchievementsV134()}</div>`;
+    return `<div class="card" data-mlv-i18n-owned="source"><div class="section-title"><div><h2>${esc(tr('Achievements'))}</h2><p></p></div><span class="pill hot">${c.unlocked}/${c.all}</span></div>${achievementFilters()}${renderAchievementsV134()}</div>`;
   };
   window.renderShop=function(){
     const c=counts();
-    return `<div class="card"><div class="section-title"><div><h2>Badges</h2><p>No item shop. This is a long-term badge system based on consistency and weekly goal completion.</p></div><span class="pill hot">${c.unlocked}/${c.all}</span></div>${achievementFilters()}${renderAchievementsV134()}</div>`;
+    return `<div class="card" data-mlv-i18n-owned="source"><div class="section-title"><div><h2>${esc(tr('Badges'))}</h2><p>${esc(tr('No item shop. This is a long-term badge system based on consistency and weekly goal completion.'))}</p></div><span class="pill hot">${c.unlocked}/${c.all}</span></div>${achievementFilters()}${renderAchievementsV134()}</div>`;
   };
   window.renderInventory=function(){
     const unlocked=ambitiousAchievements().filter(a=>progress(a).unlocked);
-    return `<div class="card"><div class="section-title"><div><h2>Collection</h2><p>Unlocked achievements only.</p></div><span class="pill hot">${unlocked.length}</span></div>${unlocked.length?renderAchievementsV134(unlocked):'<div class="v131-empty">No achievements unlocked yet.</div>'}</div>`;
+    return `<div class="card" data-mlv-i18n-owned="source"><div class="section-title"><div><h2>${esc(tr('Collection'))}</h2><p>${esc(tr('Unlocked achievements only.'))}</p></div><span class="pill hot">${unlocked.length}</span></div>${unlocked.length?renderAchievementsV134(unlocked):'<div class="v131-empty">'+esc(tr('No achievements unlocked yet.'))+'</div>'}</div>`;
   };
 
-  function translateTextNode(node){
-    const map=[
-      ['Te quedaron','You have'],['pendientes de ayer','pending from yesterday'],['Puedes moverlos a hoy sin duplicar tareas que ya existen.','Move them to today without duplicating existing tasks.'],
-      ['Mover todos sin duplicar','Move all without duplicates'],['Elegir cuáles','Choose which ones'],['Misiones de hoy','Today’s missions'],['Contratos premium','Premium contracts'],['Estadísticas','Statistics'],
-      ['pendientes','pending'],['completadas','completed'],['esta semana','this week'],['reinicia cada semana','resets weekly'],['Hoy +','Today +'],['monedas','coins'],['Contrato completado','Contract completed'],
-      ['Ya marcado hoy','Already marked today'],['Este contrato ya tuvo avance hoy.','This contract already has progress today.'],['Avance premium','Premium progress'],
-      ['Metas sugeridas','Suggested goals'],['metas','goals'],['Semanal','Weekly'],['Diaria','Daily'],['Única','One-time'],['Convertir en misión','Convert into mission'],
-      ['Nueva misión','New mission'],['No hay misiones','No missions'],['Configuración','Settings'],['Tema visual','Visual theme'],['Guardar colores','Save colors'],['Restaurar base','Restore base'],
-      ['Fondo','Background'],['Panel','Panel'],['Card','Card'],['Acento','Accent'],['Dorado','Gold'],['Completada','Completed'],['Desbloqueado','Unlocked'],['Bloqueado','Locked']
-    ];
-    let text=node.nodeValue;
-    let next=text;
-    map.forEach(([a,b])=>{next=next.split(a).join(b)});
-    if(next!==text)node.nodeValue=next;
-  }
-  function translateVisibleDOM(root=document.body){try{if((localStorage.getItem('michelsLife.language.v1')||navigator.language||'').toLowerCase().startsWith('es'))return;}catch(_){} 
-    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(n){return n.nodeValue&&/[áéíóúñÁÉÍÓÚÑ]|Misiones|Metas|Configuración|pendientes|monedas|Semanal|Diaria|Única/.test(n.nodeValue)?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT}});
-    const nodes=[]; while(walker.nextNode())nodes.push(walker.currentNode);
-    nodes.forEach(translateTextNode);
-  }
-  const oldRenderAll=window.renderAll;
-  window.renderAll=function(){oldRenderAll();setTimeout(()=>translateVisibleDOM(),0);};
-  document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>translateVisibleDOM(),80));
   try{renderAll()}catch(e){console.error('v13.4 error',e)}
 })();
 </script>
@@ -2223,7 +2201,7 @@ applyV133Theme();try{renderAll()}catch(err){console.error('v13.3 English fixes e
   function filtered(list){const m=mode();if(m==='pending')return list.filter(x=>!completed(x));if(m==='completed')return list.filter(completed);return list}
   function switcher(list){
     const total=list.length, done=list.filter(completed).length, pending=total-done, m=mode();
-    return `<div class="v133-switch"><button class="${m==='all'?'active':''}" onclick="v133SetMode('all')">All ${total}</button><button class="${m==='pending'?'active':''}" onclick="v133SetMode('pending')">Pending ${pending}</button><button class="${m==='completed'?'active':''}" onclick="v133SetMode('completed')">Completed ${done}</button></div>${m==='completed'?'<div class="v133-completed-note">Completed missions are shown here. Use the Unmark button to move them back to pending.</div>':''}`;
+    return `<div class="v133-switch" data-mlv-i18n-owned="source"><button class="${m==='all'?'active':''}" onclick="v133SetMode('all')">${tx('All','Todas')} ${total}</button><button class="${m==='pending'?'active':''}" onclick="v133SetMode('pending')">${tx('Pending','Pendientes')} ${pending}</button><button class="${m==='completed'?'active':''}" onclick="v133SetMode('completed')">${tx('Completed','Completadas')} ${done}</button></div>${m==='completed'?'<div class="v133-completed-note">'+tx('Completed missions are shown here. Use the Unmark button to move them back to pending.','Aquí se muestran las misiones completadas. Usa Desmarcar para devolverlas a pendientes.')+'</div>':''}`;
   }
   function actionButtons(m){
     const isDone=done(m), active=(isActiveOn(m,today())||(m.v140TodayOnlyDates||[]).includes(today()));
@@ -2231,7 +2209,7 @@ applyV133Theme();try{renderAll()}catch(err){console.error('v13.3 English fixes e
     const linkedProject=projectList.find(p=>String(p.id)===String(m.v30106ProjectId||''));
     const nextIds=(state.settings&&Array.isArray(state.settings.nextUpMissionIds))?state.settings.nextUpMissionIds.map(String):((state.settings&&Array.isArray(state.settings.v3098NextUpIds))?state.settings.v3098NextUpIds.map(String):[]);
     const nextIndex=nextIds.indexOf(String(m.id));
-    const nextButton=!isDone?`<button class="v135-action ghost v3098-set-next ${nextIndex>=0?'v3098-active':''}" type="button" data-action="v3098-toggle-next" data-id="${m.id}" title="${nextIndex>=0?'Remove from Next Up':'Add to Next Up'}">${nextIndex>=0?'Next #'+(nextIndex+1):'Set next'}</button>`:'';
+    const nextButton=!isDone?`<button class="v135-action ghost v3098-set-next ${nextIndex>=0?'v3098-active':''}" type="button" data-action="v3098-toggle-next" data-id="${m.id}" title="${tx(nextIndex>=0?'Remove from Next Up':'Add to Next Up',nextIndex>=0?'Quitar de Siguientes':'Agregar a Siguientes')}">${nextIndex>=0?tx('Next #','Siguiente #')+(nextIndex+1):tx('Set next','Poner siguiente')}</button>`:'';
     const projectButton=state.activeTab==='dashboard'
       ? `<button class="v135-action ghost" type="button" data-v30106-action="link-project" data-id="${m.id}" title="${tx(linkedProject?'Change or remove the linked project':'Link this mission to a project',linkedProject?'Cambiar o quitar el proyecto vinculado':'Vincular esta misión a un proyecto')}">${tx(linkedProject?'Change project':'Link project',linkedProject?'Cambiar proyecto':'Vincular proyecto')}</button>`
       : '';
@@ -2251,13 +2229,13 @@ applyV133Theme();try{renderAll()}catch(err){console.error('v13.3 English fixes e
   }
   function missionCard(m){
     const done=completed(m), c=cat(m.category), d=diff(m.difficulty);
-    return `<article class="v132-mission v137-mission ${done?'done':''}">
+    return `<article class="v132-mission v137-mission ${done?'done':''}" data-mlv-i18n-owned="source">
       <button class="v132-check" data-action="${done?'undo':'complete'}" data-id="${m.id}">${done?'✓':''}</button>
       <div>
         <h3>${esc(m.name)}</h3>
         ${((m.description||m.notes)&&String(m.description||m.notes)!=='Weekly planned mission.')?`<p>${esc(m.description||m.notes)}</p>`:''}
         <div class="v131-pills">
-          <span class="v131-pill" style="border-color:${c.color}44;color:${c.color}">${c.emoji} ${esc(c.name)}</span>
+          <span class="v131-pill" style="border-color:${c.color}44;color:${c.color}">${c.emoji} ${esc(tr(c.name))}</span>
           <span class="v131-pill ${m.boss?'bad':''}">${m.boss?tx('Boss','Jefe'):tx(d.name,d.name==='Easy'?'Fácil':d.name==='Medium'?'Media':d.name==='Hard'?'Difícil':d.name)}</span>
           <span class="v131-pill gold">+${xp(m)} XP</span>
           <span class="v131-pill gold">${coins(m)} 🪙</span>
@@ -2301,7 +2279,7 @@ applyV133Theme();try{renderAll()}catch(err){console.error('v13.3 English fixes e
   const oldRenderMissions = window.renderMissions;
   window.renderMissions=function(){
     const list=allMissionList();
-    return `<section class="card"><div class="section-title"><div><h2>${tx('Today’s missions','Misiones de hoy')}</h2><p>${tx('Repeat-day buttons are always visible. Achievement links show what each mission contributes to.','Los botones de días de repetición siempre están visibles. Los vínculos de logros muestran a qué contribuye cada misión.')}</p></div><div class="actions"><button class="btn primary" data-action="new-mission">${tx('New mission','Nueva misión')}</button><button class="btn" onclick="state.activeTab='dashboard';renderAll()">${tx('Dashboard','Inicio')}</button></div></div>${quick()}${missionList(list)}</section>`;
+    return `<section class="card" data-mlv-i18n-owned="source"><div class="section-title"><div><h2>${tx('Today’s missions','Misiones de hoy')}</h2><p>${tx('Repeat-day buttons are always visible. Achievement links show what each mission contributes to.','Los botones de días de repetición siempre están visibles. Los vínculos de logros muestran a qué contribuye cada misión.')}</p></div><div class="actions"><button class="btn primary" data-action="new-mission">${tx('New mission','Nueva misión')}</button><button class="btn" onclick="state.activeTab='dashboard';renderAll()">${tx('Dashboard','Inicio')}</button></div></div>${quick()}${missionList(list)}</section>`;
   };
 
   document.addEventListener('click',function(ev){
