@@ -2825,11 +2825,34 @@ function setLanguage(next,{userInitiated=false}={}){
   window.dispatchEvent(new CustomEvent('michelslife:languagechange',{detail:{language:next}}));
 }
 const mo=new MutationObserver(records=>{
+  let touchedLegacy=false;
   for(const r of records){
-    if(r.type==='characterData'||r.type==='attributes')translateNode(r.target);
-    for(const n of r.addedNodes)translateNode(n);
+    if(r.type==='characterData'){
+      const parent=r.target?.parentElement;
+      if(!parent||parent.closest?.('[data-mlv-i18n-owned="source"]'))continue;
+      translateNode(r.target);
+      touchedLegacy=true;
+      continue;
+    }
+    if(r.type==='attributes'){
+      const el=r.target;
+      if(!el||el.closest?.('[data-mlv-i18n-owned="source"]'))continue;
+      translateNode(el);
+      touchedLegacy=true;
+      continue;
+    }
+    if(r.type==='childList'){
+      for(const n of r.addedNodes){
+        const owner=n.nodeType===Node.ELEMENT_NODE
+          ? n.closest?.('[data-mlv-i18n-owned="source"]')
+          : n.parentElement?.closest?.('[data-mlv-i18n-owned="source"]');
+        if(owner)continue;
+        translateNode(n);
+        touchedLegacy=true;
+      }
+    }
   }
-  ensureLanguageControl();
+  if(touchedLegacy)ensureLanguageControl();
 });
 function init(){
   refresh(document.body);
