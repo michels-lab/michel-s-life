@@ -177,6 +177,7 @@ const PAIRS={
   "Balanced":"Equilibrado",
   "Coach mode":"Modo guía",
   "Start Work":"Iniciar trabajo",
+  "Start Break":"Iniciar descanso",
   "Apply":"Aplicar",
   "Auto · Current mission":"Automático · Misión actual",
   "Auto · Current misión":"Automático · Misión actual",
@@ -2101,6 +2102,9 @@ const REVERSE=Object.fromEntries(Object.entries(PAIRS).map(([en,es])=>[es,en]));
 const EMBEDDED_SYSTEM_PAIRS=Object.entries(PAIRS)
   .filter(([en])=>/[.!?]/.test(en)||en.trim().split(/\s+/).length>=4)
   .sort((a,b)=>b[0].length-a[0].length);
+const EMBEDDED_SYSTEM_PAIRS_REVERSE=EMBEDDED_SYSTEM_PAIRS
+  .map(([en,es])=>[es,en])
+  .sort((a,b)=>b[0].length-a[0].length);
 const PAIR_KEYS_CASEFOLD=new Map(Object.keys(PAIRS).map(k=>[k.toLocaleLowerCase('en-US'),k]));
 
 function escapeI18nRegExp(value){
@@ -2153,7 +2157,7 @@ function replaceEmbeddedSystemPhrases(value,targetLanguage){
   let out=String(value);
   const pairs=targetLanguage==='es'
     ? EMBEDDED_SYSTEM_PAIRS
-    : EMBEDDED_SYSTEM_PAIRS.map(([en,es])=>[es,en]).sort((a,b)=>b[0].length-a[0].length);
+    : EMBEDDED_SYSTEM_PAIRS_REVERSE;
   for(const [from,to] of pairs){
     if(from&&out.includes(from))out=out.split(from).join(to);
   }
@@ -2279,6 +2283,9 @@ const ENGLISH_SYSTEM_DEFAULTS={
   "No des el día por perdido mientras todavía haya margen.":"Do not call the day lost while there is still leverage."
 };
 
+const SPANISH_SYSTEM_DEFAULT_ENTRIES=Object.entries(SPANISH_SYSTEM_DEFAULTS).sort((a,b)=>b[0].length-a[0].length);
+const ENGLISH_EMBEDDED_LEGACY_DEFAULT_ENTRIES=Object.entries(ENGLISH_EMBEDDED_LEGACY_DEFAULTS).sort((a,b)=>b[0].length-a[0].length);
+
 function installedDefault(){
   const native=String(window.__MICHELSLIFE_INSTALL_LANGUAGE__||'').trim().toLowerCase();
   if(native==='es'||native.startsWith('spanish')){
@@ -2319,7 +2326,7 @@ let language=getLanguage();
 const translatedTextNodes=new WeakMap();
 const translatedAttributes=new WeakMap();
 
-function mapText(raw){
+function mapTextUncached(raw){
   const s=String(raw);
   const t=s.trim();
   if(!t)return s;
@@ -2332,7 +2339,7 @@ function mapText(raw){
     // phrases, then exact labels and date/greeting vocabulary.
     let out=normalizeDynamicSystemCopy(s,'en');
     out=replaceEmbeddedSystemPhrases(out,'en');
-    for(const [legacySpanish,canonicalEnglish] of Object.entries(ENGLISH_EMBEDDED_LEGACY_DEFAULTS).sort((a,b)=>b[0].length-a[0].length)){
+    for(const [legacySpanish,canonicalEnglish] of ENGLISH_EMBEDDED_LEGACY_DEFAULT_ENTRIES){
       if(out.includes(legacySpanish))out=out.split(legacySpanish).join(canonicalEnglish);
     }
     const trimmed=out.trim();
@@ -2362,7 +2369,7 @@ function mapText(raw){
     out=repairLegacyMixedSystemCopy(out);
     out=normalizeDynamicSystemCopy(out,'es');
     out=replaceEmbeddedSystemPhrases(out,'es');
-    for(const [canonicalEnglish,spanishDefault] of Object.entries(SPANISH_SYSTEM_DEFAULTS).sort((a,b)=>b[0].length-a[0].length)){
+    for(const [canonicalEnglish,spanishDefault] of SPANISH_SYSTEM_DEFAULT_ENTRIES){
       if(out.includes(canonicalEnglish))out=out.split(canonicalEnglish).join(spanishDefault);
     }
     out=out.replace(/\bAll\s+(\d+)\b/gi,'Todos $1');
@@ -2606,6 +2613,21 @@ function mapText(raw){
   ];
   for(const [re,v] of partial)out=out.replace(re,v);
   return out;
+}
+
+const MAP_TEXT_CACHE_LIMIT=4096;
+const mapTextCache={en:new Map(),es:new Map()};
+function mapText(raw){
+  const s=String(raw);
+  const cache=mapTextCache[language]||mapTextCache.en;
+  if(cache.has(s))return cache.get(s);
+  const translated=mapTextUncached(s);
+  cache.set(s,translated);
+  if(cache.size>MAP_TEXT_CACHE_LIMIT){
+    const oldest=cache.keys().next().value;
+    cache.delete(oldest);
+  }
+  return translated;
 }
 function restoreTranslatedNode(node){
   if(!node)return;

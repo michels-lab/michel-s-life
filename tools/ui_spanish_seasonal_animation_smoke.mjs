@@ -42,6 +42,29 @@ async function sampleFrames(page,label,durationMs=4200,stepMs=350){
   return samples;
 }
 
+async function switchTabAndMeasure(page,tabId){
+  return page.evaluate(id=>new Promise((resolve,reject)=>{
+    const target=document.querySelector('#tabs [data-tab="'+id+'"]')||document.querySelector('[data-tab="'+id+'"]');
+    if(!target){reject(new Error('Tab not found: '+id));return}
+    const before=document.getElementById('v30146Canvas');
+    const frameBefore=Number(before?.dataset?.frame||0);
+    const sameBefore=before===window.__mlvSeasonCanvasRef;
+    const started=performance.now();
+    target.click();
+    requestAnimationFrame(()=>{
+      const after=document.getElementById('v30146Canvas');
+      resolve({
+        tab:id,
+        elapsed:performance.now()-started,
+        frameBefore,
+        frameAfter:Number(after?.dataset?.frame||0),
+        sameBefore,
+        canvasSame:after===window.__mlvSeasonCanvasRef
+      });
+    });
+  }),tabId);
+}
+
 function assertCopy(samples,language){
   const monthIndex=new Date().getMonth();
   const expected=language==='es'?MONTHS_ES[monthIndex]:MONTHS_EN[monthIndex];
@@ -83,7 +106,23 @@ try{
   const spanishBefore=await sampleFrames(page,'Spanish >3s interval',4550,350);
   assertCopy(spanishBefore,'es');
 
-  const frameBeforeEnglish=spanishBefore.at(-1).frame;
+  const startBreak=await page.evaluate(()=>window.MichelsLifeI18n.mapText('Start Break'));
+  ok(startBreak==='Iniciar descanso','Start Break was not translated: '+JSON.stringify({startBreak}));
+
+  const tabResults=[];
+  for(const tabId of ['missions','contracts','stats','dashboard']){
+    const result=await switchTabAndMeasure(page,tabId);
+    tabResults.push(result);
+    ok(result.sameBefore&&result.canvasSame,
+      'Spanish tab switch replaced the seasonal canvas: '+JSON.stringify(result));
+    ok(result.frameAfter>result.frameBefore,
+      'Spanish tab switch stalled or reset the seasonal animation: '+JSON.stringify(result));
+    ok(result.elapsed<450,
+      'Spanish tab switch blocked the next paint for too long: '+JSON.stringify(result));
+    await page.waitForTimeout(120);
+  }
+
+  const frameBeforeEnglish=(await snapshot(page)).frame;
   await page.evaluate(()=>window.MichelsLifeI18n.setLanguage('en',{userInitiated:true}));
   await page.waitForTimeout(350);
   const english=await sampleFrames(page,'English interval',3850,350);
@@ -106,6 +145,7 @@ try{
     JSON.stringify({
       startFrame:start.frame,
       spanishEnd:spanishBefore.at(-1).frame,
+      spanishTabSwitches:tabResults,
       englishEnd:english.at(-1).frame,
       finalFrame:spanishAfter.at(-1).frame,
       finalState

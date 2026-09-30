@@ -110,6 +110,11 @@ jobs:
           export MLV_UI_URL=http://127.0.0.1:4173
           node tools/ui_spanish_dashboard_smoke.mjs
 
+      - name: Audit Spanish tab-switch animation continuity
+        run: |
+          export MLV_UI_URL=http://127.0.0.1:4173
+          node tools/ui_spanish_seasonal_animation_smoke.mjs
+
       - uses: actions/upload-artifact@v4
         if: always()
         continue-on-error: true
