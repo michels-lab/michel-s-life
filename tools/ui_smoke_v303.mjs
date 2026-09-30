@@ -24,13 +24,22 @@ try{
       window.renderAll?.();
     }catch(_){}
   });
-  await page.waitForTimeout(900);
+  await page.waitForFunction(()=>{
+    const root=document.querySelector('#v30171Sidebar');
+    const brand=root?.querySelector('.v30171-brand');
+    const img=brand?.querySelector('.v30171-brand-mark img');
+    const title=brand?.querySelector('.v30171-brand-title');
+    const sub=brand?.querySelector('.v30171-brand-sub');
+    return !!(brand&&img&&title&&sub&&img.getAttribute('src'));
+  },null,{timeout:10000});
+  await page.waitForTimeout(250);
 
   const logo=await page.evaluate(()=>{
     const img=document.querySelector('#v30171Sidebar .v30171-brand-mark img');
     const title=document.querySelector('#v30171Sidebar .v30171-brand-title');
     const sub=document.querySelector('#v30171Sidebar .v30171-brand-sub');
     const brand=document.querySelector('#v30171Sidebar .v30171-brand');
+    if(!brand||!img||!title||!sub)throw new Error('Sidebar brand lockup incomplete after render: '+JSON.stringify({brand:!!brand,img:!!img,title:!!title,sub:!!sub}));
     const ir=img.getBoundingClientRect(),tr=title.getBoundingClientRect(),sr=sub.getBoundingClientRect(),br=brand.getBoundingClientRect();
     return {
       src:img.getAttribute('src'),w:img.naturalWidth,h:img.naturalHeight,cw:ir.width,ch:ir.height,
