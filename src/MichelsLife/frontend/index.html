@@ -28360,14 +28360,22 @@ console.info("Michel's Life build "+VERSION+' — pinned navigation compatibilit
 if(window.ModernNavV30168)return;
 const VERSION='3.0.168',SPECIAL=new Set(['story','settings']);
 const PRESETS=['cyan','gold','violet','green','forge','pink','rose','steel','black','desert','ocean','terminal','ultraviolet','frost'];
-const LABELS={desert:'Desert Clay',ocean:'Ocean Coral',terminal:'Retro Terminal',ultraviolet:'Ultraviolet Acid',frost:'Frosted Mono'};
+const PRESET_LABELS={
+ cyan:['Cyan','Cian'],gold:['Gold','Dorado'],violet:['Violet','Violeta'],green:['Green','Verde'],forge:['Forge','Forja'],
+ pink:['Pink','Rosa'],rose:['Rose','Rosa antiguo'],steel:['Steel','Acero'],black:['Black','Negro'],
+ desert:['Desert Clay','Arcilla del desierto'],ocean:['Ocean Coral','Coral oceánico'],terminal:['Retro Terminal','Terminal retro'],
+ ultraviolet:['Ultraviolet Acid','Ácido ultravioleta'],frost:['Frosted Mono','Monocromo escarchado']
+};
+function presetLabel(key){const p=PRESET_LABELS[key]||[key,key];return window.mlvText?window.mlvText(p[0],p[1]):p[0]}
 let lastRoute='',lastAt=0;
 function saveNow(){try{if(typeof save==='function')save()}catch(_){} }
 function mark(id){const wrap=document.getElementById('tabs');if(!wrap)return;wrap.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',String(b.dataset.tab||'')===id));const more=wrap.querySelector('#v131More,.v131-more');if(more)more.value=''}
 function ensurePresetButtons(){
  const row=document.querySelector('#tab-settings .v133-switch');if(!row)return false;
+ row.dataset.mlvI18nOwned='source';
  const keys=[...row.querySelectorAll('[data-action="v133-preset"]')].map(b=>b.dataset.key);
- if(PRESETS.some(k=>!keys.includes(k))||keys.length!==PRESETS.length)row.innerHTML=PRESETS.map(k=>'<button type="button" data-action="v133-preset" data-key="'+k+'">'+(LABELS[k]||k)+'</button>').join('');
+ if(PRESETS.some(k=>!keys.includes(k))||keys.length!==PRESETS.length)row.innerHTML=PRESETS.map(k=>'<button type="button" data-action="v133-preset" data-key="'+k+'"></button>').join('');
+ row.querySelectorAll('[data-action="v133-preset"]').forEach(b=>{b.textContent=presetLabel(String(b.dataset.key||''));});
  return true;
 }
 function validHex(v,fb){v=String(v||'').trim();return /^#[0-9a-f]{6}$/i.test(v)?v:fb}
@@ -28413,6 +28421,7 @@ window.addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;con
 function refreshAdventure(){return false}
 const oldAll=window.renderAll;if(typeof oldAll==='function'&&!oldAll.__v30168){const w=function(){const out=oldAll.apply(this,arguments);setTimeout(()=>{if(String(state?.activeTab||'')==='settings')repairSettings()},0);setTimeout(()=>{if(String(state?.activeTab||'')==='settings')repairSettings()},160);return out};w.__v30168=true;window.renderAll=w;try{renderAll=w}catch(_){}}
 let q=0;const mo=new MutationObserver(()=>{clearTimeout(q);q=setTimeout(()=>{if(String(state?.activeTab||'')==='settings')repairSettings()},90)});try{mo.observe(document.body,{childList:true,subtree:true})}catch(_){}
+window.addEventListener('michelslife:languagechange',()=>{if(String(state?.activeTab||'')==='settings')setTimeout(repairSettings,0)});
 setTimeout(()=>{if(String(state?.activeTab||'')==='settings')repairSettings()},420);
 window.ModernNavV30168={version:'3.0.189',route,repairSettings,refreshAdventure};window.__MICHELS_LIFE_BUILD__='3.0.209';
 console.info("Michel's Life v3.0.189 — Settings navigation compatibility loaded; old dragon renderer removed");

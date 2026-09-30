@@ -2753,12 +2753,20 @@ function setLanguage(next,{userInitiated=false}={}){
   }catch(_){}
 
   if(next==='en'){
-    // Restore only values previously changed by this translation layer.
+    // Restore only legacy DOM values previously changed by this translation layer.
     restoreTranslatedNode(document.body);
     restoreEnglishWeekdayInitials();
   }
 
   document.documentElement.lang=next;
+
+  // Source-bilingual renderers own their copy. Rebuild them from state exactly once
+  // in the new language, then translate only remaining legacy surfaces.
+  try{
+    if(typeof window.renderAll==='function')window.renderAll();
+  }catch(error){
+    console.error('Michel\'s Life language rerender failed',error);
+  }
   refresh(document.body);
   window.dispatchEvent(new CustomEvent('michelslife:languagechange',{detail:{language:next}}));
 }
