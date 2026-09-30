@@ -22916,7 +22916,7 @@ function v3096RefreshArchiveCounters(){
     var j=Math.max(0,Math.min(list.length-1,i+delta));
     if(i===j)return;
     var item=list.splice(i,1)[0];list.splice(j,0,item);
-    setIds(list,{title:tx('Next Up reordered','Next Up reordenado'),body:tx('Mission moved to position ','Misión movida a la posición ')+(j+1)+'.'});
+    setIds(list,{title:tx('Next Up reordered','Siguientes reordenados'),body:tx('Mission moved to position ','Misión movida a la posición ')+(j+1)+'.'});
   }
   function remove(id,quiet){
     var m=missionById(id),list=ids().filter(function(x){return x!==String(id);});
@@ -23009,7 +23009,7 @@ function v3096RefreshArchiveCounters(){
       button.dataset.id=id;
       button.classList.toggle('v3098-active',index>=0);
       button.textContent=index>=0?'Next #'+(index+1):tx('Set next','Establecer siguiente');
-      button.title=index>=0?tx('Remove from Next Up','Quitar de Next Up'):tx('Add to Next Up','Agregar a Next Up');
+      button.title=index>=0?tx('Remove from Next Up','Quitar de Siguientes'):tx('Add to Next Up','Agregar a Siguientes');
       if(index>=0){
         button.style.setProperty('background-image','linear-gradient(135deg,var(--gold,#ffd166),var(--accent,#75e4ff))','important');
         button.style.setProperty('background-color','var(--gold,#ffd166)','important');
@@ -23044,8 +23044,8 @@ function v3096RefreshArchiveCounters(){
       root.insertBefore(card,root.firstChild);
     }
     card.dataset.mlvI18nOwned='source';
-    card.innerHTML='<div class="section-title"><div><h2>'+esc(tx('Next Up queue','Cola Next Up'))+'</h2><p>'+esc(tx('Choose how many missions can stay in your ordered queue.','Elige cuántas misiones pueden permanecer en tu cola ordenada.'))+'</p></div><span class="pill gold">'+ids().length+' '+esc(tx('queued','en cola'))+'</span></div>'+
-      '<div class="v3098-settings-grid"><div class="v30100-settings-stack"><label>'+esc(tx('Maximum Next Up missions','Máximo de misiones en Next Up'))+'<select id="v3098NextUpMax"><option value="1">1 '+esc(tx('mission','misión'))+'</option><option value="2">2 '+esc(tx('missions','misiones'))+'</option><option value="3">3 '+esc(tx('missions','misiones'))+'</option><option value="4">4 '+esc(tx('missions','misiones'))+'</option><option value="5">5 '+esc(tx('missions','misiones'))+'</option><option value="6">6 '+esc(tx('missions','misiones'))+'</option></select><p>'+esc(tx('Default is 6. The floating dock grows to a second row when needed.','El valor predeterminado es 6. El dock flotante crece a una segunda fila cuando es necesario.'))+'</p></label><label class="v30100-auto-plan"><input id="v30100AutoPlanDay" type="checkbox" '+(settings().nextUpAutoPlanDay?'checked':'')+'><span><b>'+esc(tx('Keep Plan my day first','Mantener Plan my day primero'))+'</b><small>'+esc(tx('Once per new day, the matching mission is placed at #1 automatically.','Una vez por cada día nuevo, la misión correspondiente se coloca automáticamente en el puesto #1.'))+'</small></span></label></div><button class="btn ghost" data-action="v3098-clear-next" '+(ids().length?'':'disabled')+'>'+esc(tx('Clear Next Up','Vaciar Next Up'))+'</button></div>';
+    card.innerHTML='<div class="section-title"><div><h2>'+esc(tx('Next Up queue','Cola de Siguientes'))+'</h2><p>'+esc(tx('Choose how many missions can stay in your ordered queue.','Elige cuántas misiones pueden permanecer en tu cola ordenada.'))+'</p></div><span class="pill gold">'+ids().length+' '+esc(tx('queued','en cola'))+'</span></div>'+
+      '<div class="v3098-settings-grid"><div class="v30100-settings-stack"><label>'+esc(tx('Maximum Next Up missions','Máximo de misiones en Siguientes'))+'<select id="v3098NextUpMax"><option value="1">1 '+esc(tx('mission','misión'))+'</option><option value="2">2 '+esc(tx('missions','misiones'))+'</option><option value="3">3 '+esc(tx('missions','misiones'))+'</option><option value="4">4 '+esc(tx('missions','misiones'))+'</option><option value="5">5 '+esc(tx('missions','misiones'))+'</option><option value="6">6 '+esc(tx('missions','misiones'))+'</option></select><p>'+esc(tx('Default is 6. The floating dock grows to a second row when needed.','El valor predeterminado es 6. El dock flotante crece a una segunda fila cuando es necesario.'))+'</p></label><label class="v30100-auto-plan"><input id="v30100AutoPlanDay" type="checkbox" '+(settings().nextUpAutoPlanDay?'checked':'')+'><span><b>'+esc(tx('Keep Plan my day first','Mantener «Planear mi día» primero'))+'</b><small>'+esc(tx('Once per new day, the matching mission is placed at #1 automatically.','Una vez por cada día nuevo, la misión correspondiente se coloca automáticamente en el puesto #1.'))+'</small></span></label></div><button class="btn ghost" data-action="v3098-clear-next" '+(ids().length?'':'disabled')+'>'+esc(tx('Clear Next Up','Vaciar Siguientes'))+'</button></div>';
     var select=card.querySelector('#v3098NextUpMax');
     if(select)select.value=String(maxSlots());
   }
@@ -23079,7 +23079,7 @@ function v3096RefreshArchiveCounters(){
     else if(action==='v3098-remove-next')remove(button.dataset.id,false);
     else if(action==='v3098-move-up')move(button.dataset.id,-1);
     else if(action==='v3098-move-down')move(button.dataset.id,1);
-    else if(action==='v3098-clear-next')setIds([],{title:tx('Next Up cleared','Next Up vaciado'),body:tx('The queue is empty.','La cola está vacía.')});
+    else if(action==='v3098-clear-next')setIds([],{title:tx('Next Up cleared','Siguientes vaciados'),body:tx('The queue is empty.','La cola está vacía.')});
     else if(action==='v3098-replace-next')replace(button.dataset.oldId,button.dataset.newId);
     else if(action==='v3098-close-dialog')closeDialog();
   },true);
@@ -23091,7 +23091,7 @@ function v3096RefreshArchiveCounters(){
       var value=Math.max(MAX_MIN,Math.min(MAX_MAX,Number(event.target.value)||6));
       settings().nextUpMax=value;
       var list=ids().slice(0,value);
-      setIds(list,{title:tx('Next Up limit changed','Límite de Next Up actualizado'),body:tx('Up to ','Hasta ')+value+' '+(value===1?tx('mission','misión'):tx('missions','misiones'))+'.'});
+      setIds(list,{title:tx('Next Up limit changed','Límite de Siguientes actualizado'),body:tx('Up to ','Hasta ')+value+' '+(value===1?tx('mission','misión'):tx('missions','misiones'))+'.'});
       return;
     }
     if(event.target.id==='v30100AutoPlanDay'){
@@ -23126,7 +23126,7 @@ function v3096RefreshArchiveCounters(){
     event.preventDefault();
     var targetId=String(row.dataset.v3098NextId||''),list=ids();
     var from=list.indexOf(dragMissionId),to=list.indexOf(targetId);
-    if(from>=0&&to>=0&&from!==to){var item=list.splice(from,1)[0];list.splice(to,0,item);setIds(list,{title:tx('Next Up reordered','Next Up reordenado'),body:tx('Mission moved to position ','Misión movida a la posición ')+(to+1)+'.'});}
+    if(from>=0&&to>=0&&from!==to){var item=list.splice(from,1)[0];list.splice(to,0,item);setIds(list,{title:tx('Next Up reordered','Siguientes reordenados'),body:tx('Mission moved to position ','Misión movida a la posición ')+(to+1)+'.'});}
     dragMissionId='';
     document.querySelectorAll('.v3098-dragging,.v3098-drop-target').forEach(function(el){el.classList.remove('v3098-dragging','v3098-drop-target');});
   },true);
@@ -23500,20 +23500,20 @@ body.v3099-has-nextup-dock{
         '<button type="button" class="v3099-mini-btn v30100-complete" data-v3099-action="complete" data-id="'+esc(id)+'" title="'+esc(tx('Complete mission','Completar misión'))+'" aria-label="'+esc(tx('Complete ','Completar ')+m.name)+'">✓</button>'+
         '<button type="button" class="v3099-mini-btn" data-v3099-action="up" data-id="'+esc(id)+'" '+(index===0?'disabled':'')+' title="'+esc(tx('Move earlier','Mover antes'))+'" aria-label="'+esc(tx('Move earlier','Mover antes'))+'">↑</button>'+
         '<button type="button" class="v3099-mini-btn" data-v3099-action="down" data-id="'+esc(id)+'" '+(index===total-1?'disabled':'')+' title="'+esc(tx('Move later','Mover después'))+'" aria-label="'+esc(tx('Move later','Mover después'))+'">↓</button>'+
-        '<button type="button" class="v3099-mini-btn v3099-remove" data-v3099-action="remove" data-id="'+esc(id)+'" title="'+esc(tx('Remove from Next Up','Quitar de Next Up'))+'" aria-label="'+esc(tx('Remove from Next Up','Quitar de Next Up'))+'">×</button>'+
+        '<button type="button" class="v3099-mini-btn v3099-remove" data-v3099-action="remove" data-id="'+esc(id)+'" title="'+esc(tx('Remove from Next Up','Quitar de Siguientes'))+'" aria-label="'+esc(tx('Remove from Next Up','Quitar de Siguientes'))+'">×</button>'+
       '</span></div>';
   }
   function expandedHtml(ids){
     return '<div class="v3099-dock-head" data-mlv-i18n-owned="source">'+
-      '<div class="v3099-dock-title"><span class="v3099-dock-mark">➜</span><span class="v3099-dock-title-copy"><b>Next Up</b><span>'+esc(tx('Your mission queue stays visible while you work.','Tu cola de misiones permanece visible mientras trabajas.'))+'</span></span></div>'+
-      '<div class="v3099-dock-head-actions"><span class="v3099-dock-count">'+ids.length+' / '+Math.max(1,Number(safeStateSettings().nextUpMax)||6)+'</span><button type="button" class="v3099-icon-btn" data-v3099-action="collapse" title="'+esc(tx('Minimize Next Up','Minimizar Next Up'))+'" aria-label="'+esc(tx('Minimize Next Up','Minimizar Next Up'))+'">⌄</button></div>'+
+      '<div class="v3099-dock-title"><span class="v3099-dock-mark">➜</span><span class="v3099-dock-title-copy"><b>'+esc(tx('Next Up','Siguientes'))+'</b><span>'+esc(tx('Your mission queue stays visible while you work.','Tu cola de misiones permanece visible mientras trabajas.'))+'</span></span></div>'+
+      '<div class="v3099-dock-head-actions"><span class="v3099-dock-count">'+ids.length+' / '+Math.max(1,Number(safeStateSettings().nextUpMax)||6)+'</span><button type="button" class="v3099-icon-btn" data-v3099-action="collapse" title="'+esc(tx('Minimize Next Up','Minimizar Siguientes'))+'" aria-label="'+esc(tx('Minimize Next Up','Minimizar Siguientes'))+'">⌄</button></div>'+
     '</div><div class="v3099-dock-grid">'+ids.map(function(id,index){return missionHtml(id,index,ids.length);}).join('')+'</div>';
   }
   function collapsedHtml(ids){
     var m=missionById(ids[0]);
     return '<div class="v3099-dock-head" data-mlv-i18n-owned="source">'+
       '<div class="v3099-dock-title"><span class="v3099-dock-mark">➜</span><div class="v3099-collapsed-row" role="button" tabindex="0" data-v3099-action="jump" data-id="'+esc(ids[0])+'"><span>'+esc(tx('COMING NEXT','SIGUIENTE'))+'</span><b>'+esc(m?m.name:tx('Mission','Misión'))+'</b></div></div>'+
-      '<div class="v3099-dock-head-actions"><span class="v3099-dock-count">'+ids.length+' '+esc(tx('queued','en cola'))+'</span><button type="button" class="v3099-icon-btn v30100-collapsed-complete" data-v3099-action="complete" data-id="'+esc(ids[0])+'" title="'+esc(tx('Complete ','Completar ')+(m?m.name:tx('mission','misión')))+'" aria-label="'+esc(tx('Complete ','Completar ')+(m?m.name:tx('mission','misión')))+'">✓</button><button type="button" class="v3099-icon-btn" data-v3099-action="expand" title="'+esc(tx('Expand Next Up','Expandir Next Up'))+'" aria-label="'+esc(tx('Expand Next Up','Expandir Next Up'))+'">⌃</button></div>'+
+      '<div class="v3099-dock-head-actions"><span class="v3099-dock-count">'+ids.length+' '+esc(tx('queued','en cola'))+'</span><button type="button" class="v3099-icon-btn v30100-collapsed-complete" data-v3099-action="complete" data-id="'+esc(ids[0])+'" title="'+esc(tx('Complete ','Completar ')+(m?m.name:tx('mission','misión')))+'" aria-label="'+esc(tx('Complete ','Completar ')+(m?m.name:tx('mission','misión')))+'">✓</button><button type="button" class="v3099-icon-btn" data-v3099-action="expand" title="'+esc(tx('Expand Next Up','Expandir Siguientes'))+'" aria-label="'+esc(tx('Expand Next Up','Expandir Siguientes'))+'">⌃</button></div>'+
     '</div>';
   }
   function removeLegacyBlocks(){
@@ -23536,7 +23536,7 @@ body.v3099-has-nextup-dock{
       dock=document.createElement('aside');
       dock.id='v3099NextUpDock';
       dock.className='v3099-nextup-dock';
-      dock.setAttribute('aria-label',tx('Next Up missions','Misiones Next Up'));dock.dataset.mlvI18nOwned='source';
+      dock.setAttribute('aria-label',tx('Next Up missions','Misiones de Siguientes'));dock.dataset.mlvI18nOwned='source';
       document.body.appendChild(dock);
     }
     var collapsed=!!safeStateSettings().nextUpDockCollapsed;
@@ -28499,11 +28499,11 @@ function specialHtml(id){
   if(id==='story'){
     const api=window.FocusStoryV30162;
     if(api&&typeof api.renderStory==='function')return api.renderStory();
-    return '<section class="card"><h2>Story</h2><p class="muted">Story is loading…</p></section>';
+    return '<section class="card" data-mlv-i18n-owned="source"><h2>'+window.mlvText('Story','Historia')+'</h2><p class="muted">'+window.mlvText('Story is loading…','Cargando Historia…')+'</p></section>';
   }
   if(id==='settings'){
     try{if(typeof window.renderSettings==='function')return window.renderSettings();if(typeof renderSettings==='function')return renderSettings()}catch(e){console.error('v30166 settings render error',e)}
-    return '<section class="card"><h2>Settings</h2><p class="muted">Settings are loading…</p></section>';
+    return '<section class="card" data-mlv-i18n-owned="source"><h2>'+window.mlvText('Settings','Configuración')+'</h2><p class="muted">'+window.mlvText('Settings are loading…','Cargando Configuración…')+'</p></section>';
   }
   return '';
 }
@@ -28575,10 +28575,10 @@ function renderSpecial(id){
   let html='';
   if(id==='story'){
     try{html=window.FocusStoryV30162?.renderStory?.()||''}catch(e){console.error('v30167 story render',e)}
-    if(!html)html='<section class="card"><h2>Story</h2><p class="muted">Story is loading…</p></section>';
+    if(!html)html='<section class="card" data-mlv-i18n-owned="source"><h2>'+window.mlvText('Story','Historia')+'</h2><p class="muted">'+window.mlvText('Story is loading…','Cargando Historia…')+'</p></section>';
   }else{
     try{html=(typeof window.renderSettings==='function'?window.renderSettings():(typeof renderSettings==='function'?renderSettings():''))||''}catch(e){console.error('v30167 settings render',e)}
-    if(!html)html='<section class="card"><h2>Settings</h2><p class="muted">Settings are loading…</p></section>';
+    if(!html)html='<section class="card" data-mlv-i18n-owned="source"><h2>'+window.mlvText('Settings','Configuración')+'</h2><p class="muted">'+window.mlvText('Settings are loading…','Cargando Configuración…')+'</p></section>';
   }
   main.innerHTML='<section class="tab active" id="tab-'+id+'">'+html+'</section>';
   try{if(id==='story')window.ChapterHomeNavV30163?.maintain?.()}catch(_){}
