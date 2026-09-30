@@ -26,6 +26,24 @@
 - UI smoke #456 — **success**.
 - Both workflows ran on real GitHub-hosted runners; no runner-allocation/billing failure occurred.
 
+### Release publication
+- `928b39ab` — **Bump Michel's Life to v3.0.214 with approved visual fidelity**.
+- Source validation #513 — **success**.
+- UI smoke #457 — **success**.
+- `c997a754` — temporary **Dispatch Michel's Life v3.0.214 release** workflow.
+- Dispatcher run #1 — **success**.
+- Windows release build #15 — **success**.
+- Public release `v3.0.214` published successfully to `realmichelduarte/michel-s-life-releases`.
+- Verified release assets:
+  - `AppBundle.zip`
+  - `MichelsLife-Setup-v3.0.214.exe`
+  - `MichelsLife-v3.0.214.exe`
+  - `MichelsLife-v3.0.214.exe.sha256`
+  - `michels_life_icon.ico`
+- Release is final, not a prerelease.
+- `ede4dfd0` — removed the temporary v3.0.214 dispatcher after successful publication.
+
+
 ## 2026-09-30 — v3.0.213 visual rollback to approved v3.0.211 presentation
 
 ### User-visible regression identified
