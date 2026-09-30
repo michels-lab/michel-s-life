@@ -28747,7 +28747,7 @@ const SETTINGS=[
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function saveNow(){try{if(typeof save==='function')save()}catch(_){} }
 function navButton(id,ico,label,extra){return '<button type="button" class="tab-btn v30171-nav-btn '+(extra||'')+'" data-tab="'+id+'"><span class="v30171-nav-ico">'+ico+'</span><span class="v30171-nav-label">'+esc(tr(label))+'</span></button>'}
-const LEGACY_ROUTE_MAP={goals:'contracts',inbox:'dashboard',pending:'dashboard','daily-shutdown':'dashboard',export:'settings',shop:'achievements',inventory:'achievements'};
+const LEGACY_ROUTE_MAP={goals:'contracts',inbox:'dashboard',pending:'dashboard','daily-shutdown':'dashboard',export:'settings',shop:'achievements',inventory:'achievements',pet:'dashboard',character:'stats'};
 function canonicalRoute(id){id=String(id||'');return LEGACY_ROUTE_MAP[id]||id}
 function normalizedNavTab(){let a=canonicalRoute(state?.activeTab||'dashboard');try{if(String(state?.activeTab||'')!==a)state.activeTab=a}catch(_){}return a}
 function syncNavState(wrap,a=normalizedNavTab()){
