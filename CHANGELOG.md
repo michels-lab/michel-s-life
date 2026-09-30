@@ -3,7 +3,7 @@
 > Official development log for Michel's Life. Every meaningful app change must be recorded here before a version is considered complete. Entries should describe verified changes only and be grouped by version/date.
 
 
-## Unreleased — Spanish navigation performance
+## 3.0.215 — 2026-09-30 — Spanish navigation performance
 
 ### Performance
 - Changed normal tab navigation to rerender only the tab bar and active main panel instead of running the full application renderer.
@@ -16,6 +16,8 @@
 ### Regression protection
 - Extended the Spanish seasonal-animation smoke test to switch among Missions, Premium Contracts, Stats and Dashboard while verifying that the same canvas keeps advancing and the next paint stays responsive.
 - Added that animation/tab-switch test to the main UI smoke workflow.
+- Source validation #517 — **success**.
+- UI smoke #461 — **success**, including Spanish tab-switch animation continuity.
 
 ## 3.0.214 — 2026-09-30 — Approved visual fidelity lock
 

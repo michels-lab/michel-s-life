@@ -2,8 +2,8 @@
 from pathlib import Path
 import argparse
 
-TARGET_VERSION = "3.0.214"
-PREVIOUS_VERSIONS = ("3.0.213", "3.0.212", "3.0.211", "3.0.210", "3.0.209")
+TARGET_VERSION = "3.0.215"
+PREVIOUS_VERSIONS = ("3.0.214", "3.0.213", "3.0.212", "3.0.211", "3.0.210", "3.0.209")
 
 REQUIRED = (
     f"const VERSION='{TARGET_VERSION}'",
