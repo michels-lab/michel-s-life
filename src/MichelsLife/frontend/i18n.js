@@ -1919,6 +1919,16 @@ const PAIRS={
   "Build the life you imagine":"Construye la vida que imaginas",
   "Developer":"Desarrollador",
   "Contact":"Contacto",
+  "Local recovery request timed out.":"La solicitud de recuperación local agotó el tiempo de espera.",
+  "Recovery request failed.":"La solicitud de recuperación falló.",
+  "Could not capture the current Michel’s Life state.":"No se pudo capturar el estado actual de Michel’s Life.",
+  "Request timed out.":"La solicitud agotó el tiempo de espera.",
+  "Local safety copy created.":"Copia de seguridad local creada.",
+  "Recovery tool":"Herramienta de recuperación",
+  "Statistics/progress reset; mission archive and hidden states are preserved.":"Se restablecieron estadísticas y progreso; se conservan las misiones archivadas y ocultas.",
+  "Cloud sync completed":"Sincronización de nube completada",
+  "Michel’s Life updated":"Michel’s Life actualizado",
+  "Your existing data profile was preserved.":"Se conservó tu perfil de datos existente.",
 };
 const SPANISH_SYSTEM_DEFAULTS={
   "Read 30 minutes at night 3 times":"Leer 30 minutos de noche 3 veces",
