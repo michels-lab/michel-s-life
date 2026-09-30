@@ -16911,7 +16911,7 @@ body.ml-theme-ui .v133-switch button.active,
 body.ml-theme-ui .filter-chip.active,
 body.ml-theme-ui .v168-tools button.active,
 body.ml-theme-ui .mission-filters button.active,
-body.ml-theme-ui button[aria-pressed="true"]:not([data-mlv-language-choice]):not(.mlv303-font-card){
+body.ml-theme-ui button[aria-pressed="true"]{
   background:linear-gradient(135deg,var(--ui-accent,#74f2a7),var(--ui-accent2,#75e4ff))!important;
   border-color:transparent!important;
   color:var(--ml-on-accent,#06120f)!important;
@@ -28421,7 +28421,7 @@ p.v30171-brand-sub{margin:2px 0 0!important;font-size:9px!important;letter-spaci
 (function(){
 'use strict';
 if(window.LeftNavV30171)return;
-const VERSION='3.0.209';
+const VERSION='3.0.207';
 const MAIN=[
  ['dashboard','⌂','Dashboard'],['missions','⚔','Missions'],['contracts','★','Premium Contracts'],['calendar','▦','Calendar'],
  ['stats','▥','Statistics'],['projects','▰','Projects'],['achievements','🏆','Achievements'],['affirmations','✦','Affirmations'],
@@ -28452,7 +28452,7 @@ function syncNavState(wrap,a=normalizedNavTab()){
 }
 function enforceBrandLockup(side){
  if(!side)return null;
- const markup='<div class="brand v30171-brand" data-mlv-brand-lockup="v303"><div class="brand-mark v30171-brand-mark" aria-hidden="true"><img src="assets/michels_life_logo.webp" alt=""></div><div class="v30171-brand-copy"><h1 class="v30171-brand-title">MICHEL\'S LIFE</h1><p class="v30171-brand-sub">Personal Progress System</p></div></div>';
+ const markup='<div class="brand v30171-brand" data-mlv-brand-lockup="v303"><div class="brand-mark v30171-brand-mark" aria-hidden="true"><img src="assets/michels_life_logo.svg" alt=""></div><div class="v30171-brand-copy"><h1 class="v30171-brand-title">MICHEL\'S LIFE</h1><p class="v30171-brand-sub">Personal Progress System</p></div></div>';
  let brand=side.querySelector(':scope > .v30171-brand');
  if(!brand||brand.dataset.mlvBrandLockup!=='v303'){
    const t=document.createElement('template');t.innerHTML=markup;const next=t.content.firstElementChild;
@@ -28645,7 +28645,7 @@ function applyFocusSettings(preset,workValue,breakValue){
 }
 
 
-function aboutPane(){return `<section class="card mlvdev-card" data-mlv-about-core data-mlv-developer data-v30171-owner="about"><div class="mlvdev-main"><div class="mlvdev-avatar-wrap"><img class="mlvdev-avatar" src="assets/michel_duarte_avatar.jpg" alt="Michel Duarte"></div><div class="mlvdev-info"><div class="mlvdev-title"><h2>Michel Duarte</h2><p>Developer · Michel’s Lab</p></div><div class="mlvdev-copy">Michel’s Life is created and maintained by Michel Duarte under Michel’s Lab. Independent software focused on productivity, life systems and personal tools.</div><div class="mlvdev-contact">Contact: <a href="mailto:realmichelduarte@gmail.com">realmichelduarte@gmail.com</a></div><div class="mlvdev-socials"><a class="mlvdev-social" href="https://www.instagram.com/realmichelduarte/" target="_blank" rel="noopener noreferrer"><span><strong>Instagram</strong><small>@realmichelduarte</small></span></a><a class="mlvdev-social" href="https://www.facebook.com/realmichelduarte" target="_blank" rel="noopener noreferrer"><span><strong>Facebook</strong><small>realmichelduarte</small></span></a><a class="mlvdev-social" href="https://www.linkedin.com/in/realmichelduart/" target="_blank" rel="noopener noreferrer"><span><strong>LinkedIn</strong><small>realmichelduart</small></span></a><a class="mlvdev-social" href="https://github.com/realmichelduarte" target="_blank" rel="noopener noreferrer"><span><strong>GitHub</strong><small>realmichelduarte</small></span></a><a class="mlvdev-social" href="mailto:realmichelduarte@gmail.com" target="_blank" rel="noopener noreferrer"><span><strong>Email</strong><small>realmichelduarte@gmail.com</small></span></a></div><div class="mlvdev-meta"><div><small>APP</small><b>Michel’s Life</b></div><div><small>VERSION</small><b>v3.0.209</b></div><div><small>LICENSE</small><b>Proprietary · Personal use</b></div></div><div class="mlvdev-legal">Free for personal use. Unauthorized copying, modification, redistribution, rebranding, resale, sublicensing, or claiming this software as your own is not permitted without prior written permission.<span class="mlvdev-copyright">© 2026 Michel Duarte / Michel’s Lab. All rights reserved.</span></div></div></div></section>`}
+function aboutPane(){return `<section class="card mlvdev-card" data-mlv-about-core data-mlv-developer data-v30171-owner="about"><div class="mlvdev-main"><div class="mlvdev-avatar-wrap"><img class="mlvdev-avatar" src="assets/michel_duarte_avatar.jpg" alt="Michel Duarte"></div><div class="mlvdev-info"><div class="mlvdev-title"><h2>Michel Duarte</h2><p>Developer · Michel’s Lab</p></div><div class="mlvdev-copy">Michel’s Life is created and maintained by Michel Duarte under Michel’s Lab. Independent software focused on productivity, life systems and personal tools.</div><div class="mlvdev-contact">Contact: <a href="mailto:realmichelduarte@gmail.com">realmichelduarte@gmail.com</a></div><div class="mlvdev-socials"><a class="mlvdev-social" href="https://www.instagram.com/realmichelduarte/" target="_blank" rel="noopener noreferrer"><span><strong>Instagram</strong><small>@realmichelduarte</small></span></a><a class="mlvdev-social" href="https://www.facebook.com/realmichelduarte" target="_blank" rel="noopener noreferrer"><span><strong>Facebook</strong><small>realmichelduarte</small></span></a><a class="mlvdev-social" href="https://www.linkedin.com/in/realmichelduart/" target="_blank" rel="noopener noreferrer"><span><strong>LinkedIn</strong><small>realmichelduart</small></span></a><a class="mlvdev-social" href="https://github.com/realmichelduarte" target="_blank" rel="noopener noreferrer"><span><strong>GitHub</strong><small>realmichelduarte</small></span></a><a class="mlvdev-social" href="mailto:realmichelduarte@gmail.com" target="_blank" rel="noopener noreferrer"><span><strong>Email</strong><small>realmichelduarte@gmail.com</small></span></a></div><div class="mlvdev-meta"><div><small>APP</small><b>Michel’s Life</b></div><div><small>VERSION</small><b>v3.0.207</b></div><div><small>LICENSE</small><b>Proprietary · Personal use</b></div></div><div class="mlvdev-legal">Free for personal use. Unauthorized copying, modification, redistribution, rebranding, resale, sublicensing, or claiming this software as your own is not permitted without prior written permission.<span class="mlvdev-copyright">© 2026 Michel Duarte / Michel’s Lab. All rights reserved.</span></div></div></div></section>`}
 function moveDataActions(panes){
  const general=panes.general,data=panes.data;if(!general||!data)return;
  const buttons=[...general.querySelectorAll('[data-v30116-action="export-unified"],[data-action="export-json"],[data-action="export-backup"],[data-action="import-json"],[data-action="import-backup"],[data-action="reset-app"]')];
@@ -28674,7 +28674,7 @@ function absorbSettingsStrays(root){
  moveDataActions(panes);
 }
 function settingsShellIsCanonical(shell){
- if(!shell||shell.dataset.v30171Canonical!=='3.0.209')return false;
+ if(!shell||shell.dataset.v30171Canonical!=='3.0.207')return false;
  const expected=SETTINGS.map(([k])=>k);
  const nav=[...shell.querySelectorAll('.v30171-settings-nav [data-v30171-setting]')].map(b=>b.dataset.v30171Setting);
  const panes=[...shell.querySelectorAll('.v30171-settings-content > [data-v30171-pane]')].map(p=>p.dataset.v30171Pane);
@@ -28684,32 +28684,9 @@ function createCanonicalSettingsShell(root){
  try{window.ModernNavV30168?.repairSettings?.()}catch(_){}
  const source=[];
  const seen=new Set();
- const semanticSeen=new Map();
- const semanticKey=el=>{
-   if(!(el instanceof Element)||!el.matches('.card,section.card,div.card'))return '';
-   const h=heading(el).replace(/\s+/g,' ').trim().toLowerCase();
-   const p=String(el.querySelector('.section-title p,p')?.textContent||'').replace(/\s+/g,' ').trim().toLowerCase();
-   const owner=String(el.dataset?.v30171Owner||'').trim().toLowerCase();
-   if(!h&&!owner)return '';
-   return owner+'|'+h+'|'+p;
- };
- const mergeDuplicate=(keep,dupe)=>{
-   if(!keep||!dupe)return;
-   const dest=keep.querySelector('.v30171-data-actions');
-   if(dest){
-     dupe.querySelectorAll('[data-v30116-action],[data-action]').forEach(node=>{
-       const key=node.getAttribute('data-v30116-action')||node.getAttribute('data-action')||'';
-       if(!key||!dest.querySelector('[data-v30116-action="'+CSS.escape(key)+'"],[data-action="'+CSS.escape(key)+'"]'))dest.appendChild(node);
-     });
-   }
-   dupe.remove();
- };
  const add=el=>{
    if(!(el instanceof Element)||seen.has(el))return;
    if(el.matches('.v30171-settings-shell,[data-mlv-typography-core],[data-mlv-focus-core],[data-mlv-about-core],.v30171-pane-heading'))return;
-   const key=semanticKey(el);
-   if(key&&semanticSeen.has(key)){mergeDuplicate(semanticSeen.get(key),el);return}
-   if(key)semanticSeen.set(key,el);
    seen.add(el);source.push(el);
  };
  [...root.children].forEach(el=>{
@@ -28722,7 +28699,7 @@ function createCanonicalSettingsShell(root){
  });
  const shell=document.createElement('div');
  shell.className='v30171-settings-shell';
- shell.dataset.v30171Canonical='3.0.209';
+ shell.dataset.v30171Canonical='3.0.207';
  const nav=document.createElement('aside');
  nav.className='v30171-settings-nav';
  nav.innerHTML='<div class="v30171-settings-title">SETTINGS</div>'+SETTINGS.map(([k,i,n])=>'<button type="button" class="v30171-settings-btn" data-v30171-setting="'+k+'"><span class="v30171-settings-ico">'+i+'</span><span>'+n+'</span></button>').join('');
@@ -28756,18 +28733,6 @@ function buildSettings(){
  if(!settingsShellIsCanonical(shell))shell=createCanonicalSettingsShell(root);
  absorbSettingsStrays(root);
  ensureSettingsCorePanels(root);
- root.querySelectorAll('[data-v30171-pane]').forEach(pane=>{
-   const signatures=new Map();
-   [...pane.children].forEach(el=>{
-     if(!(el instanceof Element)||el.classList.contains('v30171-pane-heading')||!el.matches('.card,section.card,div.card'))return;
-     const h=heading(el).replace(/\s+/g,' ').trim().toLowerCase();
-     const p=String(el.querySelector('.section-title p,p')?.textContent||'').replace(/\s+/g,' ').trim().toLowerCase();
-     if(!h)return;
-     const key=h+'|'+p;
-     if(signatures.has(key)){el.remove();return}
-     signatures.set(key,el);
-   });
- });
  const requested=SETTINGS.some(x=>x[0]===window.__mlvSettingsSectionLock)?window.__mlvSettingsSectionLock:savedSetting();
  activateSetting(requested,root);
  return true;
@@ -28819,7 +28784,7 @@ document.addEventListener('click',function(e){
 let mq=0;const mo=new MutationObserver(()=>{clearTimeout(mq);mq=setTimeout(()=>{if(String(state?.activeTab||'')==='settings'){forceSettingsMain();buildSettings()}},70)});try{const main=document.getElementById('main');if(main)mo.observe(main,{childList:true,subtree:true})}catch(_){}
 
 applyTypography(typographyCurrent(),false);
-window.MLVTypographyV303={version:'3.0.209',presets:MLV303_TYPOGRAPHY,current:typographyCurrent,apply:applyTypography};
+window.MLVTypographyV303={version:'3.0.207',presets:MLV303_TYPOGRAPHY,current:typographyCurrent,apply:applyTypography};
 setTimeout(enhance,0);setTimeout(enhance,350);setTimeout(enhance,950);
 window.LeftNavV30171={version:VERSION,renderNav,buildSettings,activateSetting,route};
 window.__MICHELS_LIFE_BUILD__=VERSION;
@@ -29082,7 +29047,7 @@ try{mo.observe(document.body,{childList:true,subtree:true})}catch(_){}
 setInterval(update,500);
 document.addEventListener('keydown',function(e){if(e.key==='Escape'){const api=focusApi();let f=null;try{f=api?.focusState?.()}catch(_){}if(f?.expanded){api?.closeFocusPanel?.();update()}}});
 window.ActionDockV30175={ensureDock,update};
-window.__MICHELS_LIFE_BUILD__='3.0.209';
+window.__MICHELS_LIFE_BUILD__='3.0.207';
 })();
 </script>
 <script id="v30175-build-marker">window.__MICHELS_LIFE_BUILD__='3.0.209';</script>
@@ -29306,7 +29271,7 @@ body.mlv184-background-owned #v25-sky-layer,body.mlv184-background-owned #v27-sk
 <script id="mlv-v30184-core-script">
 (function(){
 'use strict';
-const BUILD='3.0.209';
+const BUILD='3.0.207';
 const BG_KEY='michelsLife.backgroundSet.v3049',TR_KEY='michelsLife.panelTransparency.v3060',COLOR_KEY='michelsLife.colorTheme.v30184',JOURNAL_KEY='michelsLife.journal.v30184',JOURNAL_DATE_KEY='michelsLife.journalDate.v30184';
 const STAGES=['dawn','morning','noon','afternoon','night','late'];
 const THEMES={
