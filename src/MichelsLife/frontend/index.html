@@ -5766,7 +5766,7 @@ textarea::placeholder{
   box-shadow:0 12px 34px rgba(0,0,0,.20),0 0 0 1px color-mix(in srgb,var(--ml-accent,#75e4ff) 14%,transparent) inset!important;
 }
 .v169-dashboard-weekly::before{
-  content:"📅 Weekly planned";
+  content:"📅 " attr(data-v169-weekly-label);
   position:absolute;
   top:10px;
   right:12px;
@@ -11726,7 +11726,7 @@ label:has(input[name="coins"]),
   box-shadow:0 0 0 1px rgba(117,228,255,.16),0 12px 30px rgba(117,228,255,.06)!important;
 }
 .v216-search-hit::before{
-  content:"Search match"!important;
+  content:attr(data-v216-search-label)!important;
   position:absolute!important;
   top:10px!important;
   right:12px!important;
@@ -11973,6 +11973,7 @@ label:has(input[name="coins"]),
     cards.forEach(x=>{
       x.match=!!q&&x.txt.includes(q);
       x.card.classList.toggle('v216-search-hit',x.match);
+      if(x.match)x.card.dataset.v216SearchLabel=tr('Search match');else delete x.card.dataset.v216SearchLabel;
       x.card.classList.toggle('v216-search-muted',!!q&&!x.match);
       x.card.style.display='';
     });
@@ -12083,6 +12084,7 @@ label:has(input[name="coins"]),
     cards.forEach(x=>{
       x.match=!!q&&x.txt.includes(q);
       x.card.classList.toggle('v216-search-hit',x.match);
+      if(x.match)x.card.dataset.v216SearchLabel=tr('Search match');else delete x.card.dataset.v216SearchLabel;
       x.card.classList.toggle('v216-search-muted',!!q&&!x.match);
       x.card.style.display='';
     });
@@ -12959,6 +12961,7 @@ label:has(input[name="coins"]),
       const m=(state.missions||[]).find(x=>String(x.id)===String(id));
       if(m&&m.weeklyPlanner&&m.weeklyPlannerDate===key){
         row.classList.add('v169-dashboard-weekly');
+        row.dataset.v169WeeklyLabel=tr('Weekly planned');
         if(!row.querySelector('.v169-weekly-marker')){
           const pills=row.querySelector('.v131-pills,.v169-weekly-meta');
           if(pills){
@@ -25285,7 +25288,7 @@ html.v30111-rendering #tabs *{transition:none!important;animation:none!important
   }
   function compareRank(a,b){const ar=a.rank,br=b.rank;return ar[0]-br[0]||ar[1]-br[1]||ar[2]-br[2];}
   function buildGroup(stage,cards){
-    const section=document.createElement('section');section.className='v30114-stage-group'+(stage===currentStage()?' current':'');section.dataset.v30114Group=stage;
+    const section=document.createElement('section');section.className='v30114-stage-group'+(stage===currentStage()?' current':'');section.dataset.v30114Group=stage;section.dataset.currentLabel=tx('NOW','AHORA');
     const pending=cards.filter(function(card){const m=missionById(missionIdFromCard(card));return m&&!doneToday(m);}).length;
     section.innerHTML='<div class="v30114-stage-head"><div class="v30114-stage-title"><span>'+ICONS[stage]+'</span><b>'+esc(stageLabel(stage))+'</b><small>'+(stage===currentStage()?esc(tx('Current stage','Etapa actual')):'')+'</small></div><span class="v30114-stage-count">'+pending+' '+esc(tx('pending','pendientes'))+' · '+cards.length+' '+esc(tx('total','total'))+'</span></div><div class="v30114-stage-list"></div>';
     const list=section.querySelector('.v30114-stage-list');
@@ -25562,7 +25565,7 @@ html.v30111-rendering #tabs *{transition:none!important;animation:none!important
     const activeFilter=String(S().v30115MissionStageFilter||'all');
     STAGES.forEach(function(stage){
       const rows=buckets[stage].sort(function(a,b){return a.rank[0]-b.rank[0]||a.rank[1]-b.rank[1]||a.rank[2]-b.rank[2];}).map(function(x){return x.card;});
-      const section=document.createElement('section');section.className='v30115-mission-stage-group'+(window.v30114TimeOfDay&&window.v30114TimeOfDay.current&&window.v30114TimeOfDay.current()===stage?' current':'')+(activeFilter!=='all'&&activeFilter!==stage?' v30115-stage-hidden':'');section.dataset.stage=stage;
+      const section=document.createElement('section');section.className='v30115-mission-stage-group'+(window.v30114TimeOfDay&&window.v30114TimeOfDay.current&&window.v30114TimeOfDay.current()===stage?' current':'')+(activeFilter!=='all'&&activeFilter!==stage?' v30115-stage-hidden':'');section.dataset.stage=stage;section.dataset.currentLabel=tx('NOW','AHORA');
       const pending=rows.filter(function(card){const m=mission(idFromCard(card));return m&&!done(m);}).length;
       section.innerHTML='<div class="v30115-mission-stage-head"><div class="v30115-mission-stage-title"><span>'+ICON[stage]+'</span><b>'+stageLabel(stage)+'</b></div><span class="v30115-mission-stage-count">'+pending+' '+tx('pending','pendientes')+' · '+rows.length+' '+tx('total','total')+'</span></div><div class="v30115-mission-stage-list"></div>';
       const target=section.querySelector('.v30115-mission-stage-list');if(rows.length)rows.forEach(function(card){target.appendChild(card);});else target.innerHTML='<div class="v30115-stage-empty">'+tx('No missions in this stage.','No hay misiones en esta etapa.')+'</div>';
@@ -25991,7 +25994,7 @@ html.v30111-rendering #tabs *{transition:none!important;animation:none!important
 }
 .v30114-stage-group.current .v30114-stage-title::after,
 .v30115-mission-stage-group.current .v30115-mission-stage-title::after{
-  content:"NOW"!important;
+  content:attr(data-current-label)!important;
   display:inline-flex!important;align-items:center!important;height:19px!important;
   padding:0 7px!important;margin-left:3px!important;border-radius:999px!important;
   background:rgb(var(--v30115-stage-rgb))!important;color:#080b12!important;

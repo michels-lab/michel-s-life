@@ -2036,6 +2036,9 @@ const PAIRS={
   "pending":"pendientes",
   "Move to today without duplicates":"Mover a hoy sin duplicar",
   "No pending tasks.":"Sin pendientes.",
+  "Weekly planned":"Plan semanal",
+  "Search match":"Coincidencia de búsqueda",
+  "NOW":"AHORA",
 };
 const SPANISH_SYSTEM_DEFAULTS={
   "Read 30 minutes at night 3 times":"Leer 30 minutos de noche 3 veces",
