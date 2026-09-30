@@ -6203,26 +6203,6 @@ textarea::placeholder{
     default:['One useful action is enough to shift the day.','Less noise. More proof.','Do the thing that makes tomorrow easier.']
   };
 
-  function tr(v){try{return window.MichelsLifeI18n?.mapText?.(String(v))||String(v)}catch(_){return String(v)}}
-  function language(){return (window.MichelsLifeI18n?.language||document.documentElement.lang)==='es'?'es':'en'}
-  function localizedAffirmation(text){
-    const value=String(text||'');
-    try{
-      const found=(state.affirmations||[]).find(a=>String(a&&a.text||a&&a.name||'')===value);
-      if(found&&typeof affirmationText==='function')return affirmationText(found);
-    }catch(_){}
-    return FALLBACK_AFFIRMATIONS.includes(value)?tr(value):value;
-  }
-  function syncStaticLabels(panel){
-    if(!panel)return;
-    const kickers=panel.querySelectorAll('.v176-kicker');
-    if(kickers[0])kickers[0].textContent='⚡ '+tr('Command');
-    if(kickers[1])kickers[1].textContent='✦ '+tr('Affirmation');
-    const next=panel.querySelector('.v176-next'),open=panel.querySelector('.v176-open');
-    if(next)next.textContent=tr('New phrase');
-    if(open)open.textContent=tr('Open affirmations');
-  }
-
   function todayKeySafe(){
     return typeof dateKey === 'function' ? dateKey() : new Date().toISOString().slice(0,10);
   }
@@ -6581,6 +6561,29 @@ textarea::placeholder{
     late:['Low stimulation. Small useful action.','Close with intention, not chaos.','Protect tomorrow with one final reset.'],
     default:['One useful action is enough to shift the day.','Less noise. More proof.','Do the thing that makes tomorrow easier.']
   };
+
+  function tr(v){try{return window.MichelsLifeI18n?.mapText?.(String(v))||String(v)}catch(_){return String(v)}}
+  function language(){return (window.MichelsLifeI18n?.language||document.documentElement.lang)==='es'?'es':'en'}
+  function localizedAffirmation(text){
+    const value=String(text||'');
+    try{
+      const found=(state.affirmations||[]).find(a=>String(a&&a.text||a&&a.name||'')===value);
+      if(found&&typeof affirmationText==='function')return affirmationText(found);
+    }catch(_){}
+    return FALLBACK_AFFIRMATIONS.includes(value)?tr(value):value;
+  }
+  function syncStaticLabels(panel){
+    if(!panel)return;
+    const commandCard=panel.querySelector('#v176Command')?.closest('.v176-card');
+    const affirmationCard=panel.querySelector('#v176Affirmation')?.closest('.v176-card');
+    const commandKicker=commandCard?.querySelector('.v176-kicker');
+    const affirmationKicker=affirmationCard?.querySelector('.v176-kicker');
+    if(commandKicker)commandKicker.textContent='⚡ '+tr('Command');
+    if(affirmationKicker)affirmationKicker.textContent='✦ '+tr('Affirmation');
+    const next=affirmationCard?.querySelector('.v176-next'),open=affirmationCard?.querySelector('.v176-open');
+    if(next)next.textContent=tr('New phrase');
+    if(open)open.textContent=tr('Open affirmations');
+  }
 
   function todayKeySafe(){
     return typeof dateKey === 'function' ? dateKey() : new Date().toISOString().slice(0,10);
