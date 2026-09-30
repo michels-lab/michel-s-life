@@ -28745,6 +28745,7 @@ const SETTINGS=[
  ['about','ⓘ','About','Developer, license and build information.']
 ];
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function tr(v){try{return window.MichelsLifeI18n?.mapText?.(String(v))||String(v)}catch(_){return String(v)}}
 function saveNow(){try{if(typeof save==='function')save()}catch(_){} }
 function navButton(id,ico,label,extra){return '<button type="button" class="tab-btn v30171-nav-btn '+(extra||'')+'" data-tab="'+id+'"><span class="v30171-nav-ico">'+ico+'</span><span class="v30171-nav-label">'+esc(tr(label))+'</span></button>'}
 const LEGACY_ROUTE_MAP={goals:'contracts',inbox:'dashboard',pending:'dashboard','daily-shutdown':'dashboard',export:'settings',shop:'achievements',inventory:'achievements',pet:'dashboard',character:'stats'};
