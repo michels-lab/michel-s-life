@@ -793,8 +793,19 @@ select, option{color:#eaf4ff!important;background:#0c172b!important}select:focus
 'use strict';
 const STORAGE_KEY='vida_rpg_personal_progress_v2';
 const DAY_NAMES=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-const TABS=[['dashboard','Dashboard'],['missions','Missions'],['pet','Pet'],['achievements','Achievements'],['goals','Goals'],['affirmations','Affirmations'],['stats','Statistics'],['calendar','Calendar'],['compare','Compare'],['pending','Pending'],['export','AI Export'],['settings','Settings']];
-  ['dashboard','Dashboard'],['missions','Misiones'],['pet','Mascota'],['achievements','Logros'],['goals','Metas'],['affirmations','Afirmaciones'],['stats','Estadísticas'],['calendar','Calendario'],['compare','Comparar'],['pending','Pendientes'],['export','Exportar IA'],['settings','Configuración']
+const TABS=[
+  ['dashboard','Dashboard','Inicio'],
+  ['missions','Missions','Misiones'],
+  ['pet','Pet','Mascota'],
+  ['achievements','Achievements','Logros'],
+  ['goals','Goals','Metas'],
+  ['affirmations','Affirmations','Afirmaciones'],
+  ['stats','Statistics','Estadísticas'],
+  ['calendar','Calendar','Calendario'],
+  ['compare','Compare','Comparar'],
+  ['pending','Pending','Pendientes'],
+  ['export','AI Export','Exportar IA'],
+  ['settings','Settings','Configuración']
 ];
 const CATEGORIES={
   physical:{name:'Physical strength',emoji:'💪',visual:'physicalPower',color:'#ff9f5a'},
@@ -939,7 +950,7 @@ function moveCarryover(ids){let moved=0,dupes=0;const todayCanons=new Set(active
 function buyItem(id){const it=SHOP.find(x=>x.id===id);if(!it)return;const lvl=calcLevel(state.xp).level;if(state.owned.includes(id)){toast('Ya lo tienes',it.name);return}if(lvl<it.unlockLevel){toast('Bloqueado','Necesitas nivel '+it.unlockLevel);return}if(state.coins<it.price){toast('Monedas insuficientes','Completa una misión difícil o boss quest.');return}state.coins-=it.price;state.owned.push(id);log('buy','Item comprado: '+it.name,{itemId:id,coins:-it.price,category:it.category});toast('Item comprado',it.name);save();renderAll()}
 function equipItem(id){const it=SHOP.find(x=>x.id===id);if(!it||!state.owned.includes(id))return;state.equipped[it.slot]=state.equipped[it.slot]===id?null:id;log('equip',(state.equipped[it.slot]?'Item equipado: ':'Item desequipado: ')+it.name,{itemId:id,category:it.category});save();renderAll()}
 function checkAchievements(){const counts=categoryCounts(),lvl=calcLevel(state.xp).level,comps=state.missions.reduce((a,m)=>a+(m.completions?.length||0),0);const boss=state.missions.reduce((a,m)=>a+(m.boss?(m.completions?.length||0):0),0);const appVac=state.missions.filter(m=>/vacante|deacero|aplicar|industria/i.test(m.name)).reduce((a,m)=>a+(m.completions?.length||0),0);const rules={first:comps>=1,level5:lvl>=5,level10:lvl>=10,xp1000:state.xp>=1000,boss1:boss>=1,boss10:boss>=10,gym10:(counts.physical||0)>=10,acad10:(counts.academic||0)>=10,career10:(counts.career||0)>=10,deacero5:appVac>=5,auto7:(counts.autonomy||0)>=7,order15:(counts.order||0)>=15,clean10:(counts.order||0)>=10,finance10:(counts.finance||0)>=10,self10:(counts.selflove||0)>=10,self30:(counts.selflove||0)>=30,mental20:(counts.mental||0)>=20,presence20:(counts.presence||0)>=20};Object.entries(rules).forEach(([id,ok])=>{if(ok&&!state.achievements.includes(id)){state.achievements.push(id);const a=ACHIEVEMENTS.find(x=>x[0]===id);log('achievement','Logro desbloqueado: '+(a?a[1]:id));toast('Logro desbloqueado',a?a[1]:id)}})}
-function renderTabs(){const wrap=$('#tabs');wrap.innerHTML=TABS.map(([id,name])=>`<button class="tab-btn ${state.activeTab===id?'active':''}" data-tab="${id}">${name}</button>`).join('')}
+function renderTabs(){const wrap=$('#tabs');wrap.innerHTML=TABS.map(([id,en,es])=>`<button class="tab-btn ${state.activeTab===id?'active':''}" data-tab="${id}">${escapeHtml(window.mlvText?window.mlvText(en,es):en)}</button>`).join('')}
 function renderAll(){applyStage();renderTabs();renderMain();renderSide();save()}
 function renderMain(){const main=$('#main');main.innerHTML=TABS.map(([id])=>`<section class="tab ${state.activeTab===id?'active':''}" id="tab-${id}">${renderTab(id)}</section>`).join('')}
 function renderTab(id){return ({dashboard:renderDashboard,missions:renderMissions,character:renderCharacterTab,shop:renderShop,inventory:renderInventory,achievements:renderAchievements,goals:renderGoals,affirmations:renderAffirmations,stats:renderStats,calendar:renderCalendar,compare:renderCompare,pending:renderPending,export:renderExport,settings:renderSettings}[id]||renderDashboard)()}
