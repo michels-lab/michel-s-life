@@ -3,6 +3,29 @@
 > Chronological technical record of important repository, CI, release, and recovery events.
 > This file complements `CHANGELOG.md`: the changelog describes product changes by release, while this audit log records how the repository reached that state.
 
+## 2026-09-30 — v3.0.214 visual-fidelity lock after restored baseline
+
+### Reason for follow-up release
+- The v3.0.212 release changed more than copy and the resulting visual presentation was rejected.
+- v3.0.213 restored the v3.0.211 renderer baseline, but post-release verification identified a few compatibility fixes still needed around restored visual authorities and Settings behavior.
+
+### Post-v3.0.213 corrections
+- `6d4ce14a` — **Restore approved v3.0.207 visual authorities**.
+- `19816812` — **Normalize restored visual build markers**.
+- `b84cdd49` — **Keep approved sidebar geometry with current logo asset**.
+- `a5bcaf22` — **Keep restored Settings layout without duplicate cards**.
+- `01d662b3` — **Preserve language control text color in restored visual baseline**.
+
+### Visual verification
+- Exact comparison against the approved v3.0.211 baseline shows only 29 changed lines in `src/MichelsLife/frontend/index.html` at `01d662b3`.
+- Those remaining changes are Settings classification/deduplication logic; no CSS/layout redesign remains in the canonical frontend.
+- Language work may change copy, dates and labels, but must not change presentation geometry or visual hierarchy unless separately requested.
+
+### Validation
+- Source validation #512 — **success**.
+- UI smoke #456 — **success**.
+- Both workflows ran on real GitHub-hosted runners; no runner-allocation/billing failure occurred.
+
 ## 2026-09-30 — v3.0.213 visual rollback to approved v3.0.211 presentation
 
 ### User-visible regression identified

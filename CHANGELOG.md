@@ -3,6 +3,21 @@
 > Official development log for Michel's Life. Every meaningful app change must be recorded here before a version is considered complete. Entries should describe verified changes only and be grouped by version/date.
 
 
+## 3.0.214 — 2026-09-30 — Approved visual fidelity lock
+
+### Visual fidelity
+- Preserved the approved pre-regression Michel's Life presentation while keeping the current bilingual text system.
+- Re-established the approved visual authorities for sidebar geometry, Settings layout, cards, hero, backgrounds, spacing and typography without redesigning the interface.
+- Kept the current celestial Michel's Life logo asset inside the approved sidebar geometry.
+- Preserved the language selector's readable text color without changing the surrounding Settings design.
+- Compared the current frontend against the approved v3.0.211 baseline: the remaining `index.html` differences are limited to Settings classification/deduplication logic, not CSS/layout redesign.
+
+### Validation
+- Final pre-release source commit: `01d662b3`.
+- Source validation #512 — **success**.
+- UI smoke #456 — **success**.
+- Verified critical UI render, Spanish first run, installed-language selector, Missions, general and exhaustive Spanish UI, bilingual corpus, Spanish ↔ English round trip, translated-control overflow, installer/Settings language behavior, Settings integrity and Spanish Dashboard.
+
 ## 3.0.213 — 2026-09-30 — Visual baseline restoration with bilingual parity
 
 ### Visual restoration
