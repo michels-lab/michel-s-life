@@ -24,14 +24,19 @@ async function collectSystemSpanish(label){
   return await page.evaluate(({source})=>{
     const rx=new RegExp(source,'i');
     const out=[];
+    function visible(el){
+      const cs=getComputedStyle(el),r=el.getBoundingClientRect();
+      return cs.display!=='none'&&cs.visibility!=='hidden'&&Number(cs.opacity)!==0&&r.width>0&&r.height>0;
+    }
     const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
     while(walker.nextNode()){
       const n=walker.currentNode,p=n.parentElement;
-      if(!p||/^(SCRIPT|STYLE|CODE|PRE)$/i.test(p.tagName))continue;
+      if(!p||/^(SCRIPT|STYLE|CODE|PRE)$/i.test(p.tagName)||!visible(p))continue;
       const s=(n.nodeValue||'').replace(/\s+/g,' ').trim();
       if(s&&rx.test(s)&&!/^Español$/i.test(s))out.push({kind:'text',value:s,tag:p.tagName,cls:String(p.className||'')});
     }
     for(const el of document.querySelectorAll('button,input,select,option,label,[role="button"],[title],[aria-label],[placeholder]')){
+      if(!visible(el))continue;
       for(const [kind,value] of [
         ['control',(el.textContent||'').replace(/\s+/g,' ').trim()],
         ['placeholder',el.getAttribute('placeholder')||''],

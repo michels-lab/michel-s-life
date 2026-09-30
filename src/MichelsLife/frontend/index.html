@@ -2667,8 +2667,19 @@ body{
     const actual=String(m.description||m.notes||'');
     return m.v140SystemDefault===true||(expected&&actual===expected)?row:null;
   }
-  function systemMissionName(m){return systemMissionEntry(m)?sys(m.name):String(m?.name||'')}
-  function systemMissionDescription(m){const raw=String(m?.description||m?.notes||'');return systemMissionEntry(m)&&raw?sys(raw):raw}
+  function systemMissionName(m){
+    const raw=String(m?.name||''),row=systemMissionEntry(m);
+    if(row)return sys(String(row[0]||raw));
+    return m?.v140SystemDefault===true?sys(raw):raw;
+  }
+  function systemMissionDescription(m){
+    const raw=String(m?.description||m?.notes||''),row=systemMissionEntry(m);
+    if(row){
+      const canonical=String(row[5]?.description||raw);
+      return canonical?sys(canonical):raw;
+    }
+    return m?.v140SystemDefault===true&&raw?sys(raw):raw;
+  }
   function today(){return typeof dateKey==='function'?dateKey():new Date().toISOString().slice(0,10)}
   function e(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
   function tx(en,es){return window.mlvText?window.mlvText(en,es):(window.MichelsLifeI18n?.language==='es'?es:en)}
