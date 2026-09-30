@@ -4106,119 +4106,25 @@ textarea::placeholder{
 
 <script id="v153-no-coins-english-cleanup-script">
 (function(){
-  const visibleMap = {
-    "Misiones":"Missions",
-    "misiones":"missions",
-    "Metas":"Goals",
-    "metas":"goals",
-    "Logros":"Achievements",
-    "logros":"achievements",
-    "Estadísticas":"Statistics",
-    "estadísticas":"statistics",
-    "Configuración":"Settings",
-    "Afirmaciones":"Affirmations",
-    "Hoy":"Today",
-    "Semana":"Week",
-    "Mes":"Month",
-    "Completar":"Complete",
-    "Desmarcar":"Unmark",
-    "Editar":"Edit",
-    "Mañana":"Tomorrow",
-    "Mover a mañana":"Tomorrow",
-    "No aplica hoy":"Not today",
-    "Duplicar":"Duplicate",
-    "Archivar":"Archive",
-    "Eliminar":"Delete",
-    "Agregar":"Add",
-    "Guardar":"Save",
-    "Cancelar":"Cancel",
-    "Nueva misión":"New mission",
-    "Misión":"Mission",
-    "Misión completada":"Mission completed",
-    "Misión desmarcada":"Mission unmarked",
-    "Aplicar a una vacante objetivo":"Apply to one target job",
-    "Monedas":"Coins",
-    "monedas":"coins"
-  };
-
-  function translateVisibleText(){try{if((localStorage.getItem('michelsLife.language.v1')||navigator.language||'').toLowerCase().startsWith('es'))return;}catch(_){} 
-    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
-      acceptNode(node){
-        const p=node.parentElement;
-        if(!p || ['SCRIPT','STYLE'].includes(p.tagName)) return NodeFilter.FILTER_REJECT;
-        return /Misiones|misiones|Metas|metas|Logros|logros|Estadísticas|estadísticas|Configuración|Afirmaciones|Hoy|Semana|Mes|Completar|Desmarcar|Editar|Mañana|Mover a mañana|No aplica hoy|Duplicar|Archivar|Eliminar|Agregar|Guardar|Cancelar|Nueva misión|Misión|Aplicar a una vacante|Monedas|monedas/.test(node.nodeValue)
-          ? NodeFilter.FILTER_ACCEPT
-          : NodeFilter.FILTER_REJECT;
-      }
-    });
-    const nodes=[];
-    while(walker.nextNode()) nodes.push(walker.currentNode);
-    nodes.forEach(node=>{
-      let s=node.nodeValue;
-      Object.entries(visibleMap).forEach(([a,b])=>{ s=s.split(a).join(b); });
-      node.nodeValue=s;
-    });
-
-    document.querySelectorAll('[placeholder],[title],[aria-label]').forEach(el=>{
-      ['placeholder','title','aria-label'].forEach(attr=>{
-        if(el.hasAttribute(attr)){
-          let s=el.getAttribute(attr);
-          Object.entries(visibleMap).forEach(([a,b])=>{ s=s.split(a).join(b); });
-          el.setAttribute(attr,s);
-        }
-      });
-    });
-  }
-
   function removeCoinsFromUI(){
-    // remove pills, stats, labels, snippets mentioning coins/monedas or the coin emoji
-    const selectors = [
-      '.v131-pill','.v137-ach-link','.stat-hero','.v132-stat','.status-chip',
-      '.v143-insight-sub','.v143-insight-title','.v132-contract','.v132-mission',
-      '.v140-library-item','.card','.v132-panel','button','span','small','p','div'
+    const selectors=[
+      ".v131-pill",".v137-ach-link",".stat-hero",".v132-stat",".status-chip",
+      ".v143-insight-sub",".v143-insight-title",".v132-contract",".v132-mission",".v140-library-item"
     ];
-    const elements = document.querySelectorAll(selectors.join(','));
-    elements.forEach(el=>{
-      const txt = (el.textContent || '').trim();
-      if(!txt) return;
-
-      // Hide compact coin badges/counters only if they are clearly coin-related
-      const exactCoin = /^(\+?\d+\s*(coins|coin)|coins|coin|monedas|🪙|\d+\s*🪙)$/i.test(txt);
-      const containsCoinBadge = /🪙|coins?\b|monedas?\b/i.test(txt) && txt.length <= 40;
-      if(exactCoin || containsCoinBadge){
-        el.classList.add('v153-hide-coins');
-      }
-    });
-
-    // Clean text chunks where a sentence contains "+X XP · +Y coins"
-    document.querySelectorAll('*').forEach(el=>{
-      if(el.children.length===0 && el.textContent){
-        let t = el.textContent;
-        t = t.replace(/\s*[·•|-]?\s*\+?\d+\s*(coins?|monedas?)\b/gi,'');
-        t = t.replace(/\s*🪙\s*\d+/gi,'');
-        t = t.replace(/\(\s*coins?\s*\)/gi,'');
-        t = t.replace(/\bcoins?\b/gi,'').replace(/\bmonedas?\b/gi,'');
-        t = t.replace(/\s{2,}/g,' ').replace(/\s+([,.;:])/g,'$1').trim();
-        if(t !== el.textContent.trim()){
-          el.textContent = t;
-        }
-      }
+    document.querySelectorAll(selectors.join(",")).forEach(el=>{
+      const txt=(el.textContent||"").trim();
+      if(!txt)return;
+      const exactCoin=/^(\+?\d+\s*(coins?|monedas?)|coins?|monedas?|🪙|\d+\s*🪙)$/i.test(txt);
+      if(exactCoin)el.classList.add("v153-hide-coins");
     });
   }
-
-  function finalPass(){
-    translateVisibleText();
-    removeCoinsFromUI();
-  }
-
-  const previousRenderAll = window.renderAll;
-  window.renderAll = function(){
-    if(typeof previousRenderAll === 'function') previousRenderAll();
-    setTimeout(finalPass,0);
+  const previousRenderAll=window.renderAll;
+  window.renderAll=function(){
+    if(typeof previousRenderAll==="function")previousRenderAll.apply(this,arguments);
+    requestAnimationFrame(removeCoinsFromUI);
   };
-
-  document.addEventListener('DOMContentLoaded',()=>setTimeout(finalPass,80));
-  try{ finalPass(); }catch(e){ console.error('v15.3 cleanup error', e); }
+  document.addEventListener("DOMContentLoaded",()=>requestAnimationFrame(removeCoinsFromUI),{once:true});
+  try{removeCoinsFromUI()}catch(e){console.error("v15.3 coin cleanup error",e)}
 })();
 </script>
 
