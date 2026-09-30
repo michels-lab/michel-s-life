@@ -9200,6 +9200,8 @@ input[name="coins"],
 
 <script id="v155-no-coins-goal-links-streaks-script">
 (function(){
+  const tx=(en,es)=>window.mlvText?window.mlvText(en,es):((window.MichelsLifeI18n?.language||document.documentElement.lang)==='es'?String(es):String(en));
+
   function esc(s){
     return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
   }
@@ -9237,7 +9239,7 @@ input[name="coins"],
 
   function goalOptions(selected=''){
     const goals=ensureGoalList().filter(g=>g && g.active!==false && !g.archived);
-    const options=['<option value="">No linked goal</option>'].concat(
+    const options=[`<option value="">${esc(tx('No linked goal','Sin meta vinculada'))}</option>`].concat(
       goals.map(g=>`<option value="${esc(g.id)}" ${selected===g.id?'selected':''}>${esc((CATEGORIES[g.cat]?.emoji||'🎯')+' '+g.name)}</option>`)
     );
     return options.join('');
@@ -9324,21 +9326,20 @@ input[name="coins"],
     const streak=missionScheduledStreak(m);
     const best=missionBestStreak(m);
     const goal=goalById(m.linkedGoalId);
-
-    return `<div class="v155-insights" data-v155-insights="1">
-      <span class="v155-pill week">🔥 ${week} this week</span>
-      <span class="v155-pill streak">⚡ ${streak}-day streak</span>
-      <span class="v155-pill">🏆 best ${best}</span>
+    return `<div class="v155-insights" data-v155-insights="1" data-mlv-i18n-owned="source">
+      <span class="v155-pill week">🔥 ${week} ${esc(tx('this week','esta semana'))}</span>
+      <span class="v155-pill streak">⚡ ${streak}-${esc(tx('day streak','días de racha'))}</span>
+      <span class="v155-pill">🏆 ${esc(tx('best','mejor'))} ${best}</span>
       ${goal?`<span class="v155-pill goal">🎯 ${esc(goal.name)}</span>`:''}
     </div>`;
   }
 
   function goalLinkedSummaryHtml(g){
     const list=linkedMissions(g.id);
-    if(!list.length) return '<p class="v155-mission-goal-mini">No linked missions yet. Link tasks from the mission editor.</p>';
-    return `<div class="v155-goal-linked-list">
-      ${list.slice(0,5).map(m=>`<div class="v155-linked-mission"><b>${esc(m.name)}</b><span>${missionWeekCount(m)} this week · ${missionScheduledStreak(m)} streak</span></div>`).join('')}
-      ${list.length>5?`<div class="v155-mission-goal-mini">+${list.length-5} more linked missions</div>`:''}
+    if(!list.length) return `<p class="v155-mission-goal-mini" data-mlv-i18n-owned="source">${esc(tx('No linked missions yet. Link tasks from the mission editor.','Aún no hay misiones vinculadas. Vincula tareas desde el editor de misión.'))}</p>`;
+    return `<div class="v155-goal-linked-list" data-mlv-i18n-owned="source">
+      ${list.slice(0,5).map(m=>`<div class="v155-linked-mission"><b>${esc(m.name)}</b><span>${missionWeekCount(m)} ${esc(tx('this week','esta semana'))} · ${missionScheduledStreak(m)} ${esc(tx('streak','racha'))}</span></div>`).join('')}
+      ${list.length>5?`<div class="v155-mission-goal-mini">+${list.length-5} ${esc(tx('more linked missions','misiones vinculadas más'))}</div>`:''}
     </div>`;
   }
 
@@ -9388,7 +9389,7 @@ input[name="coins"],
   };
 
   function linkedGoalSelect(selected=''){
-    return `<label class="full">Linked goal
+    return `<label class="full">${esc(tx('Linked goal','Meta vinculada'))}
       <select name="linkedGoalId">${goalOptions(selected)}</select>
     </label>`;
   }
@@ -9396,60 +9397,45 @@ input[name="coins"],
   // Mission editor with no coins and with optional goal linking.
   window.missionEditForm=function(m){
     const selectedGoal=m.linkedGoalId||'';
-    return `<form id="missionEditForm" data-id="${m.id}">
-      <div class="v155-edit-grid-note">
-        Each mission has its own calendar. Change days, XP and optional linked goal here. Coins were removed from the system.
-      </div>
-
+    const linked=selectedGoal&&goalById(selectedGoal);
+    return `<form id="missionEditForm" data-id="${m.id}" data-mlv-i18n-owned="source">
+      <div class="v155-edit-grid-note">${esc(tx('Each mission has its own calendar. Change days, XP and the optional linked goal here.','Cada misión tiene su propio calendario. Cambia aquí los días, XP y la meta vinculada opcional.'))}</div>
       <div class="form-grid" style="margin-top:12px">
-        <label>Name<input name="name" value="${esc(m.name)}"></label>
-        <label>Category<select name="category">${categoryOptions(m.category)}</select></label>
-        <label>Type<select name="type">${typeOptions(m.type)}</select></label>
-        <label>Difficulty<select name="difficulty">${difficultyOptions(m.difficulty)}</select></label>
+        <label>${esc(tx('Name','Nombre'))}<input name="name" value="${esc(m.name)}"></label>
+        <label>${esc(tx('Category','Categoría'))}<select name="category">${categoryOptions(m.category)}</select></label>
+        <label>${esc(tx('Type','Tipo'))}<select name="type">${typeOptions(m.type)}</select></label>
+        <label>${esc(tx('Difficulty','Dificultad'))}<select name="difficulty">${difficultyOptions(m.difficulty)}</select></label>
         <label>XP<input name="xp" type="number" value="${Number(m.xp||0)}"></label>
-        <label>Priority<select name="priority">${priorityOptions(m.priority||'media')}</select></label>
-        <label>Deadline<input name="deadline" type="date" value="${esc(m.deadline||'')}"></label>
+        <label>${esc(tx('Priority','Prioridad'))}<select name="priority">${priorityOptions(m.priority||'media')}</select></label>
+        <label>${esc(tx('Deadline','Fecha límite'))}<input name="deadline" type="date" value="${esc(m.deadline||'')}"></label>
         ${linkedGoalSelect(selectedGoal)}
       </div>
-
       <div class="v155-linked-goal-box">
-        <b>Goal link behavior</b>
-        <p>If this mission is linked to a goal, completing the mission automatically counts toward that goal. You do not need to manually check the goal.</p>
-        ${selectedGoal && goalById(selectedGoal) ? `<div class="v155-pill goal">Linked to: ${esc(goalById(selectedGoal).name)}</div>` : '<div class="v155-pill">No goal linked</div>'}
+        <b>${esc(tx('Goal link behavior','Comportamiento del vínculo con la meta'))}</b>
+        <p>${esc(tx('If this mission is linked to a goal, completing the mission automatically counts toward that goal. You do not need to manually check the goal.','Si esta misión está vinculada a una meta, completarla cuenta automáticamente para esa meta. No necesitas marcar la meta manualmente.'))}</p>
+        ${linked?`<div class="v155-pill goal">${esc(tx('Linked to:','Vinculada a:'))} ${esc(linked.name)}</div>`:`<div class="v155-pill">${esc(tx('No goal linked','Sin meta vinculada'))}</div>`}
       </div>
-
-      <label style="margin-top:10px">Description<textarea name="description">${esc(m.description||'')}</textarea></label>
-      <label style="margin-top:10px">Internal notes<textarea name="notes">${esc(m.notes||'')}</textarea></label>
-
-      <div style="margin-top:12px">
-        <b>Repeat days</b>
-        <p class="tiny muted" style="margin:4px 0 8px">Select exactly which days this mission applies.</p>
-        ${dayCheckboxes(m.days||[new Date().getDay()])}
-      </div>
-
+      <label style="margin-top:10px">${esc(tx('Description','Descripción'))}<textarea name="description">${esc(m.description||'')}</textarea></label>
+      <label style="margin-top:10px">${esc(tx('Internal notes','Notas internas'))}<textarea name="notes">${esc(m.notes||'')}</textarea></label>
+      <div style="margin-top:12px"><b>${esc(tx('Repeat days','Días de repetición'))}</b><p class="tiny muted" style="margin:4px 0 8px">${esc(tx('Select exactly which days this mission applies.','Selecciona exactamente qué días aplica esta misión.'))}</p>${dayCheckboxes(m.days||[new Date().getDay()])}</div>
       <div class="days" style="margin-top:12px">
-        <label class="day-chip"><input type="checkbox" name="boss" ${boolChecked(m.boss)}> <strong>Boss quest</strong></label>
-        <label class="day-chip"><input type="checkbox" name="fixed" ${boolChecked(m.fixed)}> <strong>Pin above</strong></label>
-        <label class="day-chip"><input type="checkbox" name="hidden" ${boolChecked(m.hidden)}> <strong>Hidden</strong></label>
-        <label class="day-chip"><input type="checkbox" name="archived" ${boolChecked(m.archived)}> <strong>Archived</strong></label>
-        <label class="day-chip"><input type="checkbox" name="noSuggest" ${boolChecked(m.noSuggest)}> <strong>Do not suggest</strong></label>
+        <label class="day-chip"><input type="checkbox" name="boss" ${boolChecked(m.boss)}> <strong>${esc(tx('Boss quest','Misión jefe'))}</strong></label>
+        <label class="day-chip"><input type="checkbox" name="fixed" ${boolChecked(m.fixed)}> <strong>${esc(tx('Pin above','Fijar arriba'))}</strong></label>
+        <label class="day-chip"><input type="checkbox" name="hidden" ${boolChecked(m.hidden)}> <strong>${esc(tx('Hidden','Oculta'))}</strong></label>
+        <label class="day-chip"><input type="checkbox" name="archived" ${boolChecked(m.archived)}> <strong>${esc(tx('Archived','Archivada'))}</strong></label>
+        <label class="day-chip"><input type="checkbox" name="noSuggest" ${boolChecked(m.noSuggest)}> <strong>${esc(tx('Do not suggest','No sugerir'))}</strong></label>
       </div>
-
-      <div class="v155-no-coins-note">Coins are hidden and no longer awarded. The economy is now XP, streaks, goals and achievements.</div>
-
-      <div class="actions" style="margin-top:16px">
-        <button class="btn primary" type="submit">Save changes</button>
-        <button class="btn ghost" type="button" data-action="close-modal">Cancel</button>
-      </div>
+      <div class="v155-no-coins-note">${esc(tx('Missions reward XP, streaks, goals and achievements.','Las misiones otorgan XP, rachas, progreso de metas y logros.'))}</div>
+      <div class="actions" style="margin-top:16px"><button class="btn primary" type="submit">${esc(tx('Save changes','Guardar cambios'))}</button><button class="btn ghost" type="button" data-action="close-modal">${esc(tx('Cancel','Cancelar'))}</button></div>
     </form>`;
   };
 
   window.openMissionEditor=function(id){
     const m=(state.missions||[]).find(x=>x.id===id);
-    if(!m) return;
+    if(!m)return;
     const root=document.getElementById('modalRoot');
-    if(!root) return;
-    root.innerHTML=`<div class="modal-backdrop"><div class="modal"><div class="modal-head"><div><h2>Edit mission</h2><p>Independent editor: days, type, XP, category, status and optional goal link.</p></div><button class="icon-btn" data-action="close-modal">×</button></div>${window.missionEditForm(m)}</div></div>`;
+    if(!root)return;
+    root.innerHTML=`<div class="modal-backdrop" data-mlv-i18n-owned="source"><div class="modal"><div class="modal-head"><div><h2>${esc(tx('Edit mission','Editar misión'))}</h2><p>${esc(tx('Independent editor: days, type, XP, category, status and optional goal link.','Editor independiente: días, tipo, XP, categoría, estado y vínculo opcional con una meta.'))}</p></div><button class="icon-btn" data-action="close-modal">×</button></div>${window.missionEditForm(m)}</div></div>`;
     setTimeout(cleanCoinsFromDom,0);
   };
 
@@ -9486,7 +9472,7 @@ input[name="coins"],
     });
 
     if(typeof log==='function') log('edit','Mission edited: '+m.name,{missionId:m.id,category:m.category,linkedGoalId});
-    if(typeof toast==='function') toast('Mission updated', linkedGoalId ? `${m.name} · linked to goal` : m.name);
+    if(typeof toast==='function') toast(tx('Mission updated','Misión actualizada'), linkedGoalId ? `${m.name} · ${tx('linked to goal','vinculada a meta')}` : m.name);
     if(typeof closeModal==='function') closeModal();
     if(typeof save==='function') save();
     if(typeof renderAll==='function') renderAll();
@@ -9494,36 +9480,30 @@ input[name="coins"],
 
   // New mission form with linked goal and no coins.
   window.missionForm=function(){
-    return `<details class="compact-create" open>
-      <summary><div>＋ Create new mission</div><span>Editable, repeatable and optionally linked to a goal</span></summary>
+    return `<details class="compact-create" open data-mlv-i18n-owned="source">
+      <summary><div>＋ ${esc(tx('Create new mission','Crear nueva misión'))}</div><span>${esc(tx('Editable, repeatable and optionally linked to a goal','Editable, repetible y opcionalmente vinculada a una meta'))}</span></summary>
       <form id="v155MissionForm">
         <div class="form-grid">
-          <label>Name<input name="name" placeholder="Example: Wash dishes"></label>
-          <label>Category<select name="category">${categoryOptions()}</select></label>
-          <label>Type<select name="type">${typeOptions('oneoff')}</select></label>
-          <label>Difficulty<select name="difficulty">${difficultyOptions()}</select></label>
-          <label>XP<input name="xp" type="number" placeholder="Auto"></label>
-          <label>Priority<select name="priority">${priorityOptions('media')}</select></label>
+          <label>${esc(tx('Name','Nombre'))}<input name="name" placeholder="${esc(tx('Example: Wash dishes','Ejemplo: Lavar los platos'))}"></label>
+          <label>${esc(tx('Category','Categoría'))}<select name="category">${categoryOptions()}</select></label>
+          <label>${esc(tx('Type','Tipo'))}<select name="type">${typeOptions('oneoff')}</select></label>
+          <label>${esc(tx('Difficulty','Dificultad'))}<select name="difficulty">${difficultyOptions()}</select></label>
+          <label>XP<input name="xp" type="number" placeholder="${esc(tx('Auto','Auto'))}"></label>
+          <label>${esc(tx('Priority','Prioridad'))}<select name="priority">${priorityOptions('media')}</select></label>
           ${linkedGoalSelect('')}
         </div>
-        <div class="form-grid" style="margin-top:8px">
-          <label>Deadline<input name="deadline" type="date"></label>
-          <label style="grid-column:span 3">Description<textarea name="description" placeholder="Optional notes"></textarea></label>
-        </div>
-        <div style="margin-top:10px"><b>Repeat days</b><p class="tiny muted" style="margin:4px 0 8px">These days belong only to this mission.</p>${dayCheckboxes([1,2,3,4,5])}</div>
-        <div class="days" style="margin-top:8px">
-          <label class="day-chip"><input type="checkbox" name="boss"> <strong>Boss</strong></label>
-          <label class="day-chip"><input type="checkbox" name="noSuggest"> <strong>Do not suggest</strong></label>
-        </div>
-        <div class="v155-no-coins-note">Coins are no longer used. Missions now reward XP, streaks and goal progress.</div>
-        <div class="actions" style="margin-top:10px"><button class="btn primary" type="submit">Create mission</button></div>
+        <div class="form-grid" style="margin-top:8px"><label>${esc(tx('Deadline','Fecha límite'))}<input name="deadline" type="date"></label><label style="grid-column:span 3">${esc(tx('Description','Descripción'))}<textarea name="description" placeholder="${esc(tx('Optional notes','Notas opcionales'))}"></textarea></label></div>
+        <div style="margin-top:10px"><b>${esc(tx('Repeat days','Días de repetición'))}</b><p class="tiny muted" style="margin:4px 0 8px">${esc(tx('These days belong only to this mission.','Estos días pertenecen sólo a esta misión.'))}</p>${dayCheckboxes([1,2,3,4,5])}</div>
+        <div class="days" style="margin-top:8px"><label class="day-chip"><input type="checkbox" name="boss"> <strong>${esc(tx('Boss','Jefe'))}</strong></label><label class="day-chip"><input type="checkbox" name="noSuggest"> <strong>${esc(tx('Do not suggest','No sugerir'))}</strong></label></div>
+        <div class="v155-no-coins-note">${esc(tx('Missions reward XP, streaks and goal progress.','Las misiones otorgan XP, rachas y progreso de metas.'))}</div>
+        <div class="actions" style="margin-top:10px"><button class="btn primary" type="submit">${esc(tx('Create mission','Crear misión'))}</button></div>
       </form>
     </details>`;
   };
 
   function createMissionNoCoins(form){
     const fd=new FormData(form), name=String(fd.get('name')||'').trim();
-    if(!name){ if(typeof toast==='function') toast('Missing name','Write a mission name.'); return; }
+    if(!name){ if(typeof toast==='function') toast(tx('Missing name','Falta el nombre'),tx('Write a mission name.','Escribe un nombre para la misión.')); return; }
     const di=fd.get('difficulty')||'medium', type=fd.get('type')||'oneoff';
     const days=Array.from(form.querySelectorAll('input[name="days"]:checked')).map(i=>Number(i.value));
     let m;
@@ -9542,7 +9522,7 @@ input[name="coins"],
     if(fd.get('noSuggest')==='on') m.noSuggest=false;
     state.missions.unshift(m);
     if(typeof log==='function') log('create','Mission created: '+m.name,{missionId:m.id,category:m.category,linkedGoalId:m.linkedGoalId});
-    if(typeof toast==='function') toast('Mission created',m.linkedGoalId?`${m.name} · linked to goal`:m.name);
+    if(typeof toast==='function') toast(tx('Mission created','Misión creada'),m.linkedGoalId?`${m.name} · ${tx('linked to goal','vinculada a meta')}`:m.name);
     if(typeof save==='function') save();
     if(typeof closeModal==='function') closeModal();
     if(typeof renderAll==='function') renderAll();
@@ -9571,7 +9551,7 @@ input[name="coins"],
     state.xp+=Number(m.xp||0);
     if(m.type==='oneoff'&&state.settings&&state.settings.archiveOneOff)m.archived=true;
     if(typeof log==='function') log('complete','Mission completed: '+m.name,{missionId:m.id,category:m.category,xp:m.xp,linkedGoalId:m.linkedGoalId||''});
-    if(typeof toast==='function') toast('Mission completed',m.linkedGoalId ? `${m.name} · +${m.xp} XP · goal updated` : `${m.name} · +${m.xp} XP`);
+    if(typeof toast==='function') toast(tx('Mission completed','Misión completada'),m.linkedGoalId ? `${m.name} · +${m.xp} XP · ${tx('goal updated','meta actualizada')}` : `${m.name} · +${m.xp} XP`);
     try{ if(typeof checkAchievements==='function') checkAchievements(); }catch(e){}
     if(typeof save==='function') save();
     if(typeof renderAll==='function') renderAll();
@@ -9587,7 +9567,7 @@ input[name="coins"],
 
     const days=(b.dataset.days||'1,2,3,4,5').split(',').map(Number).filter(n=>!Number.isNaN(n));
     let goalId=b.dataset.goalId||'';
-    const name=b.dataset.name||'New goal mission';
+    const name=b.dataset.name||tx('New goal mission','Nueva misión de meta');
     const cat=b.dataset.cat||'mental';
 
     if(!goalId){
@@ -9603,7 +9583,7 @@ input[name="coins"],
     m.linkedGoalId=goalId;
     state.missions.unshift(m);
     if(typeof log==='function') log('goal_to_mission','Goal converted into linked mission: '+m.name,{missionId:m.id,category:m.category,linkedGoalId:goalId});
-    if(typeof toast==='function') toast('Goal converted into mission', goalId ? `${m.name} · linked automatically` : `${m.name} · you can link it from Edit`);
+    if(typeof toast==='function') toast(tx('Goal converted into mission','Meta convertida en misión'), goalId ? `${m.name} · ${tx('linked automatically','vinculada automáticamente')}` : `${m.name} · ${tx('you can link it from Edit','puedes vincularla desde Editar')}`);
     state.activeTab='missions';
     if(typeof save==='function') save();
     if(typeof renderAll==='function') renderAll();
