@@ -88,7 +88,7 @@ jobs:
           & $magickPath -background none 'branding/michels_life_logo.webp' -define icon:auto-resize=256,128,64,48,32,16 'src/MichelsLife/Assets/michels_life_icon.ico'
           if ($LASTEXITCODE -ne 0) { throw 'App icon generation failed.' }
 
-      - name: Package canonical v3.0.212 bilingual frontend
+      - name: Package canonical v3.0.213 bilingual frontend
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'

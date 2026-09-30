@@ -3,6 +3,29 @@
 > Chronological technical record of important repository, CI, release, and recovery events.
 > This file complements `CHANGELOG.md`: the changelog describes product changes by release, while this audit log records how the repository reached that state.
 
+## 2026-09-30 — v3.0.213 visual rollback to approved v3.0.211 presentation
+
+### User-visible regression identified
+- The v3.0.212 Windows release was functionally bilingual but its rendered interface no longer matched the previously approved v3.0.211 presentation.
+- Michel's Life remains one application with coexisting English and Spanish modes; switching language must change text only and must not change layout or visual design.
+
+### Root cause
+- Exact comparison against the v3.0.211 release source commit `fd8cd4b3` showed only three small CSS block differences, while dozens of JavaScript renderers had been rewritten during source-bilingual hardening.
+- The visual regression therefore came primarily from translation logic being moved inside renderers, changing generated markup/renderer behavior instead of only changing visible copy.
+- The v3.0.211 frontend contained no `data-mlv-i18n-owned="source"` regions, confirming that its approved renderer structure could remain authoritative while the expanded i18n layer handled language changes globally.
+
+### Corrective action
+- `01a23af9` — **Restore v3.0.211 visual renderer baseline**
+  - Restored `src/MichelsLife/frontend/index.html` exactly from the v3.0.211 release-build commit `fd8cd4b3`.
+  - Kept the current expanded `i18n.js` translation layer.
+  - No new layout, styling, card, navigation or renderer redesign was introduced.
+
+### Verification
+- Source validation #504 — **success**.
+- UI smoke #448 — **success**.
+- Verified critical UI render, Spanish first run, installed language selector, Spanish Missions, general and exhaustive Spanish UI, complete bilingual corpus, Spanish-English round trip, translated-control overflow, installer/Settings language behavior, Settings integrity, translated theme controls and Spanish Dashboard.
+- This establishes the v3.0.211 presentation as the visual authority and bilingual text behavior as an independent layer.
+
 ## 2026-09-30 — v3.0.212 localization hardening, CI recovery, and release
 
 ### CI / GitHub Actions infrastructure incident

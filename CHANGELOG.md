@@ -3,6 +3,25 @@
 > Official development log for Michel's Life. Every meaningful app change must be recorded here before a version is considered complete. Entries should describe verified changes only and be grouped by version/date.
 
 
+## 3.0.213 — 2026-09-30 — Visual baseline restoration with bilingual parity
+
+### Visual restoration
+- Restored the exact v3.0.211 frontend renderer baseline from commit `fd8cd4b3` after v3.0.212 localization work unintentionally changed the rendered interface.
+- Preserved the approved v3.0.211 layout, cards, sidebar, hero, typography, sizing, backgrounds, spacing and visual hierarchy.
+- Kept visual presentation identical between English and Spanish: changing language changes copy, dates and labels only, not structure or styling.
+
+### Bilingual behavior
+- Kept the expanded v3.0.212 translation dictionary and language persistence layer while returning presentation authority to the v3.0.211 renderers.
+- English and Spanish coexist in the same application and remain switchable from Settings.
+- Verified Spanish first run, installed-language switching, Missions, exhaustive Spanish UI, bilingual corpus, Spanish ↔ English round trip, translated-control overflow, Settings integrity and Spanish Dashboard without changing the restored visual baseline.
+
+### Validation
+- Visual-baseline restoration commit `01a23af9`.
+- Source validation #504 — **success**.
+- UI smoke #448 — **success**.
+- Windows host/icon compilation, release-readiness, canonical frontend validation, Spanish source audit, bilingual corpus and Store packaging all passed before the v3.0.213 bump.
+
+
 ## 3.0.212 — 2026-09-30 — Source-bilingual UI hardening and CI recovery
 
 ### Language & localization
