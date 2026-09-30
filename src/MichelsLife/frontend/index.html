@@ -28522,7 +28522,7 @@ function classify(el){
  if(el?.matches?.('[data-mlv183-transparency-card]'))return 'ui';
  if(el?.matches?.('[data-mlv183-chapter-card]'))return 'chapters';
  if(h==='settings'||h==='general'||h==='configuration'||h==='configuración')return 'general';
- if(/^(data cleanup|reset progress only|backup|backup & restore|data & backup|xp balance|recovery)/.test(h))return 'data';
+ if(/^(data cleanup|reset progress only|backup|backup & restore|data & backup|xp balance|recovery|limpieza de datos|restablecer solo el progreso|respaldo|respaldo y restauración|datos y respaldo|equilibrio de xp|recuperación)/.test(h))return 'data';
  if(/^(color theme|colour theme|theme colors|custom colors)/.test(h))return 'colors';
  if(/^(background themes|background set|background style|background pack|backgrounds)/.test(h))return 'themes';
  if(/^(panel transparency|ui customization|glass|interface|seasonal panel|density)/.test(h))return 'ui';
@@ -28733,6 +28733,18 @@ function buildSettings(){
  if(!settingsShellIsCanonical(shell))shell=createCanonicalSettingsShell(root);
  absorbSettingsStrays(root);
  ensureSettingsCorePanels(root);
+ root.querySelectorAll('[data-v30171-pane]').forEach(pane=>{
+   const signatures=new Map();
+   [...pane.children].forEach(el=>{
+     if(!(el instanceof Element)||el.classList.contains('v30171-pane-heading')||!el.matches('.card,section.card,div.card'))return;
+     const h=heading(el).replace(/\\s+/g,' ').trim().toLowerCase();
+     const p=String(el.querySelector('.section-title p,p')?.textContent||'').replace(/\\s+/g,' ').trim().toLowerCase();
+     if(!h)return;
+     const key=h+'|'+p;
+     if(signatures.has(key)){el.remove();return}
+     signatures.set(key,el);
+   });
+ });
  const requested=SETTINGS.some(x=>x[0]===window.__mlvSettingsSectionLock)?window.__mlvSettingsSectionLock:savedSetting();
  activateSetting(requested,root);
  return true;
