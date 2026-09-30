@@ -27753,6 +27753,12 @@ function inRange(k,start,end){k=String(k||'').slice(0,10);return !!k&&k>=String(
 function completionDate(c){return String(c&&((c.at)||(c.date))||'').slice(0,10)}
 function projectList(){try{return Array.isArray(state.settings&&state.settings.v30106Projects)?state.settings.v30106Projects:[]}catch(_){return []}}
 function focusSessions(){state[FOCUS_HISTORY]=Array.isArray(state[FOCUS_HISTORY])?state[FOCUS_HISTORY]:[];return state[FOCUS_HISTORY]}
+function storedFocusMissionName(f){
+  const id=String(f&&f.missionId||'');
+  const m=id?(state.missions||[]).find(x=>String(x.id)===id):null;
+  if(m)return window.mlvMissionName?window.mlvMissionName(m):String(m.name||'');
+  return String(f&&f.missionName||tr('Unassigned Focus'));
+}
 function chapterStats(ch){
   const start=String(ch.startDate||String(ch.createdAt||today()).slice(0,10)),end=String(ch.endDate||today());
   let missions=0,xp=0,bosses=0;const cats={},projects={};
@@ -27778,7 +27784,7 @@ function chapterEvents(ch){
   (ch.moments||[]).forEach(m=>{if(inRange(m.date,start,end))events.push({date:m.date,type:'moment',title:m.title,detail:m.detail||'Personal milestone',momentId:m.id})});
   (state.history||[]).forEach(h=>{const k=String(h.date||h.at||'').slice(0,10);if(!inRange(k,start,end))return;if(h.type==='achievement')events.push({date:k,type:'achievement',title:'Achievement unlocked',detail:String(h.description||'').replace(/^Logro desbloqueado:\s*/i,'')});else if(String(h.type||'').includes('project')&&h.type!=='story_chapter_start')events.push({date:k,type:'project',title:'Project event',detail:h.description||'Project progress'})});
   (state.missions||[]).filter(m=>m.boss).forEach(m=>(m.completions||[]).forEach(c=>{const k=completionDate(c);if(inRange(k,start,end))events.push({date:k,type:'boss',title:'Boss defeated',detail:(window.mlvMissionName?window.mlvMissionName(m):m.name)})}));
-  focusSessions().filter(f=>f.status==='completed'&&Number(f.elapsedMs||0)>=10*60000&&inRange(f.date||f.endedAt,start,end)).forEach(f=>events.push({date:String(f.date||f.endedAt).slice(0,10),type:'focus',title:'Focus block · '+fmtDuration(f.elapsedMs),detail:f.missionName||'Unassigned Focus'}));
+  focusSessions().filter(f=>f.status==='completed'&&Number(f.elapsedMs||0)>=10*60000&&inRange(f.date||f.endedAt,start,end)).forEach(f=>events.push({date:String(f.date||f.endedAt).slice(0,10),type:'focus',title:tr('Focus block')+' · '+fmtDuration(f.elapsedMs),detail:storedFocusMissionName(f)}));
   if(ch.status==='closed'&&ch.endDate)events.push({date:ch.endDate,type:'chapter',title:'Chapter completed',detail:ch.name});
   const rank={moment:0,chapter:1,achievement:2,boss:3,project:4,focus:5};
   return events.sort((a,b)=>String(b.date).localeCompare(String(a.date))||(rank[a.type]||9)-(rank[b.type]||9)).slice(0,40);
@@ -27847,7 +27853,7 @@ function chime(){try{if(focusState().v30165Sound===false)return;const C=window.A
 function focusHistoryHtml(){
   const rows=focusSessions().slice(0,5);
   return rows.length
-    ?rows.map(s=>`<div class="v30162-focus-history-row"><span>${esc(s.missionName||tr('Unassigned Focus'))}</span><b>${fmtDuration(s.elapsedMs)}</b></div>`).join('')
+    ?rows.map(s=>`<div class="v30162-focus-history-row"><span>${esc(storedFocusMissionName(s))}</span><b>${fmtDuration(s.elapsedMs)}</b></div>`).join('')
     :`<div class="v30162-focus-history-row"><span>${esc(tr('No Focus blocks saved yet'))}</span><b>—</b></div>`;
 }
 function ensureFocusDock(){let root=document.getElementById('v30162FocusDock');if(!root){root=document.createElement('div');root.id='v30162FocusDock';document.body.appendChild(root)}return root}
@@ -27899,7 +27905,7 @@ if(typeof prevRenderAll==='function'){window.renderAll=function(){const out=prev
 
 document.addEventListener('click',function(e){const b=e.target&&e.target.closest&&e.target.closest('[data-v30162-focus]');if(b){const a=b.dataset.v30162Focus;e.preventDefault();e.stopPropagation();if(a==='toggle')toggleFocus();else if(a==='expand'||a==='open'){const f=focusState();f.dockMode='compact';f.expanded=a==='open'?true:!f.expanded;persist();document.getElementById('v30106Focus')?.setAttribute('hidden','');renderFocusDock();}else if(a==='minimize'){const f=focusState();f.expanded=false;f.dockMode='mini';persist();renderFocusDock();}else if(a==='restore'){const f=focusState();f.dockMode='compact';f.expanded=false;persist();renderFocusDock();}else if(a==='skip')skipFocus();else if(a==='reset')resetFocus();else if(a==='switch')setPhase(focusState().mode==='work'?'break':'work');else if(a==='apply-custom'){const w=document.getElementById('v30162WorkMin')?.value,br=document.getElementById('v30162BreakMin')?.value;applyPreset('custom',w,br)}return;}const p=e.target&&e.target.closest&&e.target.closest('[data-v30162-preset]');if(p){e.preventDefault();if(p.dataset.v30162Preset==='25/5')applyPreset('25/5',25,5);else if(p.dataset.v30162Preset==='50/10')applyPreset('50/10',50,10);else{const f=focusState();f.preset='custom';persist();renderFocusDock();}return;}const s=e.target&&e.target.closest&&e.target.closest('[data-v30162-story]');if(!s)return;const a=s.dataset.v30162Story,id=s.dataset.id;e.preventDefault();if(a==='close'){const ch=chapters().find(x=>String(x.id)===String(id));if(ch&&confirm(((window.MichelsLifeI18n?.language||document.documentElement.lang)==='es'?'¿Cerrar el Capítulo ':'Close Chapter ')+roman(chapterNumber(ch))+' · '+ch.name+((window.MichelsLifeI18n?.language||document.documentElement.lang)==='es'?' hoy? Su resumen quedará congelado.':' today? Its summary will be frozen.'))){closeChapter(id);renderAll();}}else if(a==='edit'){const ch=chapters().find(x=>String(x.id)===String(id));if(ch){const name=prompt(tr('Chapter name'),ch.name);if(name&&name.trim()){ch.name=name.trim();const motto=prompt(tr('Motto / subtitle'),ch.motto||'');if(motto!=null)ch.motto=motto.trim();persist();renderAll();}}}else if(a==='delete-chapter'){const ch=chapters().find(x=>String(x.id)===String(id));if(ch&&confirm(((window.MichelsLifeI18n?.language||document.documentElement.lang)==='es'?'¿Eliminar el capítulo archivado “'+ch.name+'”? Las misiones no se eliminarán.':'Delete archived chapter “'+ch.name+'”? The missions themselves will not be deleted.'))){deleteChapter(id);renderAll();}}else if(a==='delete-moment'){if(confirm(tr('Delete this Story Moment?'))){deleteMoment(s.dataset.chapter,s.dataset.moment);renderAll();}}},true);
 
-document.addEventListener('submit',function(e){if(e.target&&e.target.id==='v30162ChapterForm'){e.preventDefault();const fd=new FormData(e.target),r=createChapter(fd.get('name'),fd.get('motto'),fd.get('start'));if(!r.ok)notify(tr('Chapter not started'),r.msg);else{notify(tr('New chapter started'),r.ch.name);renderAll();}}else if(e.target&&e.target.id==='v30162MomentForm'){e.preventDefault();const fd=new FormData(e.target);if(addMoment(e.target.dataset.chapter,fd.get('title'),fd.get('detail'),fd.get('date'))){notify(tr('Story Moment added'),String(fd.get('title')||''));renderAll();}}},true);
+document.addEventListener('submit',function(e){if(e.target&&e.target.id==='v30162ChapterForm'){e.preventDefault();const fd=new FormData(e.target),r=createChapter(fd.get('name'),fd.get('motto'),fd.get('start'));if(!r.ok)notify(tr('Chapter not started'),tr(r.msg));else{notify(tr('New chapter started'),r.ch.name);renderAll();}}else if(e.target&&e.target.id==='v30162MomentForm'){e.preventDefault();const fd=new FormData(e.target);if(addMoment(e.target.dataset.chapter,fd.get('title'),fd.get('detail'),fd.get('date'))){notify(tr('Story Moment added'),String(fd.get('title')||''));renderAll();}}},true);
 
 let enhanceTimer=0;const mo=new MutationObserver(()=>{clearTimeout(enhanceTimer);enhanceTimer=setTimeout(()=>enhanceFocusButtons(document),40)});try{mo.observe(document.body,{childList:true,subtree:true})}catch(_){}
 window.addEventListener('beforeunload',()=>{persist()});
