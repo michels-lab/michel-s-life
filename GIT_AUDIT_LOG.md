@@ -23,6 +23,23 @@
 ### Verification
 - Source validation #504 — **success**.
 - UI smoke #448 — **success**.
+
+### Release publication
+- `9b7710f5` — **Bump Michel's Life to v3.0.213 with restored visual baseline**.
+- Source validation #505 — **success**.
+- UI smoke #449 — **success**.
+- `41fb484f` — temporary **Dispatch Michel's Life v3.0.213 release** workflow.
+- Dispatcher run #1 — **success**.
+- Windows release build #14 — **success**.
+- Public release `v3.0.213` published successfully to `realmichelduarte/michel-s-life-releases`.
+- Verified release assets:
+  - `AppBundle.zip`
+  - `MichelsLife-Setup-v3.0.213.exe`
+  - `MichelsLife-v3.0.213.exe`
+  - `MichelsLife-v3.0.213.exe.sha256`
+  - `michels_life_icon.ico`
+- Release is final, not a prerelease.
+- The temporary v3.0.213 dispatcher is removed after publication so `main` returns to the normal workflow set.
 - Verified critical UI render, Spanish first run, installed language selector, Spanish Missions, general and exhaustive Spanish UI, complete bilingual corpus, Spanish-English round trip, translated-control overflow, installer/Settings language behavior, Settings integrity, translated theme controls and Spanish Dashboard.
 - This establishes the v3.0.211 presentation as the visual authority and bilingual text behavior as an independent layer.
 
