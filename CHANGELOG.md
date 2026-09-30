@@ -3,19 +3,26 @@
 > Official development log for Michel's Life. Every meaningful app change must be recorded here before a version is considered complete. Entries should describe verified changes only and be grouped by version/date.
 
 
-## Unreleased — 2026-09-30 — Source-bilingual hardening and CI recovery
+## 3.0.212 — 2026-09-30 — Source-bilingual UI hardening and CI recovery
 
 ### Language & localization
-- Aligned duplicate Spanish system defaults with the canonical translation dictionary so `Read all` consistently resolves to `Marcar todo como leído` and `This month vs last month` to `Este mes vs el mes pasado`.
-- Removed stale `Boss Quest` anglicisms from Spanish system copy and standardized those messages around `Misión de jefe`.
-- Canonicalized the late-night prompt to one English source phrase so Spanish → English → Spanish round trips are deterministic instead of depending on duplicate dictionary ordering.
-- Verified the generated bilingual system corpus end-to-end after these corrections.
+- Aligned duplicate Spanish system defaults with the canonical dictionary, including `Read all` → `Marcar todo como leído` and `This month vs last month` → `Este mes vs el mes pasado`.
+- Removed stale `Boss Quest` anglicisms and standardized those system messages around `Misión de jefe`.
+- Canonicalized duplicate late-night copy so Spanish → English → Spanish round trips are deterministic.
+- Localized search, Settings relabels, status chrome, contract status, planning surfaces and cloud-conflict language detection at their active source renderers.
+- Canonicalized system contract identity across languages and stabilized visible language round trips without rewriting user-authored text.
+- Rerendered source-owned bilingual UI on language changes and retired the obsolete English status writer that could reintroduce mixed-language copy.
+
+### Navigation & UI stability
+- Gave the left navigation its own i18n helper and stabilized the Michel's Life brand lockup/navigation across authoritative rerenders.
+- Repaired renderer dependencies exposed by exhaustive Spanish UI testing and added actionable DOM/route diagnostics to the UI smoke suite.
+- Refined Spanish UI auditing to evaluate visible product surfaces while avoiding false positives from inactive/hidden legacy markup.
 
 ### Validation & Windows build
-- Restored GitHub Actions execution by moving the repository to public visibility after private-repository jobs stopped receiving runners.
-- Verified release-readiness smoke tests, canonical frontend validation, Spanish source-copy audit, the generated bilingual system corpus, Microsoft Store packaging smoke tests, Windows host compilation, and embedded Windows icon validation on commit `17d6c63d`.
-- Hardened the critical UI smoke test so missing sidebar branding reports actionable DOM diagnostics instead of failing with a null geometry exception.
-- Confirmed a remaining rerender regression: after `renderAll()`, the left sidebar can be rebuilt without the Michel's Life brand lockup while Focus remains mounted. This remains open and blocks the next release.
+- Restored GitHub Actions runner availability by temporarily using public repository visibility after private-repository jobs stopped receiving runners.
+- Verified the full pre-release functional suite on commit `50383840`: Source validation #497 and UI smoke #441 both completed successfully.
+- Bumped Michel's Life from **v3.0.211** to **v3.0.212** across the .NET project, host materialization, installer, frontend bump/validators and Windows/UI workflows.
+- Preserved the canonical v3.0.209 frontend source as the supported baseline while generating and validating the v3.0.212 packaged frontend during CI/release builds.
 
 
 ## 3.0.211 — 2026-09-28 — Bilingual Round-trip Hardening
