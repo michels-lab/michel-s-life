@@ -24047,7 +24047,7 @@ body.v3099-has-nextup-dock{
   }
   function showUndoToast(mission){
     clearTimeout(undoTimer);document.querySelector('.v30102-undo-toast')?.remove();
-    var box=document.createElement('div');box.className='v30102-undo-toast';box.dataset.mlvI18nOwned='source';box.innerHTML='<span><b>'+nEsc('Mission deleted')+'</b>'+esc(mission.name||nText('Mission'))+'</span><button type="button" class="btn primary" data-v30102-action="undo-delete">'+nEsc('Undo')+'</button>';document.body.appendChild(box);
+    var box=document.createElement('div');box.className='v30102-undo-toast';box.dataset.mlvI18nOwned='source';box.innerHTML='<span><b>'+nEsc('Mission deleted')+'</b>'+esc(missionDisplayName(mission)||nText('Mission'))+'</span><button type="button" class="btn primary" data-v30102-action="undo-delete">'+nEsc('Undo')+'</button>';document.body.appendChild(box);
     undoTimer=setTimeout(function(){box.remove();lastDeleted=null;},9000);
   }
   function deleteTask(id,button){
@@ -24057,7 +24057,7 @@ body.v3099-has-nextup-dock{
     state.missions.splice(index,1);removeFromNextUp(id);saveSafe();
     var card=button&&button.closest(DASH_CARD_SELECTORS);if(card){card.classList.add('v30102-deleting');setTimeout(function(){card.remove();},190);}else{try{if(typeof renderAll==='function')renderAll();}catch(error){}}
     showUndoToast(snapshot);
-    toastSafe(nText('Mission deleted'),snapshot.name+' · '+(nIsEs()?'Deshacer está disponible durante 9 segundos.':'Undo is available for 9 seconds.'));
+    toastSafe(nText('Mission deleted'),missionDisplayName(snapshot)+' · '+(nIsEs()?'Deshacer está disponible durante 9 segundos.':'Undo is available for 9 seconds.'));
     scheduleRefresh();
   }
   function undoDelete(){
@@ -25332,7 +25332,7 @@ html.v30111-rendering #tabs *{transition:none!important;animation:none!important
     const pills=card.querySelector('.v131-pills,.quest-state,.pills,.chips');
     if(pills){
       const label=document.createElement('label');label.className='v30114-stage-control';label.title=tx('Time of day','Hora del día');
-      label.innerHTML='<span>◷</span><select class="v30114-stage-select" data-v30114-stage="1" data-id="'+esc(m.id)+'" aria-label="'+esc(tx('Time of day for','Hora del día para'))+' '+esc(m.name)+'">'+stageOptions(stageOf(m))+'</select>';
+      label.innerHTML='<span>◷</span><select class="v30114-stage-select" data-v30114-stage="1" data-id="'+esc(m.id)+'" aria-label="'+esc(tx('Time of day for','Hora del día para'))+' '+esc(window.mlvMissionName?window.mlvMissionName(m):m.name)+'">'+stageOptions(stageOf(m))+'</select>';
       pills.appendChild(label);
       const cur=currentStage();
       if(INDEX[stageOf(m)]<INDEX[cur]&&!doneToday(m)){
@@ -25449,7 +25449,7 @@ html.v30111-rendering #tabs *{transition:none!important;animation:none!important
       setStage(m,target.value,true);saveNow();
       document.querySelectorAll('[data-v30114-stage="1"][data-id="'+CSS.escape(String(m.id))+'"]').forEach(function(sel){if(sel!==target)sel.value=target.value;});
       if(document.getElementById('tab-dashboard'))regroupVisibleDashboard();
-      toastSafe(tx('Time of day updated','Hora del día actualizada'),m.name+' → '+stageLabel(target.value));
+      toastSafe(tx('Time of day updated','Hora del día actualizada'),(window.mlvMissionName?window.mlvMissionName(m):m.name)+' → '+stageLabel(target.value));
     }
   },true);
 
