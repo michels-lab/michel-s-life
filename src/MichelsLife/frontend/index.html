@@ -1893,7 +1893,7 @@ function missionList(list){
 function quick(){
   return `<div class="v131-quick" data-mlv-i18n-owned="source"><input id="v131QuickName" placeholder="${tx("Add a quick mission for today…","Agrega una misión rápida para hoy…")}"><select id="v131QuickCat">${categoryOptions()}</select><select id="v131QuickDiff">${difficultyOptions()}</select><button class="btn primary" onclick="v131QuickAdd()">${tx("Add","Agregar")}</button></div>`;
 }
-function contracts(){const arr=[];(state.goals||[]).forEach(g=>{if(g.archived||g.noSuggest)return;if(g.frequency==='weekly'||g.period==='week'||String(g.name||'').toLowerCase().includes('week'))arr.push({kind:'goal',id:g.id,name:g.name,category:g.category,target:Number(g.target||5),unit:g.unit||'times'})});state.missions.forEach(m=>{if(m.archived||m.hidden||m.noSuggest)return;if(m.type==='weekly'||/\b\d+\s*(times|days|veces|dias|días).*week|semana/i.test(m.name)){const mt=String(m.name).match(/\b(\d+)\s*(times|days|veces|dias|días)/i);arr.push({kind:'mission',id:m.id,name:m.name,category:m.category,target:Number(m.weeklyTarget||m.target||(mt?mt[1]:(m.days||[]).length||3)),unit:'times'})}});const seen=new Set();return arr.filter(x=>{const k=x.name.toLowerCase().trim();if(seen.has(k))return false;seen.add(k);return true}).slice(0,8)}
+function contracts(){const arr=[];(state.goals||[]).forEach(g=>{if(g.archived||g.noSuggest)return;if(g.frequency==='weekly'||g.period==='week'||String(g.name||'').toLowerCase().includes('week'))arr.push({kind:'goal',id:g.id,name:g.name,category:g.category,target:Number(g.target||5),unit:g.unit||'times'})});state.missions.forEach(m=>{if(m.archived||m.hidden||m.noSuggest)return;if(m.type==='weekly'||/\b\d+\s*(times|days|veces|dias|días).*week|semana/i.test(m.name)){const mt=String(m.name).match(/\b(\d+)\s*(times|days|veces|dias|días)/i);arr.push({kind:'mission',id:m.id,name:m.name,category:m.category,target:Number(m.weeklyTarget||m.target||(mt?mt[1]:(m.days||[]).length||3)),unit:'times',systemDefault:!!systemMissionEntry(m)})}});const seen=new Set();return arr.filter(x=>{const k=x.name.toLowerCase().trim();if(seen.has(k))return false;seen.add(k);return true}).slice(0,8)}
 function cprog(c){const start=startOfWeek(), type='v131_contract_'+c.kind+'_'+c.id, logs=(state.history||[]).filter(h=>h.type===type&&h.date>=start&&h.date<=dayKey2());return {count:logs.length,target:c.target,today:logs.some(h=>h.date===dayKey2())}}
 function rew(c){const val=(c.target>=7?30:c.target>=5?24:c.target>=3?18:14)+(c.kind==='goal'?8:0), co=Math.round(val*.45);return {xp:val,coins:co,bonusXp:Math.round(val*1.8),bonusCoins:Math.round(co*2)}}
 function resetInfo(){const start=startOfWeek(), next=addDays(start,7), days=Math.max(0,Math.ceil((new Date(next+'T00:00:00')-new Date())/86400000));return {next,days}}
@@ -2628,6 +2628,17 @@ body{
     'Entrenar pierna/glúteo':'Train legs / glutes','Entrenar brazos':'Train arms','Hacer abdomen / core 15 min':'Core / abs 15 minutes','Registrar cargas del gym':'Log gym weights','Avanzar tesis 45 minutos':'Work on thesis 45 minutes','Leer un paper o apuntes técnicos':'Read one paper or technical notes','Revisar OpenFOAM / CFD':'Review OpenFOAM / CFD','Mejorar CV o LinkedIn':'Improve CV / LinkedIn','Aplicar a una vacante objetivo':'Apply to one target job','Practicar Python / Power BI':'Practice Python / Power BI','No stalkear / no rogar / no actuar desde ansiedad':'No stalking / no chasing','Journaling breve / planear el día':'Journal / plan the day','Dormir con intención / preparar mañana':'Sleep with intention / prepare tomorrow','Lavar los trastes':'Wash dishes','Tender la cama':'Make the bed','Ordenar escritorio o cuarto':'Clean desk / room','Skincare / cuidado personal':'Skincare / grooming'
   };
   function canon(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim()}
+  const SYSTEM_MISSION_BY_CANON=new Map(MISSION_BANK.map(row=>[canon(row[0]),row]));
+  function systemMissionEntry(m){
+    if(!m)return null;
+    const row=SYSTEM_MISSION_BY_CANON.get(canon(m.name));
+    if(!row)return null;
+    const expected=String(row[5]?.description||'');
+    const actual=String(m.description||m.notes||'');
+    return m.v140SystemDefault===true||(expected&&actual===expected)?row:null;
+  }
+  function systemMissionName(m){return systemMissionEntry(m)?sys(m.name):String(m?.name||'')}
+  function systemMissionDescription(m){const raw=String(m?.description||m?.notes||'');return systemMissionEntry(m)&&raw?sys(raw):raw}
   function today(){return typeof dateKey==='function'?dateKey():new Date().toISOString().slice(0,10)}
   function e(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
   function tx(en,es){return window.mlvText?window.mlvText(en,es):(window.MichelsLifeI18n?.language==='es'?es:en)}
@@ -2664,11 +2675,19 @@ body{
 
   function ensureMissionBank(){
     state.settings=state.settings||{};
-    state.missions.forEach(m=>{if(NAME_TRANSLATIONS[m.name]){m.name=NAME_TRANSLATIONS[m.name];m.canonical=canon(m.name)}});
+    state.missions.forEach(m=>{
+      if(NAME_TRANSLATIONS[m.name]){m.name=NAME_TRANSLATIONS[m.name];m.canonical=canon(m.name)}
+      const row=SYSTEM_MISSION_BY_CANON.get(canon(m.name));
+      if(row){
+        const expected=String(row[5]?.description||''),actual=String(m.description||m.notes||'');
+        if(m.v140SystemDefault===true||(expected&&actual===expected))m.v140SystemDefault=true;
+      }
+    });
     const existing=new Set(state.missions.map(m=>canon(m.name)));
     MISSION_BANK.forEach(([name,category,type,difficulty,days,extra])=>{
       if(existing.has(canon(name))) return;
-      const m=makeMission(name,category,type,difficulty,days,extra||{});
+      const m=makeMission(name,category,type,difficulty,days,{...(extra||{}),v140SystemDefault:true});
+      m.v140SystemDefault=true;
       if(extra&&extra.weeklyTarget)m.weeklyTarget=extra.weeklyTarget;
       if(extra&&extra.boss)m.boss=true;
       state.missions.push(m);
@@ -2685,7 +2704,7 @@ body{
   function missionCat(){state.settings=state.settings||{};return state.settings.v140MissionCat||'all'}
   window.v140SetMissionMode=function(mode){state.settings=state.settings||{};state.settings.v140MissionMode=mode;save();renderAll()}
   window.v140SetMissionCat=function(cat){state.settings=state.settings||{};state.settings.v140MissionCat=cat; const quick=document.getElementById('v131QuickCat'); if(quick&&cat!=='all')quick.value=cat; save();renderAll()}
-  window.v140AddToToday=function(id){const m=state.missions.find(x=>x.id===id); if(!m)return; m.v140TodayOnlyDates=m.v140TodayOnlyDates||[]; if(!m.v140TodayOnlyDates.includes(today()))m.v140TodayOnlyDates.push(today()); save(); toast&&toast(tx('Added to today','Añadida a hoy'),m.name); renderAll()}
+  window.v140AddToToday=function(id){const m=state.missions.find(x=>x.id===id); if(!m)return; m.v140TodayOnlyDates=m.v140TodayOnlyDates||[]; if(!m.v140TodayOnlyDates.includes(today()))m.v140TodayOnlyDates.push(today()); save(); toast&&toast(tx('Added to today','Añadida a hoy'),systemMissionName(m)); renderAll()}
   function categoryShortcuts(){
     const cur=missionCat();
     return `<div class="v140-cat-shortcuts"><button class="v140-shortcut ${cur==='all'?'active':''}" onclick="v140SetMissionCat('all')">${e(tx('All','Todas'))}</button>${Object.entries(CATEGORIES).map(([id,c])=>`<button class="v140-shortcut ${cur===id?'active':''}" onclick="v140SetMissionCat('${id}')">${c.emoji} ${e(sys(c.name))}</button>`).join('')}</div>`
@@ -2704,7 +2723,7 @@ body{
   function renderAllContracts(){
     const arr=goalContracts(),reset=resetInfo();
     if(!arr.length)return '<div class="v131-empty">'+e(tx('No weekly contracts yet. Create a weekly goal or a mission like “5 times a week”.','Aún no hay contratos semanales. Crea una meta semanal o una misión como “5 veces por semana”.'))+'</div>';
-    return `<div class="v132-reset">⏳ ${e(tx('Weekly reset in','Reinicio semanal en'))} <b>${reset.days}</b> ${e(tx(reset.days===1?'day':'days',reset.days===1?'día':'días'))} · ${reset.next}</div><div class="v132-contract-list">${arr.map(contract=>{const p=cprog(contract),r=reward(contract),ca=cat(contract.category),pct=Math.min(100,Math.round(p.count/p.target*100)),unit=sys(contract.unit||tx('times','veces'));return `<article class="v132-contract"><h3>${ca.emoji} ${e(contract.name)}</h3><p>${p.count}/${p.target} ${e(unit)} ${e(tx('this week','esta semana'))}</p><div class="v131-progress"><span style="width:${pct}%;background:linear-gradient(90deg,${ca.color},var(--v140-gold))"></span></div><div class="v131-pills"><span class="v131-pill gold">${e(tx('Today','Hoy'))} +${r.xp} XP</span><span class="v131-pill">${e(tx('Weekly bonus','Bono semanal'))} +${r.bonusXp} XP</span></div><div class="v140-contract-actions"><button class="btn gold" onclick="v131CompleteContract('${contract.kind}','${contract.id}')">${e(tx('Done today','Hecho hoy'))}</button><button class="btn" onclick="v140EditContract('${contract.kind}','${contract.id}')">${e(tx('Edit','Editar'))}</button></div></article>`}).join('')}</div>`
+    return `<div class="v132-reset">⏳ ${e(tx('Weekly reset in','Reinicio semanal en'))} <b>${reset.days}</b> ${e(tx(reset.days===1?'day':'days',reset.days===1?'día':'días'))} · ${reset.next}</div><div class="v132-contract-list">${arr.map(contract=>{const p=cprog(contract),r=reward(contract),ca=cat(contract.category),pct=Math.min(100,Math.round(p.count/p.target*100)),unit=sys(contract.unit||tx('times','veces'));return `<article class="v132-contract"><h3>${ca.emoji} ${e(contract.systemDefault?sys(contract.name):contract.name)}</h3><p>${p.count}/${p.target} ${e(unit)} ${e(tx('this week','esta semana'))}</p><div class="v131-progress"><span style="width:${pct}%;background:linear-gradient(90deg,${ca.color},var(--v140-gold))"></span></div><div class="v131-pills"><span class="v131-pill gold">${e(tx('Today','Hoy'))} +${r.xp} XP</span><span class="v131-pill">${e(tx('Weekly bonus','Bono semanal'))} +${r.bonusXp} XP</span></div><div class="v140-contract-actions"><button class="btn gold" onclick="v131CompleteContract('${contract.kind}','${contract.id}')">${e(tx('Done today','Hecho hoy'))}</button><button class="btn" onclick="v140EditContract('${contract.kind}','${contract.id}')">${e(tx('Edit','Editar'))}</button></div></article>`}).join('')}</div>`
   }
 
   function completionCount(category=null){return state.missions.reduce((a,m)=>a+(m.completions||[]).filter(c=>!category||m.category===category).length,0)}
@@ -2735,8 +2754,8 @@ body{
     return `<div class="v135-actions v30111-actions"><button class="v135-action ${isDone?'':'primary'}" data-action="${isDone?'undo':'complete'}" data-id="${m.id}">${e(isDone?tx('Unmark','Desmarcar'):tx('Complete','Completar'))}</button>${nextButton}<button class="v135-action" data-action="v133-edit" data-id="${m.id}">${e(tx('Edit','Editar'))}</button>${!active?`<button class="v135-action v140-add-today" onclick="v140AddToToday('${m.id}')">${e(tx('Add today','Agregar hoy'))}</button>`:`<button class="v135-action" data-action="v131-postpone" data-id="${m.id}">${e(tx('Tomorrow','Mañana'))}</button>`}<button class="v135-action ghost" data-action="v131-not-today" data-id="${m.id}">${e(tx('Not today','No hoy'))}</button><button class="v135-action ghost" data-action="duplicate" data-id="${m.id}">${e(tx('Duplicate','Duplicar'))}</button><button class="v135-action danger" data-action="archive" data-id="${m.id}">${e(tx('Archive','Archivar'))}</button>${projectButton}<button class="v30115-start-icon" type="button" data-cm131-action="start" data-id="${m.id}" aria-label="${e(tx('Start mission','Iniciar misión'))}" title="${e(tx('Start as Current Mission','Iniciar como Misión actual'))}"></button><button class="v30111-trash" type="button" data-v30102-action="delete-task" data-id="${m.id}" aria-label="${e(tx('Delete mission','Eliminar misión'))}" title="${e(tx('Delete mission','Eliminar misión'))}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6l1 2h4v2H4V5h4l1-2Zm-2 6h10l-.7 11H7.7L7 9Zm3 2v7h2v-7h-2Zm4 0v7h2v-7h-2Z"/></svg></button></div>`
   }
   function missionCard(m){
-    const isDone=done(m),ca=cat(m.category),di=diff(m.difficulty);
-    return `<article class="v132-mission v137-mission ${isDone?"done":""}" data-mlv-i18n-owned="source"><button class="v132-check" data-action="${isDone?"undo":"complete"}" data-id="${m.id}">${isDone?"✓":""}</button><div><h3>${e(m.name)}</h3>${((m.description||m.notes)&&String(m.description||m.notes)!=="Weekly planned mission.")?`<p>${e(m.description||m.notes)}</p>`:""}<div class="v131-pills"><span class="v131-pill" style="border-color:${ca.color}44;color:${ca.color}">${ca.emoji} ${e(sys(ca.name))}</span><span class="v131-pill ${m.boss?"bad":""}">${e(m.boss?tx("Boss","Jefe"):sys(di.name))}</span><span class="v131-pill gold">+${xp(m)} XP</span>${isDone?`<span class="v131-pill good">${e(tx("Completed","Completada"))}</span>`:""}</div><div class="v137-mission-extra">${repeatDays(m)}${linkedAchievement(m)}</div></div>${actionButtons(m)}</article>`;
+    const isDone=done(m),ca=cat(m.category),di=diff(m.difficulty),rawDescription=String(m.description||m.notes||''),displayName=systemMissionName(m),displayDescription=systemMissionDescription(m);
+    return `<article class="v132-mission v137-mission ${isDone?"done":""}" data-mlv-i18n-owned="source"><button class="v132-check" data-action="${isDone?"undo":"complete"}" data-id="${m.id}">${isDone?"✓":""}</button><div><h3>${e(displayName)}</h3>${(rawDescription&&rawDescription!=="Weekly planned mission.")?`<p>${e(displayDescription)}</p>`:""}<div class="v131-pills"><span class="v131-pill" style="border-color:${ca.color}44;color:${ca.color}">${ca.emoji} ${e(sys(ca.name))}</span><span class="v131-pill ${m.boss?"bad":""}">${e(m.boss?tx("Boss","Jefe"):sys(di.name))}</span><span class="v131-pill gold">+${xp(m)} XP</span>${isDone?`<span class="v131-pill good">${e(tx("Completed","Completada"))}</span>`:""}</div><div class="v137-mission-extra">${repeatDays(m)}${linkedAchievement(m)}</div></div>${actionButtons(m)}</article>`;
   }
   function mode(){state.settings=state.settings||{};return state.settings.v133Mode||'all'}
   function filterStatus(list){const m=mode(); if(m==='pending')return list.filter(x=>!done(x)); if(m==='completed')return list.filter(done); return list}
@@ -2772,6 +2791,7 @@ body{
   window.renderAll=function(){ensureSky(); if(typeof oldRenderAll==='function')oldRenderAll(); ensureSky();}
   if(!window.__v140TimeTheme){window.__v140TimeTheme=true; setInterval(ensureSky,60000)}
   ensureMissionBank(); ensureSky();
+  window.v140SystemMissionText={isSystem:m=>!!systemMissionEntry(m),name:systemMissionName,description:systemMissionDescription};
   try{renderAll()}catch(err){console.error('v14.0 render error',err)}
 })();
 </script>
