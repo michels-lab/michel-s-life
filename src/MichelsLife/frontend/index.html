@@ -26845,7 +26845,7 @@ function ensure(){
  resize();
  return !!ctx;
 }
-function resize(){if(!canvas||!hero)return;const r=hero.getBoundingClientRect();const dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));const w=Math.max(1,Math.round(r.width*dpr)),h=Math.max(1,Math.round(r.height*dpr));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;canvas.style.width=r.width+'px';canvas.style.height=r.height+'px';ctx&&ctx.setTransform(dpr,0,0,dpr,0,0);particles=[]}}
+function resize(){if(!canvas||!hero)return;const r=hero.getBoundingClientRect();const dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));const w=Math.max(1,Math.round(r.width*dpr)),h=Math.max(1,Math.round(r.height*dpr));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;canvas.style.width=r.width+'px';canvas.style.height=r.height+'px';ctx&&ctx.setTransform(dpr,0,0,dpr,0,0);for(const p of particles){if(Number.isFinite(p.x))p.x=Math.max(-40,Math.min(r.width+40,p.x));if(Number.isFinite(p.y))p.y=Math.max(-40,Math.min(r.height+40,p.y))}}}
 function updateMonth(force=false){if(!ensure())return;const i=new Date().getMonth(),m=META[i],panel=document.getElementById('v176StatusPanel'),lang=window.mlvLanguage?window.mlvLanguage():'en',key=(i+1)+'|'+lang;panel.dataset.v30146Month=String(i+1);canvas.style.display=enabled()?'':'none';monthEl.style.display='';if(force||monthCopyKey!==key){setSeasonalText(monthEl.querySelector('.v30146-month-icon'),m.icon);setSeasonalText(monthEl.querySelector('.v30146-month-name'),lang==='es'?MONTHS_ES[i]:MONTHS_EN[i]);setSeasonalText(monthEl.querySelector('.v30146-season'),lang==='es'?m.seasonEs:m.seasonEn);setSeasonalText(monthEl.querySelector('.v30146-note'),lang==='es'?m.noteEs:m.noteEn);const motifs=m.motifs.map(x=>'<span class="v30146-motif">'+x+'</span>').join('');if(monthEl.querySelector('.v30146-motifs').innerHTML!==motifs)monthEl.querySelector('.v30146-motifs').innerHTML=motifs;monthCopyKey=key}if(sceneMonth!==i+1){sceneMonth=i+1;particles=[]}}
 function rnd(a,b){return a+Math.random()*(b-a)}
 function cloudObj(w,h,index){return {type:'cloud',x:rnd(-w,w*.85),y:rnd(12,h*.58),s:rnd(56,105),vx:rnd(22,38),a:rnd(.46,.72),phase:index}}
@@ -26860,7 +26860,7 @@ function drawSun(w,h,t){const x=w*.58,y=h*.38,r=34+Math.sin(t*.0014)*3;let g=ctx
 function drawMoon(w,h,t){const x=w*.61,y=h*.34,r=27;let g=ctx.createRadialGradient(x-7,y-8,2,x,y,r*1.8);g.addColorStop(0,'rgba(245,234,255,.85)');g.addColorStop(.4,'rgba(190,154,235,.48)');g.addColorStop(1,'rgba(130,90,200,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r*1.8,0,Math.PI*2);ctx.fill()}
 function tick(ts){
  if(!ctx||!canvas||!hero||!document.body.contains(hero)){cancelAnimationFrame(raf);raf=0;return}
- if(ts-lastPaint<32){raf=requestAnimationFrame(tick);return}lastPaint=ts;
+ if(ts-lastPaint<16){raf=requestAnimationFrame(tick);return}lastPaint=ts;
  resize();const w=hero.clientWidth,h=hero.clientHeight,m=new Date().getMonth()+1;
  if(!enabled()){ctx.clearRect(0,0,w,h);raf=requestAnimationFrame(tick);return}
  if(sceneMonth!==m||particles.length===0){sceneMonth=m;initScene(w,h,m)}
@@ -26888,7 +26888,7 @@ function settingsCard(){const on=enabled(),i=new Date().getMonth(),lang=window.m
 const baseSettings=window.renderSettings;if(typeof baseSettings==='function'&&!baseSettings.__v30146){const w=function(){return String(baseSettings.apply(this,arguments)||'')+settingsCard()};w.__v30146=true;window.renderSettings=w;try{renderSettings=w}catch(e){}}
 document.addEventListener('change',e=>{if(e.target&&e.target.id==='v30146SeasonalEnabled'){S().seasonalPanelEnabled=e.target.value!=='false';saveNow();particles=[];decorate()}},true);
 const oldRender=window.renderAll;if(typeof oldRender==='function'&&!oldRender.__v30146){const w=function(){const r=oldRender.apply(this,arguments);setTimeout(decorate,0);setTimeout(decorate,180);return r};w.__v30146=true;window.renderAll=w;try{renderAll=w}catch(e){}}
-window.addEventListener('resize',()=>{resize();particles=[]});
+window.addEventListener('resize',()=>{resize();});
 window.addEventListener('michelslife:languagechange',()=>{monthCopyKey='';updateMonth(true)});
 setInterval(()=>{const i=new Date().getMonth()+1,lang=window.mlvLanguage?window.mlvLanguage():'en';if(monthCopyKey!==i+'|'+lang)updateMonth(true)},60000);
 setTimeout(start,0);setTimeout(start,220);
