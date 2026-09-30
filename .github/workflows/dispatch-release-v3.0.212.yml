@@ -1,0 +1,20 @@
+name: Dispatch Michel's Life v3.0.212 release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/dispatch-release-v3.0.212.yml'
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch official Windows release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run release-windows.yml --ref main -f publish=true
