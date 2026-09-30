@@ -5169,6 +5169,7 @@ textarea::placeholder{
   function esc(s){
     return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
   }
+  const tx=(en,es)=>window.mlvText?window.mlvText(en,es):en;
 
   const STAGE_LABELS = {
     auto:'Auto',
@@ -5189,6 +5190,12 @@ textarea::placeholder{
     night:'🌙',
     late:'🌌'
   };
+  const STAGE_LABELS_ES={auto:'Auto',dawn:'Amanecer',morning:'Mañana',noon:'Mediodía',afternoon:'Tarde',night:'Noche',late:'Noche tardía'};
+  function stageLabel(value){return tx(STAGE_LABELS[value]||value,STAGE_LABELS_ES[value]||value)}
+  function presetLabel(value){
+    const map={cyan:['Cyan','Cian'],gold:['Gold','Dorado'],violet:['Violet','Violeta'],green:['Green','Verde'],forge:['Forge','Forja'],rose:['Rose','Rosa'],steel:['Steel','Acero']};
+    const pair=map[value]||[value,value];return tx(pair[0],pair[1]);
+  }
 
   function settings(){
     state.settings = state.settings || {};
@@ -5210,20 +5217,20 @@ textarea::placeholder{
   }
 
   function stageOptions(current){
-    return Object.entries(STAGE_LABELS).map(([value,label])=>{
-      return `<option value="${value}" ${current===value?'selected':''}>${label}</option>`;
+    return Object.keys(STAGE_LABELS).map(value=>{
+      return `<option value="${value}" ${current===value?'selected':''}>${stageLabel(value)}</option>`;
     }).join('');
   }
 
   function intensityOptions(current){
     return ['soft','direct','intense'].map(value=>{
-      const label = value==='soft'?'Soft':value==='direct'?'Direct':'Intense';
+      const label = value==='soft'?tx('Soft','Suave'):value==='direct'?tx('Direct','Directa'):tx('Intense','Intensa');
       return `<option value="${value}" ${current===value?'selected':''}>${label}</option>`;
     }).join('');
   }
 
   function dynamicOptions(current){
-    return `<option value="true" ${current?'selected':''}>Automatic</option><option value="false" ${!current?'selected':''}>Manual</option>`;
+    return `<option value="true" ${current?'selected':''}>${tx('Automatic','Automático')}</option><option value="false" ${!current?'selected':''}>${tx('Manual','Manual')}</option>`;
   }
 
   function getThemeSafe(){
@@ -5246,65 +5253,64 @@ textarea::placeholder{
     const t = getThemeSafe();
     const currentStage = s.manualStage || 'auto';
     const currentIntensity = normalizeIntensity(s.messageIntensity);
-    const stageLabel = s.dynamicTime ? 'Automatic time ambience' : `${STAGE_EMOJI[currentStage]||'✨'} ${STAGE_LABELS[currentStage]||currentStage}`;
-    const intensityLabel = currentIntensity==='soft'?'Soft':currentIntensity==='direct'?'Direct':'Intense';
+    const stageLabelText = s.dynamicTime ? tx('Automatic time ambience','Ambiente horario automático') : `${STAGE_EMOJI[currentStage]||'✨'} ${stageLabel(currentStage)}`;
+    const intensityLabel = currentIntensity==='soft'?tx('Soft','Suave'):currentIntensity==='direct'?tx('Direct','Directa'):tx('Intense','Intensa');
 
-    return `<div class="card">
-      <div class="section-title"><div><h2>Settings</h2></div></div>
+    return `<div class="card" data-mlv-i18n-owned="source">
+      <div class="section-title"><div><h2>${tx('Settings','Configuración')}</h2></div></div>
 
       <div class="form-grid">
-        <label>Character name
+        <label>${tx('Character name','Nombre del personaje')}
           <input id="setName" value="${esc(s.characterName||'Michel')}">
         </label>
 
-        <label>Time ambience
+        <label>${tx('Time ambience','Ambiente horario')}
           <select id="setDynamic">${dynamicOptions(!!s.dynamicTime)}</select>
         </label>
 
-        <label>Visual stage
+        <label>${tx('Visual stage','Etapa visual')}
           <select id="setStage">${stageOptions(currentStage)}</select>
         </label>
 
-        <label>Messages
+        <label>${tx('Messages','Mensajes')}
           <select id="setIntensity">${intensityOptions(currentIntensity)}</select>
         </label>
       </div>
 
       <div class="v162-settings-status">
-        <span class="v162-status-chip">Stage: ${esc(stageLabel)}</span>
-        <span class="v162-status-chip">Messages: ${esc(intensityLabel)}</span>
+        <span class="v162-status-chip">${tx('Stage','Etapa')}: ${esc(stageLabelText)}</span>
+        <span class="v162-status-chip">${tx('Messages','Mensajes')}: ${esc(intensityLabel)}</span>
       </div>
 
       <div class="actions" style="margin-top:12px">
-        <button class="btn primary" data-action="save-settings">Save settings</button>
-        <button class="btn" data-action="export-json">Export backup</button>
-        <button class="btn ghost" data-action="import-json">Import backup</button>
-        <button class="btn danger" data-action="reset-app">Reset app</button>
+        <button class="btn primary" data-action="save-settings">${tx('Save settings','Guardar configuración')}</button>
+        <button class="btn" data-action="export-json">${tx('Export backup','Exportar respaldo')}</button>
+        <button class="btn ghost" data-action="import-json">${tx('Import backup','Importar respaldo')}</button>
+        <button class="btn danger" data-action="reset-app">${tx('Reset app','Reiniciar app')}</button>
       </div>
 
       <div class="card" style="margin-top:16px">
-        <h2>Color theme</h2>
-        <p class="muted">Pick a preset or create your own window palette.</p>
+        <h2>${tx('Color theme','Tema de color')}</h2>
+        <p class="muted">${tx('Pick a preset or create your own window palette.','Elige un preset o crea tu propia paleta de interfaz.')}</p>
         <div class="v133-switch">
-          ${['cyan','gold','violet','green','forge','rose','steel'].map(k=>`<button data-action="v133-preset" data-key="${k}">${k}</button>`).join('')}
+          ${['cyan','gold','violet','green','forge','rose','steel'].map(k=>`<button data-action="v133-preset" data-key="${k}">${presetLabel(k)}</button>`).join('')}
         </div>
         <div class="v133-theme-grid">
           <div class="v133-theme-card">
-            <h3>Windows</h3>
-            <label class="v133-color-row">Window base <input type="color" id="v133Bg" value="${t.bg}"></label>
-            <label class="v133-color-row">Panel <input type="color" id="v133Panel" value="${t.panel}"></label>
-            <label class="v133-color-row">Card <input type="color" id="v133Card" value="${t.card}"></label>
+            <h3>${tx('Windows','Ventanas')}</h3>
+            <label class="v133-color-row">${tx('Window base','Base de ventana')} <input type="color" id="v133Bg" value="${t.bg}"></label>
+            <label class="v133-color-row">${tx('Panel','Panel')} <input type="color" id="v133Panel" value="${t.panel}"></label>
+            <label class="v133-color-row">${tx('Card','Tarjeta')} <input type="color" id="v133Card" value="${t.card}"></label>
           </div>
           <div class="v133-theme-card">
-            <h3>Accents</h3>
-            <label class="v133-color-row">Accent 1 <input type="color" id="v133Accent" value="${t.accent}"></label>
-            <label class="v133-color-row">Accent 2 <input type="color" id="v133Accent2" value="${t.accent2}"></label>
-            <label class="v133-color-row">Gold <input type="color" id="v133Gold" value="${t.gold}"></label>
+            <h3>${tx('Accents','Acentos')}</h3>
+            <label class="v133-color-row">${tx('Accent 1','Acento 1')} <input type="color" id="v133Accent" value="${t.accent}"></label>
+            <label class="v133-color-row">${tx('Accent 2','Acento 2')} <input type="color" id="v133Accent2" value="${t.accent2}"></label>
+            <label class="v133-color-row">${tx('Gold','Dorado')} <input type="color" id="v133Gold" value="${t.gold}"></label>
           </div>
         </div>
         <div class="actions" style="margin-top:12px">
-          
-          <button class="btn" data-action="v133-preset" data-key="cyan">Restore base</button>
+          <button class="btn" data-action="v133-preset" data-key="cyan">${tx('Restore base','Restaurar base')}</button>
         </div>
       </div>
     </div>`;
@@ -5316,7 +5322,7 @@ textarea::placeholder{
     if(!s.dynamicTime && s.manualStage && s.manualStage !== 'auto'){
       return {
         id:s.manualStage,
-        name:STAGE_LABELS[s.manualStage] || s.manualStage,
+        name:stageLabel(s.manualStage),
         emoji:STAGE_EMOJI[s.manualStage] || '✨'
       };
     }
@@ -5327,49 +5333,49 @@ textarea::placeholder{
       }catch(e){}
     }
     const h = new Date().getHours();
-    if(h<5) return {id:'late',name:'Late night',emoji:'🌌'};
-    if(h<8) return {id:'dawn',name:'Dawn',emoji:'🌅'};
-    if(h<12) return {id:'morning',name:'Morning',emoji:'☀️'};
-    if(h<15) return {id:'noon',name:'Noon',emoji:'🔆'};
-    if(h<19) return {id:'afternoon',name:'Afternoon',emoji:'🌇'};
-    if(h<23) return {id:'night',name:'Night',emoji:'🌙'};
-    return {id:'late',name:'Late night',emoji:'🌌'};
+    if(h<5) return {id:'late',name:stageLabel('late'),emoji:'🌌'};
+    if(h<8) return {id:'dawn',name:stageLabel('dawn'),emoji:'🌅'};
+    if(h<12) return {id:'morning',name:stageLabel('morning'),emoji:'☀️'};
+    if(h<15) return {id:'noon',name:stageLabel('noon'),emoji:'🔆'};
+    if(h<19) return {id:'afternoon',name:stageLabel('afternoon'),emoji:'🌇'};
+    if(h<23) return {id:'night',name:stageLabel('night'),emoji:'🌙'};
+    return {id:'late',name:stageLabel('late'),emoji:'🌌'};
   };
 
   const baseGetSmartMessage = window.getSmartMessage;
   window.getSmartMessage = function(){
     const mode = normalizeIntensity(settings().messageIntensity);
     const st = activeStage();
-
-    const soft = {
-      dawn:'Start gently. One clean action is enough to open the day.',
-      morning:'Choose one important thing and make it lighter by starting.',
-      noon:'You can still rescue the day with one focused action.',
-      afternoon:'Keep it simple: one mission, then the next.',
-      night:'Close the day with evidence, not pressure.',
-      late:'Do a small reset and protect tomorrow.',
-      auto:'One clear action is enough.'
+    const banks={
+      soft:{
+        dawn:tx('Start gently. One clean action is enough to open the day.','Empieza con calma. Una acción clara basta para abrir el día.'),
+        morning:tx('Choose one important thing and make it lighter by starting.','Elige una cosa importante y hazla más ligera empezando.'),
+        noon:tx('You can still rescue the day with one focused action.','Todavía puedes rescatar el día con una acción enfocada.'),
+        afternoon:tx('Keep it simple: one mission, then the next.','Hazlo simple: una misión y luego la siguiente.'),
+        night:tx('Close the day with evidence, not pressure.','Cierra el día con evidencia, no con presión.'),
+        late:tx('Do a small reset and protect tomorrow.','Haz un pequeño reinicio y protege mañana.'),
+        auto:tx('One clear action is enough.','Una acción clara es suficiente.')
+      },
+      direct:{
+        dawn:tx('Take advantage before the day gets loud.','Aprovecha antes de que el día se vuelva ruidoso.'),
+        morning:tx('Do the important mission before the day starts negotiating.','Haz la misión importante antes de que el día empiece a negociar.'),
+        noon:tx('Recover progress before the day drifts.','Recupera progreso antes de que el día se desvíe.'),
+        afternoon:tx('Pick the highest-impact pending mission and execute.','Elige la misión pendiente de mayor impacto y ejecútala.'),
+        night:tx('Finish one thing. Do not leave the day undefined.','Termina una cosa. No dejes el día indefinido.'),
+        late:tx('Reset, close loops, and stop leaking energy.','Reinicia, cierra ciclos y deja de perder energía.'),
+        auto:tx('Execute the next mission.','Ejecuta la siguiente misión.')
+      },
+      intense:{
+        dawn:tx('Attack early. Build proof before the world wakes up.','Ataca temprano. Construye evidencia antes de que el mundo despierte.'),
+        morning:tx('No decoration. Pick the hardest useful mission and move.','Sin adornos. Elige la misión útil más difícil y avanza.'),
+        noon:tx('Do not let the day become noise. Execute now.','No dejes que el día se convierta en ruido. Ejecuta ahora.'),
+        afternoon:tx('No more drifting. Choose the mission that changes the score.','No más deriva. Elige la misión que cambia el marcador.'),
+        night:tx('Close strong. Earn the feeling before you rest.','Cierra fuerte. Gánate la sensación antes de descansar.'),
+        late:tx('Discipline now protects tomorrow. Do the final reset.','La disciplina de ahora protege mañana. Haz el reinicio final.'),
+        auto:tx('Move now. Proof beats intention.','Muévete ahora. La evidencia vence a la intención.')
+      }
     };
-    const direct = {
-      dawn:'Take advantage before the day gets loud.',
-      morning:'Do the important mission before the day starts negotiating.',
-      noon:'Recover progress before the day drifts.',
-      afternoon:'Pick the highest-impact pending mission and execute.',
-      night:'Finish one thing. Do not leave the day undefined.',
-      late:'Reset, close loops, and stop leaking energy.',
-      auto:'Execute the next mission.'
-    };
-    const intense = {
-      dawn:'Attack early. Build proof before the world wakes up.',
-      morning:'No decoration. Pick the hardest useful mission and move.',
-      noon:'Do not let the day become noise. Execute now.',
-      afternoon:'No more drifting. Choose the mission that changes the score.',
-      night:'Close strong. Earn the feeling before you rest.',
-      late:'Discipline now protects tomorrow. Do the final reset.',
-      auto:'Move now. Proof beats intention.'
-    };
-
-    const bank = mode==='soft'?soft:mode==='intense'?intense:direct;
+    const bank=mode==='soft'?banks.soft:mode==='intense'?banks.intense:banks.direct;
     return bank[st.id] || bank.auto;
   };
 
@@ -5398,7 +5404,7 @@ textarea::placeholder{
       if(typeof renderStatusStripV13 === 'function') renderStatusStripV13();
     }catch(e){}
     if(showToast){
-      try{ if(typeof toast==='function') toast('Settings saved','Changes applied.'); }catch(e){}
+      try{ if(typeof toast==='function') toast(tx('Settings saved','Configuración guardada'),tx('Changes applied.','Cambios aplicados.')); }catch(e){}
     }
     try{
       if(typeof renderAll === 'function') renderAll();
@@ -5428,35 +5434,6 @@ textarea::placeholder{
     }
   }, true);
 
-  function cleanupBadText(){
-    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
-      acceptNode(n){
-        return /Monthsages|Mensajes|Configuración|Guardar configuración|Etapa visual|Ambiente por hora/.test(n.nodeValue||'')
-          ? NodeFilter.FILTER_ACCEPT
-          : NodeFilter.FILTER_REJECT;
-      }
-    });
-    const nodes=[];
-    while(walker.nextNode()) nodes.push(walker.currentNode);
-    nodes.forEach(n=>{
-      n.nodeValue = n.nodeValue
-        .replace(/Monthsages/g,'Messages')
-        .replace(/Mensajes/g,'Messages')
-        .replace(/Configuración/g,'Settings')
-        .replace(/Guardar configuración/g,'Save settings')
-        .replace(/Etapa visual/g,'Visual stage')
-        .replace(/Ambiente por hora/g,'Time ambience');
-    });
-  }
-
-  const oldRenderAll = window.renderAll;
-  window.renderAll = function(){
-    if(typeof oldRenderAll === 'function') oldRenderAll();
-    setTimeout(cleanupBadText,0);
-  };
-
-  document.addEventListener('DOMContentLoaded',()=>setTimeout(cleanupBadText,100));
-  try{cleanupBadText();}catch(e){}
 })();
 </script>
 
@@ -17161,53 +17138,6 @@ body.ml-theme-ui [data-tab-panel="dashboard"] .v132-contract{
     setTimeout(safeRender,90);
   }, true);
 
-  function textReplace(str){
-    return String(str??'')
-      .replace(/\bpor semana\b/gi,'per week')
-      .replace(/\bpor día\b/gi,'per day')
-      .replace(/\bpor dia\b/gi,'per day')
-      .replace(/\bsemana\b/gi,'week')
-      .replace(/\bsemanal\b/gi,'weekly')
-      .replace(/\bmisiones\b/gi,'missions')
-      .replace(/\bmisión\b/gi,'mission')
-      .replace(/\bmision\b/gi,'mission')
-      .replace(/\bmetas\b/gi,'goals')
-      .replace(/\bmeta\b/gi,'goal')
-      .replace(/\bcompletadas\b/gi,'completed')
-      .replace(/\bcompletada\b/gi,'completed')
-      .replace(/\bpendientes\b/gi,'pending')
-      .replace(/\bpendiente\b/gi,'pending')
-      .replace(/\bpor week\b/gi,'per week')
-      .replace(/\bper semana\b/gi,'per week')
-      .replace(/\b2 times per week\b/gi,'2 times per week');
-  }
-
-  function englishCleanup(root=document.body){
-    if(!root) return;
-    try{
-      const walker=document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {acceptNode(node){
-        const p=node.parentElement;
-        if(!p || ['SCRIPT','STYLE','TEXTAREA','NOSCRIPT'].includes(p.tagName)) return NodeFilter.FILTER_REJECT;
-        return /por semana|por d[ií]a|semana|misiones|misi[oó]n|metas|completad|pendient/i.test(node.nodeValue||'') ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
-      }});
-      const nodes=[]; while(walker.nextNode()) nodes.push(walker.currentNode);
-      nodes.forEach(n=>{ const next=textReplace(n.nodeValue); if(next!==n.nodeValue) n.nodeValue=next; });
-    }catch(e){}
-  }
-
-  document.addEventListener('DOMContentLoaded',()=>{englishCleanup(); setTimeout(englishCleanup,200);});
-  window.addEventListener('load',()=>{englishCleanup(); setTimeout(englishCleanup,200);});
-
-  const oldRenderAll=window.renderAll;
-  if(typeof oldRenderAll==='function'&&!window.__v3022RenderAllWrap){
-    window.__v3022RenderAllWrap=true;
-    window.renderAll=function(){
-      const r=oldRenderAll.apply(this,arguments);
-      setTimeout(()=>englishCleanup(document.body),40);
-      return r;
-    };
-    try{renderAll=window.renderAll;}catch(e){}
-  }
 })();
 </script>
 
