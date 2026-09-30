@@ -1594,7 +1594,6 @@ const PAIRS={
   "Putting your space in order also counts as regaining control.":"Ordenar tu espacio también cuenta como recuperar control.",
   "If you cannot move much forward, at least do not end in chaos.":"Si no puedes avanzar mucho, al menos no termines en caos.",
   "Close the day like someone who respects themselves.":"Cierra el día como alguien que se respeta.",
-  "Last call: one small mission or real rest.":"Última llamada: una misión pequeña o descanso real.",
   "Do not turn exhaustion into impulses. Close cleanly.":"No conviertas el cansancio en impulsos. Cierra limpio.",
   "If the day was heavy, do not punish it with more disorder.":"Si el día fue pesado, no lo castigues con más desorden.",
   "Finish with one honest action, not an empty promise.":"Termina con una acción honesta, no con una promesa vacía.",
