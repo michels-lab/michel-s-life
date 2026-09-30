@@ -3683,73 +3683,7 @@ body.v140-noon input::placeholder{
 }
 </style>
 
-<script id="v147-readable-compact-safe-script">
-(function(){
-  function setBrandOnly(){
-    document.title="Michel's Life";
-    document.querySelectorAll('.brand h1').forEach(el=>el.textContent="Michel's Life");
-    document.querySelectorAll('.brand p').forEach(el=>el.textContent='Personal Progress System');
-  }
-
-  const textMap = {
-    'Completar':'Complete',
-    'Desmarcar':'Unmark',
-    'Editar':'Edit',
-    'Mover a mañana':'Tomorrow',
-    'Mañana':'Tomorrow',
-    'No aplica hoy':'Not today',
-    'Duplicar':'Duplicate',
-    'Archivar':'Archive',
-    'Eliminar':'Delete',
-    'Agregar':'Add',
-    'Nueva misión':'New mission',
-    'Guardar':'Save',
-    'Cancelar':'Cancel',
-    'Aplicar a una vacante objetivo':'Apply to one target job',
-    'monedas':'coins'
-  };
-
-  function translateVisibleOnly(){
-    const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode(node){
-      const p=node.parentElement;
-      if(!p || ['SCRIPT','STYLE'].includes(p.tagName)) return NodeFilter.FILTER_REJECT;
-      return /Completar|Desmarcar|Editar|Mañana|No aplica|Duplicar|Archivar|Eliminar|Agregar|Nueva misión|Guardar|Cancelar|Aplicar a una vacante|monedas/.test(node.nodeValue)
-        ? NodeFilter.FILTER_ACCEPT
-        : NodeFilter.FILTER_REJECT;
-    }});
-    const nodes=[];
-    while(walker.nextNode()) nodes.push(walker.currentNode);
-    nodes.forEach(node=>{
-      let s=node.nodeValue;
-      Object.entries(textMap).forEach(([a,b])=>{s=s.split(a).join(b)});
-      node.nodeValue=s;
-    });
-  }
-
-  function compactDayLabels(){
-    document.querySelectorAll('.v137-day-chip').forEach(btn=>{
-      const d=String(btn.dataset.day);
-      const map={'1':'M','2':'T','3':'W','4':'T','5':'F','6':'S','0':'S'};
-      if(map[d]) btn.textContent=map[d];
-    });
-  }
-
-  function safeFinalPass(){
-    setBrandOnly();
-    translateVisibleOnly();
-    compactDayLabels();
-  }
-
-  const previousRenderAll=window.renderAll;
-  window.renderAll=function(){
-    if(typeof previousRenderAll==='function') previousRenderAll();
-    setTimeout(safeFinalPass,0);
-  };
-
-  document.addEventListener('DOMContentLoaded',()=>setTimeout(safeFinalPass,80));
-  try{safeFinalPass()}catch(e){console.error('v14.7 safe compact final error',e)}
-})();
-</script>
+<!-- v14.7 legacy language-forcing pass retired: canonical bilingual renderers own copy now. -->
 
 
 <style id="v148-remove-command-sidebar-style">
