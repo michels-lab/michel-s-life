@@ -26511,7 +26511,7 @@ function monthStart(mk){return mk+'-01'}
 function monthEnd(mk){const [y,m]=mk.split('-').map(Number);return dkey(new Date(y,m,0,12));}
 function shiftMonth(mk,n){const [y,m]=mk.split('-').map(Number),d=new Date(y,m-1+n,1,12);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
 function monthLabel(mk){const [y,m]=mk.split('-').map(Number);return new Intl.DateTimeFormat(calLocale(),{month:'long',year:'numeric'}).format(new Date(y,m-1,1,12))}
-function pretty(k,opts={weekday:'long',month:'long',day:'numeric'}){return new Intl.DateTimeFormat(calLocale(),opts).format(parse(k))}){return new Intl.DateTimeFormat('en-US',opts).format(parse(k));}
+function pretty(k,opts={weekday:'long',month:'long',day:'numeric'}){return new Intl.DateTimeFormat(calLocale(),opts).format(parse(k))}
 function mission(id){return (state.missions||[]).find(m=>String(m&&m.id)===String(id))||null}
 function completionOn(m,k){return (m&&m.completions||[]).find(c=>String(c&&c.date||c&&c.at||'').slice(0,10)===k)||null}
 function stageOf(m){const raw=String(m&& (m.v30114DayStage||m.dayStage||m.timeOfDay)||'afternoon').toLowerCase();if(raw==='morning'||raw==='dawn')return'morning';if(raw==='night'||raw==='late')return'night';return'afternoon'}
@@ -30175,7 +30175,7 @@ async function syncNow(opts={}){
     if(!opts.silent)toastSafe(gText('Google Calendar'),runtime.error);
     mountGoogleSettings();return null;
   }finally{runtime.busy=false;mountGoogleSettings();decorateCalendar()}
-}){if(runtime.busy)return runtime.lastResult;if(!runtime.connected){if(!opts.silent)toastSafe(gText('Google Calendar'),gText('Connect Google first.'));return null}runtime.busy=true;runtime.error='';mountGoogleSettings();decorateCalendar();try{const s=settings(),range=syncRange();const res=await bridge('sync',{...range,pushLocalMissions:!!s.pushMissions,localMissions:s.pushMissions?localMissions():[]});s.events=Array.isArray(res?.events)?res.events:[];s.lastSync=res?.syncedAt||new Date().toISOString();s.lastSyncStats={googleEventCount:Number(res?.googleEventCount||0),managedEventCount:Number(res?.managedEventCount||0),pushedMissionCount:Number(res?.pushedMissionCount||0),createdMissionEvents:Number(res?.createdMissionEvents||0),updatedMissionEvents:Number(res?.updatedMissionEvents||0)};runtime.lastResult=res;saveSafe();if(!opts.silent)toastSafe(gText('Google Calendar synced'),gLocale()==='es-MX'?`${s.lastSyncStats.googleEventCount} eventos de Google · ${s.lastSyncStats.pushedMissionCount} misiones con fecha revisadas.`:`${s.lastSyncStats.googleEventCount} Google events · ${s.lastSyncStats.pushedMissionCount} dated missions checked.`);decorateCalendar();return res}catch(err){runtime.error=String(err?.message||err);if(!opts.silent)toastSafe(gText('Google Calendar'),runtime.error);mountGoogleSettings();return null}finally{runtime.busy=false;mountGoogleSettings();decorateCalendar()}}
+}
 async function refreshStatus(opts={}){try{const x=await bridge('status');applyStatus(x);if(runtime.connected&&runtime.cloudReady&&opts.cloud!==false)await syncCloud('auto',{silent:true,initial:true});runtime.cloudInitialDone=true;installStorageWatch();scheduleCloudPoll();if(runtime.connected&&settings().autoSync&&opts.sync!==false)syncNow({silent:true});if(sessionStorage.getItem('mlv191CloudRestored')){sessionStorage.removeItem('mlv191CloudRestored');toastSafe(gText('Michel’s Life Cloud'),gText('Your cloud data is loaded on this PC.'))}}catch(err){runtime.bridgeAvailable=false;runtime.error=String(err?.message||err);runtime.cloudInitialDone=true;installStorageWatch();mountGoogleSettings()}}
 function dateKeyFromEvent(ev){const raw=String(ev?.start||'');if(ev?.allDay&&validDateKey(raw.slice(0,10)))return raw.slice(0,10);const d=new Date(raw);if(Number.isNaN(d.getTime()))return raw.slice(0,10);const p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`}
 function timeLabel(ev){
@@ -30359,14 +30359,6 @@ function bridge(action,payload={}){
     if(!window.chrome?.webview?.postMessage){reject(new Error(relBi('This action requires the Windows WebView2 app.','Esta acción requiere la app de Windows con WebView2.')));return}
     const requestId='mlv197-'+Date.now()+'-'+(++seq);
     const timer=setTimeout(()=>{pending.delete(requestId);reject(new Error(relBi('Cloud request timed out.','La solicitud a la nube agotó el tiempo de espera.')))},270000);
-    pending.set(requestId,{resolve,reject,timer});
-    window.chrome.webview.postMessage({channel:CHANNEL,requestId,action,payload});
-  });
-}){
-  return new Promise((resolve,reject)=>{
-    if(!window.chrome?.webview?.postMessage){reject(new Error('This action requires the Windows WebView2 app.'));return}
-    const requestId='mlv197-'+Date.now()+'-'+(++seq);
-    const timer=setTimeout(()=>{pending.delete(requestId);reject(new Error('Cloud request timed out.'))},270000);
     pending.set(requestId,{resolve,reject,timer});
     window.chrome.webview.postMessage({channel:CHANNEL,requestId,action,payload});
   });
