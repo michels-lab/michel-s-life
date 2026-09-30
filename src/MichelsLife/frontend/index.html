@@ -6203,6 +6203,26 @@ textarea::placeholder{
     default:['One useful action is enough to shift the day.','Less noise. More proof.','Do the thing that makes tomorrow easier.']
   };
 
+  function tr(v){try{return window.MichelsLifeI18n?.mapText?.(String(v))||String(v)}catch(_){return String(v)}}
+  function language(){return (window.MichelsLifeI18n?.language||document.documentElement.lang)==='es'?'es':'en'}
+  function localizedAffirmation(text){
+    const value=String(text||'');
+    try{
+      const found=(state.affirmations||[]).find(a=>String(a&&a.text||a&&a.name||'')===value);
+      if(found&&typeof affirmationText==='function')return affirmationText(found);
+    }catch(_){}
+    return FALLBACK_AFFIRMATIONS.includes(value)?tr(value):value;
+  }
+  function syncStaticLabels(panel){
+    if(!panel)return;
+    const kickers=panel.querySelectorAll('.v176-kicker');
+    if(kickers[0])kickers[0].textContent='⚡ '+tr('Command');
+    if(kickers[1])kickers[1].textContent='✦ '+tr('Affirmation');
+    const next=panel.querySelector('.v176-next'),open=panel.querySelector('.v176-open');
+    if(next)next.textContent=tr('New phrase');
+    if(open)open.textContent=tr('Open affirmations');
+  }
+
   function todayKeySafe(){
     return typeof dateKey === 'function' ? dateKey() : new Date().toISOString().slice(0,10);
   }
@@ -6662,10 +6682,11 @@ textarea::placeholder{
     removeOldPanelsFromFlow();
 
     let panel=document.getElementById('v176StatusPanel');
-    if(panel) return panel;
+    if(panel){syncStaticLabels(panel);return panel}
 
     panel=document.createElement('section');
     panel.id='v176StatusPanel';
+    panel.dataset.mlvI18nOwned='source';
     panel.innerHTML=`
       <div class="v176-card">
         <div class="v176-time" id="v176Time"></div>
@@ -6698,6 +6719,7 @@ textarea::placeholder{
       else document.body.prepend(panel);
     }
 
+    syncStaticLabels(panel);
     return panel;
   }
 
@@ -6714,12 +6736,15 @@ textarea::placeholder{
       if(n && n.textContent!==String(text)) n.textContent=String(text);
     };
 
+    syncStaticLabels(panel);
+    const locale=language()==='es'?'es-MX':'en-US';
+    const who=state.settings?.characterName||tr('Player');
     set('v176Time',timeString());
-    set('v176Greeting',`${g.tone||m.emoji} ${g.main||'Hello'}, ${state.settings?.characterName||'Player'} · ${new Date().toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'})} · ${g.sub||m.command}`);
-    set('v176Command',m.command);
-    set('v176CommandSub',`${m.stageName} · complete the next visible action.`);
-    set('v176Affirmation',m.affirmation);
-    set('v176Stats',`${s.done}/${s.active} missions today · Week ${s.weekPct}% · Reset ${s.reset}`);
+    set('v176Greeting',`${g.tone||m.emoji} ${tr(g.main||'Hello')}, ${who} · ${new Date().toLocaleDateString(locale,{weekday:'short',month:'short',day:'numeric'})} · ${tr(g.sub||m.command)}`);
+    set('v176Command',tr(m.command));
+    set('v176CommandSub',`${tr(m.stageName)} · ${tr('complete the next visible action.')}`);
+    set('v176Affirmation',localizedAffirmation(m.affirmation));
+    set('v176Stats',`${s.done}/${s.active} ${tr('Missions today')} · ${tr('Week')} ${s.weekPct}% · ${tr('Reset')} ${s.reset}`);
   }
 
   // Make old render functions harmless. They may run, but their panel is hidden.
@@ -6749,6 +6774,7 @@ textarea::placeholder{
   };
 
   document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>update(false),100));
+  window.addEventListener('michelslife:languagechange',()=>update(false));
 
   setInterval(()=>update(false),30000);
 
@@ -26719,12 +26745,13 @@ function applyOrderToList(list,stage){if(!list)return;const cards=Array.from(lis
 function decorateMissionCards(root=document){if(decorating)return;decorating=true;try{root.querySelectorAll('#tab-dashboard article.v132-mission,#tab-dashboard article.mission-card,#tab-dashboard article.quest-card,#tab-missions article.v132-mission,#tab-missions article.mission-card,#tab-missions article.quest-card').forEach(card=>{const id=idFromCard(card);if(!id)return;card.dataset.v30137Mission=id;card.draggable=true;card.classList.add('v30137-draggable')});root.querySelectorAll('#tab-dashboard [data-v30114-group]').forEach(sec=>{const st=sec.dataset.v30114Group;if(STAGES.includes(st)){sec.dataset.v30137Stage=st;applyOrderToList(sec.querySelector('.v30114-stage-list'),st)}});root.querySelectorAll('#tab-missions .v30115-mission-stage-group[data-stage]').forEach(sec=>{const st=sec.dataset.stage;if(STAGES.includes(st)){sec.dataset.v30137Stage=st;applyOrderToList(sec.querySelector('.v30115-mission-stage-list'),st)}})}finally{decorating=false}}
 function decorateCalendar(root=document){root.querySelectorAll('#tab-calendar .v30135-day[data-date]').forEach(d=>d.classList.add('v30137-calendar-drop'));root.querySelectorAll('#tab-calendar .v30135-row').forEach(row=>{const ref=row.querySelector('[data-v30135-cal][data-id]');if(!ref)return;row.draggable=true;row.dataset.v30137Mission=ref.dataset.id;row.dataset.v30137Date=ref.dataset.date||'';row.style.cursor='grab'})}
 function ensureGlobalTargets(){
-  let el=document.getElementById('v30137DragTargets');if(el)return el;
-  el=document.createElement('div');el.id='v30137DragTargets';el.dataset.mlvI18nOwned='source';
+  let el=document.getElementById('v30137DragTargets');
+  if(!el){el=document.createElement('div');el.id='v30137DragTargets';el.dataset.mlvI18nOwned='source';document.body.appendChild(el)}
   el.innerHTML='<div class="v30137-global-target" data-v30137-drop="nextup">➜ '+esc(tr('Add to Next Up'))+'</div>';
-  document.body.appendChild(el);return el;
+  return el;
 }
 function decorate(){ensureGlobalTargets();decorateMissionCards(document);decorateCalendar(document)}
+window.addEventListener('michelslife:languagechange',()=>ensureGlobalTargets());
 function clearOver(){document.querySelectorAll('.v30137-drop-over').forEach(x=>x.classList.remove('v30137-drop-over'))}
 function interactiveTarget(el){return !!el?.closest?.('button,input,select,textarea,a,label,summary,details,[contenteditable="true"]')}
 function beginDrag(e,id,sourceDate,context){if(interactiveTarget(e.target))return false;const m=mission(id);if(!m)return false;drag={id:String(id),sourceDate:sourceDate||'',sourceStage:stageOf(m),context:context||''};try{e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',String(id))}catch(_){};e.currentTarget?.classList?.add('v30137-dragging');document.body.classList.add('v30137-drag-active');ensureGlobalTargets();return true}
@@ -27862,7 +27889,8 @@ function renderFocusDock(){
   const f=focusState(),root=ensureFocusDock(),r=remaining(f),m=linkedMission(f),cur=currentInfo(),stats=todayFocusStats();
   f.dockMode='compact';root.dataset.expanded=f.expanded?'1':'0';root.dataset.dockMode='button';root.dataset.mlvI18nOwned='source';
   const sidebar=document.getElementById('v30171Sidebar');if(sidebar&&root.parentElement!==sidebar)sidebar.appendChild(root);
-  const context=f.mode==='work'?(m?m.name:(cur.m?tr('Ready to link · ')+cur.m.name:tr('Unassigned Focus'))):tr('Recovery block');
+  const missionName=x=>x?(window.mlvMissionName?window.mlvMissionName(x):String(x.name||'')):'';
+  const context=f.mode==='work'?(m?missionName(m):(cur.m?tr('Ready to link · ')+missionName(cur.m):tr('Unassigned Focus'))):tr('Recovery block');
   const openClose=f.expanded?tr('Close Focus controls'):tr('Open Focus controls');
   const phase=f.mode==='work'?tr('FOCUS · WORK'):tr('FOCUS · BREAK');
   const statusText=f.status==='running'?tr('Running'):f.status==='paused'?tr('Paused'):tr('Ready');
@@ -27877,7 +27905,7 @@ function renderFocusDock(){
       <div class="v30162-focus-row v30173-focus-presets"><button type="button" class="v30162-focus-preset ${f.preset==='25/5'?'active':''}" data-v30162-preset="25/5">25 / 5</button><button type="button" class="v30162-focus-preset ${f.preset==='50/10'?'active':''}" data-v30162-preset="50/10">50 / 10</button><button type="button" class="v30162-focus-preset ${f.preset==='custom'?'active':''}" data-v30162-preset="custom">${esc(tr('Custom'))}</button></div>
       <div class="v30162-focus-actions v30173-focus-actions"><button type="button" class="primary" data-v30162-focus="toggle">${esc(actionText)}</button><button type="button" data-v30162-focus="skip">${esc(tr('Skip'))}</button><button type="button" data-v30162-focus="reset">${esc(tr('Reset'))}</button><button type="button" data-v30162-focus="switch">${esc(f.mode==='work'?tr('Break'):tr('Work'))}</button></div>
       <div class="v30162-focus-custom v30173-focus-custom"><label>${esc(tr('Work min'))}<input id="v30162WorkMin" type="number" min="1" max="180" value="${f.workMin}"></label><label>${esc(tr('Break min'))}<input id="v30162BreakMin" type="number" min="1" max="60" value="${f.breakMin}"></label><button type="button" data-v30162-focus="apply-custom">${esc(tr('Apply'))}</button></div>
-      <div class="v30162-focus-stats v30173-focus-stats"><div class="v30162-focus-stat"><small>${esc(tr('Today'))}</small><b>${fmtDuration(stats.ms)}</b></div><div class="v30162-focus-stat"><small>${esc(tr('Completed'))}</small><b>${stats.blocks} ${esc(tr('blocks'))}</b></div><div class="v30162-focus-stat"><small>${esc(tr('Linked'))}</small><b>${esc(m?m.name:tr('None'))}</b></div></div>
+      <div class="v30162-focus-stats v30173-focus-stats"><div class="v30162-focus-stat"><small>${esc(tr('Today'))}</small><b>${fmtDuration(stats.ms)}</b></div><div class="v30162-focus-stat"><small>${esc(tr('Completed'))}</small><b>${stats.blocks} ${esc(tr('blocks'))}</b></div><div class="v30162-focus-stat"><small>${esc(tr('Linked'))}</small><b>${esc(m?missionName(m):tr('None'))}</b></div></div>
       <div class="v30173-focus-history-title">${esc(tr('Recent Focus'))}</div><div class="v30162-focus-history">${focusHistoryHtml()}</div>
     </div>
   </div>`;
@@ -27893,7 +27921,7 @@ function setFocusPanelExpanded(open){
 }
 function toggleFocusPanel(){return setFocusPanelExpanded(!focusState().expanded)}
 function closeFocusPanel(){return setFocusPanelExpanded(false)}
-function updateFocusClock(){const f=focusState(),sec=Math.ceil(remaining(f)/1000);if(sec===lastSecond)return;lastSecond=sec;document.querySelectorAll('#v30162FocusDock [data-v30162-time]').forEach(el=>el.textContent=fmtTimer(remaining(f)));if(f.status==='running'&&remaining(f)<=0)finishPhase();if(f.status==='running'&&f.mode==='work'&&!f.linkedMissionId){const {cur,m}=currentInfo();if(cur&&m){f.linkedMissionId=String(cur.id);persist();document.querySelectorAll('#v30162FocusDock [data-v30162-link]').forEach(link=>link.textContent=m.name);}}}
+function updateFocusClock(){const f=focusState(),sec=Math.ceil(remaining(f)/1000);if(sec===lastSecond)return;lastSecond=sec;document.querySelectorAll('#v30162FocusDock [data-v30162-time]').forEach(el=>el.textContent=fmtTimer(remaining(f)));if(f.status==='running'&&remaining(f)<=0)finishPhase();if(f.status==='running'&&f.mode==='work'&&!f.linkedMissionId){const {cur,m}=currentInfo();if(cur&&m){f.linkedMissionId=String(cur.id);persist();document.querySelectorAll('#v30162FocusDock [data-v30162-link]').forEach(link=>link.textContent=window.mlvMissionName?window.mlvMissionName(m):m.name);}}}
 function enhanceFocusButtons(root=document){root.querySelectorAll&&root.querySelectorAll('[data-v30106-action="focus"]').forEach(b=>{b.removeAttribute('data-v30106-action');b.setAttribute('data-v30162-focus','open');b.textContent=/focus/i.test(b.textContent||'')?'Pomodoro':b.textContent;b.title=tr('Open Pomodoro Focus Timer')});}
 
 /* ---------- Integration ---------- */
@@ -27914,7 +27942,7 @@ window.addEventListener('beforeunload',()=>{persist()});
 /* Restore a running timer from persisted absolute deadline. */
 focusState();if(focusState().status==='running'){if(remaining(focusState())<=0)setTimeout(finishPhase,0);else if(focusState().mode==='work'&&focusState().linkedMissionId)ensureCurrentRunning(focusState().linkedMissionId);else if(focusState().mode==='break'&&focusState().linkedMissionId)ensureCurrentPaused(focusState().linkedMissionId);}
 enhanceFocusButtons(document);renderFocusDock();tickTimer=setInterval(updateFocusClock,250);updateFocusClock();
-window.addEventListener('michelslife:languagechange',()=>{try{if(String(state?.activeTab||'')==='story'&&typeof renderAll==='function')renderAll()}catch(_){}});
+window.addEventListener('michelslife:languagechange',()=>{try{renderFocusDock();enhanceFocusButtons(document);if(String(state?.activeTab||'')==='story'&&typeof renderAll==='function')renderAll()}catch(_){}});
 window.FocusStoryV30162={version:VERSION,focusState,remaining,startFocus,pauseFocus,toggleFocus,resetFocus,skipFocus,focusSessions,chapters,activeChapter,chapterStats,createChapter,closeChapter,addMoment,renderStory,renderFocusDock,setFocusPanelExpanded,toggleFocusPanel,closeFocusPanel};
 window.__MICHELS_LIFE_BUILD__=VERSION;
 console.info("Michel's Life build "+VERSION+' — Pomodoro + Story Chapters loaded');
