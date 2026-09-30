@@ -767,13 +767,29 @@ select, option{color:#eaf4ff!important;background:#0c172b!important}select:focus
   window.mlvMissionDescription=function(m){
     try{return window.v140SystemMissionText?.description?.(m)||String(m?.description||m?.notes||'')}catch(_){return String(m?.description||m?.notes||'')}
   };
+  const MLV_LEGACY_SYSTEM_CONTRACT_EN={
+    'pierna y gluteo 2 veces por semana':'Legs and glutes 2 times per week',
+    'preparar presentacion o defensa':'Prepare presentation or defense',
+    'foto de progreso semanal':'Weekly progress photo',
+    'resolver 3 pendientes practicos':'Complete 3 practical pending items',
+    'revisar presupuesto semanal':'Review the weekly budget'
+  };
+  function mlvContractCanon(v){return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim()}
+  function mlvSystemContractText(v){
+    const raw=String(v||'');
+    try{
+      if(window.mlvLanguage()==='en'){
+        const legacy=MLV_LEGACY_SYSTEM_CONTRACT_EN[mlvContractCanon(raw)];
+        if(legacy)return legacy;
+      }
+      return window.MichelsLifeI18n?.mapText?.(raw)||raw;
+    }catch(_){return raw}
+  }
   window.mlvContractName=function(c){
     try{
-      if(c?.kind==='mission'){
-        if(c.source)return window.mlvMissionName(c.source);
-        if(c.systemDefault)return window.MichelsLifeI18n?.mapText?.(String(c.name||''))||String(c.name||'');
-      }
-      return String(c?.name||'');
+      let raw=String(c?.name||'');
+      if(c?.kind==='mission'&&c.source)raw=window.mlvMissionName(c.source);
+      return mlvSystemContractText(raw);
     }catch(_){return String(c?.name||'')}
   };
 })();
@@ -23733,7 +23749,10 @@ body.v3099-has-nextup-dock{
   function nEsc(value){return esc(nText(value));}
   function missionDisplayName(m){try{return window.v140SystemMissionText?.name?.(m)||String(m?.name||'');}catch(error){return String(m?.name||'');}}
   function missionDisplayDescription(m){try{return window.v140SystemMissionText?.description?.(m)||String(m?.description||m?.notes||'');}catch(error){return String(m?.description||m?.notes||'');}}
-  function contractDisplayName(c){return c&&c.kind==='mission'&&c.source?missionDisplayName(c.source):String(c?.name||'');}
+  function contractDisplayName(c){
+    try{return window.mlvContractName?window.mlvContractName(c):(c&&c.kind==='mission'&&c.source?missionDisplayName(c.source):String(c?.name||''));}
+    catch(error){return String(c?.name||'');}
+  }
   function today(){
     try{if(typeof dateKey==='function')return dateKey();}catch(error){}
     var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -24504,7 +24523,7 @@ function esc(v){try{if(typeof escapeHtml==='function')return escapeHtml(v);}catc
 function tr(v){try{return window.MichelsLifeI18n?.mapText?.(String(v))||String(v)}catch(e){return String(v)}}
 function tx(en,es){return nIsEs()?es:en}
 function missionDisplayName(m){try{return window.v140SystemMissionText?.name?.(m)||String(m?.name||'')}catch(e){return String(m?.name||'')}}
-function contractDisplayName(c){return c?.kind==='mission'&&c?.source?missionDisplayName(c.source):String(c?.name||'')}
+function contractDisplayName(c){try{return window.mlvContractName?window.mlvContractName(c):(c?.kind==='mission'&&c?.source?missionDisplayName(c.source):String(c?.name||''))}catch(e){return String(c?.name||'')}}
 function locale(){return (window.MichelsLifeI18n?.language||document.documentElement.lang)==='es'?'es-MX':'en-US'}
 function localDateTime(v){try{return new Date(v).toLocaleString(locale())}catch(e){return String(v||'')}}
 function norm(v){return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9ñ]+/g,' ').replace(/\s+/g,' ').trim();}
