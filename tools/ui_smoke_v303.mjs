@@ -24,14 +24,29 @@ try{
       window.renderAll?.();
     }catch(_){}
   });
-  await page.waitForFunction(()=>{
-    const root=document.querySelector('#v30171Sidebar');
-    const brand=root?.querySelector('.v30171-brand');
-    const img=brand?.querySelector('.v30171-brand-mark img');
-    const title=brand?.querySelector('.v30171-brand-title');
-    const sub=brand?.querySelector('.v30171-brand-sub');
-    return !!(brand&&img&&title&&sub&&img.getAttribute('src'));
-  },null,{timeout:10000});
+  try{
+    await page.waitForFunction(()=>{
+      const root=document.querySelector('#v30171Sidebar');
+      const brand=root?.querySelector('.v30171-brand');
+      const img=brand?.querySelector('.v30171-brand-mark img');
+      const title=brand?.querySelector('.v30171-brand-title');
+      const sub=brand?.querySelector('.v30171-brand-sub');
+      return !!(brand&&img&&title&&sub&&img.getAttribute('src'));
+    },null,{timeout:10000});
+  }catch(error){
+    const diagnostic=await page.evaluate(()=>({
+      sidebar:document.querySelector('#v30171Sidebar')?.innerHTML||'',
+      hasApi:typeof window.LeftNavV30171?.renderNav==='function',
+      activeTab:window.state?.activeTab||'',
+      renderAllType:typeof window.renderAll,
+      brand:!!document.querySelector('#v30171Sidebar .v30171-brand'),
+      mark:!!document.querySelector('#v30171Sidebar .v30171-brand-mark'),
+      image:!!document.querySelector('#v30171Sidebar .v30171-brand-mark img'),
+      title:!!document.querySelector('#v30171Sidebar .v30171-brand-title'),
+      sub:!!document.querySelector('#v30171Sidebar .v30171-brand-sub')
+    }));
+    throw new Error('Sidebar brand lockup did not recover after renderAll: '+JSON.stringify(diagnostic));
+  }
   await page.waitForTimeout(250);
 
   const logo=await page.evaluate(()=>{
