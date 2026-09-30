@@ -28747,7 +28747,9 @@ const SETTINGS=[
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function saveNow(){try{if(typeof save==='function')save()}catch(_){} }
 function navButton(id,ico,label,extra){return '<button type="button" class="tab-btn v30171-nav-btn '+(extra||'')+'" data-tab="'+id+'"><span class="v30171-nav-ico">'+ico+'</span><span class="v30171-nav-label">'+esc(tr(label))+'</span></button>'}
-function normalizedNavTab(){let a=String(state?.activeTab||'dashboard');if(a==='goals'){a='contracts';try{state.activeTab='contracts'}catch(_){}}if(a==='inbox'||a==='pending'){a='dashboard';try{state.activeTab='dashboard'}catch(_){}}if(a==='export'){a='settings';try{state.activeTab='settings'}catch(_){}}return a}
+const LEGACY_ROUTE_MAP={goals:'contracts',inbox:'dashboard',pending:'dashboard','daily-shutdown':'dashboard',export:'settings',shop:'achievements',inventory:'achievements'};
+function canonicalRoute(id){id=String(id||'');return LEGACY_ROUTE_MAP[id]||id}
+function normalizedNavTab(){let a=canonicalRoute(state?.activeTab||'dashboard');try{if(String(state?.activeTab||'')!==a)state.activeTab=a}catch(_){}return a}
 function syncNavState(wrap,a=normalizedNavTab()){
  const statsActive=['stats','compare','weekly-review'].includes(a);
  wrap.querySelectorAll('.v30171-nav-btn').forEach(b=>{const id=b.dataset.tab||'';let on=id===a;if(b.dataset.v3093Open)on=a===b.dataset.v3093Open;if(b.dataset.v30171Day==='today')on=a==='dashboard';b.classList.toggle('active',on);b.classList.toggle('v30171-parent-active',(id==='dashboard'&&a==='dashboard')||(id==='stats'&&statsActive)||(id==='settings'&&a==='settings'));b.setAttribute('aria-current',on?'page':'false')});
@@ -28801,6 +28803,7 @@ function route(id){
  id=String(id||'');
  if(!id)return;
  if(id==='today')id='dashboard';
+ id=canonicalRoute(id);
  if((id==='settings'||id==='story')&&typeof window.ModernNavV30168?.route==='function'){
    try{
      const out=window.ModernNavV30168.route(id);
