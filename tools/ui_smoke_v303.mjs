@@ -22,6 +22,7 @@ try{
       if(window.state)window.state.activeTab='dashboard';
       window.save?.();
       window.renderAll?.();
+      window.LeftNavV30171?.renderNav?.();
     }catch(_){}
   });
   try{
