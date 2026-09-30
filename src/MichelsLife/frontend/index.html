@@ -5497,6 +5497,7 @@ textarea::placeholder{
 
 <script id="v163-settings-buttons-real-actions-script">
 (function(){
+  function tr(v){try{return window.MichelsLifeI18n?.mapText?.(String(v))||String(v)}catch(_){return String(v)}}
   function safeToast(title,msg){
     try{
       if(typeof toast === 'function') toast(title,msg||'');
@@ -5660,7 +5661,7 @@ textarea::placeholder{
       ev.preventDefault();
       ev.stopImmediatePropagation();
       saveAllSettings();
-      safeToast('Settings saved','Settings and window palette applied.');
+      safeToast(tr('Settings saved'),tr('Settings and window palette applied.'));
       try{if(typeof renderAll==='function') renderAll()}catch(e){}
       return;
     }
@@ -5689,10 +5690,10 @@ textarea::placeholder{
 
   // Make the labels match their real behavior.
   function relabelButtons(){
-    document.querySelectorAll('[data-action="export-json"],[data-action="export-backup"]').forEach(b=>b.textContent='Export backup');
-    document.querySelectorAll('[data-action="import-json"],[data-action="import-backup"]').forEach(b=>b.textContent='Import backup');
-    document.querySelectorAll('[data-action="save-settings"]').forEach(b=>b.textContent='Save settings');
-    document.querySelectorAll('[data-action="reset-app"]').forEach(b=>b.textContent='Reset app');
+    document.querySelectorAll('[data-action="export-json"],[data-action="export-backup"]').forEach(b=>b.textContent=tr('Export backup'));
+    document.querySelectorAll('[data-action="import-json"],[data-action="import-backup"]').forEach(b=>b.textContent=tr('Import backup'));
+    document.querySelectorAll('[data-action="save-settings"]').forEach(b=>b.textContent=tr('Save settings'));
+    document.querySelectorAll('[data-action="reset-app"]').forEach(b=>b.textContent=tr('Reset app'));
   }
 
   const oldRenderAll=window.renderAll;
@@ -15209,7 +15210,7 @@ body.ml-theme-ui .v309-search-muted{
     const inputId=isTask?'v213DashboardTaskSearch':'v213DashboardContractSearch';
     const countId=isTask?'v213DashboardTaskSearchCount':'v213DashboardContractSearchCount';
     const clear=isTask?'v213-clear-task-search':'v213-clear-contract-search';
-    const label=isTask?'Search tasks / missions':'Search Premium Contracts';
+    const label=isTask?tx('Search tasks / missions','Buscar tareas / misiones'):tx('Search Premium Contracts','Buscar Contratos Premium');
     const placeholder=isTask?tx('Task name, category, note...','Nombre de tarea, categoría, nota...'):tx('Contract name, linked task, category...','Nombre de contrato, tarea vinculada, categoría...');
     const s=settings();
     const value=isTask ? (s.v213DashboardTaskSearch||s.v212DashboardTaskSearch||'') : (s.v213DashboardContractSearch||s.v212DashboardContractSearch||'');
@@ -15223,11 +15224,11 @@ body.ml-theme-ui .v309-search-muted{
       panel.innerHTML=`
         <div class="v213-inline-search-title">
           <b>${label}</b>
-          <span id="${countId}">Matches move up</span>
+          <span id="${countId}">${tx('Matches move up','Las coincidencias suben')}</span>
         </div>
         <div class="v213-search-row">
           <input id="${inputId}" placeholder="${placeholder}" value="${esc(value)}">
-          <button class="btn ghost" data-action="${clear}">Clear</button>
+          <button class="btn ghost" data-action="${clear}">${tx('Clear','Limpiar')}</button>
         </div>`;
     }
     return panel;
@@ -15330,7 +15331,7 @@ body.ml-theme-ui .v309-search-muted{
     cards.sort((a,b)=>Number(b.card.classList.contains('v309-search-hit'))-Number(a.card.classList.contains('v309-search-hit'))||a.i-b.i);
     cards.forEach(x=>list.appendChild(x.card));
 
-    if(count) count.textContent=`${matches} match${matches===1?'':'es'} moved to top`;
+    if(count) count.textContent=matches===1?tx('1 match moved to top','1 coincidencia movida arriba'):tx(`${matches} matches moved to top`,`${matches} coincidencias movidas arriba`);
   }
 
   function applySearches(){
