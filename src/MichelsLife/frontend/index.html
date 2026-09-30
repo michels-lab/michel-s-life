@@ -26286,7 +26286,7 @@ function row(m,k,kind){
   const done=!!completionOn(m,k),stage=stageOf(m),stageLabel=calText(stage[0].toUpperCase()+stage.slice(1)),meta=[catName(m),stageLabel,Number(m.xp||0)+' XP'].join(' · ');
   let actions='';
   if(kind==='future'&&isCalendarOneOff(m))actions='<button class="btn ghost" type="button" '+CAL+'="unschedule" data-id="'+esc(m.id)+'">'+esc(calText('Remove'))+'</button>';
-  return '<div class="v30134-row"><div class="v30134-row-main"><b>'+esc(m.name)+'</b><small>'+esc(meta)+(done?' · '+esc(calText('Completed')):'')+'</small></div><div class="v30134-row-actions">'+actions+'</div></div>';
+  return '<div class="v30134-row"><div class="v30134-row-main"><b>'+esc(window.mlvMissionName?window.mlvMissionName(m):m.name)+'</b><small>'+esc(meta)+(done?' · '+esc(calText('Completed')):'')+'</small></div><div class="v30134-row-actions">'+actions+'</div></div>';
 }
 function list(title,items,k,kind,empty){return '<div class="v30134-section"><h3>'+esc(calText(title))+' <span class="v30134-count">'+items.length+'</span></h3><div class="v30134-list">'+(items.length?items.map(m=>row(m,k,kind)).join(''):'<div class="v30134-empty">'+esc(calText(empty||'Nothing here.'))+'</div>')+'</div></div>'}
 function detail(k){
@@ -26379,7 +26379,7 @@ function route(e){if(e.target&&e.target.closest&&e.target.closest('[data-mlv184-
   else if(a==='schedule'){openSchedule(b.dataset.date)}
   else if(a==='dashboard'){state.activeTab='dashboard';redraw()}
   else if(a==='close-modal'){const r=document.getElementById('modalRoot');if(r)r.innerHTML=''}
-  else if(a==='unschedule'){const m=mission(b.dataset.id);if(m&&confirm(((window.MichelsLifeI18n?.language||document.documentElement.lang)==='es'?'¿Quitar “'+m.name+'” de esta fecha?':'Remove “'+m.name+'” from this date?'))){state.missions=state.missions.filter(x=>String(x.id)!==String(m.id));saveNow();redraw()}}
+  else if(a==='unschedule'){const m=mission(b.dataset.id);if(m&&confirm(((window.MichelsLifeI18n?.language||document.documentElement.lang)==='es'?'¿Quitar “'+(window.mlvMissionName?window.mlvMissionName(m):m.name)+'” de esta fecha?':'Remove “'+(window.mlvMissionName?window.mlvMissionName(m):m.name)+'” from this date?'))){state.missions=state.missions.filter(x=>String(x.id)!==String(m.id));saveNow();redraw()}}
 }
 window.addEventListener('click',route,true);
 document.addEventListener('submit',e=>{const f=e.target;if(!(f&&f.id==='v30134ScheduleForm'))return;e.preventDefault();e.stopPropagation();createScheduled(f)},true);
@@ -26513,7 +26513,7 @@ function row(m,k,kind){
   const done=!!completionOn(m,k),stage=stageOf(m),meta=[tr(catName(m)),tr(stage[0].toUpperCase()+stage.slice(1)),Number(m.xp||0)+' XP'].join(' · ');
   let actions='';
   if(kind==='future'&&isCalendarOneOff(m))actions='<button class="btn ghost" type="button" '+CAL+'="unschedule" data-id="'+esc(m.id)+'">'+esc(tr('Remove'))+'</button>';
-  return '<div class="v30134-row"><div class="v30134-row-main"><b>'+esc(m.name)+'</b><small>'+esc(meta)+(done?' · '+esc(tr('Completed')):'')+'</small></div><div class="v30134-row-actions">'+actions+'</div></div>';
+  return '<div class="v30134-row"><div class="v30134-row-main"><b>'+esc(window.mlvMissionName?window.mlvMissionName(m):m.name)+'</b><small>'+esc(meta)+(done?' · '+esc(tr('Completed')):'')+'</small></div><div class="v30134-row-actions">'+actions+'</div></div>';
 }
 function list(title,items,k,kind,empty){return '<div class="v30134-section"><h3>'+esc(tr(title))+' <span class="v30134-count">'+items.length+'</span></h3><div class="v30134-list">'+(items.length?items.map(m=>row(m,k,kind)).join(''):'<div class="v30134-empty">'+esc(tr(empty||'Nothing here.'))+'</div>')+'</div></div>'}
 function detail(k){
@@ -26557,7 +26557,7 @@ function applyPersistentGlass(){const r=document.getElementById('cm131CurrentDoc
 window.renderTabs=function(){const wrap=document.getElementById('tabs');if(!wrap)return;if(state.activeTab==='goals')state.activeTab='contracts';if(state.activeTab==='inbox')state.activeTab='dashboard';const primary=[['dashboard','Dashboard'],['calendar','Calendar'],['missions','Missions'],['contracts','Premium Contracts'],['achievements','Achievements'],['stats','Stats'],['weekly-review','Weekly Review'],['projects','Projects'],['story','Story'],['settings','Settings']];const more=[['affirmations','Affirmations'],['compare','Compare'],['export','AI Export']];const main=primary.map(([id,name])=>'<button type="button" class="tab-btn '+(state.activeTab===id?'active':'')+'" data-tab="'+id+'">'+esc(tr(name))+'</button>').join('');const activeMore=more.some(([id])=>id===state.activeTab);wrap.innerHTML=main+'<select id="v131More" class="v131-more '+(activeMore?'active':'')+'"><option value="">'+esc(tr('More'))+'</option>'+more.map(([id,name])=>'<option value="'+id+'" '+(state.activeTab===id?'selected':'')+'>'+esc(tr(name))+'</option>').join('')+'</select>'}
 window.renderCalendar=renderCalendar135;try{renderCalendar=renderCalendar135}catch(e){};
 const oldAll=window.renderAll;if(typeof oldAll==='function'&&!oldAll.__v30135){const wrapped=function(){const out=oldAll.apply(this,arguments);try{window.renderTabs()}catch(e){};setTimeout(applyPersistentGlass,0);setTimeout(applyPersistentGlass,180);return out};wrapped.__v30135=true;window.renderAll=wrapped;try{renderAll=wrapped}catch(e){}}
-window.addEventListener('click',function(e){if(e.target&&e.target.closest&&e.target.closest('[data-mlv184-journal-open]'))return;const b=e.target&&e.target.closest&&e.target.closest('['+CAL+']');if(!b)return;const a=b.getAttribute(CAL),s=S();if(!a)return;e.preventDefault();e.stopPropagation();const mk=s.v30135CalendarMonth||monthKey(today());if(a==='prev'){s.v30135CalendarMonth=shiftMonth(mk,-1);s.v30135CalendarSelected=monthStart(s.v30135CalendarMonth);redraw()}else if(a==='next'){s.v30135CalendarMonth=shiftMonth(mk,1);s.v30135CalendarSelected=monthStart(s.v30135CalendarMonth);redraw()}else if(a==='today'){s.v30135CalendarMonth=monthKey(today());s.v30135CalendarSelected=today();redraw()}else if(a==='view'){s.v30135CalendarView=b.dataset.view||'month';redraw()}else if(a==='select-day'){s.v30135CalendarSelected=b.dataset.date;saveNow();redraw()}else if(a==='dashboard'){state.activeTab='dashboard';redraw()}else if(a==='new'){openOneOffEditor(b.dataset.date||s.v30135CalendarSelected||today(),null)}else if(a==='edit'){openEdit(mission(b.dataset.id),b.dataset.date)}else if(a==='complete'){completeOn(mission(b.dataset.id),b.dataset.date)}else if(a==='undo'){undoOn(mission(b.dataset.id),b.dataset.date)}else if(a==='delete'){const m=mission(b.dataset.id);if(m&&confirm(((window.MichelsLifeI18n?.language||document.documentElement.lang)==='es'?'¿Eliminar “'+m.name+'”?':'Delete “'+m.name+'”?'))){state.missions=state.missions.filter(x=>String(x.id)!==String(m.id));saveNow();redraw()}}else if(a==='close'){const r=document.getElementById('modalRoot');if(r)r.innerHTML=''}},true);
+window.addEventListener('click',function(e){if(e.target&&e.target.closest&&e.target.closest('[data-mlv184-journal-open]'))return;const b=e.target&&e.target.closest&&e.target.closest('['+CAL+']');if(!b)return;const a=b.getAttribute(CAL),s=S();if(!a)return;e.preventDefault();e.stopPropagation();const mk=s.v30135CalendarMonth||monthKey(today());if(a==='prev'){s.v30135CalendarMonth=shiftMonth(mk,-1);s.v30135CalendarSelected=monthStart(s.v30135CalendarMonth);redraw()}else if(a==='next'){s.v30135CalendarMonth=shiftMonth(mk,1);s.v30135CalendarSelected=monthStart(s.v30135CalendarMonth);redraw()}else if(a==='today'){s.v30135CalendarMonth=monthKey(today());s.v30135CalendarSelected=today();redraw()}else if(a==='view'){s.v30135CalendarView=b.dataset.view||'month';redraw()}else if(a==='select-day'){s.v30135CalendarSelected=b.dataset.date;saveNow();redraw()}else if(a==='dashboard'){state.activeTab='dashboard';redraw()}else if(a==='new'){openOneOffEditor(b.dataset.date||s.v30135CalendarSelected||today(),null)}else if(a==='edit'){openEdit(mission(b.dataset.id),b.dataset.date)}else if(a==='complete'){completeOn(mission(b.dataset.id),b.dataset.date)}else if(a==='undo'){undoOn(mission(b.dataset.id),b.dataset.date)}else if(a==='delete'){const m=mission(b.dataset.id);if(m&&confirm(((window.MichelsLifeI18n?.language||document.documentElement.lang)==='es'?'¿Eliminar “'+(window.mlvMissionName?window.mlvMissionName(m):m.name)+'”?':'Delete “'+(window.mlvMissionName?window.mlvMissionName(m):m.name)+'”?'))){state.missions=state.missions.filter(x=>String(x.id)!==String(m.id));saveNow();redraw()}}else if(a==='close'){const r=document.getElementById('modalRoot');if(r)r.innerHTML=''}},true);
 document.addEventListener('submit',function(e){const f=e.target;if(!(f&&f.id==='v30135OneOffForm'))return;e.preventDefault();e.stopPropagation();makeOneOff(f)},true);
 window.CalendarV30135={render:renderCalendar135,dayData,openOneOffEditor,applyPersistentGlass};
 window.__MICHELS_LIFE_BUILD__=VERSION;
@@ -26734,21 +26734,21 @@ function reorderStageDrop(e,info){
   const targetCard=e.target.closest('[data-v30137-mission]');let targetId=targetCard&&String(targetCard.dataset.v30137Mission||idFromCard(targetCard));if(targetId===drag.id)targetId='';
   let before=true;if(targetCard&&targetId){const r=targetCard.getBoundingClientRect();before=e.clientY<r.top+r.height/2}
   setStage(m,info.stage);insertOrder(m.id,info.stage,targetId,before);saveNow();
-  toastSafe(tr('Mission moved'),m.name+' → '+tr(info.stage[0].toUpperCase()+info.stage.slice(1)));redraw();
+  toastSafe(tr('Mission moved'),(window.mlvMissionName?window.mlvMissionName(m):m.name)+' → '+tr(info.stage[0].toUpperCase()+info.stage.slice(1)));redraw();
 }
 function convertOneOffDate(m,dest,stage){
-  const day=parse(dest).getDay();m.type='oneoff';m.originalType='oneoff';m.oneTime=true;m.v30134CalendarOneOff=true;m.v30135CalendarOneOff=true;m.scheduledDate=dest;m.date=dest;m.due=dest;m.deadline=dest;m.days=[day];if(stage)setStage(m,stage);saveNow();toastSafe(tr('Scheduled task moved'),m.name+' → '+dest);redraw();
+  const day=parse(dest).getDay();m.type='oneoff';m.originalType='oneoff';m.oneTime=true;m.v30134CalendarOneOff=true;m.v30135CalendarOneOff=true;m.scheduledDate=dest;m.date=dest;m.due=dest;m.deadline=dest;m.days=[day];if(stage)setStage(m,stage);saveNow();toastSafe(tr('Scheduled task moved'),(window.mlvMissionName?window.mlvMissionName(m):m.name)+' → '+dest);redraw();
 }
 function createOccurrenceClone(m,dest,stage){const day=parse(dest).getDay();let c=null;try{if(typeof makeMission==='function')c=makeMission(m.name,m.category,'oneoff',m.difficulty,[day],{description:m.description||m.desc||'',deadline:dest,xp:Number(m.xp||0)})}catch(_){}if(!c)c={id:'m_occ_'+Date.now()+'_'+Math.random().toString(36).slice(2),name:m.name,category:m.category,type:'oneoff',difficulty:m.difficulty,xp:Number(m.xp||0),coins:0,days:[day],deadline:dest,createdAt:new Date().toISOString(),completions:[]};if(!(state.missions||[]).some(x=>x===c||String(x.id)===String(c.id)))state.missions.unshift(c);c.originalType='oneoff';c.oneTime=true;c.v30134CalendarOneOff=true;c.v30135CalendarOneOff=true;c.v30137OccurrenceOf=String(m.id);c.scheduledDate=dest;c.date=dest;c.due=dest;c.deadline=dest;c.days=[day];setStage(c,stage||stageOf(m));c.autoArchiveAfterComplete=false;c.noSuggest=false;c.archived=false;c.hidden=false;return c}
 function moveOccurrenceOnly(m,source,dest,stage){
   if(source){m.v131SkipDates=[...new Set([...(m.v131SkipDates||[]).map(String),String(source)])]}
-  const c=createOccurrenceClone(m,dest,stage);saveNow();toastSafe(tr(source?'Occurrence moved':'Occurrence added'),c.name+' → '+dest);closeModal();redraw();
+  const c=createOccurrenceClone(m,dest,stage);saveNow();toastSafe(tr(source?'Occurrence moved':'Occurrence added'),(window.mlvMissionName?window.mlvMissionName(c):c.name)+' → '+dest);closeModal();redraw();
 }
 function changeRecurringSchedule(m,source,dest,stage){
   const destDay=parse(dest).getDay(),days=Array.isArray(m.days)?m.days.map(Number):[];
   if(source){const srcDay=parse(source).getDay();const next=days.map(d=>d===srcDay?destDay:d);m.days=[...new Set(next.length?next:[destDay])].sort((a,b)=>a-b)}
   else if(!days.includes(destDay)){m.days=[...days,destDay].sort((a,b)=>a-b)}
-  if(stage)setStage(m,stage);saveNow();toastSafe(tr('Recurring schedule changed'),m.name);closeModal();redraw();
+  if(stage)setStage(m,stage);saveNow();toastSafe(tr('Recurring schedule changed'),window.mlvMissionName?window.mlvMissionName(m):m.name);closeModal();redraw();
 }
 function closeModal(){const r=document.getElementById('modalRoot');if(r)r.innerHTML=''}
 function recurringDialog(m,source,dest,stage){
@@ -26759,7 +26759,7 @@ function recurringDialog(m,source,dest,stage){
   const firstText=source
     ?(es?'Oculta la ocurrencia del '+source+' y crea una copia única el '+dest+'. El patrón recurrente no cambia.':'Hide the occurrence on '+source+' and create a one-off copy on '+dest+'. The recurring pattern stays unchanged.')
     :(es?'Crea una copia única el '+dest+' sin cambiar el patrón recurrente.':'Create a one-off copy on '+dest+' without changing the recurring pattern.');
-  const intro=es?'Soltaste <b>'+esc(m.name)+'</b> en '+esc(dest)+'. Elige qué debe cambiar.':'You dropped <b>'+esc(m.name)+'</b> on '+esc(dest)+'. Choose what should change.';
+  const intro=es?'Soltaste <b>'+esc(window.mlvMissionName?window.mlvMissionName(m):m.name)+'</b> en '+esc(dest)+'. Elige qué debe cambiar.':'You dropped <b>'+esc(window.mlvMissionName?window.mlvMissionName(m):m.name)+'</b> on '+esc(dest)+'. Choose what should change.';
   const scheduleText=es
     ?'Cambia el día de la semana para todas las ocurrencias futuras'+(stage?' y usa '+tr(stage[0].toUpperCase()+stage.slice(1))+' como momento del día':'')+'.'
     :'Change the weekday for every future occurrence'+(stage?' and use '+stage+' as its time of day':'')+'.';
@@ -27777,13 +27777,13 @@ function chapterEvents(ch){
   events.push({date:start,type:'chapter',title:'Chapter began',detail:ch.name});
   (ch.moments||[]).forEach(m=>{if(inRange(m.date,start,end))events.push({date:m.date,type:'moment',title:m.title,detail:m.detail||'Personal milestone',momentId:m.id})});
   (state.history||[]).forEach(h=>{const k=String(h.date||h.at||'').slice(0,10);if(!inRange(k,start,end))return;if(h.type==='achievement')events.push({date:k,type:'achievement',title:'Achievement unlocked',detail:String(h.description||'').replace(/^Logro desbloqueado:\s*/i,'')});else if(String(h.type||'').includes('project')&&h.type!=='story_chapter_start')events.push({date:k,type:'project',title:'Project event',detail:h.description||'Project progress'})});
-  (state.missions||[]).filter(m=>m.boss).forEach(m=>(m.completions||[]).forEach(c=>{const k=completionDate(c);if(inRange(k,start,end))events.push({date:k,type:'boss',title:'Boss defeated',detail:m.name})}));
+  (state.missions||[]).filter(m=>m.boss).forEach(m=>(m.completions||[]).forEach(c=>{const k=completionDate(c);if(inRange(k,start,end))events.push({date:k,type:'boss',title:'Boss defeated',detail:(window.mlvMissionName?window.mlvMissionName(m):m.name)})}));
   focusSessions().filter(f=>f.status==='completed'&&Number(f.elapsedMs||0)>=10*60000&&inRange(f.date||f.endedAt,start,end)).forEach(f=>events.push({date:String(f.date||f.endedAt).slice(0,10),type:'focus',title:'Focus block · '+fmtDuration(f.elapsedMs),detail:f.missionName||'Unassigned Focus'}));
   if(ch.status==='closed'&&ch.endDate)events.push({date:ch.endDate,type:'chapter',title:'Chapter completed',detail:ch.name});
   const rank={moment:0,chapter:1,achievement:2,boss:3,project:4,focus:5};
   return events.sort((a,b)=>String(b.date).localeCompare(String(a.date))||(rank[a.type]||9)-(rank[b.type]||9)).slice(0,40);
 }
-function recentCompletions(ch){const s=statsFor(ch),rows=[];(state.missions||[]).forEach(m=>(m.completions||[]).forEach(c=>{const k=completionDate(c);if(inRange(k,s.start,s.end))rows.push({date:k,name:m.name,xp:Number(c.xp!=null?c.xp:m.xp||0),boss:!!m.boss})}));return rows.sort((a,b)=>b.date.localeCompare(a.date)).slice(0,12)}
+function recentCompletions(ch){const s=statsFor(ch),rows=[];(state.missions||[]).forEach(m=>(m.completions||[]).forEach(c=>{const k=completionDate(c);if(inRange(k,s.start,s.end))rows.push({date:k,name:(window.mlvMissionName?window.mlvMissionName(m):m.name),xp:Number(c.xp!=null?c.xp:m.xp||0),boss:!!m.boss})}));return rows.sort((a,b)=>b.date.localeCompare(a.date)).slice(0,12)}
 
 function renderChapterForm(){
   return `<section class="v30162-story-card"><h3>${esc(tr('Start a new chapter'))}</h3><form class="v30162-story-form" id="v30162ChapterForm"><label>${esc(tr('Chapter name'))}<input name="name" required maxlength="80" placeholder="${esc(tr("Master's Final Arc"))}"></label><label>${esc(tr('Motto / subtitle'))}<input name="motto" maxlength="140" placeholder="${esc(tr('Finish the degree. Build the next version.'))}"></label><label>${esc(tr('Start date'))}<input name="start" type="date" value="${today()}"></label><button class="btn primary" type="submit">${esc(tr('Start chapter'))}</button></form></section>`;
