@@ -6,6 +6,8 @@ const KEY='michelsLife.language.v1';
 const INSTALL_DEFAULT_KEY='michelsLife.language.installDefault.v1';
 const USER_OVERRIDE_BASE_KEY='michelsLife.language.userOverrideBase.v1';
 const PAIRS={
+  "No item shop. This is a long-term badge system based on consistency and weekly goal completion.":"No hay tienda de objetos. Este es un sistema de insignias a largo plazo basado en la constancia y en completar metas semanales.",
+  "Unlocked achievements only.":"Sólo logros desbloqueados.",
   "Achievements":"Logros",
   "Add decision":"Agregar decisión",
   "Affirmations":"Afirmaciones",
