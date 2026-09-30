@@ -3904,12 +3904,13 @@ aside#side{
   }
   function phase(){
     const h=new Date().getHours();
-    if(h<8) return {id:'dawn',label:'Dawn',emoji:'🌅',greeting:'Good morning',quote:'Start before the day gets loud.',sub:'Build early advantage while everything is quiet.'};
-    if(h<12) return {id:'morning',label:'Morning',emoji:'☀️',greeting:'Good morning',quote:'Win the morning with one real action.',sub:'Pick the highest-XP mission and create momentum.'};
-    if(h<15) return {id:'noon',label:'Noon',emoji:'🔆',greeting:'Good noon',quote:'Recover progress before the day drifts.',sub:'One focused action is enough to change today.'};
-    if(h<19) return {id:'afternoon',label:'Afternoon',emoji:'🌇',greeting:'Good afternoon',quote:'Second window. One strong action still changes the day.',sub:'Do not call the day lost while there is still leverage.'};
-    if(h<23) return {id:'night',label:'Night',emoji:'🌙',greeting:'Good evening',quote:'Close clean. Reduce tomorrow’s noise.',sub:'Complete one useful mission and leave evidence.'};
-    return {id:'late',label:'Late night',emoji:'🌌',greeting:'Late night',quote:'Low stimulation. Small useful action.',sub:'Close with intention, not chaos.'};
+    const tx=(en,es)=>window.mlvText?window.mlvText(en,es):en;
+    if(h<8) return {id:"dawn",label:tx("Dawn","Amanecer"),emoji:"🌅",greeting:tx("Good morning","Buenos días"),quote:tx("Start before the day gets loud.","Empieza antes de que el día se vuelva ruidoso."),sub:tx("Build early advantage while everything is quiet.","Construye ventaja temprano mientras todo está en calma.")};
+    if(h<12) return {id:"morning",label:tx("Morning","Mañana"),emoji:"☀️",greeting:tx("Good morning","Buenos días"),quote:tx("Win the morning with one real action.","Gana la mañana con una acción real."),sub:tx("Pick the highest-XP mission and create momentum.","Elige la misión con más XP y crea impulso.")};
+    if(h<15) return {id:"noon",label:tx("Noon","Mediodía"),emoji:"🔆",greeting:tx("Good noon","Buenas tardes"),quote:tx("Recover progress before the day drifts.","Recupera progreso antes de que el día se desvíe."),sub:tx("One focused action is enough to change today.","Una acción enfocada basta para cambiar el día.")};
+    if(h<19) return {id:"afternoon",label:tx("Afternoon","Tarde"),emoji:"🌇",greeting:tx("Good afternoon","Buenas tardes"),quote:tx("Second window. One strong action still changes the day.","Segunda ventana. Una acción fuerte todavía cambia el día."),sub:tx("Do not call the day lost while there is still leverage.","No des el día por perdido mientras todavía haya margen.")};
+    if(h<23) return {id:"night",label:tx("Night","Noche"),emoji:"🌙",greeting:tx("Good evening","Buenas noches"),quote:tx("Close clean. Reduce tomorrow’s noise.","Cierra limpio. Reduce el ruido de mañana."),sub:tx("Complete one useful mission and leave evidence.","Completa una misión útil y deja evidencia.")};
+    return {id:"late",label:tx("Late night","Noche tardía"),emoji:"🌌",greeting:tx("Late night","Noche tardía"),quote:tx("Low stimulation. Small useful action.","Baja estimulación. Una acción pequeña y útil."),sub:tx("Close with intention, not chaos.","Cierra con intención, no con caos.")};
   }
   function preserveStageClasses(){
     const p=phase();
@@ -3935,12 +3936,15 @@ aside#side{
     return {goals,missions,doneMissions,week,reset};
   }
   function renderStableStatus(){
-    const el=document.getElementById('fixedStatusBar');
+    const el=document.getElementById("fixedStatusBar");
     if(!el) return;
+    const tx=(en,es)=>window.mlvText?window.mlvText(en,es):en;
     const p=preserveStageClasses();
     const s=stats();
-    const date=new Date().toLocaleDateString('en-US',{weekday:'short',day:'numeric',month:'short'});
-    el.innerHTML=`<div class="status-block"><div class="status-time">${stableTime()}</div><div class="status-greeting">${p.emoji} ${p.greeting}, Michel · ${date} · ${p.sub}</div></div><div class="status-metrics"><div class="status-chip"><small>Today’s goals</small><b>${s.goals.done}/${s.goals.total}</b></div><div class="status-chip"><small>Today’s missions</small><b>${s.doneMissions}/${s.missions.length}</b></div><div class="status-chip"><small>Week</small><b>${s.week.pct||0}%</b></div><div class="status-chip"><small>Goal reset</small><b>${s.reset} d</b></div></div><div class="status-stage"><b>${p.quote}</b><span>${p.label} · ${p.sub}</span></div>`;
+    const isEs=(window.mlvLanguage?.()||window.MichelsLifeI18n?.language||document.documentElement.lang)==="es";
+    const date=new Date().toLocaleDateString(isEs?"es-MX":"en-US",{weekday:"short",day:"numeric",month:"short"});
+    el.dataset.mlvI18nOwned="source";
+    el.innerHTML=`<div class="status-block"><div class="status-time">${stableTime()}</div><div class="status-greeting">${p.emoji} ${p.greeting}, Michel · ${date} · ${p.sub}</div></div><div class="status-metrics"><div class="status-chip"><small>${tx("Today’s goals","Metas de hoy")}</small><b>${s.goals.done}/${s.goals.total}</b></div><div class="status-chip"><small>${tx("Today’s missions","Misiones de hoy")}</small><b>${s.doneMissions}/${s.missions.length}</b></div><div class="status-chip"><small>${tx("Week","Semana")}</small><b>${s.week.pct||0}%</b></div><div class="status-chip"><small>${tx("Goal reset","Reinicio de metas")}</small><b>${s.reset} d</b></div></div><div class="status-stage"><b>${p.quote}</b><span>${p.label} · ${p.sub}</span></div>`;
   }
 
   // Root cause fix: older intervals call applyStage() and old strip renderers.
@@ -3963,6 +3967,7 @@ aside#side{
     /* v3.0.113: hidden legacy status rebuild loop retired */
   }
   document.addEventListener('DOMContentLoaded',()=>setTimeout(renderStableStatus,50));
+  window.addEventListener('michelslife:languagechange',renderStableStatus);
   try{renderStableStatus()}catch(e){console.error('v15.1 status glitch fix error',e)}
 })();
 </script>
