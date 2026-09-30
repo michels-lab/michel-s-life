@@ -5,6 +5,11 @@ function ok(v,m){if(!v)throw new Error(m)}
 
 const browser=await chromium.launch({headless:true});
 const page=await browser.newPage({viewport:{width:1600,height:1000},deviceScaleFactor:1});
+const browserDiagnostics=[];
+page.on('console',msg=>{
+  if(['warning','error'].includes(msg.type()))browserDiagnostics.push({type:msg.type(),text:msg.text()});
+});
+page.on('pageerror',err=>browserDiagnostics.push({type:'pageerror',text:String(err&&err.stack||err)}));
 
 await page.addInitScript(()=>{
   try{
@@ -118,9 +123,12 @@ try{
   const findings=new Map();
   const routes=['dashboard','missions','contracts','calendar','journal','stats','compare','weekly-review','projects','achievements','affirmations','story','settings'];
   for(const route of routes){
+    const beforeDiagCount=browserDiagnostics.length;
     await page.evaluate(r=>window.LeftNavV30171.route(r),route);
     await page.waitForTimeout(260);
     await page.evaluate(()=>window.MichelsLifeI18n.refresh());
+    const routeDiagnostics=browserDiagnostics.slice(beforeDiagCount);
+    if(routeDiagnostics.length)console.log('ROUTE_DIAGNOSTICS '+route+' '+JSON.stringify(routeDiagnostics));
     const bad=await auditSurface(route);
     if(bad.length)findings.set(route,bad);
 
