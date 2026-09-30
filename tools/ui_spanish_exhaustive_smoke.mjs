@@ -46,11 +46,12 @@ async function auditSurface(label){
     const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
     while(walker.nextNode()){
       const n=walker.currentNode,p=n.parentElement;
-      if(!p||/^(SCRIPT|STYLE|CODE|PRE)$/i.test(p.tagName))continue;
+      if(!p||/^(SCRIPT|STYLE|CODE|PRE)$/i.test(p.tagName)||!visible(p))continue;
       const s=(n.nodeValue||'').replace(/\s+/g,' ').trim();
       if(s)strings.push({kind:'text',value:s,tag:p.tagName,cls:p.className||''});
     }
     for(const el of [...document.querySelectorAll('button,input,select,option,label,[role="button"],[title],[aria-label],[placeholder]')]){
+      if(!visible(el))continue;
       const vals=[
         ['control',(el.textContent||'').replace(/\s+/g,' ').trim()],
         ['placeholder',el.getAttribute('placeholder')||''],
