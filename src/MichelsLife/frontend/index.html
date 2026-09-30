@@ -28178,8 +28178,10 @@ console.info("Michel's Life build "+VERSION+' — Pomodoro + Story Chapters load
 if(window.ChapterHomeNavV30163)return;
 const VERSION='3.0.163';
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function tx(en,es){return window.mlvText?window.mlvText(en,es):en}
+function appLocale(){return (window.mlvLanguage&&window.mlvLanguage()==='es')?'es-MX':'en-US'}
 function roman(n){const m=[[1000,'M'],[900,'CM'],[500,'D'],[400,'CD'],[100,'C'],[90,'XC'],[50,'L'],[40,'XL'],[10,'X'],[9,'IX'],[5,'V'],[4,'IV'],[1,'I']];let o='';for(const [v,s] of m){while(n>=v){o+=s;n-=v}}return o||'I'}
-function niceDate(k){if(!k)return '';try{return new Date(String(k).slice(0,10)+'T12:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}catch(_){return String(k)}}
+function niceDate(k){if(!k)return '';try{return new Date(String(k).slice(0,10)+'T12:00:00').toLocaleDateString(appLocale(),{month:'short',day:'numeric',year:'numeric'})}catch(_){return String(k)}}
 function fmt(ms){let s=Math.max(0,Math.round(Number(ms||0)/1000)),h=Math.floor(s/3600);s%=3600;const m=Math.floor(s/60);if(h)return h+'h '+String(m).padStart(2,'0')+'m';return m?m+'m':Math.max(0,s)+'s'}
 function storyApi(){return window.FocusStoryV30162||null}
 function activeChapter(){try{return storyApi()?.activeChapter?.()||null}catch(_){return null}}
@@ -28204,30 +28206,34 @@ function pinTopTabs(){
 function renderChapterCard(){
   const panel=document.getElementById('v176StatusPanel');if(!panel)return false;
   const cards=panel.querySelectorAll(':scope > .v176-card');if(cards.length<2)return false;
-  const card=cards[1];card.classList.add('v30163-chapter-card','v30165-rpg-chapter-hero');
+  const card=cards[1];card.classList.add('v30163-chapter-card','v30165-rpg-chapter-hero');card.dataset.mlvI18nOwned='source';
+  const lang=(window.mlvLanguage&&window.mlvLanguage())||'en';
   const ch=activeChapter();
   if(!ch){
-    const markup='<div class="v30165-hero-empty"><div class="v30165-hero-eyebrow">◈ YOUR STORY</div><div class="v30165-hero-empty-title">NO ACTIVE CHAPTER</div><p>Name the era you are living and make it part of the run.</p><button type="button" class="btn primary" data-tab="story">Start Chapter I</button></div>';
-    if(card.dataset.v30165HeroSig!=='empty'){card.innerHTML=markup;card.dataset.v30165HeroSig='empty'}
+    const markup='<div class="v30165-hero-empty"><div class="v30165-hero-eyebrow">'+esc(tx('◈ YOUR STORY','◈ TU HISTORIA'))+'</div><div class="v30165-hero-empty-title">'+esc(tx('NO ACTIVE CHAPTER','SIN CAPÍTULO ACTIVO'))+'</div><p>'+esc(tx('Name the era you are living and make it part of the run.','Nombra la era que estás viviendo y hazla parte del recorrido.'))+'</p><button type="button" class="btn primary" data-tab="story">'+esc(tx('Start Chapter I','Iniciar Capítulo I'))+'</button></div>';
+    const sig='empty|'+lang;
+    if(card.dataset.v30165HeroSig!==sig){card.innerHTML=markup;card.dataset.v30165HeroSig=sig}
     return true;
   }
   const n=chapterNumber(ch),st=chapterStats(ch)||{},api=window.RPGSystemsV30165;
   let snap=null;try{snap=api&&api.homeSnapshot?api.homeSnapshot():null}catch(_){}
   const lvl=snap?.level||((typeof calcLevel==='function'?calcLevel(Number(state.xp||0)):null)?.level||1);
-  const xp=Number(state.xp||0).toLocaleString();
+  const xp=Number(state.xp||0).toLocaleString(appLocale());
   const boss=snap?.boss||null,focus=snap?.focusLabel||fmt(st.focusMs||0),tomatoes=Number(snap?.tomatoes||0);
   const todayDone=Number(snap?.todayDone||0),todayTotal=Number(snap?.todayTotal||0);
-  const bossHtml=boss?'<div class="v30165-hero-boss"><div><small>CURRENT BOSS</small><b>'+esc(boss.name)+'</b></div><div class="v30165-hero-boss-track"><i style="width:'+Math.max(0,Math.min(100,boss.pct||0))+'%"></i></div><strong>'+Number(boss.pct||0)+'%</strong></div>':'<div class="v30165-hero-boss no-boss"><div><small>CURRENT BOSS</small><b>No active boss battle</b></div><button type="button" data-v30165-action="open-projects">Choose in Projects</button></div>';
-  const sig=[ch.id,ch.name,ch.motto,st.days,lvl,xp,todayDone,todayTotal,focus,tomatoes,boss?.id||'',boss?.pct||0].join('|');
+  const bossHtml=boss
+    ?'<div class="v30165-hero-boss"><div><small>'+esc(tx('CURRENT BOSS','JEFE ACTUAL'))+'</small><b>'+esc(boss.name)+'</b></div><div class="v30165-hero-boss-track"><i style="width:'+Math.max(0,Math.min(100,boss.pct||0))+'%"></i></div><strong>'+Number(boss.pct||0)+'%</strong></div>'
+    :'<div class="v30165-hero-boss no-boss"><div><small>'+esc(tx('CURRENT BOSS','JEFE ACTUAL'))+'</small><b>'+esc(tx('No active boss battle','Sin batalla de jefe activa'))+'</b></div><button type="button" data-v30165-action="open-projects">'+esc(tx('Choose in Projects','Elegir en Proyectos'))+'</button></div>';
+  const sig=[lang,ch.id,ch.name,ch.motto,st.days,lvl,xp,todayDone,todayTotal,focus,tomatoes,boss?.id||'',boss?.pct||0].join('|');
   const markup='<div class="v30165-hero-aura"></div><div class="v30165-hero-content">'+
-    '<div class="v30165-hero-eyebrow">CURRENT CHAPTER</div>'+
+    '<div class="v30165-hero-eyebrow">'+esc(tx('CURRENT CHAPTER','CAPÍTULO ACTUAL'))+'</div>'+
     '<div class="v30165-hero-crest"><span>'+roman(n)+'</span></div>'+
-    '<div class="v30165-hero-chapter-label">CHAPTER '+roman(n)+'</div>'+
-    '<div class="v30165-hero-title">'+esc(ch.name||'Untitled Chapter')+'</div>'+
-    '<div class="v30165-hero-motto">'+esc(ch.motto||'An era in progress.')+'</div>'+
-    '<div class="v30165-hero-stats"><span><small>LEVEL</small><b>'+lvl+'</b></span><span><small>TOTAL XP</small><b>'+xp+'</b></span><span><small>TODAY</small><b>'+todayDone+'/'+todayTotal+'</b></span><span><small>FOCUS</small><b>'+esc(focus)+'</b></span><span><small>POMODOROS</small><b>🍅 '+tomatoes+'</b></span><span><small>DAY</small><b>'+Number(st.days||1)+'</b></span></div>'+
+    '<div class="v30165-hero-chapter-label">'+esc(tx('CHAPTER','CAPÍTULO'))+' '+roman(n)+'</div>'+
+    '<div class="v30165-hero-title">'+esc(ch.name||tx('Untitled Chapter','Capítulo sin título'))+'</div>'+
+    '<div class="v30165-hero-motto">'+esc(ch.motto||tx('An era in progress.','Una era en progreso.'))+'</div>'+
+    '<div class="v30165-hero-stats"><span><small>'+esc(tx('LEVEL','NIVEL'))+'</small><b>'+lvl+'</b></span><span><small>'+esc(tx('TOTAL XP','XP TOTAL'))+'</small><b>'+xp+'</b></span><span><small>'+esc(tx('TODAY','HOY'))+'</small><b>'+todayDone+'/'+todayTotal+'</b></span><span><small>'+esc(tx('FOCUS','ENFOQUE'))+'</small><b>'+esc(focus)+'</b></span><span><small>'+esc(tx('POMODOROS','POMODOROS'))+'</small><b>🍅 '+tomatoes+'</b></span><span><small>'+esc(tx('DAY','DÍA'))+'</small><b>'+Number(st.days||1)+'</b></span></div>'+
     bossHtml+
-    '<div class="v30165-hero-actions"><button type="button" class="primary" data-tab="story">Open Story</button><button type="button" data-v30165-action="life-build">Life Build</button><button type="button" data-v30165-action="open-projects">Bosses & Quest Chains</button></div>'+
+    '<div class="v30165-hero-actions"><button type="button" class="primary" data-tab="story">'+esc(tx('Open Story','Abrir Historia'))+'</button><button type="button" data-v30165-action="life-build">'+esc(tx('Life Build','Progreso de vida'))+'</button><button type="button" data-v30165-action="open-projects">'+esc(tx('Bosses & Quest Chains','Jefes y cadenas de misiones'))+'</button></div>'+
     '</div>';
   if(card.dataset.v30165HeroSig!==sig){card.innerHTML=markup;card.dataset.v30165HeroSig=sig}
   return true;
