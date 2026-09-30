@@ -29,7 +29,24 @@
 - The seasonal canvas remained the exact same DOM object and its frame counter advanced across Missions → Premium Contracts → Stats → Dashboard.
 - Measured next-paint tab-switch times on the GitHub runner: Missions **99 ms**, Premium Contracts **7.3 ms**, Stats **32.5 ms**, Dashboard **90.9 ms**.
 - Spanish → English → Spanish animation round-trip also remained continuous.
-- The fix is currently documented as **Unreleased** and has not replaced the published v3.0.214 binaries yet.
+- The fix was promoted to **v3.0.215** after the versioned validation run completed successfully.
+
+### Release publication
+- `f920d290` — **Release Michel's Life v3.0.215**.
+- Source validation #519 — **success**.
+- UI smoke #463 — **success**, including the Spanish tab-switch animation continuity test.
+- `d415063e` — temporary **Dispatch Michel's Life v3.0.215 release** workflow.
+- Dispatcher run #1 — **success**.
+- Windows release build #16 — **success**.
+- Public release `v3.0.215` published successfully to `realmichelduarte/michel-s-life-releases`.
+- Verified release assets:
+  - `AppBundle.zip`
+  - `MichelsLife-Setup-v3.0.215.exe`
+  - `MichelsLife-v3.0.215.exe`
+  - `MichelsLife-v3.0.215.exe.sha256`
+  - `michels_life_icon.ico`
+- Release is final, not a prerelease.
+- `69e41cf5` — removed the temporary v3.0.215 dispatcher after successful publication.
 
 ## 2026-09-30 — v3.0.214 visual-fidelity lock after restored baseline
 
