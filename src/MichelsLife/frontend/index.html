@@ -13837,6 +13837,8 @@ body.v255-render-lock #tab-missions{
   const DISMISS_KEY='michelsLifeMissedCarryDismissed.v264';
   const PALETTE_KEY='michelsLifePalette.v264';
 
+  function tx(en,es){try{return window.mlvText?window.mlvText(en,es):((window.MichelsLifeI18n?.language||document.documentElement.lang)==='es'?es:en)}catch(_){return en}}
+
   function norm(s){
     return String(s||'')
       .toLowerCase()
@@ -26506,6 +26508,7 @@ function mission(id){return (state.missions||[]).find(m=>String(m&&m.id)===Strin
 function completionOn(m,k){return (m&&m.completions||[]).find(c=>String(c&&((c.date)||(c.at))||'').slice(0,10)===k)||null}
 function isCalendarOneOff(m){return !!(m&&(m.v30134CalendarOneOff||m.v30135CalendarOneOff)&&m.scheduledDate)}
 function stageOf(m){const x=String(m&&(m.v30114DayStage||m.dayStage||m.timeOfDay)||'afternoon').toLowerCase();return ['morning','afternoon','night'].includes(x)?x:'afternoon'}
+function stages(missions){const set=new Set((missions||[]).map(stageOf));return ['morning','afternoon','night'].filter(x=>set.has(x)).map(x=>'<i class="v30134-dot '+x+'" title="'+esc(tr(x[0].toUpperCase()+x.slice(1)))+'"></i>').join('')}
 function catName(m){try{return (CATEGORIES&&CATEGORIES[m.category]&&CATEGORIES[m.category].name)||m.category||'Other'}catch(e){return m.category||'Other'}}
 function existed(m,k){return !m.createdAt||String(m.createdAt).slice(0,10)<=k}
 function dueIgnoringSkip(m,k){
