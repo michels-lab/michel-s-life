@@ -130,8 +130,33 @@ try{
   if(seededEnglish.length)findings.set('affirmation-bank',seededEnglish);
 
   if(findings.size){
+    const diagnostics={};
+    for(const [label,items] of findings.entries()){
+      diagnostics[label]=[];
+      for(const item of items){
+        const meta=await page.evaluate(text=>{
+          const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+          while(walker.nextNode()){
+            const n=walker.currentNode,p=n.parentElement;
+            if(!p)continue;
+            const value=(n.nodeValue||'').replace(/\s+/g,' ').trim();
+            if(value!==text)continue;
+            const cs=getComputedStyle(p),r=p.getBoundingClientRect();
+            if(cs.display==='none'||cs.visibility==='hidden'||Number(cs.opacity)===0||r.width===0||r.height===0)continue;
+            const owner=p.closest('[data-mlv-i18n-owned]');
+            return {
+              tag:p.tagName,id:p.id||'',className:p.className||'',
+              owner:owner?{tag:owner.tagName,id:owner.id||'',className:owner.className||'',mode:owner.getAttribute('data-mlv-i18n-owned')||''}:null,
+              parent:(p.parentElement?.outerHTML||'').slice(0,1600)
+            };
+          }
+          return null;
+        },item);
+        diagnostics[label].push({text:item,meta});
+      }
+    }
     const report=[...findings.entries()].map(([k,v])=>'['+k+']\n'+v.map(x=>'  - '+x).join('\n')).join('\n\n');
-    throw new Error('Visible English remains in Spanish mode:\n'+report);
+    throw new Error('Visible English remains in Spanish mode:\n'+report+'\n\nDOM_DIAGNOSTICS '+JSON.stringify(diagnostics,null,2));
   }
   console.log('OK: Spanish UI audit passed across main routes, Settings sections, and affirmation bank');
 } finally {
