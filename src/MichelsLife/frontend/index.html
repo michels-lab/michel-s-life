@@ -29858,7 +29858,8 @@ const pending=new Map();
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function gText(v){try{return window.MichelsLifeI18n?.mapText?.(String(v))||String(v)}catch(_){return String(v)}}
 function gEsc(v){return esc(gText(v))}
-function gLocale(){return (window.MichelsLifeI18n?.language||document.documentElement.lang)==='es'?'es-MX':'en-US'}
+function gIsEs(){try{return window.mlvLanguage?.()==='es'||window.MichelsLifeI18n?.language==='es'||document.documentElement.lang==='es'}catch(_){return document.documentElement.lang==='es'}}
+function gLocale(){return gIsEs()?'es-MX':'en-US'}
 function settings(){state.settings=state.settings||{};const s=state.settings.v30190Google=state.settings.v30190Google||{};if(typeof s.showEvents!=='boolean')s.showEvents=true;if(typeof s.pushMissions!=='boolean')s.pushMissions=false;if(typeof s.autoSync!=='boolean')s.autoSync=true;if(typeof s.cloudAutoSync!=='boolean')s.cloudAutoSync=true;if(!Array.isArray(s.events))s.events=[];return s}
 function saveSafe(){try{if(typeof save==='function')save()}catch(_){} }
 function toastSafe(title,msg){
@@ -29911,7 +29912,7 @@ ${confirmCopy?`<div class="mlv191-cloud-conflict"><b>${esc(confirmCopy[0])}</b><
 <div class="mlv190-google-status-grid"><div><small>${gEsc('Last cloud sync')}</small><b>${esc(cloudLastSyncText())}</b></div><div><small>${gEsc('Automatic')}</small><b>${gEsc(s.cloudAutoSync?'On':'Off')}</b></div><div><small>${gEsc('Storage')}</small><b>${gEsc('Private Google Drive app data')}</b></div></div>
 <div class="mlv191-cloud-actions"><button class="btn primary" type="button" data-mlv190-google="cloud-sync" ${runtime.cloudReady&&!runtime.cloudBusy?'':'disabled'}>${gEsc('Sync Michel’s Life now')}</button><button class="btn ghost" type="button" data-mlv190-google="cloud-upload" ${runtime.cloudReady&&!runtime.cloudBusy?'':'disabled'}>${gEsc('Keep this PC → Cloud')}</button><button class="btn ghost" type="button" data-mlv190-google="cloud-download" ${runtime.cloudReady&&!runtime.cloudBusy?'':'disabled'}>${gEsc('Use Cloud → This PC')}</button></div>
 <label class="mlv190-google-option" style="margin-top:10px"><input type="checkbox" data-mlv190-google-option="cloudAutoSync" ${s.cloudAutoSync?'checked':''}><span><b>${gEsc('Keep all Michel’s Life data synced automatically')}</b><small>${gEsc('Uploads about 30 seconds after you stop making changes, checks Drive every 10 minutes, and checks again after returning to the app.')}</small></span></label>
-${runtime.cloudConflict?`<div class="mlv191-cloud-conflict"><b>${gEsc('Cloud conflict')}</b><p>${gEsc(runtime.cloudConflict.message||'Both copies changed.')}</p><div class="mlv191-cloud-actions"><button class="btn" data-mlv190-google="cloud-conflict-local">${gEsc(gLocale()==='es-MX'?'Conservar esta PC':'Keep this PC')}</button><button class="btn" data-mlv190-google="cloud-conflict-cloud">${gEsc(gLocale()==='es-MX'?'Usar la nube':'Use cloud')}</button></div></div>`:''}
+${runtime.cloudConflict?`<div class="mlv191-cloud-conflict"><b>${gEsc('Cloud conflict')}</b><p>${gEsc(runtime.cloudConflict.message||'Both copies changed.')}</p><div class="mlv191-cloud-actions"><button class="btn" data-mlv190-google="cloud-conflict-local">${gEsc(gIsEs()?'Conservar esta PC':'Keep this PC')}</button><button class="btn" data-mlv190-google="cloud-conflict-cloud">${gEsc(gIsEs()?'Usar la nube':'Use cloud')}</button></div></div>`:''}
 ${runtime.cloudError?`<div class="mlv190-google-error">${gEsc(runtime.cloudError)}</div>`:''}
 </div>
 <div class="mlv190-google-options">
@@ -30146,7 +30147,8 @@ const pending=new Map();
 
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function relText(v){try{return window.MichelsLifeI18n?.mapText?.(String(v))||String(v)}catch(_){return String(v)}}
-function relBi(en,es){return window.mlvText?window.mlvText(en,es):(window.MichelsLifeI18n?.language==='es'?es:en)}
+function relIsEs(){try{return window.mlvLanguage?.()==='es'||window.MichelsLifeI18n?.language==='es'||document.documentElement.lang==='es'}catch(_){return document.documentElement.lang==='es'}}
+function relBi(en,es){return relIsEs()?String(es):String(en)}
 function relEsc(en,es){return esc(relBi(en,es))}
 function bridge(action,payload={}){
   return new Promise((resolve,reject)=>{
