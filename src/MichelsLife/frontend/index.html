@@ -22274,7 +22274,7 @@ function v3096ArchiveMissionLocal(id,button){
     v3096RefreshArchiveCounters();
   }
 
-  try{toast('Archived',mission.name||'Mission');}catch(error){}
+  try{toast(tx('Archived','Archivada'),mission.name||tx('Mission','Misión'));}catch(error){}
   return true;
 }
 
@@ -22294,6 +22294,7 @@ function v3096CardDone(card){
 }
 
 function v3096RefreshArchiveCounters(){
+  var t=function(en,es){return window.mlvText?window.mlvText(en,es):(window.MichelsLifeI18n?.language==='es'?es:en);};
   var active=document.querySelector('#tab-dashboard.active,#tab-missions.active,.tab.active,[data-v3093-page]');
   if(!active)return;
   var cards=v3096ArchiveCards(active).filter(function(card){return !card.classList.contains('v3096-archiving');});
@@ -22302,27 +22303,27 @@ function v3096RefreshArchiveCounters(){
   var pending=Math.max(0,total-completed);
 
   active.querySelectorAll('.v133-switch button').forEach(function(button){
-    var text=(button.textContent||'').trim();
-    if(/^all\b/i.test(text))button.textContent='All '+total;
-    else if(/^pending\b/i.test(text))button.textContent='Pending '+pending;
-    else if(/^completed\b/i.test(text))button.textContent='Completed '+completed;
+    var mode=button.dataset.v254Mode||'';
+    if(mode==='all')button.textContent=t('All','Todas')+' '+total;
+    else if(mode==='pending')button.textContent=t('Pending','Pendientes')+' '+pending;
+    else if(mode==='completed')button.textContent=t('Completed','Completadas')+' '+completed;
   });
 
   active.querySelectorAll('.v131-kpi').forEach(function(kpi){
     var label=((kpi.querySelector('small')||{}).textContent||'').toLowerCase();
-    if(label.indexOf('mission')<0)return;
+    if(!/mission|misión|misiones/.test(label))return;
     var value=kpi.querySelector('b');
     var detail=kpi.querySelector('span');
     if(value)value.textContent=completed+'/'+total;
-    if(detail)detail.textContent=pending+' pending';
+    if(detail)detail.textContent=pending+' '+t('pending','pendientes');
   });
 
   active.querySelectorAll('.section-title .pill.gold,.section-title .pill.hot').forEach(function(pill){
-    if(/pending/i.test(pill.textContent||''))pill.textContent=pending+' pending';
+    if(/pending|pendiente/i.test(pill.textContent||''))pill.textContent=pending+' '+t('pending','pendientes');
   });
 
   var hint=active.querySelector('.view-hint');
-  if(hint&&/visible/i.test(hint.textContent||''))hint.textContent=total+' visible';
+  if(hint&&/visible/i.test(hint.textContent||''))hint.textContent=total+' '+t('visible','visibles');
 }
 </script>
 
@@ -22417,7 +22418,7 @@ function v3096RefreshArchiveCounters(){
       try{v3096RefreshArchiveCounters();}catch(error){}
     }
 
-    try{toast('Archived',mission.name||'Mission');}catch(error){}
+    try{toast(tx('Archived','Archivada'),mission.name||tx('Mission','Misión'));}catch(error){}
     schedulePersistence(mission,card);
     try{if(window.UndoV30147&&typeof window.UndoV30147.finishArchive==='function')window.UndoV30147.finishArchive(mission,button);}catch(error){}
     return true;
