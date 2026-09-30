@@ -3,6 +3,34 @@
 > Chronological technical record of important repository, CI, release, and recovery events.
 > This file complements `CHANGELOG.md`: the changelog describes product changes by release, while this audit log records how the repository reached that state.
 
+## 2026-09-30 — Spanish tab-switch responsiveness fix after v3.0.214
+
+### User-visible issue
+- Spanish mode felt intermittently slower than English when changing tabs.
+- During those tab changes, visible animations could pause because navigation called the full application renderer and Spanish i18n synchronously reprocessed the newly recreated DOM.
+- The Focus recovery timer still exposed the English label `Start Break`.
+
+### Root cause
+- Generic `[data-tab]` navigation called `renderAll()`, rebuilding global UI that did not need to change for simple navigation.
+- The Spanish translation path repeatedly rebuilt/sorted translation rule lists and reran the full normalization pipeline for repeated strings on every recreated tab.
+- That extra synchronous work temporarily blocked the browser's next paint, making animations appear to stop.
+
+### Corrective action
+- `6a7debbe` — **Keep Spanish tab switches fluid without restarting global UI**.
+- Normal tab navigation now updates only the tab bar and active main panel instead of invoking the full renderer.
+- Added bounded translation memoization and precomputed translation rule lists.
+- Added `Start Break` → `Iniciar descanso`.
+- Added Spanish tab-switch animation continuity coverage to the main UI smoke workflow.
+
+### Validation
+- Source validation #517 — **success**.
+- UI smoke #461 — **success**.
+- New Spanish tab-switch animation test — **success**.
+- The seasonal canvas remained the exact same DOM object and its frame counter advanced across Missions → Premium Contracts → Stats → Dashboard.
+- Measured next-paint tab-switch times on the GitHub runner: Missions **99 ms**, Premium Contracts **7.3 ms**, Stats **32.5 ms**, Dashboard **90.9 ms**.
+- Spanish → English → Spanish animation round-trip also remained continuous.
+- The fix is currently documented as **Unreleased** and has not replaced the published v3.0.214 binaries yet.
+
 ## 2026-09-30 — v3.0.214 visual-fidelity lock after restored baseline
 
 ### Reason for follow-up release
