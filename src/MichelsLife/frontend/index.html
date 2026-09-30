@@ -887,6 +887,7 @@ function addDays(key,n){const d=new Date(key+'T12:00:00');d.setDate(d.getDate()+
 function startOfWeek(key=dateKey()){const d=new Date(key+'T12:00:00');const day=d.getDay();d.setDate(d.getDate()-day);return dateKey(d)}
 function startOfMonth(key=dateKey()){return key.slice(0,8)+'01'} function startOfYear(key=dateKey()){return key.slice(0,4)+'-01-01'}
 function nowISO(){return new Date().toISOString()} function timeLabel(){return new Date().toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short'})}
+function tr(v){try{return window.MichelsLifeI18n?.mapText?.(String(v))||String(v)}catch(_){return String(v)}}
 function canon(txt){const map={'platos':'trastes','plato':'trastes','traste':'trastes','trastes':'trastes','lavar los trastes':'lavar trastes','lavar platos':'lavar trastes','actualizar linkedin':'actualizar linkedin'};let s=(txt||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9ñ\s]/g,' ').replace(/\b(los|las|el|la|un|una|de|del|mi|mis)\b/g,' ').replace(/\s+/g,' ').trim();Object.entries(map).forEach(([a,b])=>{s=s.replace(new RegExp('\\b'+a+'\\b','g'),b)});return s}
 function stageInfo(){const h=new Date().getHours();if(h<5)return {id:'late',name:tr('Deep night'),emoji:'🌙'};if(h<8)return {id:'dawn',name:tr('Dawn'),emoji:'🌅'};if(h<12)return {id:'morning',name:tr('Morning'),emoji:'☀️'};if(h<15)return {id:'noon',name:tr('Noon'),emoji:'🔆'};if(h<19)return {id:'afternoon',name:tr('Afternoon'),emoji:'🌇'};if(h<23)return {id:'night',name:tr('Night'),emoji:'🌙'};return {id:'late',name:tr('Late night'),emoji:'🌌'}}
 function xpForLevel(lvl){return 100+lvl*50} function calcLevel(xp){let level=1,rest=xp;while(rest>=xpForLevel(level)){rest-=xpForLevel(level);level++}return {level,rest,next:xpForLevel(level),pct:Math.min(100,Math.round(rest/xpForLevel(level)*100))}}
@@ -26490,6 +26491,7 @@ function esc(v){return String(v==null?'':v).replace(/[&<>'"]/g,c=>({'&':'&amp;',
 function saveNow(){try{if(typeof save==='function')save();else if(typeof window.saveState==='function')window.saveState();}catch(e){console.error('v30135 save',e)}}
 function redraw(){saveNow();try{if(typeof window.renderAll==='function')window.renderAll();else if(typeof renderAll==='function')renderAll();}catch(e){console.error('v30135 render',e)}}
 function today(){try{return typeof dateKey==='function'?dateKey():new Date().toISOString().slice(0,10)}catch(e){return new Date().toISOString().slice(0,10)}}
+function keyToday(){return today()}
 function parse(k){const p=String(k).slice(0,10).split('-').map(Number);return new Date(p[0],p[1]-1,p[2],12,0,0)}
 function key(d){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
 function add(k,n){const d=parse(k);d.setDate(d.getDate()+n);return key(d)}
