@@ -6697,18 +6697,18 @@ textarea::placeholder{
       </div>
 
       <div class="v176-card">
-        <div class="v176-kicker">⚡ Command</div>
+        <div class="v176-kicker">⚡ ${tr('Command')}</div>
         <div class="v176-title" id="v176Command"></div>
         <div class="v176-sub" id="v176CommandSub"></div>
       </div>
 
       <div class="v176-card">
-        <div class="v176-kicker">✦ Affirmation</div>
+        <div class="v176-kicker">✦ ${tr('Affirmation')}</div>
         <div class="v176-title" id="v176Affirmation"></div>
         <div class="v176-sub" id="v176Stats"></div>
         <div class="v176-actions">
-          <button class="v176-next" type="button" data-action="v176-next-phrase">New phrase</button>
-          <button class="v176-open" type="button" data-tab="affirmations">Open affirmations</button>
+          <button class="v176-next" type="button" data-action="v176-next-phrase">${tr('New phrase')}</button>
+          <button class="v176-open" type="button" data-tab="affirmations">${tr('Open affirmations')}</button>
         </div>
       </div>
     `;
@@ -22796,12 +22796,12 @@ function v3096RefreshArchiveCounters(){
   }
   function remove(id,quiet){
     var m=missionById(id),list=ids().filter(function(x){return x!==String(id);});
-    setIds(list,quiet?null:{title:tx('Removed from Next Up','Eliminada de Next Up'),body:m?m.name:tx('Mission','Misión')});
+    setIds(list,quiet?null:{title:tx('Removed from Next Up','Eliminada de Siguientes'),body:m?m.name:tx('Mission','Misión')});
   }
   function add(id){
     id=String(id||'');
     var m=missionById(id),list=ids();
-    if(!eligible(m)){safeToast(tx('Cannot add to Next Up','No se puede agregar a Next Up'),tx('Only pending, visible missions can be queued.','Sólo se pueden poner en cola misiones pendientes y visibles.'));return;}
+    if(!eligible(m)){safeToast(tx('Cannot add to Next Up','No se puede agregar a Siguientes'),tx('Only pending, visible missions can be queued.','Sólo se pueden poner en cola misiones pendientes y visibles.'));return;}
     if(list.includes(id)){remove(id,false);return;}
     if(list.length>=maxSlots()){showReplaceDialog(id);return;}
     list.push(id);
@@ -22829,7 +22829,7 @@ function v3096RefreshArchiveCounters(){
           '<button class="btn ghost" data-action="v3098-remove-next" data-id="'+esc(id)+'">'+esc(tx('Remove','Quitar'))+'</button>'+
         '</div></div>';
     }).join('');
-    return '<div class="section-title" data-mlv-i18n-owned="source"><div class="v3098-nextup-heading"><span class="v3098-nextup-icon">➜</span><div><h2>Next Up</h2><p>'+esc(tx('Your ordered mission queue. Finish one without losing the thread.','Tu cola ordenada de misiones. Termina una sin perder el hilo.'))+'</p></div></div><span class="pill gold">'+list.length+' / '+max+'</span></div>'+
+    return '<div class="section-title" data-mlv-i18n-owned="source"><div class="v3098-nextup-heading"><span class="v3098-nextup-icon">➜</span><div><h2>'+esc(tx('Next Up','Siguientes'))+'</h2><p>'+esc(tx('Your ordered mission queue. Finish one without losing the thread.','Tu cola ordenada de misiones. Termina una sin perder el hilo.'))+'</p></div></div><span class="pill gold">'+list.length+' / '+max+'</span></div>'+
       '<div class="v3098-nextup-list">'+(rows||'<div class="v3098-empty">'+esc(tx('Use Set next on a mission to build your queue.','Usa Establecer siguiente en una misión para construir tu cola.'))+'</div>')+'</div>';
   }
   function ensureBlock(tabId){
@@ -24434,7 +24434,7 @@ body.ml-theme-ui .app,body.ml-theme-ui #app,.app,#app{position:relative!importan
 
   function injectCleanupCard(){
     if(typeof state==='undefined'||!state||state.activeTab!=='settings')return;const main=document.getElementById('main');if(!main||main.querySelector('.v30103-cleanup-card'))return;
-    const card=document.createElement('section');card.className='card v30103-cleanup-card';card.dataset.mlvI18nOwned='source';const bi=(en,es)=>window.mlvText?window.mlvText(en,es):(window.MichelsLifeI18n?.language==='es'?es:en);card.innerHTML='<div class="section-title"><div><h2>'+bi('Data cleanup','Limpieza de datos')+'</h2><p>'+bi('Checks for repeated missions and Premium Contracts without deleting progress.','Busca misiones y Contratos Premium repetidos sin borrar el progreso.')+'</p></div><span class="pill hot">v3.0.103</span></div><div class="v30103-cleanup-row"><button type="button" class="btn primary" data-v30103-action="cleanup">'+bi('Check duplicates now','Revisar duplicados ahora')+'</button><span class="pill">'+bi('Bilingual interface and default content','Interfaz y contenido predeterminado bilingües')+'</span></div><div class="v30103-cleanup-note">'+bi('Exact duplicates are merged. Completion dates, linked contracts, schedules and Next Up references are preserved.','Los duplicados exactos se fusionan. Se conservan fechas de finalización, contratos vinculados, horarios y referencias de Next Up.')+'</div>';main.appendChild(card);
+    const card=document.createElement('section');card.className='card v30103-cleanup-card';card.dataset.mlvI18nOwned='source';const bi=(en,es)=>window.mlvText?window.mlvText(en,es):(window.MichelsLifeI18n?.language==='es'?es:en);card.innerHTML='<div class="section-title"><div><h2>'+bi('Data cleanup','Limpieza de datos')+'</h2><p>'+bi('Checks for repeated missions and Premium Contracts without deleting progress.','Busca misiones y Contratos Premium repetidos sin borrar el progreso.')+'</p></div><span class="pill hot">v3.0.103</span></div><div class="v30103-cleanup-row"><button type="button" class="btn primary" data-v30103-action="cleanup">'+bi('Check duplicates now','Revisar duplicados ahora')+'</button><span class="pill">'+bi('Bilingual interface and default content','Interfaz y contenido predeterminado bilingües')+'</span></div><div class="v30103-cleanup-note">'+bi('Exact duplicates are merged. Completion dates, linked contracts, schedules and Next Up references are preserved.','Los duplicados exactos se fusionan. Se conservan fechas de finalización, contratos vinculados, horarios y referencias de Siguientes.')+'</div>';main.appendChild(card);
   }
 
   let maintenanceTimer=0;
@@ -24573,7 +24573,7 @@ function enhanceContracts(){
         btn.dataset.contract=c.key;
         btn.dataset.id=m.id;
         btn.dataset.mlvI18nOwned='source';
-        btn.textContent=tx('Add linked task to Next Up','Agregar tarea vinculada a Next Up');
+        btn.textContent=tx('Add linked task to Next Up','Agregar tarea vinculada a Siguientes');
         actions.appendChild(btn);
       }
     }
@@ -24922,7 +24922,7 @@ function saveMissionProjectLink(form){const m=mission(form.dataset.id);if(!m)ret
 function openTodayPlan(forTomorrow=false){
   const key=forTomorrow?addDate(today(),1):today(),root=document.getElementById('modalRoot');if(!root)return;
   const list=tasks().filter(m=>scheduledOn(m,key)&&!doneOn(m,key)),next=nextIds();
-  root.innerHTML='<div class="modal-backdrop" data-mlv-i18n-owned="source"><div class="modal"><div class="modal-head"><div><h2>'+esc(forTomorrow?tx('Plan tomorrow','Planear mañana'):tx('Plan today','Planear hoy'))+'</h2><p>'+esc(tx('Choose one main mission, up to two important missions and up to three optional missions.','Elige una misión principal, hasta dos misiones importantes y hasta tres misiones opcionales.'))+'</p></div><button class="icon-btn" data-action="close-modal">×</button></div><form id="v30106TodayPlanForm" data-date="'+key+'"><div class="v30106-plan-summary"><div class="v30106-plan-stat"><b>1</b><small>'+esc(tx('Main','Principal'))+'</small></div><div class="v30106-plan-stat"><b>2</b><small>'+esc(tx('Important','Importantes'))+'</small></div><div class="v30106-plan-stat"><b>3</b><small>'+esc(tx('Optional','Opcionales'))+'</small></div></div><div class="v30106-plan-list">'+list.map((m,i)=>{const pos=next.indexOf(String(m.id)),rank=pos===0?'main':pos>0&&pos<3?'important':pos>=3?'optional':'none';return '<label class="v30106-plan-row"><span><b>'+esc(missionUiName(m))+'</b><small>'+esc(catInfo(m.category).emoji+' '+tr(catInfo(m.category).name))+'</small></span><select name="rank" data-id="'+esc(m.id)+'"><option value="none" '+(rank==='none'?'selected':'')+'>'+esc(tx('Not in plan','Fuera del plan'))+'</option><option value="main" '+(rank==='main'?'selected':'')+'>'+esc(tx('Main','Principal'))+'</option><option value="important" '+(rank==='important'?'selected':'')+'>'+esc(tx('Important','Importante'))+'</option><option value="optional" '+(rank==='optional'?'selected':'')+'>'+esc(tx('Optional','Opcional'))+'</option></select></label>';}).join('')+'</div><div class="actions"><button class="btn primary" type="submit">'+esc(tx('Build Next Up','Crear Next Up'))+'</button><button class="btn ghost" type="button" data-action="close-modal">'+esc(tx('Cancel','Cancelar'))+'</button></div></form></div></div>';
+  root.innerHTML='<div class="modal-backdrop" data-mlv-i18n-owned="source"><div class="modal"><div class="modal-head"><div><h2>'+esc(forTomorrow?tx('Plan tomorrow','Planear mañana'):tx('Plan today','Planear hoy'))+'</h2><p>'+esc(tx('Choose one main mission, up to two important missions and up to three optional missions.','Elige una misión principal, hasta dos misiones importantes y hasta tres misiones opcionales.'))+'</p></div><button class="icon-btn" data-action="close-modal">×</button></div><form id="v30106TodayPlanForm" data-date="'+key+'"><div class="v30106-plan-summary"><div class="v30106-plan-stat"><b>1</b><small>'+esc(tx('Main','Principal'))+'</small></div><div class="v30106-plan-stat"><b>2</b><small>'+esc(tx('Important','Importantes'))+'</small></div><div class="v30106-plan-stat"><b>3</b><small>'+esc(tx('Optional','Opcionales'))+'</small></div></div><div class="v30106-plan-list">'+list.map((m,i)=>{const pos=next.indexOf(String(m.id)),rank=pos===0?'main':pos>0&&pos<3?'important':pos>=3?'optional':'none';return '<label class="v30106-plan-row"><span><b>'+esc(missionUiName(m))+'</b><small>'+esc(catInfo(m.category).emoji+' '+tr(catInfo(m.category).name))+'</small></span><select name="rank" data-id="'+esc(m.id)+'"><option value="none" '+(rank==='none'?'selected':'')+'>'+esc(tx('Not in plan','Fuera del plan'))+'</option><option value="main" '+(rank==='main'?'selected':'')+'>'+esc(tx('Main','Principal'))+'</option><option value="important" '+(rank==='important'?'selected':'')+'>'+esc(tx('Important','Importante'))+'</option><option value="optional" '+(rank==='optional'?'selected':'')+'>'+esc(tx('Optional','Opcional'))+'</option></select></label>';}).join('')+'</div><div class="actions"><button class="btn primary" type="submit">'+esc(tx('Build Next Up','Crear Siguientes'))+'</button><button class="btn ghost" type="button" data-action="close-modal">'+esc(tx('Cancel','Cancelar'))+'</button></div></form></div></div>';
 }
 function saveTodayPlan(form){
   const picks={main:[],important:[],optional:[]};
@@ -24931,7 +24931,7 @@ function saveTodayPlan(form){
   if(picks.important.length>2||picks.optional.length>3){toastSafe(tx('Plan is too large','El plan es demasiado grande'),tx('Use up to two important and three optional missions.','Usa hasta dos misiones importantes y tres opcionales.'));return;}
   setNext([...picks.main,...picks.important,...picks.optional]);S().v30106PlanDate=form.dataset.date;saveSafe();document.getElementById('modalRoot').innerHTML='';
   const n=picks.main.length+picks.important.length+picks.optional.length;
-  toastSafe(tx('Plan ready','Plan listo'),n+' '+(n===1?tx('mission ordered in Next Up.','misión ordenada en Next Up.'):tx('missions ordered in Next Up.','misiones ordenadas en Next Up.')));
+  toastSafe(tx('Plan ready','Plan listo'),n+' '+(n===1?tx('mission ordered in Next Up.','misión ordenada en Siguientes.'):tx('missions ordered in Next Up.','misiones ordenadas en Siguientes.')));
   logActivity('Daily plan created',form.dataset.date,'planning');
 }
 function renderFocus(){
@@ -25054,7 +25054,7 @@ function safeCleanup(){
   projects().forEach(p=>p.missionIds=[...new Set((p.missionIds||[]).map(String).filter(id=>ids.has(id)))]);
   const cur=current();if(cur&&!ids.has(String(cur.id)))delete S().v30105CurrentMission;
   saveSafe();
-  toastSafe(tx('Safe cleanup complete','Limpieza segura completada'),tx('Orphan Next Up, dependency, project and Current Mission references were repaired.','Se repararon referencias huérfanas de Next Up, dependencias, proyectos y Misión actual.'));
+  toastSafe(tx('Safe cleanup complete','Limpieza segura completada'),tx('Orphan Next Up, dependency, project and Current Mission references were repaired.','Se repararon referencias huérfanas de Siguientes, dependencias, proyectos y Misión actual.'));
   logActivity('Maintenance cleanup','Safe references repaired','maintenance');renderAll();
 }
 function openMission(id){state.activeTab='missions';renderAll();setTimeout(()=>{const card=[...document.querySelectorAll(CARD_SEL)].find(x=>idFromCard(x)===String(id));card?.scrollIntoView({behavior:'smooth',block:'center'});},180);}
