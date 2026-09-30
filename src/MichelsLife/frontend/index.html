@@ -8803,23 +8803,24 @@ button[data-tab="inventory"]{
 
 <script id="v152-achievements-radar-modes-script">
 (function(){
+  const rt=(en,es)=>window.mlvText?window.mlvText(en,es):((window.MichelsLifeI18n?.language||document.documentElement.lang)==='es'?String(es):String(en));
   const ORDER=[
-    ['physical','Physical'],
-    ['academic','Academic'],
-    ['career','Career'],
-    ['mental','Mental'],
-    ['order','Order'],
-    ['presence','Presence'],
-    ['selflove','Self-worth'],
-    ['finance','Finance'],
-    ['autonomy','Autonomy'],
-    ['culture','Culture']
+    ['physical','Physical','Físico'],
+    ['academic','Academic','Académico'],
+    ['career','Career','Carrera'],
+    ['mental','Mental','Mental'],
+    ['order','Order','Orden'],
+    ['presence','Presence','Presencia'],
+    ['selflove','Self-worth','Amor propio'],
+    ['finance','Finance','Finanzas'],
+    ['autonomy','Autonomy','Autonomía'],
+    ['culture','Culture','Cultura']
   ];
 
   const MODES={
-    today:{label:'Today',sub:'Today only · very reactive'},
-    week:{label:'Week',sub:'Current week due so far · default'},
-    days30:{label:'30 days',sub:'Last 30 days · identity trend'}
+    today:{label:()=>rt('Today','Hoy'),sub:()=>rt('Today only · very reactive','Sólo hoy · muy reactivo')},
+    week:{label:()=>rt('Week','Semana'),sub:()=>rt('Current week due so far · default','Semana actual hasta hoy · predeterminado')},
+    days30:{label:()=>rt('30 days','30 días'),sub:()=>rt('Last 30 days · identity trend','Últimos 30 días · tendencia de identidad')}
   };
 
   function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
@@ -8837,9 +8838,9 @@ button[data-tab="inventory"]{
 
   function rangeFor(mode){
     const today=keyToday();
-    if(mode==='today') return {start:today,end:today,label:'Today',sub:MODES.today.sub};
-    if(mode==='days30') return {start:addDays(today,-29),end:today,label:'30 days',sub:MODES.days30.sub};
-    return {start:weekStart(today),end:today,label:'Week',sub:MODES.week.sub};
+    if(mode==='today') return {start:today,end:today,label:MODES.today.label(),sub:MODES.today.sub()};
+    if(mode==='days30') return {start:addDays(today,-29),end:today,label:MODES.days30.label(),sub:MODES.days30.sub()};
+    return {start:weekStart(today),end:today,label:MODES.week.label(),sub:MODES.week.sub()};
   }
 
   function catMeta(id,label){
@@ -8893,7 +8894,7 @@ button[data-tab="inventory"]{
 
   function rows(mode=getMode()){
     const r=rangeFor(mode);
-    const result=ORDER.map(([id,label])=>({...catMeta(id,label),due:0,done:0,dueWeight:0,doneWeight:0,score:0}));
+    const result=ORDER.map(([id,en,es])=>({...catMeta(id,rt(en,es)),due:0,done:0,dueWeight:0,doneWeight:0,score:0}));
     const byId=Object.fromEntries(result.map(x=>[x.id,x]));
 
     try{
@@ -8942,7 +8943,7 @@ button[data-tab="inventory"]{
       const a=start+i*2*Math.PI/n;
       const [lx,ly]=point(cx,cy,R+58,a);
       const anchor=Math.cos(a)>.35?'start':Math.cos(a)<-.35?'end':'middle';
-      const value=d.due>0?`${d.score}% · ${d.done}/${d.due}`:'no plan';
+      const value=d.due>0?`${d.score}% · ${d.done}/${d.due}`:rt('no plan','sin plan');
       return `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anchor}" class="v152-axis-label">${d.emoji} ${esc(d.name)}</text>
       <text x="${lx.toFixed(1)}" y="${(ly+14).toFixed(1)}" text-anchor="${anchor}" class="v152-axis-value">${esc(value)}</text>`;
     }).join('');
@@ -8956,10 +8957,10 @@ button[data-tab="inventory"]{
 
     const arrow=(top&&top.score>0)?`<line x1="${cx}" y1="${cy}" x2="${tx.toFixed(1)}" y2="${ty.toFixed(1)}" stroke="#ffd166" stroke-width="3" stroke-linecap="round"/>
       <circle cx="${tx.toFixed(1)}" cy="${ty.toFixed(1)}" r="7" fill="#ffd166" stroke="rgba(3,8,18,.75)" stroke-width="2"/>
-      <text x="${cx}" y="${cy+188}" text-anchor="middle" class="v152-axis-label">Growing by consistency toward: ${top.emoji} ${esc(top.name)}</text>`:
-      `<text x="${cx}" y="${cy+188}" text-anchor="middle" class="v152-axis-label">Schedule and complete actions to reveal your build</text>`;
+      <text x="${cx}" y="${cy+188}" text-anchor="middle" class="v152-axis-label">${esc(rt('Growing by consistency toward:','Creciendo con constancia hacia:'))} ${top.emoji} ${esc(top.name)}</text>`:
+      `<text x="${cx}" y="${cy+188}" text-anchor="middle" class="v152-axis-label">${esc(rt('Schedule and complete actions to reveal your build','Programa y completa acciones para revelar tu build'))}</text>`;
 
-    return `<svg class="v152-radar-svg" viewBox="0 0 560 465" role="img" aria-label="Weighted build radar">${grid}${axes}
+    return `<svg class="v152-radar-svg" viewBox="0 0 560 465" role="img" aria-label="${esc(rt('Weighted build radar','Radar ponderado de build'))}">${grid}${axes}
       <polygon points="${pts}" fill="rgba(117,228,255,.20)" stroke="var(--theme-accent,var(--ml-ui-accent,#75e4ff))" stroke-width="3"/>
       ${dots}${arrow}${labels}</svg>`;
   }
@@ -8973,27 +8974,29 @@ button[data-tab="inventory"]{
 
     const direction=scheduled.length
       ? (top.score>second.score+18?`${top.emoji} ${top.name}`:`${top.emoji} ${top.name} + ${second.emoji} ${second.name}`)
-      : 'Not enough scheduled actions';
+      : rt('Not enough scheduled actions','No hay suficientes acciones programadas');
 
     const ranking=sorted.slice(0,7).map((d,i)=>`<div class="v152-rank-row"><span>${i+1}</span><span class="v152-rank-name">${d.emoji} ${esc(d.name)}</span><b>${d.due>0?d.score+'%':'—'}</b><div class="v152-rank-bar"><span style="width:${Math.max(4,d.score)}%"></span></div></div>`).join('');
 
-    const balancing=weak&&weak.due>0?`Complete one planned ${weak.name.toLowerCase()} action.`:`Schedule one action in an underbuilt category.`;
+    const balancing=weak&&weak.due>0
+      ?(window.mlvLanguage?.()==='es'?`Completa una acción programada de ${weak.name.toLowerCase()}.`:`Complete one planned ${weak.name.toLowerCase()} action.`)
+      :rt('Schedule one action in an underbuilt category.','Programa una acción en una categoría poco desarrollada.');
 
-    return `<div class="v152-card big"><small>Main growth direction</small><b>${esc(direction)}</b><span>${esc(range.sub)}</span></div>
+    return `<div class="v152-card big"><small>${esc(rt('Main growth direction','Dirección principal de crecimiento'))}</small><b>${esc(direction)}</b><span>${esc(range.sub)}</span></div>
       <div class="v152-mini-grid">
-        <div class="v152-card"><small>Strongest area</small><b>${top.emoji} ${esc(top.name)}</b><span>${top.due>0?`${top.score}% · ${top.done}/${top.due} due actions`:'No due plan yet.'}</span></div>
-        <div class="v152-card"><small>Undertrained area</small><b>${weak.emoji} ${esc(weak.name)}</b><span>${weak.due>0?`${weak.score}% · complete scheduled load.`:'No scheduled load yet.'}</span></div>
+        <div class="v152-card"><small>${esc(rt('Strongest area','Área más fuerte'))}</small><b>${top.emoji} ${esc(top.name)}</b><span>${top.due>0?`${top.score}% · ${top.done}/${top.due} ${rt('due actions','acciones previstas')}`:rt('No due plan yet.','Aún no hay un plan previsto.')}</span></div>
+        <div class="v152-card"><small>${esc(rt('Undertrained area','Área menos trabajada'))}</small><b>${weak.emoji} ${esc(weak.name)}</b><span>${weak.due>0?`${weak.score}% · ${rt('complete scheduled load.','completa la carga programada.')}`:rt('No scheduled load yet.','Aún no hay carga programada.')}</span></div>
       </div>
-      <div class="v152-card"><small>Next balancing move</small><b>${esc(balancing)}</b><span>This prevents the build from becoming only gym, only work, or only admin.</span></div>
-      <div class="v152-card"><small>Consistency ranking</small><div class="v152-ranking">${ranking}</div></div>
-      <div class="v152-formula">Formula: category build = completed planned XP ÷ scheduled planned XP in the selected period. Week is default because it updates fast without becoming random.</div>`;
+      <div class="v152-card"><small>${esc(rt('Next balancing move','Siguiente movimiento de equilibrio'))}</small><b>${esc(balancing)}</b><span>${esc(rt('This prevents the build from becoming only gym, only work, or only admin.','Esto evita que la build se convierta sólo en gym, sólo trabajo o sólo administración.'))}</span></div>
+      <div class="v152-card"><small>${esc(rt('Consistency ranking','Ranking de constancia'))}</small><div class="v152-ranking">${ranking}</div></div>
+      <div class="v152-formula">${esc(rt('Formula: category build = completed planned XP ÷ scheduled planned XP in the selected period. Week is default because it updates fast without becoming random.','Fórmula: build de categoría = XP planificado completado ÷ XP planificado programado en el periodo seleccionado. Semana es el valor predeterminado porque se actualiza rápido sin volverse aleatoria.'))}</div>`;
   }
 
   function radarHTML(mode=getMode()){
     const m=MODES[mode]?mode:'week';
     const res=rows(m);
-    const tabs=Object.entries(MODES).map(([k,v])=>`<button data-action="v152-radar-mode" data-mode="${k}" class="${k===m?'active':''}">${v.label}</button>`).join('');
-    return `<div class="v152-radar-card">
+    const tabs=Object.entries(MODES).map(([k,v])=>`<button data-action="v152-radar-mode" data-mode="${k}" class="${k===m?'active':''}">${esc(v.label())}</button>`).join('');
+    return `<div class="v152-radar-card" data-mlv-i18n-owned="source">
       <div class="v152-radar-head">
         <div><p class="v152-note"><b>${esc(res.range.label)}</b> · ${esc(res.range.sub)} · ${esc(res.range.start)} → ${esc(res.range.end)}</p></div>
         <div class="v152-radar-tabs">${tabs}</div>
@@ -9021,11 +9024,14 @@ button[data-tab="inventory"]{
     const cards=Array.from(document.querySelectorAll('#main .card,.chart-card'));
     const radar=cards.find(c=>{
       const h=c.querySelector('h2,h3');
-      return h&&/build radar|radar/i.test(h.textContent||'');
+      return h&&/build radar|radar|radar de build/i.test(h.textContent||'');
     });
     if(!radar) return;
     const h=radar.querySelector('h2,h3');
-    const title=h?h.outerHTML:'<h2>Build radar</h2>';
+    const tag=(h?.tagName||'H2').toLowerCase();
+    const cls=h?.className?String(h.className):'';
+    const title='<'+tag+(cls?' class="'+esc(cls)+'"':'')+'>'+esc(rt('Build radar','Radar de build'))+'</'+tag+'>';
+    radar.dataset.mlvI18nOwned='source';
     radar.innerHTML=title+radarHTML();
     radar.dataset.v152Radar='1';
   }
@@ -9055,6 +9061,7 @@ button[data-tab="inventory"]{
     boot();
   };
 
+  window.addEventListener('michelslife:languagechange',()=>setTimeout(boot,0));
   document.addEventListener('DOMContentLoaded',()=>{
     patchTabs();
     if(window.state&&['shop','inventory','character'].includes(state.activeTab)&&typeof renderAll==='function') renderAll();
