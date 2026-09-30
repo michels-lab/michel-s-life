@@ -6205,6 +6205,10 @@ textarea::placeholder{
     default:['One useful action is enough to shift the day.','Less noise. More proof.','Do the thing that makes tomorrow easier.']
   };
 
+  function v175Lang(){return ((window.MichelsLifeI18n?.language||document.documentElement.lang)==='es')?'es':'en';}
+  function v175Bi(en,es){return v175Lang()==='es'?String(es):String(en);}
+  function v175Tr(v){try{return window.MichelsLifeI18n?.mapText?.(String(v))||String(v)}catch(_){return String(v)}}
+
   function todayKeySafe(){
     return typeof dateKey === 'function' ? dateKey() : new Date().toISOString().slice(0,10);
   }
@@ -6345,11 +6349,17 @@ textarea::placeholder{
     };
 
     set('v175Time',timeString());
-    set('v175Greeting',`${greeting.tone||mind.emoji} ${greeting.main||'Hello'}, Michel · ${new Date().toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'})} · ${greeting.sub||mind.command}`);
-    set('v175Command',mind.command);
-    set('v175CommandSub',`${mind.stageName} · complete the next visible action.`);
+    set('v175Greeting',`${greeting.tone||mind.emoji} ${v175Tr(greeting.main||'Hello')}, Michel · ${new Date().toLocaleDateString(v175Lang()==='es'?'es-MX':'en-US', {weekday:'short', month:'short', day:'numeric'})} · ${v175Tr(greeting.sub||mind.command)}`);
+    set('v175Command',v175Tr(mind.command));
+    set('v175CommandSub',`${v175Tr(mind.stageName)} · ${v175Bi('complete the next visible action.','completa la siguiente acción visible.')}`);
     set('v175Affirmation',mind.affirmation);
-    set('v175Stats',`${c.done}/${c.active} missions today · Week ${c.weekPct}% · Reset ${c.reset}`);
+    set('v175Stats',`${c.done}/${c.active} ${v175Bi('missions today','misiones hoy')} · ${v175Bi('Week','Semana')} ${c.weekPct}% · ${v175Bi('Reset','Reinicio')} ${c.reset}`);
+    const nextBtn=el.querySelector('[data-action="v175-next-phrase"]'),openBtn=el.querySelector('[data-tab="affirmations"]');
+    if(nextBtn)nextBtn.textContent=v175Bi('New phrase','Nueva frase');
+    if(openBtn)openBtn.textContent=v175Bi('Open affirmations','Abrir afirmaciones');
+    const kickers=el.querySelectorAll('.v175-kicker');
+    if(kickers[0])kickers[0].textContent='⚡ '+v175Bi('Command','Comando');
+    if(kickers[1])kickers[1].textContent='✦ '+v175Bi('Affirmation','Afirmación');
   }
 
   // One source of truth for the status render.
@@ -8941,9 +8951,9 @@ button[data-tab="inventory"]{
     const arrow=(top&&top.score>0)?`<line x1="${cx}" y1="${cy}" x2="${tx.toFixed(1)}" y2="${ty.toFixed(1)}" stroke="#ffd166" stroke-width="3" stroke-linecap="round"/>
       <circle cx="${tx.toFixed(1)}" cy="${ty.toFixed(1)}" r="7" fill="#ffd166" stroke="rgba(3,8,18,.75)" stroke-width="2"/>
       <text x="${cx}" y="${cy+188}" text-anchor="middle" class="v152-axis-label">${esc(rt('Growing by consistency toward:','Creciendo con constancia hacia:'))} ${top.emoji} ${esc(top.name)}</text>`:
-      `<text x="${cx}" y="${cy+188}" text-anchor="middle" class="v152-axis-label">${esc(rt('Schedule and complete actions to reveal your build','Programa y completa acciones para revelar tu build'))}</text>`;
+      `<text x="${cx}" y="${cy+188}" text-anchor="middle" class="v152-axis-label">${esc(rt('Schedule and complete actions to reveal your build','Programa y completa acciones para revelar tu progreso'))}</text>`;
 
-    return `<svg class="v152-radar-svg" viewBox="0 0 560 465" role="img" aria-label="${esc(rt('Weighted build radar','Radar ponderado de build'))}">${grid}${axes}
+    return `<svg class="v152-radar-svg" viewBox="0 0 560 465" role="img" aria-label="${esc(rt('Weighted build radar','Radar ponderado de progreso'))}">${grid}${axes}
       <polygon points="${pts}" fill="rgba(117,228,255,.20)" stroke="var(--theme-accent,var(--ml-ui-accent,#75e4ff))" stroke-width="3"/>
       ${dots}${arrow}${labels}</svg>`;
   }
@@ -8970,9 +8980,9 @@ button[data-tab="inventory"]{
         <div class="v152-card"><small>${esc(rt('Strongest area','Área más fuerte'))}</small><b>${top.emoji} ${esc(top.name)}</b><span>${top.due>0?`${top.score}% · ${top.done}/${top.due} ${rt('due actions','acciones previstas')}`:rt('No due plan yet.','Aún no hay un plan previsto.')}</span></div>
         <div class="v152-card"><small>${esc(rt('Undertrained area','Área menos trabajada'))}</small><b>${weak.emoji} ${esc(weak.name)}</b><span>${weak.due>0?`${weak.score}% · ${rt('complete scheduled load.','completa la carga programada.')}`:rt('No scheduled load yet.','Aún no hay carga programada.')}</span></div>
       </div>
-      <div class="v152-card"><small>${esc(rt('Next balancing move','Siguiente movimiento de equilibrio'))}</small><b>${esc(balancing)}</b><span>${esc(rt('This prevents the build from becoming only gym, only work, or only admin.','Esto evita que la build se convierta sólo en gym, sólo trabajo o sólo administración.'))}</span></div>
+      <div class="v152-card"><small>${esc(rt('Next balancing move','Siguiente movimiento de equilibrio'))}</small><b>${esc(balancing)}</b><span>${esc(rt('This prevents the build from becoming only gym, only work, or only admin.','Esto evita que tu progreso se concentre solo en el gimnasio, el trabajo o la administración.'))}</span></div>
       <div class="v152-card"><small>${esc(rt('Consistency ranking','Ranking de constancia'))}</small><div class="v152-ranking">${ranking}</div></div>
-      <div class="v152-formula">${esc(rt('Formula: category build = completed planned XP ÷ scheduled planned XP in the selected period. Week is default because it updates fast without becoming random.','Fórmula: build de categoría = XP planificado completado ÷ XP planificado programado en el periodo seleccionado. Semana es el valor predeterminado porque se actualiza rápido sin volverse aleatoria.'))}</div>`;
+      <div class="v152-formula">${esc(rt('Formula: category build = completed planned XP ÷ scheduled planned XP in the selected period. Week is default because it updates fast without becoming random.','Fórmula: progreso de categoría = XP planificado completado ÷ XP planificado programado en el periodo seleccionado. La semana es el valor predeterminado porque se actualiza rápido sin volverse aleatoria.'))}</div>`;
   }
 
   function radarHTML(mode=getMode()){
@@ -9013,7 +9023,7 @@ button[data-tab="inventory"]{
     const h=radar.querySelector('h2,h3');
     const tag=(h?.tagName||'H2').toLowerCase();
     const cls=h?.className?String(h.className):'';
-    const title='<'+tag+(cls?' class="'+esc(cls)+'"':'')+'>'+esc(rt('Build radar','Radar de build'))+'</'+tag+'>';
+    const title='<'+tag+(cls?' class="'+esc(cls)+'"':'')+'>'+esc(rt('Build radar','Radar de progreso'))+'</'+tag+'>';
     radar.dataset.mlvI18nOwned='source';
     radar.innerHTML=title+radarHTML();
     radar.dataset.v152Radar='1';
@@ -29901,7 +29911,7 @@ ${confirmCopy?`<div class="mlv191-cloud-conflict"><b>${esc(confirmCopy[0])}</b><
 <div class="mlv190-google-status-grid"><div><small>${gEsc('Last cloud sync')}</small><b>${esc(cloudLastSyncText())}</b></div><div><small>${gEsc('Automatic')}</small><b>${gEsc(s.cloudAutoSync?'On':'Off')}</b></div><div><small>${gEsc('Storage')}</small><b>${gEsc('Private Google Drive app data')}</b></div></div>
 <div class="mlv191-cloud-actions"><button class="btn primary" type="button" data-mlv190-google="cloud-sync" ${runtime.cloudReady&&!runtime.cloudBusy?'':'disabled'}>${gEsc('Sync Michel’s Life now')}</button><button class="btn ghost" type="button" data-mlv190-google="cloud-upload" ${runtime.cloudReady&&!runtime.cloudBusy?'':'disabled'}>${gEsc('Keep this PC → Cloud')}</button><button class="btn ghost" type="button" data-mlv190-google="cloud-download" ${runtime.cloudReady&&!runtime.cloudBusy?'':'disabled'}>${gEsc('Use Cloud → This PC')}</button></div>
 <label class="mlv190-google-option" style="margin-top:10px"><input type="checkbox" data-mlv190-google-option="cloudAutoSync" ${s.cloudAutoSync?'checked':''}><span><b>${gEsc('Keep all Michel’s Life data synced automatically')}</b><small>${gEsc('Uploads about 30 seconds after you stop making changes, checks Drive every 10 minutes, and checks again after returning to the app.')}</small></span></label>
-${runtime.cloudConflict?`<div class="mlv191-cloud-conflict"><b>${gEsc('Cloud conflict')}</b><p>${gEsc(runtime.cloudConflict.message||'Both copies changed.')}</p><div class="mlv191-cloud-actions"><button class="btn" data-mlv190-google="cloud-conflict-local">${gEsc('Keep this PC')}</button><button class="btn" data-mlv190-google="cloud-conflict-cloud">${gEsc('Use cloud')}</button></div></div>`:''}
+${runtime.cloudConflict?`<div class="mlv191-cloud-conflict"><b>${gEsc('Cloud conflict')}</b><p>${gEsc(runtime.cloudConflict.message||'Both copies changed.')}</p><div class="mlv191-cloud-actions"><button class="btn" data-mlv190-google="cloud-conflict-local">${gEsc(gLocale()==='es-MX'?'Conservar esta PC':'Keep this PC')}</button><button class="btn" data-mlv190-google="cloud-conflict-cloud">${gEsc(gLocale()==='es-MX'?'Usar la nube':'Use cloud')}</button></div></div>`:''}
 ${runtime.cloudError?`<div class="mlv190-google-error">${gEsc(runtime.cloudError)}</div>`:''}
 </div>
 <div class="mlv190-google-options">
@@ -30186,7 +30196,7 @@ function ensureConflictModal(){
   let o=document.getElementById('mlv197CloudConflictOverlay');
   if(o)return o;
   o=document.createElement('div');o.id='mlv197CloudConflictOverlay';o.dataset.mlvI18nOwned='source';
-  o.innerHTML='<div class="mlv197-conflict-card"><h3>'+esc(relText('Cloud conflict'))+'</h3><p data-mlv197-conflict-text>'+esc(relText('Both this PC and Google Drive changed. Choose which copy becomes the master.'))+'</p><div class="mlv197-conflict-actions"><button class="btn primary" type="button" data-mlv197-conflict="local">'+esc(relText('Keep this PC'))+'</button><button class="btn" type="button" data-mlv197-conflict="cloud">'+esc(relText('Use cloud'))+'</button><button class="btn ghost" type="button" data-mlv197-conflict="later">'+esc(relText('Decide later'))+'</button></div></div>';
+  o.innerHTML='<div class="mlv197-conflict-card"><h3>'+esc(relText('Cloud conflict'))+'</h3><p data-mlv197-conflict-text>'+esc(relText('Both this PC and Google Drive changed. Choose which copy becomes the master.'))+'</p><div class="mlv197-conflict-actions"><button class="btn primary" type="button" data-mlv197-conflict="local">'+relEsc('Keep this PC','Conservar esta PC')+'</button><button class="btn" type="button" data-mlv197-conflict="cloud">'+relEsc('Use cloud','Usar la nube')+'</button><button class="btn ghost" type="button" data-mlv197-conflict="later">'+esc(relText('Decide later'))+'</button></div></div>';
   document.body.appendChild(o);
   o.addEventListener('click',async e=>{
     const b=e.target.closest?.('[data-mlv197-conflict]');if(!b)return;
