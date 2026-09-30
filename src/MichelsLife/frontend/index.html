@@ -23656,6 +23656,12 @@ body.v3099-has-nextup-dock{
     return String(value==null?'':value).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch];});
   }
   function norm(value){return String(value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9ñ]+/g,' ').replace(/\s+/g,' ').trim();}
+  function nIsEs(){return (window.MichelsLifeI18n?.language||document.documentElement.lang||'en')==='es';}
+  function nText(value){try{return window.MichelsLifeI18n?.mapText?.(String(value))||String(value);}catch(error){return String(value);}}
+  function nEsc(value){return esc(nText(value));}
+  function missionDisplayName(m){try{return window.v140SystemMissionText?.name?.(m)||String(m?.name||'');}catch(error){return String(m?.name||'');}}
+  function missionDisplayDescription(m){try{return window.v140SystemMissionText?.description?.(m)||String(m?.description||m?.notes||'');}catch(error){return String(m?.description||m?.notes||'');}}
+  function contractDisplayName(c){return c&&c.kind==='mission'&&c.source?missionDisplayName(c.source):String(c?.name||'');}
   function today(){
     try{if(typeof dateKey==='function')return dateKey();}catch(error){}
     var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -23798,10 +23804,10 @@ body.v3099-has-nextup-dock{
         var result=linkScore(c,m);considered++;
         if(result.score>=5.5&&!isRejected(key,m.id)){
           var keys=keysOf(m);
-          if(!keys.includes(key)){keys.push(key);setKeys(m,keys);changes++;added.push(m.name);}
+          if(!keys.includes(key)){keys.push(key);setKeys(m,keys);changes++;added.push(missionDisplayName(m));}
         }
       });
-      if(added.length)details.push({contract:c.name,added:added});
+      if(added.length)details.push({contract:contractDisplayName(c),added:added});
     });
     settings().v30102AutoLinkSignature=analysisSignature();
     settings().v30102LastAnalysisAt=new Date().toISOString();
@@ -23871,11 +23877,11 @@ body.v3099-has-nextup-dock{
   function buildNotifications(){
     var mode=noticeMode(),list=[],wk=weekStart(),es=nIsEs();
     getContracts().forEach(function(c){
-      var key=cKey(c),linked=linkedTasks(c),p=progress(c),remaining=Math.max(0,p.target-p.count),suggest=suggestedTask(c),cat=catInfo(catKey(c)),primary=false;
+      var key=cKey(c),linked=linkedTasks(c),p=progress(c),remaining=Math.max(0,p.target-p.count),suggest=suggestedTask(c),cName=contractDisplayName(c),suggestName=suggest?missionDisplayName(suggest):'',cat=catInfo(catKey(c)),primary=false;
       if(!linked.length){
         list.push(notice(
           'no-links:'+key,'no-links','action','🔗',nText('No linked missions'),
-          es?'“'+c.name+'” no tiene misiones activas vinculadas.':'“'+c.name+'” has no active missions connected to it.',
+          es?'“'+cName+'” no tiene misiones activas vinculadas.':'“'+cName+'” has no active missions connected to it.',
           {contractKey:key,meta:[cat.emoji+' '+nText(cat.name),nText('Action needed')],actions:[['review-links','Review links'],['create-linked','Create mission'],['dismiss','Dismiss today']]}
         ));
         return;
@@ -23884,24 +23890,24 @@ body.v3099-has-nextup-dock{
       if(remaining>0&&(remaining>available||remaining>calendar)){
         primary=true;
         var riskMsg=es
-          ?'“'+c.name+'” todavía necesita '+remaining+' '+(remaining===1?'avance':'avances')+' y sólo '+(realistic===1?'queda ':'quedan ')+realistic+' '+(realistic===1?'día realista':'días realistas')+'.'
-          :'“'+c.name+'” still needs '+remaining+' completion'+(remaining===1?'':'s')+' with only '+realistic+' realistic day'+(realistic===1?'':'s')+' left.';
+          ?'“'+cName+'” todavía necesita '+remaining+' '+(remaining===1?'avance':'avances')+' y sólo '+(realistic===1?'queda ':'quedan ')+realistic+' '+(realistic===1?'día realista':'días realistas')+'.'
+          :'“'+cName+'” still needs '+remaining+' completion'+(remaining===1?'':'s')+' with only '+realistic+' realistic day'+(realistic===1?'':'s')+' left.';
         list.push(notice('risk:'+wk+':'+key,'contract-risk','action','⚠️',nText('Premium Contract at risk'),riskMsg,{contractKey:key,missionId:suggest&&suggest.id,meta:[p.count+'/'+p.target,nText('At risk')],actions:(suggest?[['add-next','Add mission to Next Up']]:[]).concat([['open-contract','Open contract'],['dismiss','Dismiss today']])}));
       }else if(remaining===1&&mode!=='essential'){
         primary=true;
-        var oneMsg=es?'Completa una misión vinculada para terminar “'+c.name+'” esta semana.':'Complete one linked mission to finish “'+c.name+'” this week.';
+        var oneMsg=es?'Completa una misión vinculada para terminar “'+cName+'” esta semana.':'Complete one linked mission to finish “'+cName+'” this week.';
         list.push(notice('one-away:'+wk+':'+key,'one-away','progress','🏁',nText('One mission away'),oneMsg,{contractKey:key,missionId:suggest&&suggest.id,meta:[p.count+'/'+p.target,nText('Almost done')],actions:(suggest?[['add-next','Add to Next Up']]:[]).concat([['open-contract','Open contract']])}));
       }else if(p.count===0&&new Date(today()+'T12:00:00').getDay()>=3&&mode!=='essential'){
         primary=true;
-        var noneMsg=es?'“'+c.name+'” todavía no ha avanzado esta semana.':'“'+c.name+'” has not advanced this week.';
+        var noneMsg=es?'“'+cName+'” todavía no ha avanzado esta semana.':'“'+cName+'” has not advanced this week.';
         list.push(notice('no-progress:'+wk+':'+key,'no-progress','suggestion','⏳',nText('No progress yet'),noneMsg,{contractKey:key,missionId:suggest&&suggest.id,meta:['0/'+p.target,nText('This week')],actions:(suggest?[['add-next','Add suggested mission']]:[]).concat([['open-contract','Review contract'],['dismiss','Dismiss today']])}));
       }
       if(suggest&&!primary&&!nextUpIds().includes(String(suggest.id))&&mode!=='essential'&&remaining>0){
-        var suggestMsg=es?'“'+suggest.name+'” puede hacer avanzar “'+c.name+'”.':'“'+suggest.name+'” can advance “'+c.name+'”.';
+        var suggestMsg=es?'“'+suggestName+'” puede hacer avanzar “'+cName+'”.':'“'+suggestName+'” can advance “'+cName+'”.';
         list.push(notice('suggest-next:'+today()+':'+key,'suggest-next','suggestion','➜',nText('Suggested next mission'),suggestMsg,{contractKey:key,missionId:suggest.id,meta:[cat.emoji+' '+nText(cat.name),nText('Linked mission')],actions:[['add-next','Add to Next Up'],['open-mission','Open mission'],['dismiss','Dismiss today']]}));
       }
       if(remaining===0&&mode==='coach'){
-        var completeMsg=es?'“'+c.name+'” está completo esta semana.':'“'+c.name+'” is complete for this week.';
+        var completeMsg=es?'“'+cName+'” está completo esta semana.':'“'+cName+'” is complete for this week.';
         list.push(notice('complete:'+wk+':'+key,'contract-complete','progress','✅',nText('Contract completed'),completeMsg,{contractKey:key,meta:[p.count+'/'+p.target,nText('Completed')],actions:[['open-contract','View contract']]}));
       }
     });
@@ -23909,7 +23915,7 @@ body.v3099-has-nextup-dock{
     var active=(state.missions||[]).filter(function(m){return m&&!m.archived&&!m.hidden&&!isContractMission(m)&&activeOn(m,today())&&!doneOn(m,today());});
     active.forEach(function(m){
       if(m.deadline&&String(m.deadline)<today()){
-        var overdueMsg=es?'“'+m.name+'” venció el '+m.deadline+'.':'“'+m.name+'” passed its deadline on '+m.deadline+'.';
+        var mName=missionDisplayName(m),overdueMsg=es?'“'+mName+'” venció el '+m.deadline+'.':'“'+mName+'” passed its deadline on '+m.deadline+'.';
         list.push(notice('overdue:'+m.id,'mission-overdue','action','📅',nText('Mission overdue'),overdueMsg,{missionId:String(m.id),meta:[nCategoryName(catKey(m)),nText('Overdue')],actions:[['add-next','Add to Next Up'],['open-mission','Open mission'],['dismiss','Dismiss today']]}));
       }
     });
