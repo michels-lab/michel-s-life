@@ -7846,21 +7846,9 @@ header + #v176StatusPanel{
   window.greetingV11 = greetingObj;
 
   function updatePanelTextOnly(){
+    // v18.7 is the sole authority for status copy. This older layer keeps only
+    // its sky/state responsibility so it cannot overwrite localized text.
     applySkyOnce();
-
-    const cmd = document.getElementById('v176Command');
-    const cmdSub = document.getElementById('v176CommandSub');
-    const greeting = document.getElementById('v176Greeting');
-
-    const st = window.activeStage();
-    const g = greetingObj();
-
-    if(cmd) cmd.textContent = commandText();
-    if(cmdSub) cmdSub.textContent = `${st.name} · complete the next visible action.`;
-    if(greeting){
-      const date = new Date().toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
-      greeting.textContent = `${g.tone} ${g.main}, Michel · ${date} · ${g.sub}`;
-    }
   }
 
   function stageOptions(current){
