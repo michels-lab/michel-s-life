@@ -24264,44 +24264,6 @@ body.ml-theme-ui .app,body.ml-theme-ui #app,.app,#app{position:relative!importan
     'golden-dunes':{dawn:'sky/background_sets/golden_dunes/dawn.jpg',morning:'sky/background_sets/golden_dunes/morning.jpg',noon:'sky/background_sets/golden_dunes/noon.jpg',afternoon:'sky/background_sets/golden_dunes/afternoon.jpg',night:'sky/background_sets/golden_dunes/night.jpg',late:'sky/background_sets/golden_dunes/late.jpg'}
   };
 
-  const EXACT_ENGLISH={
-    'Entrenar pierna/glúteo':'Train legs and glutes','Entrenar brazos':'Train arms','Hacer abdomen / core 15 min':'Core / abs 15 minutes','Registrar cargas del gym':'Log gym weights',
-    'Avanzar tesis 45 minutos':'Work on thesis for 45 minutes','Leer un paper o apuntes técnicos':'Read a paper or technical notes','Revisar OpenFOAM / CFD':'Review OpenFOAM / CFD',
-    'Mejorar CV o LinkedIn':'Improve CV or LinkedIn','Aplicar a una vacante objetivo':'Apply to a target job','Practicar Python / Power BI':'Practice Python / Power BI',
-    'No stalkear / no rogar / no actuar desde ansiedad':'Do not stalk, beg, or act from anxiety','Journaling breve / planear el día':'Journal / plan the day',
-    'Dormir con intención / preparar mañana':'Prepare for sleep and tomorrow','Lavar los trastes':'Wash the dishes','Tender la cama':'Make the bed','Ordenar escritorio o cuarto':'Organize desk or room',
-    'Skincare / cuidado personal':'Skincare / personal care','Foto o registro de progreso':'Take a progress photo','Francés / idioma 20 minutos':'French / language practice for 20 minutes',
-    'Leer libro 20 minutos':'Read a book for 20 minutes','Registrar gasto del día':"Log today's expenses",'Revisar presupuesto semanal':'Review the weekly budget',
-    'Repetir afirmación positiva':'Repeat a positive affirmation','Escribir 3 cosas que hice bien':'Write 3 things I did well','No hablarme feo hoy':'Speak kindly to myself today',
-    'Pierna':'Legs','Brazos':'Arms','Vacantes':'Job applications','Casa':'Home','Tesis':'Thesis','Papers':'Papers',
-    'alta':'high','media':'medium','baja':'low','crítica':'critical','directa':'direct'
-  };
-  const PHRASE_PAIRS=[
-    ['Hacer algo amable por mí 3 times','Do something kind for myself 3 times'],['Hacer algo amable por mí','Do something kind for myself'],['No revisar chats viejos 7 days','Do not review old chats for 7 days'],['No revisar chats viejos','Do not review old chats'],['Portafolio/CV técnico 2 avances','Technical portfolio/CV: 2 improvements'],['Portafolio/CV técnico 2 progresss','Technical portfolio/CV: 2 improvements'],
-    ['Preparar presentación o defensa','Prepare a presentation or defense'],['Organizar resultados o gráficas','Organize results or charts'],['Corregir una sección o gráfico','Correct a section or chart'],
-    ['Escribir 3 cosas que hice bien','Write 3 things I did well'],['Dormir con intención','Sleep intentionally'],['Afirmación positiva','Positive affirmation'],
-    ['Pierna y glúteo','Legs and glutes'],['Registrar cargas','Log training weights'],['Avanzar tesis','Work on thesis'],['Leer paper','Read a paper'],
-    ['Aplicar a','Apply to'],['Practicar entrevista','Practice interview skills'],['Practicar Power BI','Practice Power BI'],['Practicar Python','Practice Python'],
-    ['Revisar followers / following','Review followers / following'],['Ordenar archivo visual / Instagram','Organize visual archive / Instagram'],
-    ['Lavar trastes','Wash dishes'],['Tender cama','Make the bed'],['Resolver 3 pendientes prácticos','Complete 3 practical pending items'],
-    ['Registrar gastos','Log expenses'],['Revisar pagos pendientes','Review pending payments'],['Revisar vacantes','Review job openings'],['Ordenar escritorio','Organize the desk'],
-    ['Entrenar','Train'],['Leer','Read'],['Francés','French'],['Revisar','Review'],['Ordenar','Organize'],['Preparar','Prepare'],['Resolver','Complete'],['Escribir','Write'],['Corregir','Correct'],['Registrar','Log'],
-    ['vacantes','job openings'],['presentación','presentation'],['sección','section'],['gráfico','chart'],['gráficas','charts'],['resultados','results'],['bloques','blocks'],['pendientes','pending items'],['prácticos','practical'],['gastos','expenses'],['pagos','payments'],['cama','bed'],['escritorio','desk'],['por semana','per week'],['1 vez','1 time'],
-    ['No hay contratos semanales.','No weekly contracts.'],['No hay tareas vinculadas','No linked missions'],['No hay misiones vinculadas','No linked missions'],
-    ['Misiones vinculadas','Linked missions'],['Tareas vinculadas','Linked missions'],['Vincular misión','Link mission'],['Crear misión','Create mission'],
-    ['Cumplido hoy','Done today'],['Cumplí hoy','Done today'],['esta semana','this week'],['reinicia cada semana','resets weekly'],['veces','times'],['días','days'],['día','day'],
-    ['Completada','Completed'],['Activa hoy','Active today'],['Inactiva','Inactive'],['Única','One-time'],['Archivada','Archived'],['No sugerir','Do not suggest'],
-    ['Categoría','Category'],['Dificultad','Difficulty'],['Descripción','Description'],['Notas','Notes'],['Prioridad','Priority'],['Frecuencia','Frequency'],
-    ['Fácil','Easy'],['Media','Medium'],['Difícil','Hard'],['Baja','Low'],['Alta','High'],['Crítica','Critical'],
-    ['Guardar','Save'],['Editar','Edit'],['Eliminar','Delete'],['Archivar','Archive'],['Duplicar','Duplicate'],['Completar','Complete'],['Deshacer','Undo'],['Hecha','Done'],
-    ['Mañana','Tomorrow'],['Ayer','Yesterday'],['Hoy','Today'],['Misiones','Missions'],['Misión','Mission'],['Metas','Goals'],['Meta','Goal'],
-    ['Contratos premium','Premium Contracts'],['Contrato premium','Premium Contract'],['Contratos','Contracts'],['Contrato','Contract'],
-    ['Configuración','Settings'],['Estadísticas','Statistics'],['Logros','Achievements'],['Afirmaciones','Affirmations'],['Calendario','Calendar'],['Pendientes','Pending'],
-    ['Salud y cuerpo','Health & body'],['Educación y maestría','Education & thesis'],['Carrera y dinero','Career & money'],['Autonomía emocional','Emotional autonomy'],
-    ['Orden y ejecución','Order & execution'],['Imagen y amor propio','Image & self-worth'],['Fortaleza física','Physical health'],['Fortaleza mental','Mental strength'],
-    ['Cultura / idiomas','Culture / languages'],['Finanzas','Finances'],['Amor propio','Self-worth'],['Madrugada profunda','Late night'],['Amanecer','Dawn'],['Mediodía','Noon'],['Tarde','Afternoon'],['Noche tardía','Late night'],['Noche','Night']
-  ].sort(function(a,b){return b[0].length-a[0].length;});
-
   function appSettings(){try{state.settings=state.settings||{};return state.settings;}catch(error){window.__v30103Settings=window.__v30103Settings||{};return window.__v30103Settings;}}
   function saveSafe(){try{if(typeof save==='function')save();}catch(error){console.error('v3.0.103 save error',error);}}
   function toastSafe(title,message){try{if(typeof toast==='function')toast(title,message||'');}catch(error){}}
@@ -24460,38 +24422,6 @@ body.ml-theme-ui .app,body.ml-theme-ui #app,.app,#app{position:relative!importan
     return {missions:removedM,contracts:removedC};
   }
 
-  function translateExact(value){const str=String(value==null?'':value);if(EXACT_ENGLISH[str])return EXACT_ENGLISH[str];let out=str;PHRASE_PAIRS.forEach(function(pair){out=out.split(pair[0]).join(pair[1]);});return out;}
-  const ENGLISH_AFFIRMATIONS={
-    mental:['I choose clarity over noise.','My focus grows every time I return to the task.','I can feel discomfort and still act with discipline.','One deliberate action can reset my whole day.'],
-    career:['My professional future is built through real preparation.','Every application and technical practice moves me forward.','I am capable of entering bigger rooms.','Strategy and execution create opportunities.'],
-    academic:['My thesis moves when I work on it.','I can finish this stage with evidence.','Science does not require perfect conditions.','Every focused block brings the finish line closer.'],
-    physical:['My body responds to repetition.','Every workout builds strength and presence.','Consistency is shaping the body I want.','Every set counts.'],
-    autonomy:['I do not chase what drains me.','Not reacting is also power.','My peace is not negotiable.','I choose dignity over impulse.'],
-    order:['Order gives my energy a direction.','A small reset prevents a larger mess.','I finish what is in front of me.','My environment supports my execution.'],
-    presence:['My presence comes from care and intention.','I can be visible without performing for approval.','I build my image through consistent actions.','Confidence grows from keeping promises to myself.'],
-    finance:['Every expense I track gives me more control.','I use money with intention.','Financial stability is built through repeated decisions.','I can enjoy life and still protect my future.'],
-    selflove:['I speak to myself with respect.','I do not need to earn my own kindness.','I choose myself without abandoning my goals.','My worth is not decided by someone else’s attention.'],
-    culture:['Learning expands the life available to me.','Every page and new word compounds.','Curiosity is part of my discipline.','I make room for ideas beyond my routine.']
-  };
-  function translateState(){try{if((localStorage.getItem('michelsLife.language.v1')||navigator.language||'').toLowerCase().startsWith('es'))return;}catch(_){} 
-    if(typeof state==='undefined'||!state)return false;
-    const before=JSON.stringify({m:(state.missions||[]).map(function(x){return [x&&x.name,x&&x.description,x&&x.notes,x&&x.subcategory,x&&x.priority];}),g:(state.goals||[]).map(function(x){return [x&&x.name,x&&x.description,x&&x.notes,x&&x.unit,x&&x.measure];}),a:(state.affirmations||[]).map(function(x){return x&&x.text;})});
-    (state.missions||[]).forEach(function(m){['name','description','notes','subcategory','priority'].forEach(function(k){if(typeof m[k]==='string')m[k]=translateExact(m[k]);});if(m.name)m.canonical=titleKey(m.name);});
-    (state.goals||[]).forEach(function(g){['name','description','notes','unit','measure'].forEach(function(k){if(typeof g[k]==='string')g[k]=translateExact(g[k]);});});
-    (state.affirmations||[]).forEach(function(a,index){if(!a||typeof a.text!=='string')return;if(/^a\d+$/.test(String(a.id||''))||/[áéíóúñ¿¡]/i.test(a.text)){const list=ENGLISH_AFFIRMATIONS[a.category]||ENGLISH_AFFIRMATIONS.mental;a.text=list[index%list.length];}});
-    try{if(typeof SHOP!=='undefined'&&Array.isArray(SHOP))SHOP.forEach(function(x){['name','rarity','desc'].forEach(function(k){if(typeof x[k]==='string')x[k]=translateExact(x[k]);});});}catch(error){}
-    try{if(typeof ACHIEVEMENTS!=='undefined'&&Array.isArray(ACHIEVEMENTS))ACHIEVEMENTS.forEach(function(x){if(Array.isArray(x)){x[1]=translateExact(x[1]);x[2]=translateExact(x[2]);}});}catch(error){}
-    appSettings().messageIntensity=translateExact(appSettings().messageIntensity||'direct');
-    const after=JSON.stringify({m:(state.missions||[]).map(function(x){return [x&&x.name,x&&x.description,x&&x.notes,x&&x.subcategory,x&&x.priority];}),g:(state.goals||[]).map(function(x){return [x&&x.name,x&&x.description,x&&x.notes,x&&x.unit,x&&x.measure];}),a:(state.affirmations||[]).map(function(x){return x&&x.text;})});
-    if(before!==after)saveSafe();
-    return before!==after;
-  }
-  function englishSweep(root){try{if((localStorage.getItem('michelsLife.language.v1')||navigator.language||'').toLowerCase().startsWith('es'))return;}catch(_){} 
-    root=root||document.body;if(!root)return;
-    root.querySelectorAll('input,textarea,[title],[aria-label],option').forEach(function(el){['placeholder','title','aria-label'].forEach(function(attr){if(el.hasAttribute&&el.hasAttribute(attr)){const old=el.getAttribute(attr),next=translateExact(old);if(next!==old)el.setAttribute(attr,next);}});if(el.tagName==='OPTION'){const next=translateExact(el.textContent);if(next!==el.textContent)el.textContent=next;}});
-    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:function(node){const p=node.parentElement;if(!p||['SCRIPT','STYLE','NOSCRIPT','TEXTAREA'].includes(p.tagName))return NodeFilter.FILTER_REJECT;return /[áéíóúñ¿¡]|\b(Misiones|Misión|Metas|Meta|Contratos|Contrato|Configuración|Estadísticas|Logros|Afirmaciones|Calendario|Pendientes|Completada|Activa hoy|Inactiva|Archivar|Eliminar|Duplicar|Editar|Guardar|Hoy|Ayer|Mañana|Fácil|Difícil|Media|Alta|Baja|Crítica)\b/i.test(node.nodeValue||'')?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT;}});
-    const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);nodes.forEach(function(n){const next=translateExact(n.nodeValue);if(next!==n.nodeValue)n.nodeValue=next;});
-  }
   function injectCleanupCard(){
     if(typeof state==='undefined'||!state||state.activeTab!=='settings')return;const main=document.getElementById('main');if(!main||main.querySelector('.v30103-cleanup-card'))return;
     const card=document.createElement('section');card.className='card v30103-cleanup-card';card.dataset.mlvI18nOwned='source';const bi=(en,es)=>window.mlvText?window.mlvText(en,es):(window.MichelsLifeI18n?.language==='es'?es:en);card.innerHTML='<div class="section-title"><div><h2>'+bi('Data cleanup','Limpieza de datos')+'</h2><p>'+bi('Checks for repeated missions and Premium Contracts without deleting progress.','Busca misiones y Contratos Premium repetidos sin borrar el progreso.')+'</p></div><span class="pill hot">v3.0.103</span></div><div class="v30103-cleanup-row"><button type="button" class="btn primary" data-v30103-action="cleanup">'+bi('Check duplicates now','Revisar duplicados ahora')+'</button><span class="pill">'+bi('Bilingual interface and default content','Interfaz y contenido predeterminado bilingües')+'</span></div><div class="v30103-cleanup-note">'+bi('Exact duplicates are merged. Completion dates, linked contracts, schedules and Next Up references are preserved.','Los duplicados exactos se fusionan. Se conservan fechas de finalización, contratos vinculados, horarios y referencias de Next Up.')+'</div>';main.appendChild(card);
