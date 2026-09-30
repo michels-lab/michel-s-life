@@ -17082,135 +17082,7 @@ body.ml-theme-ui [data-tab-panel="dashboard"] .v132-contract{
 
 
 <!-- v3.0.20: dashboard filter count sync + final English UI sweep -->
-<script id="v3020-dashboard-counts-and-english-sweep">
-(function(){
-  function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
-
-  function patchCoreEnglishLabels(){try{if((localStorage.getItem('michelsLife.language.v1')||navigator.language||'').toLowerCase().startsWith('es'))return;}catch(_){} 
-    try{
-      if(typeof DAY_NAMES!=='undefined' && Array.isArray(DAY_NAMES)){
-        ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach((v,i)=>DAY_NAMES[i]=v);
-      }
-    }catch(e){}
-    try{
-      if(typeof TABS!=='undefined' && Array.isArray(TABS)){
-        const tabNames={dashboard:'Dashboard',missions:'Missions',pet:'Pet',achievements:'Achievements',goals:'Goals',affirmations:'Affirmations',stats:'Stats',calendar:'Calendar',compare:'Compare',pending:'Pending',export:'AI Export',settings:'Settings',shop:'Badges',inventory:'Collection',character:'Build'};
-        TABS.forEach(t=>{ if(t && tabNames[t[0]]) t[1]=tabNames[t[0]]; });
-      }
-    }catch(e){}
-    try{
-      if(typeof CATEGORIES!=='undefined'){
-        const cats={
-          physical:'Physical health', academic:'Education / thesis', career:'Career', mental:'Mental strength', order:'Order / execution',
-          presence:'Image / presence', selflove:'Self-worth', finance:'Finances', autonomy:'Emotional autonomy', culture:'Culture / languages'
-        };
-        Object.entries(cats).forEach(([k,v])=>{ if(CATEGORIES[k]) CATEGORIES[k].name=v; });
-      }
-    }catch(e){}
-    try{
-      if(typeof DIFF!=='undefined'){
-        if(DIFF.easy) DIFF.easy.name='Easy';
-        if(DIFF.medium) DIFF.medium.name='Medium';
-        if(DIFF.hard) DIFF.hard.name='Hard';
-        if(DIFF.boss) DIFF.boss.name='Boss';
-      }
-    }catch(e){}
-  }
-
-  const PAIRS=[
-    ['Today’s to‑do','Today’s to-do'],['Today’s to–do','Today’s to-do'],['to‑do','to-do'],
-    ['Panel de progreso','Progress panel'],['Hoy, semana, mes y año con lectura real.','Today, week, month, and year with real tracking.'],
-    ['Nivel global','Global level'],['Racha','Streak'],['días activos seguidos','active days in a row'],['resistencias derrotadas','resistances defeated'],
-    ['+ Tarea rápida','+ Quick task'],['Para pendientes únicos o misiones del día.','For one-time tasks or today’s missions.'],['Crear tarea rápida','Create quick task'],['Ver misiones','View missions'],
-    ['Missionses','Missions'],['Missiones','Missions'],['Goalsas','Goals'],['Configuración','Settings'],['Afirmaciones','Affirmations'],['Calendario','Calendar'],['Comparar','Compare'],['Exportar IA','AI Export'],['Pendientes','Pending'],['Misiones','Missions'],['Misión','Mission'],['Metas','Goals'],['Meta','Goal'],['Logros','Achievements'],['Logro','Achievement'],['Estadísticas','Statistics'],['Insignias','Badges'],['Insignia','Badge'],['Colección','Collection'],['Mascota','Pet'],
-    ['Contratos premium','Premium contracts'],['Contrato premium','Premium contract'],['Contratos','Contracts'],['Contrato','Contract'],['Hábitos semanales con XP/monedas diarios y bonus al completar.','Weekly habits with daily XP and a completion bonus.'],
-    ['Reinicio semanal en','Weekly reset in'],['Reinicio','Reset'],['Semana actual','Current week'],['se reinicia en','resets in'],['reinicia en','resets in'],['reinicia cada semana','resets weekly'],['esta semana','this week'],['cada semana','every week'],
-    ['Hoy +','Today +'],['Bonus semanal','Weekly bonus'],['bono semanal','weekly bonus'],['Cumplido hoy','Done today'],['Cumplí hoy','Done today'],['Avance premium','Premium progress'],['Contrato completado','Contract completed'],['Ya marcado hoy','Already marked today'],['Este contrato ya tuvo avance hoy.','This contract already has progress today.'],
-    ['Tarea rápida','Quick task'],['Nueva tarea','New task'],['Nueva misión','New mission'],['Nueva meta','New goal'],['Agregar','Add'],['Agrega','Add'],['Añadir','Add'],['Editar meta','Edit goal'],['Editar','Edit'],['Guardar cambios','Save changes'],['Guardar colores','Save colors'],['Guardar','Save'],['Eliminar','Delete'],['Archivar','Archive'],['Archivada','Archived'],['Archivadas','Archived'],['Duplicar','Duplicate'],['Completar','Complete'],['Completada','Completed'],['Completadas','Completed'],['completadas','completed'],['Desmarcar','Unmark'],['Deshacer','Undo'],['Hecha','Done'],['No aplica hoy','Not today'],['Mover a mañana','Move to tomorrow'],['Mañana','Tomorrow'],['mañana','tomorrow'],['Hoy','Today'],['hoy','today'],['Ayer','Yesterday'],['ayer','yesterday'],
-    ['Todas','All'],['Todos','All'],['Activas','Active'],['Activa hoy','Active today'],['Inactiva','Inactive'],['No sugerir','Do not suggest'],['No volver a sugerir','Do not suggest again'],['visibles','visible'],
-    ['Nombre','Name'],['Categoría','Category'],['Dificultad','Difficulty'],['Tipo','Type'],['Prioridad','Priority'],['Descripción','Description'],['Sin descripción','No description'],['Notas','Notes'],['Fecha límite','Deadline'],['Días','Days'],['Repetir días','Repeat days'],['Objetivo','Target'],['objetivo','target'],['Frecuencia','Frequency'],['Checklist','Checklist'],
-    ['Un solo uso','One-time'],['Diaria','Daily'],['diaria','daily'],['Semanal','Weekly'],['semanal','weekly'],['Única','One-time'],['Único','One-time'],['Boss quest única','One-time boss quest'],['Meta semanal','Weekly goal'],['Meta mensual','Monthly goal'],['Por días','By days'],['Por acciones','By actions'],
-    ['Fácil','Easy'],['Media','Medium'],['Difícil','Hard'],['Crítica','Critical'],['Baja','Low'],['Alta','High'],
-    ['Salud y cuerpo','Health & body'],['Salud','Health'],['Educación y maestría','Education & thesis'],['Educación','Education'],['Carrera y dinero','Career & money'],['Carrera profesional','Career'],['Imagen y amor propio','Image & self-worth'],['Imagen / presencia','Image / presence'],['Autonomía emocional','Emotional autonomy'],['Orden y ejecución','Order & execution'],['Disciplina y orden','Order / execution'],['Fortaleza física','Physical health'],['Fortaleza mental','Mental strength'],['Maestría / ciencia','Education / thesis'],['Cultura / idiomas','Culture / languages'],['Amor propio','Self-worth'],['Finanzas','Finances'],['Otros','Other'],
-    ['No hay misiones para hoy. Agrega una rápida o revisa tus frecuencias.','No missions for today. Add a quick one or check your frequencies.'],['No hay misiones','No missions'],['No hay metas','No goals'],['No hay contratos','No contracts'],['No hay logros','No achievements'],['No hay insignias','No badges'],['Sin misiones activas aquí.','No active missions here.'],['No missions in this view.','No missions in this view.'],
-    ['Te quedaron','You have'],['pendientes de ayer','pending from yesterday'],['de ayer','from yesterday'],['Mover todos sin duplicar','Move all without duplicates'],['Elegir cuáles','Choose which ones'],['Puedes moverlos a hoy sin duplicar tareas que ya existen.','Move them to today without duplicating existing tasks.'],
-    ['Progreso semanal','Weekly progress'],['Progreso','Progress'],['progreso','progress'],['conteo','count'],['Conteo','Count'],['Actualizar conteos','Refresh counts'],['Restaurar sugeridas','Restore suggested'],['Metas sugeridas','Suggested goals'],['Metas archivadas','Archived goals'],['Las puedes reactivar cuando quieras.','You can reactivate them whenever you want.'],['No hay metas archivadas.','No archived goals.'],['Reactivar','Reactivate'],
-    ['monedas','coins'],['Monedas','Coins'],['disponibles','available'],['acumulados','earned'],['Veces','Times'],['veces','times'],['vez','time'],['día','day'],['días','days'],['sesiones','sessions'],['completadas','completed'],['desbloqueadas','unlocked'],['desbloqueados','unlocked'],['desbloqueado','unlocked'],['Bloqueado','Locked'],['Desbloqueado','Unlocked'],['En progreso','In progress'],
-    ['Lun','Mon'],['Mar','Tue'],['Mié','Wed'],['Mie','Wed'],['Jue','Thu'],['Vie','Fri'],['Sáb','Sat'],['Sab','Sat'],['Dom','Sun'],['lunes','Monday'],['martes','Tuesday'],['miércoles','Wednesday'],['miercoles','Wednesday'],['jueves','Thursday'],['viernes','Friday'],['sábado','Saturday'],['sabado','Saturday'],['domingo','Sunday'],['ene','Jan'],['feb','Feb'],['abr','Apr'],['ago','Aug'],['sept','Sep'],['sep','Sep'],['oct','Oct'],['dic','Dec'],
-    ['Pierna y glúteo','Legs and glutes'],['pierna/glúteo','legs/glutes'],['glúteo','glutes'],['Registrar cargas','Log training weights'],['Trabajar tesis','Work on thesis'],['Tesis','Thesis'],['Mandar CV','Send resume'],['Casa sin caos','Chaos-free home'],['Mente de acero','Steel mind'],['Candidato a industria','Industry candidate'],['Vida ordenada','Organized life'],['No disponible emocionalmente','Emotionally unavailable'],['Me elijo','I choose myself'],
-    ['Esta es la hora de atacar lo importante, no de decorar pendientes.','This is the hour to attack what matters, not decorate your to-do list.'],['Si haces una misión fuerte temprano, el resto del día deja de sentirse perdido.','A strong mission early makes the rest of the day feel less lost.'],['La tarde no es derrota; es segunda oportunidad.','Afternoon is not defeat; it is a second chance.'],['La noche no pide perfección; pide cierre.','Night does not ask for perfection; it asks for closure.'],['Última llamada: una misión pequeña o descanso real.','Last call: a small mission or real rest.'],['La disciplina también es saber apagar.','Discipline also means knowing when to shut down.']
-  ];
-
-  const SORTED=PAIRS.slice().sort((a,b)=>b[0].length-a[0].length);
-  function replaceText(str){
-    let out=String(str??'');
-    for(const [a,b] of SORTED) out=out.split(a).join(b);
-    out=out
-      .replace(/\b(\d+)\s+misiones\b/gi,'$1 missions')
-      .replace(/\b(\d+)\s+metas\b/gi,'$1 goals')
-      .replace(/\b(\d+)\s+día(s)?\b/gi,(m,n,s)=>`${n} day${s?'s':''}`)
-      .replace(/\b(\d+)\s+veces\b/gi,'$1 times')
-      .replace(/\bMissionss\b/g,'Missions')
-      .replace(/\bGoalsas\b/g,'Goals')
-      .replace(/\bThesisis\b/g,'Thesis');
-    return out;
-  }
-
-  function englishSweep(root=document.body){try{if((localStorage.getItem('michelsLife.language.v1')||navigator.language||'').toLowerCase().startsWith('es'))return;}catch(_){} 
-    patchCoreEnglishLabels();
-    if(!root) return;
-    try{
-      root.querySelectorAll('input,textarea').forEach(el=>{
-        ['placeholder','title','aria-label'].forEach(attr=>{
-          if(el.hasAttribute(attr)){
-            const old=el.getAttribute(attr), next=replaceText(old);
-            if(next!==old) el.setAttribute(attr,next);
-          }
-        });
-      });
-      root.querySelectorAll('select,option,button,a,[title],[aria-label]').forEach(el=>{
-        ['title','aria-label'].forEach(attr=>{
-          if(el.hasAttribute(attr)){
-            const old=el.getAttribute(attr), next=replaceText(old);
-            if(next!==old) el.setAttribute(attr,next);
-          }
-        });
-      });
-      const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(node){
-        const p=node.parentElement;
-        if(!p || ['SCRIPT','STYLE','NOSCRIPT','TEXTAREA'].includes(p.tagName)) return NodeFilter.FILTER_REJECT;
-        const t=node.nodeValue||'';
-        return /[áéíóúÁÉÍÓÚñÑ]|\b(Misiones|Misión|Metas|Meta|Configuración|Afirmaciones|Calendario|Comparar|Pendientes|Logros|Insignias|Estadísticas|Contratos|Contrato|Reinicio|Semana|Hoy|Ayer|Mañana|monedas|completad|pendientes|Agregar|Editar|Guardar|Eliminar|Archivar|Duplicar|Completar|Desmarcar|Pierna|glúteo|Registrar cargas|Tesis|Fácil|Difícil|Media|Orden|Autonomía|Finanzas)\b/.test(t) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
-      }});
-      const nodes=[]; while(walker.nextNode()) nodes.push(walker.currentNode);
-      nodes.forEach(n=>{ const next=replaceText(n.nodeValue); if(next!==n.nodeValue) n.nodeValue=next; });
-    }catch(e){}
-  }
-
-  function scheduleSweep(){
-    clearTimeout(window.__v3020EnglishSweepTimer);
-    window.__v3020EnglishSweepTimer=setTimeout(()=>englishSweep(document.body),40);
-  }
-
-  const oldRenderAll=window.renderAll;
-  window.renderAll=function(){
-    patchCoreEnglishLabels();
-    const result=typeof oldRenderAll==='function'?oldRenderAll.apply(this,arguments):undefined;
-    requestAnimationFrame(()=>englishSweep(document.getElementById('main')||document.body));
-    return result;
-  };
-
-  if(!window.__v3020EnglishObserver){
-    window.__v3020EnglishObserver=true;
-    document.addEventListener('DOMContentLoaded',()=>englishSweep(document.body),{once:true});
-    /* v3.0.113: final English engine replaced the full-document character observer. */
-  }
-
-  patchCoreEnglishLabels();
-  setTimeout(()=>englishSweep(document.body),0);
-  setTimeout(()=>englishSweep(document.body),250);
-})();
-</script>
+<!-- v3.0.20 legacy English sweep retired: source-bilingual renderers + canonical i18n own language. -->
 
 
 <!-- v3.0.21: Dashboard category filters now filter the real rendered mission list, not only the filter pills/counts -->
@@ -24628,25 +24500,24 @@ body.ml-theme-ui .app,body.ml-theme-ui #app,.app,#app{position:relative!importan
   let maintenanceTimer=0;
   function maintenance(){clearTimeout(maintenanceTimer);maintenanceTimer=setTimeout(function(){
     applyBackground(false);
-    const main=document.getElementById('main');if(main)englishSweep(main);
     if(state&&state.activeTab==='settings'){repairSettings();injectCleanupCard();}
   },24);}
   document.addEventListener('click',function(event){
-    const btn=event.target&&event.target.closest&&event.target.closest('[data-v30103-action="cleanup"]');if(btn){event.preventDefault();cleanupDuplicates(true);translateState();try{if(typeof renderAll==='function')renderAll();}catch(error){}maintenance();return;}
+    const btn=event.target&&event.target.closest&&event.target.closest('[data-v30103-action="cleanup"]');if(btn){event.preventDefault();cleanupDuplicates(true);try{if(typeof renderAll==='function')renderAll();}catch(error){}maintenance();return;}
     if(event.target&&event.target.closest&&event.target.closest('[data-tab],.tab-btn,#v131More'))setTimeout(maintenance,35);
   },true);
   document.addEventListener('change',function(event){if(event.target&&event.target.id==='setStage'){setTimeout(function(){applyBackground(true);},20);}},true);
 
   function boot(){
-    translateState();const result=cleanupDuplicates(false);backgroundLayer();applyBackground(true);
-    if(state&&state.activeTab==='settings')repairSettings();englishSweep(document.body);injectCleanupCard();
+    const result=cleanupDuplicates(false);backgroundLayer();applyBackground(true);
+    if(state&&state.activeTab==='settings')repairSettings();injectCleanupCard();
     setTimeout(function(){if(state&&state.activeTab==='settings')repairSettings();},180);
     if(result.missions||result.contracts)toastSafe(uiBi('Duplicate data cleaned','Datos duplicados limpiados'),result.missions+' '+(result.missions===1?uiBi('duplicate mission','misión duplicada'):uiBi('duplicate missions','misiones duplicadas'))+' '+uiBi('and','y')+' '+result.contracts+' '+(result.contracts===1?uiBi('duplicate contract','contrato duplicado'):uiBi('duplicate contracts','contratos duplicados'))+' '+uiBi('were merged safely.','se fusionaron de forma segura.'));
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
   window.addEventListener('load',function(){maintenance();},{once:true});
   setInterval(function(){applyBackground(false);},60000);
-  window.v30103={applyBackground:applyBackground,repairSettings:repairSettings,cleanupDuplicates:cleanupDuplicates,englishSweep:englishSweep};
+  window.v30103={applyBackground:applyBackground,repairSettings:repairSettings,cleanupDuplicates:cleanupDuplicates};
 })();
 </script>
 
@@ -28676,7 +28547,6 @@ function repairSettings(){
  try{window.v3060RenderBackgroundCard?.()}catch(e){console.warn('v30168 background card',e)}
  try{window.v30103?.repairSettings?.()}catch(_){}
  try{window.MLDayTextEngine?.refresh?.()}catch(_){}
- try{window.v30103?.englishSweep?.(document.getElementById('main'))}catch(_){}
  return !!document.querySelector('#tab-settings');
 }
 function fallbackStory(){const main=document.getElementById('main');if(!main)return;let html='';try{html=window.FocusStoryV30162?.renderStory?.()||''}catch(_){}if(html)main.innerHTML='<section class="tab active" id="tab-story">'+html+'</section>'}
