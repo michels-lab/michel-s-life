@@ -1,5 +1,38 @@
 # Michel's Life — Git Audit Log
 
+## 2026-10-01 — Android v0.1.0 synchronized-client prototype
+
+### Goal
+- Build a native Android client that uses the same Michel's Life state as Windows instead of creating a separate mobile data model.
+- Reuse the current Michel's Life web application inside a native Android WebView and implement a native bridge compatible with the Windows WebView2 cloud messages.
+
+### Cloud compatibility
+- Android uses the same Google Drive application-data scope: `https://www.googleapis.com/auth/drive.appdata`.
+- Master cloud object: `michels_life_cloud_state.json`.
+- Cloud history prefix: `michels_life_backup_` with the same 10-backup retention target.
+- Device-presence prefix: `michels_life_device_`.
+- Preserved SHA-256 state hashing, `michelsLifeHash`, `michelsLifeDevice`, `michelsLifeUpdatedAt`, first-device download behavior and the Windows 3-second conflict-resolution window.
+- Android bridge implements the current state-sync actions: `status`, `connect`, `disconnect`, `cloudDirty`, `cloudSync`, `cloudAccept`, `cloudOverview`, `cloudRestoreBackup`, local restore-point creation/list/restore and basic Android diagnostics.
+
+### Android build
+- Package: `com.michelslab.michelslife`.
+- Android test version: `0.1.0`.
+- Stable build baseline: compile/target Android 16 (API 36), JDK 17, AGP 9.4.0, Gradle 9.6.0.
+- OkHttp pinned to 5.4.0 because 5.5.0 requires compile API 37 while Android 17 SDK distribution is still preview-dependent.
+- Build Android test APK run #18 — **success**.
+- Windows-compatible cloud-contract validation — **success**.
+- APK artifact: `MichelsLife-Android-TEST-v0.1.0` — 67,714,829 bytes (artifact archive).
+- APK SHA-256: `51463cf688779e9edb9b7494dbf89fcb9de8361acf159fcae39fb6ebdd942e86`.
+- Test signing certificate SHA-1: `FE:B1:35:23:32:60:6A:5F:88:C7:E6:FA:B4:50:B2:CF:C6:5A:EB:9E`.
+- Test signing certificate SHA-256: `73:59:AB:A9:5C:BF:C6:B4:2F:0A:70:05:A3:A3:44:14:59:AC:E5:3B:F4:60:D3:F9:61:82:18:20:3F:D9:E7:CF`.
+
+### Remaining live-sync gate
+- Google requires a separate Android OAuth client for each Android package/signing certificate combination.
+- Before live Drive sync can be exercised on the test APK, create an Android OAuth client in the existing Michel's Life Google Cloud project with package `com.michelslab.michelslife` and the test SHA-1 above.
+- No Android client secret is embedded in the APK.
+- Google Calendar event synchronization is not implemented in Android v0.1.0 yet; this milestone targets Michel's Life state/cloud synchronization first.
+
+
 > Chronological technical record of important repository, CI, release, and recovery events.
 > This file complements `CHANGELOG.md`: the changelog describes product changes by release, while this audit log records how the repository reached that state.
 
