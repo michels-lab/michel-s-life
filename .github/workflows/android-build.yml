@@ -57,6 +57,17 @@ jobs:
           mkdir -p artifacts/android
           cp android/app/build/outputs/apk/debug/app-debug.apk             artifacts/android/MichelsLife-Android-TEST-v0.1.0.apk
 
+      - name: Print Android test signing fingerprints
+        run: |
+          echo "=== Android debug signing certificate ==="
+          keytool -list -v \
+            -keystore "$HOME/.android/debug.keystore" \
+            -storepass android \
+            -alias androiddebugkey \
+            -keypass android | grep -E "SHA1:|SHA256:"
+          echo "=== APK SHA-256 ==="
+          sha256sum artifacts/android/MichelsLife-Android-TEST-v0.1.0.apk
+
       - uses: actions/upload-artifact@v4
         with:
           name: MichelsLife-Android-TEST-v0.1.0
