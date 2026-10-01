@@ -4,7 +4,7 @@ plugins {
 
 android {
     namespace = "com.michelslab.michelslife"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.michelslab.michelslife"
@@ -29,5 +29,5 @@ android {
 dependencies {
     implementation("androidx.webkit:webkit:1.16.0")
     implementation("com.google.android.gms:play-services-auth:22.0.0")
-    implementation("com.squareup.okhttp3:okhttp:5.5.0")
+    implementation("com.squareup.okhttp3:okhttp:5.4.0")
 }
