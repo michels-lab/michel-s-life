@@ -30,13 +30,7 @@ jobs:
         run: |
           echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "build-tools;36.0.0" "platform-tools"
-          if [ ! -d "$ANDROID_HOME/platforms/android-37" ]; then
-            echo "Android API 37 is not present on this runner."
-            "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --list --channel=3 | grep -E "platforms;android-(37|Cinnamon)" || true
-            exit 1
-          fi
-          echo "Using preinstalled Android API 37: $ANDROID_HOME/platforms/android-37"
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" "platform-tools"
 
       - name: Validate Windows-compatible cloud contract
         run: python android/tools/validate_sync_contract.py
