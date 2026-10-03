@@ -81,10 +81,37 @@
   function clickTab(id){
     if(!id)return false;
     const target=q('#v30171PrimaryNav [data-tab="'+escSelector(id)+'"]')||q('#side [data-tab="'+escSelector(id)+'"]')||q('[data-tab="'+escSelector(id)+'"]');
+    const router=window.LeftNavV30171;
+    try{
+      if(router&&typeof router.route==='function'){
+        router.route(id);
+        setDrawer(false);
+        setTimeout(updateTopbarTitle,0);
+        const debug=window.__mlvAndroidGestureDebug;
+        if(debug){
+          debug.router='LeftNavV30171.route';
+          debug.requestedTab=id;
+          debug.activeImmediately=activeTabId();
+          setTimeout(()=>{debug.activeAfter120=activeTabId();},120);
+          setTimeout(()=>{debug.activeAfter500=activeTabId();},500);
+        }
+        return true;
+      }
+    }catch(error){
+      console.warn('Michel\'s Life Android route fallback',error);
+    }
     if(!target)return false;
     target.click();
     setDrawer(false);
     setTimeout(updateTopbarTitle,0);
+    const debug=window.__mlvAndroidGestureDebug;
+    if(debug){
+      debug.router='button.click';
+      debug.requestedTab=id;
+      debug.activeImmediately=activeTabId();
+      setTimeout(()=>{debug.activeAfter120=activeTabId();},120);
+      setTimeout(()=>{debug.activeAfter500=activeTabId();},500);
+    }
     return true;
   }
 
