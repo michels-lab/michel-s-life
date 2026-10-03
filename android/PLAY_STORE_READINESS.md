@@ -230,7 +230,7 @@ Pending final device validation:
 - [x] Google Play install channel recognized by Android update status.
 - [x] Android-specific mobile UX first pass.
 - [x] Android mobile UX static validation.
-- [ ] Automated 412×915 browser UX smoke is green.
+- [x] Automated 412×915 browser UX smoke is green.
 - [ ] Physical-device v0.2.0 UX validation.
 - [ ] Physical-device Google authorization and Drive sync validation.
 - [ ] Permanent upload key created and secured.
