@@ -178,10 +178,26 @@
         .mlv-android-topbar-copy{min-width:0;display:flex;flex-direction:column;gap:1px}.mlv-android-topbar-copy strong{font-size:13px;line-height:1.1}.mlv-android-topbar-copy span{font-size:11px;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:62vw}
         #mlv-android-drawer-backdrop{display:block;position:fixed;inset:calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px)) 0 0;border:0;padding:0;background:rgba(0,0,0,.48);opacity:0;pointer-events:none;z-index:2147482990;transition:opacity .18s ease}
         body.mlv-android-nav-open #mlv-android-drawer-backdrop{opacity:1;pointer-events:auto}
+        .app{max-width:none!important;width:100%!important;margin:0!important;padding:0!important}
+        .topbar{display:none!important}
         .app-shell,.layout,.content,#main{min-width:0!important;max-width:100%!important;width:100%!important;box-sizing:border-box!important}
-        .app-shell,.layout{grid-template-columns:minmax(0,1fr)!important;display:block!important}
-        #side{position:fixed!important;top:calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px))!important;left:0!important;bottom:0!important;width:min(86vw,320px)!important;max-width:320px!important;height:auto!important;overflow-y:auto!important;transform:translateX(-105%)!important;transition:transform .2s ease!important;z-index:2147482995!important;margin:0!important;border-radius:0 18px 18px 0!important;box-shadow:12px 0 35px rgba(0,0,0,.35)!important;overscroll-behavior:contain}
-        body.mlv-android-nav-open #side{transform:translateX(0)!important}
+        .app-shell,.layout{grid-template-columns:minmax(0,1fr)!important;display:block!important;margin-top:6px!important}
+        #fixedStatusBar{position:relative!important;top:auto!important;margin:6px 8px!important;padding:7px 8px!important;border-radius:14px!important;display:flex!important;align-items:center!important;gap:6px!important;overflow-x:auto!important;min-height:0!important}
+        #fixedStatusBar .status-block{flex:0 0 auto!important}
+        #fixedStatusBar .status-time{font-size:18px!important;min-width:0!important}
+        #fixedStatusBar .status-greeting{display:none!important}
+        #fixedStatusBar .status-metrics{display:flex!important;grid-template-columns:none!important;gap:5px!important;flex:0 0 auto!important}
+        #fixedStatusBar .status-chip{padding:5px 7px!important;min-width:auto!important;border-radius:10px!important}
+        #fixedStatusBar .status-chip small{font-size:8px!important}
+        #fixedStatusBar .status-chip b{font-size:11px!important}
+        #fixedStatusBar .status-stage{display:none!important}
+        #v30171Sidebar{position:fixed!important;top:calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px))!important;left:0!important;bottom:0!important;width:min(86vw,320px)!important;max-width:320px!important;height:auto!important;max-height:none!important;overflow-y:auto!important;transform:translateX(-105%)!important;transition:transform .2s ease!important;z-index:2147482995!important;margin:0!important;padding:10px!important;border-radius:0 18px 18px 0!important;box-shadow:12px 0 35px rgba(0,0,0,.35)!important;overscroll-behavior:contain}
+        body.mlv-android-nav-open #v30171Sidebar{transform:translateX(0)!important}
+        #v30171Sidebar .v30171-brand{flex-direction:row!important;justify-content:flex-start!important;text-align:left!important;gap:8px!important;padding:5px 4px 9px!important}
+        #v30171Sidebar .v30171-brand-mark{width:38px!important;height:38px!important;min-width:38px!important;font-size:20px!important}
+        #v30171Sidebar h1.v30171-brand-title{font-size:13px!important;text-align:left!important}
+        #v30171PrimaryNav{display:flex!important;flex-direction:column!important;grid-template-columns:none!important;gap:4px!important;padding:2px 0 8px!important}
+        #v30171PrimaryNav .v30171-nav-btn{min-height:40px!important;padding:8px 9px!important;gap:8px!important;font-size:12px!important}
         #main,.content{margin:0!important;padding:8px!important}
         .card,.v132-panel,.v131-hero{max-width:100%!important;box-sizing:border-box!important}
         .v131-stack,.dashboard-v13{gap:8px!important}
@@ -195,6 +211,7 @@
         article.v132-mission>div,article.v137-mission>div,article.mission-card>div,article.quest-card>div{grid-column:2!important;min-width:0!important}
         article.v132-mission h3,article.v137-mission h3,.mission-card h3,.quest-card h3{overflow-wrap:anywhere!important;margin-top:1px!important}
         .v131-pills,.pills,.chips{display:flex!important;flex-wrap:wrap!important;gap:5px!important;min-width:0!important}
+        .v132-mission-actions{grid-column:2!important;display:flex!important;justify-content:flex-end!important;align-items:center!important;gap:6px!important;min-width:0!important;margin-top:6px!important}
         .v132-actions,.v131-actions,.quest-actions,article.v132-mission .actions,article.v137-mission .actions{display:flex!important;flex-wrap:wrap!important;gap:6px!important;min-width:0!important}
         .v132-actions button,.v131-actions button,.quest-actions button,article.v132-mission .actions button,article.v137-mission .actions button{min-height:38px!important;max-width:100%!important;white-space:normal!important}
         input,select,textarea,button{max-width:100%;box-sizing:border-box}
