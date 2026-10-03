@@ -2,6 +2,10 @@
 
 Android client for the same Michel's Life state used by Windows.
 
+## Development audit log
+
+The permanent Android development record is [`ANDROID_AUDIT_LOG.md`](ANDROID_AUDIT_LOG.md). It tracks completed work, pending work, validation evidence, Play Store preparation, device-test requirements, and follow-up items. Update it during every meaningful Android development cycle.
+
 ## Architecture
 
 - The APK packages the current Michel's Life AppBundle inside a native Android WebView.
