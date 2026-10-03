@@ -28,7 +28,7 @@
 - **DONE** — Play Store AAB generation was added to CI.
 - **DONE** — Release signing configuration can be supplied through environment variables without committing secrets.
 - **DONE** — Temporary one-off Android/Play publishing workflows were removed after use.
-- **PENDING** — Complete the Android-only mobile UX redesign requested after testing.
+- **IN PROGRESS** — Android-only mobile UX redesign is implemented in a first pass and now requires CI + physical-device validation.
 - **PENDING** — Produce and validate a properly signed production AAB for Google Play.
 - **PENDING** — Finish Play Console publishing requirements and internal testing.
 - **NEEDS DEVICE TEST** — Verify real Google authorization + Drive synchronization end-to-end on Android.
@@ -40,18 +40,18 @@ These changes apply to the Android app only. They must not alter the approved de
 
 ### Layout and primary screen
 
-- **PENDING** — Fix checklist rows/cards that appear misaligned or visually crooked on the phone layout.
-- **PENDING** — Reduce unnecessary vertical space so the primary/current-day screen is visible immediately instead of requiring an initial scroll.
-- **PENDING** — Rework mobile spacing, touch targets, card widths, and wrapping so the interface feels designed for a phone rather than a desktop page squeezed into a WebView.
-- **PENDING** — Preserve the approved Michel's Life visual identity while making the Android layout compact and native-feeling.
+- **DONE** — Added Android-only mission/checklist row alignment with fixed touch-sized check controls and a stable two-column mobile grid. **NEEDS DEVICE TEST** for visual confirmation.
+- **DONE** — Added Android-only compact dashboard spacing, single-column mobile dashboard flow, reduced card gaps, and a fixed compact top bar. **NEEDS DEVICE TEST** for the exact initial viewport.
+- **DONE** — Added Android-only mobile widths, wrapping, touch targets, action wrapping, card sizing, and safe overflow rules. **NEEDS DEVICE TEST**.
+- **DONE** — Mobile UX is injected only by `android/android-bridge.js`; the approved desktop/Windows frontend source is untouched. **NEEDS DEVICE TEST** for final polish.
 
 ### Navigation
 
-- **PENDING** — Replace the always-consuming desktop-style navigation area with a compact Android navigation model.
-- **PENDING** — Support a collapsible/expandable menu.
-- **PENDING** — Support moving between the major app areas with left/right swipe gestures where that does not conflict with controls.
-- **PENDING** — Use icon-first navigation with short/small labels where useful, rather than large desktop navigation text.
-- **PENDING** — Keep the active section obvious and make all primary destinations reachable without excessive scrolling.
+- **DONE** — The desktop sidebar becomes an off-canvas Android drawer below a fixed compact top bar on phone widths. **NEEDS DEVICE TEST**.
+- **DONE** — Added hamburger-triggered drawer, backdrop close, navigation close, and edge-swipe open/close behavior. **NEEDS DEVICE TEST**.
+- **DONE** — Added guarded left/right swipe navigation across major app areas, ignoring interactive controls and horizontal scrollers. **NEEDS DEVICE TEST**.
+- **IN PROGRESS** — Android now uses a compact icon-first top-bar entry point while reusing the existing sidebar destinations inside the drawer. Further label/icon trimming remains a device-polish task.
+- **DONE** — Added current-section title in the Android top bar and kept all primary destinations reachable from the drawer. **NEEDS DEVICE TEST**.
 
 ### Android update behavior
 
@@ -230,3 +230,43 @@ For every meaningful Android development action, add an entry containing:
 Do not mark an item **VALIDATED** only because code exists. Validation requires a concrete build, automated test, or physical-device observation.
 
 Do not silently remove unfinished work. When a pending item is completed, move its status forward and record the completion chronologically.
+
+
+## 2026-10-03 — Android mobile UX first implementation pass
+
+Commits:
+- `123b6678` — **Add Android mobile navigation and responsive UX**
+- `3592a474` — **Coordinate Android back behavior with mobile UI**
+- `50f302e0` — **Add Android mobile UX contract validator**
+- `d30055fa` — **Validate Android mobile UX in CI**
+
+Requested/observed problems:
+- Checklist/mission rows were visually crooked on the phone layout.
+- The initial mobile screen consumed too much vertical space before the primary content.
+- Desktop-style navigation occupied too much space on Android.
+- Android needed a collapsible menu and natural left/right swipe navigation.
+- Mobile-only changes must not alter the approved desktop/Windows layout.
+
+Implemented:
+- Added a fixed compact Android top bar with the active section title.
+- Converted the existing sidebar into an off-canvas drawer only on phone widths.
+- Added backdrop close, navigation close, left-edge drawer opening, and swipe-left-to-close behavior.
+- Added guarded left/right swipes between major app sections.
+- Swipe navigation ignores buttons, links, forms, modal controls, mission action areas, and known horizontal scrollers.
+- Added Android-only responsive rules for dashboard/card spacing and width handling.
+- Mission/checklist cards use a stable two-column mobile grid with a 36 px touch-sized check control.
+- Mission action rows and pills wrap instead of forcing horizontal overflow.
+- Android Back now first closes the drawer or visible modal before falling back to WebView history/system back.
+- Added `android/tools/validate_android_mobile_ux.py`.
+- Android CI now runs `node --check android/android-bridge.js` plus the mobile UX contract validator before building.
+- No desktop/Windows frontend file was modified by this Android UX pass.
+
+Validation evidence:
+- **VALIDATED** — `android/android-bridge.js` passed local `node --check`.
+- **VALIDATED** — the new mobile UX contract validator passed locally against a repo-equivalent test structure.
+- **DONE** — all source changes were committed to `main`.
+- **PENDING** — GitHub Actions completion is not yet confirmed through the available connector.
+- **NEEDS DEVICE TEST** — visual layout, exact first viewport, drawer feel, swipe thresholds, checkbox alignment, animation continuity, and Back behavior on a physical Android phone.
+
+Current state:
+- **IN PROGRESS** — first Android-specific UX implementation is complete in source; CI/device validation and visual refinement are the next gate.
