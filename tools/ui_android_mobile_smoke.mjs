@@ -147,11 +147,21 @@ try{
   }
 
   await touchSwipe(390,700,110,700);
-  await page.waitForFunction(
-    ()=>document.querySelector('#v30171PrimaryNav [data-tab="missions"]')?.classList.contains('active') ||
-        document.querySelector('#v30171PrimaryNav [data-tab="missions"]')?.getAttribute('aria-current')==='page',
-    null,{timeout:5000}
-  );
+  try{
+    await page.waitForFunction(
+      ()=>document.querySelector('#v30171PrimaryNav [data-tab="missions"]')?.classList.contains('active') ||
+          document.querySelector('#v30171PrimaryNav [data-tab="missions"]')?.getAttribute('aria-current')==='page',
+      null,{timeout:5000}
+    );
+  }catch(error){
+    const debug=await page.evaluate(()=>({
+      gesture:window.__mlvAndroidGestureDebug||null,
+      active:document.querySelector('#v30171PrimaryNav [aria-current="page"]')?.dataset?.tab||
+             document.querySelector('#v30171PrimaryNav .active[data-tab]')?.dataset?.tab||'',
+      targetAtStart:(()=>{const el=document.elementFromPoint(390,700);return el?{tag:el.tagName,cls:String(el.className||''),text:String(el.textContent||'').trim().slice(0,120)}:null})()
+    }));
+    throw new Error('Swipe did not navigate to Missions: '+JSON.stringify(debug));
+  }
   const swipeState=await page.evaluate(()=>({
     active:document.querySelector('#v30171PrimaryNav [aria-current="page"]')?.dataset?.tab||
            document.querySelector('#v30171PrimaryNav .active[data-tab]')?.dataset?.tab||'',
