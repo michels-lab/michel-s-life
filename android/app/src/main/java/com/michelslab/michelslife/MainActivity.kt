@@ -97,8 +97,20 @@ class MainActivity : Activity() {
         super.onDestroy()
     }
 
-    @Deprecated("Deprecated in Android; WebView history is still needed for the packaged app.")
-    override fun onBackPressed() {
+    private fun fallbackBackNavigation() {
         if (::webView.isInitialized && webView.canGoBack()) webView.goBack() else super.onBackPressed()
+    }
+
+    @Deprecated("Deprecated in Android; retained while Michel's Life coordinates WebView and native back behavior.")
+    override fun onBackPressed() {
+        if (!::webView.isInitialized) {
+            super.onBackPressed()
+            return
+        }
+        webView.evaluateJavascript(
+            "(function(){try{return !!(window.__mlvAndroidHandleBack&&window.__mlvAndroidHandleBack());}catch(e){return false;}})();"
+        ) { handled ->
+            if (handled != "true") fallbackBackNavigation()
+        }
     }
 }
