@@ -15,6 +15,17 @@
 
 ## Current snapshot — 2026-10-03
 
+### Open gates — source of truth
+
+1. **IN PROGRESS** — automated Android phone-viewport smoke after the `#v176StatusPanel` compact-layout fix.
+2. **NEEDS DEVICE TEST** — install Android v0.2.0 on a physical phone and approve the actual feel/geometry of the top bar, compact status strip, checklists, drawer, swipes, Back behavior, animation continuity, background/resume, and process restart.
+3. **NEEDS DEVICE TEST** — real Google authorization and bidirectional Windows ↔ Android Drive synchronization, including conflict and restore flows.
+4. **BLOCKED** — production upload signing until the permanent upload keystore and four GitHub Actions signing secrets are available.
+5. **PENDING PLAY CONSOLE** — create/configure the Play app, enroll in Play App Signing, register Play signing SHA fingerprint(s) with Google Cloud OAuth, complete privacy/Data safety/content rating/target audience/app access/store listing, upload internal test, and complete any account-specific closed-testing requirement.
+6. **PENDING PUBLICATION** — finalize and publish the privacy policy at a stable public URL and link it both in Play Console and in-app.
+
+Everything else listed as validated below is already source/build validated and must not be reopened without new evidence.
+
 ### Product state
 
 - **DONE** — Native Android host exists under `android/`.
@@ -28,7 +39,7 @@
 - **DONE** — Play Store AAB generation was added to CI.
 - **DONE** — Release signing configuration can be supplied through environment variables without committing secrets.
 - **DONE** — Temporary one-off Android/Play publishing workflows were removed after use.
-- **IN PROGRESS** — Android-only mobile UX redesign is implemented in a first pass and now requires CI + physical-device validation.
+- **IN PROGRESS** — Android-only mobile UX redesign is implemented and build-validated; automated phone-viewport validation is being rerun after the active status-panel fix, followed by physical-device approval.
 - **PENDING** — Produce and validate a properly signed production AAB for Google Play.
 - **PENDING** — Finish Play Console publishing requirements and internal testing.
 - **NEEDS DEVICE TEST** — Verify real Google authorization + Drive synchronization end-to-end on Android.
@@ -55,8 +66,8 @@ These changes apply to the Android app only. They must not alter the approved de
 
 ### Android update behavior
 
-- **PENDING** — Replace the current placeholder Android update-status behavior with the final distribution behavior.
-- **PENDING** — Once Play distribution is active, rely on Google Play versioning/update delivery for production installs; keep test-build behavior explicit so test APKs are not confused with Play releases.
+- **VALIDATED** — Android update status now distinguishes direct/test installs from Google Play installs and reports Google Play as the production update manager.
+- **VALIDATED** — Production update behavior is Play-managed, while sideloaded test builds explicitly identify themselves as test builds.
 
 ## Sync / Google account
 
@@ -160,7 +171,7 @@ Result:
 - **PENDING** — Upload the build to Play Console internal testing.
 - **PENDING** — Complete required store listing/app details, screenshots/assets, privacy/data disclosures, content rating, and testing requirements applicable to the account/app.
 - **PENDING** — Install the Play-delivered build on a physical Android device and run the Android validation checklist.
-- **PENDING** — Establish the versionCode/versionName bump rule for every future Play release.
+- **VALIDATED** — versionCode/versionName bump rule is documented and enforced by `android/tools/validate_android_version.py`; Android v0.2.0 uses versionCode 2.
 
 ## Android validation checklist
 
@@ -265,7 +276,7 @@ Validation evidence:
 - **VALIDATED** — `android/android-bridge.js` passed local `node --check`.
 - **VALIDATED** — the new mobile UX contract validator passed locally against a repo-equivalent test structure.
 - **DONE** — all source changes were committed to `main`.
-- **PENDING** — GitHub Actions completion is not yet confirmed through the available connector.
+- **VALIDATED** — subsequent Android CI runs completed successfully, including mobile UX static validation, APK build, AAB build/validation, signing diagnostics, and artifact upload.
 - **NEEDS DEVICE TEST** — visual layout, exact first viewport, drawer feel, swipe thresholds, checkbox alignment, animation continuity, and Back behavior on a physical Android phone.
 
 Current state:
@@ -375,3 +386,33 @@ CI behavior now:
 Current Android gate:
 - **NEEDS DEVICE TEST** — v0.2.0 is build-validated; the remaining UX gate is physical-device testing.
 - **BLOCKED** — production-signed Play AAB still depends on permanent upload-keystore secrets.
+
+
+### 2026-10-03 — Android initial-scroll root cause found and fixed
+
+Automated evidence:
+- UI smoke run `37161658411` loaded the real Android-prepared v3.0.215 AppBundle at a 412×915 mobile viewport.
+- The drawer was correctly off-canvas: `#v30171Sidebar` measured from x = -326 to -6.
+- There was no horizontal page overflow.
+- However, `#main` began at approximately **1914 px**, and the first Dashboard card at approximately **1923 px**.
+- This reproduced the user's complaint that the primary screen required a large initial scroll.
+
+Root cause:
+- Android had compacted the obsolete `#fixedStatusBar`, but the current frontend's active status UI is `#v176StatusPanel`.
+- Desktop responsive rules stack the active panel's Time, Command, and Affirmation cards vertically at phone widths.
+- That panel remained in normal document flow above `.layout`, creating the huge vertical gap.
+
+Correction:
+- Commit `4902ac8b` — **Compact active status panel on Android**
+  - `#fixedStatusBar/.status-strip` remain fully collapsed on Android.
+  - `#v176StatusPanel` is constrained to a short Android-only strip.
+  - Only the first Time/Greeting card remains in that strip on phone widths.
+  - Command and Affirmation status cards no longer consume vertical Dashboard space on Android; their underlying features remain available elsewhere in the app.
+  - No desktop/Windows frontend source was changed.
+- Commit `584c93a8` — **Validate compact Android status panel**
+  - Android static UX validation now requires the current `#v176StatusPanel` mobile rule.
+
+State:
+- **DONE** — root cause and source correction.
+- **IN PROGRESS** — rerunning Android phone-viewport smoke to verify the Dashboard starts near the top and to continue through checklist/drawer/swipe assertions.
+- **NEEDS DEVICE TEST** — physical-phone feel still required after automated validation is green.
