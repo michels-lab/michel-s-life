@@ -59,6 +59,13 @@ try{
       oldTopDisplay:oldTop?getComputedStyle(oldTop).display:'',
       sidebar:rect(sidebar),
       sidebarTransform:getComputedStyle(sidebar).transform,
+      sidebarPosition:getComputedStyle(sidebar).position,
+      activeStatus:rect(document.getElementById('v176StatusPanel')),
+      activeStatusMaxHeight:getComputedStyle(document.getElementById('v176StatusPanel')).maxHeight,
+      appChildren:Array.from(document.querySelector('.app')?.children||[]).map(el=>({
+        id:el.id||'',cls:String(el.className||''),display:getComputedStyle(el).display,
+        position:getComputedStyle(el).position,rect:rect(el)
+      })),
       main:rect(main),
       firstCard:rect(firstCard),
       status:rect(status),
@@ -72,6 +79,7 @@ try{
   ok(initial.topbar&&initial.topbar.top<=1&&initial.topbar.height>=50,'Android top bar geometry is invalid: '+JSON.stringify(initial));
   ok(initial.oldTopDisplay==='none','Desktop top bar is still consuming phone space: '+JSON.stringify(initial));
   ok(initial.sidebar&&initial.sidebar.right<=8,'Android drawer is visible before opening: '+JSON.stringify(initial));
+  ok(initial.sidebarPosition==='fixed','Android drawer is still participating in document flow: '+JSON.stringify(initial));
   ok(initial.main&&initial.main.top<190,'Primary content starts too low and still requires an initial scroll: '+JSON.stringify(initial));
   ok(initial.firstCard&&initial.firstCard.top<240,'First dashboard card starts too low: '+JSON.stringify(initial));
   ok(initial.overflow<=2,'Android page has horizontal overflow: '+JSON.stringify(initial));
