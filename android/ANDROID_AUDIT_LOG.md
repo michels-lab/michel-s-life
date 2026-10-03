@@ -20,7 +20,7 @@
 1. **VALIDATED** — dedicated Android phone-viewport smoke is green at 412×915 against the real v3.0.215 AppBundle.
 2. **NEEDS DEVICE TEST** — install Android v0.2.0 on a physical phone and approve the actual feel/geometry of the top bar, compact status strip, checklists, drawer, swipes, Back behavior, animation continuity, background/resume, and process restart.
 3. **NEEDS DEVICE TEST** — real Google authorization and bidirectional Windows ↔ Android Drive synchronization, including conflict and restore flows.
-4. **BLOCKED** — production upload signing until the permanent upload keystore and four GitHub Actions signing secrets are available.
+4. **PARTIALLY UNBLOCKED** — permanent upload keystore exists and a signed v0.2.0 AAB verifies locally; CI signing still requires the four GitHub Actions signing secrets.
 5. **PENDING PLAY CONSOLE** — create/configure the Play app, enroll in Play App Signing, register Play signing SHA fingerprint(s) with Google Cloud OAuth, complete privacy/Data safety/content rating/target audience/app access/store listing, upload internal test, and complete any account-specific closed-testing requirement.
 6. **PENDING PUBLICATION** — finalize and publish the privacy policy at a stable public URL and link it both in Play Console and in-app.
 
@@ -488,5 +488,35 @@ Conclusion:
 - **VALIDATED AUTOMATICALLY** — current Android v0.2.0 source and final test APK build.
 - **NEEDS DEVICE TEST** — real-phone visual/touch approval, Android Back, lifecycle/background-resume/process restart.
 - **NEEDS DEVICE TEST** — Google authorization + Windows ↔ Android Drive synchronization/conflicts/restores.
-- **BLOCKED** — production Play signing until permanent upload-keystore secrets are available.
+- **PARTIALLY UNBLOCKED** — permanent upload key is generated and the v0.2.0 AAB is locally signed/verified; repository-secret configuration is still required for signed CI builds.
 - **PENDING PLAY CONSOLE** — Play App Signing/OAuth signing fingerprint, policy/Data safety/rating/audience/listing/internal test and any account-specific production-access test.
+
+
+### 2026-10-03 — Permanent Google Play upload key and signed AAB prepared
+
+Google Play requirement:
+- Upload keys must be stored in a Java keystore and use RSA 2048 bits or higher.
+- Michel's Life upload key uses **RSA 4096 / SHA256withRSA**.
+
+Private signing material:
+- Permanent upload keystore created outside the repository.
+- Alias: `michelslife-upload`.
+- Upload certificate SHA-256: `38:90:F6:46:38:93:4D:3D:B2:0A:A3:DC:2D:A2:D0:EA:A7:17:DB:B5:78:B7:9D:9C:36:E9:0B:EA:ED:D0:48:35`.
+- Upload certificate SHA-1: `08:5F:E1:FE:3E:92:65:60:60:9C:7B:5A:32:CC:67:BD:6D:31:1E:65`.
+- `.gitignore` now excludes `*.jks` and `*.keystore` to reduce accidental private-key commits.
+
+Signed Play bundle:
+- Source bundle: v0.2.0 build #41 unsigned Play-preparation AAB.
+- Local signed output: `MichelsLife-Android-Play-SIGNED-v0.2.0.aab`.
+- Signed AAB SHA-256: `46ee8441a0bd858ebfed42f04be9b675b63a890561512a90afa95cfdbf2fe66a`.
+- **VALIDATED** — `jarsigner -verify` reports `jar verified`.
+- **VALIDATED** — compressed-data integrity test reports no errors.
+- The self-signed certificate warning from `jarsigner` is expected for an Android upload key; Play App Signing uses Google-held app-signing key(s) for distributed APKs.
+
+Remaining signing gate:
+- **PENDING USER/REPOSITORY CONFIGURATION** — add the four existing workflow secrets:
+  - `ANDROID_UPLOAD_KEYSTORE_BASE64`
+  - `ANDROID_UPLOAD_STORE_PASSWORD`
+  - `ANDROID_UPLOAD_KEY_ALIAS`
+  - `ANDROID_UPLOAD_KEY_PASSWORD`
+- Once configured, rerun Android CI and require the artifact name to become **SIGNED** with signature verification green.
