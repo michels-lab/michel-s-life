@@ -182,15 +182,12 @@
         .topbar{display:none!important}
         .app-shell,.layout,.content,#main{min-width:0!important;max-width:100%!important;width:100%!important;box-sizing:border-box!important}
         .app-shell,.layout{grid-template-columns:minmax(0,1fr)!important;display:block!important;margin-top:6px!important}
-        #fixedStatusBar{position:relative!important;top:auto!important;margin:6px 8px!important;padding:7px 8px!important;border-radius:14px!important;display:flex!important;align-items:center!important;gap:6px!important;overflow-x:auto!important;min-height:0!important}
-        #fixedStatusBar .status-block{flex:0 0 auto!important}
-        #fixedStatusBar .status-time{font-size:18px!important;min-width:0!important}
-        #fixedStatusBar .status-greeting{display:none!important}
-        #fixedStatusBar .status-metrics{display:flex!important;grid-template-columns:none!important;gap:5px!important;flex:0 0 auto!important}
-        #fixedStatusBar .status-chip{padding:5px 7px!important;min-width:auto!important;border-radius:10px!important}
-        #fixedStatusBar .status-chip small{font-size:8px!important}
-        #fixedStatusBar .status-chip b{font-size:11px!important}
-        #fixedStatusBar .status-stage{display:none!important}
+        #fixedStatusBar,.status-strip{display:none!important;height:0!important;min-height:0!important;max-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
+        #v176StatusPanel{position:relative!important;top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;display:block!important;width:calc(100% - 16px)!important;max-width:none!important;height:auto!important;min-height:0!important;max-height:64px!important;margin:6px 8px!important;padding:5px 7px!important;border-radius:14px!important;overflow:hidden!important;contain:layout paint!important;transform:none!important}
+        #v176StatusPanel .v176-card{display:none!important}
+        #v176StatusPanel .v176-card:first-child{display:flex!important;align-items:center!important;gap:8px!important;width:100%!important;min-width:0!important;min-height:0!important;height:auto!important;margin:0!important;padding:5px 7px!important;border:0!important;border-radius:10px!important;background:transparent!important;box-shadow:none!important;overflow:hidden!important}
+        #v176StatusPanel .v176-time{flex:0 0 auto!important;font-size:18px!important;line-height:1!important;letter-spacing:-.03em!important}
+        #v176StatusPanel .v176-small{min-width:0!important;margin:0!important;font-size:9px!important;line-height:1.2!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
         #v30171Sidebar{position:fixed!important;top:calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px))!important;left:0!important;bottom:0!important;width:min(86vw,320px)!important;max-width:320px!important;height:auto!important;max-height:none!important;overflow-y:auto!important;transform:translateX(-105%)!important;transition:transform .2s ease!important;z-index:2147482995!important;margin:0!important;padding:10px!important;border-radius:0 18px 18px 0!important;box-shadow:12px 0 35px rgba(0,0,0,.35)!important;overscroll-behavior:contain}
         body.mlv-android-nav-open #v30171Sidebar{transform:translateX(0)!important}
         #v30171Sidebar .v30171-brand{flex-direction:row!important;justify-content:flex-start!important;text-align:left!important;gap:8px!important;padding:5px 4px 9px!important}
