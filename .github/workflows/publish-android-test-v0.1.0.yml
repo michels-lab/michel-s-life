@@ -1,0 +1,36 @@
+name: Publish Android test v0.1.0
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-android-test-v0.1.0.yml'
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download verified Android artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p android-artifact
+          gh run download 36840999880             --repo realmichelduarte/michel-s-life             --name MichelsLife-Android-TEST-v0.1.0             --dir android-artifact
+          ls -lah android-artifact
+
+      - name: Publish direct-download Android test release
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_REPO_TOKEN }}
+        run: |
+          tag="android-test-v0.1.0"
+          repo="realmichelduarte/michel-s-life-releases"
+          notes="Michel's Life Android TEST v0.1.0. Test build for PC ↔ Android cloud synchronization. Not a production Android release."
+          if gh release view "$tag" --repo "$repo" >/dev/null 2>&1; then
+            gh release upload "$tag" android-artifact/* --repo "$repo" --clobber
+          else
+            gh release create "$tag" android-artifact/*               --repo "$repo"               --title "Michel's Life Android TEST v0.1.0"               --notes "$notes"               --prerelease
+          fi
