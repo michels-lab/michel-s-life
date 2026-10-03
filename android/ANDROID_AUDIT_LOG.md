@@ -324,6 +324,34 @@ Versioning/update work in this atomic change:
 - The Android app no longer describes APK releases as the final production update mechanism.
 
 Remaining:
-- **PENDING** — validate the new v0.2.0 CI build.
+- **VALIDATED** — Android v0.2.0 CI run `37110286283` completed successfully.
 - **NEEDS DEVICE TEST** — install the v0.2.0 test APK on a physical phone and review the mobile UX.
 - **BLOCKED** — signed production Play AAB still requires the permanent upload-keystore secrets.
+
+
+### 2026-10-03 — Android v0.2.0 CI validation
+
+Run: `37110286283` — **Build Android test APK #34**
+
+Result:
+- **VALIDATED** — workflow completed with `success`.
+- **VALIDATED** — Windows-compatible cloud contract passed.
+- **VALIDATED** — Android version metadata passed at `0.2.0 / versionCode 2`.
+- **VALIDATED** — Android mobile UX contract passed.
+- **VALIDATED** — current Michel's Life AppBundle prepared successfully.
+- **VALIDATED** — debug APK built successfully.
+- **VALIDATED** — Play AAB built and validated successfully.
+- **VALIDATED** — signing-certificate diagnostics succeeded.
+- **VALIDATED** — artifact upload succeeded.
+
+Artifact:
+- `MichelsLife-Android-TEST-v0.2.0`
+- GitHub Actions artifact id: `11269871127`
+- Artifact SHA-256: `139093b8f9dbc1472eba9e4e2c3d7b80decb90590cdaea56af1eb6e73a32c456`
+
+CI maintenance:
+- Android workflow trigger paths were narrowed so documentation-only changes under `android/ANDROID_AUDIT_LOG.md` and `android/README.md` no longer waste a full Android build.
+- Build-relevant Android source/config/tooling changes still trigger CI.
+
+Remaining gate:
+- **NEEDS DEVICE TEST** — install v0.2.0 on a physical Android phone and verify initial viewport, checklist alignment, drawer, swipe navigation, Back behavior, animation continuity, and Google sync.
