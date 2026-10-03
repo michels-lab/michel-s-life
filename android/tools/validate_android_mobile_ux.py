@@ -16,7 +16,9 @@ required_bridge = [
     "article.v132-mission",
     ".v132-check",
     ".v132-mission-actions{grid-column:2",
-    ".topbar{display:none",\n    "#v176StatusPanel{position:relative",\n    "#v176StatusPanel .v176-card:first-child",
+    ".topbar{display:none",
+    "#v176StatusPanel{position:relative",
+    "#v176StatusPanel .v176-card:first-child",
     "data-mlv-platform",
 ]
 missing = [needle for needle in required_bridge if needle not in bridge]
@@ -26,4 +28,4 @@ if missing:
 if "__mlvAndroidHandleBack" not in main:
     raise SystemExit("MainActivity does not delegate Android back handling to the web UI")
 
-print("OK: Android mobile UX contract contains final drawer target, swipe navigation, compact dashboard, mission alignment and back handling")
+print("OK: Android mobile UX contract contains final drawer target, swipe navigation, compact active status panel, mission alignment and back handling")
