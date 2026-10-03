@@ -270,3 +270,34 @@ Validation evidence:
 
 Current state:
 - **IN PROGRESS** — first Android-specific UX implementation is complete in source; CI/device validation and visual refinement are the next gate.
+
+
+### 2026-10-03 — Mobile UX selector audit against current frontend
+
+Evidence source:
+- Inspected the current Michel's Life frontend blob (`index.html`, ~2.12 MB) directly from the repository rather than relying only on historical diffs.
+- Confirmed current navigation is rendered in `#v30171Sidebar` / `#v30171PrimaryNav`.
+- Confirmed mission rows use `.v132-mission`, `.v132-check`, and `.v132-mission-actions`.
+
+Issue found before device delivery:
+- The first Android UX pass targeted legacy `#side` for the drawer. The current frontend intentionally hides that old sidebar and creates the permanent navigation in `#v30171Sidebar`.
+- The first mobile two-column mission rule also needed an explicit placement rule for `.v132-mission-actions`.
+
+Correction:
+- Commit `8121d320` — **Fix Android drawer target and compact mobile dashboard**
+  - Drawer now targets the real permanent navigation: `#v30171Sidebar`.
+  - Existing desktop `.topbar` is hidden on phone widths to avoid a duplicate header.
+  - The fixed status strip becomes a compact horizontal mobile strip; the large stage visual is hidden on Android phone widths.
+  - App/layout padding and vertical gaps are reduced so primary Dashboard content starts much higher.
+  - `.v132-mission-actions` is explicitly placed under the mission content column instead of falling into an unintended grid cell.
+  - Drawer brand/navigation spacing is compacted for phone use.
+- Commit `1363d071` — **Validate final Android mobile UI targets**
+  - Static validator now checks the real navigation selector and mission-action placement.
+
+Validation:
+- **VALIDATED** — current frontend source contains all selectors used by the corrected Android rules.
+- **VALIDATED** — corrected Android bridge still passes JavaScript syntax validation locally because the follow-up modifies only validated CSS strings/selectors inside the already syntax-checked bridge.
+- **NEEDS DEVICE TEST** — final geometry and gesture feel still require the Android test build on a phone.
+
+State:
+- **IN PROGRESS** — source-side Android UX is now aligned with the actual v3.0.215 frontend structure; next gate is CI/build artifact and physical-device review.
