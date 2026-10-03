@@ -32,6 +32,7 @@ jobs:
           curl -L --fail --retry 3 \
             "https://github.com/$RELEASES_REPO/releases/latest/download/AppBundle.zip" \
             -o artifacts/AppBundle.zip
+          cp artifacts/AppBundle.zip artifacts/AppBundle-android.zip
           python tools/bump_frontend_version.py --index src/MichelsLife/frontend/index.html
           python tools/enable_i18n.py --index src/MichelsLife/frontend/index.html
           python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
@@ -52,6 +53,19 @@ jobs:
         run: |
           npm install --no-save playwright
           npx playwright install --with-deps chromium
+
+      - name: Prepare Android mobile browser fixture
+        run: |
+          python android/tools/prepare_bundle.py \
+            --bundle artifacts/AppBundle-android.zip \
+            --assets artifacts/android-ui-bundle
+
+      - name: Audit Android mobile UX in phone viewport
+        run: |
+          python -m http.server 4174 --directory artifacts/android-ui-bundle >/tmp/mlv-android-http.log 2>&1 &
+          export MLV_ANDROID_UI_URL=http://127.0.0.1:4174
+          export MLV_ANDROID_UI_SCREENSHOT=artifacts/ui-smoke/android-mobile.png
+          node tools/ui_android_mobile_smoke.mjs
 
       - name: Render and test critical UI
         run: |
@@ -123,5 +137,6 @@ jobs:
           path: |
             artifacts/ui-smoke
             /tmp/mlv-http.log
+            /tmp/mlv-android-http.log
           if-no-files-found: warn
           retention-days: 7
