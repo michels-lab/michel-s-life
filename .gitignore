@@ -20,3 +20,7 @@ src/MichelsLife/Program.cs
 src/MichelsLife/GoogleCalendarService.cs
 local-release/
 local-secrets/
+
+# Android signing material — never commit private upload keys
+*.jks
+*.keystore
