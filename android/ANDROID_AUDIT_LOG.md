@@ -188,6 +188,32 @@ Before calling an Android version release-ready:
 - [ ] Production AAB is signed and its package/version are correct.
 - [ ] Play internal-test install/update path is verified.
 
+
+## 2026-10-03 — Harden Google Play signing workflow
+
+Commit: `cbb2bff7` — **Harden Android Play signing workflow**
+
+Requested/observed need:
+- The Play build path existed, but CI did not yet turn a securely stored GitHub keystore secret into a signing file.
+- The workflow also needed to distinguish signed production bundles from unsigned preparation bundles and validate the resulting package.
+
+Implemented:
+- Added support for `ANDROID_UPLOAD_KEYSTORE_BASE64` as the GitHub Actions keystore secret.
+- The workflow decodes the secret only into the temporary runner filesystem.
+- If a keystore is supplied, store password, key alias, and key password are mandatory; partial signing configuration fails the build instead of silently falling back.
+- Signed builds are named `MichelsLife-Android-Play-SIGNED-v0.1.0.aab`.
+- Unsigned preparation builds remain explicitly named `MichelsLife-Android-Play-UNSIGNED-v0.1.0.aab`.
+- The AAB ZIP structure is tested.
+- Signed AABs are checked with `jarsigner -verify -strict`.
+- The upload certificate is exported into the build artifacts for verification.
+- SHA-256 output remains generated for the AAB.
+
+Validation state:
+- **DONE** — source/workflow implementation committed.
+- **PENDING** — GitHub had not yet reported a completed workflow execution for this commit at the time this entry was written.
+- **PENDING** — a real signed build still requires the GitHub Actions signing secrets.
+- **PENDING** — Play Console upload/internal-track verification remains required.
+
 ## Rules for this log going forward
 
 For every meaningful Android development action, add an entry containing:
