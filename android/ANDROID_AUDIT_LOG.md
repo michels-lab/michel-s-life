@@ -17,7 +17,7 @@
 
 ### Open gates — source of truth
 
-1. **IN PROGRESS** — automated Android phone-viewport smoke after the `#v176StatusPanel` compact-layout fix.
+1. **VALIDATED** — dedicated Android phone-viewport smoke is green at 412×915 against the real v3.0.215 AppBundle.
 2. **NEEDS DEVICE TEST** — install Android v0.2.0 on a physical phone and approve the actual feel/geometry of the top bar, compact status strip, checklists, drawer, swipes, Back behavior, animation continuity, background/resume, and process restart.
 3. **NEEDS DEVICE TEST** — real Google authorization and bidirectional Windows ↔ Android Drive synchronization, including conflict and restore flows.
 4. **BLOCKED** — production upload signing until the permanent upload keystore and four GitHub Actions signing secrets are available.
@@ -39,7 +39,7 @@ Everything else listed as validated below is already source/build validated and 
 - **DONE** — Play Store AAB generation was added to CI.
 - **DONE** — Release signing configuration can be supplied through environment variables without committing secrets.
 - **DONE** — Temporary one-off Android/Play publishing workflows were removed after use.
-- **IN PROGRESS** — Android-only mobile UX redesign is implemented and build-validated; automated phone-viewport validation is being rerun after the active status-panel fix, followed by physical-device approval.
+- **VALIDATED** — Android-only mobile UX redesign is source/build validated and passed the dedicated 412×915 phone-viewport smoke; physical-device approval remains.
 - **PENDING** — Produce and validate a properly signed production AAB for Google Play.
 - **PENDING** — Finish Play Console publishing requirements and internal testing.
 - **NEEDS DEVICE TEST** — Verify real Google authorization + Drive synchronization end-to-end on Android.
@@ -416,3 +416,35 @@ State:
 - **DONE** — root cause and source correction.
 - **IN PROGRESS** — rerunning Android phone-viewport smoke to verify the Dashboard starts near the top and to continue through checklist/drawer/swipe assertions.
 - **NEEDS DEVICE TEST** — physical-phone feel still required after automated validation is green.
+
+
+### 2026-10-03 — Android phone-viewport smoke green
+
+Workflow:
+- `Android UI smoke` run `37162394170` — **SUCCESS**
+- Final navigation fix: `57d09a74` — **Route Android swipes through canonical navigation API**
+
+Validated against:
+- Current Michel's Life desktop AppBundle v3.0.215 prepared through the same Android injection path.
+- Chromium mobile viewport: **412×915**.
+
+Measured geometry:
+- Android top bar: y `0–56`, width `412`.
+- Desktop top bar: hidden.
+- Permanent drawer `#v30171Sidebar`: `position: fixed`, x `-336…-16` while closed; x `0…320` while open.
+- Compact active status panel: y `62–126`, height `64`.
+- Main content begins at **y = 148 px**.
+- First Dashboard card begins at **y = 157 px**.
+- Horizontal page overflow: **0 px**.
+- Mission checkbox: **36×36 px**, aligned with mission title/content.
+- Mission card overflow: **0 px**.
+- Swipe-left from Dashboard: **Missions** became active and Android top-bar title became `Missions`.
+- Seasonal animation continued during the mobile test: frame **77 → 85**.
+
+Historical comparison:
+- Before the Android flow fixes, the same automated viewport measured `#main` at approximately **1914 px** below the top.
+- The primary-screen initial-scroll regression is therefore closed in automated validation.
+
+State:
+- **VALIDATED AUTOMATICALLY** — initial viewport, drawer geometry/open-close, checklist alignment, no horizontal overflow, swipe navigation, edge-drawer gesture, and animation continuity.
+- **NEEDS DEVICE TEST** — actual touch feel, Android Back behavior, background/resume, process restart, and real-device rendering still require the physical phone.
