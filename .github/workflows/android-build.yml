@@ -52,10 +52,21 @@ jobs:
         working-directory: android
         run: gradle --no-daemon :app:assembleDebug
 
+      - name: Build Play Store app bundle
+        working-directory: android
+        run: gradle --no-daemon :app:bundleRelease
+
       - name: Name APK
         run: |
           mkdir -p artifacts/android
           cp android/app/build/outputs/apk/debug/app-debug.apk             artifacts/android/MichelsLife-Android-TEST-v0.1.0.apk
+
+      - name: Name Play Store app bundle
+        run: |
+          cp android/app/build/outputs/bundle/release/app-release.aab \
+            artifacts/android/MichelsLife-Android-Play-UNSIGNED-v0.1.0.aab
+          sha256sum artifacts/android/MichelsLife-Android-Play-UNSIGNED-v0.1.0.aab \
+            > artifacts/android/MichelsLife-Android-Play-UNSIGNED-v0.1.0.aab.sha256
 
       - name: Print Android test signing fingerprints
         shell: bash

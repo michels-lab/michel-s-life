@@ -33,3 +33,24 @@ python android/tools/prepare_bundle.py --bundle /path/to/AppBundle.zip --assets 
 Then build with Android Studio or Gradle 9.6+ / JDK 17.
 
 The GitHub workflow produces a debug test APK automatically.
+
+
+## Google Play distribution
+
+The Play Store track uses an Android App Bundle (AAB).
+
+Current Play identity:
+- package: `com.michelslab.michelslife`
+- versionCode: `1`
+- versionName: `0.1.0`
+- targetSdk: `36`
+
+The Gradle release build supports an upload keystore through environment variables:
+- `ANDROID_UPLOAD_KEYSTORE_PATH`
+- `ANDROID_UPLOAD_STORE_PASSWORD`
+- `ANDROID_UPLOAD_KEY_ALIAS`
+- `ANDROID_UPLOAD_KEY_PASSWORD`
+
+Never commit the upload keystore or its passwords to this repository.
+
+Without signing variables the CI workflow deliberately emits an unsigned Play AAB so it can be signed outside the public repository. Future CI Play releases should use GitHub Actions secrets.

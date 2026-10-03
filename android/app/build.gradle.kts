@@ -2,6 +2,11 @@ plugins {
     id("com.android.application")
 }
 
+val uploadKeystorePath = System.getenv("ANDROID_UPLOAD_KEYSTORE_PATH")
+val uploadStorePassword = System.getenv("ANDROID_UPLOAD_STORE_PASSWORD")
+val uploadKeyAlias = System.getenv("ANDROID_UPLOAD_KEY_ALIAS")
+val uploadKeyPassword = System.getenv("ANDROID_UPLOAD_KEY_PASSWORD")
+
 android {
     namespace = "com.michelslab.michelslife"
     compileSdk = 36
@@ -14,9 +19,24 @@ android {
         versionName = "0.1.0"
     }
 
+    signingConfigs {
+        if (!uploadKeystorePath.isNullOrBlank() &&
+            !uploadStorePassword.isNullOrBlank() &&
+            !uploadKeyAlias.isNullOrBlank() &&
+            !uploadKeyPassword.isNullOrBlank()) {
+            create("playUpload") {
+                storeFile = file(uploadKeystorePath)
+                storePassword = uploadStorePassword
+                keyAlias = uploadKeyAlias
+                keyPassword = uploadKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfigs.findByName("playUpload")?.let { signingConfig = it }
         }
     }
 
