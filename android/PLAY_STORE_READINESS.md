@@ -23,7 +23,7 @@ Official reference:
 
 ## Signing / Play App Signing
 
-Status: **BLOCKED until permanent upload-key secrets are configured.**
+Status: **UPLOAD KEY CREATED; CI SIGNING STILL BLOCKED until the four permanent GitHub Actions secrets are configured.**
 
 Google Play App Signing uses two different keys:
 1. **Upload key** — held by the developer and used to sign the AAB uploaded to Play Console.
@@ -36,6 +36,16 @@ Repository secrets expected by CI:
 - `ANDROID_UPLOAD_STORE_PASSWORD`
 - `ANDROID_UPLOAD_KEY_ALIAS`
 - `ANDROID_UPLOAD_KEY_PASSWORD`
+
+Permanent upload key created on 2026-10-03:
+- Alias: `michelslife-upload`
+- Key algorithm: RSA 4096 / SHA256withRSA
+- Upload certificate SHA-256: `38:90:F6:46:38:93:4D:3D:B2:0A:A3:DC:2D:A2:D0:EA:A7:17:DB:B5:78:B7:9D:9C:36:E9:0B:EA:ED:D0:48:35`
+- Upload certificate SHA-1: `08:5F:E1:FE:3E:92:65:60:60:9C:7B:5A:32:CC:67:BD:6D:31:1E:65`
+- Private keystore/password material is intentionally **not committed** to this repository.
+- A v0.2.0 AAB was manually signed with this upload key and verified locally with `jarsigner`.
+- Signed AAB SHA-256: `46ee8441a0bd858ebfed42f04be9b675b63a890561512a90afa95cfdbf2fe66a`
+
 
 CI behavior:
 - without the secrets → emits an explicitly named **UNSIGNED** Play-preparation AAB;
@@ -233,9 +243,10 @@ Pending final device validation:
 - [x] Automated 412×915 browser UX smoke is green.
 - [ ] Physical-device v0.2.0 UX validation.
 - [ ] Physical-device Google authorization and Drive sync validation.
-- [ ] Permanent upload key created and secured.
+- [x] Permanent upload key created; private material kept outside the repository.
 - [ ] GitHub signing secrets configured.
-- [ ] Signed AAB verified in CI.
+- [x] Manually signed v0.2.0 AAB verified with the permanent upload key.
+- [ ] Signed AAB verified in CI after repository signing secrets are configured.
 - [ ] App created/configured in Play Console.
 - [ ] Play App Signing enrolled.
 - [ ] Play app-signing SHA fingerprint(s) registered with Google Cloud OAuth.
