@@ -5,7 +5,12 @@ on:
   push:
     branches: [main]
     paths:
-      - 'android/**'
+      - 'android/app/**'
+      - 'android/android-bridge.js'
+      - 'android/tools/**'
+      - 'android/build.gradle.kts'
+      - 'android/settings.gradle.kts'
+      - 'android/gradle.properties'
       - '.github/workflows/android-build.yml'
 
 permissions:
