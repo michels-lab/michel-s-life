@@ -1,0 +1,43 @@
+name: Publish Play prep v0.1.0
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-play-prep-v0.1.0.yml'
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download verified Android build artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p play-prep
+          gh run download 37107540550 \
+            --repo realmichelduarte/michel-s-life \
+            --name MichelsLife-Android-TEST-v0.1.0 \
+            --dir play-prep
+          find play-prep -maxdepth 2 -type f -printf '%p %s bytes\n'
+
+      - name: Publish Play prep prerelease
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_REPO_TOKEN }}
+        run: |
+          tag="android-play-prep-v0.1.0"
+          repo="realmichelduarte/michel-s-life-releases"
+          notes="Temporary Play Store preparation assets for Michel's Life Android v0.1.0."
+          if gh release view "$tag" --repo "$repo" >/dev/null 2>&1; then
+            gh release upload "$tag" play-prep/* --repo "$repo" --clobber
+          else
+            gh release create "$tag" play-prep/* \
+              --repo "$repo" \
+              --title "Michel's Life Android Play prep v0.1.0" \
+              --notes "$notes" \
+              --prerelease
+          fi
