@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Michel's Life — Privacy Policy</title>
+  <meta name="description" content="Privacy Policy for the Michel's Life Android app.">
+  <style>
+    :root{color-scheme:dark;--bg:#060a12;--panel:#0c1422;--text:#f4f7fb;--muted:#a7b2c3;--line:#263247;--accent:#75e4ff;--gold:#ffd166}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 85% 0%,#12213a 0,transparent 34%),var(--bg);color:var(--text);font:16px/1.65 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    main{max-width:880px;margin:auto;padding:48px 20px 72px}.hero{padding:28px;border:1px solid var(--line);border-radius:24px;background:linear-gradient(145deg,rgba(117,228,255,.08),rgba(255,209,102,.04)),var(--panel)}
+    h1{font-size:clamp(2rem,7vw,3.5rem);line-height:1.02;margin:0 0 12px;letter-spacing:-.05em}h2{margin:38px 0 10px;font-size:1.35rem}h3{margin:24px 0 6px;font-size:1.05rem}
+    p,li{color:#d7deea}.meta,.muted{color:var(--muted)}strong{color:#fff}a{color:var(--accent)}code{background:#111c2e;border:1px solid var(--line);padding:.15em .4em;border-radius:6px}
+    .badge{display:inline-block;padding:5px 9px;border-radius:999px;border:1px solid rgba(117,228,255,.28);color:var(--accent);font-size:.78rem;font-weight:700;letter-spacing:.04em}
+    footer{margin-top:52px;padding-top:22px;border-top:1px solid var(--line);color:var(--muted);font-size:.9rem}
+  </style>
+</head>
+<body>
+<main>
+  <section class="hero">
+    <span class="badge">Michel's Life · Android</span>
+    <h1>Privacy Policy</h1>
+    <p class="meta"><strong>Effective date:</strong> October 3, 2026<br><strong>Developer:</strong> Michel's Lab / Michel Duarte<br><strong>Contact:</strong> <a href="mailto:realmichelduarte@gmail.com">realmichelduarte@gmail.com</a></p>
+    <p>Michel's Life is a personal productivity and progress application. Most app data is stored locally on the user's device. Android users may optionally connect a Google account to synchronize Michel's Life data through Google Drive.</p>
+    <p>Michel's Life does not require a Michel's Life developer-hosted user account to use its core local features.</p>
+  </section>
+
+  <h2>1. Information the Android app may process</h2>
+  <h3>Local app information</h3>
+  <p>Michel's Life may store information created or configured by the user, including missions, goals, routines, progress, journal or reflection content, settings, statistics, achievements, planning information, and other Michel's Life state. This information is used to provide the app's productivity, progress-tracking, planning, and personalization features.</p>
+
+  <h3>Google account information</h3>
+  <p>If the user chooses to connect Google Drive synchronization, Michel's Life requests Google authorization for OpenID, the user's Google account email address, and the Google Drive application-data folder. The app may read the authorized Google account email address so it can identify the connected sync account in the interface and local sync metadata.</p>
+
+  <h3>Optional Google Drive sync data</h3>
+  <p>When Google Drive sync is enabled, Michel's Life may send the user's Michel's Life backup or state data to the private Google Drive <code>appDataFolder</code> associated with that Google account.</p>
+  <p>Sync metadata may include a randomly generated Michel's Life device identifier, device manufacturer/model-derived device name, app version, synchronization timestamps, synchronization action/status, and content hashes used for change/conflict detection. Michel's Life may also keep a limited history of cloud backups for conflict handling and recovery; the current Android implementation keeps up to 10 Michel's Life history backups.</p>
+
+  <h2>2. How information is used</h2>
+  <ul>
+    <li>Store and display the user's personal app state.</li>
+    <li>Track progress and app history.</li>
+    <li>Restore app state.</li>
+    <li>Synchronize state across supported Michel's Life devices when Google Drive sync is enabled.</li>
+    <li>Detect synchronization changes and conflicts.</li>
+    <li>Identify the Google account and device participating in optional synchronization.</li>
+  </ul>
+
+  <h2>3. Third-party services</h2>
+  <p>The Android app uses Google services for optional account authorization and cloud synchronization, including Google Identity Services and the Google Drive API. When the user enables these features, relevant data is transmitted to Google under the user's Google account and is also subject to Google's applicable terms and privacy practices.</p>
+  <p>The Android client also uses standard software libraries such as AndroidX WebView and OkHttp to provide app and network functionality.</p>
+
+  <h2>4. Advertising and sale of data</h2>
+  <p>The current Michel's Life Android build does not include an advertising SDK in its Android dependencies. Michel's Life does not sell user data.</p>
+  <p>If advertising, analytics, or additional third-party SDKs are added in a future version, this policy and the Google Play Data safety declaration will be reviewed and updated before that version is released.</p>
+
+  <h2>5. Permissions</h2>
+  <p>The current Android manifest requests Internet access and network-state access. It does not request location, contacts, SMS, call-log, camera, microphone, or external-storage permissions.</p>
+
+  <h2>6. Data storage and retention</h2>
+  <p>Local Michel's Life data remains on the device until it is changed, reset, removed through app functionality, or deleted by clearing/uninstalling the app as applicable.</p>
+  <p>When optional Google Drive synchronization is enabled, Michel's Life state and sync metadata may remain in the user's Google Drive application-data storage. Disconnecting Google authorization stops the app from using the connected account but does not by itself guarantee deletion of previously synchronized Google Drive app-data files.</p>
+  <p>Michel's Life currently limits its own cloud history-backup set to 10 history backups, deleting older Michel's Life history backups as newer ones are created. Other Michel's Life sync files may remain until they are replaced or removed through relevant Google or app-data controls.</p>
+
+  <h2>7. Security</h2>
+  <p>Michel's Life communicates with Google APIs over HTTPS. Google account authorization uses Google Identity Services rather than embedding a Google account password in Michel's Life. No system can guarantee absolute security, so users should protect access to their device and Google account.</p>
+
+  <h2>8. User choices</h2>
+  <p>Users can use core Michel's Life features without enabling Google Drive synchronization. Users may choose whether to authorize Google Drive sync, and Google account access can be reviewed or revoked through the user's Google account controls.</p>
+
+  <h2>9. Children's privacy</h2>
+  <p>Michel's Life is a general productivity application and is not specifically designed or marketed as a children's app. The Google Play target-audience declaration will match the intended audience and store-listing presentation.</p>
+
+  <h2>10. Changes to this policy</h2>
+  <p>This policy may be updated when Michel's Life changes its features, data practices, third-party services, or legal/compliance requirements. The effective date will be updated when a revised policy is published.</p>
+
+  <h2>11. Contact</h2>
+  <p>Questions about this privacy policy or Michel's Life data practices can be sent to <a href="mailto:realmichelduarte@gmail.com">realmichelduarte@gmail.com</a>.</p>
+
+  <footer>© 2026 Michel Duarte / Michel's Lab · Michel's Life</footer>
+</main>
+</body>
+</html>
