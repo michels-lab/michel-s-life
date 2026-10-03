@@ -39,6 +39,11 @@ jobs:
       - name: Validate Windows-compatible cloud contract
         run: python android/tools/validate_sync_contract.py
 
+      - name: Validate Android mobile UX layer
+        run: |
+          node --check android/android-bridge.js
+          python android/tools/validate_android_mobile_ux.py
+
       - name: Download current Michel's Life AppBundle
         run: |
           mkdir -p android/build
