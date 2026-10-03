@@ -4,7 +4,7 @@ Android client for the same Michel's Life state used by Windows.
 
 ## Development audit log
 
-The permanent Android development record is [`ANDROID_AUDIT_LOG.md`](ANDROID_AUDIT_LOG.md). It tracks completed work, pending work, validation evidence, Play Store preparation, device-test requirements, and follow-up items. Update it during every meaningful Android development cycle.\n\nGoogle Play preparation is tracked in [`PLAY_STORE_READINESS.md`](PLAY_STORE_READINESS.md), with the current privacy-policy source draft in [`PRIVACY_POLICY_DRAFT.md`](PRIVACY_POLICY_DRAFT.md).
+The permanent Android development record is [`ANDROID_AUDIT_LOG.md`](ANDROID_AUDIT_LOG.md). It tracks completed work, pending work, validation evidence, Play Store preparation, device-test requirements, and follow-up items. Update it during every meaningful Android development cycle.\n\nGoogle Play preparation is tracked in [`PLAY_STORE_READINESS.md`](PLAY_STORE_READINESS.md), with the current privacy-policy source draft in [`PRIVACY_POLICY_DRAFT.md`](PRIVACY_POLICY_DRAFT.md) and a prepared Play Console answer sheet in [`PLAY_CONSOLE_SUBMISSION_DRAFT.md`](PLAY_CONSOLE_SUBMISSION_DRAFT.md).
 
 ## Architecture
 
