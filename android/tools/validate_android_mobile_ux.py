@@ -16,7 +16,7 @@ required_bridge = [
     "article.v132-mission",
     ".v132-check",
     ".v132-mission-actions{grid-column:2",
-    ".topbar{display:none",
+    ".topbar{display:none",\n    "#v176StatusPanel{position:relative",\n    "#v176StatusPanel .v176-card:first-child",
     "data-mlv-platform",
 ]
 missing = [needle for needle in required_bridge if needle not in bridge]
