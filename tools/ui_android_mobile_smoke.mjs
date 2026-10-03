@@ -1,4 +1,6 @@
 import { chromium } from 'playwright';
+import { mkdir } from 'node:fs/promises';
+import { dirname } from 'node:path';
 
 const url=process.env.MLV_ANDROID_UI_URL||'http://127.0.0.1:4174';
 const screenshot=process.env.MLV_ANDROID_UI_SCREENSHOT||'artifacts/ui-smoke/android-mobile.png';
@@ -36,8 +38,12 @@ try{
     null,{timeout:60000}
   );
 
-  await page.locator('#v30171PrimaryNav [data-tab="dashboard"]').click();
-  await page.waitForTimeout(350);
+  const initialActive=await page.evaluate(()=>document.querySelector('#v30171PrimaryNav [aria-current="page"]')?.dataset?.tab||
+    document.querySelector('#v30171PrimaryNav .active[data-tab]')?.dataset?.tab||'');
+  if(initialActive!=='dashboard'){
+    await page.evaluate(()=>document.querySelector('#v30171PrimaryNav [data-tab="dashboard"]')?.click());
+    await page.waitForTimeout(350);
+  }
 
   const initial=await page.evaluate(()=>{
     const rect=el=>{const r=el?.getBoundingClientRect();return r?{left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:r.width,height:r.height}:null};
@@ -148,6 +154,7 @@ try{
   const afterFrame=await page.evaluate(()=>Number(document.getElementById('v30146Canvas')?.dataset?.frame||0));
   if(beforeFrame>0)ok(afterFrame>beforeFrame,'Seasonal animation stalled in Android mobile viewport: '+JSON.stringify({beforeFrame,afterFrame}));
 
+  await mkdir(dirname(screenshot),{recursive:true});
   await page.screenshot({path:screenshot,fullPage:true});
   console.log(JSON.stringify({
     ok:true,
