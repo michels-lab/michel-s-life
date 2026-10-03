@@ -55,6 +55,12 @@ The Gradle release build supports an upload keystore through environment variabl
 - `ANDROID_UPLOAD_KEY_ALIAS`
 - `ANDROID_UPLOAD_KEY_PASSWORD`
 
-Never commit the upload keystore or its passwords to this repository.
+For GitHub Actions, store the keystore itself as Base64 plus the three credential values as repository secrets:
+- `ANDROID_UPLOAD_KEYSTORE_BASE64`
+- `ANDROID_UPLOAD_STORE_PASSWORD`
+- `ANDROID_UPLOAD_KEY_ALIAS`
+- `ANDROID_UPLOAD_KEY_PASSWORD`
 
-Without signing variables the CI workflow deliberately emits an unsigned Play AAB so it can be signed outside the public repository. Future CI Play releases should use GitHub Actions secrets.
+The workflow decodes the keystore only into the temporary runner filesystem and sets `ANDROID_UPLOAD_KEYSTORE_PATH` there. Never commit the upload keystore or its passwords to this repository.
+
+Without the keystore secret, CI deliberately emits an explicitly named unsigned Play preparation AAB. With all signing secrets present, CI emits a signed AAB and verifies its JAR signature before uploading the artifact.
