@@ -13,6 +13,10 @@ permissions:
 
 env:
   RELEASES_REPO: realmichelduarte/michel-s-life-releases
+  ANDROID_UPLOAD_KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+  ANDROID_UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
+  ANDROID_UPLOAD_KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+  ANDROID_UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
 
 jobs:
   android:
@@ -52,6 +56,25 @@ jobs:
         working-directory: android
         run: gradle --no-daemon :app:assembleDebug
 
+      - name: Prepare optional Play upload keystore
+        shell: bash
+        run: |
+          if [[ -n "${ANDROID_UPLOAD_KEYSTORE_BASE64:-}" ]]; then
+            for required in ANDROID_UPLOAD_STORE_PASSWORD ANDROID_UPLOAD_KEY_ALIAS ANDROID_UPLOAD_KEY_PASSWORD; do
+              if [[ -z "${!required:-}" ]]; then
+                echo "::error::$required must be configured when ANDROID_UPLOAD_KEYSTORE_BASE64 is present."
+                exit 1
+              fi
+            done
+            KEYSTORE_PATH="$RUNNER_TEMP/michels-life-upload.jks"
+            printf '%s' "$ANDROID_UPLOAD_KEYSTORE_BASE64" | base64 --decode > "$KEYSTORE_PATH"
+            test -s "$KEYSTORE_PATH"
+            echo "ANDROID_UPLOAD_KEYSTORE_PATH=$KEYSTORE_PATH" >> "$GITHUB_ENV"
+            echo "PLAY_BUNDLE_SIGNING=SIGNED" >> "$GITHUB_ENV"
+          else
+            echo "PLAY_BUNDLE_SIGNING=UNSIGNED" >> "$GITHUB_ENV"
+          fi
+
       - name: Build Play Store app bundle
         working-directory: android
         run: gradle --no-daemon :app:bundleRelease
@@ -62,11 +85,29 @@ jobs:
           cp android/app/build/outputs/apk/debug/app-debug.apk             artifacts/android/MichelsLife-Android-TEST-v0.1.0.apk
 
       - name: Name Play Store app bundle
+        shell: bash
         run: |
-          cp android/app/build/outputs/bundle/release/app-release.aab \
-            artifacts/android/MichelsLife-Android-Play-UNSIGNED-v0.1.0.aab
-          sha256sum artifacts/android/MichelsLife-Android-Play-UNSIGNED-v0.1.0.aab \
-            > artifacts/android/MichelsLife-Android-Play-UNSIGNED-v0.1.0.aab.sha256
+          AAB="artifacts/android/MichelsLife-Android-Play-${PLAY_BUNDLE_SIGNING}-v0.1.0.aab"
+          cp android/app/build/outputs/bundle/release/app-release.aab "$AAB"
+          sha256sum "$AAB" > "$AAB.sha256"
+          echo "PLAY_AAB=$AAB" >> "$GITHUB_ENV"
+
+      - name: Validate Play Store app bundle
+        shell: bash
+        run: |
+          unzip -t "$PLAY_AAB" >/dev/null
+          if [[ "$PLAY_BUNDLE_SIGNING" == "SIGNED" ]]; then
+            jarsigner -verify -strict "$PLAY_AAB"
+            keytool -printcert -jarfile "$PLAY_AAB" \
+              | tee artifacts/android/play-upload-certificate.txt
+            echo "Validated signed Google Play upload bundle."
+          else
+            if jarsigner -verify "$PLAY_AAB" 2>&1 | grep -qi "jar is unsigned"; then
+              echo "Validated expected unsigned Play preparation bundle."
+            else
+              echo "::warning::Could not positively identify the preparation bundle as unsigned."
+            fi
+          fi
 
       - name: Print Android test signing fingerprints
         shell: bash
