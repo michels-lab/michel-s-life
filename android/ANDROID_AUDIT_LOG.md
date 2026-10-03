@@ -520,3 +520,31 @@ Remaining signing gate:
   - `ANDROID_UPLOAD_KEY_ALIAS`
   - `ANDROID_UPLOAD_KEY_PASSWORD`
 - Once configured, rerun Android CI and require the artifact name to become **SIGNED** with signature verification green.
+
+
+### 2026-10-03 — Public privacy-policy site prepared; GitHub Pages enablement required
+
+Prepared:
+- Public static policy source: `docs/privacy/index.html`.
+- Deployment workflow: `.github/workflows/privacy-pages.yml`.
+- Play Console answer sheet: `android/PLAY_CONSOLE_SUBMISSION_DRAFT.md`.
+
+Deployment attempt:
+- Workflow `Publish privacy policy` run `37162745935`.
+- Checkout succeeded.
+- `actions/configure-pages@v5` failed with GitHub's explicit message: **Get Pages site failed. Please verify that the repository has Pages enabled and configured to build using GitHub Actions.**
+- The workflow itself has the required `pages: write` and `id-token: write` permissions.
+- GitHub's configure-pages action cannot self-enable Pages with the workflow's normal `GITHUB_TOKEN`; first-time enablement requires repository settings or a separate token with the required administration/pages permissions.
+
+User action required once:
+1. Repository → **Settings → Pages**.
+2. **Build and deployment → Source → GitHub Actions**.
+3. Rerun **Publish privacy policy**.
+
+Expected site base once enabled:
+- `https://realmichelduarte.github.io/michel-s-life/`
+
+State:
+- **DONE** — policy content and automated deployment workflow.
+- **BLOCKED BY REPOSITORY SETTING** — first-time GitHub Pages enablement.
+- **PENDING** — after publication, verify the live URL and add the Privacy Policy link inside Android and Play Console.
