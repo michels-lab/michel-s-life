@@ -23,7 +23,7 @@
 - **DONE** — Google Drive app-data sync primitives were ported to Android.
 - **DONE** — Android local restore points and cloud history plumbing exist.
 - **DONE** — Android build was stabilized on API / target SDK 36.
-- **DONE** — Debug test APK v0.1.0 has been produced.
+- **VALIDATED** — Android mobile UX build run `37110037392` completed successfully against the current v3.0.215 AppBundle, including debug APK, Play AAB build/validation, signing diagnostics, and artifact upload.
 - **DONE** — APK signing-certificate fingerprints were extracted for Android OAuth setup.
 - **DONE** — Play Store AAB generation was added to CI.
 - **DONE** — Release signing configuration can be supplied through environment variables without committing secrets.
@@ -301,3 +301,29 @@ Validation:
 
 State:
 - **IN PROGRESS** — source-side Android UX is now aligned with the actual v3.0.215 frontend structure; next gate is CI/build artifact and physical-device review.
+
+
+## 2026-10-03 — Android v0.2.0 versioning and Play update channel
+
+Build evidence before version bump:
+- **VALIDATED** — GitHub Actions run `37110037392` completed with conclusion `success`.
+- **VALIDATED** — Android mobile UX validator passed in CI.
+- **VALIDATED** — current Michel's Life v3.0.215 AppBundle was downloaded and prepared successfully.
+- **VALIDATED** — debug APK build succeeded.
+- **VALIDATED** — Play AAB build and AAB validation succeeded.
+- **VALIDATED** — signing-certificate diagnostics and artifact upload succeeded.
+
+Versioning/update work in this atomic change:
+- Android version moves from `0.1.0 / versionCode 1` to `0.2.0 / versionCode 2`.
+- `DriveCloudEngine.ANDROID_VERSION` moves to `0.2.0`.
+- CI artifact names use a shared `ANDROID_VERSION` environment value instead of hard-coded `v0.1.0` strings.
+- Added `android/tools/validate_android_version.py` so Gradle, CloudSync, Android bridge, and workflow version labels cannot silently drift.
+- Android `updateStatus` now distinguishes a Google Play install from a sideloaded/test install.
+- Play installs report that updates are managed by Google Play.
+- Test builds explicitly report that they are test builds and that production updates come through Google Play.
+- The Android app no longer describes APK releases as the final production update mechanism.
+
+Remaining:
+- **PENDING** — validate the new v0.2.0 CI build.
+- **NEEDS DEVICE TEST** — install the v0.2.0 test APK on a physical phone and review the mobile UX.
+- **BLOCKED** — signed production Play AAB still requires the permanent upload-keystore secrets.

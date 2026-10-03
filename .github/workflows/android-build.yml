@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 env:
-  RELEASES_REPO: realmichelduarte/michel-s-life-releases
+  RELEASES_REPO: realmichelduarte/michel-s-life-releases\n  ANDROID_VERSION: 0.2.0
   ANDROID_UPLOAD_KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
   ANDROID_UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
   ANDROID_UPLOAD_KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
@@ -38,6 +38,9 @@ jobs:
 
       - name: Validate Windows-compatible cloud contract
         run: python android/tools/validate_sync_contract.py
+
+      - name: Validate Android version metadata
+        run: python android/tools/validate_android_version.py
 
       - name: Validate Android mobile UX layer
         run: |
@@ -87,12 +90,12 @@ jobs:
       - name: Name APK
         run: |
           mkdir -p artifacts/android
-          cp android/app/build/outputs/apk/debug/app-debug.apk             artifacts/android/MichelsLife-Android-TEST-v0.1.0.apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk             artifacts/android/MichelsLife-Android-TEST-v${ANDROID_VERSION}.apk
 
       - name: Name Play Store app bundle
         shell: bash
         run: |
-          AAB="artifacts/android/MichelsLife-Android-Play-${PLAY_BUNDLE_SIGNING}-v0.1.0.aab"
+          AAB="artifacts/android/MichelsLife-Android-Play-${PLAY_BUNDLE_SIGNING}-v${ANDROID_VERSION}.aab"
           cp android/app/build/outputs/bundle/release/app-release.aab "$AAB"
           sha256sum "$AAB" > "$AAB.sha256"
           echo "PLAY_AAB=$AAB" >> "$GITHUB_ENV"
@@ -117,16 +120,16 @@ jobs:
       - name: Print Android test signing fingerprints
         shell: bash
         run: |
-          APK="artifacts/android/MichelsLife-Android-TEST-v0.1.0.apk"
+          APK="artifacts/android/MichelsLife-Android-TEST-v${ANDROID_VERSION}.apk"
           echo "=== Android APK signing certificate ==="
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$APK" \
             | tee artifacts/android/signing-certificate.txt
           echo "=== APK SHA-256 ==="
-          sha256sum "$APK" | tee artifacts/android/MichelsLife-Android-TEST-v0.1.0.apk.sha256
+          sha256sum "$APK" | tee artifacts/android/MichelsLife-Android-TEST-v${ANDROID_VERSION}.apk.sha256
 
       - uses: actions/upload-artifact@v4
         with:
-          name: MichelsLife-Android-TEST-v0.1.0
+          name: MichelsLife-Android-TEST-v${{ env.ANDROID_VERSION }}
           path: artifacts/android/
           if-no-files-found: error
           retention-days: 7

@@ -45,8 +45,8 @@ The Play Store track uses an Android App Bundle (AAB).
 
 Current Play identity:
 - package: `com.michelslab.michelslife`
-- versionCode: `1`
-- versionName: `0.1.0`
+- versionCode: `2`
+- versionName: `0.2.0`
 - targetSdk: `36`
 
 The Gradle release build supports an upload keystore through environment variables:
@@ -64,3 +64,14 @@ For GitHub Actions, store the keystore itself as Base64 plus the three credentia
 The workflow decodes the keystore only into the temporary runner filesystem and sets `ANDROID_UPLOAD_KEYSTORE_PATH` there. Never commit the upload keystore or its passwords to this repository.
 
 Without the keystore secret, CI deliberately emits an explicitly named unsigned Play preparation AAB. With all signing secrets present, CI emits a signed AAB and verifies its JAR signature before uploading the artifact.
+
+
+## Android versioning rule
+
+Every Google Play upload must use a higher `versionCode` than the previous Play upload. Keep the user-facing Android version aligned across:
+- `android/app/build.gradle.kts` → `versionName`
+- `DriveCloudEngine.ANDROID_VERSION`
+- `.github/workflows/android-build.yml` → `ANDROID_VERSION`
+- `android/android-bridge.js` bridge version
+
+CI runs `android/tools/validate_android_version.py` and fails if those Android version labels drift apart. Test APKs identify themselves as the test channel; Play-installed builds report that updates are managed externally by Google Play.

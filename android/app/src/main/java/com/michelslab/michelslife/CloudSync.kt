@@ -99,7 +99,7 @@ class DriveCloudEngine(
         const val CLOUD_BACKUP_PREFIX = "michels_life_backup_"
         const val DEVICE_FILE_PREFIX = "michels_life_device_"
         const val CLOUD_BACKUP_LIMIT = 10
-        const val ANDROID_VERSION = "0.1.0"
+        const val ANDROID_VERSION = "0.2.0"
     }
 
     private val http = OkHttpClient.Builder()

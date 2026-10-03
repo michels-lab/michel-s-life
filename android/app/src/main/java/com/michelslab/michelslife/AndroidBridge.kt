@@ -133,11 +133,39 @@ class AndroidBridge(
                 .put("platform", "Android")
                 .put("version", DriveCloudEngine.ANDROID_VERSION)
                 .put("status", "ok"))
-            "updateStatus" -> respondOk(requestId, JSONObject()
-                .put("updateAvailable", false)
-                .put("status", "Android updates are distributed as APK releases."))
+            "updateStatus" -> {
+                val channel = installChannel()
+                respondOk(requestId, JSONObject()
+                    .put("updateAvailable", false)
+                    .put("managedExternally", true)
+                    .put("channel", channel)
+                    .put("version", DriveCloudEngine.ANDROID_VERSION)
+                    .put(
+                        "status",
+                        if (channel == "google-play")
+                            "Updates are managed by Google Play."
+                        else
+                            "Test build. Production updates are delivered through Google Play."
+                    ))
+            }
             else -> respondError(requestId, "This Michel's Life desktop action is not available on Android yet: " + action)
         }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun installChannel(): String {
+        val installer = try {
+            if (android.os.Build.VERSION.SDK_INT >= 30) {
+                activity.packageManager
+                    .getInstallSourceInfo(activity.packageName)
+                    .installingPackageName
+            } else {
+                activity.packageManager.getInstallerPackageName(activity.packageName)
+            }
+        } catch (_: Exception) {
+            null
+        }
+        return if (installer == "com.android.vending") "google-play" else "test"
     }
 
     private fun authorizeFor(
