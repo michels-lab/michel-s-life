@@ -163,20 +163,29 @@
       const target=event.target;
       interactive=!!target.closest('button,a,input,select,textarea,label,[contenteditable="true"],.modal,.v132-actions,.actions');
       horizontalScroller=!!target.closest('.v134-ach-filter,.v140-cat-shortcuts,.v140-library-toggle,[data-horizontal-scroll],.tabs');
+      window.__mlvAndroidGestureDebug={
+        phase:'start',startX,startY,target:target?.tagName||'',className:String(target?.className||''),
+        interactive,horizontalScroller
+      };
     },{passive:true});
     document.addEventListener('touchend',event=>{
       if(!tracking||!isMobile()||event.changedTouches.length!==1){tracking=false;return;}
       tracking=false;
       const touch=event.changedTouches[0];
       const dx=touch.clientX-startX,dy=touch.clientY-startY,elapsed=Math.max(1,performance.now()-startAt);
-      if(Math.abs(dx)<64||Math.abs(dx)<Math.abs(dy)*1.35||elapsed>650)return;
+      const debug=window.__mlvAndroidGestureDebug||{};
+      Object.assign(debug,{phase:'end',dx,dy,elapsed,drawerOpen:document.body.classList.contains('mlv-android-nav-open')});
+      window.__mlvAndroidGestureDebug=debug;
+      if(Math.abs(dx)<64||Math.abs(dx)<Math.abs(dy)*1.35||elapsed>650){debug.result='threshold-rejected';return;}
       if(document.body.classList.contains('mlv-android-nav-open')){
-        if(dx<0)setDrawer(false);
+        if(dx<0){setDrawer(false);debug.result='drawer-closed';}else debug.result='drawer-open-noop';
         return;
       }
-      if(startX<=28&&dx>72){setDrawer(true);return;}
-      if(interactive||horizontalScroller)return;
-      navigateSwipe(dx<0?'next':'previous');
+      if(startX<=28&&dx>72){setDrawer(true);debug.result='drawer-opened';return;}
+      if(interactive||horizontalScroller){debug.result=interactive?'interactive-rejected':'horizontal-scroller-rejected';return;}
+      const direction=dx<0?'next':'previous';
+      debug.direction=direction;
+      debug.result=navigateSwipe(direction)?'navigated':'navigation-unavailable';
     },{passive:true});
   }
 
@@ -204,7 +213,9 @@
       #mlv-android-topbar,#mlv-android-drawer-backdrop{display:none}
       @media(max-width:${MOBILE_BREAKPOINT}px){
         :root{--mlv-android-topbar-h:56px}
-        html[data-mlv-platform="android"] body{overscroll-behavior-y:none;padding-top:calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px))!important}
+        html[data-mlv-platform="android"] body{overscroll-behavior-y:none;padding-top:calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px))!important;touch-action:pan-y!important}
+        #main,.layout{touch-action:pan-y!important}
+        .v134-ach-filter,.v140-cat-shortcuts,.v140-library-toggle,[data-horizontal-scroll],.tabs{touch-action:pan-x!important}
         #mlv-android-topbar{position:fixed;display:flex;align-items:center;gap:10px;top:0;left:0;right:0;height:calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px));padding:env(safe-area-inset-top,0px) 12px 0;z-index:2147483000;background:rgba(6,9,19,.94);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.1);box-sizing:border-box}
         #mlv-android-menu-button{width:42px;height:42px;min-width:42px;padding:0;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:inherit;font:inherit;font-size:22px;line-height:1;display:grid;place-items:center}
         .mlv-android-topbar-copy{min-width:0;display:flex;flex-direction:column;gap:1px}.mlv-android-topbar-copy strong{font-size:13px;line-height:1.1}.mlv-android-topbar-copy span{font-size:11px;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:62vw}
