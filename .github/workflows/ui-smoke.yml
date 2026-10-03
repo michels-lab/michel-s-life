@@ -4,6 +4,13 @@ on:
   pull_request:
   push:
     branches: [main]
+    paths:
+      - 'src/MichelsLife/frontend/**'
+      - 'branding/**'
+      - 'tools/**'
+      - 'android/android-bridge.js'
+      - 'android/tools/prepare_bundle.py'
+      - '.github/workflows/ui-smoke.yml'
   workflow_dispatch:
 
 permissions:
