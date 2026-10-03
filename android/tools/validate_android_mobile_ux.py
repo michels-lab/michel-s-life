@@ -9,10 +9,14 @@ required_bridge = [
     "window.__MICHELSLIFE_ANDROID_BRIDGE__='0.2.0'",
     "mlv-android-topbar",
     "mlv-android-drawer-backdrop",
+    "#v30171Sidebar{",
+    "body.mlv-android-nav-open #v30171Sidebar",
     "function navigateSwipe(direction)",
     "window.__mlvAndroidHandleBack=function()",
     "article.v132-mission",
     ".v132-check",
+    ".v132-mission-actions{grid-column:2",
+    ".topbar{display:none",
     "data-mlv-platform",
 ]
 missing = [needle for needle in required_bridge if needle not in bridge]
@@ -22,4 +26,4 @@ if missing:
 if "__mlvAndroidHandleBack" not in main:
     raise SystemExit("MainActivity does not delegate Android back handling to the web UI")
 
-print("OK: Android mobile UX contract contains drawer, swipe navigation, mission alignment and back handling")
+print("OK: Android mobile UX contract contains final drawer target, swipe navigation, compact dashboard, mission alignment and back handling")
