@@ -355,3 +355,23 @@ CI maintenance:
 
 Remaining gate:
 - **NEEDS DEVICE TEST** — install v0.2.0 on a physical Android phone and verify initial viewport, checklist alignment, drawer, swipe navigation, Back behavior, animation continuity, and Google sync.
+
+
+### 2026-10-03 — Build-trigger cleanup validation
+
+Run: `37110414892` — **Build Android test APK #35**
+
+Result:
+- **VALIDATED** — workflow completed with `success` after narrowing Android CI trigger paths.
+- **VALIDATED** — cloud contract, Android version metadata, Android mobile UX validation, debug APK, Play AAB, bundle validation, signing diagnostics, and artifact upload all passed again.
+- **VALIDATED** — Android v0.2.0 artifact remained correctly named `MichelsLife-Android-TEST-v0.2.0`.
+- Artifact id: `11269407443`.
+- Artifact SHA-256: `54bdff6fc26de1e1f9c98d8ca644d70fd4d30da40b9d0b14e941b61fa4144582`.
+
+CI behavior now:
+- Documentation-only edits to `android/README.md` or `android/ANDROID_AUDIT_LOG.md` do not trigger a full Android build.
+- Android source, Gradle config, bridge code, Android tools, and the Android workflow itself continue to trigger CI.
+
+Current Android gate:
+- **NEEDS DEVICE TEST** — v0.2.0 is build-validated; the remaining UX gate is physical-device testing.
+- **BLOCKED** — production-signed Play AAB still depends on permanent upload-keystore secrets.
