@@ -1,0 +1,67 @@
+name: Android UI smoke
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'android/android-bridge.js'
+      - 'android/tools/prepare_bundle.py'
+      - 'tools/ui_android_mobile_smoke.mjs'
+      - '.github/workflows/android-ui-smoke.yml'
+
+permissions:
+  contents: read
+
+env:
+  RELEASES_REPO: realmichelduarte/michel-s-life-releases
+
+jobs:
+  android-ui-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Download current Michel's Life AppBundle
+        run: |
+          mkdir -p artifacts
+          curl -L --fail --retry 3 \
+            "https://github.com/$RELEASES_REPO/releases/latest/download/AppBundle.zip" \
+            -o artifacts/AppBundle-android.zip
+
+      - name: Install Chromium test runtime
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Prepare Android browser fixture
+        run: |
+          python android/tools/prepare_bundle.py \
+            --bundle artifacts/AppBundle-android.zip \
+            --assets artifacts/android-ui-bundle
+
+      - name: Audit Android mobile UX at 412x915
+        run: |
+          python -m http.server 4174 --directory artifacts/android-ui-bundle >/tmp/mlv-android-http.log 2>&1 &
+          export MLV_ANDROID_UI_URL=http://127.0.0.1:4174
+          export MLV_ANDROID_UI_SCREENSHOT=artifacts/android-ui-smoke/android-mobile.png
+          node tools/ui_android_mobile_smoke.mjs
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        continue-on-error: true
+        with:
+          name: android-ui-smoke-v0.2.0
+          path: |
+            artifacts/android-ui-smoke
+            /tmp/mlv-android-http.log
+          if-no-files-found: warn
+          retention-days: 7
