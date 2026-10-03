@@ -1,0 +1,25 @@
+#!/usr/bin/env python3
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+bridge = (ROOT / "android-bridge.js").read_text(encoding="utf-8")
+main = (ROOT / "app/src/main/java/com/michelslab/michelslife/MainActivity.kt").read_text(encoding="utf-8")
+
+required_bridge = [
+    "window.__MICHELSLIFE_ANDROID_BRIDGE__='0.2.0'",
+    "mlv-android-topbar",
+    "mlv-android-drawer-backdrop",
+    "function navigateSwipe(direction)",
+    "window.__mlvAndroidHandleBack=function()",
+    "article.v132-mission",
+    ".v132-check",
+    "data-mlv-platform",
+]
+missing = [needle for needle in required_bridge if needle not in bridge]
+if missing:
+    raise SystemExit("Android mobile UX contract missing: " + ", ".join(missing))
+
+if "__mlvAndroidHandleBack" not in main:
+    raise SystemExit("MainActivity does not delegate Android back handling to the web UI")
+
+print("OK: Android mobile UX contract contains drawer, swipe navigation, mission alignment and back handling")
