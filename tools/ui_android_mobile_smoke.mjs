@@ -123,19 +123,26 @@ try{
   if(missionGeometry.actions){
     ok(missionGeometry.actions.left>=missionGeometry.content.left-2,'Mission actions are falling into the checkbox column: '+JSON.stringify(missionGeometry));
   }
+  console.log('ANDROID_GEOMETRY '+JSON.stringify({initial,drawerOpen,missionGeometry}));
 
+  const cdp=await context.newCDPSession(page);
   async function touchSwipe(x1,y1,x2,y2){
-    await page.evaluate(({x1,y1,x2,y2})=>{
-      const target=document.body;
-      const fire=(type,touches,changedTouches)=>{
-        const ev=new Event(type,{bubbles:true,cancelable:true});
-        Object.defineProperty(ev,'touches',{value:touches});
-        Object.defineProperty(ev,'changedTouches',{value:changedTouches});
-        target.dispatchEvent(ev);
-      };
-      fire('touchstart',[{clientX:x1,clientY:y1}],[]);
-      fire('touchend',[],[{clientX:x2,clientY:y2}]);
-    },{x1,y1,x2,y2});
+    await cdp.send('Input.dispatchTouchEvent',{
+      type:'touchStart',
+      touchPoints:[{x:x1,y:y1,radiusX:2,radiusY:2,force:1,id:1}]
+    });
+    await page.waitForTimeout(30);
+    await cdp.send('Input.dispatchTouchEvent',{
+      type:'touchMove',
+      touchPoints:[{x:(x1+x2)/2,y:(y1+y2)/2,radiusX:2,radiusY:2,force:1,id:1}]
+    });
+    await page.waitForTimeout(30);
+    await cdp.send('Input.dispatchTouchEvent',{
+      type:'touchMove',
+      touchPoints:[{x:x2,y:y2,radiusX:2,radiusY:2,force:1,id:1}]
+    });
+    await page.waitForTimeout(20);
+    await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
     await page.waitForTimeout(320);
   }
 
