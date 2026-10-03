@@ -448,3 +448,45 @@ Historical comparison:
 State:
 - **VALIDATED AUTOMATICALLY** — initial viewport, drawer geometry/open-close, checklist alignment, no horizontal overflow, swipe navigation, edge-drawer gesture, and animation continuity.
 - **NEEDS DEVICE TEST** — actual touch feel, Android Back behavior, background/resume, process restart, and real-device rendering still require the physical phone.
+
+
+### 2026-10-03 — Android v0.2.0 final automated-validation build
+
+Source:
+- Commit `57d09a74` — **Route Android swipes through canonical navigation API**
+
+Native build:
+- GitHub Actions run `37162394159` — **Build Android test APK #41**
+- Result: **SUCCESS**
+- **VALIDATED** — Windows-compatible cloud contract.
+- **VALIDATED** — Android version metadata `0.2.0 / versionCode 2`.
+- **VALIDATED** — Android mobile UX static contract.
+- **VALIDATED** — current v3.0.215 AppBundle preparation.
+- **VALIDATED** — debug APK compilation.
+- **VALIDATED** — Play AAB compilation and bundle validation.
+- **VALIDATED** — signing-certificate diagnostics.
+- **VALIDATED** — artifact upload.
+
+Build artifact:
+- GitHub artifact id: `11287309798`
+- Artifact name: `MichelsLife-Android-TEST-v0.2.0`
+- Artifact ZIP digest: `sha256:9278c5af572c9ba392af4e2749c1d13653801ac40fa59638232f3efdd02cfad6`
+- Test APK: `MichelsLife-Android-TEST-v0.2.0.apk`
+- Test APK SHA-256: `a166f186cac115ddc30f5f062d507c498203d2514a7c8da28c3a7288e07b060c`
+- Play-preparation AAB remains explicitly **UNSIGNED** because permanent upload-key secrets are not yet configured.
+
+Android UI validation:
+- Dedicated Android UI smoke run `37162394170` — **SUCCESS**
+- Viewport: `412×915`.
+- Dashboard `#main` begins at `y=148 px`; first card at `y=157 px`.
+- Drawer is fixed and off-canvas while closed, then opens to `0…320 px`.
+- Mission check target is `36×36 px` with no card/page horizontal overflow.
+- Swipe-left routes from Dashboard to Missions using `LeftNavV30171.route`.
+- Seasonal animation continued during navigation, frame `77 → 85`.
+
+Conclusion:
+- **VALIDATED AUTOMATICALLY** — current Android v0.2.0 source and final test APK build.
+- **NEEDS DEVICE TEST** — real-phone visual/touch approval, Android Back, lifecycle/background-resume/process restart.
+- **NEEDS DEVICE TEST** — Google authorization + Windows ↔ Android Drive synchronization/conflicts/restores.
+- **BLOCKED** — production Play signing until permanent upload-keystore secrets are available.
+- **PENDING PLAY CONSOLE** — Play App Signing/OAuth signing fingerprint, policy/Data safety/rating/audience/listing/internal test and any account-specific production-access test.
