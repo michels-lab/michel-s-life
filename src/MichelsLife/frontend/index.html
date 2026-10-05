@@ -28764,6 +28764,7 @@ function activateSetting(key,root){
  root.querySelectorAll('[data-v30171-setting]').forEach(b=>b.classList.toggle('active',b.dataset.v30171Setting===key));
  root.querySelectorAll('[data-v30171-pane]').forEach(p=>p.classList.toggle('active',p.dataset.v30171Pane===key));
  try{localStorage.setItem('michelsLife.settingsSection.v30171',key)}catch(_){}
+  if(key==='sync')queueMicrotask(()=>window.SupabaseSyncV30216?.mount?.());
 }
 function enhance(){renderNav();if(String(state?.activeTab||'')==='settings')buildSettings()}
 const oldTabs=window.renderTabs;window.renderTabs=function(){renderNav();};try{renderTabs=window.renderTabs}catch(_){}
