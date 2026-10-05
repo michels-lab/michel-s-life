@@ -733,3 +733,44 @@ State:
 - **CHECKLIST SIZE FIX: IN PROGRESS — automated revalidation running**
 - **PLAY CONSOLE SUBMISSION: PENDING USER CONSOLE SETUP**
 - **PRODUCTION: BLOCKED until Play Console requirements + required testing + Play-delivered device validation are complete**
+
+
+## 2026-10-05 — Android v0.2.1 onboarding regression closed + Play parallel-work state
+
+User-visible evidence:
+- Physical Android and PC-emulator testing had shown malformed onboarding/focus checks, overlapping Android actions and sluggish section changes.
+- Automated fresh-install reproduction confirmed the onboarding checkbox regression at **262.59 × 48.40 px** with a 349.27 × 74 px row.
+
+Root cause / correction:
+- Desktop onboarding input sizing could still win after the onboarding step rebuilt its DOM.
+- Android now runs `stabilizeAndroidOnboardingControls()` and writes the checkbox/row geometry as Android-only inline `!important` values after onboarding step changes.
+- Focus/options checks are constrained to 22 × 22 px; rows use a compact two-column grid.
+- Android Settings continues to use the active-surface fast route instead of the desktop global rerender cascade.
+- Android app mode remains active through wide emulator/landscape widths rather than reverting to the desktop-heavy shell.
+
+Commits:
+- `9b9d6d0b` — Force compact Android onboarding checkboxes at runtime.
+- `f9612202` — Use Android-compatible approved celestial launcher asset.
+- Prior v0.2.1 Android UX commits cover wide-emulator mode, Settings fast routing, in-drawer action controls and robust swipe validation.
+
+Validation:
+- **VALIDATED** — Android UI smoke run **#38** / run `37285236527`: SUCCESS.
+- **VALIDATED** — Android build run **#69** / run `37285236594`: SUCCESS.
+- **VALIDATED** — Source validation run `37285236498`: SUCCESS.
+- Build artifact: `MichelsLife-Android-TEST-v0.2.1`, artifact id `11334113420`.
+- Artifact contains test APK plus `MichelsLife-Android-Play-UNSIGNED-v0.2.1.aab`.
+
+Google Play state:
+- **DONE** — package `com.michelslab.michelslife`, targetSdk 36, versionName 0.2.1, versionCode 3.
+- **DONE** — permanent upload key already exists and remains outside source control.
+- **BLOCKED** — CI Play AAB is still unsigned until the four repository secrets are configured:
+  - `ANDROID_UPLOAD_KEYSTORE_BASE64`
+  - `ANDROID_UPLOAD_STORE_PASSWORD`
+  - `ANDROID_UPLOAD_KEY_ALIAS`
+  - `ANDROID_UPLOAD_KEY_PASSWORD`
+- **PENDING USER / PLAY CONSOLE** — create/configure Play Console app, complete policy/listing forms, create testing track and testers.
+- **NEEDS RETEST** — install build #69 on the physical phone and PC emulator to confirm perceived responsiveness and visual behavior after the final v0.2.1 fixes.
+- **PENDING** — once signing secrets are present, rerun Android build, verify a `Play-SIGNED` AAB, upload it to Play testing, then register the Play app-signing SHA fingerprint in Google Cloud OAuth for Drive sign-in validation.
+
+State:
+- **VALIDATED AUTOMATICALLY / PLAY SUBMISSION IN PROGRESS**.
