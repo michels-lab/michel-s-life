@@ -1,3 +1,35 @@
+## 3.0.216 — Supabase primary sync migration (pre-release)
+
+### Supabase backend
+- Created a dedicated **michels-life** Supabase project for Michel's Life rather than sharing the unrelated IG Cleaner backend.
+- Added authenticated master-state sync through `ml_state`, revision history through `ml_state_history`, and cross-device presence/activity through `ml_devices`.
+- Enabled Row Level Security on every Michel's Life table and scoped all policies to the authenticated user's `auth.uid()`.
+- Explicitly revoked anonymous table privileges. Supabase Security Advisor reports zero findings after the final hardening migration.
+- Desktop/mobile clients use only the modern Supabase publishable key. Release validation rejects `sb_secret_` and `service_role` markers.
+
+### Cross-platform sync
+- Added email/password Supabase Auth, access-token refresh, persistent session handling and a dedicated Settings → Sync surface.
+- Reused the existing full Michel's Life backup payload as the initial canonical snapshot format so Missions, Journal, Projects, Stats, Chapters and settings migrate without a parallel data model.
+- Sync uses monotonic revisions and a dirty flag: unchanged polling does not create new revisions.
+- If another device has a newer revision, automatic sync refuses to overwrite it and surfaces a conflict; cloud/local replacement remains an explicit user action.
+- The previous remote snapshot is preserved in Supabase history before overwrites.
+- The global Sync Center, Command Palette and Windows tray Sync Now now prefer Supabase.
+- Google Drive remains available only as a temporary manual recovery/migration fallback. Its automatic sync is disabled whenever a Supabase session is active.
+- Google Calendar remains an independent optional integration.
+
+### Android 0.2.2
+- The Android WebView reuses the same Supabase client as Windows and reports `source_platform='android'` with a separate Android device identity.
+- Android version bumped to **0.2.2 / versionCode 4**.
+- Android builds now overlay the branch's canonical frontend into the base AppBundle before APK/AAB packaging, preventing test builds from silently embedding an older public-release frontend.
+- Android sync validation requires the Supabase contract and rejects privileged Supabase keys.
+- Native Google Drive code remains temporarily available as a fallback only.
+
+### Validation
+- Supabase production schema: RLS enabled, anonymous table privileges revoked, Security Advisor **0 findings**.
+- Source validation **#717 — success** on the shared Windows/Android Supabase product code.
+- UI smoke **#607 — success**, including Supabase sign-in simulation, first master upload, dirty-state revision upload, newer-remote conflict protection and explicit cloud restore.
+- Native Windows/Android device validation is still required before public release; no v3.0.216 release has been published.
+
 # Changelog
 
 > Official development log for Michel's Life. Every meaningful app change must be recorded here before a version is considered complete. Entries should describe verified changes only and be grouped by version/date.
