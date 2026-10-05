@@ -774,3 +774,39 @@ Google Play state:
 
 State:
 - **VALIDATED AUTOMATICALLY / PLAY SUBMISSION IN PROGRESS**.
+
+
+## 2026-10-05 — Android v0.2.1 single-pass Settings navigation validation
+
+Follow-up source change:
+- Commit `cbe3278e` — **Make Android Settings category switching single-pass**.
+- Android capture-phase navigation now intercepts permanent-nav tabs, Today, and Settings-category buttons before the desktop handlers can schedule repeated repair/rebuild passes.
+- Settings-category changes call the canonical category activator once; Google settings mounts once on the next animation frame when selected.
+
+Android UI smoke:
+- Workflow: **Android UI smoke #39**
+- Run: `37288373859`
+- Result: **SUCCESS**
+
+Measured phone-like viewport (412×915):
+- Settings route: **73.9 ms**, router `android-render-main`.
+- Arrow navigation to Missions: **87.6 ms**.
+- Fresh-install onboarding checkbox: **22×22 px**.
+- Fresh-install onboarding row: **44 px** high.
+- Action Dock parent: `#v30171Sidebar`, computed `position: sticky`.
+- Quick/Focus controls remain off-canvas with the closed drawer and do not overlay Settings/Journal content.
+- Drawer explicitly displays: **“Swipe ↔ or use ‹ › to change sections”**.
+- Seasonal animation continued during route test: frame `120 → 128`.
+
+Measured wide PC-hosted Android emulator viewport (1536×864):
+- Android shell remained active; desktop top bar stayed hidden.
+- Main content width bounded to **1180 px**.
+- No horizontal overflow.
+- Settings route: **74.7 ms**, router `android-render-main`.
+- Existing profile did not re-open onboarding.
+
+Validation state:
+- **VALIDATED** — Android UI smoke #39.
+- **VALIDATED** — Source validation run `37288373924`.
+- **IN PROGRESS** — native Android build #70 / run `37288373900` is compiling the Play AAB at the time of this entry.
+- **NEEDS USER RETEST** — install the resulting v0.2.1 APK on physical phone and PC emulator for perceived responsiveness and real touch behavior.
