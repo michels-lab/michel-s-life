@@ -284,16 +284,35 @@
       setImportantOnce(side,'transform',document.body.classList.contains('mlv-android-nav-open')?'translateX(0)':'translateX(-105%)');
     }
 
+    const active=activeTabId();
+    const quietTab=active==='journal'||active==='settings';
+
     const actionDock=q('#v30175ActionDock');
     if(actionDock){
       setImportantOnce(actionDock,'position','fixed');
       setImportantOnce(actionDock,'left','auto');
       setImportantOnce(actionDock,'right','12px');
-      setImportantOnce(actionDock,'bottom','max(12px,env(safe-area-inset-bottom,0px))');
-      setImportantOnce(actionDock,'display','flex');
+      setImportantOnce(actionDock,'bottom','calc(env(safe-area-inset-bottom,0px) + 76px)');
+      setImportantOnce(actionDock,'display',quietTab?'none':'flex');
       setImportantOnce(actionDock,'flex-direction','row');
       setImportantOnce(actionDock,'gap','8px');
       setImportantOnce(actionDock,'z-index','2147482800');
+    }
+
+    const quickFab=q('#v30106QuickFab');
+    if(quickFab){
+      setImportantOnce(quickFab,'position','fixed');
+      setImportantOnce(quickFab,'left','auto');
+      setImportantOnce(quickFab,'right','12px');
+      setImportantOnce(quickFab,'bottom','calc(env(safe-area-inset-bottom,0px) + 76px)');
+      setImportantOnce(quickFab,'display',quietTab?'none':'grid');
+      setImportantOnce(quickFab,'z-index','2147482801');
+    }
+
+    const focusDock=q('#v30162FocusDock');
+    if(focusDock){
+      setImportantOnce(focusDock,'display',quietTab?'none':'block');
+      if(side&&focusDock.parentElement!==side)side.appendChild(focusDock);
     }
 
     const status=q('#v176StatusPanel');
