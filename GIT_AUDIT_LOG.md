@@ -18,7 +18,8 @@
 ### Desktop shell and Quick Capture
 - Added `src/MichelsLife/DesktopShell.cs` as a separate native WinForms responsibility rather than expanding the already-large host class.
 - The materialized Windows host attaches the desktop shell after WebView2 initialization.
-- Added tray actions for Open Michel's Life, Quick Capture and Exit, plus resident close/minimize behavior.
+- Added tray actions for Open Michel's Life, Quick Capture, Current Mission, Sync Now, Start with Windows and Exit, plus resident close/minimize behavior.
+- Current Mission routes through `CurrentMissionV131`; Sync Now routes through `GoogleCloudV30192`/`GoogleCloudV30191`; Start with Windows writes only the current-user Windows Run entry.
 - Registered `Ctrl + Shift + Space` through the Windows hotkey API and routes it to the existing WebView2 document.
 - Added `window.MLV216QuickCapture` in the canonical frontend.
 - Quick Capture writes Missions through the existing `makeMission` / `state.missions` path and Journal notes through `JournalV30189`; no parallel data model was introduced.
@@ -47,7 +48,7 @@
 ### Release state
 - No merge to `main` has been performed.
 - No v3.0.216 release has been published.
-- A real Windows test build is still required to exercise tray visibility, global hotkey registration and resident-window behavior interactively before public release.
+- Windows test build #48 completed successfully and produced `MichelsLife-TEST-v3.0.215.zip` for interactive tray, hotkey, resident-window, Current Mission, Sync Now and startup-toggle validation. Public release remains blocked on that interactive native check.
 
 ## 2026-10-01 — Android v0.1.0 synchronized-client prototype
 
