@@ -16,8 +16,12 @@ required_bridge = [
     "function fastRoute(id)",
     "window.__mlvAndroidFastRoute=fastRoute",
     "android-fast-route",
+    "function installFastNavCapture()",
+    "installFastNavCapture();",
+    "(document.body||document.head).appendChild(style)",
     "#v30171Sidebar{",
     "document.body.appendChild(side)",
+    "setImportantOnce(side,'z-index','2147482995')",
     "body.mlv-android-nav-open #v30171Sidebar",
     "function navigateSwipe(direction)",
     "window.__mlvAndroidHandleBack=function()",
@@ -25,15 +29,16 @@ required_bridge = [
     ".v132-check",
     ".v132-mission-actions{grid-column:2",
     ".topbar{display:none",
+    "#mlv200Onboarding{padding:8px!important",
     "#mlv200Onboarding .mlv200-focus input[type=\"checkbox\"]",
     "width:22px!important",
     "#v30175ActionDock{left:auto",
-    "#v30162FocusDock{left:auto",
-    "body[data-mlv-android-tab=\"journal\"] #v30175ActionDock",
-    "body[data-mlv-android-tab=\"settings\"] #v30175ActionDock",
+    "#v30106QuickFab",
+    "#v30162FocusDock",
     "#v176StatusPanel{position:relative",
     "#v176StatusPanel .v176-card:first-child",
     "setInterval(maintenance,1000)",
+    "body[data-mlv-android-tab=\"journal\"] #v30175ActionDock",
     "data-mlv-platform",
 ]
 missing = [needle for needle in required_bridge if needle not in bridge]
@@ -42,7 +47,7 @@ if missing:
 
 native_required = [
     "setLayerType(View.LAYER_TYPE_HARDWARE",
-    "setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_IMPORTANT",
+    "setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_BOUND",
     "offscreenPreRaster = true",
 ]
 missing_native = [needle for needle in native_required if needle not in main]
@@ -52,4 +57,4 @@ if missing_native:
 if "__mlvAndroidHandleBack" not in main:
     raise SystemExit("MainActivity does not delegate Android back handling to the web UI")
 
-print("OK: Android v0.2.1 mobile UX contract contains fast navigation, compact onboarding controls, safe floating actions, hardware rendering, drawer/swipe navigation, mission alignment and back handling")
+print("OK: Android mobile UX contract contains fast drawer navigation, end-of-DOM Android cascade, stable onboarding/checklists, safe floating actions, hardware rendering, fixed drawer layering, swipe navigation, mission alignment and back handling")
