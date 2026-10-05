@@ -445,3 +445,38 @@ Validation:
 - Source validation #734: **SUCCESS**, including Windows host compile, release-readiness, canonical frontend validation and Android Supabase contract validation.
 - Android UI smoke #42: **SUCCESS**, including canonical frontend overlay, Android mobile UX at 412×915 and Android Supabase sync contract.
 - UI smoke #620 is the final shared-regression run for this pipeline hardening and was still running when this entry was written.
+
+
+## 2026-10-05 — `limon` handoff checkpoint
+
+Workflow keyword:
+- **`limon`** means: update all relevant permanent project logs, record the exact branch/CI/pending state, and leave a clean handoff so development can continue in a new chat without reconstructing context.
+- This is a development-workflow convention, not an app feature or user-facing command.
+
+Current repository state:
+- Branch: `desktop-v3.0.216`.
+- Draft PR: **#10 — v3.0.216: Supabase sync, desktop shell and Android integration**.
+- PR is currently mergeable.
+- Handoff HEAD before this log-only checkpoint: `419de33c4038e371debd1a74fd8d13db0d9907e7`.
+- Public **v3.0.216 is not published**.
+
+Current validation at the handoff HEAD:
+- Source validation **#736 — SUCCESS**.
+- UI smoke **#622 — SUCCESS**.
+- Android UI smoke **#44 — SUCCESS**.
+- Supabase production schema remains hardened with RLS enabled, anonymous table access revoked and Security Advisor at zero findings.
+
+Implemented / stable:
+- Supabase is the primary Michel's Life state/account/device sync backend.
+- Windows and Android share the canonical Supabase sync client.
+- Dirty/revision logic prevents poll-driven revision spam and refuses automatic overwrite of a newer remote revision.
+- Sync Center, Command Palette and Windows tray prefer Supabase.
+- Google Drive is transitional manual recovery/migration fallback only; Google Calendar remains independent.
+- Android PR smoke tests the branch's exact canonical frontend, not the public-release bundle.
+- Desktop shell improvements from the same pre-release cycle remain in place: Quick Capture, tray residency/actions, automatic update detection, Command Palette, progressive startup and Current Mission taskbar integration.
+
+Remaining gates for the next chat:
+1. Perform a real same-account cross-device validation: Windows ↔ Android, including first-device choice, upload/download, newer-remote conflict and explicit restore.
+2. Generate a refreshed native Windows candidate containing the final Supabase code and interactively test tray/hotkey/taskbar/Sync Center.
+3. Run the native Android APK/AAB build for **0.2.2 / versionCode 4**, configure signing secrets if still absent, and test on device/emulator.
+4. Only after those native gates pass: bump/finalize release metadata as needed, merge PR #10, publish v3.0.216 and verify final assets.
