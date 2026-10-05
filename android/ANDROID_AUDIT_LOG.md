@@ -853,3 +853,7 @@ Next gate:
 The repository-level cloud audit is now documented in `docs/INFRASTRUCTURE_AUDIT.md`.
 
 Android remains on the shared Google Drive appDataFolder contract. The remaining cloud gate is real-device validation of OAuth persistence, Windows↔Android synchronization, conflict handling and restore behavior. Supabase is not part of the Android production path at this stage.
+
+## 2026-10-05 — Michel's Lab parent/child governance contract
+
+Android now inherits the repository-level Michel's Lab governance contract declared in `.michelslab/project.yml`. Android-specific technical evidence remains in this log; cross-app/cloud/security patterns are promoted to `Michel-Software-Standards` when reusable.
