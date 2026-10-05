@@ -20,6 +20,14 @@ try{
 
   await page.addInitScript(()=>{
     try{
+      const existing={
+        version:2,
+        settings:{characterName:'Michel',onboardingRequired:true,onboardingCompletedAt:'2026-10-01T12:00:00.000Z'},
+        xp:10,coins:0,totalCoinsEarned:0,activeTab:'dashboard',
+        missions:[{id:'smoke-mission',name:'Android smoke mission',canonical:'android smoke mission',description:'',category:'physical',type:'daily',difficulty:'medium',xp:25,coins:0,priority:'media',days:[1,2,3,4,5],deadline:'',fixed:false,boss:false,archived:false,hidden:false,noSuggest:false,createdAt:'2026-01-01T12:00:00.000Z',completions:[]}],
+        history:[],owned:[],equipped:{},achievements:[],goals:[],affirmations:[]
+      };
+      localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(existing));
       localStorage.removeItem('michelsLife.onboarding.v30200');
       localStorage.setItem('michelsLife.language.v1','en');
       localStorage.setItem('michelsLife.language.userOverrideBase.v1','en');
@@ -170,6 +178,16 @@ try{
   const settingsSwitch=await page.evaluate(()=>window.__mlvAndroidLastSwitch||null);
   ok(settingsSwitch?.router==='android-fast-route','Settings did not use Android fast route: '+JSON.stringify(settingsSwitch));
   ok(Number(settingsSwitch?.elapsedMs||99999)<1000,'Settings switch exceeded 1000 ms: '+JSON.stringify(settingsSwitch));
+  const settingsAndroidState=await page.evaluate(()=>({
+    onboardingVisible:(()=>{const el=document.getElementById('mlv200Onboarding');return !!(el&&el.getClientRects().length&&getComputedStyle(el).display!=='none')})(),
+    actionDockDisplay:(()=>{const el=document.getElementById('v30175ActionDock');return el?getComputedStyle(el).display:'missing'})(),
+    quickDisplay:(()=>{const el=document.getElementById('v30106QuickFab');return el?getComputedStyle(el).display:'missing'})(),
+    focusDisplay:(()=>{const el=document.getElementById('v30162FocusDock');return el?getComputedStyle(el).display:'missing'})()
+  }));
+  ok(!settingsAndroidState.onboardingVisible,'Existing user onboarding reappeared in Settings: '+JSON.stringify(settingsAndroidState));
+  ok(settingsAndroidState.actionDockDisplay==='none'||settingsAndroidState.actionDockDisplay==='missing','Action dock overlaps Settings: '+JSON.stringify(settingsAndroidState));
+  ok(settingsAndroidState.quickDisplay==='none'||settingsAndroidState.quickDisplay==='missing','Quick FAB overlaps Settings: '+JSON.stringify(settingsAndroidState));
+  ok(settingsAndroidState.focusDisplay==='none'||settingsAndroidState.focusDisplay==='missing','Focus FAB overlaps Settings: '+JSON.stringify(settingsAndroidState));
 
   await page.evaluate(()=>window.__mlvAndroidFastRoute?.('dashboard'));
   await page.waitForFunction(()=>String(window.state?.activeTab||'')==='dashboard',null,{timeout:5000});
@@ -230,6 +248,35 @@ try{
   const afterFrame=await page.evaluate(()=>Number(document.getElementById('v30146Canvas')?.dataset?.frame||0));
   if(beforeFrame>0)ok(afterFrame>beforeFrame,'Seasonal animation stalled in Android mobile viewport: '+JSON.stringify({beforeFrame,afterFrame}));
 
+  const freshContext=await browser.newContext({
+    viewport:{width:412,height:915},
+    screen:{width:412,height:915},
+    deviceScaleFactor:2.625,
+    isMobile:true,
+    hasTouch:true
+  });
+  const fresh=await freshContext.newPage();
+  await fresh.addInitScript(()=>{
+    try{
+      localStorage.removeItem('vida_rpg_personal_progress_v2');
+      localStorage.removeItem('michelsLife.onboarding.v30200');
+      localStorage.setItem('michelsLife.language.v1','en');
+    }catch(_){}
+    window.__MICHELSLIFE_INSTALL_LANGUAGE__='en';
+    window.MichelsLifeAndroid={postMessage(){}};
+  });
+  await fresh.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
+  await fresh.waitForSelector('#mlv200Onboarding .mlv200-focus input[type="checkbox"]',{state:'visible',timeout:60000});
+  const freshOnboarding=await fresh.evaluate(()=>{
+    const input=document.querySelector('#mlv200Onboarding .mlv200-focus input[type="checkbox"]');
+    const row=input?.closest('.mlv200-focus');
+    const ir=input?.getBoundingClientRect(),rr=row?.getBoundingClientRect();
+    return {checkbox:ir?{width:ir.width,height:ir.height}:null,row:rr?{width:rr.width,height:rr.height}:null};
+  });
+  ok(freshOnboarding.checkbox&&freshOnboarding.checkbox.width<=24&&freshOnboarding.checkbox.height<=24,'Fresh-install onboarding checkbox is oversized: '+JSON.stringify(freshOnboarding));
+  ok(freshOnboarding.row&&freshOnboarding.row.height<=64,'Fresh-install onboarding row is too tall: '+JSON.stringify(freshOnboarding));
+  await freshContext.close();
+
   await mkdir(dirname(screenshot),{recursive:true});
   await page.screenshot({path:screenshot,fullPage:true});
   console.log(JSON.stringify({
@@ -239,6 +286,8 @@ try{
     drawerOpen,
     missionGeometry,
     settingsSwitch,
+    settingsAndroidState,
+    freshOnboarding,
     arrowSwitch,
     swipeState,
     animation:{beforeFrame,afterFrame}
