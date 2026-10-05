@@ -52,15 +52,19 @@ async function switchTabAndMeasure(page,tabId){
     const started=performance.now();
     target.click();
     requestAnimationFrame(()=>{
-      const after=document.getElementById('v30146Canvas');
-      resolve({
-        tab:id,
-        elapsed:performance.now()-started,
-        frameBefore,
-        frameAfter:Number(after?.dataset?.frame||0),
-        sameBefore,
-        canvasSame:after===window.__mlvSeasonCanvasRef
-      });
+      setTimeout(()=>{
+        requestAnimationFrame(()=>{
+          const after=document.getElementById('v30146Canvas');
+          resolve({
+            tab:id,
+            elapsed:performance.now()-started,
+            frameBefore,
+            frameAfter:Number(after?.dataset?.frame||0),
+            sameBefore,
+            canvasSame:after===window.__mlvSeasonCanvasRef
+          });
+        });
+      },80);
     });
   }),tabId);
 }
