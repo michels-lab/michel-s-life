@@ -44,6 +44,15 @@ jobs:
           npm install --no-save playwright
           npx playwright install --with-deps chromium
 
+      - name: Overlay canonical Michel's Life frontend
+        run: |
+          python tools/enable_i18n.py --index src/MichelsLife/frontend/index.html
+          python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
+          python tools/replace_bundle_index.py --bundle artifacts/AppBundle-android.zip --index src/MichelsLife/frontend/index.html
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-android.zip --source src/MichelsLife/frontend/i18n.js --arcname i18n.js
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-android.zip --source branding/michel_duarte_avatar.jpg --arcname assets/michel_duarte_avatar.jpg
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-android.zip --source branding/michels_life_logo.webp --arcname assets/michels_life_logo.webp
+
       - name: Prepare Android browser fixture
         run: |
           python android/tools/prepare_bundle.py \
