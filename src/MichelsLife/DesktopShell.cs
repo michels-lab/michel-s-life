@@ -27,11 +27,12 @@ internal static class DesktopShell
         _webView = webView;
 
         var menu = new ContextMenuStrip();
-        menu.Items.Add("Open Michel's Life", null, (_, _) => RestoreWindow());
-        menu.Items.Add("Quick Capture", null, async (_, _) => await ShowQuickCaptureAsync());
-        menu.Items.Add("Current Mission", null, async (_, _) => await OpenCurrentMissionAsync());
-        menu.Items.Add("Sync Now", null, async (_, _) => await SyncNowAsync());
-        var startupItem = new ToolStripMenuItem("Start with Windows")
+        var spanish = IsInstalledLanguageSpanish();
+        var openItem = menu.Items.Add(spanish ? "Abrir Michel's Life" : "Open Michel's Life", null, (_, _) => RestoreWindow());
+        var quickCaptureItem = menu.Items.Add(spanish ? "Captura rápida" : "Quick Capture", null, async (_, _) => await ShowQuickCaptureAsync());
+        var currentMissionItem = menu.Items.Add(spanish ? "Misión actual" : "Current Mission", null, async (_, _) => await OpenCurrentMissionAsync());
+        var syncItem = menu.Items.Add(spanish ? "Sincronizar ahora" : "Sync Now", null, async (_, _) => await SyncNowAsync());
+        var startupItem = new ToolStripMenuItem(spanish ? "Iniciar con Windows" : "Start with Windows")
         {
             CheckOnClick = true,
             Checked = IsStartWithWindowsEnabled()
@@ -43,7 +44,15 @@ internal static class DesktopShell
         };
         menu.Items.Add(startupItem);
         menu.Items.Add(new ToolStripSeparator());
-        menu.Items.Add("Exit", null, (_, _) => ExitApplication());
+        var exitItem = menu.Items.Add(spanish ? "Salir" : "Exit", null, (_, _) => ExitApplication());
+        menu.Opening += async (_, _) => await RefreshTrayLanguageAsync(
+            openItem,
+            quickCaptureItem,
+            currentMissionItem,
+            syncItem,
+            startupItem,
+            exitItem
+        );
 
         _trayIcon = new NotifyIcon
         {
@@ -68,7 +77,9 @@ internal static class DesktopShell
             _trayIcon.ShowBalloonTip(
                 5000,
                 "Michel's Life",
-                "Ctrl + Shift + Space is already in use by Windows or another app. Quick Capture remains available from the tray.",
+                spanish
+                    ? "Ctrl + Shift + Espacio ya está en uso por Windows u otra aplicación. Captura rápida sigue disponible desde la bandeja."
+                    : "Ctrl + Shift + Space is already in use by Windows or another app. Quick Capture remains available from the tray.",
                 ToolTipIcon.Warning
             );
         }
@@ -136,6 +147,57 @@ internal static class DesktopShell
         }
     }
 
+    private static bool IsInstalledLanguageSpanish()
+    {
+        try
+        {
+            var raw = (Microsoft.Win32.Registry.GetValue(
+                @"HKEY_CURRENT_USER\Software\Michel's Life",
+                "Language",
+                string.Empty
+            ) as string ?? string.Empty).Trim().ToLowerInvariant();
+            return raw.StartsWith("spanish") || raw.StartsWith("es");
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static async Task RefreshTrayLanguageAsync(
+        ToolStripItem openItem,
+        ToolStripItem quickCaptureItem,
+        ToolStripItem currentMissionItem,
+        ToolStripItem syncItem,
+        ToolStripItem startupItem,
+        ToolStripItem exitItem
+    )
+    {
+        var spanish = IsInstalledLanguageSpanish();
+        try
+        {
+            if (_webView?.CoreWebView2 is not null)
+            {
+                var raw = await _webView.CoreWebView2.ExecuteScriptAsync(
+                    "window.MichelsLifeI18n?.language||'en'"
+                );
+                var language = System.Text.Json.JsonSerializer.Deserialize<string>(raw) ?? "en";
+                spanish = language.Equals("es", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+        catch
+        {
+            // Keep the installed-language fallback if the WebView is not ready.
+        }
+
+        openItem.Text = spanish ? "Abrir Michel's Life" : "Open Michel's Life";
+        quickCaptureItem.Text = spanish ? "Captura rápida" : "Quick Capture";
+        currentMissionItem.Text = spanish ? "Misión actual" : "Current Mission";
+        syncItem.Text = spanish ? "Sincronizar ahora" : "Sync Now";
+        startupItem.Text = spanish ? "Iniciar con Windows" : "Start with Windows";
+        exitItem.Text = spanish ? "Salir" : "Exit";
+    }
+
     private static bool IsStartWithWindowsEnabled()
     {
         try
@@ -167,7 +229,9 @@ internal static class DesktopShell
             _trayIcon?.ShowBalloonTip(
                 4000,
                 "Michel's Life",
-                "Windows startup preference could not be changed.",
+                IsInstalledLanguageSpanish()
+                    ? "No se pudo cambiar la preferencia de inicio con Windows."
+                    : "Windows startup preference could not be changed.",
                 ToolTipIcon.Warning
             );
             return false;
