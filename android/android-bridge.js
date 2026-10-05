@@ -45,6 +45,8 @@
 
   function setDrawer(open){
     document.body.classList.toggle('mlv-android-nav-open',!!open);
+    const side=q('#v30171Sidebar');
+    if(side)side.style.setProperty('transform',open?'translateX(0)':'translateX(-105%)','important');
     const button=q('#mlv-android-menu-button');
     if(button)button.setAttribute('aria-expanded',open?'true':'false');
   }
@@ -277,7 +279,23 @@
       setImportantOnce(side,'height','auto');
       setImportantOnce(side,'max-height','none');
       setImportantOnce(side,'margin','0');
+      setImportantOnce(side,'z-index','2147482995');
+      setImportantOnce(side,'background','rgba(var(--ui-panel-rgb,7,13,25),.985)');
+      setImportantOnce(side,'transform',document.body.classList.contains('mlv-android-nav-open')?'translateX(0)':'translateX(-105%)');
     }
+
+    const actionDock=q('#v30175ActionDock');
+    if(actionDock){
+      setImportantOnce(actionDock,'position','fixed');
+      setImportantOnce(actionDock,'left','auto');
+      setImportantOnce(actionDock,'right','12px');
+      setImportantOnce(actionDock,'bottom','max(12px,env(safe-area-inset-bottom,0px))');
+      setImportantOnce(actionDock,'display','flex');
+      setImportantOnce(actionDock,'flex-direction','row');
+      setImportantOnce(actionDock,'gap','8px');
+      setImportantOnce(actionDock,'z-index','2147482800');
+    }
+
     const status=q('#v176StatusPanel');
     if(status){
       setImportantOnce(status,'position','relative');
@@ -445,7 +463,7 @@
       }
       @media(min-width:${MOBILE_BREAKPOINT+1}px){body.mlv-android-nav-open{overflow:auto}}
     `;
-    document.head.appendChild(style);
+    (document.body||document.head).appendChild(style);
   }
 
   function observeUi(){
@@ -478,6 +496,8 @@
     window.addEventListener('michelslife:languagechange',()=>setTimeout(updateTopbarTitle,0));
     window.addEventListener('resize',()=>{if(!isMobile())setDrawer(false);else maintenance();});
   }
+
+  installFastNavCapture();
 
   function boot(){
     document.documentElement.setAttribute('data-mlv-platform','android');
