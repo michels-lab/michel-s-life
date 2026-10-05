@@ -5,7 +5,7 @@ ROOT = Path(__file__).resolve().parents[1]
 bridge = (ROOT / "android-bridge.js").read_text(encoding="utf-8")
 main = (ROOT / "app/src/main/java/com/michelslab/michelslife/MainActivity.kt").read_text(encoding="utf-8")
 manifest = (ROOT / "app/src/main/AndroidManifest.xml").read_text(encoding="utf-8")
-logo = ROOT / "app/src/main/res/drawable-nodpi/michels_life_logo.png"
+logo = ROOT / "app/src/main/res/drawable-nodpi/michels_life_logo.jpg"
 
 required_bridge = [
     "window.__MICHELSLIFE_ANDROID_BRIDGE__='0.2.1'",
