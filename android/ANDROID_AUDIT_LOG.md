@@ -856,3 +856,28 @@ Validation:
 - Supabase is the primary sync authority; native Google Drive remains transitional fallback only.
 - Still pending: native APK/AAB workflow/build, signing configuration if absent, physical-device/emulator retest, and real same-account Windows ↔ Android Supabase validation.
 - `limon` is the project handoff keyword: update logs and preserve the exact continuation state before moving development to another chat.
+
+
+## 2026-10-05 — Android v0.2.2 native PR build gate validated
+
+Pipeline correction:
+- The Android native build now runs on relevant pull requests, so APK/AAB compilation is tested before merge instead of waiting for main/manual dispatch.
+- First PR run #71 correctly caught an obsolete validator marker: `validate_android_mobile_ux.py` expected bridge v0.2.1 while the app bridge/version metadata was v0.2.2.
+- The validator was aligned to v0.2.2 without changing Android UX behavior.
+
+Validation on candidate HEAD `25054d18`:
+- Android UI smoke **#53 — SUCCESS**.
+- Native Android build **#76 — SUCCESS**.
+- Android version contract remains **0.2.2 / versionCode 4**.
+- Windows-compatible Supabase cloud contract, Android UX validator, debug APK assembly and release AAB assembly all passed.
+- Artifact: `MichelsLife-Android-TEST-v0.2.2` (artifact id `11379078581`).
+
+Signing state:
+- CI explicitly reports `PLAY_BUNDLE_SIGNING=UNSIGNED`.
+- Generated Play preparation bundle: `MichelsLife-Android-Play-UNSIGNED-v0.2.2.aab`.
+- The permanent upload-key credential file exists outside source control, but the four GitHub Actions repository secrets are still absent. The connected GitHub integration cannot write repository secrets.
+
+Still required before Play submission:
+1. Configure `ANDROID_UPLOAD_KEYSTORE_BASE64`, `ANDROID_UPLOAD_STORE_PASSWORD`, `ANDROID_UPLOAD_KEY_ALIAS`, and `ANDROID_UPLOAD_KEY_PASSWORD` as repository secrets.
+2. Rerun the Android build and require a validated `Play-SIGNED` AAB.
+3. Test same-account Supabase sync on real Windows + Android and perform physical-device / Play-delivered validation.

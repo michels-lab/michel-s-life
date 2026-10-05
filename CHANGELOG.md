@@ -28,17 +28,18 @@
 
 ### Validation
 - Supabase production schema: RLS enabled, anonymous table privileges revoked, Security Advisor **0 findings**.
-- Final current-head validation on `419de33c`: **Source validation #736 — success**, **UI smoke #622 — success**, and **Android UI smoke #44 — success**.
+- Release-candidate validation on `25054d18`: **Source validation #745 — success**, **UI smoke #631 — success**, **Android UI smoke #53 — success**, **Windows release build #22 — success**, and **Android native build #76 — success**.
 - Source validation **#721 — success** on the shared Windows/Android Supabase product code.
 - UI smoke **#611 — success**, including Supabase sign-in simulation, first master upload, dirty-state revision upload, newer-remote conflict protection, explicit cloud restore and the existing bilingual/UI regression suite.
 - Android-mode Supabase smoke validates Android platform detection, `and_` device identity, Android master-state attribution and Android device registration without privileged keys.
-- Native Windows/Android live-account validation is still required before public release; no v3.0.216 release has been published.
+- Windows build #22 produced the correctly versioned `MichelsLife-v3.0.216` candidate. Android build #76 produced `MichelsLife-Android-TEST-v0.2.2`; its Play AAB is intentionally marked `UNSIGNED` until the repository signing secrets are configured.
+- Real same-account Windows ↔ Android sync/restore/conflict validation and interactive native-device checks are still required before public release; no v3.0.216 release has been published.
 
 ### Handoff / `limon`
 - Project handoff keyword: **`limon`**.
 - Meaning: update the permanent project logs, capture the exact current branch/CI/pending state, and leave a clean continuation point for a new chat.
 - Current continuation point: Supabase primary sync is implemented and CI-green on Desktop/shared frontend and Android WebView contract; public v3.0.216 remains unpublished.
-- Remaining release gates: live same-account Windows ↔ Android sync test, refreshed native Windows candidate/final build, native Android APK/AAB build/signing/device test, then version/release completion.
+- Remaining release gates: live same-account Windows ↔ Android sync/restore/conflict test, interactive Windows candidate verification, configure Android Play signing secrets + device/Play-delivered validation, then merge/release completion.
 
 # Changelog
 
@@ -84,7 +85,7 @@
 ### Release state
 - Work is isolated on `desktop-v3.0.216` / draft PR #10.
 - No v3.0.216 public release has been published and `main` has not been changed by this pre-release cycle.
-- Windows test build #49 — **success** for the earlier tray/Quick Capture candidate. The newer Sync Center/Command Palette/progressive-startup/taskbar code is source/UI validated, but a refreshed downloadable Windows candidate has not been generated because the connected GitHub tool blocked temporarily enabling the push trigger for the manual-only test-build workflow.
+- Windows release candidate build #22 — **success** on `25054d18`, producing the correctly versioned `MichelsLife-v3.0.216` artifact with the current Supabase/Desktop code. The PR now builds native Windows candidates automatically without publishing them.
 
 ## 3.0.215 — 2026-09-30 — Spanish navigation performance
 

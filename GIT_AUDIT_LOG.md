@@ -480,3 +480,40 @@ Remaining gates for the next chat:
 2. Generate a refreshed native Windows candidate containing the final Supabase code and interactively test tray/hotkey/taskbar/Sync Center.
 3. Run the native Android APK/AAB build for **0.2.2 / versionCode 4**, configure signing secrets if still absent, and test on device/emulator.
 4. Only after those native gates pass: bump/finalize release metadata as needed, merge PR #10, publish v3.0.216 and verify final assets.
+
+
+## 2026-10-05 — Native PR candidates + v3.0.216 version-alignment gate
+
+Problem found:
+- Native candidate workflows were not running automatically on the pull request, leaving a gap between browser/source validation and the actual Windows/Android packages.
+- The first new Windows candidate exposed release-version drift: branch/product target was v3.0.216 but the .NET project, installer default, host materializer, frontend bump/validator and several build labels still targeted v3.0.215.
+- The first Android native PR run exposed a stale mobile UX validator that still required Android bridge v0.2.1 even though the bridge/version metadata had already advanced to v0.2.2.
+
+Corrections:
+- Windows release workflow now builds a non-publishing native candidate on same-repository pull requests.
+- Android build workflow now builds native APK/AAB candidates on relevant pull-request changes.
+- Android UX validator now follows bridge v0.2.2.
+- Desktop release metadata is aligned end-to-end at **v3.0.216**: .NET assembly/file version, generated host version, installer default, frontend bump/validation, Windows test build, Store packaging path and UI artifact naming.
+- Windows test/Store/release packaging now runs the canonical frontend version bump before validation/injection.
+
+Validated candidate HEAD: `25054d186a8bf62ef04b146f45938879f8cb2876`.
+- Source validation **#745 — SUCCESS**.
+- UI smoke **#631 — SUCCESS**, including update detection, Quick Capture, desktop experience, Supabase primary sync, Android-mode Supabase sync and bilingual/animation regressions.
+- Android UI smoke **#53 — SUCCESS**.
+- Windows release build **#22 — SUCCESS**.
+  - Artifact: `MichelsLife-v3.0.216`.
+  - Artifact id: `11379613249`.
+- Android native build **#76 — SUCCESS**.
+  - Artifact: `MichelsLife-Android-TEST-v0.2.2`.
+  - Artifact id: `11379078581`.
+  - Debug APK + release AAB paths compile successfully.
+  - Play AAB remains `MichelsLife-Android-Play-UNSIGNED-v0.2.2.aab` because the repository signing secrets are not configured.
+
+Remaining release gates:
+1. Real same-account Windows ↔ Android Supabase validation: first-device authority choice, upload/download, newer-remote conflict protection and explicit restore.
+2. Interactive Windows candidate test for tray, global Quick Capture hotkey, taskbar Current Mission and Sync Center.
+3. Configure the four Android upload-signing repository secrets, rerun build to obtain a `Play-SIGNED` AAB, then validate on physical device / Play testing delivery.
+4. Merge draft PR #10 and publish v3.0.216 only after the live/native gates above pass.
+
+Public state:
+- **v3.0.216 remains unpublished.**
