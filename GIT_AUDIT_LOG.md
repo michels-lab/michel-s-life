@@ -30,19 +30,20 @@
 - UI smoke #557 initially failed the Spanish source-copy audit because the new translation used the anglicism `app`. The wording was corrected to `aplicación de escritorio`; the audit was not weakened.
 - Early Quick Capture smoke runs #567–#569 exposed test-harness assumptions that top-level lexical bindings such as `state` and `makeMission` were properties of `window`. The test was corrected to inspect the actual lexical application state rather than changing product code to satisfy the test.
 - Automatic update detection had already passed UI smoke #558 before the desktop-shell work was layered on top.
+- UI smoke #587 later exposed a timing-flaky seasonal-animation assertion: tab navigation preserved the exact same canvas and completed in 17.5 ms, but the frame counter had not advanced within the first requestAnimationFrame. The test was corrected to observe multiple frames across ~80 ms; no product animation code was changed. UI smoke #588 then passed the complete suite.
 
 ### Final validation
 - Branch: `desktop-v3.0.216`.
 - Draft PR: #10.
-- Final validated functional head before documentation: `9976f371193e77fbe7731037b532425374163857`.
-- Source validation #677 — **success**.
+- Final validated functional head: `757a92014cf78943bf76c8e3c7f0c59508e9da13`.
+- Source validation #695 — **success**.
   - Release-readiness smoke — success.
   - Canonical frontend validation — success.
   - Spanish source-copy audit — success.
   - Generated bilingual corpus audit — success.
   - Microsoft Store packaging smoke — success.
   - Windows host compile with embedded icon and native `DesktopShell` — success.
-- UI smoke #570 — **success**.
+- UI smoke #588 — **success**.
   - Automatic desktop update detection — success.
   - Desktop Quick Capture — success.
   - Existing Spanish/UI/Settings/Dashboard/animation regression suite — success.
