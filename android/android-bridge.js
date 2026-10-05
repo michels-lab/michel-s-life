@@ -33,7 +33,7 @@
     }
   };
 
-  const MOBILE_BREAKPOINT=760;
+  const MOBILE_BREAKPOINT=4096;
   const STORAGE_KEY='vida_rpg_personal_progress_v2';
   const ONBOARD_KEY='michelsLife.onboarding.v30200';
   const MAJOR_TABS=['dashboard','missions','contracts','journal','stats','achievements','calendar','settings'];
@@ -485,6 +485,11 @@
         #main{padding-bottom:12px!important}
         #v30162FocusDock .v30173-focus-panel{pointer-events:auto!important;left:10px!important;right:10px!important;bottom:10px!important;width:auto!important;max-height:calc(100vh - var(--mlv-android-topbar-h) - 30px)!important}
                 input,select,textarea,button{max-width:100%;box-sizing:border-box}
+      }
+      @media(min-width:900px) and (max-width:${MOBILE_BREAKPOINT}px){
+        html[data-mlv-platform="android"] #main,
+        html[data-mlv-platform="android"] .content{width:min(100%,1180px)!important;max-width:1180px!important;margin-left:auto!important;margin-right:auto!important}
+        html[data-mlv-platform="android"] #v176StatusPanel{width:min(calc(100% - 24px),1180px)!important;max-width:1180px!important;margin-left:auto!important;margin-right:auto!important}
       }
       @media(min-width:${MOBILE_BREAKPOINT+1}px){body.mlv-android-nav-open{overflow:auto}}
     `;
