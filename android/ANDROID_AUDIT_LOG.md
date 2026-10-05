@@ -548,3 +548,28 @@ State:
 - **DONE** — policy content and automated deployment workflow.
 - **BLOCKED BY REPOSITORY SETTING** — first-time GitHub Pages enablement.
 - **PENDING** — after publication, verify the live URL and add the Privacy Policy link inside Android and Play Console.
+
+
+### 2026-10-05 — Canonical Android download/signing package rebuilt
+
+Reason:
+- Previous generated signing/download attachments were not reliably downloadable from the conversation surface.
+- A new canonical private package was generated so all Android v0.2.0 delivery/signing files are available together in one archive.
+
+Canonical private upload key:
+- Alias: `michelslife-upload`.
+- Algorithm: RSA 4096 / SHA256withRSA.
+- Upload certificate SHA-1: `4E:4C:63:1D:EC:EF:24:35:8A:81:11:AD:2D:8D:A4:0C:9C:1C:05:55`.
+- Upload certificate SHA-256: `BA:8C:AC:81:57:B4:E0:0B:69:8E:FA:D7:F2:90:90:05:E7:22:30:79:7A:C4:03:2F:7D:BD:CB:17:BC:73:C6:26`.
+- This 2026-10-05 key **supersedes the temporary 2026-10-03 locally generated upload-key package**. Use only the 2026-10-05 package going forward unless Google Play App Signing has already been enrolled with another upload key.
+
+Canonical deliverables:
+- Test APK SHA-256: `a166f186cac115ddc30f5f062d507c498203d2514a7c8da28c3a7288e07b060c`.
+- Signed AAB SHA-256: `ec2acce7617b4970b9083fc5ad3a1a7ca767f85c1353332c95ed836a118393cb`.
+- Signed AAB verification: **VALIDATED** with `jarsigner -verify`.
+- Complete private archive SHA-256: `055521688c71185619aa2f4d3f457124a2f26e46c4e88885853cec00bacd1de0`.
+
+GitHub Pages:
+- User confirmed repository Pages source is now set to **GitHub Actions**.
+- Commit `739ce52a` updated the privacy-policy effective date and intentionally retriggered `Publish privacy policy`.
+- Live public URL still requires post-deployment verification before being placed in Play Console/in-app.
