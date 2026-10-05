@@ -28,10 +28,17 @@
 
 ### Validation
 - Supabase production schema: RLS enabled, anonymous table privileges revoked, Security Advisor **0 findings**.
+- Final current-head validation on `419de33c`: **Source validation #736 — success**, **UI smoke #622 — success**, and **Android UI smoke #44 — success**.
 - Source validation **#721 — success** on the shared Windows/Android Supabase product code.
 - UI smoke **#611 — success**, including Supabase sign-in simulation, first master upload, dirty-state revision upload, newer-remote conflict protection, explicit cloud restore and the existing bilingual/UI regression suite.
 - Android-mode Supabase smoke validates Android platform detection, `and_` device identity, Android master-state attribution and Android device registration without privileged keys.
 - Native Windows/Android live-account validation is still required before public release; no v3.0.216 release has been published.
+
+### Handoff / `limon`
+- Project handoff keyword: **`limon`**.
+- Meaning: update the permanent project logs, capture the exact current branch/CI/pending state, and leave a clean continuation point for a new chat.
+- Current continuation point: Supabase primary sync is implemented and CI-green on Desktop/shared frontend and Android WebView contract; public v3.0.216 remains unpublished.
+- Remaining release gates: live same-account Windows ↔ Android sync test, refreshed native Windows candidate/final build, native Android APK/AAB build/signing/device test, then version/release completion.
 
 # Changelog
 
