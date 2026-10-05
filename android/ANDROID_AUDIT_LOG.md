@@ -847,3 +847,9 @@ Measured automated route timings:
 
 Next gate:
 - **NEEDS USER RETEST** — install this exact APK on the physical phone and PC emulator and verify perceived smoothness, launcher icon, onboarding/check geometry, Journal clearance, Settings section switching, swipe/arrow navigation and Android Back behavior.
+
+## 2026-10-05 — Infrastructure audit synchronization
+
+The repository-level cloud audit is now documented in `docs/INFRASTRUCTURE_AUDIT.md`.
+
+Android remains on the shared Google Drive appDataFolder contract. The remaining cloud gate is real-device validation of OAuth persistence, Windows↔Android synchronization, conflict handling and restore behavior. Supabase is not part of the Android production path at this stage.
