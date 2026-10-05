@@ -9,6 +9,8 @@ internal static class DesktopShell
     private const uint ModControl = 0x0002;
     private const uint ModShift = 0x0004;
     private const uint VkSpace = 0x20;
+    private const string StartupRegistryPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
+    private const string StartupValueName = "MichelsLife";
 
     private static Form? _form;
     private static WebView2? _webView;
@@ -29,6 +31,17 @@ internal static class DesktopShell
         menu.Items.Add("Quick Capture", null, async (_, _) => await ShowQuickCaptureAsync());
         menu.Items.Add("Current Mission", null, async (_, _) => await OpenCurrentMissionAsync());
         menu.Items.Add("Sync Now", null, async (_, _) => await SyncNowAsync());
+        var startupItem = new ToolStripMenuItem("Start with Windows")
+        {
+            CheckOnClick = true,
+            Checked = IsStartWithWindowsEnabled()
+        };
+        startupItem.Click += (_, _) =>
+        {
+            if (!SetStartWithWindows(startupItem.Checked))
+                startupItem.Checked = IsStartWithWindowsEnabled();
+        };
+        menu.Items.Add(startupItem);
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("Exit", null, (_, _) => ExitApplication());
 
@@ -114,6 +127,46 @@ internal static class DesktopShell
             // The user can retry the action once the current document is ready.
         }
     }
+
+    private static bool IsStartWithWindowsEnabled()
+    {
+        try
+        {
+            using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(StartupRegistryPath, writable: false);
+            var value = key?.GetValue(StartupValueName) as string;
+            var expected = QuoteExecutablePath(Application.ExecutablePath);
+            return string.Equals(value, expected, StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool SetStartWithWindows(bool enabled)
+    {
+        try
+        {
+            using var key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(StartupRegistryPath, writable: true);
+            if (enabled)
+                key?.SetValue(StartupValueName, QuoteExecutablePath(Application.ExecutablePath), Microsoft.Win32.RegistryValueKind.String);
+            else
+                key?.DeleteValue(StartupValueName, throwOnMissingValue: false);
+            return true;
+        }
+        catch
+        {
+            _trayIcon?.ShowBalloonTip(
+                4000,
+                "Michel's Life",
+                "Windows startup preference could not be changed.",
+                ToolTipIcon.Warning
+            );
+            return false;
+        }
+    }
+
+    private static string QuoteExecutablePath(string path) => $"\"{path}\"";
 
     private static void ExitApplication()
     {
