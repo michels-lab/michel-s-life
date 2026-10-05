@@ -288,7 +288,9 @@ try{
     await page.waitForTimeout(320);
   }
 
-  await touchSwipe(390,700,110,700);
+  // Swipe from a neutral strip just below the compact status area.
+  // Interactive controls intentionally reject section swipes.
+  await touchSwipe(390,143,110,143);
   try{
     await page.waitForFunction(
       ()=>document.querySelector('#v30171PrimaryNav [data-tab="missions"]')?.classList.contains('active') ||
