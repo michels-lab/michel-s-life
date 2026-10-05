@@ -810,3 +810,40 @@ Validation state:
 - **VALIDATED** — Source validation run `37288373924`.
 - **IN PROGRESS** — native Android build #70 / run `37288373900` is compiling the Play AAB at the time of this entry.
 - **NEEDS USER RETEST** — install the resulting v0.2.1 APK on physical phone and PC emulator for perceived responsiveness and real touch behavior.
+
+
+## 2026-10-05 — Android v0.2.1 build #70 ready for phone + emulator retest
+
+Final source for this test build:
+- Commit `cbe3278e` — **Make Android Settings category switching single-pass**.
+
+CI:
+- **VALIDATED** — Android UI smoke #39 / run `37288373859`: SUCCESS.
+- **VALIDATED** — Source validation run `37288373924`: SUCCESS.
+- **VALIDATED** — Android build #70 / run `37288373900`: SUCCESS.
+- Build artifact id: `11335805656`.
+- Artifact name: `MichelsLife-Android-TEST-v0.2.1`.
+- Artifact digest: `sha256:4c62fa44c30286b6ae380ef8cb35f98f8391b7d4cead76355f062ae23d89517f`.
+
+Extracted device-test APK:
+- File: `MichelsLife-Android-TEST-v0.2.1.apk`.
+- Size: approximately **64.8 MB**.
+- SHA-256: `df152df5f0520dc5a74eb6dc031ec14b5675e6d7851cca383c34f22a6001db1a`.
+
+What this build specifically addresses from user evidence:
+- Approved Michel's Life celestial launcher icon instead of the temporary generic star.
+- Fresh-install onboarding checkboxes constrained to 22×22 px with compact rows.
+- Existing profiles do not reopen stale onboarding when entering Settings.
+- Action Dock (Focus + Quick Capture) lives inside the off-canvas drawer instead of floating over Journal/content.
+- Explicit ‹/› top-bar controls plus swipe and drawer guidance for section navigation.
+- Android navigation uses active-surface `renderMain()` rather than the desktop global rerender cascade.
+- Settings-category clicks are intercepted in Android and activated once instead of running the desktop delayed 0/90/260/760 ms rebuild sequence.
+- Wide PC-hosted Android emulator remains in Android mode rather than falling back to desktop UI.
+
+Measured automated route timings:
+- Phone-like Settings: **73.9 ms**.
+- Phone-like arrow navigation to Missions: **87.6 ms**.
+- Wide-emulator Settings: **74.7 ms**.
+
+Next gate:
+- **NEEDS USER RETEST** — install this exact APK on the physical phone and PC emulator and verify perceived smoothness, launcher icon, onboarding/check geometry, Journal clearance, Settings section switching, swipe/arrow navigation and Android Back behavior.
