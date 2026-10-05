@@ -87,6 +87,11 @@ jobs:
           export MLV_UI_URL=http://127.0.0.1:4173
           node tools/ui_supabase_sync_smoke.mjs
 
+      - name: Audit Supabase sync in Android mode
+        run: |
+          export MLV_UI_URL=http://127.0.0.1:4173
+          node tools/ui_supabase_android_sync_smoke.mjs
+
       - name: Audit Spanish first run
         run: |
           export MLV_UI_URL=http://127.0.0.1:4173
