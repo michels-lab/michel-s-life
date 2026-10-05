@@ -69,6 +69,9 @@ for marker in (
     "MLV216CommandPalette",
     "MLV216SyncCenter",
     "MLV216DesktopExperience",
+    "SupabaseSyncV30216",
+    "lqnkcqredlxrykynacwr.supabase.co",
+    "sb_publishable_",
     "requestIdleCallback",
 ):
     assert marker in frontend, f'missing canonical frontend source: {marker}'
@@ -84,7 +87,7 @@ for required in ('src/MichelsLife/frontend/index.html','branding/michels_life_lo
     assert required in workflow_text, f'canonical build dependency missing: {required}'
 
 security='\n'.join(read(p) for p in (PROGRAM,GOOGLE,SECRETS,FRONTEND,PROFILE,LICENSE))
-for forbidden in ('GOCSPX-','github_pat_','ghp_','client_secret_794181'):
+for forbidden in ('GOCSPX-','github_pat_','ghp_','client_secret_794181','sb_secret_','service_role'):
     assert forbidden.lower() not in security.lower(), f'committed secret-like value: {forbidden}'
 
 print('OK: v3.0.215 host + desktop shell + Quick Capture + automatic updates + bilingual canonical frontend + branding + clean build pipeline')
