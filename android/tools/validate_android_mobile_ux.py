@@ -5,8 +5,8 @@ ROOT = Path(__file__).resolve().parents[1]
 bridge = (ROOT / "android-bridge.js").read_text(encoding="utf-8")
 main = (ROOT / "app/src/main/java/com/michelslab/michelslife/MainActivity.kt").read_text(encoding="utf-8")
 manifest = (ROOT / "app/src/main/AndroidManifest.xml").read_text(encoding="utf-8")
-logo = ROOT / "app/src/main/res/drawable-nodpi/michels_life_logo.png"
-approved_logo = ROOT.parent / "branding/michels_life_logo.png"
+logo = ROOT / "app/src/main/res/drawable-nodpi/michels_life_logo.jpg"
+EXPECTED_ANDROID_LOGO_BLOB_SHA = "3f170f27dcd460c45a892cde51d6385d6608cfe7"
 
 required_bridge = [
     "window.__MICHELSLIFE_ANDROID_BRIDGE__='0.2.1'",
@@ -64,9 +64,12 @@ if "__mlvAndroidHandleBack" not in main:
 
 if 'android:icon="@drawable/michels_life_logo"' not in manifest or 'android:roundIcon="@drawable/michels_life_logo"' not in manifest:
     raise SystemExit("Android manifest is not using the approved Michel's Life celestial launcher logo")
-if not logo.exists() or not approved_logo.exists():
-    raise SystemExit("Approved Michel's Life launcher logo asset is missing")
-if logo.read_bytes() != approved_logo.read_bytes():
-    raise SystemExit("Android launcher logo is not byte-identical to branding/michels_life_logo.png")
+if not logo.exists():
+    raise SystemExit("Approved Michel's Life Android launcher logo asset is missing")
+import hashlib
+logo_bytes = logo.read_bytes()
+git_blob_sha = hashlib.sha1(b"blob " + str(len(logo_bytes)).encode("ascii") + b"\0" + logo_bytes).hexdigest()
+if git_blob_sha != EXPECTED_ANDROID_LOGO_BLOB_SHA:
+    raise SystemExit("Android launcher logo is not the approved normalized celestial-logo asset")
 
 print("OK: Android UX contract covers phone + wide-emulator app mode, active-surface navigation, stable onboarding/checklists, in-drawer quick actions, hardware rendering, approved launcher logo, fixed drawer layering, swipe navigation, mission alignment and back handling")
