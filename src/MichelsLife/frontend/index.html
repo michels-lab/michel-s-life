@@ -30628,8 +30628,9 @@ function safeJson(v,fallback=null){try{return JSON.parse(v)}catch(_){return fall
 function session(){return safeJson(localStorage.getItem(SESSION_KEY)||'',null)}
 function meta(){return safeJson(localStorage.getItem(META_KEY)||'',{})||{}}
 function saveMeta(patch){const next={...meta(),...patch};localStorage.setItem(META_KEY,JSON.stringify(next));return next}
-function deviceId(){let id=localStorage.getItem(DEVICE_KEY);if(!id){id='win_'+crypto.randomUUID();localStorage.setItem(DEVICE_KEY,id)}return id}
-function deviceName(){try{return navigator.userAgentData?.platform||navigator.platform||'Windows PC'}catch(_){return'Windows PC'}}
+function platform(){return String(window.__MICHELSLIFE_PLATFORM__||'windows').toLowerCase()==='android'?'android':'windows'}
+function deviceId(){let id=localStorage.getItem(DEVICE_KEY);if(!id){id=(platform()==='android'?'and_':'win_')+crypto.randomUUID();localStorage.setItem(DEVICE_KEY,id)}return id}
+function deviceName(){if(platform()==='android'){try{return navigator.userAgentData?.platform||navigator.platform||'Android'}catch(_){return'Android'}}try{return navigator.userAgentData?.platform||navigator.platform||'Windows PC'}catch(_){return'Windows PC'}}
 function capture(){try{return window.GoogleCloudV30192?.capture?.()||window.GoogleCloudV30191?.capture?.()||''}catch(_){return''}}
 function notify(title,msg,kind=''){try{window.toast?.(title,msg,kind,{persistent:kind==='error'})}catch(_){}}
 function authHeaders(access){const h={'apikey':PUBLISHABLE_KEY,'Content-Type':'application/json'};if(access)h.Authorization='Bearer '+access;return h}
@@ -30678,7 +30679,7 @@ async function remoteState(s){
 }
 async function touchDevice(s,action='connected'){
  const user=s.user?.id;if(!user)return;
- const row={user_id:user,device_id:deviceId(),platform:'windows',label:deviceName(),app_version:BUILD,last_action:action,last_seen_at:new Date().toISOString()};
+ const row={user_id:user,device_id:deviceId(),platform:platform(),label:deviceName(),app_version:BUILD,last_action:action,last_seen_at:new Date().toISOString()};
  await request('/rest/v1/ml_devices?on_conflict=user_id,device_id',{method:'POST',access:s.access_token,body:row,prefer:'resolution=merge-duplicates,return=minimal'})
 }
 async function writeHistory(s,row,reason){
@@ -30692,7 +30693,7 @@ async function push(reason='manual'){
  const snapshot=safeJson(raw,null);if(!snapshot)throw new Error('Snapshot is not valid JSON.');
  const remote=await remoteState(s),nextRevision=Math.max(Number(remote?.revision||0),Number(meta().revision||0))+1;
  if(remote?.snapshot)await writeHistory(s,remote,'before_'+reason);
- const now=new Date().toISOString(),row={user_id:s.user.id,snapshot,revision:nextRevision,source_device_id:deviceId(),source_platform:'windows',app_version:BUILD,updated_at:now};
+ const now=new Date().toISOString(),row={user_id:s.user.id,snapshot,revision:nextRevision,source_device_id:deviceId(),source_platform:platform(),app_version:BUILD,updated_at:now};
  await request('/rest/v1/ml_state?on_conflict=user_id',{method:'POST',access:s.access_token,body:row,prefer:'resolution=merge-duplicates,return=representation'});
  saveMeta({revision:nextRevision,lastSync:now,lastRemoteAt:now,lastLocalHash:raw.length,dirty:false});
  runtime.cloudLastSync=now;runtime.revision=nextRevision;runtime.lastRemoteAt=now;await touchDevice(s,'upload');return row
@@ -30782,7 +30783,7 @@ window.addEventListener('focus',()=>{if(runtime.connected){refreshOverview();if(
 syncRuntime();
 ensureSession().then(s=>{if(s){refreshOverview();clearInterval(pollTimer);pollTimer=setInterval(()=>{refreshOverview();sync('auto',{silent:true}).catch(()=>{})},POLL_MS)}}).catch(err=>{runtime.cloudError=String(err.message||err);scheduleMount()});
 setTimeout(mount,500);
-window.SupabaseSyncV30216={version:BUILD,provider:'Supabase',runtime,signIn,signUp,signOut,sync,push,pull,capture,refreshOverview,getOverview,session,deviceId,applySnapshot,mount};
+window.SupabaseSyncV30216={version:BUILD,provider:'Supabase',runtime,signIn,signUp,signOut,sync,push,pull,capture,refreshOverview,getOverview,session,deviceId,platform,applySnapshot,mount};
 })();
 </script>
 
