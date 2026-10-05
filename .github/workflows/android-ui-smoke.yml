@@ -11,6 +11,11 @@ on:
       - 'tools/ui_android_mobile_smoke.mjs'
       - 'tools/ui_supabase_android_sync_smoke.mjs'
       - 'src/MichelsLife/frontend/**'
+      - 'tools/bump_frontend_version.py'
+      - 'tools/enable_i18n.py'
+      - 'tools/validate_generated_index.py'
+      - 'tools/replace_bundle_index.py'
+      - 'tools/inject_bundle_asset.py'
       - '.github/workflows/android-ui-smoke.yml'
 
 permissions:
@@ -47,6 +52,7 @@ jobs:
 
       - name: Overlay canonical Michel's Life frontend
         run: |
+          python tools/bump_frontend_version.py --index src/MichelsLife/frontend/index.html
           python tools/enable_i18n.py --index src/MichelsLife/frontend/index.html
           python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
           python tools/replace_bundle_index.py --bundle artifacts/AppBundle-android.zip --index src/MichelsLife/frontend/index.html
