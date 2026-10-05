@@ -50,7 +50,7 @@
 ### Release state
 - No merge to `main` has been performed.
 - No v3.0.216 release has been published.
-- Windows test build #48 completed successfully and produced `MichelsLife-TEST-v3.0.215.zip` for interactive tray, hotkey, resident-window, Current Mission, Sync Now and startup-toggle validation. Public release remains blocked on that interactive native check.
+- Windows test build #49 completed successfully after tray localization and hotkey-conflict handling. The downloaded candidate is `MichelsLife-Desktop-v3.0.216-CANDIDATE.zip`; its internal build marker remains v3.0.215 until the release version bump. Public release remains blocked on the interactive native tray/hotkey check.
 
 ## 2026-10-01 — Android v0.1.0 synchronized-client prototype
 
