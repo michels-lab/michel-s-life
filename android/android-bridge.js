@@ -206,17 +206,47 @@
   function installFastNavCapture(){
     if(window.__mlvAndroidFastNavCaptureInstalled)return;
     window.__mlvAndroidFastNavCaptureInstalled=true;
-    // Registered from android-bridge.js in <head>, before the legacy window capture handlers.
+    // Registered from android-bridge.js in <head>, before legacy capture handlers.
     window.addEventListener('click',event=>{
       if(!isMobile())return;
+
       const nav=event.target?.closest?.('#v30171PrimaryNav [data-tab]');
-      if(!nav)return;
-      const id=String(nav.dataset.tab||'');
-      if(!id)return;
-      event.preventDefault();
-      event.stopPropagation();
-      event.stopImmediatePropagation();
-      fastRoute(id);
+      if(nav){
+        const id=String(nav.dataset.tab||'');
+        if(!id)return;
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        fastRoute(id);
+        return;
+      }
+
+      const today=event.target?.closest?.('[data-v30171-day="today"]');
+      if(today){
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        fastRoute('dashboard');
+        return;
+      }
+
+      const setting=event.target?.closest?.('.v30171-settings-nav [data-v30171-setting]');
+      if(setting){
+        const key=String(setting.dataset.v30171Setting||'');
+        if(!key)return;
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        try{
+          window.__mlvSettingsSectionLock=key;
+          localStorage.setItem('michelsLife.settingsSection.v30171',key);
+          window.LeftNavV30171?.activateSetting?.(key);
+          if(key==='google')requestAnimationFrame(()=>window.GoogleCalendarV30190?.mountSettings?.());
+          window.__mlvAndroidLastSettingsSwitch={key,at:performance.now()};
+        }catch(error){
+          console.warn('Michel\'s Life Android settings section switch',error);
+        }
+      }
     },true);
   }
 

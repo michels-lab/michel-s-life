@@ -814,3 +814,11 @@ State:
 - **IMPLEMENTED** — Android-specific Supabase smoke + PR CI contract check.
 - **PENDING CURRENT-HEAD CI** — GitHub had not yet surfaced new Source/UI runs for head `7af80e9427bc62740aeb11215decf6dda100b2e4` at the time of this log entry.
 - **PREVIOUS SHARED RUNTIME VALIDATION GREEN** — Source validation #721 and UI smoke #611 passed on the immediately preceding Supabase runtime head.
+
+
+## 2026-10-05 — Governance/infrastructure reconciliation after Supabase migration
+
+- Inherited the repository-level Michel's Lab governance contract from `.michelslab/project.yml`.
+- The pre-migration infrastructure audit that described Google Drive as the Android cloud authority is historical context only.
+- Android v0.2.2 now uses the shared Supabase primary-sync client from the canonical frontend; native Google Drive support remains a temporary manual fallback.
+- Android-specific implementation evidence remains in this log; reusable cloud/auth/security patterns are promoted to `Michel-Software-Standards`.

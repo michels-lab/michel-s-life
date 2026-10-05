@@ -425,3 +425,12 @@ Validation:
 - Later Android metadata/workflow/documentation commits do not alter the tested Supabase runtime; native APK/AAB compilation for 0.2.2 still requires the Android workflow to be dispatched or run after merge.
 - Real cross-device production validation still requires signing into the same Michel's Life Supabase account on Windows and Android.
 - Public v3.0.216 release remains intentionally unpublished.
+
+
+## 2026-10-05 — Reconcile Michel's Lab governance with Supabase migration
+
+- Merged the newer `main` governance/infrastructure work into the Supabase migration branch.
+- `.michelslab/project.yml` and `MICHELS_LAB_PROJECT.md` remain authoritative for the parent/child reporting contract with `realmichelduarte/Michel-Software-Standards`.
+- The earlier infrastructure audit conclusion that Google Drive should remain the cloud authority is superseded by the explicit product decision in this development cycle to migrate Michel's Life to Supabase.
+- Current authority: Supabase for Michel's Life state/account/device sync; Google Drive only as a temporary manual migration/recovery fallback; Google Calendar remains optional and independent.
+- Shared cloud/auth/security decisions from this migration must be promoted to the Michel's Lab standards repository without copying secret values.
