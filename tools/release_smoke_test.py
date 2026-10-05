@@ -32,7 +32,7 @@ for marker in ('ComputeEmbeddedBundleFingerprint','SHA256.Create()','string.Equa
     assert marker in program, f'missing runtime cache protection: {marker}'
 assert 'MichelsLife.DesktopShell.Attach(this, _webView);' in program, 'desktop shell is not attached to the Windows host'
 desktop_shell=read(DESKTOP_SHELL)
-for marker in ('NotifyIcon','RegisterHotKey','CloseReason.UserClosing','MLV216QuickCapture','Quick Capture','Current Mission','Sync Now','GoogleCloudV30192','Start with Windows','StartupRegistryPath','already in use by Windows or another app','Exit'):
+for marker in ('NotifyIcon','RegisterHotKey','CloseReason.UserClosing','MLV216QuickCapture','Quick Capture','Current Mission','Sync Now','GoogleCloudV30192','Start with Windows','StartupRegistryPath','already in use by Windows or another app','RefreshTrayLanguageAsync','Captura rápida','Misión actual','Sincronizar ahora','Iniciar con Windows','Salir','Exit'):
     assert marker in desktop_shell, f'missing desktop shell behavior: {marker}'
 assert '__BUILD_SECRET_GOOGLE__' in read(SECRETS)
 assert 'NormalizeGoogleClientSecret' in read(SECRETS)
