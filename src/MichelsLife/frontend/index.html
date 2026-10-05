@@ -29736,7 +29736,7 @@ function reliabilityHTML(){
   </section>`;
 }
 function mountReliability(){
-  if(String(window.state?.activeTab||'')!=='settings')return;
+  if(String(state?.activeTab||'')!=='settings')return;
   const pane=document.querySelector('[data-v30171-pane="google"]');if(!pane)return;
   const sig=JSON.stringify([overviewBusy,overview.currentDeviceId,overview.backups,overview.devices]);
   let old=pane.querySelector('[data-mlv197-reliability]');
@@ -30756,7 +30756,7 @@ function cardHtml(){
 }
 function pane(){return document.querySelector('[data-v30171-pane="sync"]')}
 function mount(){
- if(String(window.state?.activeTab||'')!=='settings')return;const p=pane();if(!p)return;const old=p.querySelector('[data-mlv216-supabase-card]'),tmp=document.createElement('template');tmp.innerHTML=cardHtml();const next=tmp.content.firstElementChild;if(old)old.replaceWith(next);else p.appendChild(next)
+ if(String(state?.activeTab||'')!=='settings')return;const p=pane();if(!p)return;const old=p.querySelector('[data-mlv216-supabase-card]'),tmp=document.createElement('template');tmp.innerHTML=cardHtml();const next=tmp.content.firstElementChild;if(old)old.replaceWith(next);else p.appendChild(next)
 }
 function scheduleMount(){clearTimeout(mountTimer);mountTimer=setTimeout(mount,30)}
 document.addEventListener('click',async e=>{
