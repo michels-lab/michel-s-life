@@ -845,3 +845,14 @@ Validation:
   - mobile UX 412×915 — success;
   - Supabase Android sync smoke — success.
 - This closes the previous “pending native Android PR validation” gap for the browser/WebView contract. Physical-device/account validation is still the final native behavioral gate.
+
+
+## 2026-10-05 — `limon` Android handoff
+
+- Shared Supabase/Android browser-WebView contract is green on current handoff HEAD `419de33c4038e371debd1a74fd8d13db0d9907e7`.
+- Android UI smoke **#44 — SUCCESS**.
+- Source validation **#736 — SUCCESS** and shared UI smoke **#622 — SUCCESS** on the same HEAD.
+- Android remains **0.2.2 / versionCode 4**.
+- Supabase is the primary sync authority; native Google Drive remains transitional fallback only.
+- Still pending: native APK/AAB workflow/build, signing configuration if absent, physical-device/emulator retest, and real same-account Windows ↔ Android Supabase validation.
+- `limon` is the project handoff keyword: update logs and preserve the exact continuation state before moving development to another chat.
