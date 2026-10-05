@@ -3,6 +3,34 @@
 > Official development log for Michel's Life. Every meaningful app change must be recorded here before a version is considered complete. Entries should describe verified changes only and be grouped by version/date.
 
 
+## 3.0.216 — 2026-10-05 — Desktop Quick Capture, tray and automatic update detection (validated pre-release)
+
+### Desktop workflow
+- Added a native Windows system-tray shell without changing the approved Michel's Life visual baseline.
+- Closing the desktop window from the title bar now keeps Michel's Life resident in the tray; the tray menu exposes Open Michel's Life, Quick Capture and Exit.
+- Added a global `Ctrl + Shift + Space` hotkey that restores Michel's Life and opens Quick Capture.
+- Added bilingual Quick Capture for fast Mission or Journal capture while preserving the existing mission and journal data models.
+- Quick Capture Mission creation supports category selection; Journal capture appends a timestamped note to the current day.
+
+### Automatic updates
+- Reused the existing safe GitHub Releases updater instead of introducing a second update system.
+- Michel's Life now checks the public release channel automatically shortly after desktop startup, every six hours while open, and on refocus when the previous check is old enough.
+- A newer online release produces one persistent bilingual notification per version per app session.
+- Automatic network-check failures stay silent; the existing manual update check continues to surface errors.
+- Installation remains user-initiated and retains the existing SHA-256 verification and pre-update restore point.
+
+### Validation
+- Source validation #677 — **success**, including release-readiness checks, bilingual corpus checks, Store packaging and Windows host compilation with the native desktop shell.
+- UI smoke #570 — **success**.
+- Dedicated automatic-update smoke — **success**.
+- Dedicated Quick Capture smoke — **success**, including categorized Mission creation, Journal append and Spanish UI.
+- Existing Spanish first-run, Missions, exhaustive UI, language round trip, Settings, Dashboard and seasonal-animation continuity tests all remained green.
+
+### Release state
+- Work is isolated on `desktop-v3.0.216` / draft PR #10.
+- No v3.0.216 public release has been published and `main` has not been changed by this pre-release cycle.
+- Native tray/hotkey runtime behavior still requires a real Windows test build before public release.
+
 ## 3.0.215 — 2026-09-30 — Spanish navigation performance
 
 ### Performance
