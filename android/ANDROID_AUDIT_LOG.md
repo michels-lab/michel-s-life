@@ -822,3 +822,26 @@ State:
 - The pre-migration infrastructure audit that described Google Drive as the Android cloud authority is historical context only.
 - Android v0.2.2 now uses the shared Supabase primary-sync client from the canonical frontend; native Google Drive support remains a temporary manual fallback.
 - Android-specific implementation evidence remains in this log; reusable cloud/auth/security patterns are promoted to `Michel-Software-Standards`.
+
+
+### 2026-10-05 — Android PR smoke now uses the exact canonical Supabase frontend
+
+Problem found:
+- The independent Android UI smoke originally downloaded the public AppBundle and injected only `android-bridge.js`.
+- That meant an Android Supabase test could accidentally validate the public-release frontend instead of the branch being reviewed.
+- First PR-gate run #40 then failed earlier at canonical validation because the workflow also omitted the frontend version-bump step.
+
+Root-cause correction:
+- Android UI smoke now overlays branch `index.html`, `i18n.js`, developer avatar and Michel's Life logo before `prepare_bundle.py`.
+- Android UI smoke now runs on pull requests.
+- Both Android UI smoke and Android build run `bump_frontend_version.py` before i18n/canonical validation, matching the Desktop packaging sequence.
+- The Android UI workflow now executes `ui_supabase_android_sync_smoke.mjs` directly, so Android platform/device attribution is independently gated.
+
+Validation:
+- Source validation #734 — **SUCCESS**.
+- Android UI smoke #42 — **SUCCESS**:
+  - canonical branch frontend overlay — success;
+  - Android fixture preparation — success;
+  - mobile UX 412×915 — success;
+  - Supabase Android sync smoke — success.
+- This closes the previous “pending native Android PR validation” gap for the browser/WebView contract. Physical-device/account validation is still the final native behavioral gate.
