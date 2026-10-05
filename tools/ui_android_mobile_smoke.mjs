@@ -351,7 +351,15 @@ try{
     window.MichelsLifeAndroid={postMessage(){}};
   });
   await fresh.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
-  await fresh.waitForTimeout(1200);
+  await fresh.waitForSelector('#mlv200Onboarding',{state:'visible',timeout:60000});
+  await fresh.waitForTimeout(350);
+  // Focus checkboxes live on onboarding step 2, not the initial name/theme step.
+  if(!(await fresh.locator('#mlv200Onboarding .mlv200-focus input[type="checkbox"]').count())){
+    const next=fresh.locator('#mlv200Onboarding [data-mlv200-onboard="next"]');
+    ok(await next.count(),'Fresh onboarding has no Continue button');
+    await next.click();
+  }
+  await fresh.waitForSelector('#mlv200Onboarding .mlv200-focus input[type="checkbox"]',{state:'visible',timeout:5000});
   const freshInstallOnboarding=await fresh.evaluate(()=>{
     const root=document.getElementById('mlv200Onboarding');
     const input=root?.querySelector('.mlv200-focus input[type="checkbox"]');
@@ -360,10 +368,9 @@ try{
     const visible=!!(root&&root.getClientRects().length&&getComputedStyle(root).display!=='none');
     return {visible,checkbox:ir?{width:ir.width,height:ir.height}:null,row:rr?{width:rr.width,height:rr.height}:null};
   });
-  if(freshInstallOnboarding.visible){
-    ok(freshInstallOnboarding.checkbox&&freshInstallOnboarding.checkbox.width<=24&&freshInstallOnboarding.checkbox.height<=24,'Fresh-install onboarding checkbox is oversized: '+JSON.stringify(freshInstallOnboarding));
-    ok(freshInstallOnboarding.row&&freshInstallOnboarding.row.height<=64,'Fresh-install onboarding row is too tall: '+JSON.stringify(freshInstallOnboarding));
-  }
+  ok(freshInstallOnboarding.visible,'Fresh-install onboarding disappeared before focus step');
+  ok(freshInstallOnboarding.checkbox&&freshInstallOnboarding.checkbox.width<=24&&freshInstallOnboarding.checkbox.height<=24,'Fresh-install onboarding checkbox is oversized: '+JSON.stringify(freshInstallOnboarding));
+  ok(freshInstallOnboarding.row&&freshInstallOnboarding.row.height<=64,'Fresh-install onboarding row is too tall: '+JSON.stringify(freshInstallOnboarding));
   await freshContext.close();
 
   // PC-hosted Android emulator / landscape validation.
