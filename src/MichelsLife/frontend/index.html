@@ -24911,7 +24911,7 @@ const v30106OldCompleteMission=window.completeMission;window.completeMission=fun
 const oldRenderTab=window.renderTab;window.renderTab=function(id){if(id==='projects')return renderProjects();if(id==='inbox'){state.activeTab='dashboard';return typeof oldRenderTab==='function'?oldRenderTab.call(this,'dashboard'):'';}if(id==='annual-heatmap')return renderHeatmap();if(id==='daily-shutdown'){state.activeTab='dashboard';return typeof oldRenderTab==='function'?oldRenderTab.call(this,'dashboard'):'';}if(id==='maintenance')return renderMaintenance();return typeof oldRenderTab==='function'?oldRenderTab.apply(this,arguments):'';};
 const oldRenderTabs=window.renderTabs;window.renderTabs=function(){if(typeof oldRenderTabs==='function')oldRenderTabs.apply(this,arguments);ensureTabs();};
 const oldRenderAll=window.renderAll;window.renderAll=function(){const out=typeof oldRenderAll==='function'?oldRenderAll.apply(this,arguments):undefined;scheduleEnhance();return out;};try{renderAll=window.renderAll;}catch(e){}
-document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openCommand();}else if(e.key==='Escape'){closeCommand();closeFocus();}},true);
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if(window.MLV216CommandPalette?.open)window.MLV216CommandPalette.open();else openCommand();}else if(e.key==='Escape'){window.MLV216CommandPalette?.close?.();window.MLV216SyncCenter?.close?.();closeCommand();closeFocus();}},true);
 document.addEventListener('change',e=>{const sel=e.target.closest('#tabs select');if(sel&&CUSTOM_TABS.has(sel.value)){e.preventDefault();e.stopPropagation();state.activeTab=sel.value;renderAll();}},true);
 document.addEventListener('click',e=>{if(e.target.closest('[data-v30105-action],[data-cm131-action]'))setTimeout(()=>{const r=document.getElementById('v30106Focus');if(r&&!r.hidden)renderFocus();},120);const complete=e.target.closest('[data-action="complete"],[data-v3093-action="complete"],[data-cm131-action="complete"]');if(complete){let id=complete.dataset.id||idFromCard(complete.closest(CARD_SEL));if(complete.dataset.cm131Action==='complete')id=current()?.id;const m=mission(id);if(m&&!dependenciesMet(m)){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();toastSafe('Mission blocked','Complete '+unmetDependencies(m).map(x=>x.name).join(', ')+' first.');return;}if(m&&/plan my day|journal.*plan.*day/i.test(norm(m.name))&&S().v30106AutoPlan!==false&&S().v30106PlanDate!==today()){planTriggerId=String(m.id);setTimeout(()=>{const x=mission(planTriggerId);if(x&&doneOn(x,today())&&S().v30106PlanDate!==today())openTodayPlan(false);},550);}}
 const cmd=e.target.closest('[data-v30106-command]');if(cmd){runCommand(cmd.dataset.v30106Command);return;}const b=e.target.closest('[data-v30106-action]');if(!b)return;const a=b.dataset.v30106Action,id=b.dataset.id;e.preventDefault();if(a==='quick-capture')openQuickCapture();else if(a==='focus')openFocus();else if(a==='close-focus')closeFocus();else if(a==='open-plan')openTodayPlan(b.dataset.tomorrow==='1');else if(a==='new-project')openProjectEditor();else if(a==='edit-project')openProjectEditor(id);else if(a==='delete-project'){const p=project(id);if(p&&confirm('Delete project “'+p.name+'”? Missions will remain.')){projectTasks(p).forEach(m=>{if(String(m.v30106ProjectId)===String(id))delete m.v30106ProjectId;});S().v30106Projects=projects().filter(x=>String(x.id)!==String(id));saveSafe();renderAll();}}else if(a==='add-decision')openDecision(b.dataset.project||'');else if(a==='delete-decision'){S().v30106Decisions=decisions().filter(x=>String(x.id)!==String(id));saveSafe();renderAll();}else if(a==='link-project')openMissionProjectLink(id);else if(a==='open-mission')openMission(id);else if(a==='refresh-heatmap'){S().v30106HeatYear=Number(document.getElementById('v30106HeatYear')?.value||new Date().getFullYear());S().v30106HeatCategory=document.getElementById('v30106HeatCategory')?.value||'all';saveSafe();renderAll();}else if(a==='safe-cleanup')safeCleanup();else if(a==='run-self-test'){toastSafe('Self-test complete',maintenanceReport().map(x=>x.name).join(' · '));renderAll();}else if(a==='open-settings'){state.activeTab='settings';renderAll();}else if(a==='make-easier'){const m=mission(id);if(m){m.difficulty='easy';m.xp=Math.min(Number(m.xp||10),10);saveSafe();toastSafe('Mission recalibrated',m.name+' is now Easy.');renderAll();}}else if(a==='mute-calibration'){const m=mission(id);if(m){m.v30106CalibrationMuteUntil=addDate(today(),30)+'T23:59:59';saveSafe();renderAll();}}else if(a==='save-settings'){S().v30106AutoPlan=document.getElementById('v30106AutoPlan')?.value!=='false';S().v30106Streaks=document.getElementById('v30106Streaks')?.value!=='false';saveSafe();toastSafe('Settings saved','Planning and streak settings updated.');renderAll();}else if(a.startsWith('inbox-')){const item=inbox().find(x=>String(x.id)===String(id));if(!item)return;if(a==='inbox-mission'){createMission(item.text,'order',{type:'oneoff',difficulty:'easy'});S().v30106Inbox=inbox().filter(x=>String(x.id)!==String(id));saveSafe();renderAll();}else if(a==='inbox-project'){createProject({name:item.text});S().v30106Inbox=inbox().filter(x=>String(x.id)!==String(id));saveSafe();renderAll();}else if(a==='inbox-decision')openDecision('',item.text,item.id);else if(a==='inbox-delete'){S().v30106Inbox=inbox().filter(x=>String(x.id)!==String(id));saveSafe();renderAll();}}},true);
@@ -29563,7 +29563,7 @@ document.addEventListener('click',e=>{
 },true);
 const googleSettingsObserver=new MutationObserver(()=>{if(String(state?.activeTab||'')!=='settings')return;const pane=document.querySelector('[data-v30171-pane="google"]');if(pane?.classList.contains('active'))requestAnimationFrame(mountGoogleSettings);else if(googlePanePinned)requestAnimationFrame(forceGooglePaneOpen)});
 try{const main=document.getElementById('main');if(main)googleSettingsObserver.observe(main,{childList:true,subtree:true})}catch(_){}
-queueMicrotask(mountGoogleSettings);setTimeout(mountGoogleSettings,0);setTimeout(()=>{mountGoogleSettings();decorateCalendar();refreshStatus({sync:true,cloud:true})},80);
+queueMicrotask(mountGoogleSettings);requestAnimationFrame(()=>mountGoogleSettings());const mlv216Idle=(fn,timeout=1400)=>{if(typeof requestIdleCallback==='function')requestIdleCallback(()=>fn(),{timeout});else setTimeout(fn,650)};mlv216Idle(()=>{mountGoogleSettings();decorateCalendar();refreshStatus({sync:true,cloud:true})},1400);
 window.GoogleCalendarV30190={version:BUILD,runtime,settings,status:()=>refreshStatus({sync:false,cloud:false}),sync:syncNow,cloudSync:syncCloud,decorateCalendar,mountSettings:mountGoogleSettings,openSettings:forceGooglePaneOpen,localMissions};window.GoogleCloudV30192={version:BUILD,runtime,sync:syncCloud,capture:captureCloudBackup,mountSettings:mountGoogleSettings,openSettings:forceGooglePaneOpen};window.GoogleCloudV30191=window.GoogleCloudV30192;
 window.__MICHELS_LIFE_BUILD__=BUILD;
 console.info("Michel's Life build "+BUILD+' — Google Drive Cloud Sync + Calendar loaded');
@@ -29671,16 +29671,19 @@ function capture(){try{return api()?.capture?.()||''}catch(_){return ''}}
 
 function ensureBadge(){
   let b=document.getElementById('mlv197CloudBadge');
-  if(!b){b=document.createElement('div');b.id='mlv197CloudBadge';b.title='Open Google Cloud Sync';b.addEventListener('click',()=>{try{state.activeTab='settings';save?.();renderAll?.();setTimeout(()=>window.GoogleCalendarV30190?.openSettings?.(),80)}catch(_){}});document.body.appendChild(b)}
+  if(!b){b=document.createElement('div');b.id='mlv197CloudBadge';b.title='Open Sync Center';b.addEventListener('click',()=>{if(window.MLV216SyncCenter?.open){window.MLV216SyncCenter.open();return}try{state.activeTab='settings';save?.();renderAll?.();setTimeout(()=>window.GoogleCalendarV30190?.openSettings?.(),80)}catch(_){}});document.body.appendChild(b)}
   return b;
 }
+function syncRelative(v){if(!v)return'';const d=new Date(v),ms=Date.now()-d.getTime();if(!Number.isFinite(ms))return'';const min=Math.max(0,Math.floor(ms/60000));if(min<1)return'now';if(min<60)return min+'m';const h=Math.floor(min/60);if(h<24)return h+'h';return Math.floor(h/24)+'d'}
 function updateBadge(){
-  const r=rt(),b=ensureBadge();let cls='',label='',show=false;
-  if(r.cloudConflict){cloudBusySince=0;cls='conflict';label='Cloud conflict';show=true}
-  else if(r.cloudError||r.error){cloudBusySince=0;cls='error';label='Cloud needs attention';show=true}
-  else if(r.cloudBusy){if(!cloudBusySince)cloudBusySince=Date.now();if(Date.now()-cloudBusySince>=3500){cls='syncing';label='Cloud syncing…';show=true}}
-  else{cloudBusySince=0}
-  b.className=cls;b.textContent=(window.MichelsLifeI18n?.mapText?.(label)||label);b.style.display=show?'flex':'none';
+  const r=rt(),b=ensureBadge(),es=window.MichelsLifeI18n?.language==='es';let cls='',label='',show=true;
+  if(r.cloudConflict){cloudBusySince=0;cls='conflict';label=es?'Nube · Conflicto':'Cloud · Conflict'}
+  else if(r.cloudError||r.error){cloudBusySince=0;cls='error';label=es?'Nube · Revisar':'Cloud · Attention'}
+  else if(r.cloudBusy){if(!cloudBusySince)cloudBusySince=Date.now();cls='syncing';label=es?'Nube · Sincronizando…':'Cloud · Syncing…'}
+  else if(r.connected&&r.cloudReady){cloudBusySince=0;cls='synced';const age=syncRelative(r.cloudLastSync);label=age?(es?'Nube · '+age:'Cloud · '+age):(es?'Nube · Lista':'Cloud · Ready')}
+  else if(r.connected){cloudBusySince=0;cls='error';label=es?'Nube · Reconectar':'Cloud · Reconnect'}
+  else{cloudBusySince=0;cls='';label=es?'Nube · Sin conectar':'Cloud · Offline'}
+  b.className=cls;b.textContent=label;b.style.display=show?'flex':'none';b.title=es?'Abrir Centro de sincronización':'Open Sync Center';
 }
 
 function ensureConflictModal(){
@@ -29798,7 +29801,7 @@ setInterval(()=>{
   if(stamp!==previousCloudStamp){previousCloudStamp=stamp;if(r.connected&&r.cloudReady&&Date.now()-lastOverviewAt>1500)setTimeout(refreshOverview,500)}
 },900);
 
-setTimeout(()=>{updateBadge();updateConflictModal();mountReliability();refreshOverview()},900);
+(typeof requestIdleCallback==='function'?requestIdleCallback(()=>{updateBadge();updateConflictModal();mountReliability();refreshOverview()},{timeout:1900}):setTimeout(()=>{updateBadge();updateConflictModal();mountReliability();refreshOverview()},950));
 window.MLV197Reliability={version:BUILD,notification,refreshOverview,getOverview:()=>overview};
 })();
 </script>
@@ -30587,6 +30590,120 @@ function saveCapture(){
 document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.shiftKey&&e.code==='Space'){e.preventDefault();e.stopPropagation();open()}},true);
 window.addEventListener('michelslife:languagechange',()=>{if(root&&!root.hidden)render()});
 window.MLV216QuickCapture={open,close,capture:saveCapture};
+})();
+</script>
+
+
+<!-- v3.0.216: desktop command palette + sync center + progressive startup -->
+<style id="mlv-v30216-desktop-experience-style">
+#mlv216CommandPalette[hidden],#mlv216SyncCenter[hidden]{display:none!important}
+#mlv216CommandPalette{position:fixed;inset:0;z-index:2147483720;background:rgba(2,5,11,.66);backdrop-filter:blur(10px);display:grid;place-items:start center;padding-top:min(10vh,96px)}
+.mlv216-command-box{width:min(760px,calc(100vw - 28px));max-height:76vh;overflow:hidden;border:1px solid rgba(255,255,255,.12);border-radius:20px;background:color-mix(in srgb,var(--panel,#111722) 97%,transparent);box-shadow:0 28px 100px rgba(0,0,0,.55)}
+.mlv216-command-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+.mlv216-command-head input{flex:1;border:0!important;background:transparent!important;outline:0!important;padding:4px!important;font:inherit;font-size:16px!important;color:var(--text)!important}
+.mlv216-command-key{font-size:9px;color:var(--muted);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:4px 7px}
+.mlv216-command-list{max-height:60vh;overflow:auto;padding:8px}
+.mlv216-command-item{width:100%;border:0;background:transparent;color:inherit;display:flex;justify-content:space-between;gap:12px;align-items:center;text-align:left;padding:10px 11px;border-radius:12px;cursor:pointer}
+.mlv216-command-item.active,.mlv216-command-item:hover{background:rgba(117,228,255,.09)}
+.mlv216-command-item b,.mlv216-command-item small{display:block}.mlv216-command-item small{margin-top:2px;color:var(--muted);font-size:9px}.mlv216-command-empty{padding:20px;text-align:center;color:var(--muted)}
+#mlv216SyncCenter{position:fixed;inset:0;z-index:2147483710;background:rgba(2,5,11,.30);display:block}
+.mlv216-sync-panel{position:absolute;top:76px;right:18px;width:min(430px,calc(100vw - 28px));max-height:calc(100vh - 96px);overflow:auto;border:1px solid rgba(255,255,255,.12);border-radius:18px;background:color-mix(in srgb,var(--panel,#111722) 97%,transparent);box-shadow:0 24px 80px rgba(0,0,0,.48);padding:14px}
+.mlv216-sync-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.mlv216-sync-head h3{margin:0;font-size:15px}.mlv216-sync-head p{margin:4px 0 0;color:var(--muted);font-size:9px}
+.mlv216-sync-close{border:0;background:transparent;color:var(--muted);font-size:20px;cursor:pointer}
+.mlv216-sync-state{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:12px}.mlv216-sync-kpi{border:1px solid rgba(255,255,255,.07);border-radius:11px;padding:9px;background:rgba(255,255,255,.02)}.mlv216-sync-kpi small,.mlv216-sync-kpi b{display:block}.mlv216-sync-kpi small{font-size:8px;color:var(--muted)}.mlv216-sync-kpi b{margin-top:3px;font-size:10.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mlv216-sync-devices{display:grid;gap:6px;margin-top:11px}.mlv216-sync-device{display:flex;justify-content:space-between;gap:10px;align-items:center;border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:8px}.mlv216-sync-device b,.mlv216-sync-device small{display:block}.mlv216-sync-device small{font-size:8.5px;color:var(--muted);margin-top:2px}.mlv216-sync-current{color:#9ff7c2}.mlv216-sync-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.mlv216-sync-note{margin-top:9px;font-size:9px;color:var(--muted);line-height:1.4}
+@media(max-width:640px){.mlv216-sync-panel{left:10px;right:10px;top:62px;width:auto}.mlv216-sync-state{grid-template-columns:1fr}}
+</style>
+<script id="mlv-v30216-desktop-experience-script">
+(function(){
+'use strict';
+if(window.MLV216DesktopExperience)return;
+const isEs=()=>window.MichelsLifeI18n?.language==='es';
+const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+const route=id=>{try{if(window.LeftNavV30171?.route)return window.LeftNavV30171.route(id);state.activeTab=id;save?.();renderAll?.();return true}catch(_){return false}};
+const settingsSection=key=>{route('settings');[40,120,300].forEach(ms=>setTimeout(()=>{try{window.LeftNavV30171?.buildSettings?.();window.LeftNavV30171?.activateSetting?.(key)}catch(_){}},ms))};
+const actionButton=name=>{const b=document.createElement('button');b.dataset.v30106Action=name;b.style.display='none';document.body.appendChild(b);b.click();b.remove()};
+const cloudApi=()=>window.GoogleCloudV30192||window.GoogleCloudV30191;
+const cloudRuntime=()=>cloudApi()?.runtime||{};
+const reliability=()=>window.MLV197Reliability;
+function relative(v){if(!v)return isEs()?'Nunca':'Never';const d=new Date(v),ms=Date.now()-d.getTime();if(!Number.isFinite(ms))return String(v);const min=Math.max(0,Math.floor(ms/60000));if(min<1)return isEs()?'Ahora':'Now';if(min<60)return isEs()?'Hace '+min+' min':min+' min ago';const h=Math.floor(min/60);if(h<24)return isEs()?'Hace '+h+' h':h+' h ago';const days=Math.floor(h/24);return isEs()?'Hace '+days+' d':days+' d ago'}
+function currentMissionName(){try{const c=window.CurrentMissionV131?.getState?.();if(!c)return'';return (state.missions||[]).find(m=>String(m?.id)===String(c.id))?.name||''}catch(_){return''}}
+function copy(){return isEs()?{
+ command:'Comandos',placeholder:'Busca una acción, sección o misión…',none:'No se encontró ningún comando.',syncTitle:'Centro de sincronización',syncHelp:'Estado de este equipo, nube y dispositivos conectados.',status:'Estado',last:'Último sync',device:'Este equipo',devices:'Dispositivos',syncNow:'Sincronizar ahora',google:'Abrir Google',close:'Cerrar',current:'Este equipo',latest:'Actividad más reciente',noDevices:'Todavía no hay registros de dispositivos.',offline:'Sin conectar',ready:'Al día',syncing:'Sincronizando',conflict:'Conflicto',attention:'Revisar conexión'
+}:{
+ command:'Commands',placeholder:'Search an action, section, or mission…',none:'No command found.',syncTitle:'Sync Center',syncHelp:'Status for this PC, cloud, and connected devices.',status:'Status',last:'Last sync',device:'This PC',devices:'Devices',syncNow:'Sync now',google:'Open Google',close:'Close',current:'This PC',latest:'Latest activity',noDevices:'No device records yet.',offline:'Not connected',ready:'Up to date',syncing:'Syncing',conflict:'Conflict',attention:'Check connection'
+}}
+function commandItems(query=''){
+ const es=isEs(),base=[
+  ['quick',es?'Captura rápida':'Quick Capture',es?'Crear una misión o nota sin salir de lo que haces.':'Create a mission or journal note without leaving your work.','capture mission journal'],
+  ['sync-center',es?'Centro de sincronización':'Sync Center',es?'Ver nube, este equipo y otros dispositivos.':'See cloud, this PC, and other devices.','cloud devices google'],
+  ['sync-now',es?'Sincronizar ahora':'Sync now',es?'Sincronizar Michel’s Life con Google Drive.':'Sync Michel’s Life with Google Drive.','cloud google drive'],
+  ['update',es?'Buscar actualizaciones':'Check for updates',es?'Consultar el canal oficial de releases.':'Check the official release channel.','update version release'],
+  ['current',es?'Misión actual':'Current Mission',currentMissionName()|| (es?'Abrir la misión activa.':'Open the active mission.'),'focus timer'],
+  ['focus',es?'Modo Focus':'Focus Mode',es?'Abrir el modo de concentración.':'Open focus mode.','focus timer'],
+  ['plan',es?'Planear hoy':'Plan today',es?'Ordenar Main, Important y Optional.':'Order Main, Important, and Optional missions.','today next up planning'],
+  ['tab:dashboard',es?'Dashboard':'Dashboard',es?'Volver a la vista principal.':'Return to the main view.','home'],
+  ['tab:missions',es?'Misiones':'Missions',es?'Abrir todas las misiones.':'Open all missions.','tasks'],
+  ['tab:calendar',es?'Calendario':'Calendar',es?'Abrir calendario.':'Open calendar.','dates'],
+  ['journal',es?'Diario':'Journal',es?'Abrir el diario de hoy.':'Open today’s journal.','notes'],
+  ['tab:stats',es?'Estadísticas':'Stats',es?'Abrir estadísticas.':'Open statistics.','analytics'],
+  ['tab:achievements',es?'Logros':'Achievements',es?'Abrir logros.':'Open achievements.','badges'],
+  ['tab:projects',es?'Proyectos':'Projects',es?'Abrir proyectos y decisiones.':'Open projects and decisions.','outcomes'],
+  ['tab:weekly-review',es?'Revisión semanal':'Weekly Review',es?'Revisar progreso y salud del sistema.':'Review progress and system health.','review'],
+  ['tab:maintenance',es?'Mantenimiento':'Maintenance',es?'Abrir herramientas de mantenimiento.':'Open maintenance tools.','health repair'],
+  ['settings:google',es?'Configuración · Google':'Settings · Google',es?'Abrir conexión y sincronización.':'Open connection and sync settings.','settings cloud'],
+  ['settings:data',es?'Configuración · Datos y respaldos':'Settings · Data & backups',es?'Abrir respaldos y recuperación.':'Open backups and recovery.','backup timeline restore'],
+  ['settings:themes',es?'Configuración · Temas':'Settings · Themes',es?'Cambiar apariencia visual.':'Change visual appearance.','appearance theme'],
+  ['settings:about',es?'Configuración · Acerca de':'Settings · About',es?'Versión, diagnósticos y actualizaciones.':'Version, diagnostics, and updates.','about version']
+ ];
+ try{(state.missions||[]).filter(m=>m&&!m.archived&&!m.hidden).slice(0,120).forEach(m=>base.push(['mission:'+m.id,(es?'Iniciar: ':'Start: ')+m.name,es?'Usar como Misión actual.':'Set as Current Mission.','mission '+(m.category||'')]))}catch(_){}
+ const q=norm(query);return base.filter(x=>!q||norm(x.slice(1).join(' ')).includes(q)).slice(0,40)
+}
+let commandRoot=null,commandIndex=0;
+function ensureCommand(){
+ if(commandRoot&&document.body.contains(commandRoot))return commandRoot;
+ commandRoot=document.createElement('div');commandRoot.id='mlv216CommandPalette';commandRoot.hidden=true;
+ commandRoot.innerHTML='<div class="mlv216-command-box"><div class="mlv216-command-head"><input autocomplete="off"><span class="mlv216-command-key">Ctrl K</span></div><div class="mlv216-command-list"></div></div>';
+ document.body.appendChild(commandRoot);
+ commandRoot.addEventListener('click',e=>{if(e.target===commandRoot){closeCommand();return}const b=e.target.closest?.('[data-mlv216-command]');if(b)runCommand(b.dataset.mlv216Command)});
+ const input=commandRoot.querySelector('input');
+ input.addEventListener('input',()=>{commandIndex=0;renderCommands()});
+ input.addEventListener('keydown',e=>{const items=[...commandRoot.querySelectorAll('[data-mlv216-command]')];if(e.key==='ArrowDown'){e.preventDefault();commandIndex=Math.min(items.length-1,commandIndex+1);paintCommandSelection()}else if(e.key==='ArrowUp'){e.preventDefault();commandIndex=Math.max(0,commandIndex-1);paintCommandSelection()}else if(e.key==='Enter'){e.preventDefault();items[commandIndex]?.click()}else if(e.key==='Escape'){e.preventDefault();closeCommand()}});
+ return commandRoot
+}
+function paintCommandSelection(){const items=[...commandRoot.querySelectorAll('[data-mlv216-command]')];items.forEach((x,i)=>x.classList.toggle('active',i===commandIndex));items[commandIndex]?.scrollIntoView?.({block:'nearest'})}
+function renderCommands(){const root=ensureCommand(),c=copy(),input=root.querySelector('input'),items=commandItems(input.value),list=root.querySelector('.mlv216-command-list');input.placeholder=c.placeholder;list.innerHTML=items.length?items.map((x,i)=>'<button class="mlv216-command-item '+(i===commandIndex?'active':'')+'" data-mlv216-command="'+esc(x[0])+'"><span><b>'+esc(x[1])+'</b><small>'+esc(x[2])+'</small></span><span class="mlv216-command-key">↵</span></button>').join(''):'<div class="mlv216-command-empty">'+esc(c.none)+'</div>'}
+function openCommand(){const root=ensureCommand();commandIndex=0;root.hidden=false;const input=root.querySelector('input');input.value='';renderCommands();requestAnimationFrame(()=>input.focus())}
+function closeCommand(){if(commandRoot)commandRoot.hidden=true}
+async function runCommand(cmd){closeCommand();if(cmd==='quick'){window.MLV216QuickCapture?.open?.({source:'command'})}else if(cmd==='sync-center'){openSync()}else if(cmd==='sync-now'){await cloudApi()?.sync?.('auto',{silent:false})}else if(cmd==='update'){await window.MLV202ReleaseReadiness?.checkUpdates?.();settingsSection('about')}else if(cmd==='current'){const c=window.CurrentMissionV131?.getState?.();c?.id?window.CurrentMissionV131.open?.(c.id):route('missions')}else if(cmd==='focus'){actionButton('focus')}else if(cmd==='plan'){actionButton('open-plan')}else if(cmd==='journal'){window.JournalV30189?.open?.()}else if(cmd.startsWith('tab:')){route(cmd.slice(4))}else if(cmd.startsWith('settings:')){settingsSection(cmd.slice(9))}else if(cmd.startsWith('mission:')){window.CurrentMissionV131?.start?.(cmd.slice(8))}}
+let syncRoot=null;
+function syncStatus(r){const c=copy();if(r.cloudConflict)return c.conflict;if(r.cloudBusy)return c.syncing;if(r.cloudError||r.error)return c.attention;if(r.connected&&r.cloudReady)return c.ready;return c.offline}
+function latestDevice(devices){return devices.slice().sort((a,b)=>Date.parse(b?.lastSeenAt||0)-Date.parse(a?.lastSeenAt||0))[0]||null}
+function ensureSync(){
+ if(syncRoot&&document.body.contains(syncRoot))return syncRoot;
+ syncRoot=document.createElement('div');syncRoot.id='mlv216SyncCenter';syncRoot.hidden=true;document.body.appendChild(syncRoot);
+ syncRoot.addEventListener('click',async e=>{if(e.target===syncRoot||e.target.closest?.('[data-mlv216-sync-close]')){closeSync();return}if(e.target.closest?.('[data-mlv216-sync-now]')){await cloudApi()?.sync?.('auto',{silent:false});renderSync();setTimeout(()=>reliability()?.refreshOverview?.().then?.(renderSync),500)}if(e.target.closest?.('[data-mlv216-sync-settings]')){closeSync();settingsSection('google')}});
+ return syncRoot
+}
+function renderSync(){
+ const root=ensureSync(),c=copy(),r=cloudRuntime(),o=reliability()?.getOverview?.()||{},devices=Array.isArray(o.devices)?o.devices:[],current=devices.find(x=>String(x.deviceId||'')===String(o.currentDeviceId||'')),latest=latestDevice(devices);
+ root.innerHTML='<div class="mlv216-sync-panel"><div class="mlv216-sync-head"><div><h3>'+esc(c.syncTitle)+'</h3><p>'+esc(c.syncHelp)+'</p></div><button class="mlv216-sync-close" data-mlv216-sync-close aria-label="'+esc(c.close)+'">×</button></div>'+
+ '<div class="mlv216-sync-state"><div class="mlv216-sync-kpi"><small>'+esc(c.status)+'</small><b>'+esc(syncStatus(r))+'</b></div><div class="mlv216-sync-kpi"><small>'+esc(c.last)+'</small><b>'+esc(relative(r.cloudLastSync))+'</b></div><div class="mlv216-sync-kpi"><small>'+esc(c.device)+'</small><b>'+esc(current?.deviceName||o.currentDeviceName||c.current)+'</b></div></div>'+
+ '<div class="mlv216-sync-note"><b>'+esc(c.latest)+':</b> '+esc(latest?((latest.deviceName||'Device')+' · '+relative(latest.lastSeenAt)):(c.noDevices))+'</div>'+
+ '<div class="mlv216-sync-devices">'+(devices.length?devices.slice().sort((a,b)=>Date.parse(b?.lastSeenAt||0)-Date.parse(a?.lastSeenAt||0)).slice(0,6).map(x=>{const cur=String(x.deviceId||'')===String(o.currentDeviceId||'');return '<div class="mlv216-sync-device"><div><b class="'+(cur?'mlv216-sync-current':'')+'">'+esc(x.deviceName||'Device')+(cur?' · '+esc(c.current):'')+'</b><small>'+esc(relative(x.lastSeenAt))+' · v'+esc(x.appVersion||'—')+'</small></div><span class="pill">'+esc(x.lastAction||'synced')+'</span></div>'}).join(''):'<div class="mlv216-sync-note">'+esc(c.noDevices)+'</div>')+'</div>'+
+ '<div class="mlv216-sync-actions"><button class="btn primary" data-mlv216-sync-now '+(r.connected&&r.cloudReady&&!r.cloudBusy?'':'disabled')+'>'+esc(c.syncNow)+'</button><button class="btn ghost" data-mlv216-sync-settings>'+esc(c.google)+'</button></div></div>'
+}
+async function openSync(){ensureSync();syncRoot.hidden=false;renderSync();try{await reliability()?.refreshOverview?.()}catch(_){}renderSync()}
+function closeSync(){if(syncRoot)syncRoot.hidden=true}
+document.addEventListener('click',e=>{if(e.target?.closest?.('#mlv197CloudBadge')){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();openSync()}},true);
+window.addEventListener('michelslife:languagechange',()=>{if(commandRoot&&!commandRoot.hidden)renderCommands();if(syncRoot&&!syncRoot.hidden)renderSync()});
+const startup={criticalReadyAt:performance.now(),idleScheduledAt:null,idleReadyAt:null};
+const idle=fn=>{startup.idleScheduledAt=performance.now();const run=()=>{startup.idleReadyAt=performance.now();fn?.()};if(typeof requestIdleCallback==='function')requestIdleCallback(run,{timeout:1800});else setTimeout(run,700)};
+idle(()=>{try{reliability()?.refreshOverview?.()}catch(_){}});
+window.MLV216CommandPalette={open:openCommand,close:closeCommand,items:commandItems,run:runCommand};
+window.MLV216SyncCenter={open:openSync,close:closeSync,render:renderSync,status:()=>({runtime:cloudRuntime(),overview:reliability()?.getOverview?.()||{}})};
+window.MLV216DesktopExperience={startup,openCommand,openSync};
 })();
 </script>
 
