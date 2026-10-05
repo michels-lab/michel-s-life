@@ -133,7 +133,7 @@ try{
   ok(initial.sidebarZ>initial.backdropZ,'Android drawer can be dimmed by its own backdrop: '+JSON.stringify(initial));
   ok(!initial.onboardingVisible,'Desktop onboarding overlay reappeared on Android: '+JSON.stringify(initial));
   ok(initial.prevExists&&initial.nextExists,'Android section navigation arrows are missing: '+JSON.stringify(initial));
-  if(initial.quickFab)ok(initial.quickFab.bottom<=855,'Quick Capture overlaps Android system-navigation zone: '+JSON.stringify(initial));
+  if(initial.quickFab&&initial.quickFab.right>0)ok(initial.quickFab.bottom<=855,'Visible Quick Capture overlaps Android system-navigation zone: '+JSON.stringify(initial));
   if(initial.focusDock&&initial.focusDock.right>0)ok(initial.focusDock.bottom<=855,'Visible Focus control overlaps Android system-navigation zone: '+JSON.stringify(initial));
   ok(initial.main&&initial.main.top<190,'Primary content starts too low and still requires an initial scroll: '+JSON.stringify(initial));
   ok(initial.firstCard&&initial.firstCard.top<240,'First dashboard card starts too low: '+JSON.stringify(initial));
