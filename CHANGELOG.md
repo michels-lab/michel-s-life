@@ -7,6 +7,8 @@
 - Explicitly revoked anonymous table privileges. Supabase Security Advisor reports zero findings after the final hardening migration.
 - Desktop/mobile clients use only the modern Supabase publishable key. Release validation rejects `sb_secret_` and `service_role` markers.
 
+- Android PR validation now overlays the branch's canonical frontend before running mobile/Supabase smoke tests and uses the same version-bump/i18n/validation sequence as the production Android build.
+
 ### Cross-platform sync
 - Added email/password Supabase Auth, access-token refresh, persistent session handling and a dedicated Settings → Sync surface.
 - Reused the existing full Michel's Life backup payload as the initial canonical snapshot format so Missions, Journal, Projects, Stats, Chapters and settings migrate without a parallel data model.
