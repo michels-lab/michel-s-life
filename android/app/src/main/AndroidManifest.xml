@@ -7,6 +7,7 @@
         android:label="Michel's Life"
         android:icon="@drawable/michels_life_logo"
         android:roundIcon="@drawable/michels_life_logo"
+        android:hardwareAccelerated="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="false">
         <activity
