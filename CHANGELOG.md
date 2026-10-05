@@ -23,11 +23,12 @@
 - Installation remains user-initiated and retains the existing SHA-256 verification and pre-update restore point.
 
 ### Validation
-- Source validation #677 — **success**, including release-readiness checks, bilingual corpus checks, Store packaging and Windows host compilation with the native desktop shell.
-- UI smoke #570 — **success**.
+- Source validation #695 — **success**, including release-readiness checks, bilingual corpus checks, Store packaging and Windows host compilation with the native desktop shell.
+- UI smoke #588 — **success**.
 - Dedicated automatic-update smoke — **success**.
 - Dedicated Quick Capture smoke — **success**, including categorized Mission creation, Journal append and Spanish UI.
 - Existing Spanish first-run, Missions, exhaustive UI, language round trip, Settings, Dashboard and seasonal-animation continuity tests all remained green.
+- UI smoke #587 exposed a timing-flaky animation assertion: the same seasonal canvas remained mounted and the tab switched in 17.5 ms, but the frame counter had not advanced within the first requestAnimationFrame. The test now samples across ~80 ms without changing product animation code; #588 passed.
 
 ### Release state
 - Work is isolated on `desktop-v3.0.216` / draft PR #10.
