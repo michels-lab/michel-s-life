@@ -310,14 +310,14 @@ try{
   });
   await fresh.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
   await fresh.waitForSelector('#mlv200Onboarding .mlv200-focus input[type="checkbox"]',{state:'visible',timeout:60000});
-  const freshOnboarding=await fresh.evaluate(()=>{
+  const freshInstallOnboarding=await fresh.evaluate(()=>{
     const input=document.querySelector('#mlv200Onboarding .mlv200-focus input[type="checkbox"]');
     const row=input?.closest('.mlv200-focus');
     const ir=input?.getBoundingClientRect(),rr=row?.getBoundingClientRect();
     return {checkbox:ir?{width:ir.width,height:ir.height}:null,row:rr?{width:rr.width,height:rr.height}:null};
   });
-  ok(existingOnboardingProbe.checkbox&&existingOnboardingProbe.checkbox.width<=24&&existingOnboardingProbe.checkbox.height<=24,'Fresh-install onboarding checkbox is oversized: '+JSON.stringify(existingOnboardingProbe));
-  ok(freshOnboarding.row&&freshOnboarding.row.height<=64,'Fresh-install onboarding row is too tall: '+JSON.stringify(existingOnboardingProbe));
+  ok(freshInstallOnboarding.checkbox&&freshInstallOnboarding.checkbox.width<=24&&freshInstallOnboarding.checkbox.height<=24,'Fresh-install onboarding checkbox is oversized: '+JSON.stringify(freshInstallOnboarding));
+  ok(freshInstallOnboarding.row&&freshInstallOnboarding.row.height<=64,'Fresh-install onboarding row is too tall: '+JSON.stringify(freshInstallOnboarding));
   await freshContext.close();
 
   await mkdir(dirname(screenshot),{recursive:true});
@@ -326,7 +326,7 @@ try{
     ok:true,
     viewport:{width:412,height:915},
     existingOnboardingProbe,
-    freshOnboarding,
+    freshInstallOnboarding,
     initial,
     drawerOpen,
     missionGeometry,
