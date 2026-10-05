@@ -13,6 +13,9 @@ required_bridge = [
     "mlv-android-next-section",
     "function suppressAndroidOnboarding()",
     "michelsLife.onboarding.v30200",
+    "function fastRoute(id)",
+    "window.__mlvAndroidFastRoute=fastRoute",
+    "android-fast-route",
     "#v30171Sidebar{",
     "document.body.appendChild(side)",
     "body.mlv-android-nav-open #v30171Sidebar",
@@ -23,6 +26,9 @@ required_bridge = [
     ".v132-mission-actions{grid-column:2",
     ".topbar{display:none",
     "#mlv200Onboarding{display:none",
+    "#mlv200Onboarding .mlv200-focus input[type=\"checkbox\"]",
+    "width:22px!important",
+    "#v30175ActionDock{left:auto",
     "#v30106QuickFab{left:auto",
     "#v30162FocusDock{left:auto",
     "#v176StatusPanel{position:relative",
@@ -45,4 +51,4 @@ if missing_native:
 if "__mlvAndroidHandleBack" not in main:
     raise SystemExit("MainActivity does not delegate Android back handling to the web UI")
 
-print("OK: Android mobile UX contract contains onboarding suppression, clear navigation, safe floating actions, hardware rendering, final drawer target, swipe navigation, mission alignment and back handling")
+print("OK: Android mobile UX contract contains fast navigation, fixed-size checklist controls, onboarding suppression, safe floating actions, hardware rendering, final drawer target, swipe navigation, mission alignment and back handling")
