@@ -59,7 +59,7 @@ jobs:
         if: always()
         continue-on-error: true
         with:
-          name: android-ui-smoke-v0.2.0
+          name: android-ui-smoke-v0.2.1
           path: |
             artifacts/android-ui-smoke
             /tmp/mlv-android-http.log
