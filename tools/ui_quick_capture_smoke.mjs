@@ -25,7 +25,7 @@ try{
   await page.click('[data-mlv216-qc-save]');
   await page.waitForFunction(()=>document.querySelector('[data-mlv216-qc]')?.hidden===true);
 
-  const mission=await page.evaluate(()=>window.state.missions.find(x=>x?.name==='Quick capture smoke mission'));
+  const mission=await page.evaluate(()=>state.missions.find(x=>x?.name==='Quick capture smoke mission'));
   ok(!!mission,'Quick Capture did not create a mission');
   ok(mission.category==='academic','Quick Capture mission category was not preserved: '+JSON.stringify(mission));
 
