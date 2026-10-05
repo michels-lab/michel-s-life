@@ -285,3 +285,9 @@ For every meaningful future Michel's Life development cycle, record:
 5. release publication result and assets;
 6. any temporary infrastructure or repository-setting changes;
 7. final clean-up state.
+
+## 2026-10-05 — Cross-service infrastructure audit
+
+Added `docs/INFRASTRUCTURE_AUDIT.md` as the durable inventory for Google Drive sync, OAuth/secrets, Android/Play, backup/recovery, and future Supabase decision boundaries.
+
+Key finding: the existing Google Drive architecture remains the production cloud authority. Android still needs real-device OAuth/bidirectional-sync/conflict/restore validation. Supabase is not a production dependency and must not be added without a concrete backend requirement. Desktop OAuth must be treated as a public installed-app client rather than assuming an embedded client secret is confidential.
