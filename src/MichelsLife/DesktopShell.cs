@@ -27,6 +27,8 @@ internal static class DesktopShell
         var menu = new ContextMenuStrip();
         menu.Items.Add("Open Michel's Life", null, (_, _) => RestoreWindow());
         menu.Items.Add("Quick Capture", null, async (_, _) => await ShowQuickCaptureAsync());
+        menu.Items.Add("Current Mission", null, async (_, _) => await OpenCurrentMissionAsync());
+        menu.Items.Add("Sync Now", null, async (_, _) => await SyncNowAsync());
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("Exit", null, (_, _) => ExitApplication());
 
@@ -74,17 +76,42 @@ internal static class DesktopShell
     private static async Task ShowQuickCaptureAsync()
     {
         RestoreWindow();
+        await ExecuteDesktopScriptAsync(
+            "window.MLV216QuickCapture&&window.MLV216QuickCapture.open({source:'desktop'});"
+        );
+    }
+
+    private static async Task OpenCurrentMissionAsync()
+    {
+        RestoreWindow();
+        await ExecuteDesktopScriptAsync(
+            "(()=>{const api=window.CurrentMissionV131;const current=api?.getState?.();" +
+            "if(current?.id){api.open?.(current.id);return 'current';}" +
+            "window.LeftNavV30171?.route?.('missions');return 'missions';})()"
+        );
+    }
+
+    private static async Task SyncNowAsync()
+    {
+        RestoreWindow();
+        await ExecuteDesktopScriptAsync(
+            "(()=>{const api=window.GoogleCloudV30192||window.GoogleCloudV30191;" +
+            "if(!api?.sync){window.toast?.('Michel’s Life Cloud','Cloud Sync is not ready yet.');return 'unavailable';}" +
+            "api.sync('auto',{silent:false});return 'started';})()"
+        );
+    }
+
+    private static async Task ExecuteDesktopScriptAsync(string script)
+    {
         if (_webView?.CoreWebView2 is null) return;
         try
         {
-            await _webView.CoreWebView2.ExecuteScriptAsync(
-                "window.MLV216QuickCapture&&window.MLV216QuickCapture.open({source:'desktop'});"
-            );
+            await _webView.CoreWebView2.ExecuteScriptAsync(script);
         }
         catch
         {
-            // The WebView can be between navigations during startup. The shortcut
-            // simply becomes available after the current document is ready.
+            // Native shell actions may arrive while WebView2 is between documents.
+            // The user can retry the action once the current document is ready.
         }
     }
 
