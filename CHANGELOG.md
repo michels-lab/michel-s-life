@@ -9,6 +9,7 @@
 - Added a native Windows system-tray shell without changing the approved Michel's Life visual baseline.
 - Closing or minimizing the desktop window now keeps Michel's Life resident in the tray.
 - The tray menu exposes Open Michel's Life, Quick Capture, Current Mission, Sync Now, Start with Windows and Exit.
+- Tray labels follow the active English/Spanish interface language, and a failed global Quick Capture hotkey registration is surfaced instead of failing silently.
 - Current Mission reuses the existing Current Mission authority; Sync Now reuses the existing Google Drive Cloud Sync API; Start with Windows is an optional per-user Windows startup toggle.
 - Added a global `Ctrl + Shift + Space` hotkey that restores Michel's Life and opens Quick Capture.
 - Added bilingual Quick Capture for fast Mission or Journal capture while preserving the existing mission and journal data models.
