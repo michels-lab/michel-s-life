@@ -291,3 +291,14 @@ For every meaningful future Michel's Life development cycle, record:
 Added `docs/INFRASTRUCTURE_AUDIT.md` as the durable inventory for Google Drive sync, OAuth/secrets, Android/Play, backup/recovery, and future Supabase decision boundaries.
 
 Key finding: the existing Google Drive architecture remains the production cloud authority. Android still needs real-device OAuth/bidirectional-sync/conflict/restore validation. Supabase is not a production dependency and must not be added without a concrete backend requirement. Desktop OAuth must be treated as a public installed-app client rather than assuming an embedded client secret is confidential.
+
+## 2026-10-05 — Michel's Lab parent/child governance contract
+
+Added the repository-level Michel's Lab governance declaration:
+
+- `.michelslab/project.yml` identifies `realmichelduarte/Michel-Software-Standards` as the shared standards authority.
+- `MICHELS_LAB_PROJECT.md` documents the human-readable reporting contract.
+- App-specific implementation evidence remains in this repository.
+- Reusable/cross-app decisions are promoted to the master standards repository.
+- The master repository polls child status centrally; this repository receives no credential that can write to the master.
+- Secret values remain prohibited from both repositories.
