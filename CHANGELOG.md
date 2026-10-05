@@ -26,9 +26,10 @@
 
 ### Validation
 - Supabase production schema: RLS enabled, anonymous table privileges revoked, Security Advisor **0 findings**.
-- Source validation **#717 — success** on the shared Windows/Android Supabase product code.
-- UI smoke **#607 — success**, including Supabase sign-in simulation, first master upload, dirty-state revision upload, newer-remote conflict protection and explicit cloud restore.
-- Native Windows/Android device validation is still required before public release; no v3.0.216 release has been published.
+- Source validation **#721 — success** on the shared Windows/Android Supabase product code.
+- UI smoke **#611 — success**, including Supabase sign-in simulation, first master upload, dirty-state revision upload, newer-remote conflict protection, explicit cloud restore and the existing bilingual/UI regression suite.
+- Android-mode Supabase smoke validates Android platform detection, `and_` device identity, Android master-state attribution and Android device registration without privileged keys.
+- Native Windows/Android live-account validation is still required before public release; no v3.0.216 release has been published.
 
 # Changelog
 
