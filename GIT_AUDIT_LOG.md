@@ -26,6 +26,20 @@
 - Added `window.MLV216QuickCapture` in the canonical frontend.
 - Quick Capture writes Missions through the existing `makeMission` / `state.missions` path and Journal notes through `JournalV30189`; no parallel data model was introduced.
 
+### Sync Center, Command Palette and progressive startup
+- Reused `MLV197Reliability`, `GoogleCloudV30192` / `GoogleCloudV30191` and their existing `cloudOverview` contract to build a compact Sync Center rather than creating a second synchronization model.
+- The center reports actual connection/conflict state, last sync, current device identity and the most recent connected-device activity. It does not infer that Android/PC data is newer unless the cloud metadata supports that conclusion.
+- Upgraded the global command experience behind `Ctrl + K` with bilingual search, arrow-key selection, Enter execution and navigation/action commands, including per-mission Current Mission starts.
+- Initial Google/cloud status and cloud-overview requests are scheduled after critical UI through `requestIdleCallback` when available, with bounded timer fallbacks.
+- Critical Dashboard rendering and visual layers remain synchronous; automatic update detection was already delayed and remains non-blocking.
+
+### Windows taskbar integration
+- Added an isolated `ITaskbarList3` wrapper inside `DesktopShell.cs`.
+- The desktop host polls the existing `CurrentMissionV131` state through WebView2 every 1.5 seconds.
+- Running Current Mission → Windows indeterminate taskbar progress; paused Current Mission → paused taskbar state; no Current Mission → no taskbar progress.
+- Window/taskbar title and tray tooltip surface the active mission name; the title also includes focused elapsed time.
+- COM/taskbar failures are intentionally swallowed so Windows shell integration can never break Michel's Life core behavior.
+
 ### Test findings and corrections
 - UI smoke #557 initially failed the Spanish source-copy audit because the new translation used the anglicism `app`. The wording was corrected to `aplicación de escritorio`; the audit was not weakened.
 - Early Quick Capture smoke runs #567–#569 exposed test-harness assumptions that top-level lexical bindings such as `state` and `makeMission` were properties of `window`. The test was corrected to inspect the actual lexical application state rather than changing product code to satisfy the test.
@@ -36,22 +50,23 @@
 - Branch: `desktop-v3.0.216`.
 - Draft PR: #10.
 - Final validated functional head: `757a92014cf78943bf76c8e3c7f0c59508e9da13`.
-- Source validation #695 — **success**.
+- Source validation #702 — **success**.
   - Release-readiness smoke — success.
   - Canonical frontend validation — success.
   - Spanish source-copy audit — success.
   - Generated bilingual corpus audit — success.
   - Microsoft Store packaging smoke — success.
   - Windows host compile with embedded icon and native `DesktopShell` — success.
-- UI smoke #588 — **success**.
+- UI smoke #594 — **success** for the complete product code and dedicated desktop-experience smoke.
   - Automatic desktop update detection — success.
   - Desktop Quick Capture — success.
   - Existing Spanish/UI/Settings/Dashboard/animation regression suite — success.
+- UI smoke #594 validated the new desktop experience end-to-end: Ctrl+K palette, bilingual search, keyboard selection, Sync Center and progressive-startup markers all passed before the legacy regression suite completed green.
 
 ### Release state
 - No merge to `main` has been performed.
 - No v3.0.216 release has been published.
-- Windows test build #49 completed successfully after tray localization and hotkey-conflict handling. The downloaded candidate is `MichelsLife-Desktop-v3.0.216-CANDIDATE.zip`; its internal build marker remains v3.0.215 until the release version bump. Public release remains blocked on the interactive native tray/hotkey check.
+- Windows test build #49 remains the last downloadable candidate and predates the final Sync Center/Command Palette/progressive-startup/taskbar additions. The final code is validated by Source validation #702 and UI smoke #594. A refreshed test ZIP was not generated because the connected GitHub tool blocked temporarily changing the manual-only test-build workflow trigger. Public release remains blocked on an interactive native Windows check of the final code.
 
 ## 2026-10-01 — Android v0.1.0 synchronized-client prototype
 
