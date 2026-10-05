@@ -5,7 +5,8 @@ ROOT = Path(__file__).resolve().parents[1]
 bridge = (ROOT / "android-bridge.js").read_text(encoding="utf-8")
 main = (ROOT / "app/src/main/java/com/michelslab/michelslife/MainActivity.kt").read_text(encoding="utf-8")
 manifest = (ROOT / "app/src/main/AndroidManifest.xml").read_text(encoding="utf-8")
-logo = ROOT / "app/src/main/res/drawable-nodpi/michels_life_logo.jpg"
+logo = ROOT / "app/src/main/res/drawable-nodpi/michels_life_logo.png"
+approved_logo = ROOT.parent / "branding/michels_life_logo.png"
 
 required_bridge = [
     "window.__MICHELSLIFE_ANDROID_BRIDGE__='0.2.1'",
@@ -63,7 +64,9 @@ if "__mlvAndroidHandleBack" not in main:
 
 if 'android:icon="@drawable/michels_life_logo"' not in manifest or 'android:roundIcon="@drawable/michels_life_logo"' not in manifest:
     raise SystemExit("Android manifest is not using the approved Michel's Life celestial launcher logo")
-if not logo.exists() or logo.stat().st_size < 1024:
-    raise SystemExit("Approved Michel's Life launcher logo asset is missing or unexpectedly small")
+if not logo.exists() or not approved_logo.exists():
+    raise SystemExit("Approved Michel's Life launcher logo asset is missing")
+if logo.read_bytes() != approved_logo.read_bytes():
+    raise SystemExit("Android launcher logo is not byte-identical to branding/michels_life_logo.png")
 
 print("OK: Android UX contract covers phone + wide-emulator app mode, active-surface navigation, stable onboarding/checklists, in-drawer quick actions, hardware rendering, approved launcher logo, fixed drawer layering, swipe navigation, mission alignment and back handling")
