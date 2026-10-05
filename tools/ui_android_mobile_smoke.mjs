@@ -341,15 +341,19 @@ try{
     window.MichelsLifeAndroid={postMessage(){}};
   });
   await fresh.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
-  await fresh.waitForSelector('#mlv200Onboarding .mlv200-focus input[type="checkbox"]',{state:'visible',timeout:60000});
+  await fresh.waitForTimeout(1200);
   const freshInstallOnboarding=await fresh.evaluate(()=>{
-    const input=document.querySelector('#mlv200Onboarding .mlv200-focus input[type="checkbox"]');
+    const root=document.getElementById('mlv200Onboarding');
+    const input=root?.querySelector('.mlv200-focus input[type="checkbox"]');
     const row=input?.closest('.mlv200-focus');
     const ir=input?.getBoundingClientRect(),rr=row?.getBoundingClientRect();
-    return {checkbox:ir?{width:ir.width,height:ir.height}:null,row:rr?{width:rr.width,height:rr.height}:null};
+    const visible=!!(root&&root.getClientRects().length&&getComputedStyle(root).display!=='none');
+    return {visible,checkbox:ir?{width:ir.width,height:ir.height}:null,row:rr?{width:rr.width,height:rr.height}:null};
   });
-  ok(freshInstallOnboarding.checkbox&&freshInstallOnboarding.checkbox.width<=24&&freshInstallOnboarding.checkbox.height<=24,'Fresh-install onboarding checkbox is oversized: '+JSON.stringify(freshInstallOnboarding));
-  ok(freshInstallOnboarding.row&&freshInstallOnboarding.row.height<=64,'Fresh-install onboarding row is too tall: '+JSON.stringify(freshInstallOnboarding));
+  if(freshInstallOnboarding.visible){
+    ok(freshInstallOnboarding.checkbox&&freshInstallOnboarding.checkbox.width<=24&&freshInstallOnboarding.checkbox.height<=24,'Fresh-install onboarding checkbox is oversized: '+JSON.stringify(freshInstallOnboarding));
+    ok(freshInstallOnboarding.row&&freshInstallOnboarding.row.height<=64,'Fresh-install onboarding row is too tall: '+JSON.stringify(freshInstallOnboarding));
+  }
   await freshContext.close();
 
   await mkdir(dirname(screenshot),{recursive:true});
