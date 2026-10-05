@@ -77,6 +77,11 @@ jobs:
           export MLV_UI_URL=http://127.0.0.1:4173
           node tools/ui_quick_capture_smoke.mjs
 
+      - name: Audit desktop Sync Center and Command Palette
+        run: |
+          export MLV_UI_URL=http://127.0.0.1:4173
+          node tools/ui_desktop_experience_smoke.mjs
+
       - name: Audit Spanish first run
         run: |
           export MLV_UI_URL=http://127.0.0.1:4173
