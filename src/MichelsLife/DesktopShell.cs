@@ -63,7 +63,15 @@ internal static class DesktopShell
 
         _hotKeyWindow = new TrayHotKeyWindow();
         _hotKeyWindow.HotKeyPressed += async (_, _) => await ShowQuickCaptureAsync();
-        _hotKeyWindow.Register(HotKeyId, ModControl | ModShift, VkSpace);
+        if (!_hotKeyWindow.Register(HotKeyId, ModControl | ModShift, VkSpace))
+        {
+            _trayIcon.ShowBalloonTip(
+                5000,
+                "Michel's Life",
+                "Ctrl + Shift + Space is already in use by Windows or another app. Quick Capture remains available from the tray.",
+                ToolTipIcon.Warning
+            );
+        }
 
         Application.ApplicationExit += (_, _) => Dispose();
     }
@@ -203,10 +211,11 @@ internal static class DesktopShell
             CreateHandle(new CreateParams());
         }
 
-        public void Register(int id, uint modifiers, uint key)
+        public bool Register(int id, uint modifiers, uint key)
         {
             _id = id;
             _registered = RegisterHotKey(Handle, id, modifiers, key);
+            return _registered;
         }
 
         protected override void WndProc(ref Message m)
