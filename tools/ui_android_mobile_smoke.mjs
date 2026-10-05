@@ -118,6 +118,7 @@ try{
       firstCard:rect(firstCard),
       status:rect(status),
       overflow:document.documentElement.scrollWidth-window.innerWidth,
+      viewportHeight:window.innerHeight,
       active:document.querySelector('#v30171PrimaryNav [aria-current="page"]')?.dataset?.tab||
              document.querySelector('#v30171PrimaryNav .active[data-tab]')?.dataset?.tab||''
     };
