@@ -573,3 +573,23 @@ GitHub Pages:
 - User confirmed repository Pages source is now set to **GitHub Actions**.
 - Commit `739ce52a` updated the privacy-policy effective date and intentionally retriggered `Publish privacy policy`.
 - Live public URL still requires post-deployment verification before being placed in Play Console/in-app.
+
+
+### 2026-10-05 — Android launcher icon corrected to the approved Michel's Life celestial logo
+
+User correction:
+- The Android launcher icon must **not** be a generic star or a newly invented symbol.
+- The approved Michel's Life icon is the exact previously selected **third celestial logo image**, stored in the repository as `branding/michels_life_logo.png`.
+
+Previous Android issue:
+- Android was still using `res/drawable/ic_launcher.xml`, a temporary vector made from cyan/gold circles plus a generic star.
+- That vector did not match the approved Michel's Life identity.
+
+Correction:
+- Android now packages the exact `branding/michels_life_logo.png` bytes as `res/drawable-nodpi/michels_life_logo.png`.
+- `AndroidManifest.xml` uses that exact asset for both `android:icon` and `android:roundIcon`.
+- The temporary generic-star vector is no longer referenced by the launcher.
+
+State:
+- **DONE IN SOURCE** — exact approved celestial logo wired to Android launcher.
+- **PENDING BUILD/DEVICE VALIDATION** — confirm the launcher icon appearance on the physical Android device after installing the next build.
