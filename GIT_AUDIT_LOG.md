@@ -353,3 +353,57 @@ For every meaningful future Michel's Life development cycle, record:
 5. release publication result and assets;
 6. any temporary infrastructure or repository-setting changes;
 7. final clean-up state.
+
+
+## 2026-10-05 — Supabase becomes Michel's Life primary sync backend
+
+Decision:
+- Google Drive was useful as the first full-state sync transport but is no longer the preferred source of truth for a Windows + Android product.
+- A dedicated Supabase project named `michels-life` was created under Michel's Lab. The unrelated `ig-cleaner-sync` project was deliberately not reused.
+- Supabase becomes the automatic primary sync authority. Google Drive remains temporarily available for manual migration/recovery and Google Calendar remains independent.
+
+Production backend:
+- Project ref: `lqnkcqredlxrykynacwr`.
+- Region: `us-east-2`.
+- Tables: `ml_state`, `ml_state_history`, `ml_devices`.
+- Migration `michels_life_initial_sync_schema` created the state/history/device model, indexes, authenticated grants and RLS policies.
+- Migration `lock_michels_life_sync_to_authenticated` explicitly revoked all table access from `anon`.
+- Verification confirmed RLS=true on all three tables; authenticated has required CRUD privileges; anon SELECT/INSERT are false.
+- Supabase Security Advisor: zero findings after hardening.
+- Only the publishable client key is embedded; privileged `sb_secret_` / `service_role` markers are prohibited by source validation.
+
+Sync behavior:
+- The canonical existing Michel's Life cloud backup JSON remains the initial snapshot payload; no second Missions/Journal/etc. model was introduced.
+- Supabase Auth supports email/password sign-in, signup, refresh and logout.
+- Per-device revision metadata prevents automatic overwrites when a different device has a higher remote revision.
+- Local saves mark the Supabase state dirty; automatic upload happens only when dirty instead of creating a revision on every poll.
+- Before overwriting a remote master, the previous remote snapshot is stored in history.
+- Device records capture platform, app version, activity and last-seen time.
+- Initial login on a device that finds existing cloud data requires an explicit local-vs-cloud choice rather than silently replacing either copy.
+
+Google transition:
+- `syncCloud('auto')`, Drive save scheduling, Drive polling and focus-triggered Drive autosync all short-circuit while a Supabase session is connected.
+- Manual Drive functions remain available as a recovery bridge during migration.
+- Google Calendar functionality is retained.
+
+Windows:
+- Settings gains a dedicated Sync section.
+- Sync Center, Command Palette and tray Sync Now prefer `SupabaseSyncV30216`.
+- The Supabase settings card mounts for both direct clicks and programmatic Settings routing.
+- Root-cause correction during testing: the first implementation read `window.state`, but Michel's Life uses lexical `state`; switching to canonical `state` fixed routed Sync-pane mounting.
+
+Android:
+- Shared canonical frontend reads `window.__MICHELSLIFE_PLATFORM__='android'` from the Android bridge.
+- Android sync rows use Android platform metadata and a distinct device id.
+- Android version advanced to 0.2.2 / versionCode 4.
+- Android build workflow now overlays the current branch frontend into the downloaded base AppBundle before packaging.
+- Android contract validation requires Supabase markers and forbids privileged keys.
+- Android-specific audit details remain in `android/ANDROID_AUDIT_LOG.md`.
+
+Validation:
+- Source validation #717: SUCCESS on shared Supabase product code.
+- UI smoke #607: SUCCESS, including dedicated Supabase flow.
+- The dedicated smoke verifies sign in, first remote master creation, one revision per dirty sync, no overwrite of a simulated newer Android revision, and explicit cloud restore.
+- Later Android metadata/workflow/documentation commits do not alter the tested Supabase runtime; native APK/AAB compilation for 0.2.2 still requires the Android workflow to be dispatched or run after merge.
+- Real cross-device production validation still requires signing into the same Michel's Life Supabase account on Windows and Android.
+- Public v3.0.216 release remains intentionally unpublished.
