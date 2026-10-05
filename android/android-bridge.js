@@ -63,7 +63,14 @@
   function updateTopbarTitle(){
     const title=q('#mlv-android-section-title');
     if(!title)return;
-    title.textContent=displayLabelForTab(activeTabId()||'dashboard');
+    const current=activeTabId()||'dashboard';
+    title.textContent=displayLabelForTab(current);
+    const tabs=availableMajorTabs();
+    const index=tabs.indexOf(current);
+    const prev=q('#mlv-android-prev-section');
+    const next=q('#mlv-android-next-section');
+    if(prev)prev.disabled=index<=0;
+    if(next)next.disabled=index<0||index>=tabs.length-1;
   }
 
   function availableMajorTabs(){
@@ -78,15 +85,31 @@
       .filter(id=>id&&!seen.has(id)&&seen.add(id));
   }
 
+  function finishSectionSwitch(started,id,routerName){
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      document.documentElement.removeAttribute('data-mlv-android-switching');
+      updateTopbarTitle();
+      window.__mlvAndroidLastSwitch={
+        tab:id,
+        router:routerName,
+        elapsedMs:Math.round((performance.now()-started)*10)/10,
+        active:activeTabId()
+      };
+    }));
+  }
+
   function clickTab(id){
     if(!id)return false;
+    if(activeTabId()===id){setDrawer(false);updateTopbarTitle();return true;}
     const target=q('#v30171PrimaryNav [data-tab="'+escSelector(id)+'"]')||q('#side [data-tab="'+escSelector(id)+'"]')||q('[data-tab="'+escSelector(id)+'"]');
     const router=window.LeftNavV30171;
+    const started=performance.now();
+    document.documentElement.setAttribute('data-mlv-android-switching','1');
     try{
       if(router&&typeof router.route==='function'){
         router.route(id);
         setDrawer(false);
-        setTimeout(updateTopbarTitle,0);
+        finishSectionSwitch(started,id,'LeftNavV30171.route');
         const debug=window.__mlvAndroidGestureDebug;
         if(debug){
           debug.router='LeftNavV30171.route';
@@ -100,10 +123,10 @@
     }catch(error){
       console.warn('Michel\'s Life Android route fallback',error);
     }
-    if(!target)return false;
+    if(!target){document.documentElement.removeAttribute('data-mlv-android-switching');return false;}
     target.click();
     setDrawer(false);
-    setTimeout(updateTopbarTitle,0);
+    finishSectionSwitch(started,id,'button.click');
     const debug=window.__mlvAndroidGestureDebug;
     if(debug){
       debug.router='button.click';
@@ -126,8 +149,14 @@
     return clickTab(tabs[next]);
   }
 
+  function suppressAndroidOnboarding(){
+    try{localStorage.setItem('michelsLife.onboarding.v30200','done')}catch(_){}
+    q('#mlv200Onboarding')?.remove();
+  }
+
   function enforceMobileFlowGeometry(){
     if(!isMobile())return;
+    suppressAndroidOnboarding();
     const app=q('.app');
     if(app){
       app.style.setProperty('padding','0','important');
@@ -137,6 +166,7 @@
     }
     const side=q('#v30171Sidebar');
     if(side){
+      if(side.parentElement!==document.body)document.body.appendChild(side);
       side.style.setProperty('position','fixed','important');
       side.style.setProperty('top','calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px))','important');
       side.style.setProperty('left','0','important');
@@ -163,7 +193,7 @@
     const topbar=document.createElement('header');
     topbar.id='mlv-android-topbar';
     topbar.setAttribute('aria-label','Android navigation');
-    topbar.innerHTML='<button id="mlv-android-menu-button" type="button" aria-label="Open menu" aria-expanded="false">☰</button><div class="mlv-android-topbar-copy"><strong>Michel’s Life</strong><span id="mlv-android-section-title">Today</span></div>';
+    topbar.innerHTML='<button id="mlv-android-menu-button" type="button" aria-label="Open menu" aria-expanded="false">☰</button><div class="mlv-android-topbar-copy"><strong>Michel’s Life</strong><span id="mlv-android-section-title">Today</span></div><div class="mlv-android-section-controls" aria-label="Section navigation"><button id="mlv-android-prev-section" type="button" aria-label="Previous section">‹</button><button id="mlv-android-next-section" type="button" aria-label="Next section">›</button></div>';
     const backdrop=document.createElement('button');
     backdrop.id='mlv-android-drawer-backdrop';
     backdrop.type='button';
@@ -171,6 +201,8 @@
     backdrop.setAttribute('aria-label','Close menu');
     document.body.append(topbar,backdrop);
     q('#mlv-android-menu-button')?.addEventListener('click',()=>setDrawer(!document.body.classList.contains('mlv-android-nav-open')));
+    q('#mlv-android-prev-section')?.addEventListener('click',()=>navigateSwipe('previous'));
+    q('#mlv-android-next-section')?.addEventListener('click',()=>navigateSwipe('next'));
     backdrop.addEventListener('click',()=>setDrawer(false));
     document.addEventListener('click',event=>{
       if(!isMobile())return;
@@ -241,11 +273,16 @@
       @media(max-width:${MOBILE_BREAKPOINT}px){
         :root{--mlv-android-topbar-h:56px}
         html[data-mlv-platform="android"] body{overscroll-behavior-y:none;padding-top:calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px))!important;touch-action:pan-y!important}
+        #mlv200Onboarding{display:none!important}
+        html[data-mlv-platform="android"] #main *,html[data-mlv-platform="android"] #v30171Sidebar *,#mlv-android-topbar{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+        html[data-mlv-platform="android"][data-mlv-android-switching="1"] #mlv-android-topbar::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:currentColor;opacity:.38;animation:mlvAndroidSwitchPulse .55s ease-in-out infinite alternate}
+        @keyframes mlvAndroidSwitchPulse{from{transform:scaleX(.22);opacity:.18}to{transform:scaleX(1);opacity:.52}}
         #main,.layout{touch-action:pan-y!important}
         .v134-ach-filter,.v140-cat-shortcuts,.v140-library-toggle,[data-horizontal-scroll],.tabs{touch-action:pan-x!important}
         #mlv-android-topbar{position:fixed;display:flex;align-items:center;gap:10px;top:0;left:0;right:0;height:calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px));padding:env(safe-area-inset-top,0px) 12px 0;z-index:2147483000;background:rgba(6,9,19,.94);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.1);box-sizing:border-box}
         #mlv-android-menu-button{width:42px;height:42px;min-width:42px;padding:0;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:inherit;font:inherit;font-size:22px;line-height:1;display:grid;place-items:center}
-        .mlv-android-topbar-copy{min-width:0;display:flex;flex-direction:column;gap:1px}.mlv-android-topbar-copy strong{font-size:13px;line-height:1.1}.mlv-android-topbar-copy span{font-size:11px;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:62vw}
+        .mlv-android-topbar-copy{min-width:0;display:flex;flex:1 1 auto;flex-direction:column;gap:1px}.mlv-android-topbar-copy strong{font-size:13px;line-height:1.1}.mlv-android-topbar-copy span{font-size:11px;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:48vw}
+        .mlv-android-section-controls{display:flex;gap:5px;flex:0 0 auto}.mlv-android-section-controls button{width:34px;height:34px;min-width:34px;padding:0;border-radius:10px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.045);color:inherit;font-size:22px;line-height:1;display:grid;place-items:center}.mlv-android-section-controls button:disabled{opacity:.24}
         #mlv-android-drawer-backdrop{display:block;position:fixed;inset:calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px)) 0 0;border:0;padding:0;background:rgba(0,0,0,.48);opacity:0;pointer-events:none;z-index:2147482990;transition:opacity .18s ease}
         body.mlv-android-nav-open #mlv-android-drawer-backdrop{opacity:1;pointer-events:auto}
         .app{max-width:none!important;width:100%!important;margin:0!important;padding:0!important}
@@ -258,7 +295,7 @@
         #v176StatusPanel .v176-card:first-child{display:flex!important;align-items:center!important;gap:8px!important;width:100%!important;min-width:0!important;min-height:0!important;height:auto!important;margin:0!important;padding:5px 7px!important;border:0!important;border-radius:10px!important;background:transparent!important;box-shadow:none!important;overflow:hidden!important}
         #v176StatusPanel .v176-time{flex:0 0 auto!important;font-size:18px!important;line-height:1!important;letter-spacing:-.03em!important}
         #v176StatusPanel .v176-small{min-width:0!important;margin:0!important;font-size:9px!important;line-height:1.2!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
-        #v30171Sidebar{position:fixed!important;top:calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px))!important;left:0!important;bottom:0!important;width:min(86vw,320px)!important;max-width:320px!important;height:auto!important;max-height:none!important;overflow-y:auto!important;transform:translateX(-105%)!important;transition:transform .2s ease!important;z-index:2147482995!important;margin:0!important;padding:10px!important;border-radius:0 18px 18px 0!important;box-shadow:12px 0 35px rgba(0,0,0,.35)!important;overscroll-behavior:contain}
+        #v30171Sidebar{position:fixed!important;top:calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px))!important;left:0!important;bottom:0!important;width:min(86vw,320px)!important;max-width:320px!important;height:auto!important;max-height:none!important;overflow-y:auto!important;transform:translateX(-105%)!important;transition:transform .16s ease!important;z-index:2147482995!important;margin:0!important;padding:10px!important;border-radius:0 18px 18px 0!important;box-shadow:12px 0 35px rgba(0,0,0,.35)!important;overscroll-behavior:contain;background:rgba(var(--ui-panel-rgb,7,13,25),.985)!important}
         body.mlv-android-nav-open #v30171Sidebar{transform:translateX(0)!important}
         #v30171Sidebar .v30171-brand{flex-direction:row!important;justify-content:flex-start!important;text-align:left!important;gap:8px!important;padding:5px 4px 9px!important}
         #v30171Sidebar .v30171-brand-mark{width:38px!important;height:38px!important;min-width:38px!important;font-size:20px!important}
@@ -281,6 +318,9 @@
         .v132-mission-actions{grid-column:2!important;display:flex!important;justify-content:flex-end!important;align-items:center!important;gap:6px!important;min-width:0!important;margin-top:6px!important}
         .v132-actions,.v131-actions,.quest-actions,article.v132-mission .actions,article.v137-mission .actions{display:flex!important;flex-wrap:wrap!important;gap:6px!important;min-width:0!important}
         .v132-actions button,.v131-actions button,.quest-actions button,article.v132-mission .actions button,article.v137-mission .actions button{min-height:38px!important;max-width:100%!important;white-space:normal!important}
+        #v30106QuickFab{left:auto!important;right:14px!important;bottom:calc(env(safe-area-inset-bottom,0px) + 76px)!important;width:50px!important;height:50px!important;min-width:50px!important;min-height:50px!important;max-width:50px!important;max-height:50px!important}
+        #v30162FocusDock{left:auto!important;right:14px!important;bottom:calc(env(safe-area-inset-bottom,0px) + 136px)!important;width:50px!important;height:50px!important;min-width:50px!important;min-height:50px!important;max-width:50px!important;max-height:50px!important}
+        #v30162FocusDock .v30173-focus-wrap,#v30162FocusDock .v30173-focus-trigger{width:50px!important;height:50px!important;min-width:50px!important;min-height:50px!important;max-width:50px!important;max-height:50px!important}
         input,select,textarea,button{max-width:100%;box-sizing:border-box}
       }
       @media(min-width:${MOBILE_BREAKPOINT+1}px){body.mlv-android-nav-open{overflow:auto}}
@@ -290,18 +330,48 @@
 
   function observeUi(){
     let queued=false;
+    let navObserver=null;
+    let navTarget=null;
+
+    const attachNavObserver=()=>{
+      const next=q('#v30171PrimaryNav');
+      if(next===navTarget)return;
+      navObserver?.disconnect();
+      navTarget=next;
+      if(!next)return;
+      navObserver=new MutationObserver(()=>updateTopbarTitle());
+      navObserver.observe(next,{subtree:true,attributes:true,attributeFilter:['class','aria-current']});
+    };
+
     const refresh=()=>{
       if(queued)return;
       queued=true;
-      requestAnimationFrame(()=>{queued=false;enforceMobileFlowGeometry();updateTopbarTitle();});
+      setTimeout(()=>{
+        queued=false;
+        suppressAndroidOnboarding();
+        enforceMobileFlowGeometry();
+        attachNavObserver();
+        updateTopbarTitle();
+      },32);
     };
-    new MutationObserver(refresh).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class','aria-current']});
+
+    new MutationObserver(mutations=>{
+      const relevant=mutations.some(m=>Array.from(m.addedNodes||[]).some(node=>{
+        if(!(node instanceof Element))return false;
+        return node.matches?.('#v30171Sidebar,#v30171PrimaryNav,#v176StatusPanel,#mlv200Onboarding,#v30106QuickFab,#v30162FocusDock')||
+          node.querySelector?.('#v30171Sidebar,#v30171PrimaryNav,#v176StatusPanel,#mlv200Onboarding,#v30106QuickFab,#v30162FocusDock');
+      }));
+      if(relevant)refresh();
+    }).observe(document.body,{subtree:true,childList:true});
+
+    attachNavObserver();
     window.addEventListener('michelslife:languagechange',()=>setTimeout(updateTopbarTitle,0));
-    window.addEventListener('resize',()=>{if(!isMobile())setDrawer(false);else enforceMobileFlowGeometry();});
+    window.addEventListener('resize',()=>{if(!isMobile())setDrawer(false);else refresh();});
   }
 
   function boot(){
     document.documentElement.setAttribute('data-mlv-platform','android');
+    suppressAndroidOnboarding();
     installPlatformStyles();
     installMobileChrome();
     enforceMobileFlowGeometry();
