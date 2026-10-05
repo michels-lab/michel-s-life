@@ -205,7 +205,11 @@ try{
   // Settings was the slowest Android transition because legacy code rebuilt it repeatedly.
   await page.evaluate(()=>window.__mlvAndroidFastRoute?.('settings'));
   await page.waitForFunction(
-    ()=>String(window.state?.activeTab||'')==='settings' && !!document.getElementById('tab-settings'),
+    ()=>!!document.getElementById('tab-settings') && (
+      document.querySelector('#v30171PrimaryNav [data-tab="settings"]')?.classList.contains('active') ||
+      document.querySelector('#v30171PrimaryNav [data-tab="settings"]')?.getAttribute('aria-current')==='page' ||
+      document.getElementById('mlv-android-section-title')?.textContent?.trim()==='Settings'
+    ),
     null,{timeout:5000}
   );
   await page.waitForFunction(
@@ -247,7 +251,14 @@ try{
   ok(/Swipe/.test(actionDockState.hint),'Android drawer does not explain swipe/arrow navigation: '+JSON.stringify(actionDockState));
 
   await page.evaluate(()=>window.__mlvAndroidFastRoute?.('dashboard'));
-  await page.waitForFunction(()=>String(window.state?.activeTab||'')==='dashboard',null,{timeout:5000});
+  await page.waitForFunction(
+    ()=>!!document.getElementById('tab-dashboard') && (
+      document.querySelector('#v30171PrimaryNav [data-tab="dashboard"]')?.classList.contains('active') ||
+      document.querySelector('#v30171PrimaryNav [data-tab="dashboard"]')?.getAttribute('aria-current')==='page' ||
+      document.getElementById('mlv-android-section-title')?.textContent?.trim()==='Dashboard'
+    ),
+    null,{timeout:5000}
+  );
 
   console.log('ANDROID_GEOMETRY '+JSON.stringify({initial,drawerOpen,missionGeometry,settingsSwitch}));
 
