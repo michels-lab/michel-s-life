@@ -105,6 +105,7 @@ try{
       prevExists:!!document.getElementById('mlv-android-prev-section'),
       nextExists:!!document.getElementById('mlv-android-next-section'),
       actionDock:rect(document.getElementById('v30175ActionDock')),
+      actionDockParent:document.getElementById('v30175ActionDock')?.parentElement?.id||'',
       quickFab:rect(document.getElementById('v30106QuickFab')),
       focusFab:rect(document.getElementById('v30175FocusFab')),
       focusDock:rect(document.getElementById('v30162FocusDock')),
@@ -133,8 +134,11 @@ try{
   ok(initial.sidebarZ>initial.backdropZ,'Android drawer can be dimmed by its own backdrop: '+JSON.stringify(initial));
   ok(!initial.onboardingVisible,'Desktop onboarding overlay reappeared on Android: '+JSON.stringify(initial));
   ok(initial.prevExists&&initial.nextExists,'Android section navigation arrows are missing: '+JSON.stringify(initial));
-  if(initial.quickFab&&initial.quickFab.right>0)ok(initial.quickFab.bottom<=855,'Visible Quick Capture overlaps Android system-navigation zone: '+JSON.stringify(initial));
-  if(initial.focusDock&&initial.focusDock.right>0)ok(initial.focusDock.bottom<=855,'Visible Focus control overlaps Android system-navigation zone: '+JSON.stringify(initial));
+  if(initial.actionDock){
+    ok(initial.actionDockParent==='v30171Sidebar','Android action dock is not contained by the drawer: '+JSON.stringify(initial));
+    ok(initial.actionDock.right<=8,'Closed Android drawer leaves quick actions over app content: '+JSON.stringify(initial));
+  }
+  if(initial.focusDock)ok(initial.focusDock.width===0&&initial.focusDock.height===0,'Legacy Focus dock still occupies Android content space: '+JSON.stringify(initial));
   ok(initial.main&&initial.main.top<190,'Primary content starts too low and still requires an initial scroll: '+JSON.stringify(initial));
   ok(initial.firstCard&&initial.firstCard.top<240,'First dashboard card starts too low: '+JSON.stringify(initial));
   ok(initial.overflow<=2,'Android page has horizontal overflow: '+JSON.stringify(initial));
@@ -143,13 +147,16 @@ try{
   await page.waitForTimeout(260);
   const drawerOpen=await page.evaluate(()=>{
     const s=document.getElementById('v30171Sidebar').getBoundingClientRect();
+    const d=document.getElementById('v30175ActionDock')?.getBoundingClientRect();
     return {
       bodyOpen:document.body.classList.contains('mlv-android-nav-open'),
       left:s.left,right:s.right,width:s.width,
+      actionDock:d?{left:d.left,top:d.top,right:d.right,bottom:d.bottom,width:d.width,height:d.height}:null,
       expanded:document.getElementById('mlv-android-menu-button')?.getAttribute('aria-expanded')
     };
   });
   ok(drawerOpen.bodyOpen&&drawerOpen.left>=-2&&drawerOpen.expanded==='true','Drawer did not open correctly: '+JSON.stringify(drawerOpen));
+  if(drawerOpen.actionDock)ok(drawerOpen.actionDock.left>=-2&&drawerOpen.actionDock.right<=drawerOpen.right+2,'Quick actions are not contained inside the open Android drawer: '+JSON.stringify(drawerOpen));
 
   await page.locator('#mlv-android-drawer-backdrop').click({position:{x:400,y:300}});
   await page.waitForTimeout(240);
