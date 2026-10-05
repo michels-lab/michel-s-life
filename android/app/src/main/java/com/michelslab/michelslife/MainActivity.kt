@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
@@ -33,6 +34,9 @@ class MainActivity : Activity() {
             .build()
 
         webView = WebView(this)
+        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        webView.overScrollMode = View.OVER_SCROLL_NEVER
+        webView.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_BOUND, true)
         setContentView(webView)
 
         webView.settings.apply {
@@ -45,6 +49,10 @@ class MainActivity : Activity() {
             mediaPlaybackRequiresUserGesture = false
             javaScriptCanOpenWindowsAutomatically = false
             setSupportMultipleWindows(false)
+            setSupportZoom(false)
+            builtInZoomControls = false
+            displayZoomControls = false
+            offscreenPreRaster = true
         }
 
         webView.addJavascriptInterface(
