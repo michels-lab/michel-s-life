@@ -593,3 +593,34 @@ Correction:
 State:
 - **DONE IN SOURCE** — exact approved celestial logo wired to Android launcher.
 - **PENDING BUILD/DEVICE VALIDATION** — confirm the launcher icon appearance on the physical Android device after installing the next build.
+
+
+### 2026-10-05 — Physical phone + emulator feedback incorporated into Android v0.2.1
+
+Observed by user on real phone and PC emulator:
+- Launcher still showed the obsolete generic star instead of the approved Michel's Life celestial logo.
+- The pink first-run/onboarding overlay could reappear over an existing Michel's Life profile, especially around Settings.
+- The onboarding focus checklist rendered as oversized crooked checkbox cards on Android.
+- Drawer/backdrop layering made the navigation look heavily dimmed.
+- Focus/Quick Capture floating controls collided with the lower Android UI and covered content on Journal/Settings.
+- Section changes felt slow and the swipe gesture was not self-explanatory; accidental swipes could change sections.
+- Emulator reproduced the same class of mobile bugs and lag.
+
+v0.2.1 corrections:
+- Uses the approved Michel's Life celestial branding for Android launcher; resource normalized to an Android-safe JPG after AAPT2 rejected the original PNG container.
+- Existing-profile detection suppresses stale onboarding only when real Michel's Life data already exists; true fresh installs keep onboarding.
+- Fresh Android onboarding is single-column with fixed 22 px native checkboxes instead of giant stretched controls.
+- Drawer is reparented outside desktop stacking contexts and kept above its own backdrop.
+- Added explicit previous/next section controls to the Android top bar in addition to hamburger + swipe.
+- Swipe threshold increased so casual horizontal movement is less likely to switch sections accidentally.
+- Added Android fast routing and removes the legacy multi-delay Settings navigation cascade.
+- During Android section switches, CSS transition durations are temporarily suppressed to reduce perceived lag.
+- Expensive mobile backdrop filters and sky filters are reduced/disabled in Android.
+- WebView uses explicit hardware layer, bound renderer priority, no overscroll/zoom, and offscreen pre-raster.
+- Action Dock/Focus controls are reduced and hidden on Journal/Settings where they interfered with writing/settings UI.
+- Android version bumped to **0.2.1 / versionCode 3**.
+
+Validation gates:
+- **IN PROGRESS** — Android UI smoke must pass with onboarding/profile, drawer, safe-area, explicit arrows, swipe and section-switch budget.
+- **IN PROGRESS** — native Android build must pass APK + AAB with the normalized launcher resource.
+- **NEEDS DEVICE/EMULATOR RETEST** — final feel and visual behavior on the user's phone and emulator.
