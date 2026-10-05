@@ -151,7 +151,7 @@ jobs:
         if: always()
         continue-on-error: true
         with:
-          name: ui-smoke-v3.0.215
+          name: ui-smoke-v3.0.216
           path: |
             artifacts/ui-smoke
             /tmp/mlv-http.log
