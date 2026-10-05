@@ -89,6 +89,7 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $PSNativeCommandUseErrorActionPreference = $true
+          python tools/bump_frontend_version.py --index src/MichelsLife/frontend/index.html
           python tools/enable_i18n.py --index src/MichelsLife/frontend/index.html
           python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
           python tools/replace_bundle_index.py --bundle src/MichelsLife/AppBundle.zip --index src/MichelsLife/frontend/index.html
