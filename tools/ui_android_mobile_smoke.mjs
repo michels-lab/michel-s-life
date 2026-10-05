@@ -288,9 +288,18 @@ try{
     await page.waitForTimeout(320);
   }
 
-  // Swipe from a neutral strip just below the compact status area.
-  // Interactive controls intentionally reject section swipes.
-  await touchSwipe(390,143,110,143);
+  // Find a genuinely non-interactive point before swiping.
+  // Inputs/buttons intentionally keep their own gestures and must never trigger section navigation.
+  const swipePoint=await page.evaluate(()=>{
+    const blocked=el=>!!el?.closest?.('button,a,input,select,textarea,label,[contenteditable="true"],.modal,.v132-actions,.actions,.v134-ach-filter,.v140-cat-shortcuts,.v140-library-toggle,[data-horizontal-scroll],.tabs');
+    const x=window.innerWidth-22;
+    for(let y=136;y<Math.min(window.innerHeight-120,760);y+=18){
+      const el=document.elementFromPoint(x,y);
+      if(el&&!blocked(el))return {x,y,tag:el.tagName,cls:String(el.className||'')};
+    }
+    return {x,y:136,tag:'fallback',cls:''};
+  });
+  await touchSwipe(swipePoint.x,swipePoint.y,110,swipePoint.y);
   try{
     await page.waitForFunction(
       ()=>document.querySelector('#v30171PrimaryNav [data-tab="missions"]')?.classList.contains('active') ||
@@ -302,7 +311,8 @@ try{
       gesture:window.__mlvAndroidGestureDebug||null,
       active:document.querySelector('#v30171PrimaryNav [aria-current="page"]')?.dataset?.tab||
              document.querySelector('#v30171PrimaryNav .active[data-tab]')?.dataset?.tab||'',
-      targetAtStart:(()=>{const el=document.elementFromPoint(390,700);return el?{tag:el.tagName,cls:String(el.className||''),text:String(el.textContent||'').trim().slice(0,120)}:null})()
+      targetAtStart:(()=>{const el=document.elementFromPoint(swipePoint.x,swipePoint.y);return el?{tag:el.tagName,cls:String(el.className||''),text:String(el.textContent||'').trim().slice(0,120)}:null})(),
+      swipePoint
     }));
     throw new Error('Swipe did not navigate to Missions: '+JSON.stringify(debug));
   }
@@ -356,6 +366,71 @@ try{
   }
   await freshContext.close();
 
+  // PC-hosted Android emulator / landscape validation.
+  // A wide WebView must keep the Android shell instead of reverting to the desktop layout.
+  const wideContext=await browser.newContext({
+    viewport:{width:1536,height:864},
+    screen:{width:1536,height:864},
+    deviceScaleFactor:1,
+    isMobile:false,
+    hasTouch:true
+  });
+  const wide=await wideContext.newPage();
+  await wide.addInitScript(()=>{
+    try{
+      const existing={
+        version:2,
+        settings:{characterName:'Michel',onboardingRequired:false,onboardingCompletedAt:'2026-10-01T12:00:00.000Z'},
+        xp:10,coins:0,totalCoinsEarned:0,activeTab:'dashboard',
+        missions:[{id:'wide-mission',name:'Wide Android smoke mission',canonical:'wide android smoke mission',description:'',category:'physical',type:'daily',difficulty:'medium',xp:25,coins:0,priority:'media',days:[1,2,3,4,5],deadline:'',fixed:false,boss:false,archived:false,hidden:false,noSuggest:false,createdAt:'2026-01-01T12:00:00.000Z',completions:[]}],
+        history:[],owned:[],equipped:{},achievements:[],goals:[],affirmations:[]
+      };
+      localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(existing));
+      localStorage.setItem('michelsLife.onboarding.v30200','done');
+      localStorage.setItem('michelsLife.language.v1','en');
+    }catch(_){}
+    window.__MICHELSLIFE_INSTALL_LANGUAGE__='en';
+    window.MichelsLifeAndroid={postMessage(){}};
+  });
+  await wide.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
+  await wide.waitForFunction(
+    ()=>document.documentElement.dataset.mlvPlatform==='android' &&
+        document.getElementById('mlv-android-topbar') &&
+        getComputedStyle(document.getElementById('mlv-android-topbar')).display!=='none' &&
+        document.getElementById('v30171Sidebar'),
+    null,{timeout:60000}
+  );
+  await wide.waitForTimeout(700);
+  const wideState=await wide.evaluate(()=>{
+    const rect=el=>{const r=el?.getBoundingClientRect();return r?{left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:r.width,height:r.height}:null};
+    const side=document.getElementById('v30171Sidebar');
+    const top=document.getElementById('mlv-android-topbar');
+    const main=document.getElementById('main');
+    const oldTop=document.querySelector('.topbar');
+    return {
+      topbar:rect(top),topbarDisplay:getComputedStyle(top).display,
+      sidebar:rect(side),sidebarPosition:getComputedStyle(side).position,
+      main:rect(main),mainMaxWidth:getComputedStyle(main).maxWidth,
+      desktopTop:oldTop?getComputedStyle(oldTop).display:'',
+      onboardingVisible:(()=>{const el=document.getElementById('mlv200Onboarding');return !!(el&&el.getClientRects().length&&getComputedStyle(el).display!=='none')})(),
+      overflow:document.documentElement.scrollWidth-window.innerWidth
+    };
+  });
+  ok(wideState.topbarDisplay!=='none','Wide Android emulator fell back to desktop UI: '+JSON.stringify(wideState));
+  ok(wideState.desktopTop==='none','Desktop topbar is visible in wide Android emulator: '+JSON.stringify(wideState));
+  ok(wideState.sidebarPosition==='fixed'&&wideState.sidebar&&wideState.sidebar.right<=8,'Wide Android drawer is not fixed/off-canvas: '+JSON.stringify(wideState));
+  ok(wideState.main&&wideState.main.top<200,'Wide Android main content starts too low: '+JSON.stringify(wideState));
+  ok(wideState.main&&wideState.main.width<=1182,'Wide Android content is not bounded for emulator/landscape: '+JSON.stringify(wideState));
+  ok(!wideState.onboardingVisible,'Existing profile onboarding appeared in wide Android emulator: '+JSON.stringify(wideState));
+  ok(wideState.overflow<=2,'Wide Android emulator has horizontal overflow: '+JSON.stringify(wideState));
+
+  await wide.evaluate(()=>window.__mlvAndroidFastRoute?.('settings'));
+  await wide.waitForFunction(()=>window.__mlvAndroidLastSwitch?.tab==='settings',null,{timeout:5000});
+  const wideSettingsSwitch=await wide.evaluate(()=>window.__mlvAndroidLastSwitch||null);
+  ok(wideSettingsSwitch?.router==='android-render-main','Wide Android Settings did not use fast route: '+JSON.stringify(wideSettingsSwitch));
+  ok(Number(wideSettingsSwitch?.elapsedMs||99999)<1000,'Wide Android Settings switch exceeded 1000 ms: '+JSON.stringify(wideSettingsSwitch));
+  await wideContext.close();
+
   await mkdir(dirname(screenshot),{recursive:true});
   await page.screenshot({path:screenshot,fullPage:true});
   console.log(JSON.stringify({
@@ -363,6 +438,8 @@ try{
     viewport:{width:412,height:915},
     existingOnboardingProbe,
     freshInstallOnboarding,
+    wideState,
+    wideSettingsSwitch,
     initial,
     drawerOpen,
     missionGeometry,
