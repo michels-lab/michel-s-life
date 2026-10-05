@@ -32,7 +32,7 @@
 ### Release state
 - Work is isolated on `desktop-v3.0.216` / draft PR #10.
 - No v3.0.216 public release has been published and `main` has not been changed by this pre-release cycle.
-- Windows test build #48 — **success** and artifact generated for interactive native tray/hotkey validation before public release.
+- Windows test build #49 — **success** and final candidate artifact generated after tray localization and hotkey-conflict handling. Interactive native tray/hotkey validation remains the last release gate.
 
 ## 3.0.215 — 2026-09-30 — Spanish navigation performance
 
