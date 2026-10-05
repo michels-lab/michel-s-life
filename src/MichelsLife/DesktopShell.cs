@@ -16,6 +16,9 @@ internal static class DesktopShell
     private static WebView2? _webView;
     private static NotifyIcon? _trayIcon;
     private static TrayHotKeyWindow? _hotKeyWindow;
+    private static System.Windows.Forms.Timer? _taskbarTimer;
+    private static TaskbarProgress? _taskbarProgress;
+    private static bool _taskbarPollBusy;
     private static bool _exitRequested;
     private static bool _attached;
 
@@ -84,6 +87,12 @@ internal static class DesktopShell
             );
         }
 
+        _taskbarProgress = new TaskbarProgress(form.Handle);
+        _taskbarTimer = new System.Windows.Forms.Timer { Interval = 1500 };
+        _taskbarTimer.Tick += async (_, _) => await RefreshTaskbarMissionAsync();
+        _taskbarTimer.Start();
+        _ = RefreshTaskbarMissionAsync();
+
         Application.ApplicationExit += (_, _) => Dispose();
     }
 
@@ -145,6 +154,71 @@ internal static class DesktopShell
             // Native shell actions may arrive while WebView2 is between documents.
             // The user can retry the action once the current document is ready.
         }
+    }
+
+    private static async Task RefreshTaskbarMissionAsync()
+    {
+        if (_taskbarPollBusy || _form is null || _form.IsDisposed || _webView?.CoreWebView2 is null) return;
+        _taskbarPollBusy = true;
+        try
+        {
+            var raw = await _webView.CoreWebView2.ExecuteScriptAsync(
+                "(()=>{try{const api=window.CurrentMissionV131,c=api?.getState?.();" +
+                "if(!c)return null;let name='Current Mission';" +
+                "try{name=(state.missions||[]).find(m=>String(m?.id)===String(c.id))?.name||name}catch(_){}" +
+                "return {id:String(c.id||''),status:String(c.status||'running'),name:String(name),elapsedMs:Number(api?.elapsed?.(c)||c.elapsedMs||0)}" +
+                "}catch(_){return null}})()"
+            );
+            using var doc = System.Text.Json.JsonDocument.Parse(raw);
+            if (doc.RootElement.ValueKind is System.Text.Json.JsonValueKind.Null or System.Text.Json.JsonValueKind.Undefined)
+            {
+                ClearTaskbarMission();
+                return;
+            }
+
+            var root = doc.RootElement;
+            var name = root.TryGetProperty("name", out var n) ? n.GetString() ?? "Current Mission" : "Current Mission";
+            var status = root.TryGetProperty("status", out var st) ? st.GetString() ?? "running" : "running";
+            var elapsedMs = root.TryGetProperty("elapsedMs", out var em) && em.TryGetDouble(out var ms) ? Math.Max(0, ms) : 0;
+            var elapsed = FormatElapsed(elapsedMs);
+
+            _taskbarProgress?.SetMissionState(status);
+            _form.Text = $"Michel's Life · {(status == "paused" ? "⏸" : "▶")} {name} · {elapsed}";
+            if (_trayIcon is not null)
+            {
+                var trayText = $"Michel's Life · {name}";
+                _trayIcon.Text = trayText.Length <= 63 ? trayText : trayText[..60] + "...";
+            }
+        }
+        catch
+        {
+            // Navigation or startup can temporarily make the page context unavailable.
+            // Keep the previous taskbar state until the next poll.
+        }
+        finally
+        {
+            _taskbarPollBusy = false;
+        }
+    }
+
+    private static void ClearTaskbarMission()
+    {
+        _taskbarProgress?.Clear();
+        if (_form is not null && !_form.IsDisposed)
+            _form.Text = "Michel's Life";
+        if (_trayIcon is not null)
+            _trayIcon.Text = "Michel's Life";
+    }
+
+    private static string FormatElapsed(double elapsedMs)
+    {
+        var totalSeconds = Math.Max(0, (long)(elapsedMs / 1000));
+        var hours = totalSeconds / 3600;
+        var minutes = (totalSeconds % 3600) / 60;
+        var seconds = totalSeconds % 60;
+        return hours > 0
+            ? $"{hours:00}:{minutes:00}:{seconds:00}"
+            : $"{minutes:00}:{seconds:00}";
     }
 
     private static bool IsInstalledLanguageSpanish()
@@ -252,6 +326,11 @@ internal static class DesktopShell
 
     private static void Dispose()
     {
+        _taskbarTimer?.Stop();
+        _taskbarTimer?.Dispose();
+        _taskbarTimer = null;
+        _taskbarProgress?.Dispose();
+        _taskbarProgress = null;
         _hotKeyWindow?.Dispose();
         _hotKeyWindow = null;
         if (_trayIcon is not null)
@@ -259,6 +338,92 @@ internal static class DesktopShell
             _trayIcon.Visible = false;
             _trayIcon.Dispose();
             _trayIcon = null;
+        }
+    }
+
+    private enum TaskbarProgressState
+    {
+        NoProgress = 0x0,
+        Indeterminate = 0x1,
+        Normal = 0x2,
+        Error = 0x4,
+        Paused = 0x8
+    }
+
+    [ComImport]
+    [Guid("EA1AFB91-9E28-4B86-90E9-9E9F8A5EEA84")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    private interface ITaskbarList3
+    {
+        void HrInit();
+        void AddTab(IntPtr hwnd);
+        void DeleteTab(IntPtr hwnd);
+        void ActivateTab(IntPtr hwnd);
+        void SetActiveAlt(IntPtr hwnd);
+        void MarkFullscreenWindow(IntPtr hwnd, [MarshalAs(UnmanagedType.Bool)] bool fullscreen);
+        void SetProgressValue(IntPtr hwnd, ulong completed, ulong total);
+        void SetProgressState(IntPtr hwnd, TaskbarProgressState state);
+    }
+
+    [ComImport]
+    [Guid("56FDF344-FD6D-11D0-958A-006097C9A090")]
+    [ClassInterface(ClassInterfaceType.None)]
+    private class CTaskbarList
+    {
+    }
+
+    private sealed class TaskbarProgress : IDisposable
+    {
+        private readonly IntPtr _handle;
+        private ITaskbarList3? _taskbar;
+
+        public TaskbarProgress(IntPtr handle)
+        {
+            _handle = handle;
+            try
+            {
+                _taskbar = (ITaskbarList3)new CTaskbarList();
+                _taskbar.HrInit();
+            }
+            catch
+            {
+                _taskbar = null;
+            }
+        }
+
+        public void SetMissionState(string status)
+        {
+            if (_taskbar is null) return;
+            try
+            {
+                if (string.Equals(status, "paused", StringComparison.OrdinalIgnoreCase))
+                {
+                    _taskbar.SetProgressValue(_handle, 1, 1);
+                    _taskbar.SetProgressState(_handle, TaskbarProgressState.Paused);
+                }
+                else
+                {
+                    _taskbar.SetProgressState(_handle, TaskbarProgressState.Indeterminate);
+                }
+            }
+            catch
+            {
+                // Taskbar integration is best-effort and must never affect the app.
+            }
+        }
+
+        public void Clear()
+        {
+            try { _taskbar?.SetProgressState(_handle, TaskbarProgressState.NoProgress); }
+            catch { }
+        }
+
+        public void Dispose()
+        {
+            Clear();
+            if (_taskbar is not null && Marshal.IsComObject(_taskbar))
+                Marshal.FinalReleaseComObject(_taskbar);
+            _taskbar = null;
         }
     }
 
