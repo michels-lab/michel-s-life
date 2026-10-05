@@ -28444,7 +28444,8 @@ const SETTINGS=[
  ['focus','⏱','Focus & Timers','Pomodoro, focus sessions and timer behavior.'],
  ['notifications','◉','Notifications','Alerts and notification behavior.'],
  ['planning','☷','Planning & Next Up','Day planning, Next Up and mission time-of-day rules.'],
- ['google','G','Google','Cloud-sync all Michel’s Life data and optionally connect Calendar.'],
+ ['sync','☁','Sync','Supabase account, devices and cross-platform data sync.'],
+ ['google','G','Google','Optional Google Calendar integration and temporary Drive fallback.'],
  ['data','▣','Data & Backup','Export, import, recovery and maintenance tools.'],
  ['chapters','⌁','Chapter Scenes','Cinematic worlds used only by Current Chapter.'],
  ['about','ⓘ','About','Developer, license and build information.']
@@ -30594,6 +30595,187 @@ window.MLV216QuickCapture={open,close,capture:saveCapture};
 </script>
 
 
+
+<!-- v3.0.216: Supabase primary cloud sync -->
+<style id="mlv-v30216-supabase-sync-style">
+.mlv216-supa-card{margin-top:12px!important}
+.mlv216-supa-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.mlv216-supa-kpi{border:1px solid rgba(255,255,255,.07);border-radius:11px;padding:9px;background:rgba(255,255,255,.02)}
+.mlv216-supa-kpi small,.mlv216-supa-kpi b{display:block}.mlv216-supa-kpi small{font-size:8px;color:var(--muted)}.mlv216-supa-kpi b{font-size:10.5px;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mlv216-supa-auth{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.mlv216-supa-auth label{display:grid;gap:4px;font-size:9px;color:var(--muted)}
+.mlv216-supa-auth input{width:100%}.mlv216-supa-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.mlv216-supa-device-list{display:grid;gap:6px;margin-top:10px}.mlv216-supa-device{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px;border:1px solid rgba(255,255,255,.06);border-radius:10px}.mlv216-supa-device small{display:block;color:var(--muted);font-size:8.5px;margin-top:2px}
+.mlv216-supa-note{font-size:9px;color:var(--muted);line-height:1.45;margin-top:9px}.mlv216-supa-error{color:#ffcf8a}
+@media(max-width:680px){.mlv216-supa-grid,.mlv216-supa-auth{grid-template-columns:1fr}}
+</style>
+<script id="mlv-v30216-supabase-sync-script">
+(function(){
+'use strict';
+if(window.SupabaseSyncV30216)return;
+const BUILD='3.0.216';
+const SUPABASE_URL='https://lqnkcqredlxrykynacwr.supabase.co';
+const PUBLISHABLE_KEY='sb_publishable_ugWnaeKPRdH55vVNOtugjw_lBAqG7tr';
+const SESSION_KEY='michelsLife.supabase.session.v30216';
+const META_KEY='michelsLife.supabase.meta.v30216';
+const DEVICE_KEY='michelsLife.supabase.device.v30216';
+const POLL_MS=30000;
+let syncTimer=0,pollTimer=0,applying=false,mountTimer=0,lastOverviewAt=0;
+let overview={devices:[],backups:[],currentDeviceId:'',currentDeviceName:''};
+const runtime={connected:false,cloudReady:false,cloudBusy:false,cloudError:'',cloudConflict:null,cloudAction:'',cloudLastSync:'',account:'',revision:0,lastRemoteAt:'',provider:'Supabase'};
+function es(){return window.MichelsLifeI18n?.language==='es'}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function safeJson(v,fallback=null){try{return JSON.parse(v)}catch(_){return fallback}}
+function session(){return safeJson(localStorage.getItem(SESSION_KEY)||'',null)}
+function meta(){return safeJson(localStorage.getItem(META_KEY)||'',{})||{}}
+function saveMeta(patch){const next={...meta(),...patch};localStorage.setItem(META_KEY,JSON.stringify(next));return next}
+function deviceId(){let id=localStorage.getItem(DEVICE_KEY);if(!id){id='win_'+crypto.randomUUID();localStorage.setItem(DEVICE_KEY,id)}return id}
+function deviceName(){try{return navigator.userAgentData?.platform||navigator.platform||'Windows PC'}catch(_){return'Windows PC'}}
+function capture(){try{return window.GoogleCloudV30192?.capture?.()||window.GoogleCloudV30191?.capture?.()||''}catch(_){return''}}
+function notify(title,msg,kind=''){try{window.toast?.(title,msg,kind,{persistent:kind==='error'})}catch(_){}}
+function authHeaders(access){const h={'apikey':PUBLISHABLE_KEY,'Content-Type':'application/json'};if(access)h.Authorization='Bearer '+access;return h}
+async function request(path,{method='GET',body=null,access=null,prefer='',headers={}}={}){
+ const res=await fetch(SUPABASE_URL+path,{method,headers:{...authHeaders(access),...(prefer?{'Prefer':prefer}:{}),...headers},body:body==null?null:JSON.stringify(body)});
+ let data=null,text='';try{text=await res.text();data=text?safeJson(text,text):null}catch(_){}
+ if(!res.ok){const message=(data&&typeof data==='object'&&(data.msg||data.message||data.error_description||data.error))||String(text||res.statusText||('HTTP '+res.status));const err=new Error(message);err.status=res.status;throw err}
+ return data
+}
+function storeSession(data){
+ if(!data?.access_token)return null;
+ const expiresAt=Date.now()+Math.max(30,Number(data.expires_in||3600))*1000;
+ const next={access_token:data.access_token,refresh_token:data.refresh_token||session()?.refresh_token||'',expires_at:expiresAt,user:data.user||session()?.user||null};
+ localStorage.setItem(SESSION_KEY,JSON.stringify(next));syncRuntime();return next
+}
+async function ensureSession(){
+ let s=session();if(!s?.access_token)return null;
+ if(Number(s.expires_at||0)-Date.now()>120000)return s;
+ if(!s.refresh_token){signOutLocal();return null}
+ try{const data=await request('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:{refresh_token:s.refresh_token}});return storeSession(data)}
+ catch(err){signOutLocal();throw err}
+}
+function syncRuntime(){
+ const s=session(),m=meta();runtime.connected=!!s?.access_token;runtime.cloudReady=runtime.connected;runtime.account=s?.user?.email||'';runtime.cloudLastSync=m.lastSync||'';runtime.revision=Number(m.revision||0);runtime.lastRemoteAt=m.lastRemoteAt||'';scheduleMount()
+}
+async function signIn(email,password){
+ runtime.cloudBusy=true;runtime.cloudAction='auth';runtime.cloudError='';scheduleMount();
+ try{const data=await request('/auth/v1/token?grant_type=password',{method:'POST',body:{email,password}});storeSession(data);await initializeAfterAuth();return data}
+ catch(err){runtime.cloudError=String(err.message||err);throw err}finally{runtime.cloudBusy=false;runtime.cloudAction='';scheduleMount()}
+}
+async function signUp(email,password){
+ runtime.cloudBusy=true;runtime.cloudAction='auth';runtime.cloudError='';scheduleMount();
+ try{const data=await request('/auth/v1/signup',{method:'POST',body:{email,password}});
+   if(data?.access_token){storeSession(data);await initializeAfterAuth()}
+   else notify(es()?'Cuenta creada':'Account created',es()?'Revisa tu correo para confirmar la cuenta y después inicia sesión.':'Check your email to confirm the account, then sign in.');
+   return data
+ }catch(err){runtime.cloudError=String(err.message||err);throw err}finally{runtime.cloudBusy=false;runtime.cloudAction='';scheduleMount()}
+}
+function signOutLocal(){localStorage.removeItem(SESSION_KEY);runtime.connected=false;runtime.cloudReady=false;runtime.account='';runtime.cloudLastSync='';runtime.revision=0;overview={devices:[],backups:[],currentDeviceId:deviceId(),currentDeviceName:deviceName()};scheduleMount()}
+async function signOut(){
+ const s=await ensureSession().catch(()=>null);try{if(s?.access_token)await request('/auth/v1/logout',{method:'POST',access:s.access_token})}catch(_){}signOutLocal()
+}
+async function remoteState(s){
+ const rows=await request('/rest/v1/ml_state?select=user_id,snapshot,revision,source_device_id,source_platform,app_version,updated_at&limit=1',{access:s.access_token});
+ return Array.isArray(rows)&&rows.length?rows[0]:null
+}
+async function touchDevice(s,action='connected'){
+ const user=s.user?.id;if(!user)return;
+ const row={user_id:user,device_id:deviceId(),platform:'windows',label:deviceName(),app_version:BUILD,last_action:action,last_seen_at:new Date().toISOString()};
+ await request('/rest/v1/ml_devices?on_conflict=user_id,device_id',{method:'POST',access:s.access_token,body:row,prefer:'resolution=merge-duplicates,return=minimal'})
+}
+async function writeHistory(s,row,reason){
+ if(!row?.snapshot||!s.user?.id)return;
+ const body={user_id:s.user.id,snapshot:row.snapshot,revision:Number(row.revision||1),source_device_id:String(row.source_device_id||''),source_platform:String(row.source_platform||'other'),app_version:String(row.app_version||''),reason:String(reason||'before_sync')};
+ await request('/rest/v1/ml_state_history',{method:'POST',access:s.access_token,body,prefer:'return=minimal'})
+}
+async function push(reason='manual'){
+ const s=await ensureSession();if(!s)throw new Error(es()?'Inicia sesión en Supabase.':'Sign in to Supabase.');
+ const raw=capture();if(!raw)throw new Error('Michel’s Life could not capture a sync snapshot.');
+ const snapshot=safeJson(raw,null);if(!snapshot)throw new Error('Snapshot is not valid JSON.');
+ const remote=await remoteState(s),nextRevision=Math.max(Number(remote?.revision||0),Number(meta().revision||0))+1;
+ if(remote?.snapshot)await writeHistory(s,remote,'before_'+reason);
+ const now=new Date().toISOString(),row={user_id:s.user.id,snapshot,revision:nextRevision,source_device_id:deviceId(),source_platform:'windows',app_version:BUILD,updated_at:now};
+ await request('/rest/v1/ml_state?on_conflict=user_id',{method:'POST',access:s.access_token,body:row,prefer:'resolution=merge-duplicates,return=representation'});
+ saveMeta({revision:nextRevision,lastSync:now,lastRemoteAt:now,lastLocalHash:raw.length});
+ runtime.cloudLastSync=now;runtime.revision=nextRevision;runtime.lastRemoteAt=now;await touchDevice(s,'upload');return row
+}
+function applySnapshot(snapshot){
+ if(!snapshot||typeof snapshot!=='object')throw new Error('Supabase snapshot is not restorable.');
+ const ls=snapshot.localStorage&&typeof snapshot.localStorage==='object'?snapshot.localStorage:null,incoming=snapshot.state&&typeof snapshot.state==='object'?snapshot.state:null;
+ if(!ls&&!incoming)throw new Error('Supabase snapshot has no Michel’s Life state.');
+ applying=true;
+ try{
+   const preserved={};[SESSION_KEY,META_KEY,DEVICE_KEY].forEach(k=>{const v=localStorage.getItem(k);if(v!=null)preserved[k]=v});
+   localStorage.clear();if(ls)for(const [k,v] of Object.entries(ls))localStorage.setItem(k,String(v));for(const [k,v] of Object.entries(preserved))localStorage.setItem(k,v);
+   if(incoming)localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(incoming));
+ }finally{applying=false}
+}
+async function pull({reload=true}={}){
+ const s=await ensureSession();if(!s)throw new Error(es()?'Inicia sesión en Supabase.':'Sign in to Supabase.');
+ const remote=await remoteState(s);if(!remote)return null;
+ applySnapshot(remote.snapshot);const now=new Date().toISOString();saveMeta({revision:Number(remote.revision||0),lastSync:now,lastRemoteAt:remote.updated_at||now});runtime.cloudLastSync=now;runtime.revision=Number(remote.revision||0);runtime.lastRemoteAt=remote.updated_at||now;await touchDevice(s,'download');if(reload)location.reload();return remote
+}
+async function sync(mode='auto',opts={}){
+ if(runtime.cloudBusy)return null;runtime.cloudBusy=true;runtime.cloudAction=mode;runtime.cloudError='';scheduleMount();
+ try{
+  const s=await ensureSession();if(!s){if(!opts.silent)notify(es()?'Supabase':'Supabase',es()?'Inicia sesión para sincronizar.':'Sign in to sync.');return null}
+  const remote=await remoteState(s),m=meta();
+  if(!remote){const out=await push('first_upload');if(!opts.silent)notify(es()?'Sincronizado':'Synced',es()?'Este equipo creó el estado maestro en Supabase.':'This PC created the master state in Supabase.');return out}
+  if(mode==='download')return await pull({reload:opts.reload!==false});
+  if(mode==='upload')return await push('manual_upload');
+  const remoteRev=Number(remote.revision||0),localRev=Number(m.revision||0);
+  if(remoteRev>localRev){if(!opts.silent)notify(es()?'Cambio remoto disponible':'Remote change available',es()?'Supabase tiene una revisión más nueva. Abre Sync Center para usarla.':'Supabase has a newer revision. Open Sync Center to use it.');runtime.cloudConflict={message:'Remote revision '+remoteRev+' is newer than local revision '+localRev,remoteRevision:remoteRev,localRevision:localRev};return remote}
+  runtime.cloudConflict=null;return await push('auto');
+ }catch(err){runtime.cloudError=String(err.message||err);if(!opts.silent)notify(es()?'Error de Supabase':'Supabase error',runtime.cloudError,'error');throw err}
+ finally{runtime.cloudBusy=false;runtime.cloudAction='';scheduleMount()}
+}
+function scheduleAutoSync(){
+ if(applying||!runtime.connected)return;clearTimeout(syncTimer);syncTimer=setTimeout(()=>sync('auto',{silent:true}).catch(()=>{}),2500)
+}
+async function refreshOverview(){
+ const s=await ensureSession().catch(()=>null);if(!s){overview={devices:[],backups:[],currentDeviceId:deviceId(),currentDeviceName:deviceName()};scheduleMount();return overview}
+ try{
+  const [devices,history]=await Promise.all([
+   request('/rest/v1/ml_devices?select=device_id,platform,label,app_version,last_action,last_seen_at&order=last_seen_at.desc&limit=12',{access:s.access_token}),
+   request('/rest/v1/ml_state_history?select=id,revision,source_device_id,source_platform,app_version,reason,created_at&order=created_at.desc&limit=10',{access:s.access_token})
+  ]);
+  overview={devices:(devices||[]).map(d=>({deviceId:d.device_id,deviceName:d.label||d.platform,lastSeenAt:d.last_seen_at,appVersion:d.app_version,lastAction:d.last_action,platform:d.platform})),backups:(history||[]).map(h=>({fileId:h.id,createdAt:h.created_at,reason:h.reason,appVersion:h.app_version,sourceDeviceId:h.source_device_id,revision:h.revision})),currentDeviceId:deviceId(),currentDeviceName:deviceName()};lastOverviewAt=Date.now();await touchDevice(s,'online')
+ }catch(err){runtime.cloudError=String(err.message||err)}
+ scheduleMount();return overview
+}
+function getOverview(){return overview}
+async function initializeAfterAuth(){
+ syncRuntime();await refreshOverview();const remote=await remoteState(await ensureSession());if(!remote)await push('first_upload');else{const m=meta();if(!m.revision)saveMeta({revision:Number(remote.revision||0),lastRemoteAt:remote.updated_at||''})}scheduleMount()
+}
+function copy(){return es()?{title:'Sync de Michel’s Life',desc:'Supabase es la nube principal para Desktop y Android.',account:'Cuenta',status:'Estado',revision:'Revisión',signed:'Conectado',offline:'Sin sesión',email:'Correo',password:'Contraseña',login:'Iniciar sesión',signup:'Crear cuenta',logout:'Cerrar sesión',sync:'Sincronizar ahora',upload:'Usar este PC',download:'Usar nube',devices:'Dispositivos',none:'Todavía no hay dispositivos sincronizados.',primary:'Supabase es la fuente de verdad. Google Drive queda temporalmente como respaldo de transición.'}:{title:'Michel’s Life Sync',desc:'Supabase is the primary cloud for Desktop and Android.',account:'Account',status:'Status',revision:'Revision',signed:'Connected',offline:'Signed out',email:'Email',password:'Password',login:'Sign in',signup:'Create account',logout:'Sign out',sync:'Sync now',upload:'Use this PC',download:'Use cloud',devices:'Devices',none:'No synced devices yet.',primary:'Supabase is the source of truth. Google Drive remains temporarily as a transition fallback.'}}
+function cardHtml(){
+ const c=copy(),s=session(),devices=overview.devices||[];
+ return '<section class="card mlv216-supa-card" data-mlv216-supabase-card><div class="section-title"><div><h2>'+esc(c.title)+'</h2><p>'+esc(c.desc)+'</p></div><span class="pill '+(runtime.connected?'good':'')+'">Supabase</span></div>'+
+ '<div class="mlv216-supa-grid"><div class="mlv216-supa-kpi"><small>'+esc(c.status)+'</small><b>'+esc(runtime.connected?c.signed:c.offline)+'</b></div><div class="mlv216-supa-kpi"><small>'+esc(c.account)+'</small><b>'+esc(runtime.account||'—')+'</b></div><div class="mlv216-supa-kpi"><small>'+esc(c.revision)+'</small><b>'+esc(String(runtime.revision||'—'))+'</b></div></div>'+
+ (runtime.connected?'<div class="mlv216-supa-actions"><button class="btn primary" data-mlv216-supa="sync" '+(runtime.cloudBusy?'disabled':'')+'>'+esc(c.sync)+'</button><button class="btn" data-mlv216-supa="upload" '+(runtime.cloudBusy?'disabled':'')+'>'+esc(c.upload)+'</button><button class="btn ghost" data-mlv216-supa="download" '+(runtime.cloudBusy?'disabled':'')+'>'+esc(c.download)+'</button><button class="btn ghost" data-mlv216-supa="logout">'+esc(c.logout)+'</button></div>':'<div class="mlv216-supa-auth"><label>'+esc(c.email)+'<input type="email" autocomplete="username" data-mlv216-supa-email></label><label>'+esc(c.password)+'<input type="password" autocomplete="current-password" data-mlv216-supa-password></label></div><div class="mlv216-supa-actions"><button class="btn primary" data-mlv216-supa="login">'+esc(c.login)+'</button><button class="btn ghost" data-mlv216-supa="signup">'+esc(c.signup)+'</button></div>')+
+ (runtime.cloudError?'<div class="mlv216-supa-note mlv216-supa-error">'+esc(runtime.cloudError)+'</div>':'')+
+ '<div class="mlv216-supa-note">'+esc(c.primary)+'</div><div class="section-title" style="margin-top:12px"><div><h3>'+esc(c.devices)+'</h3></div></div><div class="mlv216-supa-device-list">'+(devices.length?devices.map(d=>'<div class="mlv216-supa-device"><div><b>'+esc(d.deviceName||d.platform||'Device')+(d.deviceId===deviceId()?' · '+(es()?'Este equipo':'This PC'):'')+'</b><small>'+esc(d.platform||'')+' · v'+esc(d.appVersion||'—')+'</small></div><span class="pill">'+esc(d.lastAction||'synced')+'</span></div>').join(''):'<div class="mlv216-supa-note">'+esc(c.none)+'</div>')+'</div></section>'
+}
+function pane(){return document.querySelector('[data-v30171-pane="sync"]')}
+function mount(){
+ if(String(window.state?.activeTab||'')!=='settings')return;const p=pane();if(!p)return;const old=p.querySelector('[data-mlv216-supabase-card]'),tmp=document.createElement('template');tmp.innerHTML=cardHtml();const next=tmp.content.firstElementChild;if(old)old.replaceWith(next);else p.appendChild(next)
+}
+function scheduleMount(){clearTimeout(mountTimer);mountTimer=setTimeout(mount,30)}
+document.addEventListener('click',async e=>{
+ const b=e.target.closest?.('[data-mlv216-supa]');if(!b)return;e.preventDefault();e.stopPropagation();const a=b.dataset.mlv216Supa;
+ try{
+  if(a==='login'||a==='signup'){const root=b.closest('[data-mlv216-supabase-card]'),email=root?.querySelector('[data-mlv216-supa-email]')?.value.trim(),password=root?.querySelector('[data-mlv216-supa-password]')?.value||'';if(!email||password.length<6){notify('Supabase',es()?'Escribe correo y una contraseña de al menos 6 caracteres.':'Enter an email and a password with at least 6 characters.');return}await (a==='login'?signIn(email,password):signUp(email,password))}
+  else if(a==='logout')await signOut();else if(a==='sync')await sync('auto',{silent:false});else if(a==='upload')await sync('upload',{silent:false});else if(a==='download'){if(confirm(es()?'¿Usar la copia de Supabase en este equipo? Se conservará la sesión.':'Use the Supabase copy on this PC? Your session will be preserved.'))await sync('download',{silent:false})}
+ }catch(err){notify(es()?'Supabase':'Supabase',String(err.message||err),'error')}finally{scheduleMount()}
+},true);
+document.addEventListener('click',e=>{if(e.target.closest?.('[data-v30171-setting="sync"]')){setTimeout(()=>{mount();refreshOverview()},80)}},true);
+const oldSave=window.save;if(typeof oldSave==='function'&&!oldSave.__mlv216Supabase){const wrapped=function(){const out=oldSave.apply(this,arguments);scheduleAutoSync();return out};wrapped.__mlv216Supabase=true;window.save=wrapped;try{save=wrapped}catch(_){}}
+window.addEventListener('focus',()=>{if(runtime.connected){refreshOverview();if(Date.now()-Date.parse(runtime.cloudLastSync||0)>POLL_MS)sync('auto',{silent:true}).catch(()=>{})}});
+syncRuntime();
+ensureSession().then(s=>{if(s){refreshOverview();clearInterval(pollTimer);pollTimer=setInterval(()=>{refreshOverview();sync('auto',{silent:true}).catch(()=>{})},POLL_MS)}}).catch(err=>{runtime.cloudError=String(err.message||err);scheduleMount()});
+setTimeout(mount,500);
+window.SupabaseSyncV30216={version:BUILD,provider:'Supabase',runtime,signIn,signUp,signOut,sync,push,pull,capture,refreshOverview,getOverview,session,deviceId,applySnapshot};
+})();
+</script>
+
 <!-- v3.0.216: desktop command palette + sync center + progressive startup -->
 <style id="mlv-v30216-desktop-experience-style">
 #mlv216CommandPalette[hidden],#mlv216SyncCenter[hidden]{display:none!important}
@@ -30624,9 +30806,9 @@ const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLo
 const route=id=>{try{if(window.LeftNavV30171?.route)return window.LeftNavV30171.route(id);state.activeTab=id;save?.();renderAll?.();return true}catch(_){return false}};
 const settingsSection=key=>{route('settings');[40,120,300].forEach(ms=>setTimeout(()=>{try{window.LeftNavV30171?.buildSettings?.();window.LeftNavV30171?.activateSetting?.(key)}catch(_){}},ms))};
 const actionButton=name=>{const b=document.createElement('button');b.dataset.v30106Action=name;b.style.display='none';document.body.appendChild(b);b.click();b.remove()};
-const cloudApi=()=>window.GoogleCloudV30192||window.GoogleCloudV30191;
+const cloudApi=()=>window.SupabaseSyncV30216||window.GoogleCloudV30192||window.GoogleCloudV30191;
 const cloudRuntime=()=>cloudApi()?.runtime||{};
-const reliability=()=>window.MLV197Reliability;
+const reliability=()=>window.SupabaseSyncV30216||window.MLV197Reliability;
 function relative(v){if(!v)return isEs()?'Nunca':'Never';const d=new Date(v),ms=Date.now()-d.getTime();if(!Number.isFinite(ms))return String(v);const min=Math.max(0,Math.floor(ms/60000));if(min<1)return isEs()?'Ahora':'Now';if(min<60)return isEs()?'Hace '+min+' min':min+' min ago';const h=Math.floor(min/60);if(h<24)return isEs()?'Hace '+h+' h':h+' h ago';const days=Math.floor(h/24);return isEs()?'Hace '+days+' d':days+' d ago'}
 function currentMissionName(){try{const c=window.CurrentMissionV131?.getState?.();if(!c)return'';return (state.missions||[]).find(m=>String(m?.id)===String(c.id))?.name||''}catch(_){return''}}
 function copy(){return isEs()?{
@@ -30652,7 +30834,8 @@ function commandItems(query=''){
   ['tab:projects',es?'Proyectos':'Projects',es?'Abrir proyectos y decisiones.':'Open projects and decisions.','outcomes'],
   ['tab:weekly-review',es?'Revisión semanal':'Weekly Review',es?'Revisar progreso y salud del sistema.':'Review progress and system health.','review'],
   ['tab:maintenance',es?'Mantenimiento':'Maintenance',es?'Abrir herramientas de mantenimiento.':'Open maintenance tools.','health repair'],
-  ['settings:google',es?'Configuración · Google':'Settings · Google',es?'Abrir conexión y sincronización.':'Open connection and sync settings.','settings cloud'],
+  ['settings:sync',es?'Configuración · Sync':'Settings · Sync',es?'Abrir cuenta y sincronización de Supabase.':'Open Supabase account and sync settings.','settings cloud supabase'],
+  ['settings:google',es?'Configuración · Google':'Settings · Google',es?'Abrir Google Calendar y fallback de Drive.':'Open Google Calendar and Drive fallback.','calendar google'],
   ['settings:data',es?'Configuración · Datos y respaldos':'Settings · Data & backups',es?'Abrir respaldos y recuperación.':'Open backups and recovery.','backup timeline restore'],
   ['settings:themes',es?'Configuración · Temas':'Settings · Themes',es?'Cambiar apariencia visual.':'Change visual appearance.','appearance theme'],
   ['settings:about',es?'Configuración · Acerca de':'Settings · About',es?'Versión, diagnósticos y actualizaciones.':'Version, diagnostics, and updates.','about version']
@@ -30683,7 +30866,7 @@ function latestDevice(devices){return devices.slice().sort((a,b)=>Date.parse(b?.
 function ensureSync(){
  if(syncRoot&&document.body.contains(syncRoot))return syncRoot;
  syncRoot=document.createElement('div');syncRoot.id='mlv216SyncCenter';syncRoot.hidden=true;document.body.appendChild(syncRoot);
- syncRoot.addEventListener('click',async e=>{if(e.target===syncRoot||e.target.closest?.('[data-mlv216-sync-close]')){closeSync();return}if(e.target.closest?.('[data-mlv216-sync-now]')){await cloudApi()?.sync?.('auto',{silent:false});renderSync();setTimeout(()=>reliability()?.refreshOverview?.().then?.(renderSync),500)}if(e.target.closest?.('[data-mlv216-sync-settings]')){closeSync();settingsSection('google')}});
+ syncRoot.addEventListener('click',async e=>{if(e.target===syncRoot||e.target.closest?.('[data-mlv216-sync-close]')){closeSync();return}if(e.target.closest?.('[data-mlv216-sync-now]')){await cloudApi()?.sync?.('auto',{silent:false});renderSync();setTimeout(()=>reliability()?.refreshOverview?.().then?.(renderSync),500)}if(e.target.closest?.('[data-mlv216-sync-settings]')){closeSync();settingsSection(window.SupabaseSyncV30216?'sync':'google')}});
  return syncRoot
 }
 function renderSync(){
