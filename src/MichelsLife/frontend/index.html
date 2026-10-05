@@ -30772,7 +30772,7 @@ let syncPaneObserverTimer=0;
 const syncPaneObserver=new MutationObserver(()=>{
  clearTimeout(syncPaneObserverTimer);
  syncPaneObserverTimer=setTimeout(()=>{
-  if(String(window.state?.activeTab||'')!=='settings')return;
+  if(String(state?.activeTab||'')!=='settings')return;
   const p=pane();if(!p?.classList.contains('active'))return;
   if(!p.querySelector('[data-mlv216-supabase-card]'))mount();
  },35);
