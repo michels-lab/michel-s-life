@@ -155,9 +155,18 @@
     }
 
     try{
-      if(typeof window.renderMain==='function')window.renderMain();
-      else if(typeof renderMain==='function')renderMain();
-      else throw new Error('renderMain unavailable');
+      if(id==='settings'){
+        const main=q('#main');
+        const renderSettingsFn=typeof window.renderSettings==='function'?window.renderSettings:(typeof renderSettings==='function'?renderSettings:null);
+        if(!main||!renderSettingsFn)throw new Error('Settings renderer unavailable');
+        main.innerHTML='<section class="tab active" id="tab-settings">'+String(renderSettingsFn()||'')+'</section>';
+      }else if(typeof window.renderMain==='function'){
+        window.renderMain();
+      }else if(typeof renderMain==='function'){
+        renderMain();
+      }else{
+        throw new Error('renderMain unavailable');
+      }
       try{window.LeftNavV30171?.renderNav?.()}catch(_){}
     }catch(error){
       console.warn('Michel\'s Life Android active-surface render',error);
@@ -167,9 +176,8 @@
 
     requestAnimationFrame(()=>{
       if(id==='settings'){
-        // One Android Settings build pass only; avoid the desktop renderAll/rebuild cascade.
-        try{window.ModernNavV30168?.repairSettings?.()}catch(_){}
-        try{window.LeftNavV30171?.buildSettings?.()}catch(_){}
+        // Build the canonical Settings categories once from the already-rendered Settings surface.
+        try{window.LeftNavV30171?.buildSettings?.()}catch(error){console.warn('Michel\'s Life Android Settings shell',error);}
       }else{
         try{window.PlanningFocusV30106?.enhanceAll?.()}catch(_){}
       }
