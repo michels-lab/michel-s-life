@@ -30,7 +30,7 @@ for stale in ('3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207','3.0.2
     assert stale not in program, f'stale host version remains: {stale}'
 for marker in ('ComputeEmbeddedBundleFingerprint','SHA256.Create()','string.Equals(marker, bundleFingerprint','File.WriteAllText(markerPath, bundleFingerprint)'):
     assert marker in program, f'missing runtime cache protection: {marker}'
-assert 'DesktopShell.Attach(this, _webView);' in program, 'desktop shell is not attached to the Windows host'
+assert 'MichelsLife.DesktopShell.Attach(this, _webView);' in program, 'desktop shell is not attached to the Windows host'
 desktop_shell=read(DESKTOP_SHELL)
 for marker in ('NotifyIcon','RegisterHotKey','CloseReason.UserClosing','MLV216QuickCapture','Quick Capture','Exit'):
     assert marker in desktop_shell, f'missing desktop shell behavior: {marker}'
