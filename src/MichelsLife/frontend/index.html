@@ -30502,5 +30502,93 @@ body.ml-theme-ui button.mlv303-font-card[aria-pressed="true"] .mlv303-font-state
 </style>
 
 <script src="i18n.js" data-mlv-i18n="v1"></script>
+
+<!-- v3.0.216: desktop Quick Capture -->
+<style id="mlv-v30216-quick-capture-style">
+[data-mlv216-qc][hidden]{display:none!important}
+[data-mlv216-qc]{position:fixed;inset:0;z-index:2147482000;display:grid;place-items:start center;padding-top:min(16vh,150px);background:rgba(4,7,12,.62);backdrop-filter:blur(8px)}
+.mlv216-qc-card{width:min(620px,calc(100vw - 32px));border:1px solid rgba(255,255,255,.12);border-radius:18px;background:color-mix(in srgb,var(--panel,#141821) 94%,transparent);box-shadow:0 24px 80px rgba(0,0,0,.42);padding:16px}
+.mlv216-qc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.mlv216-qc-head h2{margin:0;font-size:16px}.mlv216-qc-head p{margin:4px 0 0;color:var(--muted);font-size:10px}
+.mlv216-qc-close{border:0;background:transparent;color:var(--muted);font-size:20px;line-height:1;cursor:pointer;padding:2px 6px}
+.mlv216-qc-input{width:100%;box-sizing:border-box;border:1px solid rgba(255,255,255,.11);border-radius:13px;background:rgba(0,0,0,.16);color:var(--text);padding:13px 14px;font:inherit;font-size:14px;outline:none}
+.mlv216-qc-input:focus{border-color:color-mix(in srgb,var(--accent,#8aa7ff) 70%,white 10%);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent,#8aa7ff) 18%,transparent)}
+.mlv216-qc-options{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px;margin-top:10px}
+.mlv216-qc-options select{width:100%;border:1px solid rgba(255,255,255,.09);border-radius:11px;background:rgba(0,0,0,.14);color:var(--text);padding:9px 10px;font:inherit}
+.mlv216-qc-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:13px}
+.mlv216-qc-hint{font-size:9px;color:var(--muted)}.mlv216-qc-buttons{display:flex;gap:8px}
+@media(max-width:620px){[data-mlv216-qc]{padding-top:70px}.mlv216-qc-options{grid-template-columns:1fr}.mlv216-qc-actions{align-items:flex-end;flex-direction:column}.mlv216-qc-buttons{width:100%}.mlv216-qc-buttons .btn{flex:1}}
+</style>
+<script id="mlv-v30216-quick-capture-script">
+(function(){
+'use strict';
+if(window.MLV216QuickCapture)return;
+let root=null;
+const isEs=()=>window.MichelsLifeI18n?.language==='es';
+const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const copy=()=>isEs()?{
+ title:'Captura rápida',help:'Guarda una idea sin abandonar lo que estás haciendo.',placeholder:'¿Qué quieres capturar?',mission:'Misión',journal:'Diario',type:'Tipo',category:'Categoría',save:'Guardar',cancel:'Cancelar',hint:'Ctrl + Shift + Espacio',savedMission:'Misión capturada',savedJournal:'Nota guardada en el diario',empty:'Escribe algo primero.',
+ cats:{physical:'Físico',mental:'Mental',order:'Orden',career:'Carrera',academic:'Académico',finance:'Finanzas',autonomy:'Autonomía',culture:'Cultura',selflove:'Autocuidado'}
+}:{
+ title:'Quick Capture',help:'Save an idea without leaving what you are doing.',placeholder:'What do you want to capture?',mission:'Mission',journal:'Journal',type:'Type',category:'Category',save:'Save',cancel:'Cancel',hint:'Ctrl + Shift + Space',savedMission:'Mission captured',savedJournal:'Journal note saved',empty:'Write something first.',
+ cats:{physical:'Physical',mental:'Mental',order:'Order',career:'Career',academic:'Academic',finance:'Finance',autonomy:'Autonomy',culture:'Culture',selflove:'Self care'}
+};
+function notify(title,message=''){try{return window.MLV197Reliability?.notification?.(title,message)||window.toast?.(title,message)}catch(_){}}
+function todayKey(){const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())}
+function ensure(){
+ if(root&&document.body.contains(root))return root;
+ root=document.createElement('div');root.dataset.mlv216Qc='1';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-modal','true');
+ root.addEventListener('click',e=>{
+   if(e.target===root||e.target.closest?.('[data-mlv216-qc-close]')){close();return}
+   if(e.target.closest?.('[data-mlv216-qc-save]'))saveCapture();
+ });
+ root.addEventListener('change',e=>{if(e.target?.dataset?.mlv216QcType)renderOptions()});
+ root.addEventListener('keydown',e=>{
+   if(e.key==='Escape'){e.preventDefault();close();return}
+   if(e.key==='Enter'&&!e.shiftKey&&e.target?.matches?.('[data-mlv216-qc-input]')){e.preventDefault();saveCapture()}
+ });
+ document.body.appendChild(root);render();
+ return root;
+}
+function render(){
+ if(!root)return;const c=copy(),prevType=root.querySelector('[data-mlv216-qc-type]')?.value||'mission',prevCat=root.querySelector('[data-mlv216-qc-category]')?.value||'order',prevText=root.querySelector('[data-mlv216-qc-input]')?.value||'';
+ root.innerHTML=`<div class="mlv216-qc-card"><div class="mlv216-qc-head"><div><h2>${esc(c.title)}</h2><p>${esc(c.help)}</p></div><button class="mlv216-qc-close" type="button" data-mlv216-qc-close aria-label="${esc(c.cancel)}">×</button></div><input class="mlv216-qc-input" data-mlv216-qc-input autocomplete="off" placeholder="${esc(c.placeholder)}" value="${esc(prevText)}"><div class="mlv216-qc-options"><label><small>${esc(c.type)}</small><select data-mlv216-qc-type><option value="mission" ${prevType==='mission'?'selected':''}>${esc(c.mission)}</option><option value="journal" ${prevType==='journal'?'selected':''}>${esc(c.journal)}</option></select></label><label data-mlv216-qc-category-wrap><small>${esc(c.category)}</small><select data-mlv216-qc-category>${Object.entries(c.cats).map(([k,v])=>`<option value="${esc(k)}" ${prevCat===k?'selected':''}>${esc(v)}</option>`).join('')}</select></label></div><div class="mlv216-qc-actions"><span class="mlv216-qc-hint">${esc(c.hint)}</span><div class="mlv216-qc-buttons"><button class="btn ghost" type="button" data-mlv216-qc-close>${esc(c.cancel)}</button><button class="btn primary" type="button" data-mlv216-qc-save>${esc(c.save)}</button></div></div></div>`;
+ renderOptions();
+}
+function renderOptions(){if(!root)return;const type=root.querySelector('[data-mlv216-qc-type]')?.value||'mission',wrap=root.querySelector('[data-mlv216-qc-category-wrap]');if(wrap)wrap.hidden=type!=='mission'}
+function open(){
+ ensure();render();root.hidden=false;
+ requestAnimationFrame(()=>root.querySelector('[data-mlv216-qc-input]')?.focus());
+ return true;
+}
+function close(){if(root)root.hidden=true}
+function saveCapture(){
+ ensure();const c=copy(),input=root.querySelector('[data-mlv216-qc-input]'),text=String(input?.value||'').trim();
+ if(!text){notify(c.title,c.empty);input?.focus();return false}
+ const type=root.querySelector('[data-mlv216-qc-type]')?.value||'mission';
+ if(type==='journal'){
+   const api=window.JournalV30189||window.JournalV30188||window.JournalV30184;
+   if(!api?.save)throw new Error('Journal API unavailable');
+   const key=todayKey(),old=api.entry?.(key)||{title:'',body:''},stamp=new Date().toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'}),line='• '+stamp+' — '+text;
+   api.save(key,old.title||'',String(old.body||'').trim()?String(old.body).trimEnd()+'\n\n'+line:line);
+   notify(c.savedJournal,text);
+ }else{
+   if(typeof makeMission!=='function')throw new Error('Mission API unavailable');
+   if(!Array.isArray(state.missions))state.missions=[];
+   const category=root.querySelector('[data-mlv216-qc-category]')?.value||'order';
+   const mission=makeMission(text,category,'daily','medium',[new Date().getDay()],{description:isEs()?'Creada desde Captura rápida.':'Created from Quick Capture.'});
+   state.missions.push(mission);
+   try{save?.()}catch(_){}
+   try{renderAll?.()}catch(_){}
+   notify(c.savedMission,text);
+ }
+ input.value='';close();return true;
+}
+document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.shiftKey&&e.code==='Space'){e.preventDefault();e.stopPropagation();open()}},true);
+window.addEventListener('michelslife:languagechange',()=>{if(root&&!root.hidden)render()});
+window.MLV216QuickCapture={open,close,capture:saveCapture};
+})();
+</script>
+
 </body>
 </html>
