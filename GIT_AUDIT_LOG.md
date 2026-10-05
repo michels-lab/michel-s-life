@@ -434,3 +434,14 @@ Validation:
 - The earlier infrastructure audit conclusion that Google Drive should remain the cloud authority is superseded by the explicit product decision in this development cycle to migrate Michel's Life to Supabase.
 - Current authority: Supabase for Michel's Life state/account/device sync; Google Drive only as a temporary manual migration/recovery fallback; Google Calendar remains optional and independent.
 - Shared cloud/auth/security decisions from this migration must be promoted to the Michel's Lab standards repository without copying secret values.
+
+
+### 2026-10-05 — Android Supabase PR gate hardened
+- Added `pull_request` execution to the independent Android UI smoke workflow so Android/Supabase regressions are blocked before merge rather than only after reaching `main`.
+- Root cause found in first Android PR-gate attempt (#40): the smoke downloaded the latest public AppBundle and injected only the Android bridge, so the new Supabase smoke could have exercised stale public-release frontend code.
+- Corrected the Android UI smoke to overlay the current branch's canonical `index.html`, `i18n.js` and branding before preparing browser assets.
+- The first corrected attempt exposed a second pipeline mismatch: Android workflows skipped `tools/bump_frontend_version.py`, causing canonical validation to reject the source version before packaging.
+- Corrected both `.github/workflows/android-ui-smoke.yml` and `.github/workflows/android-build.yml` so their canonical frontend sequence matches Desktop: version bump → i18n enablement → canonical validation → bundle overlay/injection → Android asset preparation.
+- Source validation #734: **SUCCESS**, including Windows host compile, release-readiness, canonical frontend validation and Android Supabase contract validation.
+- Android UI smoke #42: **SUCCESS**, including canonical frontend overlay, Android mobile UX at 412×915 and Android Supabase sync contract.
+- UI smoke #620 is the final shared-regression run for this pipeline hardening and was still running when this entry was written.
