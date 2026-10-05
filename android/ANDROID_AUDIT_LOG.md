@@ -799,3 +799,18 @@ State:
 - **BACKEND VALIDATED** — RLS, authenticated grants, anonymous revoke and Security Advisor.
 - **PENDING NATIVE APK/AAB CI** — current branch cannot dispatch the manual Android workflow through the connected GitHub tool; the workflow is prepared to build the canonical Supabase frontend when run/merged.
 - **NEEDS DEVICE/EMULATOR RETEST** — sign in to the same Supabase account on Windows + Android, verify first-device choice, cross-device revision conflict behavior and explicit cloud restore.
+
+
+### 2026-10-05 — Android Supabase platform smoke added
+
+Change:
+- Added `tools/ui_supabase_android_sync_smoke.mjs`.
+- The test boots the shared canonical frontend with `window.__MICHELSLIFE_PLATFORM__='android'`.
+- It verifies the shared Supabase client reports `platform() === 'android'`, creates an `and_*` device id, writes the initial master snapshot with `source_platform='android'`, registers the device as Android, and contains no `sb_secret_` / `service_role` marker.
+- Added this Android-mode smoke to the main UI smoke workflow.
+- Added `android/tools/validate_sync_contract.py` to the pull-request Source validation workflow so the Android/Supabase contract is no longer only checked by the manual Android build workflow.
+
+State:
+- **IMPLEMENTED** — Android-specific Supabase smoke + PR CI contract check.
+- **PENDING CURRENT-HEAD CI** — GitHub had not yet surfaced new Source/UI runs for head `7af80e9427bc62740aeb11215decf6dda100b2e4` at the time of this log entry.
+- **PREVIOUS SHARED RUNTIME VALIDATION GREEN** — Source validation #721 and UI smoke #611 passed on the immediately preceding Supabase runtime head.
