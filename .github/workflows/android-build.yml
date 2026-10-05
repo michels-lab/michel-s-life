@@ -11,6 +11,13 @@ on:
       - 'android/build.gradle.kts'
       - 'android/settings.gradle.kts'
       - 'android/gradle.properties'
+      - 'src/MichelsLife/frontend/**'
+      - 'branding/michel_duarte_avatar.jpg'
+      - 'branding/michels_life_logo.webp'
+      - 'tools/enable_i18n.py'
+      - 'tools/validate_generated_index.py'
+      - 'tools/replace_bundle_index.py'
+      - 'tools/inject_bundle_asset.py'
       - '.github/workflows/android-build.yml'
 
 permissions:
@@ -18,7 +25,7 @@ permissions:
 
 env:
   RELEASES_REPO: realmichelduarte/michel-s-life-releases
-  ANDROID_VERSION: 0.2.1
+  ANDROID_VERSION: 0.2.2
   ANDROID_UPLOAD_KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
   ANDROID_UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
   ANDROID_UPLOAD_KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
@@ -58,9 +65,18 @@ jobs:
           mkdir -p android/build
           curl -L --fail --retry 3             "https://github.com/$RELEASES_REPO/releases/latest/download/AppBundle.zip"             -o android/build/AppBundle.zip
 
+      - name: Package canonical Michel's Life frontend
+        run: |
+          python tools/enable_i18n.py --index src/MichelsLife/frontend/index.html
+          python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
+          python tools/replace_bundle_index.py --bundle android/build/AppBundle.zip --index src/MichelsLife/frontend/index.html
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source src/MichelsLife/frontend/i18n.js --arcname i18n.js
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michel_duarte_avatar.jpg --arcname assets/michel_duarte_avatar.jpg
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_life_logo.webp --arcname assets/michels_life_logo.webp
+
       - name: Prepare Android web assets
         run: |
-          python android/tools/prepare_bundle.py             --bundle android/build/AppBundle.zip             --assets android/app/src/main/assets/app
+          python android/tools/prepare_bundle.py --bundle android/build/AppBundle.zip --assets android/app/src/main/assets/app
 
       - uses: gradle/actions/setup-gradle@v4
         with:
