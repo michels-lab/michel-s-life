@@ -30767,12 +30767,22 @@ document.addEventListener('click',async e=>{
  }catch(err){notify(es()?'Supabase':'Supabase',String(err.message||err),'error')}finally{scheduleMount()}
 },true);
 document.addEventListener('click',e=>{if(e.target.closest?.('[data-v30171-setting="sync"]')){setTimeout(()=>{mount();refreshOverview()},80)}},true);
+let syncPaneObserverTimer=0;
+const syncPaneObserver=new MutationObserver(()=>{
+ clearTimeout(syncPaneObserverTimer);
+ syncPaneObserverTimer=setTimeout(()=>{
+  if(String(window.state?.activeTab||'')!=='settings')return;
+  const p=pane();if(!p?.classList.contains('active'))return;
+  if(!p.querySelector('[data-mlv216-supabase-card]'))mount();
+ },35);
+});
+try{syncPaneObserver.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']})}catch(_){}
 const oldSave=window.save;if(typeof oldSave==='function'&&!oldSave.__mlv216Supabase){const wrapped=function(){const out=oldSave.apply(this,arguments);scheduleAutoSync();return out};wrapped.__mlv216Supabase=true;window.save=wrapped;try{save=wrapped}catch(_){}}
 window.addEventListener('focus',()=>{if(runtime.connected){refreshOverview();if(Date.now()-Date.parse(runtime.cloudLastSync||0)>POLL_MS)sync('auto',{silent:true}).catch(()=>{})}});
 syncRuntime();
 ensureSession().then(s=>{if(s){refreshOverview();clearInterval(pollTimer);pollTimer=setInterval(()=>{refreshOverview();sync('auto',{silent:true}).catch(()=>{})},POLL_MS)}}).catch(err=>{runtime.cloudError=String(err.message||err);scheduleMount()});
 setTimeout(mount,500);
-window.SupabaseSyncV30216={version:BUILD,provider:'Supabase',runtime,signIn,signUp,signOut,sync,push,pull,capture,refreshOverview,getOverview,session,deviceId,applySnapshot};
+window.SupabaseSyncV30216={version:BUILD,provider:'Supabase',runtime,signIn,signUp,signOut,sync,push,pull,capture,refreshOverview,getOverview,session,deviceId,applySnapshot,mount};
 })();
 </script>
 
