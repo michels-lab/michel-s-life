@@ -1,5 +1,54 @@
 # Michel's Life — Git Audit Log
 
+## 2026-10-05 — Desktop v3.0.216 pre-release: Quick Capture, tray and automatic update detection
+
+### Goal
+- Make the Windows app useful as a resident desktop application instead of requiring navigation back into Michel's Life for every capture.
+- Make Michel's Life discover new public desktop releases automatically while preserving explicit user approval for installation.
+- Keep the v3.0.211-approved visual presentation unchanged.
+
+### Automatic update architecture
+- Reused the existing `updateStatus` / `installOnlineUpdate` host bridge and the public `realmichelduarte/michel-s-life-releases` channel.
+- Removed the obsolete duplicate startup update request from the older finish-system layer.
+- Added automatic online checks after startup, every six hours while the app remains open, and on focus when the previous check is sufficiently old.
+- Added session-level duplicate suppression so the same available version does not repeatedly notify.
+- Automatic connectivity failures are silent; manual update checks still report errors.
+- No automatic installation was added. SHA-256 verification and the mandatory pre-update restore point remain authoritative.
+
+### Desktop shell and Quick Capture
+- Added `src/MichelsLife/DesktopShell.cs` as a separate native WinForms responsibility rather than expanding the already-large host class.
+- The materialized Windows host attaches the desktop shell after WebView2 initialization.
+- Added tray actions for Open Michel's Life, Quick Capture and Exit, plus resident close/minimize behavior.
+- Registered `Ctrl + Shift + Space` through the Windows hotkey API and routes it to the existing WebView2 document.
+- Added `window.MLV216QuickCapture` in the canonical frontend.
+- Quick Capture writes Missions through the existing `makeMission` / `state.missions` path and Journal notes through `JournalV30189`; no parallel data model was introduced.
+
+### Test findings and corrections
+- UI smoke #557 initially failed the Spanish source-copy audit because the new translation used the anglicism `app`. The wording was corrected to `aplicación de escritorio`; the audit was not weakened.
+- Early Quick Capture smoke runs #567–#569 exposed test-harness assumptions that top-level lexical bindings such as `state` and `makeMission` were properties of `window`. The test was corrected to inspect the actual lexical application state rather than changing product code to satisfy the test.
+- Automatic update detection had already passed UI smoke #558 before the desktop-shell work was layered on top.
+
+### Final validation
+- Branch: `desktop-v3.0.216`.
+- Draft PR: #10.
+- Final validated functional head before documentation: `9976f371193e77fbe7731037b532425374163857`.
+- Source validation #677 — **success**.
+  - Release-readiness smoke — success.
+  - Canonical frontend validation — success.
+  - Spanish source-copy audit — success.
+  - Generated bilingual corpus audit — success.
+  - Microsoft Store packaging smoke — success.
+  - Windows host compile with embedded icon and native `DesktopShell` — success.
+- UI smoke #570 — **success**.
+  - Automatic desktop update detection — success.
+  - Desktop Quick Capture — success.
+  - Existing Spanish/UI/Settings/Dashboard/animation regression suite — success.
+
+### Release state
+- No merge to `main` has been performed.
+- No v3.0.216 release has been published.
+- A real Windows test build is still required to exercise tray visibility, global hotkey registration and resident-window behavior interactively before public release.
+
 ## 2026-10-01 — Android v0.1.0 synchronized-client prototype
 
 ### Goal
