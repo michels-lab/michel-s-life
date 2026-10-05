@@ -6,6 +6,7 @@ const KEY='michelsLife.language.v1';
 const INSTALL_DEFAULT_KEY='michelsLife.language.installDefault.v1';
 const USER_OVERRIDE_BASE_KEY='michelsLife.language.userOverrideBase.v1';
 const PAIRS={
+  "Michel’s Life checks the public release channel automatically when the desktop app starts and every six hours while it stays open. Updates are never installed without your approval. Online builds must include a matching SHA-256 checksum, and a restore point is created before replacement.":"Michel’s Life revisa automáticamente el canal público de actualizaciones al iniciar la app de escritorio y cada seis horas mientras permanece abierta. Las actualizaciones nunca se instalan sin tu aprobación. Las versiones en línea deben incluir una suma SHA-256 coincidente y se crea un punto de restauración antes del reemplazo.",
   "No item shop. This is a long-term badge system based on consistency and weekly goal completion.":"No hay tienda de objetos. Este es un sistema de insignias a largo plazo basado en la constancia y en completar metas semanales.",
   "Unlocked achievements only.":"Sólo logros desbloqueados.",
   "Achievements":"Logros",
