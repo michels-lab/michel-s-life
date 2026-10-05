@@ -8,14 +8,16 @@ The permanent Android development record is [`ANDROID_AUDIT_LOG.md`](ANDROID_AUD
 
 ## Architecture
 
-- The APK packages the current Michel's Life AppBundle inside a native Android WebView.
-- A small JavaScript compatibility layer exposes the same message shape used by the Windows WebView2 host.
-- Native Kotlin code implements Google Drive app-data sync against the same cloud contract as Windows:
-  - scope: `https://www.googleapis.com/auth/drive.appdata`
-  - master file: `michels_life_cloud_state.json`
-  - history: `michels_life_backup_*`
-  - devices: `michels_life_device_*`
-  - SHA-256 conflict tracking and the same 3-second tie window.
+- The APK packages the current Michel's Life canonical frontend inside a native Android WebView.
+- **Supabase is the primary cross-platform sync backend** shared with Windows:
+  - authenticated per-user master snapshot in `ml_state`
+  - revisioned safety history in `ml_state_history`
+  - device presence/activity in `ml_devices`
+  - Row Level Security restricts every row to `auth.uid()`
+  - anonymous table access is explicitly revoked
+- The shared frontend detects `window.__MICHELSLIFE_PLATFORM__='android'` and registers Android device/source metadata without maintaining a second sync engine.
+- Native Google Drive code remains temporarily as a manual migration/recovery fallback; its automatic sync is suppressed whenever a Supabase session is active.
+- Google Calendar remains an optional Google integration and is independent from Supabase data sync.
 
 ## Google authorization requirement
 
@@ -45,8 +47,8 @@ The Play Store track uses an Android App Bundle (AAB).
 
 Current Play identity:
 - package: `com.michelslab.michelslife`
-- versionCode: `3`
-- versionName: `0.2.1`
+- versionCode: `4`
+- versionName: `0.2.2`
 - targetSdk: `36`
 
 The Gradle release build supports an upload keystore through environment variables:
