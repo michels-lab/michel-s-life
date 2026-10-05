@@ -11,7 +11,7 @@ required_bridge = [
     "mlv-android-drawer-backdrop",
     "mlv-android-prev-section",
     "mlv-android-next-section",
-    "function suppressAndroidOnboarding()",
+    "function stabilizeAndroidOnboarding()",
     "michelsLife.onboarding.v30200",
     "function fastRoute(id)",
     "window.__mlvAndroidFastRoute=fastRoute",
@@ -25,17 +25,15 @@ required_bridge = [
     ".v132-check",
     ".v132-mission-actions{grid-column:2",
     ".topbar{display:none",
-    "#mlv200Onboarding{display:none",
     "#mlv200Onboarding .mlv200-focus input[type=\"checkbox\"]",
     "width:22px!important",
     "#v30175ActionDock{left:auto",
-    "#v30106QuickFab{left:auto",
     "#v30162FocusDock{left:auto",
+    "body[data-mlv-android-tab=\"journal\"] #v30175ActionDock",
+    "body[data-mlv-android-tab=\"settings\"] #v30175ActionDock",
     "#v176StatusPanel{position:relative",
     "#v176StatusPanel .v176-card:first-child",
     "setInterval(maintenance,1000)",
-    "body[data-mlv-android-tab=\"journal\"] #v30175ActionDock",
-    "#mlv200Onboarding .mlv200-focus input[type=\"checkbox\"]",
     "data-mlv-platform",
 ]
 missing = [needle for needle in required_bridge if needle not in bridge]
@@ -44,7 +42,7 @@ if missing:
 
 native_required = [
     "setLayerType(View.LAYER_TYPE_HARDWARE",
-    "setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_BOUND",
+    "setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_IMPORTANT",
     "offscreenPreRaster = true",
 ]
 missing_native = [needle for needle in native_required if needle not in main]
@@ -54,4 +52,4 @@ if missing_native:
 if "__mlvAndroidHandleBack" not in main:
     raise SystemExit("MainActivity does not delegate Android back handling to the web UI")
 
-print("OK: Android mobile UX contract contains fast navigation, fixed-size checklist controls, onboarding suppression, safe floating actions, hardware rendering, final drawer target, swipe navigation, mission alignment and back handling")
+print("OK: Android v0.2.1 mobile UX contract contains fast navigation, compact onboarding controls, safe floating actions, hardware rendering, drawer/swipe navigation, mission alignment and back handling")
