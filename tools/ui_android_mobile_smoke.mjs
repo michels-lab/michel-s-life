@@ -48,7 +48,7 @@ try{
 
   await page.waitForTimeout(700);
 
-  const freshOnboarding=await page.evaluate(()=>{
+  const existingOnboardingProbe=await page.evaluate(()=>{
     const rect=el=>{const r=el?.getBoundingClientRect();return r?{left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:r.width,height:r.height}:null};
     const root=document.getElementById('mlv200Onboarding');
     const first=root?.querySelector('.mlv200-focus input[type="checkbox"]');
@@ -59,9 +59,9 @@ try{
       grid:root?.querySelector('.mlv200-focus-grid')?getComputedStyle(root.querySelector('.mlv200-focus-grid')).gridTemplateColumns:''
     };
   });
-  if(freshOnboarding.visible){
-    ok(freshOnboarding.card&&freshOnboarding.card.width<=412,'Fresh Android onboarding card overflows phone viewport: '+JSON.stringify(freshOnboarding));
-    ok(freshOnboarding.checkbox&&freshOnboarding.checkbox.width<=24&&freshOnboarding.checkbox.height<=24,'Fresh Android onboarding checkbox is stretched: '+JSON.stringify(freshOnboarding));
+  if(existingOnboardingProbe.visible){
+    ok(existingOnboardingProbe.card&&existingOnboardingProbe.card.width<=412,'Fresh Android onboarding card overflows phone viewport: '+JSON.stringify(existingOnboardingProbe));
+    ok(existingOnboardingProbe.checkbox&&existingOnboardingProbe.checkbox.width<=24&&existingOnboardingProbe.checkbox.height<=24,'Fresh Android onboarding checkbox is stretched: '+JSON.stringify(existingOnboardingProbe));
   }
 
   // Reproduce the user's real case: an existing Michel's Life profile whose local onboarding flag is stale/missing.
@@ -316,8 +316,8 @@ try{
     const ir=input?.getBoundingClientRect(),rr=row?.getBoundingClientRect();
     return {checkbox:ir?{width:ir.width,height:ir.height}:null,row:rr?{width:rr.width,height:rr.height}:null};
   });
-  ok(freshOnboarding.checkbox&&freshOnboarding.checkbox.width<=24&&freshOnboarding.checkbox.height<=24,'Fresh-install onboarding checkbox is oversized: '+JSON.stringify(freshOnboarding));
-  ok(freshOnboarding.row&&freshOnboarding.row.height<=64,'Fresh-install onboarding row is too tall: '+JSON.stringify(freshOnboarding));
+  ok(existingOnboardingProbe.checkbox&&existingOnboardingProbe.checkbox.width<=24&&existingOnboardingProbe.checkbox.height<=24,'Fresh-install onboarding checkbox is oversized: '+JSON.stringify(existingOnboardingProbe));
+  ok(freshOnboarding.row&&freshOnboarding.row.height<=64,'Fresh-install onboarding row is too tall: '+JSON.stringify(existingOnboardingProbe));
   await freshContext.close();
 
   await mkdir(dirname(screenshot),{recursive:true});
@@ -325,6 +325,7 @@ try{
   console.log(JSON.stringify({
     ok:true,
     viewport:{width:412,height:915},
+    existingOnboardingProbe,
     freshOnboarding,
     initial,
     drawerOpen,
@@ -332,7 +333,6 @@ try{
     settingsSwitch,
     settingsAndroidState,
     actionDockState,
-    freshOnboarding,
     arrowSwitch,
     swipeState,
     animation:{beforeFrame,afterFrame}
