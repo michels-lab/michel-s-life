@@ -10,6 +10,7 @@ subprocess.run([sys.executable,str(ROOT/'tools/materialize_host_source.py')],che
 PROGRAM=ROOT/'src/MichelsLife/Program.cs'
 GOOGLE=ROOT/'src/MichelsLife/GoogleCalendarService.cs'
 SECRETS=ROOT/'src/MichelsLife/BuildSecrets.cs'
+DESKTOP_SHELL=ROOT/'src/MichelsLife/DesktopShell.cs'
 FRONTEND=ROOT/'src/MichelsLife/frontend/index.html'
 LOGO=ROOT/'branding/michels_life_logo.webp'
 AVATAR=ROOT/'branding/michel_duarte_avatar.jpg'
@@ -20,7 +21,7 @@ WORKFLOWS=[
     ROOT/'.github/workflows/release-windows.yml',
     ROOT/'.github/workflows/build-store-msix.yml',
 ]
-for p in (PROGRAM,GOOGLE,SECRETS,FRONTEND,LOGO,AVATAR,PROFILE,LICENSE,*WORKFLOWS):
+for p in (PROGRAM,GOOGLE,SECRETS,DESKTOP_SHELL,FRONTEND,LOGO,AVATAR,PROFILE,LICENSE,*WORKFLOWS):
     assert p.exists(),f'missing {p}'
 
 program=read(PROGRAM)
@@ -29,6 +30,10 @@ for stale in ('3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207','3.0.2
     assert stale not in program, f'stale host version remains: {stale}'
 for marker in ('ComputeEmbeddedBundleFingerprint','SHA256.Create()','string.Equals(marker, bundleFingerprint','File.WriteAllText(markerPath, bundleFingerprint)'):
     assert marker in program, f'missing runtime cache protection: {marker}'
+assert 'DesktopShell.Attach(this, _webView);' in program, 'desktop shell is not attached to the Windows host'
+desktop_shell=read(DESKTOP_SHELL)
+for marker in ('NotifyIcon','RegisterHotKey','CloseReason.UserClosing','MLV216QuickCapture','Quick Capture','Exit'):
+    assert marker in desktop_shell, f'missing desktop shell behavior: {marker}'
 assert '__BUILD_SECRET_GOOGLE__' in read(SECRETS)
 assert 'NormalizeGoogleClientSecret' in read(SECRETS)
 assert 'JsonDocument.Parse' in read(SECRETS)
@@ -58,6 +63,9 @@ for marker in (
     "michelsLife.typography.v303",
     "<script data-mlv-language-guard=\"v1\">",
     "<script src=\"i18n.js\" data-mlv-i18n=\"v1\"></script>",
+    "MLV216QuickCapture",
+    "automaticUpdateCheck",
+    "AUTO_UPDATE_INTERVAL_MS=6*60*60*1000",
 ):
     assert marker in frontend, f'missing canonical frontend source: {marker}'
 for forbidden in ('data:image/png;base64,','data:image/jpeg;base64,',"artist:'Taylor Swift'","artist:'Lana Del Rey'","data-mlv-font-artist="):
@@ -75,4 +83,4 @@ security='\n'.join(read(p) for p in (PROGRAM,GOOGLE,SECRETS,FRONTEND,PROFILE,LIC
 for forbidden in ('GOCSPX-','github_pat_','ghp_','client_secret_794181'):
     assert forbidden.lower() not in security.lower(), f'committed secret-like value: {forbidden}'
 
-print('OK: v3.0.215 host + bilingual canonical frontend + branding + clean build pipeline')
+print('OK: v3.0.215 host + desktop shell + Quick Capture + automatic updates + bilingual canonical frontend + branding + clean build pipeline')
