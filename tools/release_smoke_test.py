@@ -32,7 +32,7 @@ for marker in ('ComputeEmbeddedBundleFingerprint','SHA256.Create()','string.Equa
     assert marker in program, f'missing runtime cache protection: {marker}'
 assert 'MichelsLife.DesktopShell.Attach(this, _webView);' in program, 'desktop shell is not attached to the Windows host'
 desktop_shell=read(DESKTOP_SHELL)
-for marker in ('NotifyIcon','RegisterHotKey','CloseReason.UserClosing','MLV216QuickCapture','Quick Capture','Current Mission','Sync Now','GoogleCloudV30192','Start with Windows','StartupRegistryPath','already in use by Windows or another app','RefreshTrayLanguageAsync','Captura rápida','Misión actual','Sincronizar ahora','Iniciar con Windows','Salir','Exit'):
+for marker in ('NotifyIcon','RegisterHotKey','CloseReason.UserClosing','MLV216QuickCapture','Quick Capture','Current Mission','Sync Now','GoogleCloudV30192','Start with Windows','StartupRegistryPath','already in use by Windows or another app','RefreshTrayLanguageAsync','Captura rápida','Misión actual','Sincronizar ahora','Iniciar con Windows','TaskbarProgress','ITaskbarList3','SetProgressState','RefreshTaskbarMissionAsync','Salir','Exit'):
     assert marker in desktop_shell, f'missing desktop shell behavior: {marker}'
 assert '__BUILD_SECRET_GOOGLE__' in read(SECRETS)
 assert 'NormalizeGoogleClientSecret' in read(SECRETS)
@@ -66,6 +66,10 @@ for marker in (
     "MLV216QuickCapture",
     "automaticUpdateCheck",
     "AUTO_UPDATE_INTERVAL_MS=6*60*60*1000",
+    "MLV216CommandPalette",
+    "MLV216SyncCenter",
+    "MLV216DesktopExperience",
+    "requestIdleCallback",
 ):
     assert marker in frontend, f'missing canonical frontend source: {marker}'
 for forbidden in ('data:image/png;base64,','data:image/jpeg;base64,',"artist:'Taylor Swift'","artist:'Lana Del Rey'","data-mlv-font-artist="):
