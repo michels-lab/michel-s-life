@@ -156,7 +156,25 @@ try{
   if(missionGeometry.actions){
     ok(missionGeometry.actions.left>=missionGeometry.content.left-2,'Mission actions are falling into the checkbox column: '+JSON.stringify(missionGeometry));
   }
-  console.log('ANDROID_GEOMETRY '+JSON.stringify({initial,drawerOpen,missionGeometry}));
+
+  // Settings was the slowest Android transition because legacy code rebuilt it repeatedly.
+  await page.evaluate(()=>window.__mlvAndroidFastRoute?.('settings'));
+  await page.waitForFunction(
+    ()=>String(window.state?.activeTab||'')==='settings' && !!document.getElementById('tab-settings'),
+    null,{timeout:5000}
+  );
+  await page.waitForFunction(
+    ()=>window.__mlvAndroidLastSwitch?.tab==='settings',
+    null,{timeout:5000}
+  );
+  const settingsSwitch=await page.evaluate(()=>window.__mlvAndroidLastSwitch||null);
+  ok(settingsSwitch?.router==='android-fast-route','Settings did not use Android fast route: '+JSON.stringify(settingsSwitch));
+  ok(Number(settingsSwitch?.elapsedMs||99999)<1000,'Settings switch exceeded 1000 ms: '+JSON.stringify(settingsSwitch));
+
+  await page.evaluate(()=>window.__mlvAndroidFastRoute?.('dashboard'));
+  await page.waitForFunction(()=>String(window.state?.activeTab||'')==='dashboard',null,{timeout:5000});
+
+  console.log('ANDROID_GEOMETRY '+JSON.stringify({initial,drawerOpen,missionGeometry,settingsSwitch}));
 
   const cdp=await context.newCDPSession(page);
   async function touchSwipe(x1,y1,x2,y2){
@@ -220,6 +238,7 @@ try{
     initial,
     drawerOpen,
     missionGeometry,
+    settingsSwitch,
     arrowSwitch,
     swipeState,
     animation:{beforeFrame,afterFrame}
