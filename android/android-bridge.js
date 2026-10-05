@@ -155,27 +155,29 @@
     }
 
     try{
-      if(typeof window.renderAll==='function')window.renderAll();
-      else if(typeof renderAll==='function')renderAll();
-      else throw new Error('renderAll unavailable');
+      if(typeof window.renderMain==='function')window.renderMain();
+      else if(typeof renderMain==='function')renderMain();
+      else throw new Error('renderMain unavailable');
+      try{window.LeftNavV30171?.renderNav?.()}catch(_){}
     }catch(error){
-      console.warn('Michel\'s Life Android fast route render',error);
+      console.warn('Michel\'s Life Android active-surface render',error);
       document.documentElement.removeAttribute('data-mlv-android-switching');
       return false;
     }
 
     requestAnimationFrame(()=>{
-      try{window.LeftNavV30171?.renderNav?.()}catch(_){}
       if(id==='settings'){
-        // One repair/build pass only. Avoid the legacy 0/60/120/140/320/500/650/900 ms cascade.
+        // One Android Settings build pass only; avoid the desktop renderAll/rebuild cascade.
         try{window.ModernNavV30168?.repairSettings?.()}catch(_){}
         try{window.LeftNavV30171?.buildSettings?.()}catch(_){}
+      }else{
+        try{window.PlanningFocusV30106?.enhanceAll?.()}catch(_){}
       }
       enforceMobileFlowGeometry();
       updateTopbarTitle();
     });
     persistNavLater();
-    finishSectionSwitch(started,id,'android-fast-route');
+    finishSectionSwitch(started,id,'android-render-main');
     return true;
   }
   window.__mlvAndroidFastRoute=fastRoute;
@@ -282,37 +284,43 @@
       setImportantOnce(side,'z-index','2147482995');
       setImportantOnce(side,'background','rgba(var(--ui-panel-rgb,7,13,25),.985)');
       setImportantOnce(side,'transform',document.body.classList.contains('mlv-android-nav-open')?'translateX(0)':'translateX(-105%)');
-    }
 
-    const active=activeTabId();
-    const quietTab=active==='journal'||active==='settings';
+      let hint=q('#mlv-android-drawer-hint',side);
+      if(!hint){
+        hint=document.createElement('div');
+        hint.id='mlv-android-drawer-hint';
+        hint.textContent='Swipe ↔ or use ‹ › to change sections';
+        side.appendChild(hint);
+      }
 
-    const actionDock=q('#v30175ActionDock');
-    if(actionDock){
-      setImportantOnce(actionDock,'position','fixed');
-      setImportantOnce(actionDock,'left','auto');
-      setImportantOnce(actionDock,'right','12px');
-      setImportantOnce(actionDock,'bottom','calc(env(safe-area-inset-bottom,0px) + 76px)');
-      setImportantOnce(actionDock,'display',quietTab?'none':'flex');
-      setImportantOnce(actionDock,'flex-direction','row');
-      setImportantOnce(actionDock,'gap','8px');
-      setImportantOnce(actionDock,'z-index','2147482800');
-    }
-
-    const quickFab=q('#v30106QuickFab');
-    if(quickFab){
-      setImportantOnce(quickFab,'position','fixed');
-      setImportantOnce(quickFab,'left','auto');
-      setImportantOnce(quickFab,'right','12px');
-      setImportantOnce(quickFab,'bottom','calc(env(safe-area-inset-bottom,0px) + 76px)');
-      setImportantOnce(quickFab,'display',quietTab?'none':'grid');
-      setImportantOnce(quickFab,'z-index','2147482801');
+      const actionDock=q('#v30175ActionDock');
+      if(actionDock){
+        if(actionDock.parentElement!==side)side.appendChild(actionDock);
+        setImportantOnce(actionDock,'position','sticky');
+        setImportantOnce(actionDock,'left','auto');
+        setImportantOnce(actionDock,'right','auto');
+        setImportantOnce(actionDock,'bottom','0');
+        setImportantOnce(actionDock,'width','100%');
+        setImportantOnce(actionDock,'display','flex');
+        setImportantOnce(actionDock,'flex-direction','row');
+        setImportantOnce(actionDock,'justify-content','center');
+        setImportantOnce(actionDock,'gap','9px');
+        setImportantOnce(actionDock,'z-index','8');
+      }
     }
 
     const focusDock=q('#v30162FocusDock');
     if(focusDock){
-      setImportantOnce(focusDock,'display',quietTab?'none':'block');
-      if(side&&focusDock.parentElement!==side)side.appendChild(focusDock);
+      setImportantOnce(focusDock,'left','0');
+      setImportantOnce(focusDock,'right','auto');
+      setImportantOnce(focusDock,'bottom','0');
+      setImportantOnce(focusDock,'width','0');
+      setImportantOnce(focusDock,'height','0');
+      setImportantOnce(focusDock,'min-width','0');
+      setImportantOnce(focusDock,'min-height','0');
+      setImportantOnce(focusDock,'max-width','0');
+      setImportantOnce(focusDock,'max-height','0');
+      setImportantOnce(focusDock,'pointer-events','none');
     }
 
     const status=q('#v176StatusPanel');
@@ -462,22 +470,20 @@
         .v132-mission-actions{grid-column:2!important;display:flex!important;justify-content:flex-end!important;align-items:center!important;gap:6px!important;min-width:0!important;margin-top:6px!important}
         .v132-actions,.v131-actions,.quest-actions,article.v132-mission .actions,article.v137-mission .actions{display:flex!important;flex-wrap:wrap!important;gap:6px!important;min-width:0!important}
         .v132-actions button,.v131-actions button,.quest-actions button,article.v132-mission .actions button,article.v137-mission .actions button{min-height:38px!important;max-width:100%!important;white-space:normal!important}
-        #v30175ActionDock{left:auto!important;right:12px!important;bottom:max(12px,env(safe-area-inset-bottom,0px))!important;flex-direction:row!important;gap:8px!important;align-items:center!important}
-        #v30175ActionDock .v30175-action,#v30106QuickFab{width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;max-width:46px!important;max-height:46px!important;border-radius:14px!important}
-        #v30162FocusDock{left:auto!important;right:12px!important;bottom:calc(env(safe-area-inset-bottom,0px) + 68px)!important;width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;max-width:46px!important;max-height:46px!important}
-        #v30162FocusDock .v30173-focus-wrap,#v30162FocusDock .v30173-focus-trigger{width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;max-width:46px!important;max-height:46px!important}
-        body[data-mlv-android-tab="journal"] #v30175ActionDock,body[data-mlv-android-tab="settings"] #v30175ActionDock,body[data-mlv-android-tab="journal"] #v30106QuickFab,body[data-mlv-android-tab="settings"] #v30106QuickFab,body[data-mlv-android-tab="journal"] #v30162FocusDock,body[data-mlv-android-tab="settings"] #v30162FocusDock{display:none!important}
+        #mlv-android-drawer-hint{margin:8px 2px 5px;padding:7px 8px;border-top:1px solid rgba(255,255,255,.08);font-size:9px;line-height:1.25;text-align:center;color:var(--muted,#aeb9ce);opacity:.78}
+        #v30175ActionDock{position:sticky!important;left:auto!important;right:auto!important;bottom:0!important;width:100%!important;margin:0!important;padding:6px 2px 8px!important;display:flex!important;flex-direction:row!important;justify-content:center!important;gap:9px!important;align-items:center!important;background:linear-gradient(180deg,transparent,rgba(6,9,19,.98) 30%)!important;z-index:8!important;pointer-events:none!important;box-sizing:border-box!important}
+        #v30175ActionDock .v30175-action,#v30175ActionDock #v30106QuickFab{--v30175-action-size:44px!important;position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;max-width:44px!important;max-height:44px!important;border-radius:14px!important;pointer-events:auto!important}
+        #v30175ActionDock .v30175-icon{width:21px!important;height:21px!important}
+        #v30162FocusDock{left:0!important;right:auto!important;bottom:0!important;width:0!important;height:0!important;min-width:0!important;min-height:0!important;max-width:0!important;max-height:0!important;pointer-events:none!important}
+        #v30162FocusDock .v30173-focus-wrap,#v30162FocusDock .v30173-focus-trigger{width:0!important;height:0!important;min-width:0!important;min-height:0!important;max-width:0!important;max-height:0!important}
         /* Stable Android check controls: never inherit full-width desktop input sizing. */
         #mlv200Onboarding .mlv200-focus{display:grid!important;grid-template-columns:26px minmax(0,1fr)!important;align-items:center!important;gap:10px!important;min-height:52px!important;padding:9px 11px!important}
         #mlv200Onboarding .mlv200-focus input[type="checkbox"]{width:22px!important;height:22px!important;min-width:22px!important;min-height:22px!important;max-width:22px!important;max-height:22px!important;margin:0!important;padding:0!important;transform:none!important;flex:0 0 22px!important;accent-color:var(--accent)!important}
         #mlv200Onboarding .mlv200-focus span{min-width:0!important}
         #mlv200Onboarding .mlv200-focus b{font-size:13px!important;line-height:1.25!important;overflow-wrap:anywhere!important}
         #mlv200Onboarding .mlv200-option input[type="checkbox"],.day-chip input[type="checkbox"],.mlv185-opacity-toggle input[type="checkbox"]{width:20px!important;height:20px!important;min-width:20px!important;min-height:20px!important;max-width:20px!important;max-height:20px!important;flex:0 0 20px!important;margin:1px 0 0!important}
-        #main{padding-bottom:76px!important}
-        #v30175ActionDock{left:auto!important;right:12px!important;bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;flex-direction:row!important;gap:7px!important}
-        #v30175ActionDock .v30175-action,#v30175ActionDock #v30106QuickFab{--v30175-action-size:44px!important;width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;max-width:44px!important;max-height:44px!important;border-radius:14px!important}
-        #v30175ActionDock .v30175-icon{width:21px!important;height:21px!important}
-        #v30162FocusDock .v30173-focus-panel{left:10px!important;right:10px!important;bottom:64px!important;width:auto!important;max-height:calc(100vh - 150px)!important}
+        #main{padding-bottom:12px!important}
+        #v30162FocusDock .v30173-focus-panel{pointer-events:auto!important;left:10px!important;right:10px!important;bottom:10px!important;width:auto!important;max-height:calc(100vh - var(--mlv-android-topbar-h) - 30px)!important}
                 input,select,textarea,button{max-width:100%;box-sizing:border-box}
       }
       @media(min-width:${MOBILE_BREAKPOINT+1}px){body.mlv-android-nav-open{overflow:auto}}

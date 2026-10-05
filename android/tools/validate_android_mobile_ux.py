@@ -15,7 +15,7 @@ required_bridge = [
     "michelsLife.onboarding.v30200",
     "function fastRoute(id)",
     "window.__mlvAndroidFastRoute=fastRoute",
-    "android-fast-route",
+    "android-render-main",
     "function installFastNavCapture()",
     "installFastNavCapture();",
     "(document.body||document.head).appendChild(style)",
@@ -32,13 +32,13 @@ required_bridge = [
     "#mlv200Onboarding{padding:8px!important",
     "#mlv200Onboarding .mlv200-focus input[type=\"checkbox\"]",
     "width:22px!important",
-    "#v30175ActionDock{left:auto",
+    "#v30175ActionDock{position:sticky",
     "#v30106QuickFab",
     "#v30162FocusDock",
     "#v176StatusPanel{position:relative",
     "#v176StatusPanel .v176-card:first-child",
     "setInterval(maintenance,1000)",
-    "body[data-mlv-android-tab=\"journal\"] #v30175ActionDock",
+    "mlv-android-drawer-hint",
     "data-mlv-platform",
 ]
 missing = [needle for needle in required_bridge if needle not in bridge]
@@ -57,4 +57,4 @@ if missing_native:
 if "__mlvAndroidHandleBack" not in main:
     raise SystemExit("MainActivity does not delegate Android back handling to the web UI")
 
-print("OK: Android mobile UX contract contains fast drawer navigation, end-of-DOM Android cascade, stable onboarding/checklists, safe floating actions, hardware rendering, fixed drawer layering, swipe navigation, mission alignment and back handling")
+print("OK: Android mobile UX contract contains active-surface navigation, end-of-DOM Android cascade, stable onboarding/checklists, in-drawer quick actions, hardware rendering, fixed drawer layering, swipe navigation, mission alignment and back handling")

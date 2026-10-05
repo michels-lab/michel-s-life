@@ -624,3 +624,28 @@ Validation gates:
 - **IN PROGRESS** — Android UI smoke must pass with onboarding/profile, drawer, safe-area, explicit arrows, swipe and section-switch budget.
 - **IN PROGRESS** — native Android build must pass APK + AAB with the normalized launcher resource.
 - **NEEDS DEVICE/EMULATOR RETEST** — final feel and visual behavior on the user's phone and emulator.
+
+
+### 2026-10-05 — Android Action Dock removed from content + true active-surface navigation
+
+Follow-up to phone/emulator feedback:
+- The v0.2.1 Action Dock was smaller/safer but still a fixed overlay on Dashboard/Missions.
+- The initial Android “fast route” still called `renderAll()`, so it still paid much of the desktop rendering cost.
+
+Final structural correction:
+- `#v30175ActionDock` is now physically reparented into `#v30171Sidebar` and styled as a sticky drawer footer.
+- Focus/Quick controls therefore never float over Journal, Settings, or normal content.
+- Drawer includes the visible hint: **Swipe ↔ or use ‹ › to change sections**.
+- `#v30162FocusDock` launcher geometry is collapsed to zero on Android; its full Focus panel can still open when requested.
+- Android section routing now uses `renderMain()` plus permanent nav refresh instead of `renderAll()`.
+- Settings receives one explicit canonical Settings build pass on the next animation frame.
+- Deferred persistence is retained.
+
+Validation added:
+- Android UI smoke requires Action Dock parent `#v30171Sidebar`, computed `position: sticky`, and the navigation hint.
+- Smoke route label changed to `android-render-main`.
+
+State:
+- **IMPLEMENTED** — source/tests updated.
+- **PENDING CI** — native build + Android UI smoke.
+- **NEEDS PHONE/EMULATOR RETEST** — install the resulting v0.2.1 APK.

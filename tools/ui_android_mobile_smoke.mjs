@@ -203,7 +203,7 @@ try{
     null,{timeout:5000}
   );
   const settingsSwitch=await page.evaluate(()=>window.__mlvAndroidLastSwitch||null);
-  ok(settingsSwitch?.router==='android-fast-route','Settings did not use Android fast route: '+JSON.stringify(settingsSwitch));
+  ok(settingsSwitch?.router==='android-render-main','Settings did not use Android fast route: '+JSON.stringify(settingsSwitch));
   ok(Number(settingsSwitch?.elapsedMs||99999)<1000,'Settings switch exceeded 1000 ms: '+JSON.stringify(settingsSwitch));
   const settingsAndroidState=await page.evaluate(()=>({
     onboardingVisible:(()=>{const el=document.getElementById('mlv200Onboarding');return !!(el&&el.getClientRects().length&&getComputedStyle(el).display!=='none')})(),
@@ -215,6 +215,19 @@ try{
   ok(settingsAndroidState.actionDockDisplay==='none'||settingsAndroidState.actionDockDisplay==='missing','Action dock overlaps Settings: '+JSON.stringify(settingsAndroidState));
   ok(settingsAndroidState.quickDisplay==='none'||settingsAndroidState.quickDisplay==='missing','Quick FAB overlaps Settings: '+JSON.stringify(settingsAndroidState));
   ok(settingsAndroidState.focusDisplay==='none'||settingsAndroidState.focusDisplay==='missing','Focus FAB overlaps Settings: '+JSON.stringify(settingsAndroidState));
+
+  const actionDockState=await page.evaluate(()=>{
+    const dock=document.getElementById('v30175ActionDock');
+    return {
+      exists:!!dock,
+      parentId:dock?.parentElement?.id||'',
+      position:dock?getComputedStyle(dock).position:'',
+      hint:document.getElementById('mlv-android-drawer-hint')?.textContent||''
+    };
+  });
+  ok(actionDockState.exists&&actionDockState.parentId==='v30171Sidebar','Android Action Dock is not inside the drawer: '+JSON.stringify(actionDockState));
+  ok(actionDockState.position==='sticky','Android Action Dock still floats over content: '+JSON.stringify(actionDockState));
+  ok(/Swipe/.test(actionDockState.hint),'Android drawer does not explain swipe/arrow navigation: '+JSON.stringify(actionDockState));
 
   await page.evaluate(()=>window.__mlvAndroidFastRoute?.('dashboard'));
   await page.waitForFunction(()=>String(window.state?.activeTab||'')==='dashboard',null,{timeout:5000});
@@ -315,6 +328,7 @@ try{
     missionGeometry,
     settingsSwitch,
     settingsAndroidState,
+    actionDockState,
     freshOnboarding,
     arrowSwitch,
     swipeState,
