@@ -30694,7 +30694,7 @@ async function push(reason='manual'){
  if(remote?.snapshot)await writeHistory(s,remote,'before_'+reason);
  const now=new Date().toISOString(),row={user_id:s.user.id,snapshot,revision:nextRevision,source_device_id:deviceId(),source_platform:'windows',app_version:BUILD,updated_at:now};
  await request('/rest/v1/ml_state?on_conflict=user_id',{method:'POST',access:s.access_token,body:row,prefer:'resolution=merge-duplicates,return=representation'});
- saveMeta({revision:nextRevision,lastSync:now,lastRemoteAt:now,lastLocalHash:raw.length});
+ saveMeta({revision:nextRevision,lastSync:now,lastRemoteAt:now,lastLocalHash:raw.length,dirty:false});
  runtime.cloudLastSync=now;runtime.revision=nextRevision;runtime.lastRemoteAt=now;await touchDevice(s,'upload');return row
 }
 function applySnapshot(snapshot){
@@ -30711,7 +30711,7 @@ function applySnapshot(snapshot){
 async function pull({reload=true}={}){
  const s=await ensureSession();if(!s)throw new Error(es()?'Inicia sesión en Supabase.':'Sign in to Supabase.');
  const remote=await remoteState(s);if(!remote)return null;
- applySnapshot(remote.snapshot);const now=new Date().toISOString();saveMeta({revision:Number(remote.revision||0),lastSync:now,lastRemoteAt:remote.updated_at||now});runtime.cloudLastSync=now;runtime.revision=Number(remote.revision||0);runtime.lastRemoteAt=remote.updated_at||now;await touchDevice(s,'download');if(reload)location.reload();return remote
+ applySnapshot(remote.snapshot);const now=new Date().toISOString();saveMeta({revision:Number(remote.revision||0),lastSync:now,lastRemoteAt:remote.updated_at||now,dirty:false});runtime.cloudLastSync=now;runtime.revision=Number(remote.revision||0);runtime.lastRemoteAt=remote.updated_at||now;await touchDevice(s,'download');if(reload)location.reload();return remote
 }
 async function sync(mode='auto',opts={}){
  if(runtime.cloudBusy)return null;runtime.cloudBusy=true;runtime.cloudAction=mode;runtime.cloudError='';scheduleMount();
@@ -30723,12 +30723,12 @@ async function sync(mode='auto',opts={}){
   if(mode==='upload')return await push('manual_upload');
   const remoteRev=Number(remote.revision||0),localRev=Number(m.revision||0);
   if(remoteRev>localRev){if(!opts.silent)notify(es()?'Cambio remoto disponible':'Remote change available',es()?'Supabase tiene una revisión más nueva. Abre Sync Center para usarla.':'Supabase has a newer revision. Open Sync Center to use it.');runtime.cloudConflict={message:'Remote revision '+remoteRev+' is newer than local revision '+localRev,remoteRevision:remoteRev,localRevision:localRev};return remote}
-  runtime.cloudConflict=null;return await push('auto');
+  runtime.cloudConflict=null;if(m.dirty)return await push('auto');await touchDevice(s,'online');return remote;
  }catch(err){runtime.cloudError=String(err.message||err);if(!opts.silent)notify(es()?'Error de Supabase':'Supabase error',runtime.cloudError,'error');throw err}
  finally{runtime.cloudBusy=false;runtime.cloudAction='';scheduleMount()}
 }
 function scheduleAutoSync(){
- if(applying||!runtime.connected)return;clearTimeout(syncTimer);syncTimer=setTimeout(()=>sync('auto',{silent:true}).catch(()=>{}),2500)
+ if(applying||!runtime.connected)return;saveMeta({dirty:true});clearTimeout(syncTimer);syncTimer=setTimeout(()=>sync('auto',{silent:true}).catch(()=>{}),2500)
 }
 async function refreshOverview(){
  const s=await ensureSession().catch(()=>null);if(!s){overview={devices:[],backups:[],currentDeviceId:deviceId(),currentDeviceName:deviceName()};scheduleMount();return overview}
@@ -30743,7 +30743,7 @@ async function refreshOverview(){
 }
 function getOverview(){return overview}
 async function initializeAfterAuth(){
- syncRuntime();await refreshOverview();const remote=await remoteState(await ensureSession());if(!remote)await push('first_upload');else{const m=meta();if(!m.revision)saveMeta({revision:Number(remote.revision||0),lastRemoteAt:remote.updated_at||''})}scheduleMount()
+ syncRuntime();await refreshOverview();const remote=await remoteState(await ensureSession());if(!remote)await push('first_upload');else{const m=meta();if(!m.revision){runtime.cloudConflict={message:'Existing Supabase data requires an explicit first-device choice.',remoteRevision:Number(remote.revision||0),localRevision:0};runtime.lastRemoteAt=remote.updated_at||''}}scheduleMount()
 }
 function copy(){return es()?{title:'Sync de Michel’s Life',desc:'Supabase es la nube principal para Desktop y Android.',account:'Cuenta',status:'Estado',revision:'Revisión',signed:'Conectado',offline:'Sin sesión',email:'Correo',password:'Contraseña',login:'Iniciar sesión',signup:'Crear cuenta',logout:'Cerrar sesión',sync:'Sincronizar ahora',upload:'Usar este PC',download:'Usar nube',devices:'Dispositivos',none:'Todavía no hay dispositivos sincronizados.',primary:'Supabase es la fuente de verdad. Google Drive queda temporalmente como respaldo de transición.'}:{title:'Michel’s Life Sync',desc:'Supabase is the primary cloud for Desktop and Android.',account:'Account',status:'Status',revision:'Revision',signed:'Connected',offline:'Signed out',email:'Email',password:'Password',login:'Sign in',signup:'Create account',logout:'Sign out',sync:'Sync now',upload:'Use this PC',download:'Use cloud',devices:'Devices',none:'No synced devices yet.',primary:'Supabase is the source of truth. Google Drive remains temporarily as a transition fallback.'}}
 function cardHtml(){
