@@ -681,3 +681,55 @@ Automated validation added:
 State:
 - **IN PROGRESS** — Android UI smoke and native build are rerunning against these v0.2.1 fixes.
 - **NEEDS DEVICE/EMULATOR RETEST** — after CI is green, install the new APK on both the physical phone and PC emulator to confirm touch feel and perceived responsiveness.
+
+
+## 2026-10-05 — Android v0.2.1 stabilization + Google Play parallel submission track
+
+Version:
+- Android `0.2.1`
+- `versionCode = 3`
+- `compileSdk = 36`
+- `targetSdk = 36`
+- Package: `com.michelslab.michelslife`
+
+User-visible problems / requested changes:
+- Android navigation/settings transitions felt slow on both phone and emulator.
+- The onboarding/focus checklist rendered oversized controls on Android.
+- Quick/focus actions could overlap app content.
+- The Android launcher asset needed to remain the approved Michel's Life celestial logo.
+- User requested that Google Play publication work proceed in parallel and that the Android project log remain continuously maintained.
+
+Root causes / findings:
+- Android WebView needed a lighter observer/maintenance path and hardware-rendering priority.
+- The desktop onboarding stylesheet could override the Android checkbox dimensions after render. Automated focus-step measurement reproduced the issue at approximately `262.6 × 48.4 px` for a checkbox.
+- Android resource packaging could not use the original repository PNG encoding reliably in AAPT2 release merge, so the Android launcher uses the approved normalized celestial-logo asset that had already compiled successfully.
+- Google Play submission is technically ready for API-level policy: the app already targets API 36.
+
+Implemented / relevant commits:
+- `f9612202` — Use Android-compatible approved celestial launcher asset.
+- `9b9d6d0b` — Force compact Android onboarding checkboxes at runtime.
+- Android runtime now reapplies compact onboarding controls with inline `!important` logical and physical sizing, rather than relying only on stylesheet order.
+- Android WebView path already includes hardware rendering, high renderer priority, reduced UI observation, compact drawer navigation, and Android-only layout behavior.
+
+Validation evidence:
+- GitHub Actions **Build Android test APK #68** completed successfully for `f9612202`, including the Android/Play build path.
+- Automated smoke #37 reproduced the actual oversized focus-step checkbox, confirming the bug was real rather than a test-only artifact.
+- Smoke #38 is the validation run for the runtime checkbox fix at the time of this log entry.
+- Existing-user Android Settings navigation in smoke measured tens of milliseconds in the browser fixture and no longer reintroduced the onboarding overlay.
+
+Google Play parallel work split:
+- **USER / Play Console:** create/verify the developer account, create the app record, complete account/device verification, store listing fields, policy questionnaires, and recruit testers when the closed-test requirement applies.
+- **ASSISTANT / repository:** keep the Android build release-ready, maintain API 36, signed-AAB workflow, versionCode/versionName discipline, Play App Signing/OAuth checklist, privacy/data-safety technical inventory, automated phone + wide-emulator validation, and this audit log.
+
+Current Play publication dependencies:
+- Play Console developer account must be created/verified if not already done.
+- A personal developer account created after 2023-11-13 requires a closed test with at least 12 continuously opted-in testers for 14 days before production access.
+- Play App Signing must be enabled; after enrollment, its app-signing SHA fingerprint must be registered in the Google Cloud Android OAuth client for `com.michelslab.michelslife`.
+- Store listing, Data safety, Content rating, Target audience, App access, Ads declaration, and final privacy-policy URL still require Play Console completion.
+- Physical-device and Play-delivered internal-test OAuth/sync validation remain mandatory before calling production release ready.
+
+State:
+- **BUILD / PLAY AAB PATH: VALIDATED**
+- **CHECKLIST SIZE FIX: IN PROGRESS — automated revalidation running**
+- **PLAY CONSOLE SUBMISSION: PENDING USER CONSOLE SETUP**
+- **PRODUCTION: BLOCKED until Play Console requirements + required testing + Play-delivered device validation are complete**
