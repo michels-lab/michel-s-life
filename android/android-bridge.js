@@ -1,7 +1,7 @@
 (function(){
   'use strict';
   if(window.__MICHELSLIFE_ANDROID_BRIDGE__) return;
-  window.__MICHELSLIFE_ANDROID_BRIDGE__='0.2.0';
+  window.__MICHELSLIFE_ANDROID_BRIDGE__='0.2.1';
   window.__MICHELSLIFE_PLATFORM__='android';
 
   const listeners=new Set();
@@ -34,6 +34,8 @@
   };
 
   const MOBILE_BREAKPOINT=760;
+  const STORAGE_KEY='vida_rpg_personal_progress_v2';
+  const ONBOARD_KEY='michelsLife.onboarding.v30200';
   const MAJOR_TABS=['dashboard','missions','contracts','journal','stats','achievements','calendar','settings'];
   const isMobile=()=>window.matchMedia('(max-width:'+MOBILE_BREAKPOINT+'px)').matches;
   const q=(selector,root=document)=>root.querySelector(selector);
@@ -69,6 +71,7 @@
     if(!title)return;
     const current=activeTabId()||'dashboard';
     title.textContent=displayLabelForTab(current);
+    document.body.dataset.mlvAndroidTab=current;
     const tabs=availableMajorTabs();
     const index=tabs.indexOf(current);
     const prev=q('#mlv-android-prev-section');
@@ -216,42 +219,72 @@
     return clickTab(tabs[next]);
   }
 
-  function suppressAndroidOnboarding(){
-    try{localStorage.setItem('michelsLife.onboarding.v30200','done')}catch(_){}
+  function savedMichelState(){
+    try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'null')}catch(_){return null}
+  }
+
+  function hasExistingMichelState(saved=savedMichelState()){
+    if(!saved||typeof saved!=='object')return false;
+    const settings=saved.settings||{};
+    return !!(
+      settings.onboardingCompletedAt ||
+      (settings.characterName&&settings.characterName!=='Player') ||
+      Number(saved.xp||0)>0 ||
+      (Array.isArray(saved.missions)&&saved.missions.length) ||
+      (Array.isArray(saved.goals)&&saved.goals.length) ||
+      (Array.isArray(saved.history)&&saved.history.length)
+    );
+  }
+
+  function stabilizeAndroidOnboarding(){
+    const saved=savedMichelState();
+    if(!hasExistingMichelState(saved))return false;
+    try{localStorage.setItem(ONBOARD_KEY,'done')}catch(_){}
+    if(saved?.settings?.onboardingRequired===true){
+      saved.settings.onboardingRequired=false;
+      try{localStorage.setItem(STORAGE_KEY,JSON.stringify(saved))}catch(_){}
+    }
     q('#mlv200Onboarding')?.remove();
+    return true;
+  }
+
+  function setImportantOnce(el,prop,value){
+    if(!el)return;
+    if(el.style.getPropertyValue(prop)===value&&el.style.getPropertyPriority(prop)==='important')return;
+    el.style.setProperty(prop,value,'important');
   }
 
   function enforceMobileFlowGeometry(){
     if(!isMobile())return;
-    suppressAndroidOnboarding();
+    stabilizeAndroidOnboarding();
     const app=q('.app');
     if(app){
-      app.style.setProperty('padding','0','important');
-      app.style.setProperty('margin','0','important');
-      app.style.setProperty('width','100%','important');
-      app.style.setProperty('max-width','none','important');
+      setImportantOnce(app,'padding','0');
+      setImportantOnce(app,'margin','0');
+      setImportantOnce(app,'width','100%');
+      setImportantOnce(app,'max-width','none');
     }
     const side=q('#v30171Sidebar');
     if(side){
       if(side.parentElement!==document.body)document.body.appendChild(side);
-      side.style.setProperty('position','fixed','important');
-      side.style.setProperty('top','calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px))','important');
-      side.style.setProperty('left','0','important');
-      side.style.setProperty('right','auto','important');
-      side.style.setProperty('bottom','0','important');
-      side.style.setProperty('width','min(86vw,320px)','important');
-      side.style.setProperty('max-width','320px','important');
-      side.style.setProperty('height','auto','important');
-      side.style.setProperty('max-height','none','important');
-      side.style.setProperty('margin','0','important');
+      setImportantOnce(side,'position','fixed');
+      setImportantOnce(side,'top','calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px))');
+      setImportantOnce(side,'left','0');
+      setImportantOnce(side,'right','auto');
+      setImportantOnce(side,'bottom','0');
+      setImportantOnce(side,'width','min(86vw,320px)');
+      setImportantOnce(side,'max-width','320px');
+      setImportantOnce(side,'height','auto');
+      setImportantOnce(side,'max-height','none');
+      setImportantOnce(side,'margin','0');
     }
     const status=q('#v176StatusPanel');
     if(status){
-      status.style.setProperty('position','relative','important');
-      status.style.setProperty('top','auto','important');
-      status.style.setProperty('max-height','64px','important');
-      status.style.setProperty('overflow','hidden','important');
-      status.style.setProperty('margin','6px 8px','important');
+      setImportantOnce(status,'position','relative');
+      setImportantOnce(status,'top','auto');
+      setImportantOnce(status,'max-height','64px');
+      setImportantOnce(status,'overflow','hidden');
+      setImportantOnce(status,'margin','6px 8px');
     }
   }
 
@@ -302,7 +335,7 @@
       const debug=window.__mlvAndroidGestureDebug||{};
       Object.assign(debug,{phase:'end',dx,dy,elapsed,drawerOpen:document.body.classList.contains('mlv-android-nav-open')});
       window.__mlvAndroidGestureDebug=debug;
-      if(Math.abs(dx)<64||Math.abs(dx)<Math.abs(dy)*1.35||elapsed>650){debug.result='threshold-rejected';return;}
+      if(Math.abs(dx)<96||Math.abs(dx)<Math.abs(dy)*1.65||elapsed>650){debug.result='threshold-rejected';return;}
       if(document.body.classList.contains('mlv-android-nav-open')){
         if(dx<0){setDrawer(false);debug.result='drawer-closed';}else debug.result='drawer-open-noop';
         return;
@@ -340,8 +373,15 @@
       @media(max-width:${MOBILE_BREAKPOINT}px){
         :root{--mlv-android-topbar-h:56px}
         html[data-mlv-platform="android"] body{overscroll-behavior-y:none;padding-top:calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px))!important;touch-action:pan-y!important}
-        #mlv200Onboarding{display:none!important}
         html[data-mlv-platform="android"] #main *,html[data-mlv-platform="android"] #v30171Sidebar *,#mlv-android-topbar{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+        #v3000SkyImg{filter:none!important;transform:none!important}
+        #mlv200Onboarding{padding:8px!important;place-items:start center!important;padding-top:calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px) + 8px)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(3,7,13,.90)!important}
+        #mlv200Onboarding .mlv200-onboard-card{width:calc(100vw - 16px)!important;max-width:none!important;max-height:calc(100dvh - var(--mlv-android-topbar-h) - env(safe-area-inset-top,0px) - 16px)!important;padding:14px!important;border-radius:18px!important}
+        #mlv200Onboarding .mlv200-focus-grid{grid-template-columns:1fr!important;gap:6px!important}
+        #mlv200Onboarding .mlv200-focus{display:grid!important;grid-template-columns:28px minmax(0,1fr)!important;align-items:center!important;gap:8px!important;min-height:46px!important;padding:7px 10px!important;border-radius:12px!important}
+        #mlv200Onboarding .mlv200-focus input[type="checkbox"],#mlv200Onboarding .mlv200-option input[type="checkbox"]{-webkit-appearance:checkbox!important;appearance:auto!important;width:22px!important;height:22px!important;min-width:22px!important;min-height:22px!important;max-width:22px!important;max-height:22px!important;margin:0!important;padding:0!important;transform:none!important;accent-color:var(--ui-accent,var(--accent,#ff7ad9))!important}
+        #mlv200Onboarding .mlv200-focus b{font-size:12px!important;line-height:1.25!important}
+        html[data-mlv-platform="android"][data-mlv-android-switching="1"] *{transition-duration:0s!important}
         html[data-mlv-platform="android"][data-mlv-android-switching="1"] #mlv-android-topbar::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:currentColor;opacity:.38;animation:mlvAndroidSwitchPulse .55s ease-in-out infinite alternate}
         @keyframes mlvAndroidSwitchPulse{from{transform:scaleX(.22);opacity:.18}to{transform:scaleX(1);opacity:.52}}
         #main,.layout{touch-action:pan-y!important}
@@ -385,9 +425,11 @@
         .v132-mission-actions{grid-column:2!important;display:flex!important;justify-content:flex-end!important;align-items:center!important;gap:6px!important;min-width:0!important;margin-top:6px!important}
         .v132-actions,.v131-actions,.quest-actions,article.v132-mission .actions,article.v137-mission .actions{display:flex!important;flex-wrap:wrap!important;gap:6px!important;min-width:0!important}
         .v132-actions button,.v131-actions button,.quest-actions button,article.v132-mission .actions button,article.v137-mission .actions button{min-height:38px!important;max-width:100%!important;white-space:normal!important}
-        #v30106QuickFab{left:auto!important;right:14px!important;bottom:calc(env(safe-area-inset-bottom,0px) + 76px)!important;width:50px!important;height:50px!important;min-width:50px!important;min-height:50px!important;max-width:50px!important;max-height:50px!important}
-        #v30162FocusDock{left:auto!important;right:14px!important;bottom:calc(env(safe-area-inset-bottom,0px) + 136px)!important;width:50px!important;height:50px!important;min-width:50px!important;min-height:50px!important;max-width:50px!important;max-height:50px!important}
-        #v30162FocusDock .v30173-focus-wrap,#v30162FocusDock .v30173-focus-trigger{width:50px!important;height:50px!important;min-width:50px!important;min-height:50px!important;max-width:50px!important;max-height:50px!important}
+        #v30175ActionDock{left:auto!important;right:12px!important;bottom:max(12px,env(safe-area-inset-bottom,0px))!important;flex-direction:row!important;gap:8px!important;align-items:center!important}
+        #v30175ActionDock .v30175-action,#v30106QuickFab{width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;max-width:46px!important;max-height:46px!important;border-radius:14px!important}
+        #v30162FocusDock{left:auto!important;right:12px!important;bottom:calc(env(safe-area-inset-bottom,0px) + 68px)!important;width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;max-width:46px!important;max-height:46px!important}
+        #v30162FocusDock .v30173-focus-wrap,#v30162FocusDock .v30173-focus-trigger{width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;max-width:46px!important;max-height:46px!important}
+        body[data-mlv-android-tab="journal"] #v30175ActionDock,body[data-mlv-android-tab="settings"] #v30175ActionDock,body[data-mlv-android-tab="journal"] #v30106QuickFab,body[data-mlv-android-tab="settings"] #v30106QuickFab,body[data-mlv-android-tab="journal"] #v30162FocusDock,body[data-mlv-android-tab="settings"] #v30162FocusDock{display:none!important}
         /* Stable Android check controls: never inherit full-width desktop input sizing. */
         #mlv200Onboarding .mlv200-focus{display:grid!important;grid-template-columns:26px minmax(0,1fr)!important;align-items:center!important;gap:10px!important;min-height:52px!important;padding:9px 11px!important}
         #mlv200Onboarding .mlv200-focus input[type="checkbox"]{width:22px!important;height:22px!important;min-width:22px!important;min-height:22px!important;max-width:22px!important;max-height:22px!important;margin:0!important;padding:0!important;transform:none!important;flex:0 0 22px!important;accent-color:var(--accent)!important}
@@ -407,9 +449,9 @@
   }
 
   function observeUi(){
-    let queued=false;
     let navObserver=null;
     let navTarget=null;
+    let lastActive='';
 
     const attachNavObserver=()=>{
       const next=q('#v30171PrimaryNav');
@@ -417,41 +459,29 @@
       navObserver?.disconnect();
       navTarget=next;
       if(!next)return;
-      navObserver=new MutationObserver(()=>updateTopbarTitle());
+      navObserver=new MutationObserver(()=>requestAnimationFrame(updateTopbarTitle));
       navObserver.observe(next,{subtree:true,attributes:true,attributeFilter:['class','aria-current']});
     };
 
-    const refresh=()=>{
-      if(queued)return;
-      queued=true;
-      setTimeout(()=>{
-        queued=false;
-        suppressAndroidOnboarding();
-        enforceMobileFlowGeometry();
-        attachNavObserver();
-        updateTopbarTitle();
-      },32);
+    const maintenance=()=>{
+      if(!isMobile())return;
+      stabilizeAndroidOnboarding();
+      attachNavObserver();
+      const active=activeTabId();
+      if(active&&active!==lastActive){lastActive=active;updateTopbarTitle();}
+      enforceMobileFlowGeometry();
     };
 
-    new MutationObserver(mutations=>{
-      const relevant=mutations.some(m=>Array.from(m.addedNodes||[]).some(node=>{
-        if(!(node instanceof Element))return false;
-        return node.matches?.('#v30171Sidebar,#v30171PrimaryNav,#v176StatusPanel,#mlv200Onboarding,#v30106QuickFab,#v30162FocusDock')||
-          node.querySelector?.('#v30171Sidebar,#v30171PrimaryNav,#v176StatusPanel,#mlv200Onboarding,#v30106QuickFab,#v30162FocusDock');
-      }));
-      if(relevant)refresh();
-    }).observe(document.body,{subtree:true,childList:true});
-
     attachNavObserver();
+    maintenance();
+    window.__mlvAndroidMaintenanceTimer=setInterval(maintenance,1000);
     window.addEventListener('michelslife:languagechange',()=>setTimeout(updateTopbarTitle,0));
-    window.addEventListener('resize',()=>{if(!isMobile())setDrawer(false);else refresh();});
+    window.addEventListener('resize',()=>{if(!isMobile())setDrawer(false);else maintenance();});
   }
-
-  installFastNavCapture();
 
   function boot(){
     document.documentElement.setAttribute('data-mlv-platform','android');
-    suppressAndroidOnboarding();
+    stabilizeAndroidOnboarding();
     installPlatformStyles();
     installMobileChrome();
     enforceMobileFlowGeometry();
