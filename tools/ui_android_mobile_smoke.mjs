@@ -20,7 +20,7 @@ try{
 
   await page.addInitScript(()=>{
     try{
-      localStorage.setItem('michelsLife.onboarding.v30200','done');
+      localStorage.removeItem('michelsLife.onboarding.v30200');
       localStorage.setItem('michelsLife.language.v1','en');
       localStorage.setItem('michelsLife.language.userOverrideBase.v1','en');
       localStorage.setItem('michelsLife.language.installDefault.v1','en');
@@ -37,6 +37,8 @@ try{
         document.getElementById('v30171PrimaryNav'),
     null,{timeout:60000}
   );
+
+  await page.waitForTimeout(700);
 
   const initialActive=await page.evaluate(()=>document.querySelector('#v30171PrimaryNav [aria-current="page"]')?.dataset?.tab||
     document.querySelector('#v30171PrimaryNav .active[data-tab]')?.dataset?.tab||'');
@@ -60,6 +62,15 @@ try{
       sidebar:rect(sidebar),
       sidebarTransform:getComputedStyle(sidebar).transform,
       sidebarPosition:getComputedStyle(sidebar).position,
+      sidebarParent:sidebar?.parentElement?.tagName||'',
+      sidebarZ:Number.parseInt(getComputedStyle(sidebar).zIndex||'0',10)||0,
+      backdropZ:Number.parseInt(getComputedStyle(document.getElementById('mlv-android-drawer-backdrop')).zIndex||'0',10)||0,
+      onboardingVisible:(()=>{const el=document.getElementById('mlv200Onboarding');return !!(el&&el.getClientRects().length&&getComputedStyle(el).display!=='none')})(),
+      onboardingExists:!!document.getElementById('mlv200Onboarding'),
+      prevExists:!!document.getElementById('mlv-android-prev-section'),
+      nextExists:!!document.getElementById('mlv-android-next-section'),
+      quickFab:rect(document.getElementById('v30106QuickFab')),
+      focusDock:rect(document.getElementById('v30162FocusDock')),
       activeStatus:rect(document.getElementById('v176StatusPanel')),
       activeStatusMaxHeight:getComputedStyle(document.getElementById('v176StatusPanel')).maxHeight,
       appChildren:Array.from(document.querySelector('.app')?.children||[]).map(el=>({
@@ -80,6 +91,12 @@ try{
   ok(initial.oldTopDisplay==='none','Desktop top bar is still consuming phone space: '+JSON.stringify(initial));
   ok(initial.sidebar&&initial.sidebar.right<=8,'Android drawer is visible before opening: '+JSON.stringify(initial));
   ok(initial.sidebarPosition==='fixed','Android drawer is still participating in document flow: '+JSON.stringify(initial));
+  ok(initial.sidebarParent==='BODY','Android drawer is trapped inside a desktop stacking context: '+JSON.stringify(initial));
+  ok(initial.sidebarZ>initial.backdropZ,'Android drawer can be dimmed by its own backdrop: '+JSON.stringify(initial));
+  ok(!initial.onboardingVisible,'Desktop onboarding overlay reappeared on Android: '+JSON.stringify(initial));
+  ok(initial.prevExists&&initial.nextExists,'Android section navigation arrows are missing: '+JSON.stringify(initial));
+  if(initial.quickFab)ok(initial.quickFab.bottom<=window.innerHeight-60,'Quick Capture overlaps Android system-navigation zone: '+JSON.stringify(initial));
+  if(initial.focusDock)ok(initial.focusDock.bottom<=window.innerHeight-110,'Focus button overlaps Android system-navigation zone: '+JSON.stringify(initial));
   ok(initial.main&&initial.main.top<190,'Primary content starts too low and still requires an initial scroll: '+JSON.stringify(initial));
   ok(initial.firstCard&&initial.firstCard.top<240,'First dashboard card starts too low: '+JSON.stringify(initial));
   ok(initial.overflow<=2,'Android page has horizontal overflow: '+JSON.stringify(initial));
@@ -99,6 +116,22 @@ try{
   await page.locator('#mlv-android-drawer-backdrop').click({position:{x:400,y:300}});
   await page.waitForTimeout(240);
   ok(!(await page.evaluate(()=>document.body.classList.contains('mlv-android-nav-open'))),'Backdrop did not close drawer');
+
+  await page.locator('#mlv-android-next-section').click();
+  await page.waitForFunction(
+    ()=>document.querySelector('#v30171PrimaryNav [data-tab="missions"]')?.classList.contains('active') ||
+        document.querySelector('#v30171PrimaryNav [data-tab="missions"]')?.getAttribute('aria-current')==='page',
+    null,{timeout:5000}
+  );
+  const arrowSwitch=await page.evaluate(()=>window.__mlvAndroidLastSwitch||null);
+  ok(arrowSwitch&&arrowSwitch.active==='missions','Android next-section arrow did not route to Missions: '+JSON.stringify(arrowSwitch));
+  ok(arrowSwitch.elapsedMs<1500,'Android section switch exceeded 1500 ms in smoke environment: '+JSON.stringify(arrowSwitch));
+  await page.locator('#mlv-android-prev-section').click();
+  await page.waitForFunction(
+    ()=>document.querySelector('#v30171PrimaryNav [data-tab="dashboard"]')?.classList.contains('active') ||
+        document.querySelector('#v30171PrimaryNav [data-tab="dashboard"]')?.getAttribute('aria-current')==='page',
+    null,{timeout:5000}
+  );
 
   const missionSelector='article.v132-mission, article.v137-mission, article.mission-card, article.quest-card';
   const missionCount=await page.locator(missionSelector).count();
@@ -187,6 +220,7 @@ try{
     initial,
     drawerOpen,
     missionGeometry,
+    arrowSwitch,
     swipeState,
     animation:{beforeFrame,afterFrame}
   },null,2));
