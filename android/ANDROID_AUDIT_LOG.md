@@ -774,3 +774,28 @@ Google Play state:
 
 State:
 - **VALIDATED AUTOMATICALLY / PLAY SUBMISSION IN PROGRESS**.
+
+
+## 2026-10-05 — Android v0.2.2 Supabase primary sync migration
+
+Architecture change:
+- Supabase project `michels-life` is now the primary shared sync backend for Windows + Android.
+- Android reuses the same canonical frontend Supabase client as Windows instead of duplicating sync logic in Kotlin.
+- The shared client records Android device IDs with an `and_` prefix and writes `source_platform='android'`.
+- Supabase tables: `ml_state`, `ml_state_history`, `ml_devices`.
+- RLS is enabled on all three tables and every policy is scoped to `auth.uid()`.
+- Anonymous table privileges were explicitly revoked; Supabase Security Advisor reports zero findings.
+- Only the Supabase publishable key is bundled in the client. Secret/service-role keys are forbidden by validation.
+- Existing Google Drive native code is retained as a temporary manual recovery/migration fallback. Automatic Drive sync is disabled whenever a Supabase session is active.
+- Google Calendar remains independent and available.
+
+Android build pipeline:
+- Android build now overlays the branch's canonical Michel's Life frontend into the downloaded base AppBundle before WebView assets are prepared, preventing test APKs from silently packaging an older public-release frontend.
+- Android sync contract validation now requires the shared Supabase module/platform markers and rejects secret/service-role markers.
+- Android version bumped to **0.2.2 / versionCode 4**.
+
+State:
+- **IMPLEMENTED** — shared Supabase sync path + Android platform/device identity.
+- **BACKEND VALIDATED** — RLS, authenticated grants, anonymous revoke and Security Advisor.
+- **PENDING NATIVE APK/AAB CI** — current branch cannot dispatch the manual Android workflow through the connected GitHub tool; the workflow is prepared to build the canonical Supabase frontend when run/merged.
+- **NEEDS DEVICE/EMULATOR RETEST** — sign in to the same Supabase account on Windows + Android, verify first-device choice, cross-device revision conflict behavior and explicit cloud restore.
