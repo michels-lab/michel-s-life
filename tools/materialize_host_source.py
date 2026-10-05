@@ -56,13 +56,13 @@ for name in ('Program.cs','GoogleCalendarService.cs'):
                 // above will apply the installer language on the next navigation.
             }
 '''
-        desktop_shell='            DesktopShell.Attach(this, _webView);\n'
+        desktop_shell='            MichelsLife.DesktopShell.Attach(this, _webView);\n'
         text=text.replace(webview_anchor,webview_anchor+desktop_shell+language_bridge)
         if '__MICHELSLIFE_INSTALL_LANGUAGE__' not in text:
             raise SystemExit('Program.cs installer-language bridge injection failed')
         if 'applyInstalledLanguage' not in text or 'ExecuteScriptAsync(installerLanguageScript)' not in text:
             raise SystemExit('Program.cs installer-language bridge is missing the late-document reconciliation path')
-        if 'DesktopShell.Attach(this, _webView);' not in text:
+        if 'MichelsLife.DesktopShell.Attach(this, _webView);' not in text:
             raise SystemExit('Program.cs desktop shell injection failed')
     data=text.encode('utf-8')
     (ROOT/name).write_bytes(data)
