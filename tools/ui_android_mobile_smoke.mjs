@@ -48,6 +48,33 @@ try{
 
   await page.waitForTimeout(700);
 
+  const freshOnboarding=await page.evaluate(()=>{
+    const rect=el=>{const r=el?.getBoundingClientRect();return r?{left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:r.width,height:r.height}:null};
+    const root=document.getElementById('mlv200Onboarding');
+    const first=root?.querySelector('.mlv200-focus input[type="checkbox"]');
+    const card=root?.querySelector('.mlv200-onboard-card');
+    return {
+      visible:!!(root&&root.getClientRects().length&&getComputedStyle(root).display!=='none'),
+      root:rect(root),card:rect(card),checkbox:rect(first),
+      grid:root?.querySelector('.mlv200-focus-grid')?getComputedStyle(root.querySelector('.mlv200-focus-grid')).gridTemplateColumns:''
+    };
+  });
+  if(freshOnboarding.visible){
+    ok(freshOnboarding.card&&freshOnboarding.card.width<=412,'Fresh Android onboarding card overflows phone viewport: '+JSON.stringify(freshOnboarding));
+    ok(freshOnboarding.checkbox&&freshOnboarding.checkbox.width<=24&&freshOnboarding.checkbox.height<=24,'Fresh Android onboarding checkbox is stretched: '+JSON.stringify(freshOnboarding));
+  }
+
+  // Reproduce the user's real case: an existing Michel's Life profile whose local onboarding flag is stale/missing.
+  await page.evaluate(()=>{
+    const key='vida_rpg_personal_progress_v2';
+    let saved={};
+    try{saved=JSON.parse(localStorage.getItem(key)||'{}')||{}}catch(_){}
+    saved.settings={...(saved.settings||{}),characterName:'Michel',onboardingRequired:true};
+    localStorage.setItem(key,JSON.stringify(saved));
+    localStorage.removeItem('michelsLife.onboarding.v30200');
+  });
+  await page.waitForFunction(()=>!document.getElementById('mlv200Onboarding'),null,{timeout:2500});
+
   const initialActive=await page.evaluate(()=>document.querySelector('#v30171PrimaryNav [aria-current="page"]')?.dataset?.tab||
     document.querySelector('#v30171PrimaryNav .active[data-tab]')?.dataset?.tab||'');
   if(initialActive!=='dashboard'){
@@ -282,6 +309,7 @@ try{
   console.log(JSON.stringify({
     ok:true,
     viewport:{width:412,height:915},
+    freshOnboarding,
     initial,
     drawerOpen,
     missionGeometry,
