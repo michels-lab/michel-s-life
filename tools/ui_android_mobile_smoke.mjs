@@ -168,6 +168,10 @@ try{
         document.querySelector('#v30171PrimaryNav [data-tab="missions"]')?.getAttribute('aria-current')==='page',
     null,{timeout:5000}
   );
+  await page.waitForFunction(
+    ()=>window.__mlvAndroidLastSwitch?.tab==='missions' && window.__mlvAndroidLastSwitch?.active==='missions',
+    null,{timeout:5000}
+  );
   const arrowSwitch=await page.evaluate(()=>window.__mlvAndroidLastSwitch||null);
   ok(arrowSwitch&&arrowSwitch.active==='missions','Android next-section arrow did not route to Missions: '+JSON.stringify(arrowSwitch));
   ok(arrowSwitch.elapsedMs<1500,'Android section switch exceeded 1500 ms in smoke environment: '+JSON.stringify(arrowSwitch));
