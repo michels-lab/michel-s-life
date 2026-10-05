@@ -8,6 +8,8 @@ on:
       - 'android/android-bridge.js'
       - 'android/tools/prepare_bundle.py'
       - 'tools/ui_android_mobile_smoke.mjs'
+      - 'tools/ui_supabase_android_sync_smoke.mjs'
+      - 'src/MichelsLife/frontend/**'
       - '.github/workflows/android-ui-smoke.yml'
 
 permissions:
@@ -54,6 +56,11 @@ jobs:
           export MLV_ANDROID_UI_URL=http://127.0.0.1:4174
           export MLV_ANDROID_UI_SCREENSHOT=artifacts/android-ui-smoke/android-mobile.png
           node tools/ui_android_mobile_smoke.mjs
+
+      - name: Audit Android Supabase sync contract
+        run: |
+          export MLV_UI_URL=http://127.0.0.1:4174
+          node tools/ui_supabase_android_sync_smoke.mjs
 
       - uses: actions/upload-artifact@v4
         if: always()
