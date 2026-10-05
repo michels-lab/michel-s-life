@@ -8,8 +8,8 @@ This file is the release checklist for the Android/Google Play build. It complem
 
 - App name: **Michel's Life**
 - Package: `com.michelslab.michelslife`
-- Android version: `0.2.0`
-- `versionCode`: `2`
+- Android version: `0.2.1`
+- `versionCode`: `3`
 - `compileSdk`: `36`
 - `targetSdk`: `36`
 - `minSdk`: `26`
@@ -69,7 +69,7 @@ This is critical: a test APK can authorize correctly while the Play-delivered bu
 ## Testing tracks
 
 Recommended release order:
-1. Direct v0.2.0 test APK on a physical phone.
+1. Direct v0.2.1 test APK on a physical phone.
 2. Play Console **Internal testing** with the signed AAB.
 3. Closed testing if required for the developer account.
 4. Production only after the Android validation checklist is green.
@@ -237,7 +237,7 @@ Pending final device validation:
 
 - [x] Package identity fixed: `com.michelslab.michelslife`.
 - [x] API 36 target.
-- [x] Android v0.2.0 / versionCode 2.
+- [x] Android v0.2.1 / versionCode 3.
 - [x] CI version consistency check.
 - [x] Debug APK builds.
 - [x] Release AAB builds.
@@ -247,7 +247,7 @@ Pending final device validation:
 - [x] Android-specific mobile UX first pass.
 - [x] Android mobile UX static validation.
 - [x] Automated 412×915 browser UX smoke is green.
-- [ ] Physical-device v0.2.0 UX validation.
+- [ ] Physical-device v0.2.1 post-fix UX validation.
 - [ ] Physical-device Google authorization and Drive sync validation.
 - [x] Permanent upload key created; private material kept outside the repository.
 - [ ] GitHub signing secrets configured.
@@ -268,3 +268,12 @@ Pending final device validation:
 - [ ] Play-delivered build installed and tested.
 - [ ] Closed-testing requirement completed if the developer account is subject to it.
 - [ ] Production access/release only after all applicable gates above are complete.
+
+
+### 2026-10-05 — v0.2.1 current Play gate
+
+- Android UI smoke **#38**: **SUCCESS**.
+- Android build **#69**: **SUCCESS**.
+- Current CI artifact contains a validated test APK and an **UNSIGNED** Play AAB.
+- Next signing gate: configure the four GitHub Actions upload-key secrets, rerun the Android workflow, and require a `MichelsLife-Android-Play-SIGNED-v0.2.1.aab` artifact before Play upload.
+- Next Play Console gate can proceed in parallel now: create/configure the app, complete App content + Data safety + listing, and prepare the applicable test track/tester group.
