@@ -151,7 +151,7 @@ Michel's Life es una app independiente de productividad desarrollada por Michel'
 
 ## Privacy policy
 
-Status: **PUBLIC PAGE PREPARED; FIRST-TIME GITHUB PAGES ENABLEMENT STILL REQUIRED.**
+Status: **PUBLIC PAGE PREPARED; GITHUB PAGES SOURCE ENABLED; DEPLOYMENT RETRIGGERED.**
 
 Google Play currently requires every app to provide a comprehensive privacy policy in Play Console and make it accessible from inside the app. The policy must be available at a stable public URL and must match the Data safety declaration.
 
@@ -161,10 +161,11 @@ Draft:
 Official reference:
 - https://support.google.com/googleplay/android-developer/answer/10144311
 
-GitHub Pages deployment attempt:
-- Workflow run `37162745935` reached `actions/configure-pages@v5` and confirmed Pages is not yet enabled for the repository.
-- Required one-time setting: repository **Settings → Pages → Build and deployment → Source → GitHub Actions**.
-- Then rerun **Publish privacy policy**.
+GitHub Pages status:
+- The earlier deployment failed because Pages was not yet enabled.
+- On 2026-10-05 the user confirmed **Settings → Pages → Source → GitHub Actions** is enabled.
+- Commit `739ce52a` retriggered the privacy-policy deployment workflow.
+- Verify the resulting live URL before entering it in Play Console or shipping the in-app link.
 
 Before Play submission:
 - publish the finalized policy at a stable public web URL;
