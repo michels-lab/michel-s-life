@@ -6,7 +6,7 @@ bridge = (ROOT / "android-bridge.js").read_text(encoding="utf-8")
 main = (ROOT / "app/src/main/java/com/michelslab/michelslife/MainActivity.kt").read_text(encoding="utf-8")
 
 required_bridge = [
-    "window.__MICHELSLIFE_ANDROID_BRIDGE__='0.2.0'",
+    "window.__MICHELSLIFE_ANDROID_BRIDGE__='0.2.1'",
     "mlv-android-topbar",
     "mlv-android-drawer-backdrop",
     "mlv-android-prev-section",
@@ -33,6 +33,9 @@ required_bridge = [
     "#v30162FocusDock{left:auto",
     "#v176StatusPanel{position:relative",
     "#v176StatusPanel .v176-card:first-child",
+    "setInterval(maintenance,1000)",
+    "body[data-mlv-android-tab=\"journal\"] #v30175ActionDock",
+    "#mlv200Onboarding .mlv200-focus input[type=\"checkbox\"]",
     "data-mlv-platform",
 ]
 missing = [needle for needle in required_bridge if needle not in bridge]
