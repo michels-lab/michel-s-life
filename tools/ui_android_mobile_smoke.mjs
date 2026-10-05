@@ -208,16 +208,23 @@ try{
   const settingsSwitch=await page.evaluate(()=>window.__mlvAndroidLastSwitch||null);
   ok(settingsSwitch?.router==='android-render-main','Settings did not use Android fast route: '+JSON.stringify(settingsSwitch));
   ok(Number(settingsSwitch?.elapsedMs||99999)<1000,'Settings switch exceeded 1000 ms: '+JSON.stringify(settingsSwitch));
-  const settingsAndroidState=await page.evaluate(()=>({
-    onboardingVisible:(()=>{const el=document.getElementById('mlv200Onboarding');return !!(el&&el.getClientRects().length&&getComputedStyle(el).display!=='none')})(),
-    actionDockDisplay:(()=>{const el=document.getElementById('v30175ActionDock');return el?getComputedStyle(el).display:'missing'})(),
-    quickDisplay:(()=>{const el=document.getElementById('v30106QuickFab');return el?getComputedStyle(el).display:'missing'})(),
-    focusDisplay:(()=>{const el=document.getElementById('v30162FocusDock');return el?getComputedStyle(el).display:'missing'})()
-  }));
+  const settingsAndroidState=await page.evaluate(()=>{
+    const rect=el=>{const r=el?.getBoundingClientRect();return r?{left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:r.width,height:r.height}:null};
+    const drawer=document.getElementById('v30171Sidebar');
+    const dock=document.getElementById('v30175ActionDock');
+    const quick=document.getElementById('v30106QuickFab');
+    const focus=document.getElementById('v30162FocusDock');
+    return {
+      onboardingVisible:(()=>{const el=document.getElementById('mlv200Onboarding');return !!(el&&el.getClientRects().length&&getComputedStyle(el).display!=='none')})(),
+      drawer:rect(drawer),actionDock:rect(dock),quick:rect(quick),focus:rect(focus),
+      actionDockParent:dock?.parentElement?.id||'',
+      quickParent:quick?.parentElement?.id||''
+    };
+  });
   ok(!settingsAndroidState.onboardingVisible,'Existing user onboarding reappeared in Settings: '+JSON.stringify(settingsAndroidState));
-  ok(settingsAndroidState.actionDockDisplay==='none'||settingsAndroidState.actionDockDisplay==='missing','Action dock overlaps Settings: '+JSON.stringify(settingsAndroidState));
-  ok(settingsAndroidState.quickDisplay==='none'||settingsAndroidState.quickDisplay==='missing','Quick FAB overlaps Settings: '+JSON.stringify(settingsAndroidState));
-  ok(settingsAndroidState.focusDisplay==='none'||settingsAndroidState.focusDisplay==='missing','Focus FAB overlaps Settings: '+JSON.stringify(settingsAndroidState));
+  if(settingsAndroidState.actionDock)ok(settingsAndroidState.actionDock.right<=0&&settingsAndroidState.actionDockParent==='v30171Sidebar','Action dock is not safely off-canvas inside drawer in Settings: '+JSON.stringify(settingsAndroidState));
+  if(settingsAndroidState.quick)ok(settingsAndroidState.quick.right<=0,'Quick Capture is visible over Settings: '+JSON.stringify(settingsAndroidState));
+  if(settingsAndroidState.focus)ok(settingsAndroidState.focus.width===0||settingsAndroidState.focus.right<=0,'Focus control is visible over Settings: '+JSON.stringify(settingsAndroidState));
 
   const actionDockState=await page.evaluate(()=>{
     const dock=document.getElementById('v30175ActionDock');
