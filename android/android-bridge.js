@@ -499,6 +499,8 @@
 
   installFastNavCapture();
 
+  // Run in <head> before Michel's Life body scripts can sanitize an existing profile as fresh.
+  stabilizeAndroidOnboarding();
   function boot(){
     document.documentElement.setAttribute('data-mlv-platform','android');
     stabilizeAndroidOnboarding();
