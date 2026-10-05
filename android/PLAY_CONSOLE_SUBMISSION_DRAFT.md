@@ -8,8 +8,8 @@ This is a prepared answer sheet for Play Console. It is intentionally conservati
 
 - App name: **Michel's Life**
 - Package: `com.michelslab.michelslife`
-- Current release candidate: Android `0.2.0`
-- versionCode: `2`
+- Current release candidate: Android `0.2.1`
+- versionCode: `3`
 - Target SDK: `36`
 - Category recommendation: **Productivity**
 - Monetization: no ads, no in-app purchases in the current Android build.
