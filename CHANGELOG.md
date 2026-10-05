@@ -15,6 +15,14 @@
 - Added bilingual Quick Capture for fast Mission or Journal capture while preserving the existing mission and journal data models.
 - Quick Capture Mission creation supports category selection; Journal capture appends a timestamped note to the current day.
 
+### Desktop experience expansion
+- Added a compact Sync Center that surfaces cloud state, last sync, this PC, connected-device activity and real cloud conflicts without duplicating the existing Google Drive sync engine.
+- The existing cloud badge is now a persistent compact entry point: healthy, syncing, attention and conflict states remain visible without opening Settings.
+- Expanded the global `Ctrl + K` Command Palette with keyboard navigation and commands for Quick Capture, Sync Center, Sync Now, update checks, Current Mission, Focus, planning, main sections, Settings destinations and starting individual missions.
+- Added progressive startup scheduling: critical UI renders first while initial Google/cloud status and cloud-overview work is deferred until browser idle time (with bounded fallbacks), reducing competition with first paint.
+- Added native Windows taskbar integration for Current Mission. Running missions use the Windows indeterminate progress state; paused missions use the paused taskbar state; the taskbar/window title and tray tooltip include mission name and focused time.
+- Taskbar integration is best-effort and isolated from the app: unsupported/failing Windows taskbar APIs cannot break Michel's Life.
+
 ### Automatic updates
 - Reused the existing safe GitHub Releases updater instead of introducing a second update system.
 - Michel's Life now checks the public release channel automatically shortly after desktop startup, every six hours while open, and on refocus when the previous check is old enough.
@@ -23,17 +31,18 @@
 - Installation remains user-initiated and retains the existing SHA-256 verification and pre-update restore point.
 
 ### Validation
-- Source validation #695 — **success**, including release-readiness checks, bilingual corpus checks, Store packaging and Windows host compilation with the native desktop shell.
-- UI smoke #588 — **success**.
+- Source validation #702 — **success**, including release-readiness checks, bilingual corpus checks, Store packaging and Windows host compilation with tray + taskbar integration.
+- UI smoke #594 — **success** with the same product code and the dedicated Sync Center / Command Palette smoke included.
 - Dedicated automatic-update smoke — **success**.
 - Dedicated Quick Capture smoke — **success**, including categorized Mission creation, Journal append and Spanish UI.
+- Dedicated desktop-experience smoke — **success**, including Ctrl+K opening, Spanish command search, arrow-key selection, Sync Center rendering/actions and progressive-startup timing markers.
 - Existing Spanish first-run, Missions, exhaustive UI, language round trip, Settings, Dashboard and seasonal-animation continuity tests all remained green.
 - UI smoke #587 exposed a timing-flaky animation assertion: the same seasonal canvas remained mounted and the tab switched in 17.5 ms, but the frame counter had not advanced within the first requestAnimationFrame. The test now samples across ~80 ms without changing product animation code; #588 passed.
 
 ### Release state
 - Work is isolated on `desktop-v3.0.216` / draft PR #10.
 - No v3.0.216 public release has been published and `main` has not been changed by this pre-release cycle.
-- Windows test build #49 — **success** and final candidate artifact generated after tray localization and hotkey-conflict handling. Interactive native tray/hotkey validation remains the last release gate.
+- Windows test build #49 — **success** for the earlier tray/Quick Capture candidate. The newer Sync Center/Command Palette/progressive-startup/taskbar code is source/UI validated, but a refreshed downloadable Windows candidate has not been generated because the connected GitHub tool blocked temporarily enabling the push trigger for the manual-only test-build workflow.
 
 ## 3.0.215 — 2026-09-30 — Spanish navigation performance
 
