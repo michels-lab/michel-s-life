@@ -14,6 +14,7 @@ on:
       - 'src/MichelsLife/frontend/**'
       - 'branding/michel_duarte_avatar.jpg'
       - 'branding/michels_life_logo.webp'
+      - 'tools/bump_frontend_version.py'
       - 'tools/enable_i18n.py'
       - 'tools/validate_generated_index.py'
       - 'tools/replace_bundle_index.py'
@@ -67,6 +68,7 @@ jobs:
 
       - name: Package canonical Michel's Life frontend
         run: |
+          python tools/bump_frontend_version.py --index src/MichelsLife/frontend/index.html
           python tools/enable_i18n.py --index src/MichelsLife/frontend/index.html
           python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
           python tools/replace_bundle_index.py --bundle android/build/AppBundle.zip --index src/MichelsLife/frontend/index.html
