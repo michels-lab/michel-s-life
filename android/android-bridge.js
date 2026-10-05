@@ -48,6 +48,10 @@
   }
 
   function activeTabId(){
+    try{
+      const id=String(window.state?.activeTab||'');
+      if(id)return id==='goals'?'contracts':id;
+    }catch(_){}
     const active=q('#v30171PrimaryNav [data-tab].active, #v30171PrimaryNav [data-tab][aria-current="page"], #side [data-tab].active, #side [data-tab][aria-current="page"]');
     return active?.dataset?.tab||'';
   }
@@ -98,44 +102,107 @@
     }));
   }
 
-  function clickTab(id){
+  function persistNavLater(){
+    const work=()=>{try{if(typeof window.save==='function')window.save();else if(typeof save==='function')save()}catch(_){}};
+    if(typeof requestIdleCallback==='function')requestIdleCallback(work,{timeout:450});
+    else setTimeout(work,80);
+  }
+
+  function fastRoute(id){
+    id=String(id||'');
     if(!id)return false;
+    if(id==='today')id='dashboard';
+    if(id==='goals')id='contracts';
     if(activeTabId()===id){setDrawer(false);updateTopbarTitle();return true;}
-    const target=q('#v30171PrimaryNav [data-tab="'+escSelector(id)+'"]')||q('#side [data-tab="'+escSelector(id)+'"]')||q('[data-tab="'+escSelector(id)+'"]');
-    const router=window.LeftNavV30171;
+
     const started=performance.now();
     document.documentElement.setAttribute('data-mlv-android-switching','1');
-    try{
-      if(router&&typeof router.route==='function'){
-        router.route(id);
-        setDrawer(false);
-        finishSectionSwitch(started,id,'LeftNavV30171.route');
-        const debug=window.__mlvAndroidGestureDebug;
-        if(debug){
-          debug.router='LeftNavV30171.route';
-          debug.requestedTab=id;
-          debug.activeImmediately=activeTabId();
-          setTimeout(()=>{debug.activeAfter120=activeTabId();},120);
-          setTimeout(()=>{debug.activeAfter500=activeTabId();},500);
-        }
-        return true;
-      }
-    }catch(error){
-      console.warn('Michel\'s Life Android route fallback',error);
-    }
-    if(!target){document.documentElement.removeAttribute('data-mlv-android-switching');return false;}
-    target.click();
     setDrawer(false);
-    finishSectionSwitch(started,id,'button.click');
+    try{window.v3094ExitDayPage?.()}catch(_){}
+
+    if(id==='journal'&&window.JournalV30189?.open){
+      try{
+        window.JournalV30189.open();
+        finishSectionSwitch(started,id,'JournalV30189.open');
+        return true;
+      }catch(error){
+        console.warn('Michel\'s Life Android journal fast route fallback',error);
+      }
+    }
+
+    // Story keeps its compatibility router because it has its own legacy/fallback renderer.
+    if(id==='story'){
+      try{
+        const router=window.LeftNavV30171;
+        if(router&&typeof router.route==='function'){
+          router.route(id);
+          finishSectionSwitch(started,id,'LeftNavV30171.route:story');
+          return true;
+        }
+      }catch(_){}
+    }
+
+    try{window.state.activeTab=id}catch(_){
+      try{state.activeTab=id}catch(__){
+        document.documentElement.removeAttribute('data-mlv-android-switching');
+        return false;
+      }
+    }
+
+    try{
+      if(typeof window.renderAll==='function')window.renderAll();
+      else if(typeof renderAll==='function')renderAll();
+      else throw new Error('renderAll unavailable');
+    }catch(error){
+      console.warn('Michel\'s Life Android fast route render',error);
+      document.documentElement.removeAttribute('data-mlv-android-switching');
+      return false;
+    }
+
+    requestAnimationFrame(()=>{
+      try{window.LeftNavV30171?.renderNav?.()}catch(_){}
+      if(id==='settings'){
+        // One repair/build pass only. Avoid the legacy 0/60/120/140/320/500/650/900 ms cascade.
+        try{window.ModernNavV30168?.repairSettings?.()}catch(_){}
+        try{window.LeftNavV30171?.buildSettings?.()}catch(_){}
+      }
+      enforceMobileFlowGeometry();
+      updateTopbarTitle();
+    });
+    persistNavLater();
+    finishSectionSwitch(started,id,'android-fast-route');
+    return true;
+  }
+  window.__mlvAndroidFastRoute=fastRoute;
+
+  function clickTab(id){
+    const ok=fastRoute(id);
     const debug=window.__mlvAndroidGestureDebug;
     if(debug){
-      debug.router='button.click';
+      debug.router='android-fast-route';
       debug.requestedTab=id;
       debug.activeImmediately=activeTabId();
       setTimeout(()=>{debug.activeAfter120=activeTabId();},120);
       setTimeout(()=>{debug.activeAfter500=activeTabId();},500);
     }
-    return true;
+    return ok;
+  }
+
+  function installFastNavCapture(){
+    if(window.__mlvAndroidFastNavCaptureInstalled)return;
+    window.__mlvAndroidFastNavCaptureInstalled=true;
+    // Registered from android-bridge.js in <head>, before the legacy window capture handlers.
+    window.addEventListener('click',event=>{
+      if(!isMobile())return;
+      const nav=event.target?.closest?.('#v30171PrimaryNav [data-tab]');
+      if(!nav)return;
+      const id=String(nav.dataset.tab||'');
+      if(!id)return;
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      fastRoute(id);
+    },true);
   }
 
   function navigateSwipe(direction){
@@ -321,7 +388,18 @@
         #v30106QuickFab{left:auto!important;right:14px!important;bottom:calc(env(safe-area-inset-bottom,0px) + 76px)!important;width:50px!important;height:50px!important;min-width:50px!important;min-height:50px!important;max-width:50px!important;max-height:50px!important}
         #v30162FocusDock{left:auto!important;right:14px!important;bottom:calc(env(safe-area-inset-bottom,0px) + 136px)!important;width:50px!important;height:50px!important;min-width:50px!important;min-height:50px!important;max-width:50px!important;max-height:50px!important}
         #v30162FocusDock .v30173-focus-wrap,#v30162FocusDock .v30173-focus-trigger{width:50px!important;height:50px!important;min-width:50px!important;min-height:50px!important;max-width:50px!important;max-height:50px!important}
-        input,select,textarea,button{max-width:100%;box-sizing:border-box}
+        /* Stable Android check controls: never inherit full-width desktop input sizing. */
+        #mlv200Onboarding .mlv200-focus{display:grid!important;grid-template-columns:26px minmax(0,1fr)!important;align-items:center!important;gap:10px!important;min-height:52px!important;padding:9px 11px!important}
+        #mlv200Onboarding .mlv200-focus input[type="checkbox"]{width:22px!important;height:22px!important;min-width:22px!important;min-height:22px!important;max-width:22px!important;max-height:22px!important;margin:0!important;padding:0!important;transform:none!important;flex:0 0 22px!important;accent-color:var(--accent)!important}
+        #mlv200Onboarding .mlv200-focus span{min-width:0!important}
+        #mlv200Onboarding .mlv200-focus b{font-size:13px!important;line-height:1.25!important;overflow-wrap:anywhere!important}
+        #mlv200Onboarding .mlv200-option input[type="checkbox"],.day-chip input[type="checkbox"],.mlv185-opacity-toggle input[type="checkbox"]{width:20px!important;height:20px!important;min-width:20px!important;min-height:20px!important;max-width:20px!important;max-height:20px!important;flex:0 0 20px!important;margin:1px 0 0!important}
+        #main{padding-bottom:76px!important}
+        #v30175ActionDock{left:auto!important;right:12px!important;bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;flex-direction:row!important;gap:7px!important}
+        #v30175ActionDock .v30175-action,#v30175ActionDock #v30106QuickFab{--v30175-action-size:44px!important;width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;max-width:44px!important;max-height:44px!important;border-radius:14px!important}
+        #v30175ActionDock .v30175-icon{width:21px!important;height:21px!important}
+        #v30162FocusDock .v30173-focus-panel{left:10px!important;right:10px!important;bottom:64px!important;width:auto!important;max-height:calc(100vh - 150px)!important}
+                input,select,textarea,button{max-width:100%;box-sizing:border-box}
       }
       @media(min-width:${MOBILE_BREAKPOINT+1}px){body.mlv-android-nav-open{overflow:auto}}
     `;
@@ -368,6 +446,8 @@
     window.addEventListener('michelslife:languagechange',()=>setTimeout(updateTopbarTitle,0));
     window.addEventListener('resize',()=>{if(!isMobile())setDrawer(false);else refresh();});
   }
+
+  installFastNavCapture();
 
   function boot(){
     document.documentElement.setAttribute('data-mlv-platform','android');
