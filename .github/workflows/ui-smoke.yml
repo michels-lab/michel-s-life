@@ -72,6 +72,11 @@ jobs:
           export MLV_UI_URL=http://127.0.0.1:4173
           node tools/ui_auto_update_smoke.mjs
 
+      - name: Audit desktop Quick Capture
+        run: |
+          export MLV_UI_URL=http://127.0.0.1:4173
+          node tools/ui_quick_capture_smoke.mjs
+
       - name: Audit Spanish first run
         run: |
           export MLV_UI_URL=http://127.0.0.1:4173
