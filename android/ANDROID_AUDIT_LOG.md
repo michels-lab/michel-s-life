@@ -649,3 +649,35 @@ State:
 - **IMPLEMENTED** — source/tests updated.
 - **PENDING CI** — native build + Android UI smoke.
 - **NEEDS PHONE/EMULATOR RETEST** — install the resulting v0.2.1 APK.
+
+
+### 2026-10-05 — Physical-device + PC-emulator regression pass (Android v0.2.1)
+
+User evidence:
+- Physical Android screenshots still showed oversized/misaligned onboarding check controls, floating Focus/Quick Capture controls obscuring Journal/content, unclear section-changing gestures, and slow transitions.
+- PC Android emulator independently reproduced stutter/bugs, proving this was not specific to the physical phone.
+
+Root causes confirmed:
+- Android UX rules were gated by a 760 px CSS breakpoint. A wide/landscape emulator therefore fell back to the desktop-heavy layout and legacy navigation/render pipeline.
+- The desktop onboarding rule `.mlv200-field input{width:100%;min-height:44px}` also matched nested checkbox inputs, creating the huge pink/white check controls.
+- Legacy Settings navigation performs repeated repair/rebuild passes for hundreds of milliseconds; Android now bypasses that cascade through an active-surface fast route.
+- A whole-page Android observer from earlier iterations was replaced by narrow nav observation + low-frequency maintenance.
+- Quick Capture/Focus actions are moved into the off-canvas drawer rather than floating over content.
+
+Android-only corrections:
+- Android app UX breakpoint expanded from 760 px to **4096 px**, so phone, landscape, tablet and desktop-hosted Android emulators all stay in Android mode rather than reverting to desktop.
+- Wide Android WebViews center the active content/status surface at a maximum of 1180 px while retaining the Android top bar + drawer.
+- Onboarding/focus checkboxes are hard-limited to 20–22 px controls and no longer inherit full-width text-input sizing.
+- Existing-user stale onboarding state is suppressed before Michel's Life startup scripts can sanitize a real profile as a fresh install.
+- Settings uses `android-render-main` fast routing with one active-surface render rather than the legacy repeated rebuild cascade.
+- Section navigation now has explicit ‹/› controls in addition to deliberate horizontal swipe; the drawer explains both.
+- The approved Michel's Life celestial launcher logo is enforced in the static Android UX contract.
+
+Automated validation added:
+- Existing 412×915 physical-phone-like viewport remains covered.
+- New **1536×864 wide Android emulator** viewport must show Android top bar/drawer, no desktop top bar, no stale onboarding overlay, no horizontal overflow and Settings fast-route completion under the smoke threshold.
+- Off-canvas actions are treated correctly by geometry (negative X is not a screen overlap).
+
+State:
+- **IN PROGRESS** — Android UI smoke and native build are rerunning against these v0.2.1 fixes.
+- **NEEDS DEVICE/EMULATOR RETEST** — after CI is green, install the new APK on both the physical phone and PC emulator to confirm touch feel and perceived responsiveness.
