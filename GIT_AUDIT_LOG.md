@@ -21,6 +21,8 @@
 - Added tray actions for Open Michel's Life, Quick Capture, Current Mission, Sync Now, Start with Windows and Exit, plus resident close/minimize behavior.
 - Current Mission routes through `CurrentMissionV131`; Sync Now routes through `GoogleCloudV30192`/`GoogleCloudV30191`; Start with Windows writes only the current-user Windows Run entry.
 - Registered `Ctrl + Shift + Space` through the Windows hotkey API and routes it to the existing WebView2 document.
+- The tray language is refreshed from the active Michel's Life interface when the menu opens, with the installed Windows-language preference as fallback.
+- Hotkey registration failure is detected and reported through a Windows notification while Quick Capture remains available from the tray.
 - Added `window.MLV216QuickCapture` in the canonical frontend.
 - Quick Capture writes Missions through the existing `makeMission` / `state.missions` path and Journal notes through `JournalV30189`; no parallel data model was introduced.
 
