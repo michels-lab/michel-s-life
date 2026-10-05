@@ -7,7 +7,9 @@
 
 ### Desktop workflow
 - Added a native Windows system-tray shell without changing the approved Michel's Life visual baseline.
-- Closing the desktop window from the title bar now keeps Michel's Life resident in the tray; the tray menu exposes Open Michel's Life, Quick Capture and Exit.
+- Closing or minimizing the desktop window now keeps Michel's Life resident in the tray.
+- The tray menu exposes Open Michel's Life, Quick Capture, Current Mission, Sync Now, Start with Windows and Exit.
+- Current Mission reuses the existing Current Mission authority; Sync Now reuses the existing Google Drive Cloud Sync API; Start with Windows is an optional per-user Windows startup toggle.
 - Added a global `Ctrl + Shift + Space` hotkey that restores Michel's Life and opens Quick Capture.
 - Added bilingual Quick Capture for fast Mission or Journal capture while preserving the existing mission and journal data models.
 - Quick Capture Mission creation supports category selection; Journal capture appends a timestamped note to the current day.
@@ -29,7 +31,7 @@
 ### Release state
 - Work is isolated on `desktop-v3.0.216` / draft PR #10.
 - No v3.0.216 public release has been published and `main` has not been changed by this pre-release cycle.
-- Native tray/hotkey runtime behavior still requires a real Windows test build before public release.
+- Windows test build #48 — **success** and artifact generated for interactive native tray/hotkey validation before public release.
 
 ## 3.0.215 — 2026-09-30 — Spanish navigation performance
 
