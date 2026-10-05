@@ -136,9 +136,9 @@ internal static class DesktopShell
     {
         RestoreWindow();
         await ExecuteDesktopScriptAsync(
-            "(()=>{const api=window.GoogleCloudV30192||window.GoogleCloudV30191;" +
+            "(()=>{const api=window.SupabaseSyncV30216||window.GoogleCloudV30192||window.GoogleCloudV30191;" +
             "if(!api?.sync){window.toast?.('Michel’s Life Cloud','Cloud Sync is not ready yet.');return 'unavailable';}" +
-            "api.sync('auto',{silent:false});return 'started';})()"
+            "api.sync('auto',{silent:false});return api.provider||'started';})()"
         );
     }
 
