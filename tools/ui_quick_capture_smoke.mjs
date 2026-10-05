@@ -11,10 +11,10 @@ try{
     try{localStorage.setItem('michelsLife.onboarding.v30200','done')}catch(_){}
   });
   await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
-  await page.waitForFunction(()=>window.MLV216QuickCapture&&window.state&&window.JournalV30189,null,{timeout:60000});
+  await page.waitForFunction(()=>window.MLV216QuickCapture&&typeof state!=='undefined'&&window.JournalV30189,null,{timeout:60000});
 
   const before=await page.evaluate(k=>({
-    missions:Array.isArray(window.state?.missions)?window.state.missions.length:0,
+    missions:Array.isArray(state?.missions)?state.missions.length:0,
     journal:window.JournalV30189?.entry?.(k)?.body||''
   }),todayKey());
 
@@ -37,7 +37,7 @@ try{
   await page.waitForFunction(()=>document.querySelector('[data-mlv216-qc]')?.hidden===true);
 
   const after=await page.evaluate(k=>({
-    missions:Array.isArray(window.state?.missions)?window.state.missions.length:0,
+    missions:Array.isArray(state?.missions)?state.missions.length:0,
     journal:window.JournalV30189?.entry?.(k)?.body||''
   }),todayKey());
   ok(after.missions===before.missions+1,'Quick Capture mission count did not increase exactly once: '+JSON.stringify({before,after}));
