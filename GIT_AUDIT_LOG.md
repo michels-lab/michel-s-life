@@ -1,3 +1,21 @@
+## 2026-10-05 — Final Supabase migration audit
+
+### Current state
+- Dedicated Supabase project: `michels-life` (`lqnkcqredlxrykynacwr`) is ACTIVE_HEALTHY.
+- Tables `ml_state`, `ml_state_history` and `ml_devices` have RLS enabled and authenticated ownership policies based on `auth.uid()`.
+- Supabase Security Advisor reports **0 findings**.
+- Desktop and Android share the same canonical Supabase sync client; Android identifies itself with platform `android` and an `and_` device ID namespace, while Windows uses `windows` / `win_`.
+- Client bundles contain only the publishable Supabase key. Source validation rejects `sb_secret_` and `service_role`.
+- Google Drive is a temporary manual fallback only; Google Calendar remains independent.
+
+### Validation
+- Source validation #721 — **success**.
+- UI smoke #611 — **success**.
+- Supabase smoke covers first upload, dirty-state revision upload, remote-newer conflict protection and explicit cloud download.
+- Android-mode Supabase smoke covers Android platform/device attribution and rejects privileged-key leakage.
+- Remaining release gate: live login/sync on actual Windows + Android installations using one real Supabase account.
+
+
 # Michel's Life — Git Audit Log
 
 ## 2026-10-05 — Desktop v3.0.216 pre-release: Quick Capture, tray and automatic update detection
