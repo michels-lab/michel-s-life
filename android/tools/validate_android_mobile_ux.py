@@ -9,7 +9,7 @@ logo = ROOT / "app/src/main/res/drawable-nodpi/michels_life_logo.jpg"
 EXPECTED_ANDROID_LOGO_BLOB_SHA = "3f170f27dcd460c45a892cde51d6385d6608cfe7"
 
 required_bridge = [
-    "window.__MICHELSLIFE_ANDROID_BRIDGE__='0.2.1'",
+    "window.__MICHELSLIFE_ANDROID_BRIDGE__='0.2.2'",
     "const MOBILE_BREAKPOINT=4096;",
     "@media(min-width:900px) and (max-width:${MOBILE_BREAKPOINT}px)",
     "mlv-android-topbar",
