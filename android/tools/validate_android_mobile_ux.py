@@ -9,7 +9,12 @@ required_bridge = [
     "window.__MICHELSLIFE_ANDROID_BRIDGE__='0.2.0'",
     "mlv-android-topbar",
     "mlv-android-drawer-backdrop",
+    "mlv-android-prev-section",
+    "mlv-android-next-section",
+    "function suppressAndroidOnboarding()",
+    "michelsLife.onboarding.v30200",
     "#v30171Sidebar{",
+    "document.body.appendChild(side)",
     "body.mlv-android-nav-open #v30171Sidebar",
     "function navigateSwipe(direction)",
     "window.__mlvAndroidHandleBack=function()",
@@ -17,6 +22,9 @@ required_bridge = [
     ".v132-check",
     ".v132-mission-actions{grid-column:2",
     ".topbar{display:none",
+    "#mlv200Onboarding{display:none",
+    "#v30106QuickFab{left:auto",
+    "#v30162FocusDock{left:auto",
     "#v176StatusPanel{position:relative",
     "#v176StatusPanel .v176-card:first-child",
     "data-mlv-platform",
@@ -25,7 +33,16 @@ missing = [needle for needle in required_bridge if needle not in bridge]
 if missing:
     raise SystemExit("Android mobile UX contract missing: " + ", ".join(missing))
 
+native_required = [
+    "setLayerType(View.LAYER_TYPE_HARDWARE",
+    "setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_BOUND",
+    "offscreenPreRaster = true",
+]
+missing_native = [needle for needle in native_required if needle not in main]
+if missing_native:
+    raise SystemExit("Android native performance contract missing: " + ", ".join(missing_native))
+
 if "__mlvAndroidHandleBack" not in main:
     raise SystemExit("MainActivity does not delegate Android back handling to the web UI")
 
-print("OK: Android mobile UX contract contains final drawer target, swipe navigation, compact active status panel, mission alignment and back handling")
+print("OK: Android mobile UX contract contains onboarding suppression, clear navigation, safe floating actions, hardware rendering, final drawer target, swipe navigation, mission alignment and back handling")
