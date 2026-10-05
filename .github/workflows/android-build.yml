@@ -2,6 +2,23 @@ name: Build Android test APK
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'android/app/**'
+      - 'android/android-bridge.js'
+      - 'android/tools/**'
+      - 'android/build.gradle.kts'
+      - 'android/settings.gradle.kts'
+      - 'android/gradle.properties'
+      - 'src/MichelsLife/frontend/**'
+      - 'branding/michel_duarte_avatar.jpg'
+      - 'branding/michels_life_logo.webp'
+      - 'tools/bump_frontend_version.py'
+      - 'tools/enable_i18n.py'
+      - 'tools/validate_generated_index.py'
+      - 'tools/replace_bundle_index.py'
+      - 'tools/inject_bundle_asset.py'
+      - '.github/workflows/android-build.yml'
   push:
     branches: [main]
     paths:
