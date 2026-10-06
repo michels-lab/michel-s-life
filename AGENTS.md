@@ -62,3 +62,22 @@ For any changed animation, verify a real state/position/transform difference at 
 ## Completion
 
 Update the appropriate audit log with meaningful bugs, decisions, tests, failures and validation. Do not bump versions or publish releases unless the assigned task explicitly authorizes it.
+
+
+## Intelligent brand adoption
+
+When the user asks to update/adopt the app logo, icon, splash, startup or About:
+
+- use the canonical product assets from `realmichelduarte/Michel-Software-Standards/shared-assets/product-logos/`;
+- follow `standards/PRODUCT_IDENTITY_STANDARD.md` and `standards/BRAND_ADOPTION_PLAYBOOK.md` from the Michel-Software-Standards repository;
+- inspect this app's current design system before placing assets;
+- replace the real active platform identity references instead of layering the new logo over legacy/generic branding;
+- use the app icon for launcher/executable/favicon derivatives, the mark for compact identity, and the lockup for larger splash/About surfaces when appropriate;
+- treat the logo geometry as design language where useful, but do not repeat the literal logo across screens;
+- build About in the hierarchy Product → Author → Michel's Lab → Social;
+- use the canonical Michel Duarte portrait and Michel's Lab mark in About;
+- preserve unrelated product behavior;
+- update this repository's project/audit log and validate current build/CI;
+- do not publish a release unless the user explicitly authorizes it.
+
+A change that merely pastes the SVG/PNG into an arbitrary card or header is not a completed branding migration.
