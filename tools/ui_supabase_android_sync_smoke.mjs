@@ -20,6 +20,7 @@ try{
         return json({access_token:'android_access',refresh_token:'android_refresh',expires_in:3600,user:{id:'00000000-0000-0000-0000-000000000216',email:'android-sync@example.com'}});
       }
       if(path.startsWith('/rest/v1/ml_state?select='))return json(window.__supaMock.remote?[window.__supaMock.remote]:[]);
+      if(path==='/rest/v1/ml_state'&&String(init.method||'GET').toUpperCase()==='POST'){window.__supaMock.remote=body;window.__supaMock.pushes++;return json([body]);}
       if(path.startsWith('/rest/v1/ml_state?on_conflict=')){window.__supaMock.remote=body;window.__supaMock.pushes++;return json([body]);}
       if(path==='/rest/v1/ml_state_history'){window.__supaMock.history.push(body);return json({});}
       if(path.startsWith('/rest/v1/ml_devices?on_conflict=')){
