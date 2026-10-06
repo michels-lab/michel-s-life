@@ -84,7 +84,7 @@ Play packaging:
 
 Current HEAD `0bf88b6bb9c2ed588dc78d6af40256a475be073d`:
 - Source validation **#775 — SUCCESS**
-- UI smoke **#661 — final animation gate running at this checkpoint; all prior steps green**
+- UI smoke **#661 — SUCCESS**
 - Android UI smoke **#83 — SUCCESS**
 - Build Android test APK **#106 — SUCCESS**
 - Build Windows release **#52 — SUCCESS**
@@ -150,7 +150,7 @@ The next work starts from **live cross-device validation and signing/native rele
 
 ## 2026-10-06 continuation note
 - Current branch HEAD verified at `0bf88b6bb9c2ed588dc78d6af40256a475be073d`; this HEAD only closes the Supabase hardening audit after the final functional code.
-- Current-HEAD gates: Source #775 green, Android UI #83 green, Android native #106 green, Windows release #52 green; UI #661 has passed every step through Spanish Dashboard and is on the final seasonal-animation continuity gate.
+- Current-HEAD gates: Source #775 green, UI #661 green, Android UI #83 green, Android native #106 green and Windows release #52 green.
 - Supabase Security Advisor still reports 0 findings; `ml_state`, `ml_state_history`, and `ml_devices` remain RLS-enabled.
 - Supabase row counts remain 0/0/0, so the same-account Windows↔Android production behavior still has not been exercised by a real account.
 - GitHub connector limitation: repository secret APIs are intentionally unavailable, so Android upload-signing secrets cannot be configured from this chat. This is the only blocker to producing a Play-SIGNED AAB from CI.
