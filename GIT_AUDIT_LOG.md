@@ -9,10 +9,14 @@
 - Google Drive is a temporary manual fallback only; Google Calendar remains independent.
 
 ### Validation
-- Source validation #721 — **success**.
-- UI smoke #611 — **success**.
+- Source validation #746 — **success**.
+- UI smoke #632 — **success**.
 - Supabase smoke covers first upload, dirty-state revision upload, remote-newer conflict protection and explicit cloud download.
 - Android-mode Supabase smoke covers Android platform/device attribution and rejects privileged-key leakage.
+- Android UI smoke #54 — **success**.
+- Android native build #77 — **success**, artifact `MichelsLife-Android-TEST-v0.2.2`.
+- Windows release build #23 — **success**, artifact `MichelsLife-v3.0.216`.
+- Production row count is still zero across `ml_state`, `ml_state_history` and `ml_devices`; the backend is configured but has not yet received a real account sync.
 - Remaining release gate: live login/sync on actual Windows + Android installations using one real Supabase account.
 
 
