@@ -653,3 +653,18 @@ Public state:
 ### Validation status
 - Commit `f85daf15f8c1f88c4578e69251e81d0591139787` contains the validator correction.
 - Current-commit CI must pass before this fix is considered verified.
+
+## 2026-10-06 — Android launcher validator stale after canonical identity adoption
+
+### Finding
+- Android build run `37544565748` failed in `Validate Android mobile UX layer` before Gradle packaging.
+- `android/tools/validate_android_mobile_ux.py` still required the retired drawable/JPEG launcher contract (`@drawable/michels_life_logo`).
+- The canonical identity migration intentionally moved Android to `@mipmap/ic_launcher` / `@mipmap/ic_launcher_round` with adaptive foreground/background resources, which `tools/validate_brand_identity.py` already validates.
+
+### Corrective action
+- Updated the Android UX validator to require the canonical mipmap launcher references plus adaptive icon foreground/background wiring.
+- Removed the obsolete JPEG/hash requirement from the UX validator; canonical product asset integrity remains enforced by `tools/validate_brand_identity.py`.
+
+### Validation status
+- Commit `2e463ad00d307893a6a2f404ec18f117be6ee184` contains the correction.
+- Current-commit CI must pass before the fix is considered verified.
