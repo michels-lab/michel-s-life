@@ -21,6 +21,14 @@ try{
       if(path.startsWith('/auth/v1/token?grant_type=refresh_token')){
         return json({access_token:'access_test_2',refresh_token:'refresh_test_2',expires_in:3600,user:{id:'00000000-0000-0000-0000-000000000216',email:'sync-test@example.com'}});
       }
+      if(path==='/auth/v1/otp'&&String(init.method||'GET').toUpperCase()==='POST'){
+        window.__supaMock.lastOtpRequest=body;
+        return json({});
+      }
+      if(path==='/auth/v1/verify'&&String(init.method||'GET').toUpperCase()==='POST'){
+        window.__supaMock.lastOtpVerify=body;
+        return json({access_token:'access_otp',refresh_token:'refresh_otp',expires_in:3600,user:{id:'00000000-0000-0000-0000-000000000216',email:body.email}});
+      }
       if(path.startsWith('/auth/v1/logout'))return json({});
       if(path.startsWith('/rest/v1/ml_state?select='))return json(window.__supaMock.remote?[window.__supaMock.remote]:[]);
       if(path==='/rest/v1/ml_state'&&String(init.method||'GET').toUpperCase()==='POST'){
@@ -70,6 +78,38 @@ try{
   await page.waitForTimeout(120);
   ok(await page.locator('[data-v30171-setting="sync"]').count()===1,'Dedicated Sync settings nav missing');
   ok(await page.locator('[data-mlv216-supabase-card]').count()===1,'Supabase settings card missing');
+
+  const authDefault=await page.evaluate(()=>({
+    mode:window.SupabaseSyncV30216.authMode(),
+    passwordActive:document.querySelector('[data-mlv216-supa="mode-password"]')?.classList.contains('active')||false,
+    codeActive:document.querySelector('[data-mlv216-supa="mode-code"]')?.classList.contains('active')||false,
+    hasPassword:!!document.querySelector('[data-mlv216-supa-password]'),
+    hasCode:!!document.querySelector('[data-mlv216-supa-code]')
+  }));
+  ok(authDefault.mode==='password'&&authDefault.passwordActive&&!authDefault.codeActive&&authDefault.hasPassword&&!authDefault.hasCode,'Password is not the default Supabase sign-in mode: '+JSON.stringify(authDefault));
+
+  await page.click('[data-mlv216-supa="mode-code"]');
+  await page.waitForTimeout(80);
+  const codeMode=await page.evaluate(()=>({
+    mode:window.SupabaseSyncV30216.authMode(),
+    codeActive:document.querySelector('[data-mlv216-supa="mode-code"]')?.classList.contains('active')||false,
+    hasCode:!!document.querySelector('[data-mlv216-supa-code]')
+  }));
+  ok(codeMode.mode==='code'&&codeMode.codeActive&&codeMode.hasCode,'Optional code mode did not activate: '+JSON.stringify(codeMode));
+  await page.fill('[data-mlv216-supa-email]','sync-test@example.com');
+  await page.click('[data-mlv216-supa="send-code"]');
+  await page.waitForTimeout(80);
+  const otpRequested=await page.evaluate(()=>window.__supaMock.lastOtpRequest);
+  ok(otpRequested?.email==='sync-test@example.com'&&otpRequested?.create_user===false,'OTP request must target an existing account without auto-signup: '+JSON.stringify(otpRequested));
+  await page.fill('[data-mlv216-supa-code]','123456');
+  await page.click('[data-mlv216-supa="verify-code"]');
+  await page.waitForTimeout(120);
+  const otpVerified=await page.evaluate(()=>({verify:window.__supaMock.lastOtpVerify,connected:window.SupabaseSyncV30216.runtime.connected}));
+  ok(otpVerified.verify?.email==='sync-test@example.com'&&otpVerified.verify?.token==='123456'&&otpVerified.verify?.type==='email','OTP verification payload is wrong: '+JSON.stringify(otpVerified));
+  ok(otpVerified.connected,'OTP verification did not establish a Supabase session');
+  await page.evaluate(async()=>window.SupabaseSyncV30216.signOut());
+  await page.evaluate(()=>window.SupabaseSyncV30216.setAuthMode('password'));
+  await page.waitForTimeout(80);
 
   await page.evaluate(async()=>window.SupabaseSyncV30216.signIn('sync-test@example.com','testpass123'));
   const first=await page.evaluate(()=>({
@@ -139,7 +179,7 @@ try{
   ok(forced.pushes===beforeRace+1&&forced.remote?.revision===11,'Explicit force upload did not advance the master exactly once: '+JSON.stringify(forced));
   ok(forced.history.some(x=>Number(x.revision)===10),'Force upload did not preserve the replaced remote revision in history');
 
-  console.log('OK: Supabase auth + first upload + dirty sync + remote conflict + CAS race protection + explicit force upload/download');
+  console.log('OK: password-default auth + optional OTP + first upload + dirty sync + remote conflict + CAS race protection + explicit force upload/download');
 } finally {
   await browser.close();
 }
