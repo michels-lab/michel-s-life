@@ -5,7 +5,7 @@ Project: Michel's Life
 Repository: `realmichelduarte/michel-s-life`
 Branch: `desktop-v3.0.216`
 Draft PR: #10 — `v3.0.216: Supabase sync, desktop shell and Android integration`
-Current branch HEAD: `b031ab5a76a0ff09c7fe871e9cade1a84bc62b30`
+Current branch HEAD: `0bf88b6bb9c2ed588dc78d6af40256a475be073d`
 PR state: open, draft, mergeable
 Public release state: **v3.0.216 is NOT published**
 
@@ -82,12 +82,12 @@ Play packaging:
 
 ## Validation at this exact checkpoint
 
-Current HEAD `b031ab5a76a0ff09c7fe871e9cade1a84bc62b30`:
-- Source validation **#752 — SUCCESS**
-- UI smoke **#638 — SUCCESS**
-- Android UI smoke **#60 — SUCCESS**
-- Build Android test APK **#83 — SUCCESS**
-- Build Windows release **#29 — SUCCESS**
+Current HEAD `0bf88b6bb9c2ed588dc78d6af40256a475be073d`:
+- Source validation **#775 — SUCCESS**
+- UI smoke **#661 — final animation gate running at this checkpoint; all prior steps green**
+- Android UI smoke **#83 — SUCCESS**
+- Build Android test APK **#106 — SUCCESS**
+- Build Windows release **#52 — SUCCESS**
 - Supabase project: **ACTIVE_HEALTHY**
 - Supabase Security Advisor: **0 findings**
 
@@ -149,8 +149,8 @@ The next work starts from **live cross-device validation and signing/native rele
 
 
 ## 2026-10-06 continuation note
-- Current branch HEAD verified at `b031ab5a76a0ff09c7fe871e9cade1a84bc62b30`; only documentation changed after the previous handoff checkpoint.
-- All current-HEAD CI gates are green: Source #752, UI #638, Android UI #60, Android native #83, Windows release #29.
+- Current branch HEAD verified at `0bf88b6bb9c2ed588dc78d6af40256a475be073d`; this HEAD only closes the Supabase hardening audit after the final functional code.
+- Current-HEAD gates: Source #775 green, Android UI #83 green, Android native #106 green, Windows release #52 green; UI #661 has passed every step through Spanish Dashboard and is on the final seasonal-animation continuity gate.
 - Supabase Security Advisor still reports 0 findings; `ml_state`, `ml_state_history`, and `ml_devices` remain RLS-enabled.
 - Supabase row counts remain 0/0/0, so the same-account Windows↔Android production behavior still has not been exercised by a real account.
 - GitHub connector limitation: repository secret APIs are intentionally unavailable, so Android upload-signing secrets cannot be configured from this chat. This is the only blocker to producing a Play-SIGNED AAB from CI.
