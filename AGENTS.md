@@ -43,6 +43,21 @@ The approved mark is the **foundation of the product-wide design system**, not j
 
 Follow `standards/PRODUCT_IDENTITY_STANDARD.md` in the master standards repository as the authority.
 
+## About identity — mandatory
+
+About is a primary Michel's Life brand surface, not a plain metadata/settings page.
+
+It MUST intentionally combine:
+- the approved product mark/lockup with prominent visual presence;
+- the current canonical Michel Duarte portrait;
+- Michel's Lab / developer identity;
+- social links using **both the recognizable network icon and the visible network name**.
+
+For social links, render icon + label together (for example Instagram icon + `Instagram`, GitHub icon + `GitHub`). Do not use text-only rows as the finished design, and do not use icon-only controls without a visible/accessibility label.
+
+Use the canonical URLs from the master `brand/developer-profile.json`. Treat the portrait, logo, social controls and metadata as one coherent branded composition derived from the product's visual language.
+
+
 ## Validation
 
 For Desktop changes, inspect the owning workflow/tooling and run the relevant current-commit checks. The documented baseline includes:
