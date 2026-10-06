@@ -79,6 +79,8 @@ jobs:
           python android/tools/validate_android_mobile_ux.py
 
       - name: Download current Michel's Life AppBundle
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p android/build
           python tools/download_latest_michels_life_bundle.py --repo "$RELEASES_REPO" --output android/build/AppBundle.zip
