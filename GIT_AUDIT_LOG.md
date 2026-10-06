@@ -638,3 +638,18 @@ Public state:
 ### Release boundary
 - No version bump or release publication is authorized by this reconciliation.
 - Current-commit CI is required before this reconciliation is treated as verified.
+
+## 2026-10-06 — Branding validator regression after branch reconciliation
+
+### Finding
+- UI smoke on reconciled commit `da6c0a66e40685dab11617f5233debf130ab6c96` failed during generated frontend validation before browser tests ran.
+- `tools/validate_generated_index.py` still required legacy marker `assets/michels_life_logo.webp`, while the canonical branding migration intentionally removed that asset and `tools/validate_brand_identity.py` explicitly forbids it.
+- This was a stale QA contract, not a product-UI regression.
+
+### Corrective action
+- Updated generated frontend validation to require the canonical Michel's Life app icon, mark, lockup and Michel's Lab lockup assets instead of the removed legacy logo marker.
+- No product behavior, version or release state changed.
+
+### Validation status
+- Commit `f85daf15f8c1f88c4578e69251e81d0591139787` contains the validator correction.
+- Current-commit CI must pass before this fix is considered verified.
