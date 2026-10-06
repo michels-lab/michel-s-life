@@ -36,9 +36,7 @@ jobs:
       - name: Build browser-test bundle from canonical frontend
         run: |
           mkdir -p artifacts/ui-bundle
-          curl -L --fail --retry 3 \
-            "https://github.com/$RELEASES_REPO/releases/latest/download/AppBundle.zip" \
-            -o artifacts/AppBundle.zip
+          python tools/download_release_asset.py --repo "$RELEASES_REPO" --asset AppBundle.zip --tag-prefix v --output artifacts/AppBundle.zip
           python tools/bump_frontend_version.py --index src/MichelsLife/frontend/index.html
           python tools/enable_i18n.py --index src/MichelsLife/frontend/index.html
           python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html

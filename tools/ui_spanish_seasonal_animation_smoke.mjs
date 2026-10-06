@@ -52,15 +52,26 @@ async function switchTabAndMeasure(page,tabId){
     const started=performance.now();
     target.click();
     requestAnimationFrame(()=>{
-      const after=document.getElementById('v30146Canvas');
-      resolve({
-        tab:id,
-        elapsed:performance.now()-started,
-        frameBefore,
-        frameAfter:Number(after?.dataset?.frame||0),
-        sameBefore,
-        canvasSame:after===window.__mlvSeasonCanvasRef
-      });
+      const firstPaintElapsed=performance.now()-started;
+      const checkAnimation=()=>{
+        const after=document.getElementById('v30146Canvas');
+        const frameAfter=Number(after?.dataset?.frame||0);
+        const animationElapsed=performance.now()-started;
+        if(frameAfter>frameBefore||animationElapsed>=350){
+          resolve({
+            tab:id,
+            elapsed:firstPaintElapsed,
+            animationElapsed,
+            frameBefore,
+            frameAfter,
+            sameBefore,
+            canvasSame:after===window.__mlvSeasonCanvasRef
+          });
+          return;
+        }
+        requestAnimationFrame(checkAnimation);
+      };
+      requestAnimationFrame(checkAnimation);
     });
   }),tabId);
 }
