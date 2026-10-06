@@ -13,3 +13,6 @@ For Android, verify versionCode/versionName, applicable build/AAB/APK tasks, sig
 Never treat a skipped build or historical green run as release validation. Never expose signing/OAuth secrets. Never publish a release unless the assigned task explicitly authorizes publication.
 
 Reconcile release notes and audit logs with exactly what was validated.
+
+For releases that touch UI/About/branding, treat the mandatory identity/About contract in `AGENTS.md` as part of release completeness. Do not present a build as visually reconciled if product identity, author/Michel's Lab hierarchy, canonical portrait, or icon + network-name social controls are knowingly missing/regressed.
+
