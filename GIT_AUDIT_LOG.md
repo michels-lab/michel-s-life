@@ -339,3 +339,9 @@ Purpose: reduce repeated context reconstruction in future ChatGPT sessions and m
 ### Validation status
 - Branch CI must demonstrate the resolver unit test plus a real Windows download/compile path before the P0 can be closed.
 
+### UI smoke follow-up
+
+After the shared-release resolver was fixed, Source validation passed but UI smoke exposed a timing-sensitive assertion in `ui_spanish_seasonal_animation_smoke.mjs`. The seasonal canvas object remained identical and the tab's next paint completed quickly, but the test sampled the animation counter on that same first paint and could observe the same frame number.
+
+The test now measures first-paint latency separately and then requires a real seasonal frame-counter advance within a bounded 350 ms requestAnimationFrame window. This preserves the required functional animation evidence while avoiding a false failure caused by two checks landing in the same animation frame.
+
