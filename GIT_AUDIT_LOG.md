@@ -1,3 +1,25 @@
+## 2026-10-06 — Supabase concurrency, restore safety and shared-release fix
+
+### Findings and fixes
+- Root cause of simultaneous Windows/Android/Source/UI failures was external to the product code: `realmichelduarte/michel-s-life-releases` is shared, and the LouderMe `louderme-v0.1.4` release became GitHub's repository-wide `latest`. Every Michel's Life workflow that requested `releases/latest/download/AppBundle.zip` therefore received 404.
+- Added `tools/download_latest_michels_life_bundle.py`, which selects the highest non-draft/non-prerelease `vX.Y.Z` release that actually contains `AppBundle.zip`. Updated Windows release/test/Store, Android build/UI, source validation and UI smoke pipelines to use it.
+- Confirmed the resolver selects Michel's Life `v3.0.215` even while LouderMe is the newest repository release.
+- Automatic Supabase upload now performs a conditional PATCH against the expected remote revision. A concurrent writer wins exactly once; the losing client enters conflict state without overwriting remote data.
+- Explicit `Use this PC` remains a force overwrite path and archives the replaced remote revision first.
+- Supabase cloud download now saves the current local snapshot to `ml_state_history` as `before_download_local` before applying cloud state.
+- Backup Timeline restore preserves current Supabase session/meta/device keys and publishes restored state to Supabase before considering the Google Drive fallback.
+- Global cloud badge/conflict actions now follow Supabase when Supabase is connected instead of displaying stale Google Drive authority.
+- Database privilege audit found authenticated roles also had TRUNCATE/TRIGGER/REFERENCES privileges. Migration `20261006070456_least_privilege_michels_life_sync` revoked all client privileges and re-granted only required operations.
+- Verified final grants: `ml_state` + `ml_devices` = SELECT/INSERT/UPDATE/DELETE; `ml_state_history` = SELECT/INSERT; `anon` = none. Supabase Security Advisor remains **0 findings**.
+- Production migrations are now mirrored in source under `supabase/migrations/`.
+
+### Validation status
+- Desktop Supabase smoke passed the new CAS race simulation: a synthetic Android write between read and PATCH was preserved, the Windows upload count did not advance, local dirty state remained pending, and explicit force upload advanced the master exactly once while preserving history.
+- Android UI smoke #79 — **success** on the final provider/restore code.
+- Source validation #771 — **success** on the final provider/restore code.
+- Windows and Android native builds were already green on the CAS product code before the final restore-safety-only change; final-cycle builds are tracked below when complete.
+
+
 ## 2026-10-05 — Final Supabase migration audit
 
 ### Current state
