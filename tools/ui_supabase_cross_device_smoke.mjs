@@ -94,7 +94,8 @@ async function sessionSnapshot(page){
     deviceId:window.SupabaseSyncV30216.deviceId(),
     runtime:{...window.SupabaseSyncV30216.runtime},
     meta:JSON.parse(localStorage.getItem('michelsLife.supabase.meta.v30216')||'{}'),
-    xp:Number(state?.xp||0)
+    xp:Number(state?.xp||0),
+    storedXp:Number((JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')||{}).xp||0)
   }));
 }
 
@@ -132,11 +133,13 @@ try{
   ok(Number(backend.remote.revision)===desktopRevision&&backend.remote.source_platform==='windows','Android sign-in overwrote existing Windows master');
 
   await android.page.evaluate(async()=>window.SupabaseSyncV30216.pull({reload:false}));
+  const androidStoredBeforeReload=await sessionSnapshot(android.page);
+  ok(androidStoredBeforeReload.storedXp===desktopXp,'Android pull did not persist Windows master before reload: '+JSON.stringify({desktopXp,androidStoredBeforeReload,remoteXp:backend.remote?.snapshot?.state?.xp}));
   await android.page.reload({waitUntil:'domcontentloaded'});
   await android.page.waitForFunction(()=>window.SupabaseSyncV30216,null,{timeout:60000});
   const androidAdopted=await sessionSnapshot(android.page);
   ok(Number(androidAdopted.meta.revision)===desktopRevision,'Android explicit cloud choice did not adopt desktop revision');
-  ok(androidAdopted.xp===desktopXp,'Android did not restore the Windows master state');
+  ok(androidAdopted.xp===desktopXp&&androidAdopted.storedXp===desktopXp,'Android startup changed the restored Windows master state: '+JSON.stringify({desktopXp,androidAdopted,remoteXp:backend.remote?.snapshot?.state?.xp}));
 
   await android.page.evaluate(()=>{state.xp=Number(state.xp||0)+23;window.save();});
   await android.page.waitForTimeout(2900);
@@ -158,7 +161,7 @@ try{
   await desktop.page.waitForFunction(()=>window.SupabaseSyncV30216,null,{timeout:60000});
   const desktopRestored=await sessionSnapshot(desktop.page);
   ok(Number(desktopRestored.meta.revision)===androidRevision,'Windows explicit cloud restore did not adopt Android revision');
-  ok(desktopRestored.xp===androidXp,'Windows did not restore Android state');
+  ok(desktopRestored.xp===androidXp&&desktopRestored.storedXp===androidXp,'Windows did not restore Android state: '+JSON.stringify({androidXp,desktopRestored,remoteXp:backend.remote?.snapshot?.state?.xp}));
 
   await Promise.all([
     desktop.page.evaluate(()=>window.SupabaseSyncV30216.refreshOverview()),
