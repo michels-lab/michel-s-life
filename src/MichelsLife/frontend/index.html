@@ -29669,6 +29669,8 @@ function notification(title,msg='',opts={}){return toast(title,msg,opts.kind||''
 
 function api(){return window.GoogleCloudV30192||window.GoogleCloudV30191}
 function rt(){return api()?.runtime||{}}
+function activeApi(){const supa=window.SupabaseSyncV30216;return supa?.runtime?.connected?supa:api()}
+function activeRt(){return activeApi()?.runtime||{}}
 function capture(){try{return api()?.capture?.()||''}catch(_){return ''}}
 
 function ensureBadge(){
@@ -29678,7 +29680,7 @@ function ensureBadge(){
 }
 function syncRelative(v){if(!v)return'';const d=new Date(v),ms=Date.now()-d.getTime();if(!Number.isFinite(ms))return'';const min=Math.max(0,Math.floor(ms/60000));if(min<1)return'now';if(min<60)return min+'m';const h=Math.floor(min/60);if(h<24)return h+'h';return Math.floor(h/24)+'d'}
 function updateBadge(){
-  const r=rt(),b=ensureBadge(),es=window.MichelsLifeI18n?.language==='es';let cls='',label='',show=true;
+  const r=activeRt(),b=ensureBadge(),es=window.MichelsLifeI18n?.language==='es';let cls='',label='',show=true;
   if(r.cloudConflict){cloudBusySince=0;cls='conflict';label=es?'Nube · Conflicto':'Cloud · Conflict'}
   else if(r.cloudError||r.error){cloudBusySince=0;cls='error';label=es?'Nube · Revisar':'Cloud · Attention'}
   else if(r.cloudBusy){if(!cloudBusySince)cloudBusySince=Date.now();cls='syncing';label=es?'Nube · Sincronizando…':'Cloud · Syncing…'}
@@ -29692,27 +29694,27 @@ function ensureConflictModal(){
   let o=document.getElementById('mlv197CloudConflictOverlay');
   if(o)return o;
   o=document.createElement('div');o.id='mlv197CloudConflictOverlay';
-  o.innerHTML='<div class="mlv197-conflict-card"><h3>Cloud conflict</h3><p data-mlv197-conflict-text>Both this PC and Google Drive changed. Choose which copy becomes the master.</p><div class="mlv197-conflict-actions"><button class="btn primary" type="button" data-mlv197-conflict="local">Keep this PC</button><button class="btn" type="button" data-mlv197-conflict="cloud">Use cloud</button><button class="btn ghost" type="button" data-mlv197-conflict="later">Decide later</button></div></div>';
+  o.innerHTML='<div class="mlv197-conflict-card"><h3>Cloud conflict</h3><p data-mlv197-conflict-text>This device and cloud both changed. Choose which copy becomes the master.</p><div class="mlv197-conflict-actions"><button class="btn primary" type="button" data-mlv197-conflict="local">Keep this PC</button><button class="btn" type="button" data-mlv197-conflict="cloud">Use cloud</button><button class="btn ghost" type="button" data-mlv197-conflict="later">Decide later</button></div></div>';
   document.body.appendChild(o);
   o.addEventListener('click',async e=>{
     const b=e.target.closest?.('[data-mlv197-conflict]');if(!b)return;
     const choice=b.dataset.mlv197Conflict;
-    if(choice==='later'){dismissedConflictSig=String(rt().cloudConflict?.localHash||'')+'|'+String(rt().cloudConflict?.remoteHash||'')+'|'+String(rt().cloudConflict?.message||'');o.classList.remove('show');return}
-    const r=rt();if(!r.cloudConflict){o.classList.remove('show');return}
+    if(choice==='later'){const r=activeRt();dismissedConflictSig=String(r.cloudConflict?.localHash||r.cloudConflict?.localRevision||'')+'|'+String(r.cloudConflict?.remoteHash||r.cloudConflict?.remoteRevision||'')+'|'+String(r.cloudConflict?.message||'');o.classList.remove('show');return}
+    const provider=activeApi(),r=activeRt();if(!r.cloudConflict||!provider){o.classList.remove('show');return}
     try{
       o.classList.remove('show');
-      if(choice==='local'){notification('Michel’s Life Cloud','Keeping this PC and saving the previous cloud version in backup history.',{persistent:true});await api().sync('upload')}
-      else{notification('Michel’s Life Cloud','Loading the cloud copy. A local restore point is being created first.',{persistent:true});await api().sync('download')}
-      setTimeout(refreshOverview,700);
+      if(choice==='local'){notification('Michel’s Life Cloud','Keeping this device and preserving the previous cloud version in backup history.',{persistent:true});await provider.sync('upload')}
+      else{notification('Michel’s Life Cloud','Saving the current state, then loading the cloud copy.',{persistent:true});await provider.sync('download')}
+      setTimeout(()=>{if(provider===window.SupabaseSyncV30216)provider.refreshOverview?.();else refreshOverview()},700);
     }catch(err){notification('Cloud error',String(err?.message||err),{kind:'error',persistent:true})}
   });
   return o;
 }
 function updateConflictModal(){
-  const r=rt(),o=ensureConflictModal();
+  const r=activeRt(),o=ensureConflictModal();
   if(r.cloudConflict){
-    const sig=String(r.cloudConflict.localHash||'')+'|'+String(r.cloudConflict.remoteHash||'')+'|'+String(r.cloudConflict.message||'');
-    const p=o.querySelector('[data-mlv197-conflict-text]');if(p)p.textContent=r.cloudConflict.message||'Both this PC and Google Drive changed. Choose which copy becomes the master.';
+    const sig=String(r.cloudConflict.localHash||r.cloudConflict.localRevision||'')+'|'+String(r.cloudConflict.remoteHash||r.cloudConflict.remoteRevision||'')+'|'+String(r.cloudConflict.message||'');
+    const p=o.querySelector('[data-mlv197-conflict-text]');if(p)p.textContent=r.cloudConflict.message||'This device and cloud both changed. Choose which copy becomes the master.';
     if(sig!==dismissedConflictSig)o.classList.add('show');
   }else{dismissedConflictSig='';o.classList.remove('show')}
 }
@@ -30724,7 +30726,9 @@ function applySnapshot(snapshot){
 async function pull({reload=true}={}){
  const s=await ensureSession();if(!s)throw new Error(es()?'Inicia sesión en Supabase.':'Sign in to Supabase.');
  const remote=await remoteState(s);if(!remote)return null;
- applySnapshot(remote.snapshot);const now=new Date().toISOString();saveMeta({revision:Number(remote.revision||0),lastSync:now,lastRemoteAt:remote.updated_at||now,dirty:false});runtime.cloudLastSync=now;runtime.revision=Number(remote.revision||0);runtime.lastRemoteAt=remote.updated_at||now;await touchDevice(s,'download');if(reload)location.reload();return remote
+ const localRaw=capture(),localSnapshot=safeJson(localRaw,null);
+ if(localSnapshot){await writeHistory(s,{snapshot:localSnapshot,revision:Math.max(1,Number(meta().revision||1)),source_device_id:deviceId(),source_platform:platform(),app_version:BUILD},'before_download_local')}
+ applySnapshot(remote.snapshot);const now=new Date().toISOString();saveMeta({revision:Number(remote.revision||0),lastSync:now,lastRemoteAt:remote.updated_at||now,dirty:false});runtime.cloudLastSync=now;runtime.revision=Number(remote.revision||0);runtime.lastRemoteAt=remote.updated_at||now;runtime.cloudConflict=null;await touchDevice(s,'download');if(reload)location.reload();return remote
 }
 async function sync(mode='auto',opts={}){
  if(runtime.cloudBusy)return null;runtime.cloudBusy=true;runtime.cloudAction=mode;runtime.cloudError='';scheduleMount();
