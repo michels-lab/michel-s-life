@@ -1,3 +1,11 @@
+## 2026-10-06 — Shared Supabase authentication UX
+
+- Android uses the same Michel's Life Supabase account surface as Desktop.
+- Email + password is the required default login experience.
+- Email OTP/code is available only as an explicit fallback for existing accounts and must never replace Password as the default after restart/reload.
+- OTP requests do not auto-create accounts; account creation stays in the password flow.
+- Android inherits the shared frontend smoke contract for this behavior.
+
 # Michel's Life Android — Development Audit Log
 
 > Permanent Android-specific record of what has been done, what is pending, what was validated, and what still needs verification.
