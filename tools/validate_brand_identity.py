@@ -9,6 +9,11 @@ def text(path):
 
 def git_blob_sha(path):
     data=path.read_bytes()
+    # Git checkouts may materialize text assets as CRLF on Windows. Normalize
+    # canonical text assets back to repository LF bytes before computing the
+    # expected Git blob identity; binary portrait/brand PNGs remain untouched.
+    if path.suffix.lower() in {'.svg', '.json', '.md', '.txt'}:
+        data=data.replace(b'\r\n',b'\n').replace(b'\r',b'\n')
     return hashlib.sha1(f"blob {len(data)}\0".encode()+data).hexdigest()
 
 required={
