@@ -682,3 +682,17 @@ Public state:
 ### Validation status
 - Commit `f266bfc019dcee9d6e12ecf40cb2242c16d53a94` contains the cross-platform correction.
 - Current-commit Windows and source validation must pass before this is considered verified.
+
+## 2026-10-06 — Canonical About portrait JPEG integrity repair
+
+### Finding
+- UI smoke loaded `assets/michel_duarte_avatar.jpg` with HTTP 200, but Chromium reported `naturalWidth=0` / `naturalHeight=0`.
+- The child portrait blob matched the master asset exactly, so this was not app-local drift.
+- Binary inspection found the approved 480 × 640 progressive JPEG ended with a truncated `FF F6` marker instead of required EOI `FF D9`.
+
+### Corrective action
+- Master authority `realmichelduarte/Michel-Software-Standards` was repaired at commit `418730a7f0a8bb9e74860e80e1ffe2ed1e12f12b` by changing only the terminal marker byte; no recompression, crop, retouching or pixel-data substitution occurred.
+- Michel's Life now vendors that exact repaired canonical portrait blob `9454e22ee91f26f98723457ad5132d950270cc36` and the brand-integrity validator expects the repaired master hash.
+
+### Validation status
+- Current-commit UI/Windows/Android/source checks must pass before the reconciliation is considered verified.

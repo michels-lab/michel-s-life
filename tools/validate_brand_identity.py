@@ -31,7 +31,7 @@ expected_git_blobs={
     ROOT/'branding/michels_life_app_icon.svg':'169c62ccb7dfc7fc25532925932cde0818d7fe13',
     ROOT/'branding/michels_life_mark.svg':'420a506ecffcebd3fc1cf6dbb8875168c039abfd',
     ROOT/'branding/michels_life_lockup.svg':'edfa6026bfabbbe852d3cad8aa385de53b65775b',
-    ROOT/'branding/michel_duarte_avatar.jpg':'be4d18572bec28d53783cd4db05cb6cd289a7916',
+    ROOT/'branding/michel_duarte_avatar.jpg':'9454e22ee91f26f98723457ad5132d950270cc36',
     ROOT/'branding/michels_lab_mark.png':'f205c15c3b6bd7fe676ced83fd1ea2ae24c25586',
     ROOT/'branding/michels_lab_lockup.png':'7819ef5c7d1a5c338c67c9bbd517e5448724a5cf',
 }
