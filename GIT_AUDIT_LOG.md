@@ -551,3 +551,22 @@ Public state:
 - Public v3.0.216 remains unpublished.
 - Remaining gates are live Windows↔Android same-account Supabase validation, interactive Windows shell validation, Android upload signing / signed Play AAB, then merge + GitHub Release.
 - Distribution constraint carried forward: do not send APK/ZIP/build artifacts through chat; final distributable artifacts are handled through GitHub Release.
+
+
+## 2026-10-06 — Final continuation verification before live device gate
+
+- Branch HEAD before this documentation update: `b031ab5a76a0ff09c7fe871e9cade1a84bc62b30`.
+- PR #10 remains open, draft and mergeable.
+- Current-HEAD validation is fully green:
+  - Source validation #752 — SUCCESS.
+  - UI smoke #638 — SUCCESS.
+  - Android UI smoke #60 — SUCCESS.
+  - Android native build #83 — SUCCESS.
+  - Windows release build #29 — SUCCESS.
+- Current native artifacts:
+  - Windows `MichelsLife-v3.0.216` artifact id `11383451755`, GitHub digest `sha256:8d7c89aab311166d0e9b24ab96c5fa35aa7ddf9b4e45daafafdd89e8f9dc6712`.
+  - Android `MichelsLife-Android-TEST-v0.2.2` artifact id `11382903182`, GitHub digest `sha256:45dbf60c0392249490a30daf8fadd3b8d7279a83a1cb93eeda160e22334bc5ab`.
+- Android CI still reports `PLAY_BUNDLE_SIGNING=UNSIGNED` because the repository upload-signing secrets are empty. The connected GitHub integration does not expose repository-secret write APIs, so this cannot be completed programmatically from this chat.
+- Supabase project `michels-life` remains security-clean: Security Advisor has 0 findings and all three production tables have RLS enabled.
+- Production table row counts remain zero. Therefore the remaining Supabase gate is genuinely live-account/native validation, not missing implementation or CI coverage.
+- Public Michel's Life release remains v3.0.215. v3.0.216 must remain unpublished until the real Windows↔Android account test and Windows native-shell interaction are completed.
