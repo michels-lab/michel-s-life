@@ -30606,7 +30606,7 @@ window.MLV216QuickCapture={open,close,capture:saveCapture};
 .mlv216-supa-kpi{border:1px solid rgba(255,255,255,.07);border-radius:11px;padding:9px;background:rgba(255,255,255,.02)}
 .mlv216-supa-kpi small,.mlv216-supa-kpi b{display:block}.mlv216-supa-kpi small{font-size:8px;color:var(--muted)}.mlv216-supa-kpi b{font-size:10.5px;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mlv216-supa-auth{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.mlv216-supa-auth label{display:grid;gap:4px;font-size:9px;color:var(--muted)}
-.mlv216-supa-auth input{width:100%}.mlv216-supa-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.mlv216-supa-auth input{width:100%}.mlv216-supa-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.mlv216-supa-auth-modes{display:inline-flex;gap:4px;padding:3px;margin-top:11px;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(255,255,255,.02)}.mlv216-supa-auth-mode{border:0;background:transparent;color:var(--muted);padding:6px 9px;border-radius:7px;font-size:9px;cursor:pointer}.mlv216-supa-auth-mode.active{background:rgba(117,228,255,.10);color:var(--text)}.mlv216-supa-code-hint{font-size:8.5px;color:var(--muted);margin-top:7px}
 .mlv216-supa-device-list{display:grid;gap:6px;margin-top:10px}.mlv216-supa-device{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px;border:1px solid rgba(255,255,255,.06);border-radius:10px}.mlv216-supa-device small{display:block;color:var(--muted);font-size:8.5px;margin-top:2px}
 .mlv216-supa-note{font-size:9px;color:var(--muted);line-height:1.45;margin-top:9px}.mlv216-supa-error{color:#ffcf8a}
 @media(max-width:680px){.mlv216-supa-grid,.mlv216-supa-auth{grid-template-columns:1fr}}
@@ -30621,6 +30621,8 @@ const PUBLISHABLE_KEY='sb_publishable_ugWnaeKPRdH55vVNOtugjw_lBAqG7tr';
 const SESSION_KEY='michelsLife.supabase.session.v30216';
 const META_KEY='michelsLife.supabase.meta.v30216';
 const DEVICE_KEY='michelsLife.supabase.device.v30216';
+const AUTH_MODE_KEY='michelsLife.supabase.authMode.v30216';
+const OTP_EMAIL_KEY='michelsLife.supabase.otpEmail.v30216';
 const POLL_MS=30000;
 let syncTimer=0,pollTimer=0,applying=false,mountTimer=0,lastOverviewAt=0;
 let overview={devices:[],backups:[],currentDeviceId:'',currentDeviceName:''};
@@ -30671,6 +30673,18 @@ async function signUp(email,password){
    else notify(es()?'Cuenta creada':'Account created',es()?'Revisa tu correo para confirmar la cuenta y después inicia sesión.':'Check your email to confirm the account, then sign in.');
    return data
  }catch(err){runtime.cloudError=String(err.message||err);throw err}finally{runtime.cloudBusy=false;runtime.cloudAction='';scheduleMount()}
+}
+function authMode(){return localStorage.getItem(AUTH_MODE_KEY)==='code'?'code':'password'}
+function setAuthMode(mode){localStorage.setItem(AUTH_MODE_KEY,mode==='code'?'code':'password');runtime.cloudError='';scheduleMount()}
+async function requestOtp(email){
+ runtime.cloudBusy=true;runtime.cloudAction='auth-code';runtime.cloudError='';scheduleMount();
+ try{await request('/auth/v1/otp',{method:'POST',body:{email,create_user:false}});localStorage.setItem(OTP_EMAIL_KEY,email);notify(es()?'Código enviado':'Code sent',es()?'Revisa tu correo e introduce el código de 6 dígitos.':'Check your email and enter the 6-digit code.');return true}
+ catch(err){runtime.cloudError=String(err.message||err);throw err}finally{runtime.cloudBusy=false;runtime.cloudAction='';scheduleMount()}
+}
+async function verifyOtp(email,token){
+ runtime.cloudBusy=true;runtime.cloudAction='auth-code';runtime.cloudError='';scheduleMount();
+ try{const data=await request('/auth/v1/verify',{method:'POST',body:{email,token,type:'email'}});storeSession(data);localStorage.removeItem(OTP_EMAIL_KEY);await initializeAfterAuth();return data}
+ catch(err){runtime.cloudError=String(err.message||err);throw err}finally{runtime.cloudBusy=false;runtime.cloudAction='';scheduleMount()}
 }
 function signOutLocal(){localStorage.removeItem(SESSION_KEY);runtime.connected=false;runtime.cloudReady=false;runtime.account='';runtime.cloudLastSync='';runtime.revision=0;overview={devices:[],backups:[],currentDeviceId:deviceId(),currentDeviceName:deviceName()};scheduleMount()}
 async function signOut(){
@@ -30762,12 +30776,14 @@ function getOverview(){return overview}
 async function initializeAfterAuth(){
  syncRuntime();await refreshOverview();const remote=await remoteState(await ensureSession());if(!remote)await push('first_upload');else{const m=meta();if(!m.revision){runtime.cloudConflict={message:'Existing Supabase data requires an explicit first-device choice.',remoteRevision:Number(remote.revision||0),localRevision:0};runtime.lastRemoteAt=remote.updated_at||''}}scheduleMount()
 }
-function copy(){return es()?{title:'Sync de Michel’s Life',desc:'Supabase es la nube principal para Desktop y Android.',account:'Cuenta',status:'Estado',revision:'Revisión',signed:'Conectado',offline:'Sin sesión',email:'Correo',password:'Contraseña',login:'Iniciar sesión',signup:'Crear cuenta',logout:'Cerrar sesión',sync:'Sincronizar ahora',upload:'Usar este PC',download:'Usar nube',devices:'Dispositivos',none:'Todavía no hay dispositivos sincronizados.',primary:'Supabase es la fuente de verdad. Google Drive queda temporalmente como respaldo de transición.'}:{title:'Michel’s Life Sync',desc:'Supabase is the primary cloud for Desktop and Android.',account:'Account',status:'Status',revision:'Revision',signed:'Connected',offline:'Signed out',email:'Email',password:'Password',login:'Sign in',signup:'Create account',logout:'Sign out',sync:'Sync now',upload:'Use this PC',download:'Use cloud',devices:'Devices',none:'No synced devices yet.',primary:'Supabase is the source of truth. Google Drive remains temporarily as a transition fallback.'}}
+function copy(){return es()?{title:'Sync de Michel’s Life',desc:'Supabase es la nube principal para Desktop y Android.',account:'Cuenta',status:'Estado',revision:'Revisión',signed:'Conectado',offline:'Sin sesión',email:'Correo',password:'Contraseña',login:'Iniciar sesión',signup:'Crear cuenta',logout:'Cerrar sesión',sync:'Sincronizar ahora',upload:'Usar este PC',download:'Usar nube',devices:'Dispositivos',none:'Todavía no hay dispositivos sincronizados.',primary:'Supabase es la fuente de verdad. Google Drive queda temporalmente como respaldo de transición.',passwordMode:'Contraseña',codeMode:'Código',sendCode:'Enviar código',verifyCode:'Entrar con código',code:'Código de 6 dígitos',codeHint:'La contraseña es el método principal. Usa código solo cuando lo prefieras o no tengas tu contraseña a la mano.'}:{title:'Michel’s Life Sync',desc:'Supabase is the primary cloud for Desktop and Android.',account:'Account',status:'Status',revision:'Revision',signed:'Connected',offline:'Signed out',email:'Email',password:'Password',login:'Sign in',signup:'Create account',logout:'Sign out',sync:'Sync now',upload:'Use this PC',download:'Use cloud',devices:'Devices',none:'No synced devices yet.',primary:'Supabase is the source of truth. Google Drive remains temporarily as a transition fallback.',passwordMode:'Password',codeMode:'Code',sendCode:'Send code',verifyCode:'Sign in with code',code:'6-digit code',codeHint:'Password is the primary sign-in method. Use a code only when you prefer it or do not have your password handy.'}}
 function cardHtml(){
- const c=copy(),s=session(),devices=overview.devices||[];
+ const c=copy(),s=session(),devices=overview.devices||[],mode=authMode(),otpEmail=localStorage.getItem(OTP_EMAIL_KEY)||'';
+ const authHtml=runtime.connected?'':'<div class="mlv216-supa-auth-modes" role="tablist"><button type="button" class="mlv216-supa-auth-mode '+(mode==='password'?'active':'')+'" data-mlv216-supa="mode-password">'+esc(c.passwordMode)+'</button><button type="button" class="mlv216-supa-auth-mode '+(mode==='code'?'active':'')+'" data-mlv216-supa="mode-code">'+esc(c.codeMode)+'</button></div>'+
+ (mode==='password'?'<div class="mlv216-supa-auth"><label>'+esc(c.email)+'<input type="email" autocomplete="username" data-mlv216-supa-email></label><label>'+esc(c.password)+'<input type="password" autocomplete="current-password" data-mlv216-supa-password></label></div><div class="mlv216-supa-actions"><button class="btn primary" data-mlv216-supa="login">'+esc(c.login)+'</button><button class="btn ghost" data-mlv216-supa="signup">'+esc(c.signup)+'</button></div>':'<div class="mlv216-supa-auth"><label>'+esc(c.email)+'<input type="email" autocomplete="username" value="'+esc(otpEmail)+'" data-mlv216-supa-email></label><label>'+esc(c.code)+'<input type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" data-mlv216-supa-code></label></div><div class="mlv216-supa-actions"><button class="btn primary" data-mlv216-supa="send-code">'+esc(c.sendCode)+'</button><button class="btn ghost" data-mlv216-supa="verify-code">'+esc(c.verifyCode)+'</button></div><div class="mlv216-supa-code-hint">'+esc(c.codeHint)+'</div>');
  return '<section class="card mlv216-supa-card" data-mlv216-supabase-card data-v30171-owner="sync"><div class="section-title"><div><h2>'+esc(c.title)+'</h2><p>'+esc(c.desc)+'</p></div><span class="pill '+(runtime.connected?'good':'')+'">Supabase</span></div>'+
  '<div class="mlv216-supa-grid"><div class="mlv216-supa-kpi"><small>'+esc(c.status)+'</small><b>'+esc(runtime.connected?c.signed:c.offline)+'</b></div><div class="mlv216-supa-kpi"><small>'+esc(c.account)+'</small><b>'+esc(runtime.account||'—')+'</b></div><div class="mlv216-supa-kpi"><small>'+esc(c.revision)+'</small><b>'+esc(String(runtime.revision||'—'))+'</b></div></div>'+
- (runtime.connected?'<div class="mlv216-supa-actions"><button class="btn primary" data-mlv216-supa="sync" '+(runtime.cloudBusy?'disabled':'')+'>'+esc(c.sync)+'</button><button class="btn" data-mlv216-supa="upload" '+(runtime.cloudBusy?'disabled':'')+'>'+esc(c.upload)+'</button><button class="btn ghost" data-mlv216-supa="download" '+(runtime.cloudBusy?'disabled':'')+'>'+esc(c.download)+'</button><button class="btn ghost" data-mlv216-supa="logout">'+esc(c.logout)+'</button></div>':'<div class="mlv216-supa-auth"><label>'+esc(c.email)+'<input type="email" autocomplete="username" data-mlv216-supa-email></label><label>'+esc(c.password)+'<input type="password" autocomplete="current-password" data-mlv216-supa-password></label></div><div class="mlv216-supa-actions"><button class="btn primary" data-mlv216-supa="login">'+esc(c.login)+'</button><button class="btn ghost" data-mlv216-supa="signup">'+esc(c.signup)+'</button></div>')+
+ (runtime.connected?'<div class="mlv216-supa-actions"><button class="btn primary" data-mlv216-supa="sync" '+(runtime.cloudBusy?'disabled':'')+'>'+esc(c.sync)+'</button><button class="btn" data-mlv216-supa="upload" '+(runtime.cloudBusy?'disabled':'')+'>'+esc(c.upload)+'</button><button class="btn ghost" data-mlv216-supa="download" '+(runtime.cloudBusy?'disabled':'')+'>'+esc(c.download)+'</button><button class="btn ghost" data-mlv216-supa="logout">'+esc(c.logout)+'</button></div>':authHtml)+
  (runtime.cloudError?'<div class="mlv216-supa-note mlv216-supa-error">'+esc(runtime.cloudError)+'</div>':'')+
  '<div class="mlv216-supa-note">'+esc(c.primary)+'</div><div class="section-title" style="margin-top:12px"><div><h3>'+esc(c.devices)+'</h3></div></div><div class="mlv216-supa-device-list">'+(devices.length?devices.map(d=>'<div class="mlv216-supa-device"><div><b>'+esc(d.deviceName||d.platform||'Device')+(d.deviceId===deviceId()?' · '+(es()?'Este equipo':'This PC'):'')+'</b><small>'+esc(d.platform||'')+' · v'+esc(d.appVersion||'—')+'</small></div><span class="pill">'+esc(d.lastAction||'synced')+'</span></div>').join(''):'<div class="mlv216-supa-note">'+esc(c.none)+'</div>')+'</div></section>'
 }
@@ -30779,7 +30795,11 @@ function scheduleMount(){clearTimeout(mountTimer);mountTimer=setTimeout(mount,30
 document.addEventListener('click',async e=>{
  const b=e.target.closest?.('[data-mlv216-supa]');if(!b)return;e.preventDefault();e.stopPropagation();const a=b.dataset.mlv216Supa;
  try{
+  if(a==='mode-password'){setAuthMode('password');return}
+  if(a==='mode-code'){setAuthMode('code');return}
   if(a==='login'||a==='signup'){const root=b.closest('[data-mlv216-supabase-card]'),email=root?.querySelector('[data-mlv216-supa-email]')?.value.trim(),password=root?.querySelector('[data-mlv216-supa-password]')?.value||'';if(!email||password.length<6){notify('Supabase',es()?'Escribe correo y una contraseña de al menos 6 caracteres.':'Enter an email and a password with at least 6 characters.');return}await (a==='login'?signIn(email,password):signUp(email,password))}
+  else if(a==='send-code'){const root=b.closest('[data-mlv216-supabase-card]'),email=root?.querySelector('[data-mlv216-supa-email]')?.value.trim();if(!email){notify('Supabase',es()?'Escribe tu correo para recibir el código.':'Enter your email to receive the code.');return}await requestOtp(email)}
+  else if(a==='verify-code'){const root=b.closest('[data-mlv216-supabase-card]'),email=root?.querySelector('[data-mlv216-supa-email]')?.value.trim(),token=(root?.querySelector('[data-mlv216-supa-code]')?.value||'').replace(/\D/g,'');if(!email||token.length!==6){notify('Supabase',es()?'Escribe tu correo y el código de 6 dígitos.':'Enter your email and the 6-digit code.');return}await verifyOtp(email,token)}
   else if(a==='logout')await signOut();else if(a==='sync')await sync('auto',{silent:false});else if(a==='upload')await sync('upload',{silent:false});else if(a==='download'){if(confirm(es()?'¿Usar la copia de Supabase en este equipo? Se conservará la sesión.':'Use the Supabase copy on this PC? Your session will be preserved.'))await sync('download',{silent:false})}
  }catch(err){notify(es()?'Supabase':'Supabase',String(err.message||err),'error')}finally{scheduleMount()}
 },true);
@@ -30799,7 +30819,7 @@ window.addEventListener('focus',()=>{if(runtime.connected){refreshOverview();if(
 syncRuntime();
 ensureSession().then(s=>{if(s){refreshOverview();clearInterval(pollTimer);pollTimer=setInterval(()=>{refreshOverview();sync('auto',{silent:true}).catch(()=>{})},POLL_MS)}}).catch(err=>{runtime.cloudError=String(err.message||err);scheduleMount()});
 setTimeout(mount,500);
-window.SupabaseSyncV30216={version:BUILD,provider:'Supabase',runtime,signIn,signUp,signOut,sync,push,pull,capture,refreshOverview,getOverview,session,deviceId,platform,applySnapshot,mount};
+window.SupabaseSyncV30216={version:BUILD,provider:'Supabase',runtime,signIn,signUp,requestOtp,verifyOtp,authMode,setAuthMode,signOut,sync,push,pull,capture,refreshOverview,getOverview,session,deviceId,platform,applySnapshot,mount};
 })();
 </script>
 
