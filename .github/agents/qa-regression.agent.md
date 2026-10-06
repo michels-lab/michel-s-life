@@ -18,3 +18,6 @@ Check the requested surface plus likely adjacent regressions. Pay special attent
 Use current-commit tests/builds, not old release evidence. Device/cloud/Play checks remain open unless actually executed.
 
 Do not redesign the product during an audit. If assigned to fix findings, make the smallest coherent correction and update the proper audit log.
+
+For UI/About changes, treat identity/About regression as a real defect: verify recognizable canonical logo geometry, product-derived visual language, product → author → Michel's Lab hierarchy, canonical portrait usage, and social controls that visibly show both network icon and network name.
+
