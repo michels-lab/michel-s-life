@@ -620,3 +620,21 @@ Public state:
 - Supabase project `michels-life` remains security-clean: Security Advisor has 0 findings and all three production tables have RLS enabled.
 - Production table row counts remain zero. Therefore the remaining Supabase gate is genuinely live-account/native validation, not missing implementation or CI coverage.
 - Public Michel's Life release remains v3.0.215. v3.0.216 must remain unpublished until the real Windows↔Android account test and Windows native-shell interaction are completed.
+
+## 2026-10-06 — Reconcile desktop-v3.0.216 with current main governance
+
+### Integration
+- Reconciled the v3.0.216 Desktop/Supabase branch with current `main` governance without discarding branch functionality or the newly adopted canonical Michel's Life identity.
+- Integrated `AGENTS.md`, GitHub Copilot instructions, App Maintainer / QA Regression / Release Manager agents, and the ChatGPT-ready task template from current `main`.
+- Current Michel's Lab identity/About/claim/handoff contracts become authoritative on this branch.
+
+### Shared release bootstrap resolution
+- Kept v3.0.216's active `tools/download_latest_michels_life_bundle.py` path because it is Michel's Life-specific: stable `vX.Y.Z` only, no draft/prerelease, required `AppBundle.zip`, highest semantic version selected from the shared release repository.
+- Also integrated the reusable `tools/download_release_asset.py` + unit test from `main`; Source validation runs the test as an additional regression guard.
+
+### Animation regression merge
+- Adopted current `main`'s bounded requestAnimationFrame frame-advance check for Spanish seasonal tab switching, separating first-paint latency from actual animation progress.
+
+### Release boundary
+- No version bump or release publication is authorized by this reconciliation.
+- Current-commit CI is required before this reconciliation is treated as verified.

@@ -25,6 +25,9 @@ jobs:
       - name: Release-readiness smoke tests
         run: python tools/release_smoke_test.py
 
+      - name: Shared release asset resolver tests
+        run: python tools/test_download_release_asset.py
+
       - name: Canonical frontend validation
         run: |
           python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
