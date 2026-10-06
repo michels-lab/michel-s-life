@@ -30732,8 +30732,9 @@ function applySnapshot(snapshot){
  applying=true;
  try{
    const preserved={};[SESSION_KEY,META_KEY,DEVICE_KEY].forEach(k=>{const v=localStorage.getItem(k);if(v!=null)preserved[k]=v});
+   const restoredState=incoming?(typeof migrate==='function'?migrate(JSON.parse(JSON.stringify(incoming))):JSON.parse(JSON.stringify(incoming))):null;
    localStorage.clear();if(ls)for(const [k,v] of Object.entries(ls))localStorage.setItem(k,String(v));for(const [k,v] of Object.entries(preserved))localStorage.setItem(k,v);
-   if(incoming)localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(incoming));
+   if(restoredState){state=restoredState;localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(restoredState))}
  }finally{applying=false}
 }
 async function pull({reload=true}={}){
