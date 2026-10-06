@@ -96,6 +96,7 @@ try{
     hasCode:!!document.querySelector('[data-mlv216-supa-code]')
   }));
   ok(codeMode.mode==='code'&&codeMode.codeActive&&codeMode.hasCode,'Optional code mode did not activate: '+JSON.stringify(codeMode));
+  ok((await page.evaluate(()=>localStorage.getItem('michelsLife.supabase.authMode.v30216')))===null,'Code mode must not persist as the next-session default');
   await page.fill('[data-mlv216-supa-email]','sync-test@example.com');
   await page.click('[data-mlv216-supa="send-code"]');
   await page.waitForTimeout(80);
