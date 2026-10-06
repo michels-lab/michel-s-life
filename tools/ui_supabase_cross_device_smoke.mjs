@@ -84,7 +84,7 @@ async function newDevice(browser,platform){
   },platform);
   const page=await context.newPage();
   await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
-  await page.waitForFunction(()=>window.SupabaseSyncV30216&&window.state,null,{timeout:60000});
+  await page.waitForFunction(()=>window.SupabaseSyncV30216,null,{timeout:60000});
   return {context,page};
 }
 
@@ -94,7 +94,7 @@ async function sessionSnapshot(page){
     deviceId:window.SupabaseSyncV30216.deviceId(),
     runtime:{...window.SupabaseSyncV30216.runtime},
     meta:JSON.parse(localStorage.getItem('michelsLife.supabase.meta.v30216')||'{}'),
-    xp:Number(window.state?.xp||0)
+    xp:Number(state?.xp||0)
   }));
 }
 
@@ -133,7 +133,7 @@ try{
 
   await android.page.evaluate(async()=>window.SupabaseSyncV30216.pull({reload:false}));
   await android.page.reload({waitUntil:'domcontentloaded'});
-  await android.page.waitForFunction(()=>window.SupabaseSyncV30216&&window.state,null,{timeout:60000});
+  await android.page.waitForFunction(()=>window.SupabaseSyncV30216,null,{timeout:60000});
   const androidAdopted=await sessionSnapshot(android.page);
   ok(Number(androidAdopted.meta.revision)===desktopRevision,'Android explicit cloud choice did not adopt desktop revision');
   ok(androidAdopted.xp===desktopXp,'Android did not restore the Windows master state');
@@ -155,7 +155,7 @@ try{
 
   await desktop.page.evaluate(async()=>window.SupabaseSyncV30216.pull({reload:false}));
   await desktop.page.reload({waitUntil:'domcontentloaded'});
-  await desktop.page.waitForFunction(()=>window.SupabaseSyncV30216&&window.state,null,{timeout:60000});
+  await desktop.page.waitForFunction(()=>window.SupabaseSyncV30216,null,{timeout:60000});
   const desktopRestored=await sessionSnapshot(desktop.page);
   ok(Number(desktopRestored.meta.revision)===androidRevision,'Windows explicit cloud restore did not adopt Android revision');
   ok(desktopRestored.xp===androidXp,'Windows did not restore Android state');
