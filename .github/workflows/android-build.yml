@@ -56,7 +56,7 @@ jobs:
       - name: Download current Michel's Life AppBundle
         run: |
           mkdir -p android/build
-          curl -L --fail --retry 3             "https://github.com/$RELEASES_REPO/releases/latest/download/AppBundle.zip"             -o android/build/AppBundle.zip
+          python tools/download_release_asset.py --repo "$RELEASES_REPO" --asset AppBundle.zip --tag-prefix v --output android/build/AppBundle.zip
 
       - name: Prepare Android web assets
         run: |
