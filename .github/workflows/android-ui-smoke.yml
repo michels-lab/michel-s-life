@@ -11,6 +11,7 @@ on:
       - 'tools/ui_android_mobile_smoke.mjs'
       - 'tools/ui_supabase_android_sync_smoke.mjs'
       - 'src/MichelsLife/frontend/**'
+      - 'branding/**'
       - 'tools/bump_frontend_version.py'
       - 'tools/enable_i18n.py'
       - 'tools/validate_generated_index.py'
@@ -58,7 +59,11 @@ jobs:
           python tools/replace_bundle_index.py --bundle artifacts/AppBundle-android.zip --index src/MichelsLife/frontend/index.html
           python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-android.zip --source src/MichelsLife/frontend/i18n.js --arcname i18n.js
           python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-android.zip --source branding/michel_duarte_avatar.jpg --arcname assets/michel_duarte_avatar.jpg
-          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-android.zip --source branding/michels_life_logo.webp --arcname assets/michels_life_logo.webp
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-android.zip --source branding/michels_life_app_icon.svg --arcname assets/michels_life_app_icon.svg
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-android.zip --source branding/michels_life_mark.svg --arcname assets/michels_life_mark.svg
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-android.zip --source branding/michels_life_lockup.svg --arcname assets/michels_life_lockup.svg
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-android.zip --source branding/michels_lab_mark.png --arcname assets/michels_lab_mark.png
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-android.zip --source branding/michels_lab_lockup.png --arcname assets/michels_lab_lockup.png
 
       - name: Prepare Android browser fixture
         run: |

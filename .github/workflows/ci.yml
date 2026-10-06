@@ -68,7 +68,7 @@ jobs:
           python tools/download_latest_michels_life_bundle.py --repo "realmichelduarte/michel-s-life-releases" --output src/MichelsLife/AppBundle.zip
           if (-not (Test-Path 'src/MichelsLife/AppBundle.zip')) { throw 'AppBundle.zip download failed.' }
 
-      - name: Generate Windows icon from selected celestial logo
+      - name: Generate Windows icon from canonical product icon
         shell: pwsh
         run: |
           choco install imagemagick --yes --no-progress
@@ -81,7 +81,7 @@ jobs:
           } else {
             $magickPath = $magick.Source
           }
-          & $magickPath 'branding/michels_life_logo.webp' -define icon:auto-resize=256,128,64,48,32,16 'src/MichelsLife/Assets/michels_life_icon.ico'
+          & $magickPath 'branding/michels_life_app_icon.svg' -define icon:auto-resize=256,128,64,48,32,16 'src/MichelsLife/Assets/michels_life_icon.ico'
           if ($LASTEXITCODE -ne 0) { throw 'Windows icon generation failed.' }
 
       - name: Compile Windows host with embedded icon

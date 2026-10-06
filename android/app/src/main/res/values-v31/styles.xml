@@ -6,5 +6,9 @@
         <item name="android:navigationBarColor">#060913</item>
         <item name="android:colorAccent">#75E4FF</item>
         <item name="android:windowBackground">@color/ml_icon_background</item>
+        <item name="android:windowSplashScreenBackground">@color/ml_icon_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
+        <item name="android:windowSplashScreenAnimationDuration">350</item>
     </style>
 </resources>

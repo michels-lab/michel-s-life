@@ -1,3 +1,14 @@
+## 2026-10-06 — Canonical Michel's Life identity adoption (implementation)
+
+- **Agent route:** Michel's Lab queue P1 → `app-maintainer`; QA validation is the next gate.
+- Replaced active legacy celestial-M/generic-star branding with the approved **The Ascent** mountain/path/star product geometry.
+- Vendored canonical product app-icon/mark/lockup assets, the approved 480×640 Michel Duarte forest-trail portrait, and current Michel's Lab mark/lockup from `Michel-Software-Standards`.
+- Windows build/Store/release/CI icon generation now derives from the canonical product app icon.
+- Android manifest now targets canonical mipmap launcher resources; Android 8+ receives an adaptive icon and Android 12+ receives a system splash using the canonical foreground geometry.
+- About now follows Product → Author → Michel's Lab → Socials, uses the canonical portrait/parent brand, displays the runtime build version, and gives every social destination a visible icon + name.
+- Added `tools/validate_brand_identity.py` and expanded Playwright UI smoke assertions.
+- **State:** source implementation complete; CI validation required before marking this work VALIDATED or closing issue #11. No release was published.
+
 ## 2026-10-06 — GitHub AppBundle resolver authentication fix
 
 - Source validation #785 failed only in the Windows compile job while resolving the bootstrap AppBundle: GitHub API returned HTTP 403 rate-limit exceeded.

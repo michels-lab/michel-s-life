@@ -1,3 +1,12 @@
+## 2026-10-06 — Canonical Michel's Life Android identity (implementation)
+
+- Replaced the active legacy JPEG launcher reference with `@mipmap/ic_launcher` / `@mipmap/ic_launcher_round`.
+- Added a flat Android vector derivative of the approved Michel's Life mountain/path/star geometry plus Android 8+ adaptive-icon resources.
+- Added Android 12+ branded splash configuration using the same canonical foreground geometry and the Michel's Life navy base.
+- Android packaging now injects the same canonical product/About assets as Desktop.
+- Cross-platform identity validation is part of the Android build contract.
+- **State:** IN PROGRESS — source implementation complete; Android CI/UI smoke must pass before this entry advances to VALIDATED. Physical-device branding review remains a separate device gate.
+
 ## 2026-10-06 — Shared Supabase authentication UX
 
 - Android uses the same Michel's Life Supabase account surface as Desktop.

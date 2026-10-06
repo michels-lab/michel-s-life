@@ -12,7 +12,11 @@ GOOGLE=ROOT/'src/MichelsLife/GoogleCalendarService.cs'
 SECRETS=ROOT/'src/MichelsLife/BuildSecrets.cs'
 DESKTOP_SHELL=ROOT/'src/MichelsLife/DesktopShell.cs'
 FRONTEND=ROOT/'src/MichelsLife/frontend/index.html'
-LOGO=ROOT/'branding/michels_life_logo.webp'
+APP_ICON=ROOT/'branding/michels_life_app_icon.svg'
+MARK=ROOT/'branding/michels_life_mark.svg'
+LOCKUP=ROOT/'branding/michels_life_lockup.svg'
+LAB_MARK=ROOT/'branding/michels_lab_mark.png'
+LAB_LOCKUP=ROOT/'branding/michels_lab_lockup.png'
 AVATAR=ROOT/'branding/michel_duarte_avatar.jpg'
 PROFILE=ROOT/'branding/developer-profile.json'
 LICENSE=ROOT/'LICENSE.txt'
@@ -21,7 +25,7 @@ WORKFLOWS=[
     ROOT/'.github/workflows/release-windows.yml',
     ROOT/'.github/workflows/build-store-msix.yml',
 ]
-for p in (PROGRAM,GOOGLE,SECRETS,DESKTOP_SHELL,FRONTEND,LOGO,AVATAR,PROFILE,LICENSE,*WORKFLOWS):
+for p in (PROGRAM,GOOGLE,SECRETS,DESKTOP_SHELL,FRONTEND,APP_ICON,MARK,LOCKUP,LAB_MARK,LAB_LOCKUP,AVATAR,PROFILE,LICENSE,*WORKFLOWS):
     assert p.exists(),f'missing {p}'
 
 program=read(PROGRAM)
@@ -52,7 +56,11 @@ subprocess.run([sys.executable,str(ROOT/'tools/enable_i18n.py'),'--index',str(FR
 frontend=read(FRONTEND)
 for marker in (
     "const VERSION='3.0.216'",
-    "assets/michels_life_logo.webp",
+    "assets/michels_life_mark.svg",
+    "assets/michels_life_lockup.svg",
+    "assets/michels_lab_lockup.png",
+    'data-mlv-product-brand="canonical"',
+    'data-mlv-author-brand="canonical"',
     "assets/michel_duarte_avatar.jpg",
     "['typography','Aa','Typography'",
     "midnights:{name:'Midnights'",
@@ -85,13 +93,15 @@ for stale in ('3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207','3.0.2
     assert stale not in frontend, f'stale frontend version remains: {stale}'
 
 workflow_text='\n'.join(read(p) for p in WORKFLOWS)
-for forbidden in ('build_frontend_v30202.py','AppPatches/v3.0.202.html','branding/michels_life_mark.svg'):
+for forbidden in ('build_frontend_v30202.py','AppPatches/v3.0.202.html','branding/michels_life_logo.webp'):
     assert forbidden not in workflow_text, f'legacy frontend build dependency remains: {forbidden}'
-for required in ('src/MichelsLife/frontend/index.html','branding/michels_life_logo.webp','assets/michels_life_logo.webp'):
+for required in ('src/MichelsLife/frontend/index.html','branding/michels_life_app_icon.svg','assets/michels_life_mark.svg','assets/michels_life_lockup.svg','assets/michels_lab_lockup.png'):
     assert required in workflow_text, f'canonical build dependency missing: {required}'
 
 security='\n'.join(read(p) for p in (PROGRAM,GOOGLE,SECRETS,FRONTEND,PROFILE,LICENSE))
 for forbidden in ('GOCSPX-','github_pat_','ghp_','client_secret_794181','sb_secret_','service_role'):
     assert forbidden.lower() not in security.lower(), f'committed secret-like value: {forbidden}'
 
-print('OK: v3.0.216 host + desktop shell + Quick Capture + automatic updates + bilingual canonical frontend + branding + clean build pipeline')
+subprocess.run([sys.executable,str(ROOT/'tools/validate_brand_identity.py')],check=True)
+
+print('OK: v3.0.216 host + desktop shell + Quick Capture + automatic updates + bilingual canonical frontend + canonical identity + clean build pipeline')

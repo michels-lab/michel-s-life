@@ -53,21 +53,20 @@ html.v3084-start-cover::before{
   background-repeat:no-repeat;
 }
 html.v3084-start-cover::after{
-  content:"MICHEL’S LIFE";
+  content:"";
   position:fixed;
   left:50%;
   top:50%;
   z-index:2147483647;
   pointer-events:none;
+  width:min(620px,82vw);
+  aspect-ratio:1600/600;
   transform:translate(-50%,-50%);
-  padding:13px 20px;
-  border:1px solid rgba(var(--ui-accent-rgb,117,228,255),.28);
-  border-radius:999px;
-  background:rgba(3,8,16,.82);
-  color:var(--ui-text,#eef6ff);
-  font:900 13px/1.1 var(--mlv-ui-font,Inter,"Segoe UI",Arial,sans-serif);
-  letter-spacing:.16em;
-  box-shadow:0 18px 54px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.08);
+  border:1px solid rgba(var(--ui-accent-rgb,117,228,255),.24);
+  border-radius:28px;
+  background:url("assets/michels_life_lockup.svg") center/92% auto no-repeat,linear-gradient(145deg,rgba(249,252,255,.94),rgba(224,236,248,.90));
+  box-shadow:0 24px 74px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.72);
+  backdrop-filter:blur(18px);
 }
 html.v3084-start-cover *,html.v3084-start-cover *::before,html.v3084-start-cover *::after{
   animation:none!important;
@@ -78,6 +77,7 @@ html.v3084-start-cover *,html.v3084-start-cover *::before,html.v3084-start-cover
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Michel's Life — Personal Progress System</title>
+<link rel="icon" href="assets/michels_life_app_icon.svg" type="image/svg+xml" data-mlv-product-icon="canonical">
 <script id="v343-theme-preload">
 (function(){
   try{
@@ -727,22 +727,23 @@ select, option{color:#eaf4ff!important;background:#0c172b!important}select:focus
 .v30171-brand-mark{width:82px!important;height:82px!important;border-radius:0!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;overflow:visible!important}
 .v30171-brand-mark>img{width:82px!important;height:82px!important;display:block!important;visibility:visible!important;opacity:1!important;position:static!important;object-fit:contain!important;filter:drop-shadow(0 8px 18px rgba(0,0,0,.28))}
 .v30171-brand-copy{min-width:0}
-.mlvdev-card{position:relative;overflow:hidden;padding:20px!important}
-.mlvdev-main{display:grid;grid-template-columns:220px minmax(0,1fr);gap:24px;align-items:stretch}
-.mlvdev-avatar-wrap{position:relative;min-width:0}
-.mlvdev-avatar{width:220px;height:270px;border-radius:24px;object-fit:cover;object-position:center 68%;display:block;border:2px solid rgba(231,187,92,.58);box-shadow:0 16px 36px rgba(0,0,0,.32)}
-.mlvdev-info{min-width:0;display:flex;flex-direction:column;justify-content:center}
-.mlvdev-title h2{margin:0;font-size:24px;line-height:1.05}.mlvdev-title p{margin:6px 0 0;color:var(--muted);font-size:11px;line-height:1.4}
-.mlvdev-copy{margin-top:15px;color:var(--muted);font-size:10.5px;line-height:1.6;max-width:720px}
-.mlvdev-contact{margin-top:11px;font-size:10px;color:var(--muted)}.mlvdev-contact a{color:inherit;text-decoration:none;border-bottom:1px dotted rgba(255,255,255,.22)}
-.mlvdev-socials{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:16px;max-width:660px}
-.mlvdev-social{min-height:58px;border-radius:13px;display:flex;align-items:center;padding:9px 12px;text-decoration:none;color:inherit;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.025);transition:transform .15s ease,border-color .15s ease,background .15s ease}
-.mlvdev-social:hover{transform:translateY(-2px);border-color:rgba(231,187,92,.42);background:rgba(231,187,92,.07)}.mlvdev-social strong{font-size:10.5px}.mlvdev-social small{display:block;margin-top:2px;font-size:8px;color:var(--muted);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mlvdev-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}.mlvdev-meta>div{padding:9px 10px;border-radius:11px;border:1px solid rgba(255,255,255,.07);background:rgba(0,0,0,.08)}.mlvdev-meta small{display:block;color:var(--muted);font-size:7.5px;font-weight:800;letter-spacing:.06em}.mlvdev-meta b{display:block;margin-top:2px;font-size:9.5px}
-.mlvdev-legal{margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,.055);font-size:8.2px;line-height:1.45;color:rgba(255,255,255,.48)}.mlvdev-copyright{display:block;margin-top:6px;font-size:7.8px;color:rgba(255,255,255,.42)}
+.brand-mark>img{width:100%;height:100%;display:block;object-fit:contain}
+.mlvdev-card{position:relative;overflow:hidden;padding:20px!important;background:radial-gradient(circle at 92% 6%,rgba(var(--ui-accent2-rgb,167,121,255),.10),transparent 34%),linear-gradient(180deg,rgba(255,255,255,.052),rgba(255,255,255,.025))!important}
+.mlvdev-product{display:grid;grid-template-columns:minmax(260px,390px) minmax(0,1fr) auto;gap:18px;align-items:center;padding-bottom:15px}
+.mlvdev-product-lockup{min-height:132px;padding:14px 18px;display:grid;place-items:center;border-radius:20px;border:1px solid rgba(var(--ui-accent-rgb,117,228,255),.18);background:linear-gradient(145deg,rgba(249,252,255,.94),rgba(224,236,248,.90));box-shadow:0 14px 34px rgba(0,0,0,.22)}
+.mlvdev-product-lockup img{display:block;width:100%;height:auto;max-height:118px;object-fit:contain}
+.mlvdev-product-copy small,.mlvdev-title small,.mlvdev-studio small,.mlvdev-version-chip small{display:block;color:var(--muted);font-size:8px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+.mlvdev-product-copy h2{margin:6px 0 4px;font-size:25px;line-height:1}.mlvdev-product-copy p{margin:0;color:var(--muted);font-size:10.5px;line-height:1.55;max-width:520px}
+.mlvdev-version-chip{min-width:102px;padding:12px 13px;border-radius:15px;border:1px solid rgba(var(--ui-gold-rgb,255,209,102),.24);background:rgba(var(--ui-gold-rgb,255,209,102),.055);text-align:right}.mlvdev-version-chip b{display:block;margin-top:5px;font-size:13px}
+.mlvdev-ascent-line{position:relative;height:28px;margin:0 0 13px}.mlvdev-ascent-line::before{content:"";position:absolute;left:2%;right:2%;bottom:7px;height:2px;border-radius:999px;background:linear-gradient(90deg,transparent,rgba(var(--ui-accent-rgb,117,228,255),.38),rgba(var(--ui-gold-rgb,255,209,102),.52),transparent);transform:skewY(-1.2deg)}.mlvdev-ascent-line::after{content:"✦";position:absolute;right:5%;top:-4px;color:var(--ui-gold,#ffd166);font-size:18px;text-shadow:0 0 18px rgba(var(--ui-gold-rgb,255,209,102),.45)}
+.mlvdev-main{display:grid;grid-template-columns:210px minmax(0,1fr);gap:24px;align-items:stretch}.mlvdev-avatar-wrap{position:relative;min-width:0}.mlvdev-avatar{width:210px;height:280px;border-radius:24px;object-fit:cover;object-position:center 42%;display:block;border:1px solid rgba(var(--ui-gold-rgb,255,209,102),.44);box-shadow:0 16px 36px rgba(0,0,0,.32)}
+.mlvdev-info{min-width:0;display:flex;flex-direction:column;justify-content:center}.mlvdev-title h2{margin:5px 0 0;font-size:23px;line-height:1.05}.mlvdev-title p{margin:6px 0 0;color:var(--muted);font-size:10.5px;line-height:1.4}
+.mlvdev-studio{display:grid;grid-template-columns:150px minmax(0,1fr);gap:13px;align-items:center;margin-top:13px;padding:10px 12px;border-radius:15px;border:1px solid rgba(var(--ui-accent2-rgb,167,121,255),.18);background:rgba(var(--ui-accent2-rgb,167,121,255),.045)}.mlvdev-studio-lockup{min-height:52px;display:grid;place-items:center;padding:6px 9px;border-radius:11px;background:rgba(255,255,255,.90)}.mlvdev-studio-lockup img{display:block;width:100%;max-height:48px;object-fit:contain}.mlvdev-studio b{display:block;margin-top:3px;font-size:11px}.mlvdev-studio p{margin:3px 0 0;color:var(--muted);font-size:9px}
+.mlvdev-socials{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:13px;max-width:690px}.mlvdev-social{min-height:54px;border-radius:13px;display:flex;align-items:center;gap:10px;padding:8px 11px;text-decoration:none;color:inherit;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.025);transition:transform .15s ease,border-color .15s ease,background .15s ease}.mlvdev-social:hover{transform:translateY(-2px);border-color:rgba(var(--ui-gold-rgb,255,209,102),.42);background:rgba(var(--ui-gold-rgb,255,209,102),.07)}.mlvdev-social-icon{width:22px;height:22px;flex:0 0 22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;color:var(--ui-accent,#75e4ff)}.mlvdev-social-icon path:not([fill="none"]){fill:currentColor;stroke:none}.mlvdev-social strong{font-size:10.5px}.mlvdev-social small{display:block;margin-top:2px;font-size:8px;color:var(--muted);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mlvdev-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:13px}.mlvdev-meta>div{padding:9px 10px;border-radius:11px;border:1px solid rgba(255,255,255,.07);background:rgba(0,0,0,.08)}.mlvdev-meta small{display:block;color:var(--muted);font-size:7.5px;font-weight:800;letter-spacing:.06em}.mlvdev-meta b{display:block;margin-top:2px;font-size:9.5px}.mlvdev-legal{margin-top:13px;padding-top:10px;border-top:1px solid rgba(255,255,255,.055);font-size:8.2px;line-height:1.45;color:rgba(255,255,255,.48)}.mlvdev-copyright{display:block;margin-top:6px;font-size:7.8px;color:rgba(255,255,255,.42)}
 .mlv-toast-unified .mlv197-toast-close{display:flex!important}
-@media(max-width:1050px){.mlvdev-main{grid-template-columns:180px minmax(0,1fr);gap:18px}.mlvdev-avatar{width:180px;height:225px}.mlvdev-socials{grid-template-columns:1fr 1fr}}
-@media(max-width:760px){.mlvdev-main{grid-template-columns:1fr}.mlvdev-avatar{width:min(100%,320px);height:360px}.mlvdev-socials,.mlvdev-meta{grid-template-columns:1fr}}
+@media(max-width:1050px){.mlvdev-product{grid-template-columns:minmax(230px,330px) minmax(0,1fr)}.mlvdev-version-chip{grid-column:2}.mlvdev-main{grid-template-columns:180px minmax(0,1fr);gap:18px}.mlvdev-avatar{width:180px;height:240px}.mlvdev-socials{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.mlvdev-product,.mlvdev-main,.mlvdev-studio{grid-template-columns:1fr}.mlvdev-version-chip{grid-column:auto;text-align:left}.mlvdev-product-lockup{min-height:110px}.mlvdev-avatar{width:min(100%,300px);height:auto;aspect-ratio:3/4}.mlvdev-socials,.mlvdev-meta{grid-template-columns:1fr}}
 </style>
 <script id="mlv-v303-typography-preload">(function(){try{var v=localStorage.getItem('michelsLife.typography.v303')||'midnights';document.documentElement.dataset.mlvTypography=v}catch(_){document.documentElement.dataset.mlvTypography='midnights'}})();</script>
 </head>
@@ -760,7 +761,7 @@ select, option{color:#eaf4ff!important;background:#0c172b!important}select:focus
 </div>
 <div class="app">
   <header class="topbar">
-    <div class="brand"><div class="brand-mark" aria-hidden="true">M</div><div><h1>Michel\'s Life</h1><p>Personal Progress System</p></div></div>
+    <div class="brand"><div class="brand-mark" aria-hidden="true"><img src="assets/michels_life_mark.svg" alt=""></div><div><h1>Michel\'s Life</h1><p>Personal Progress System</p></div></div>
     <nav class="tabs" id="tabs"></nav>
   </header>
   <section id="fixedStatusBar" class="status-strip" aria-live="polite"></section>
@@ -28460,7 +28461,7 @@ function syncNavState(wrap,a=normalizedNavTab()){
 }
 function enforceBrandLockup(side){
  if(!side)return null;
- const markup='<div class="brand v30171-brand" data-mlv-brand-lockup="v303"><div class="brand-mark v30171-brand-mark" aria-hidden="true"><img src="assets/michels_life_logo.webp" alt=""></div><div class="v30171-brand-copy"><h1 class="v30171-brand-title">MICHEL\'S LIFE</h1><p class="v30171-brand-sub">Personal Progress System</p></div></div>';
+ const markup='<div class="brand v30171-brand" data-mlv-brand-lockup="v303"><div class="brand-mark v30171-brand-mark" aria-hidden="true"><img src="assets/michels_life_mark.svg" alt=""></div><div class="v30171-brand-copy"><h1 class="v30171-brand-title">MICHEL\'S LIFE</h1><p class="v30171-brand-sub">Personal Progress System</p></div></div>';
  let brand=side.querySelector(':scope > .v30171-brand');
  if(!brand||brand.dataset.mlvBrandLockup!=='v303'){
    const t=document.createElement('template');t.innerHTML=markup;const next=t.content.firstElementChild;
@@ -28653,7 +28654,42 @@ function applyFocusSettings(preset,workValue,breakValue){
 }
 
 
-function aboutPane(){return `<section class="card mlvdev-card" data-mlv-about-core data-mlv-developer data-v30171-owner="about"><div class="mlvdev-main"><div class="mlvdev-avatar-wrap"><img class="mlvdev-avatar" src="assets/michel_duarte_avatar.jpg" alt="Michel Duarte"></div><div class="mlvdev-info"><div class="mlvdev-title"><h2>Michel Duarte</h2><p>Developer · Michel’s Lab</p></div><div class="mlvdev-copy">Michel’s Life is created and maintained by Michel Duarte under Michel’s Lab. Independent software focused on productivity, life systems and personal tools.</div><div class="mlvdev-contact">Contact: <a href="mailto:realmichelduarte@gmail.com">realmichelduarte@gmail.com</a></div><div class="mlvdev-socials"><a class="mlvdev-social" href="https://www.instagram.com/realmichelduarte/" target="_blank" rel="noopener noreferrer"><span><strong>Instagram</strong><small>@realmichelduarte</small></span></a><a class="mlvdev-social" href="https://www.facebook.com/realmichelduarte" target="_blank" rel="noopener noreferrer"><span><strong>Facebook</strong><small>realmichelduarte</small></span></a><a class="mlvdev-social" href="https://www.linkedin.com/in/realmichelduart/" target="_blank" rel="noopener noreferrer"><span><strong>LinkedIn</strong><small>realmichelduart</small></span></a><a class="mlvdev-social" href="https://github.com/realmichelduarte" target="_blank" rel="noopener noreferrer"><span><strong>GitHub</strong><small>realmichelduarte</small></span></a><a class="mlvdev-social" href="mailto:realmichelduarte@gmail.com" target="_blank" rel="noopener noreferrer"><span><strong>Email</strong><small>realmichelduarte@gmail.com</small></span></a></div><div class="mlvdev-meta"><div><small>APP</small><b>Michel’s Life</b></div><div><small>VERSION</small><b>v3.0.209</b></div><div><small>LICENSE</small><b>Proprietary · Personal use</b></div></div><div class="mlvdev-legal">Free for personal use. Unauthorized copying, modification, redistribution, rebranding, resale, sublicensing, or claiming this software as your own is not permitted without prior written permission.<span class="mlvdev-copyright">© 2026 Michel Duarte / Michel’s Lab. All rights reserved.</span></div></div></div></section>`}
+function mlvAboutSocialIcon(kind){
+ const common='class="mlvdev-social-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"';
+ if(kind==='instagram')return '<svg '+common+'><rect x="3.5" y="3.5" width="17" height="17" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.6" cy="6.6" r="1"></circle></svg>';
+ if(kind==='facebook')return '<svg '+common+'><path d="M14.2 21v-8h2.8l.5-3.2h-3.3V7.7c0-.9.4-1.8 1.9-1.8h1.6V3.1c-.3 0-1.4-.1-2.6-.1-2.6 0-4.4 1.6-4.4 4.5v2.3H8v3.2h2.7v8h3.5z"></path></svg>';
+ if(kind==='linkedin')return '<svg '+common+'><rect x="3.4" y="9" width="3.7" height="11.5" rx=".5" fill="currentColor" stroke="none"></rect><circle cx="5.25" cy="5.35" r="2.05" fill="currentColor" stroke="none"></circle><path d="M10 9h3.5v1.6h.1c.5-.9 1.7-2 3.6-2 3.8 0 4.5 2.5 4.5 5.8v6.1H18v-5.4c0-1.3 0-3-1.9-3-1.9 0-2.2 1.4-2.2 2.9v5.5H10V9z"></path></svg>';
+ if(kind==='github')return '<svg '+common+'><path d="M12 2.6a9.6 9.6 0 0 0-3 18.7c.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.2-3.4-1.2-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.6 1.1 1.6 1.1.9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.7-1.3-2.3-.3-4.7-1.1-4.7-5.1 0-1.1.4-2.1 1.1-2.8-.1-.3-.5-1.3.1-2.7 0 0 .9-.3 2.9 1.1a10 10 0 0 1 5.2 0c2-1.4 2.9-1.1 2.9-1.1.6 1.4.2 2.4.1 2.7.7.7 1.1 1.7 1.1 2.8 0 4-2.4 4.8-4.7 5.1.4.3.7 1 .7 1.9v2.5c0 .3.2.6.7.5A9.6 9.6 0 0 0 12 2.6z"></path></svg>';
+ return '<svg '+common+'><rect x="3" y="5" width="18" height="14" rx="2"></rect><path fill="none" d="M4 7l8 6 8-6"></path></svg>';
+}
+function mlvAboutSocialLink(kind,label,detail,href){return '<a class="mlvdev-social" href="'+href+'" target="_blank" rel="noopener noreferrer" aria-label="'+label+'">'+mlvAboutSocialIcon(kind)+'<span><strong>'+label+'</strong><small>'+detail+'</small></span></a>'}
+function aboutPane(){
+ const build=String(window.__MICHELS_LIFE_BUILD__||'3.0.216');
+ return `<section class="card mlvdev-card" data-mlv-about-core data-mlv-developer data-v30171-owner="about">
+ <div class="mlvdev-product" data-mlv-product-brand="canonical">
+  <div class="mlvdev-product-lockup"><img src="assets/michels_life_lockup.svg" alt="Michel’s Life"></div>
+  <div class="mlvdev-product-copy"><small>Product identity</small><h2>Michel’s Life</h2><p>Private personal productivity system for missions, focus, progress and cross-device sync.</p></div>
+  <div class="mlvdev-version-chip"><small>VERSION</small><b>v${esc(build)}</b></div>
+ </div>
+ <div class="mlvdev-ascent-line" aria-hidden="true"></div>
+ <div class="mlvdev-main">
+  <div class="mlvdev-avatar-wrap"><img class="mlvdev-avatar" src="assets/michel_duarte_avatar.jpg" alt="Michel Duarte"></div>
+  <div class="mlvdev-info" data-mlv-author-brand="canonical">
+   <div class="mlvdev-title"><small>About the author</small><h2>Michel Duarte</h2><p>Created and maintained by Michel Duarte.</p></div>
+   <div class="mlvdev-studio"><div class="mlvdev-studio-lockup"><img src="assets/michels_lab_lockup.png" alt="Michel’s Lab"></div><div><small>STUDIO</small><b>Part of Michel’s Lab</b><p>Independent software studio</p></div></div>
+   <div class="mlvdev-socials">
+    ${mlvAboutSocialLink('instagram','Instagram','@realmichelduarte','https://www.instagram.com/realmichelduarte/')}
+    ${mlvAboutSocialLink('facebook','Facebook','realmichelduarte','https://www.facebook.com/realmichelduarte')}
+    ${mlvAboutSocialLink('linkedin','LinkedIn','realmichelduart','https://www.linkedin.com/in/realmichelduart/')}
+    ${mlvAboutSocialLink('github','GitHub','realmichelduarte','https://github.com/realmichelduarte')}
+    ${mlvAboutSocialLink('email','Email','realmichelduarte@gmail.com','mailto:realmichelduarte@gmail.com')}
+   </div>
+   <div class="mlvdev-meta"><div><small>APP</small><b>Michel’s Life</b></div><div><small>VERSION</small><b>v${esc(build)}</b></div><div><small>LICENSE</small><b>Proprietary · Personal use</b></div></div>
+   <div class="mlvdev-legal">Free for personal use. Unauthorized copying, modification, redistribution, rebranding, resale, sublicensing, or claiming this software as your own is not permitted without prior written permission.<span class="mlvdev-copyright">© 2026 Michel Duarte / Michel’s Lab. All rights reserved.</span></div>
+  </div>
+ </div>
+ </section>`
+}
 function moveDataActions(panes){
  const general=panes.general,data=panes.data;if(!general||!data)return;
  const buttons=[...general.querySelectorAll('[data-v30116-action="export-unified"],[data-action="export-json"],[data-action="export-backup"],[data-action="import-json"],[data-action="import-backup"],[data-action="reset-app"]')];

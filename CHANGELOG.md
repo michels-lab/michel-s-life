@@ -1,5 +1,12 @@
 ## 3.0.216 — Supabase primary sync migration (pre-release)
 
+### Canonical Michel's Lab identity adoption — 2026-10-06
+- Adopted the approved Michel's Life **The Ascent** mountain/path/star geometry as the product identity source for Windows, Android, startup and in-app branding.
+- Rebuilt About around the governed hierarchy: product identity/version → canonical Michel Duarte portrait → official Michel's Lab parent brand → Instagram/Facebook/LinkedIn/GitHub/Email links with visible icons and network names.
+- Windows icon generation now derives from the canonical app-icon SVG; Android now uses canonical launcher/adaptive-icon geometry and Android 12+ splash branding.
+- Added a cross-platform identity validator and expanded UI smoke coverage so legacy logo drift, stale About identity and missing social icons fail CI.
+- This entry records implementation only; CI validation is recorded separately after the new branch head runs.
+
 ### Supabase backend
 - Created a dedicated **michels-life** Supabase project for Michel's Life rather than sharing the unrelated IG Cleaner backend.
 - Added authenticated master-state sync through `ml_state`, revision history through `ml_state_history`, and cross-device presence/activity through `ml_devices`.
