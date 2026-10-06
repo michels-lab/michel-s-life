@@ -1,3 +1,13 @@
+## 2026-10-06 — Password-first authentication contract
+
+### Product rule
+- Michel's Life authentication is **password-first** on both Windows and Android.
+- The default signed-out surface is email + password with Sign in / Create account actions.
+- Email OTP is an explicit fallback tab for existing accounts; OTP requests use `create_user:false` so asking for a code cannot silently create a new account.
+- OTP mode is in-memory only and is not persisted. Returning to the sign-in surface defaults back to Password.
+- Release/UI smoke now fails if Password is not the default, if Code mode persists, or if OTP request/verification payloads change unexpectedly.
+- Supabase's hosted email template must contain `{{ .Token }}` for the fallback email to display the six-digit code; the connected Supabase tooling does not expose auth-template mutation, so that project-dashboard configuration remains an external activation step.
+
 ## 2026-10-06 — Supabase concurrency, restore safety and shared-release fix
 
 ### Findings and fixes
