@@ -532,3 +532,22 @@ Public state:
 - Android package contents verified: test APK, unsigned Play AAB, their checksum files and signing-certificate report. APK includes the canonical Supabase module plus `window.__MICHELSLIFE_PLATFORM__='android'`.
 - Binary payload scans of Windows AppBundle and Android app assets found no `sb_secret_` or `service_role` credentials.
 - Migration phase status: implementation complete; live same-account Windows ↔ Android behavior remains the final functional gate before disabling the Google Drive fallback and publishing the release.
+
+
+## 2026-10-05 — LIMON canonical handoff refresh
+
+- Created `docs/CURRENT_HANDOFF.md` as the canonical resume point for the current Michel's Life development state.
+- Branch at checkpoint: `desktop-v3.0.216`.
+- Draft PR #10 remains open and mergeable.
+- Checkpoint HEAD before the handoff commit: `0f329a6e2700604e5cc5d96446a1d0dccaa6c84c`.
+- Current validation at that HEAD:
+  - Source validation #750: **SUCCESS**.
+  - UI smoke #636: **SUCCESS**.
+  - Android UI smoke #58: **SUCCESS**.
+  - Android native build #81: **SUCCESS**.
+  - Windows release build #27: **SUCCESS**.
+- Supabase project `michels-life` (`lqnkcqredlxrykynacwr`) is `ACTIVE_HEALTHY` and Security Advisor reports **0 findings**.
+- Supabase remains the primary sync authority; Google Drive remains temporary manual migration/recovery fallback only; Google Calendar remains independent.
+- Public v3.0.216 remains unpublished.
+- Remaining gates are live Windows↔Android same-account Supabase validation, interactive Windows shell validation, Android upload signing / signed Play AAB, then merge + GitHub Release.
+- Distribution constraint carried forward: do not send APK/ZIP/build artifacts through chat; final distributable artifacts are handled through GitHub Release.
