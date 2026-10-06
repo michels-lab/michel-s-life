@@ -71,6 +71,10 @@ for marker in (
     "MLV216DesktopExperience",
     "SupabaseSyncV30216",
     "lqnkcqredlxrykynacwr.supabase.co",
+    "/auth/v1/otp",
+    "/auth/v1/verify",
+    "create_user:false",
+    "authModeState='password'",
     "sb_publishable_",
     "requestIdleCallback",
 ):
