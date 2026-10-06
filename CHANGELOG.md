@@ -36,6 +36,7 @@
 - Added a Michel's Life-specific AppBundle resolver for the shared releases repository. Builds no longer use GitHub `releases/latest`, which broke when LouderMe became the repository's newest release; they now select the highest stable `vX.Y.Z` release containing `AppBundle.zip`.
 
 ### Validation
+- Final functional commit `e28e8ce36aebf2d38aeca9699877f2f1beefd5bc`: **UI smoke #657 — success**, **Android UI smoke #79 — success**, **Source validation #771 — success**, **Windows release build #48 — success**, **Android test build #102 — success**.
 - Supabase production schema: RLS enabled, anonymous table privileges revoked, Security Advisor **0 findings**.
 - Release-candidate validation on `aefcffb9`: **Source validation #746 — success**, **UI smoke #632 — success**, **Android UI smoke #54 — success**, **Windows release build #23 — success**, and **Android native build #77 — success**.
 - Source validation **#721 — success** on the shared Windows/Android Supabase product code.
