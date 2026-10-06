@@ -81,6 +81,7 @@ jobs:
         shell: pwsh
         env:
           INPUT_BUNDLE_URL: ${{ inputs.bundle_url }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python tools/download_latest_michels_life_bundle.py --repo "$env:RELEASES_REPO" --output src/MichelsLife/AppBundle.zip --url "$env:INPUT_BUNDLE_URL"
 
