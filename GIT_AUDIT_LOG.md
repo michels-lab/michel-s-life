@@ -317,3 +317,25 @@ Added `.github/ISSUE_TEMPLATE/chatgpt-task.yml` so new implementation/audit task
 
 Purpose: reduce repeated context reconstruction in future ChatGPT sessions and make repository work resumable from a bounded GitHub Issue without changing product behavior.
 \n
+
+## 2026-10-06 — Shared release repository broke AppBundle bootstrap
+
+### Finding
+- Master governance detected Source validation run `37437098395` as P0 because the Windows icon smoke job failed before compilation.
+- The failing step downloaded `AppBundle.zip` from `realmichelduarte/michel-s-life-releases/releases/latest/download/AppBundle.zip`.
+- The shared release repository's newest release was `louderme-v0.1.5`, which does not contain Michel's Life `AppBundle.zip`; GitHub therefore returned `Not Found`.
+- The same fragile `releases/latest` assumption existed in Source validation, Windows test ZIP, Microsoft Store MSIX and Windows release workflows.
+
+### Corrective action
+- Added `tools/download_release_asset.py`, which pages GitHub Releases and selects the newest non-draft release that actually contains the requested asset and matches the requested tag prefix.
+- Michel's Life bootstrap calls now require asset `AppBundle.zip` and tag prefix `v`, so unrelated shared-channel releases such as `louderme-*` cannot hijack bootstrap resolution.
+- Explicit `bundle_url` input remains supported by the Windows release workflow.
+- Added `tools/test_download_release_asset.py` and wired it into Source validation.
+
+### Scope
+- Distribution/bootstrap resolution only. No visual, generated frontend, cloud-sync or product behavior changes.
+- No release/version bump is authorized by this repair.
+
+### Validation status
+- Branch CI must demonstrate the resolver unit test plus a real Windows download/compile path before the P0 can be closed.
+
