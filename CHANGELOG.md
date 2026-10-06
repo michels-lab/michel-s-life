@@ -26,6 +26,15 @@
 - Android sync validation requires the Supabase contract and rejects privileged Supabase keys.
 - Native Google Drive code remains temporarily available as a fallback only.
 
+### Sync hardening — 2026-10-06
+- Automatic Supabase uploads now use revision compare-and-swap semantics. If another device changes the same remote revision between read and write, the conditional update affects zero rows and Michel's Life surfaces a conflict instead of overwriting the winner.
+- **Use this PC** remains an explicit force action and preserves the replaced remote snapshot in `ml_state_history`.
+- **Use cloud** now writes the current local state to Supabase history with reason `before_download_local` before applying the remote snapshot.
+- Backup Timeline restores preserve Supabase session/device metadata and republish restored state to Supabase first; Google Drive is used only when Supabase is not connected.
+- Tightened database grants to least privilege: `ml_state` and `ml_devices` get authenticated CRUD; `ml_state_history` gets authenticated SELECT/INSERT only. Client roles no longer have TRUNCATE/TRIGGER/REFERENCES privileges. Security Advisor remains at zero findings.
+- Versioned the three production Supabase migrations under `supabase/migrations/`.
+- Added a Michel's Life-specific AppBundle resolver for the shared releases repository. Builds no longer use GitHub `releases/latest`, which broke when LouderMe became the repository's newest release; they now select the highest stable `vX.Y.Z` release containing `AppBundle.zip`.
+
 ### Validation
 - Supabase production schema: RLS enabled, anonymous table privileges revoked, Security Advisor **0 findings**.
 - Release-candidate validation on `aefcffb9`: **Source validation #746 — success**, **UI smoke #632 — success**, **Android UI smoke #54 — success**, **Windows release build #23 — success**, and **Android native build #77 — success**.
