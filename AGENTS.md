@@ -19,44 +19,31 @@ Shared Michel's Lab rules live in `realmichelduarte/Michel-Software-Standards`.
 - Google Drive/OAuth changes require explicit auth, secret-boundary, conflict/recovery and real-provider validation reasoning.
 - Never commit OAuth secrets, tokens, signing material or personal app data.
 
-## Official product identity — mandatory
 
-Michel's Life uses the approved Michel's Lab canonical logo geometry from `realmichelduarte/Michel-Software-Standards`.
+## Fundamental visual identity and About — mandatory
 
-**Do not implement branding by simply pasting the source SVG into screens.** The logo is a design language, not a sticker.
+This is a **core Michel's Life product contract**, not optional branding polish.
 
-Protected identity:
-- preserve the defining mountain/path/star silhouette, proportions and spatial relationships;
-- do not stretch, skew, redraw into another symbol, or alter the geometry until it stops reading as the approved Michel's Life mark.
+### Product-wide visual system
 
-Adaptive expression is expected:
-- color may adapt to theme/context;
-- monochrome, inverted, glow, glass, outline, translucent and animated treatments are allowed;
-- mark-only and mark + product-name compositions are allowed where appropriate;
-- the mountain/path/star visual DNA should inform relevant progress paths, missions, achievements, chapter transitions and completion states.
+The approved mountain/path/star logo geometry is the foundation of the app's visual system. Preserve the defining silhouette, proportions and spatial relationships. Color, monochrome/inverted treatment, glow, glass, outline, translucency, material and motion may adapt to theme/context.
 
-A screen can be correctly branded without displaying the full logo. Prefer integrated visual language over repeated logo placement.
+Do not satisfy branding by pasting the source SVG into unrelated screens. Translate the mark's visual DNA into layout rhythm, progress paths, missions, achievements, chapter transitions, status/completion states, cards, highlights and motion where appropriate. The goal is coherent visual ancestry, not repetitive logo placement.
 
-The approved mark is the **foundation of the product-wide design system**, not just a branding asset. Its visual DNA should influence layout rhythm, cards/containers, hierarchy, progress/status states, controls, transitions, loaders, background motifs, highlights and premium moments where appropriate.
+### About hierarchy
 
-**About is a primary brand showcase.** It should give the canonical mark/lockup prominent visual presence and may use richer scale, motion, material, background motifs and composition derived from the mountain/path/star identity. Do not reduce About to a metadata page with a small logo.
+About MUST be intentionally designed in this order:
 
-Follow `standards/PRODUCT_IDENTITY_STANDARD.md` in the master standards repository as the authority.
+1. **Product identity first** — approved Michel's Life mark/lockup, product name, real current version and product-facing composition derived from the app identity.
+2. **About the author** — current canonical Michel Duarte portrait, **Michel Duarte**, and appropriate developer copy.
+3. **Michel's Lab parent brand** — official Michel's Lab mark/lockup shown as the studio/ecosystem identity without overpowering Michel's Life.
+4. **Social profiles** — each visible network link shows the recognizable network icon **and** the visible network name together, using canonical URLs from the master `brand/developer-profile.json`.
 
-## About identity — mandatory
+Do not finish About with text-only social links or icon-only social buttons. Accessibility labels/tooltips supplement the visible network name; they do not replace it.
 
-About is a primary Michel's Life brand surface, not a plain metadata/settings page.
+Treat this hierarchy and the product-wide logo-derived design language as part of product completeness. Visual work must not regress it.
 
-It MUST intentionally combine:
-- the approved product mark/lockup with prominent visual presence;
-- the current canonical Michel Duarte portrait;
-- Michel's Lab / developer identity;
-- social links using **both the recognizable network icon and the visible network name**.
-
-For social links, render icon + label together (for example Instagram icon + `Instagram`, GitHub icon + `GitHub`). Do not use text-only rows as the finished design, and do not use icon-only controls without a visible/accessibility label.
-
-Use the canonical URLs from the master `brand/developer-profile.json`. Treat the portrait, logo, social controls and metadata as one coherent branded composition derived from the product's visual language.
-
+Follow `standards/PRODUCT_IDENTITY_STANDARD.md` and `standards/ABOUT_STANDARD.md` in `realmichelduarte/Michel-Software-Standards`.
 
 ## Validation
 
