@@ -95,7 +95,7 @@ async function sessionSnapshot(page){
     runtime:{...window.SupabaseSyncV30216.runtime},
     meta:JSON.parse(localStorage.getItem('michelsLife.supabase.meta.v30216')||'{}'),
     xp:Number(state?.xp||0),
-    storedXp:Number((JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')||{}).xp||0)
+    storedXp:Number((JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')||{}).xp||0),\n    onboard:localStorage.getItem('michelsLife.onboarding.v30200'),\n    onboardingRequired:state?.settings?.onboardingRequired===true
   }));
 }
 
