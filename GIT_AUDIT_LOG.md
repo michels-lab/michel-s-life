@@ -521,3 +521,14 @@ Remaining release gates:
 
 Public state:
 - **v3.0.216 remains unpublished.**
+
+## 2026-10-05 — Final Supabase artifact audit
+- Audited branch HEAD: `d70c1e07e1cac63d13d74ca0e621f22b06815461`.
+- CI: Source validation #748 success; UI smoke #634 success; Android UI smoke #56 success; Android build #79 success; Windows release build #25 success.
+- Supabase production project `michels-life` remains security-clean: Security Advisor returned 0 findings; `ml_state`, `ml_state_history`, and `ml_devices` all report `rls_enabled=true`.
+- Downloaded Windows artifact ID `11382211312` (`MichelsLife-v3.0.216`), verified GitHub digest and local ZIP SHA-256 `1ea8e0d09eb48b3cc1eaae137de87b6d325d7dee7a1527f2ee1c7012c1702e54`.
+- Windows package contents verified: v3.0.216 portable EXE, v3.0.216 installer, AppBundle, checksum and icon. Embedded AppBundle contains `SupabaseSyncV30216` and the configured Michel’s Life Supabase project URL.
+- Downloaded Android artifact ID `11382022229` (`MichelsLife-Android-TEST-v0.2.2`), verified GitHub digest and local ZIP SHA-256 `ab7658be649ee2090df4ff7e8d1ad624dddb17289e0870f383d680aa130d618b`.
+- Android package contents verified: test APK, unsigned Play AAB, their checksum files and signing-certificate report. APK includes the canonical Supabase module plus `window.__MICHELSLIFE_PLATFORM__='android'`.
+- Binary payload scans of Windows AppBundle and Android app assets found no `sb_secret_` or `service_role` credentials.
+- Migration phase status: implementation complete; live same-account Windows ↔ Android behavior remains the final functional gate before disabling the Google Drive fallback and publishing the release.
