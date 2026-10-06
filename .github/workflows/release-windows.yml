@@ -82,11 +82,7 @@ jobs:
         env:
           INPUT_BUNDLE_URL: ${{ inputs.bundle_url }}
         run: |
-          $base = $env:INPUT_BUNDLE_URL
-          if ([string]::IsNullOrWhiteSpace($base)) {
-            $base = "https://github.com/$env:RELEASES_REPO/releases/latest/download/AppBundle.zip"
-          }
-          Invoke-WebRequest -Uri $base -OutFile 'src/MichelsLife/AppBundle.zip'
+          python tools/download_latest_michels_life_bundle.py --repo "$env:RELEASES_REPO" --output src/MichelsLife/AppBundle.zip --url "$env:INPUT_BUNDLE_URL"
 
       - name: Generate current Michel's Life icon
         shell: pwsh
