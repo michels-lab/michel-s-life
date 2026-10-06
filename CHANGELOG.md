@@ -28,11 +28,12 @@
 
 ### Validation
 - Supabase production schema: RLS enabled, anonymous table privileges revoked, Security Advisor **0 findings**.
-- Release-candidate validation on `25054d18`: **Source validation #745 — success**, **UI smoke #631 — success**, **Android UI smoke #53 — success**, **Windows release build #22 — success**, and **Android native build #76 — success**.
+- Release-candidate validation on `aefcffb9`: **Source validation #746 — success**, **UI smoke #632 — success**, **Android UI smoke #54 — success**, **Windows release build #23 — success**, and **Android native build #77 — success**.
 - Source validation **#721 — success** on the shared Windows/Android Supabase product code.
 - UI smoke **#611 — success**, including Supabase sign-in simulation, first master upload, dirty-state revision upload, newer-remote conflict protection, explicit cloud restore and the existing bilingual/UI regression suite.
 - Android-mode Supabase smoke validates Android platform detection, `and_` device identity, Android master-state attribution and Android device registration without privileged keys.
-- Windows build #22 produced the correctly versioned `MichelsLife-v3.0.216` candidate. Android build #76 produced `MichelsLife-Android-TEST-v0.2.2`; its Play AAB is intentionally marked `UNSIGNED` until the repository signing secrets are configured.
+- Windows build #23 produced the correctly versioned `MichelsLife-v3.0.216` candidate. Android build #77 produced `MichelsLife-Android-TEST-v0.2.2`; its Play AAB is intentionally marked `UNSIGNED` until the repository signing secrets are configured.
+- Supabase production tables currently contain 0 rows, confirming that no live user account has yet written production sync data.
 - Real same-account Windows ↔ Android sync/restore/conflict validation and interactive native-device checks are still required before public release; no v3.0.216 release has been published.
 
 ### Handoff / `limon`
