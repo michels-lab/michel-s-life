@@ -668,3 +668,17 @@ Public state:
 ### Validation status
 - Commit `2e463ad00d307893a6a2f404ec18f117be6ee184` contains the correction.
 - Current-commit CI must pass before the fix is considered verified.
+
+## 2026-10-06 — Cross-platform canonical brand hash validation
+
+### Finding
+- Windows release validation failed even though the branch SVG blobs exactly match the canonical Michel-Software-Standards assets.
+- The validator computed Git blob SHAs from working-tree bytes. Windows checkout line-ending conversion changed LF SVG bytes to CRLF, producing a false hash mismatch while Linux/GitHub blob identity remained correct.
+
+### Corrective action
+- Canonical text assets are normalized to repository LF bytes before Git blob SHA calculation; binary portrait/PNG assets remain byte-exact.
+- This keeps the integrity gate strict while making it deterministic across Linux and Windows runners.
+
+### Validation status
+- Commit `f266bfc019dcee9d6e12ecf40cb2242c16d53a94` contains the cross-platform correction.
+- Current-commit Windows and source validation must pass before this is considered verified.
