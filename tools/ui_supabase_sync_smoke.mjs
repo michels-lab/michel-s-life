@@ -107,6 +107,8 @@ try{
   }));
   ok(downloaded.meta.revision===9,'Explicit cloud download did not adopt remote revision');
   ok(downloaded.meta.dirty===false,'Download left local state dirty');
+  const downloadHistory=await page.evaluate(()=>window.__supaMock.history.map(x=>({revision:x.revision,reason:x.reason,source_device_id:x.source_device_id})));
+  ok(downloadHistory.some(x=>x.reason==='before_download_local'&&Number(x.revision)===2),'Cloud download did not preserve the pre-download local state: '+JSON.stringify(downloadHistory));
 
   const beforeRace=await page.evaluate(()=>window.__supaMock.pushes);
   await page.evaluate(()=>{
