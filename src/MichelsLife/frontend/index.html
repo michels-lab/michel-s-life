@@ -30621,10 +30621,9 @@ const PUBLISHABLE_KEY='sb_publishable_ugWnaeKPRdH55vVNOtugjw_lBAqG7tr';
 const SESSION_KEY='michelsLife.supabase.session.v30216';
 const META_KEY='michelsLife.supabase.meta.v30216';
 const DEVICE_KEY='michelsLife.supabase.device.v30216';
-const AUTH_MODE_KEY='michelsLife.supabase.authMode.v30216';
 const OTP_EMAIL_KEY='michelsLife.supabase.otpEmail.v30216';
 const POLL_MS=30000;
-let syncTimer=0,pollTimer=0,applying=false,mountTimer=0,lastOverviewAt=0;
+let syncTimer=0,pollTimer=0,applying=false,mountTimer=0,lastOverviewAt=0,authModeState='password';
 let overview={devices:[],backups:[],currentDeviceId:'',currentDeviceName:''};
 const runtime={connected:false,cloudReady:false,cloudBusy:false,cloudError:'',cloudConflict:null,cloudAction:'',cloudLastSync:'',account:'',revision:0,lastRemoteAt:'',provider:'Supabase'};
 function es(){return window.MichelsLifeI18n?.language==='es'}
@@ -30674,8 +30673,8 @@ async function signUp(email,password){
    return data
  }catch(err){runtime.cloudError=String(err.message||err);throw err}finally{runtime.cloudBusy=false;runtime.cloudAction='';scheduleMount()}
 }
-function authMode(){return localStorage.getItem(AUTH_MODE_KEY)==='code'?'code':'password'}
-function setAuthMode(mode){localStorage.setItem(AUTH_MODE_KEY,mode==='code'?'code':'password');runtime.cloudError='';scheduleMount()}
+function authMode(){return authModeState==='code'?'code':'password'}
+function setAuthMode(mode){authModeState=mode==='code'?'code':'password';runtime.cloudError='';scheduleMount()}
 async function requestOtp(email){
  runtime.cloudBusy=true;runtime.cloudAction='auth-code';runtime.cloudError='';scheduleMount();
  try{await request('/auth/v1/otp',{method:'POST',body:{email,create_user:false}});localStorage.setItem(OTP_EMAIL_KEY,email);notify(es()?'Código enviado':'Code sent',es()?'Revisa tu correo e introduce el código de 6 dígitos.':'Check your email and enter the 6-digit code.');return true}
