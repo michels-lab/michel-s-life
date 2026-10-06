@@ -19,6 +19,26 @@ Shared Michel's Lab rules live in `realmichelduarte/Michel-Software-Standards`.
 - Google Drive/OAuth changes require explicit auth, secret-boundary, conflict/recovery and real-provider validation reasoning.
 - Never commit OAuth secrets, tokens, signing material or personal app data.
 
+## Official product identity — mandatory
+
+Michel's Life uses the approved Michel's Lab canonical logo geometry from `realmichelduarte/Michel-Software-Standards`.
+
+**Do not implement branding by simply pasting the source SVG into screens.** The logo is a design language, not a sticker.
+
+Protected identity:
+- preserve the defining mountain/path/star silhouette, proportions and spatial relationships;
+- do not stretch, skew, redraw into another symbol, or alter the geometry until it stops reading as the approved Michel's Life mark.
+
+Adaptive expression is expected:
+- color may adapt to theme/context;
+- monochrome, inverted, glow, glass, outline, translucent and animated treatments are allowed;
+- mark-only and mark + product-name compositions are allowed where appropriate;
+- the mountain/path/star visual DNA should inform relevant progress paths, missions, achievements, chapter transitions and completion states.
+
+A screen can be correctly branded without displaying the full logo. Prefer integrated visual language over repeated logo placement.
+
+Follow `standards/PRODUCT_IDENTITY_STANDARD.md` in the master standards repository as the authority.
+
 ## Validation
 
 For Desktop changes, inspect the owning workflow/tooling and run the relevant current-commit checks. The documented baseline includes:
