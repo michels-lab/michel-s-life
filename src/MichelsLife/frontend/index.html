@@ -30787,8 +30787,9 @@ function cardHtml(){
  '<div class="mlv216-supa-note">'+esc(c.primary)+'</div><div class="section-title" style="margin-top:12px"><div><h3>'+esc(c.devices)+'</h3></div></div><div class="mlv216-supa-device-list">'+(devices.length?devices.map(d=>'<div class="mlv216-supa-device"><div><b>'+esc(d.deviceName||d.platform||'Device')+(d.deviceId===deviceId()?' · '+(es()?'Este equipo':'This PC'):'')+'</b><small>'+esc(d.platform||'')+' · v'+esc(d.appVersion||'—')+'</small></div><span class="pill">'+esc(d.lastAction||'synced')+'</span></div>').join(''):'<div class="mlv216-supa-note">'+esc(c.none)+'</div>')+'</div></section>'
 }
 function pane(){return document.querySelector('[data-v30171-pane="sync"]')}
+function cardSignature(){return JSON.stringify([authMode(),localStorage.getItem(OTP_EMAIL_KEY)||'',runtime.connected,runtime.cloudReady,runtime.cloudBusy,runtime.cloudError,runtime.account,runtime.revision,runtime.cloudLastSync,runtime.cloudConflict?.message||'',overview.currentDeviceId,overview.devices])}
 function mount(){
- if(String(state?.activeTab||'')!=='settings')return;const p=pane();if(!p)return;const old=p.querySelector('[data-mlv216-supabase-card]'),tmp=document.createElement('template');tmp.innerHTML=cardHtml();const next=tmp.content.firstElementChild;if(old)old.replaceWith(next);else p.appendChild(next)
+ if(String(state?.activeTab||'')!=='settings')return;const p=pane();if(!p)return;const old=p.querySelector('[data-mlv216-supabase-card]'),sig=cardSignature();if(old&&old.dataset.mlv216Sig===sig)return;const tmp=document.createElement('template');tmp.innerHTML=cardHtml();const next=tmp.content.firstElementChild;if(!next)return;next.dataset.mlv216Sig=sig;if(old)old.replaceWith(next);else p.appendChild(next)
 }
 function scheduleMount(){clearTimeout(mountTimer);mountTimer=setTimeout(mount,30)}
 document.addEventListener('click',async e=>{
