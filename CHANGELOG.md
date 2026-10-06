@@ -10,6 +10,8 @@
 - Android PR validation now overlays the branch's canonical frontend before running mobile/Supabase smoke tests and uses the same version-bump/i18n/validation sequence as the production Android build.
 
 ### Cross-platform sync
+- Authentication UX rule: **password-first**. Email + password is the default sign-in surface on Desktop and Android; email OTP/code is an explicit fallback and never persists as the next-session default.
+- Added optional 6-digit email OTP request/verification for existing accounts only (`create_user:false`), while account creation remains password-based.
 - Added email/password Supabase Auth, access-token refresh, persistent session handling and a dedicated Settings → Sync surface.
 - Reused the existing full Michel's Life backup payload as the initial canonical snapshot format so Missions, Journal, Projects, Stats, Chapters and settings migrate without a parallel data model.
 - Sync uses monotonic revisions and a dirty flag: unchanged polling does not create new revisions.
