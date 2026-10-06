@@ -50,6 +50,8 @@ jobs:
           "version=$v" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Download visual bundle
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: pwsh
         run: |
           python tools/download_latest_michels_life_bundle.py --repo "$env:RELEASES_REPO" --output src/MichelsLife/AppBundle.zip
