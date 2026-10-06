@@ -1,3 +1,10 @@
+## 2026-10-06 — GitHub AppBundle resolver authentication fix
+
+- Source validation #785 failed only in the Windows compile job while resolving the bootstrap AppBundle: GitHub API returned HTTP 403 rate-limit exceeded.
+- The resolver already supported `GITHUB_TOKEN`, but the workflows invoking it did not expose the Actions token to that step.
+- Updated Windows release/test/Store, source validation, UI smoke, Android build and Android UI smoke download steps to pass `secrets.GITHUB_TOKEN` only to the AppBundle resolver step.
+- Product validation before the download failure was green; this change addresses CI infrastructure rather than Michel's Life runtime behavior.
+
 ## 2026-10-06 — Password-first authentication contract
 
 ### Product rule
