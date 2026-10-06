@@ -251,3 +251,13 @@
 ## 3.0.199 — Final Five Worlds
 
 - Added Obsidian Empire, Celestial Garden, The Last Observatory, Cathedral of the Moon, and Golden Dunes as six-stage dynamic world packs.
+
+### Final Supabase packaging verification — 2026-10-05
+- Final branch HEAD `d70c1e07e1cac63d13d74ca0e621f22b06815461` passed Source validation **#748**, UI smoke **#634**, Android UI smoke **#56**, Android native build **#79** and Windows release build **#25**.
+- Windows artifact `MichelsLife-v3.0.216` was downloaded and inspected. It contains `MichelsLife-v3.0.216.exe`, installer, AppBundle and SHA-256 manifest; the embedded AppBundle contains the Supabase primary-sync module.
+- Windows artifact ZIP SHA-256: `1ea8e0d09eb48b3cc1eaae137de87b6d325d7dee7a1527f2ee1c7012c1702e54`.
+- Android artifact `MichelsLife-Android-TEST-v0.2.2` was downloaded and inspected. The APK contains the canonical frontend with the Supabase primary-sync module plus the Android bridge/platform marker.
+- Android artifact ZIP SHA-256: `ab7658be649ee2090df4ff7e8d1ad624dddb17289e0870f383d680aa130d618b`.
+- Direct package scans found no `sb_secret_` or `service_role` credentials in either Windows or Android application payloads.
+- Supabase Security Advisor for project `michels-life`: **0 security findings**. All three sync tables have RLS enabled.
+- Remaining migration gate is live same-account validation between a physical Windows install and Android device; no further schema/client implementation is pending for the snapshot-based migration phase.
