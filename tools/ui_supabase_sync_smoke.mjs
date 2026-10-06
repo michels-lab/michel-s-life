@@ -7,13 +7,13 @@ const browser=await chromium.launch({headless:true});
 try{
   const page=await browser.newPage({viewport:{width:1440,height:900}});
   await page.addInitScript(()=>{
-    window.__supaMock={remote:null,devices:[],history:[],pushes:0};
+    window.__supaMock={remote:null,devices:[],history:[],pushes:0,raceOnNextPatch:false};
     const original=window.fetch.bind(window);
     window.fetch=async (input,init={})=>{
       const u=String(input);
       if(!u.startsWith('https://lqnkcqredlxrykynacwr.supabase.co'))return original(input,init);
       const path=u.split('.supabase.co')[1]||'';
-      const json=v=>new Response(JSON.stringify(v),{status:200,headers:{'content-type':'application/json'}});
+      const json=(v,status=200)=>new Response(JSON.stringify(v),{status,headers:{'content-type':'application/json'}});
       const body=init.body?JSON.parse(init.body):null;
       if(path.startsWith('/auth/v1/token?grant_type=password')){
         return json({access_token:'access_test',refresh_token:'refresh_test',expires_in:3600,user:{id:'00000000-0000-0000-0000-000000000216',email:'sync-test@example.com'}});
@@ -23,6 +23,20 @@ try{
       }
       if(path.startsWith('/auth/v1/logout'))return json({});
       if(path.startsWith('/rest/v1/ml_state?select='))return json(window.__supaMock.remote?[window.__supaMock.remote]:[]);
+      if(path==='/rest/v1/ml_state'&&String(init.method||'GET').toUpperCase()==='POST'){
+        if(window.__supaMock.remote)return json({message:'duplicate key'},409);
+        window.__supaMock.remote=body;window.__supaMock.pushes++;return json([body]);
+      }
+      if(path.startsWith('/rest/v1/ml_state?user_id=eq.')&&String(init.method||'GET').toUpperCase()==='PATCH'){
+        if(window.__supaMock.raceOnNextPatch){
+          window.__supaMock.raceOnNextPatch=false;
+          window.__supaMock.remote={...window.__supaMock.remote,revision:Number(window.__supaMock.remote?.revision||0)+1,updated_at:new Date(Date.now()+120000).toISOString(),source_device_id:'android_race',source_platform:'android'};
+          return json([]);
+        }
+        const params=new URL(u).searchParams,expected=Number(String(params.get('revision')||'').replace(/^eq\./,''));
+        if(!window.__supaMock.remote||Number(window.__supaMock.remote.revision)!==expected)return json([]);
+        window.__supaMock.remote={...window.__supaMock.remote,...body};window.__supaMock.pushes++;return json([window.__supaMock.remote]);
+      }
       if(path.startsWith('/rest/v1/ml_state?on_conflict=')){
         window.__supaMock.remote=body;window.__supaMock.pushes++;return json([body]);
       }
@@ -94,7 +108,36 @@ try{
   ok(downloaded.meta.revision===9,'Explicit cloud download did not adopt remote revision');
   ok(downloaded.meta.dirty===false,'Download left local state dirty');
 
-  console.log('OK: Supabase auth + first upload + dirty sync + conflict protection + explicit download');
+  const beforeRace=await page.evaluate(()=>window.__supaMock.pushes);
+  await page.evaluate(()=>{
+    const m=JSON.parse(localStorage.getItem('michelsLife.supabase.meta.v30216')||'{}');
+    m.dirty=true;localStorage.setItem('michelsLife.supabase.meta.v30216',JSON.stringify(m));
+    window.__supaMock.raceOnNextPatch=true;
+  });
+  await page.evaluate(async()=>window.SupabaseSyncV30216.sync('auto',{silent:true}));
+  const race=await page.evaluate(()=>({
+    conflict:window.SupabaseSyncV30216.runtime.cloudConflict,
+    pushes:window.__supaMock.pushes,
+    remote:window.__supaMock.remote,
+    meta:JSON.parse(localStorage.getItem('michelsLife.supabase.meta.v30216')||'{}')
+  }));
+  ok(race.conflict?.remoteRevision===10,'Simultaneous remote write was not converted into a conflict: '+JSON.stringify(race));
+  ok(race.pushes===beforeRace,'Compare-and-swap race overwrote the remote state');
+  ok(race.remote?.revision===10&&race.remote?.source_device_id==='android_race','Remote race winner was not preserved: '+JSON.stringify(race.remote));
+  ok(race.meta.dirty===true,'Race conflict incorrectly cleared the local dirty flag');
+
+  await page.evaluate(async()=>window.SupabaseSyncV30216.sync('upload',{silent:true}));
+  const forced=await page.evaluate(()=>({
+    conflict:window.SupabaseSyncV30216.runtime.cloudConflict,
+    pushes:window.__supaMock.pushes,
+    remote:window.__supaMock.remote,
+    history:window.__supaMock.history
+  }));
+  ok(!forced.conflict,'Explicit Use this PC did not clear the conflict');
+  ok(forced.pushes===beforeRace+1&&forced.remote?.revision===11,'Explicit force upload did not advance the master exactly once: '+JSON.stringify(forced));
+  ok(forced.history.some(x=>Number(x.revision)===10),'Force upload did not preserve the replaced remote revision in history');
+
+  console.log('OK: Supabase auth + first upload + dirty sync + remote conflict + CAS race protection + explicit force upload/download');
 } finally {
   await browser.close();
 }
