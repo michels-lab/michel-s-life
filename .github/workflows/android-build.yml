@@ -81,7 +81,7 @@ jobs:
       - name: Download current Michel's Life AppBundle
         run: |
           mkdir -p android/build
-          curl -L --fail --retry 3             "https://github.com/$RELEASES_REPO/releases/latest/download/AppBundle.zip"             -o android/build/AppBundle.zip
+          python tools/download_latest_michels_life_bundle.py --repo "$RELEASES_REPO" --output android/build/AppBundle.zip
 
       - name: Package canonical Michel's Life frontend
         run: |
