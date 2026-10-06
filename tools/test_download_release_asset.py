@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from tools.download_release_asset import select_release_asset
+from download_release_asset import select_release_asset
 
 
 def test_skips_newer_unrelated_release():
