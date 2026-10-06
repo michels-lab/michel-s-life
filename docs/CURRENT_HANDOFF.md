@@ -5,7 +5,7 @@ Project: Michel's Life
 Repository: `realmichelduarte/michel-s-life`
 Branch: `desktop-v3.0.216`
 Draft PR: #10 — `v3.0.216: Supabase sync, desktop shell and Android integration`
-Current branch HEAD: `0f329a6e2700604e5cc5d96446a1d0dccaa6c84c`
+Current branch HEAD: `b031ab5a76a0ff09c7fe871e9cade1a84bc62b30`
 PR state: open, draft, mergeable
 Public release state: **v3.0.216 is NOT published**
 
@@ -82,14 +82,20 @@ Play packaging:
 
 ## Validation at this exact checkpoint
 
-Current HEAD `0f329a6e2700604e5cc5d96446a1d0dccaa6c84c`:
-- Source validation **#750 — SUCCESS**
-- UI smoke **#636 — SUCCESS**
-- Android UI smoke **#58 — SUCCESS**
-- Build Android test APK **#81 — SUCCESS**
-- Build Windows release **#27 — SUCCESS**
+Current HEAD `b031ab5a76a0ff09c7fe871e9cade1a84bc62b30`:
+- Source validation **#752 — SUCCESS**
+- UI smoke **#638 — SUCCESS**
+- Android UI smoke **#60 — SUCCESS**
+- Build Android test APK **#83 — SUCCESS**
+- Build Windows release **#29 — SUCCESS**
 - Supabase project: **ACTIVE_HEALTHY**
 - Supabase Security Advisor: **0 findings**
+
+Latest current-HEAD native artifacts:
+- Windows: `MichelsLife-v3.0.216`, artifact id `11383451755`, GitHub digest `sha256:8d7c89aab311166d0e9b24ab96c5fa35aa7ddf9b4e45daafafdd89e8f9dc6712`.
+- Android: `MichelsLife-Android-TEST-v0.2.2`, artifact id `11382903182`, GitHub digest `sha256:45dbf60c0392249490a30daf8fadd3b8d7279a83a1cb93eeda160e22334bc5ab`.
+- Android Play bundle is still `UNSIGNED`; repository upload-signing secrets are not configured.
+- Supabase production tables currently contain 0 rows, confirming no real user account has completed first live sync yet.
 
 Earlier artifact audits already confirmed:
 - Windows v3.0.216 package includes the Supabase client/project URL and no privileged Supabase credentials.
@@ -140,3 +146,12 @@ Do not recreate:
 - existing CI gates.
 
 The next work starts from **live cross-device validation and signing/native release gates**, not from implementation.
+
+
+## 2026-10-06 continuation note
+- Current branch HEAD verified at `b031ab5a76a0ff09c7fe871e9cade1a84bc62b30`; only documentation changed after the previous handoff checkpoint.
+- All current-HEAD CI gates are green: Source #752, UI #638, Android UI #60, Android native #83, Windows release #29.
+- Supabase Security Advisor still reports 0 findings; `ml_state`, `ml_state_history`, and `ml_devices` remain RLS-enabled.
+- Supabase row counts remain 0/0/0, so the same-account Windows↔Android production behavior still has not been exercised by a real account.
+- GitHub connector limitation: repository secret APIs are intentionally unavailable, so Android upload-signing secrets cannot be configured from this chat. This is the only blocker to producing a Play-SIGNED AAB from CI.
+- Public Michel's Life release remains v3.0.215; v3.0.216 is still intentionally unpublished.
