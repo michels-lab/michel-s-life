@@ -52,7 +52,7 @@ jobs:
       - name: Download visual bundle
         shell: pwsh
         run: |
-          Invoke-WebRequest -Uri "https://github.com/$env:RELEASES_REPO/releases/latest/download/AppBundle.zip" -OutFile 'src/MichelsLife/AppBundle.zip'
+          python tools/download_latest_michels_life_bundle.py --repo "$env:RELEASES_REPO" --output src/MichelsLife/AppBundle.zip
 
       - name: Generate current app icon
         shell: pwsh
