@@ -7,6 +7,10 @@ const browser=await chromium.launch({headless:true});
 try{
   const page=await browser.newPage({viewport:{width:1440,height:900}});
   await page.addInitScript(()=>{
+    try{
+      localStorage.setItem('michelsLife.onboarding.v30200','done');
+      localStorage.setItem('michelsLife.onboardingCompleted.v1','1');
+    }catch(_){}
     window.__supaMock={remote:null,devices:[],history:[],pushes:0,raceOnNextPatch:false};
     const original=window.fetch.bind(window);
     window.fetch=async (input,init={})=>{
