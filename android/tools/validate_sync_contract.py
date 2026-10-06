@@ -35,7 +35,9 @@ scan_suffixes = {".kt", ".kts", ".js", ".py", ".xml", ".properties"}
 security_sources = [repo / "src/MichelsLife/frontend/index.html"]
 security_sources.extend(
     p for p in root.rglob("*")
-    if p.is_file() and p.suffix.lower() in scan_suffixes
+    if p.is_file()
+    and p.resolve() != Path(__file__).resolve()
+    and p.suffix.lower() in scan_suffixes
 )
 for forbidden in ("sb_secret_", "service_role", "github_pat_", "ghp_"):
     offenders = [
