@@ -5,8 +5,9 @@ ROOT = Path(__file__).resolve().parents[1]
 bridge = (ROOT / "android-bridge.js").read_text(encoding="utf-8")
 main = (ROOT / "app/src/main/java/com/michelslab/michelslife/MainActivity.kt").read_text(encoding="utf-8")
 manifest = (ROOT / "app/src/main/AndroidManifest.xml").read_text(encoding="utf-8")
-logo = ROOT / "app/src/main/res/drawable-nodpi/michels_life_logo.jpg"
-EXPECTED_ANDROID_LOGO_BLOB_SHA = "3f170f27dcd460c45a892cde51d6385d6608cfe7"
+adaptive_icon = ROOT / "app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml"
+adaptive_round_icon = ROOT / "app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml"
+launcher_foreground = ROOT / "app/src/main/res/drawable/ic_launcher_foreground.xml"
 
 required_bridge = [
     "window.__MICHELSLIFE_ANDROID_BRIDGE__='0.2.2'",
@@ -62,14 +63,14 @@ if missing_native:
 if "__mlvAndroidHandleBack" not in main:
     raise SystemExit("MainActivity does not delegate Android back handling to the web UI")
 
-if 'android:icon="@drawable/michels_life_logo"' not in manifest or 'android:roundIcon="@drawable/michels_life_logo"' not in manifest:
-    raise SystemExit("Android manifest is not using the approved Michel's Life celestial launcher logo")
-if not logo.exists():
-    raise SystemExit("Approved Michel's Life Android launcher logo asset is missing")
-import hashlib
-logo_bytes = logo.read_bytes()
-git_blob_sha = hashlib.sha1(b"blob " + str(len(logo_bytes)).encode("ascii") + b"\0" + logo_bytes).hexdigest()
-if git_blob_sha != EXPECTED_ANDROID_LOGO_BLOB_SHA:
-    raise SystemExit("Android launcher logo is not the approved normalized celestial-logo asset")
+if 'android:icon="@mipmap/ic_launcher"' not in manifest or 'android:roundIcon="@mipmap/ic_launcher_round"' not in manifest:
+    raise SystemExit("Android manifest is not using the canonical Michel's Life launcher resources")
+for path in (adaptive_icon, adaptive_round_icon, launcher_foreground):
+    if not path.exists() or path.stat().st_size == 0:
+        raise SystemExit(f"Canonical Michel's Life Android launcher resource is missing: {path}")
+for path in (adaptive_icon, adaptive_round_icon):
+    xml = path.read_text(encoding="utf-8")
+    if '@drawable/ic_launcher_foreground' not in xml or '@color/ml_icon_background' not in xml:
+        raise SystemExit(f"Adaptive launcher icon is not wired to the canonical foreground/background: {path}")
 
-print("OK: Android UX contract covers phone + wide-emulator app mode, active-surface navigation, stable onboarding/checklists, in-drawer quick actions, hardware rendering, approved launcher logo, fixed drawer layering, swipe navigation, mission alignment and back handling")
+print("OK: Android UX contract covers phone + wide-emulator app mode, active-surface navigation, stable onboarding/checklists, in-drawer quick actions, hardware rendering, canonical adaptive launcher identity, fixed drawer layering, swipe navigation, mission alignment and back handling")
