@@ -17,7 +17,7 @@
 - Desktop Supabase smoke passed the new CAS race simulation: a synthetic Android write between read and PATCH was preserved, the Windows upload count did not advance, local dirty state remained pending, and explicit force upload advanced the master exactly once while preserving history.
 - Android UI smoke #79 — **success** on the final provider/restore code.
 - Source validation #771 — **success** on the final provider/restore code.
-- Windows and Android native builds were already green on the CAS product code before the final restore-safety-only change; final-cycle builds are tracked below when complete.
+- Final functional commit `e28e8ce36aebf2d38aeca9699877f2f1beefd5bc`: UI smoke #657 — **success**; Android UI smoke #79 — **success**; Source validation #771 — **success**; Windows release build #48 — **success**; Android test build #102 — **success**.
 
 
 ## 2026-10-05 — Final Supabase migration audit
