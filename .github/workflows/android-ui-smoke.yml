@@ -39,6 +39,8 @@ jobs:
           node-version: '22'
 
       - name: Download current Michel's Life AppBundle
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p artifacts
           python tools/download_latest_michels_life_bundle.py --repo "$RELEASES_REPO" --output artifacts/AppBundle-android.zip
