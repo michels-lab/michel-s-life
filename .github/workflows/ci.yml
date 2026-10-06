@@ -60,7 +60,7 @@ jobs:
       - name: Download current AppBundle for Windows compile
         shell: pwsh
         run: |
-          Invoke-WebRequest -Uri 'https://github.com/realmichelduarte/michel-s-life-releases/releases/latest/download/AppBundle.zip' -OutFile 'src/MichelsLife/AppBundle.zip'
+          python tools/download_release_asset.py --repo realmichelduarte/michel-s-life-releases --asset AppBundle.zip --tag-prefix v --output src/MichelsLife/AppBundle.zip
           if (-not (Test-Path 'src/MichelsLife/AppBundle.zip')) { throw 'AppBundle.zip download failed.' }
 
       - name: Generate Windows icon from selected celestial logo
