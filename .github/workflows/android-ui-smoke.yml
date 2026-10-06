@@ -41,9 +41,7 @@ jobs:
       - name: Download current Michel's Life AppBundle
         run: |
           mkdir -p artifacts
-          curl -L --fail --retry 3 \
-            "https://github.com/$RELEASES_REPO/releases/latest/download/AppBundle.zip" \
-            -o artifacts/AppBundle-android.zip
+          python tools/download_latest_michels_life_bundle.py --repo "$RELEASES_REPO" --output artifacts/AppBundle-android.zip
 
       - name: Install Chromium test runtime
         run: |
