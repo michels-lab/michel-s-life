@@ -302,3 +302,12 @@ Added the repository-level Michel's Lab governance declaration:
 - Reusable/cross-app decisions are promoted to the master standards repository.
 - The master repository polls child status centrally; this repository receives no credential that can write to the master.
 - Secret values remain prohibited from both repositories.
+
+## 2026-10-06 — GitHub Copilot agent delegation
+
+Added repository-level Copilot instructions and custom App Maintainer, QA Regression and Release Manager agents. The agent contract preserves the accepted visual base, generated AppBundle/frontend release architecture, Desktop/Android platform separation, animation validation rule, cloud/OAuth secret boundary and project-log discipline.
+
+Purpose: delegate bounded implementation, regression checks and release preparation to GitHub agents so cross-project ChatGPT work can focus on diagnosis, architecture and coordination.
+
+No product behavior, version or release artifact changed in this infrastructure-only update.
+
