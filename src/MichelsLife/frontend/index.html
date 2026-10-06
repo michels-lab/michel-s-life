@@ -30688,15 +30688,26 @@ async function writeHistory(s,row,reason){
  const body={user_id:s.user.id,snapshot:row.snapshot,revision:Number(row.revision||1),source_device_id:String(row.source_device_id||''),source_platform:String(row.source_platform||'other'),app_version:String(row.app_version||''),reason:String(reason||'before_sync')};
  await request('/rest/v1/ml_state_history',{method:'POST',access:s.access_token,body,prefer:'return=minimal'})
 }
-async function push(reason='manual'){
+async function push(reason='manual',opts={}){
  const s=await ensureSession();if(!s)throw new Error(es()?'Inicia sesión en Supabase.':'Sign in to Supabase.');
  const raw=capture();if(!raw)throw new Error('Michel’s Life could not capture a sync snapshot.');
  const snapshot=safeJson(raw,null);if(!snapshot)throw new Error('Snapshot is not valid JSON.');
- const remote=await remoteState(s),nextRevision=Math.max(Number(remote?.revision||0),Number(meta().revision||0))+1;
- if(remote?.snapshot)await writeHistory(s,remote,'before_'+reason);
- const now=new Date().toISOString(),row={user_id:s.user.id,snapshot,revision:nextRevision,source_device_id:deviceId(),source_platform:platform(),app_version:BUILD,updated_at:now};
- await request('/rest/v1/ml_state?on_conflict=user_id',{method:'POST',access:s.access_token,body:row,prefer:'resolution=merge-duplicates,return=representation'});
- saveMeta({revision:nextRevision,lastSync:now,lastRemoteAt:now,lastLocalHash:raw.length,dirty:false});
+ const localRevision=Number(meta().revision||0),remote=await remoteState(s),remoteRevision=Number(remote?.revision||0),force=!!opts.force;
+ if(remote&&!force&&remoteRevision!==localRevision){runtime.cloudConflict={message:'Remote revision '+remoteRevision+' changed before upload.',remoteRevision,localRevision};return {conflict:true,remoteRevision,localRevision}}
+ const nextRevision=Math.max(remoteRevision,localRevision)+1,now=new Date().toISOString(),row={user_id:s.user.id,snapshot,revision:nextRevision,source_device_id:deviceId(),source_platform:platform(),app_version:BUILD,updated_at:now};
+ if(!remote){
+   try{await request('/rest/v1/ml_state',{method:'POST',access:s.access_token,body:row,prefer:'return=representation'})}
+   catch(err){if(err?.status===409){const latest=await remoteState(s),latestRevision=Number(latest?.revision||0);runtime.cloudConflict={message:'Another device created the Supabase master first.',remoteRevision:latestRevision,localRevision};return {conflict:true,remoteRevision:latestRevision,localRevision}}throw err}
+ }else if(force){
+   await writeHistory(s,remote,'before_'+reason);
+   await request('/rest/v1/ml_state?on_conflict=user_id',{method:'POST',access:s.access_token,body:row,prefer:'resolution=merge-duplicates,return=representation'})
+ }else{
+   const path='/rest/v1/ml_state?user_id=eq.'+encodeURIComponent(s.user.id)+'&revision=eq.'+remoteRevision;
+   const updated=await request(path,{method:'PATCH',access:s.access_token,body:{snapshot,revision:nextRevision,source_device_id:row.source_device_id,source_platform:row.source_platform,app_version:BUILD,updated_at:now},prefer:'return=representation'});
+   if(!Array.isArray(updated)||updated.length!==1){const latest=await remoteState(s),latestRevision=Number(latest?.revision||0);runtime.cloudConflict={message:'Another device updated Supabase during this upload.',remoteRevision:latestRevision,localRevision};return {conflict:true,remoteRevision:latestRevision,localRevision}}
+   try{await writeHistory(s,remote,'before_'+reason)}catch(_){}
+ }
+ runtime.cloudConflict=null;saveMeta({revision:nextRevision,lastSync:now,lastRemoteAt:now,lastLocalHash:raw.length,dirty:false});
  runtime.cloudLastSync=now;runtime.revision=nextRevision;runtime.lastRemoteAt=now;await touchDevice(s,'upload');return row
 }
 function applySnapshot(snapshot){
@@ -30720,9 +30731,9 @@ async function sync(mode='auto',opts={}){
  try{
   const s=await ensureSession();if(!s){if(!opts.silent)notify(es()?'Supabase':'Supabase',es()?'Inicia sesión para sincronizar.':'Sign in to sync.');return null}
   const remote=await remoteState(s),m=meta();
-  if(!remote){const out=await push('first_upload');if(!opts.silent)notify(es()?'Sincronizado':'Synced',es()?'Este equipo creó el estado maestro en Supabase.':'This PC created the master state in Supabase.');return out}
+  if(!remote){const out=await push('first_upload');if(!out?.conflict&&!opts.silent)notify(es()?'Sincronizado':'Synced',es()?'Este equipo creó el estado maestro en Supabase.':'This PC created the master state in Supabase.');return out}
   if(mode==='download')return await pull({reload:opts.reload!==false});
-  if(mode==='upload')return await push('manual_upload');
+  if(mode==='upload')return await push('manual_upload',{force:true});
   const remoteRev=Number(remote.revision||0),localRev=Number(m.revision||0);
   if(remoteRev>localRev){if(!opts.silent)notify(es()?'Cambio remoto disponible':'Remote change available',es()?'Supabase tiene una revisión más nueva. Abre Sync Center para usarla.':'Supabase has a newer revision. Open Sync Center to use it.');runtime.cloudConflict={message:'Remote revision '+remoteRev+' is newer than local revision '+localRev,remoteRevision:remoteRev,localRevision:localRev};return remote}
   runtime.cloudConflict=null;if(m.dirty)return await push('auto');await touchDevice(s,'online');return remote;
