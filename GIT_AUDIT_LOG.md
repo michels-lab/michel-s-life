@@ -345,3 +345,9 @@ After the shared-release resolver was fixed, Source validation passed but UI smo
 
 The test now measures first-paint latency separately and then requires a real seasonal frame-counter advance within a bounded 350 ms requestAnimationFrame window. This preserves the required functional animation evidence while avoiding a false failure caused by two checks landing in the same animation frame.
 
+## 2026-10-06 — Intelligent Michel's Lab brand-adoption guidance
+
+Repository instructions now explicitly route logo, launcher, splash/startup and About work through the Michel-Software-Standards Product Identity Standard and Brand Adoption Playbook.
+
+The required interpretation is structural integration rather than sticker placement: replace active legacy identity, adapt canonical geometry to the existing product design language, preserve unrelated behavior, validate the build, and keep release publication separate unless explicitly authorized.
+
