@@ -767,3 +767,17 @@ Public state:
 ### Validation boundary
 - Current-commit CI must pass before this test repair is considered verified.
 
+## 2026-10-06 — Incomplete Chapter Scene card reconstruction
+
+### Finding
+- UI smoke on `e86a43d3cbce3b679fd4ad45c6214fe97a826cb2` reached the Chapters interaction test and found no alternate scene option even though the canonical `CHAPTERS` registry defines 11 scene packs.
+- `renderSettingsOwned()` treated any existing `[data-mlv184-chapter-card]` as valid and reused it without checking its contents. A stale/incomplete card could therefore survive with only the current scene.
+
+### Corrective action
+- Chapters ownership now validates the rendered scene IDs against the complete canonical `CHAPTERS` registry.
+- If the card is missing, incomplete, duplicated or otherwise does not contain the full canonical set, Michel's Life removes it and reconstructs the Chapter Scene Packs UI from `chaptersHTML()`.
+- Existing selected-scene state is preserved through the normal `chapter()` / `setChapter()` path.
+
+### Validation boundary
+- Current-commit UI smoke must demonstrate an actual alternate Chapter Scene click/state change before this regression is considered fixed.
+
