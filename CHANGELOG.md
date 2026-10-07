@@ -1,5 +1,12 @@
 ## 3.0.216 — Supabase primary sync migration (pre-release)
 
+### Windows portable naming transition — 2026-10-06
+- Canonical portable release asset is now `MichelsLife-Portable-vX.Y.Z.exe` with a matching SHA-256 sidecar.
+- The v3.0.216 updater host is materialized to prefer the explicit portable asset name.
+- Releases retain byte-identical `MichelsLife-vX.Y.Z.exe` + checksum aliases temporarily so older installed updaters can still discover v3.0.216.
+- The Setup installer remains the recommended normal-user download.
+- No release publication or version bump is part of this migration; current-commit CI must validate the transition.
+
 ### Canonical Michel's Lab identity adoption — 2026-10-06
 - Adopted the approved Michel's Life **The Ascent** mountain/path/star geometry as the product identity source for Windows, Android, startup and in-app branding.
 - Rebuilt About around the governed hierarchy: product identity/version → canonical Michel Duarte portrait → official Michel's Lab parent brand → Instagram/Facebook/LinkedIn/GitHub/Email links with visible icons and network names.
