@@ -172,7 +172,7 @@ try{
   ok(aboutBrand.avatar.w===1440&&aboutBrand.avatar.h===1920&&aboutBrand.avatar.cw>=170&&aboutBrand.avatar.ch>=220,'About canonical portrait is missing or incorrectly rendered: '+JSON.stringify(aboutBrand.avatar));
   ok(aboutBrand.productSrc==='assets/michels_life_lockup.svg'&&aboutBrand.productWidth>100,'About product identity is not using the canonical Michel’s Life lockup');
   ok(aboutBrand.author,'About author hierarchy is missing');
-  ok(aboutBrand.labSrc==='assets/michels_lab_lockup.png'&&aboutBrand.labWidth>100,'About parent brand is not using the canonical Michel’s Lab lockup');
+  ok(aboutBrand.labSrc==='assets/michels_lab_lockup.png'&&aboutBrand.labWidth>100,'About parent brand is not using the canonical Michel’s Lab lockup: '+JSON.stringify(aboutBrand));
   ok(aboutBrand.socialCount===5&&aboutBrand.socialIcons===5,'About socials must expose five visible icon+name links: '+JSON.stringify(aboutBrand));
   ok(JSON.stringify(aboutBrand.socialNames)===JSON.stringify(['Instagram','Facebook','LinkedIn','GitHub','Email']),'About social order/names drifted: '+JSON.stringify(aboutBrand.socialNames));
   ok(aboutBrand.version==='v3.0.216','About does not show the current build version: '+JSON.stringify(aboutBrand));
