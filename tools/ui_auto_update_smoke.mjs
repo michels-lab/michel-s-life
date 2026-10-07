@@ -30,8 +30,8 @@ try{
           onlineStatus:'Connected',
           onlineAvailable:true,
           onlineVersion:'3.0.216',
-          onlineDownloadUrl:'https://example.invalid/MichelsLife-v3.0.216.exe',
-          onlineChecksumUrl:'https://example.invalid/MichelsLife-v3.0.216.exe.sha256',
+          onlineDownloadUrl:'https://example.invalid/MichelsLife-Portable-v3.0.216.exe',
+          onlineChecksumUrl:'https://example.invalid/MichelsLife-Portable-v3.0.216.exe.sha256',
           onlineReleaseNotes:'Automatic update smoke test',
           candidatePath:'',
           candidateVersion:''
