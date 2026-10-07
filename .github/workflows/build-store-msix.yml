@@ -21,6 +21,17 @@ on:
         default: "Michel's Life"
         type: string
 
+  push:
+    branches:
+      - main
+      - 'fix/**'
+    paths:
+      - 'src/MichelsLife/**'
+      - 'store/**'
+      - 'tools/**'
+      - 'branding/**'
+      - '.github/workflows/build-store-msix.yml'
+
 permissions:
   contents: read
 
@@ -28,7 +39,39 @@ env:
   RELEASES_REPO: realmichelduarte/michel-s-life-releases
 
 jobs:
+  validate:
+    name: Validate Microsoft Store channel
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Materialize host source
+        shell: pwsh
+        run: python tools/materialize_host_source.py
+
+      - name: Syntax-check Store validation scripts
+        shell: pwsh
+        run: |
+          python -m py_compile tools/store_smoke_test.py tools/render_store_manifest.py tools/append_store_overlay.py
+
+      - name: Validate Store channel source
+        shell: pwsh
+        run: |
+          python tools/release_smoke_test.py
+          python tools/store_smoke_test.py
+
   package:
+    name: Build manual Partner Center package
+    needs: validate
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
