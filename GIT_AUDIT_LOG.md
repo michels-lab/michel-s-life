@@ -834,3 +834,22 @@ Public state:
 ### Validation boundary
 - Current-commit Source validation, UI smoke and Windows release build must pass before this migration is considered verified.
 - The compatibility alias is transitional and should only be removed after the installed user base no longer depends on the pre-v3.0.216 updater naming contract.
+
+
+## 2026-10-07 — Windows BUILD / INSTALL / LAUNCH evidence integrated from main
+
+### Finding
+- Main advanced during the v3.0.216 portable-naming work with a stricter Michel's Lab Windows runtime QA contract.
+- Installer existence/version checks alone are not sufficient evidence that the installed GUI application actually starts.
+
+### Corrective action
+- Synchronized the shared child-agent contract to `2026-10-06.5`.
+- Added `tools/windows_launch_smoke.ps1` to require a live process plus a real top-level window and to emit Windows Application/.NET crash evidence on failure.
+- Source validation now launch-smokes both a portable runtime candidate and an isolated installed Setup candidate.
+- The manual Windows test ZIP launch-smokes its portable executable.
+- The release workflow launch-smokes the canonical `MichelsLife-Portable-vX.Y.Z.exe` after optional signing, then installs the signed Setup, validates installed version, launches the installed executable, requires a real top-level window, captures evidence, and only then uninstalls.
+- The explicit portable naming migration and legacy updater compatibility alias remain preserved.
+
+### Validation boundary
+- These merged runtime gates must pass on the reconciled branch HEAD before BUILD / INSTALL / LAUNCH can be claimed for v3.0.216.
+- Device-level functional checks and live Windows ↔ Android Supabase validation remain separate release gates.
