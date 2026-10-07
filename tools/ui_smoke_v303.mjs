@@ -207,7 +207,7 @@ try{
   await page.waitForTimeout(600);
   await page.screenshot({path:`${out}/05-dashboard.png`,fullPage:true});
 
-  console.log(JSON.stringify({logo,typographyRoute,typographyPaletteCheck,headingFonts,avatar,chapterTarget:target,typography:'midnights',cloudPopups:cloudCount},null,2));
+  console.log(JSON.stringify({logo,typographyRoute,typographyPaletteCheck,headingFonts,avatar:aboutBrand.avatar,chapterTarget:target,typography:'midnights',cloudPopups:cloudCount},null,2));
 } finally {
   await browser.close();
 }

@@ -755,3 +755,15 @@ Public state:
 ### Validation boundary
 - Current-commit CI must pass before this test correction is considered verified.
 
+## 2026-10-06 — UI smoke final summary variable repaired
+
+### Finding
+- UI smoke on `0aa272e502961819c4f535dbf6862d1c93ce9021` completed the About, Chapters and Cloud-popup assertions, then failed only while printing its final JSON summary because it referenced removed variable `avatar`.
+
+### Corrective action
+- Final smoke summary now reports `aboutBrand.avatar`, the already validated canonical portrait object.
+- No application behavior or UI changed.
+
+### Validation boundary
+- Current-commit CI must pass before this test repair is considered verified.
+
