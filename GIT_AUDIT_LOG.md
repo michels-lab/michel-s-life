@@ -351,3 +351,11 @@ Repository instructions now explicitly route logo, launcher, splash/startup and 
 
 The required interpretation is structural integration rather than sticker placement: replace active legacy identity, adapt canonical geometry to the existing product design language, preserve unrelated behavior, validate the build, and keep release publication separate unless explicitly authorized.
 
+## 2026-10-07 — Windows installed-app launch validation
+
+A LouderMe false-green exposed a cross-app QA gap: successful Setup installation is not proof that an installed GUI application actually starts.
+
+Michel's Life now treats Windows evidence separately as BUILD / INSTALL / LAUNCH / FUNCTIONAL. The test workflow launch-smokes the portable executable. The release workflow launch-smokes the distributed portable executable, silently installs the generated Setup into an isolated test directory, launches `MichelsLife.exe` from that installed path, requires the process to remain alive and expose a real top-level window, records launch evidence, and only then uninstalls.
+
+Startup failure evidence includes process exit/lifetime plus available Windows Application/.NET crash events from `tools/windows_launch_smoke.ps1`. Public release upload remains downstream of these launch gates.
+
