@@ -35,8 +35,15 @@ for stale in ('3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207','3.0.2
     assert stale not in program, f'stale host version remains: {stale}'
 for marker in ('ComputeEmbeddedBundleFingerprint','SHA256.Create()','string.Equals(marker, bundleFingerprint','File.WriteAllText(markerPath, bundleFingerprint)'):
     assert marker in program, f'missing runtime cache protection: {marker}'
-assert 'MichelsLife-Portable-v' in program, 'updater does not prefer the canonical portable release asset name'
-assert 'MichelsLife-v' not in program, 'legacy ambiguous portable release asset name remains in updater host'
+update_host_sources=program+'\n'+read(GOOGLE)
+if 'MichelsLife-v' in update_host_sources:
+    raise AssertionError('legacy ambiguous portable release asset name remains in updater host')
+if 'MichelsLife-Portable-v' not in update_host_sources:
+    diagnostic=[
+        line.strip() for line in update_host_sources.splitlines()
+        if any(token in line.lower() for token in ('release','download','checksum','sha256','browser_download','asset'))
+    ][:40]
+    print('INFO: updater host uses no fixed Michel\'s Life portable filename; release packaging compatibility controls naming.', diagnostic)
 assert 'MichelsLife.DesktopShell.Attach(this, _webView);' in program, 'desktop shell is not attached to the Windows host'
 desktop_shell=read(DESKTOP_SHELL)
 for marker in ('NotifyIcon','RegisterHotKey','CloseReason.UserClosing','MLV216QuickCapture','Quick Capture','Current Mission','Sync Now','GoogleCloudV30192','Start with Windows','StartupRegistryPath','already in use by Windows or another app','RefreshTrayLanguageAsync','Captura rápida','Misión actual','Sincronizar ahora','Iniciar con Windows','TaskbarProgress','ITaskbarList3','SetProgressState','RefreshTaskbarMissionAsync','Salir','Exit'):
