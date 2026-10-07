@@ -781,3 +781,16 @@ Public state:
 ### Validation boundary
 - Current-commit UI smoke must demonstrate an actual alternate Chapter Scene click/state change before this regression is considered fixed.
 
+## 2026-10-06 — Spanish UI smoke aligned with canonical Michel’s Life mark
+
+### Finding
+- UI smoke advanced past the canonical portrait and Michel’s Lab About checks, then failed in `ui_spanish_smoke.mjs` because the test still required legacy `assets/michels_life_logo.webp`.
+- The rendered Spanish sidebar correctly used the canonical `assets/michels_life_mark.svg` at visible 82 × 82 CSS pixels with a valid 150 × 150 intrinsic render.
+
+### Corrective action
+- Updated only the Spanish logo assertion to require `assets/michels_life_mark.svg`.
+- No app UI, logo geometry, image binary, version or release state changed.
+
+### Validation boundary
+- Current-commit CI must pass before this correction is considered verified.
+
