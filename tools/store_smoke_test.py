@@ -2,6 +2,7 @@
 """Static checks for the Microsoft Store/MSIX packaging path."""
 from __future__ import annotations
 
+import re
 import subprocess
 import sys
 import tempfile
@@ -55,5 +56,15 @@ overlay = OVERLAY.read_text(encoding="utf-8")
 assert "mlv-store-msix-channel" in overlay
 assert "data-mlv202-update" in overlay
 assert "Microsoft Store updates" in overlay
+
+workflow = WORKFLOW.read_text(encoding="utf-8")
+assert re.search(r"(?ms)^  push:\s*\n(?:.*\n)*?    branches:\s*\n(?:.*\n)*?      - main(?:\s|$)", workflow), (
+    "Store workflow must validate the default branch automatically."
+)
+assert "name: Validate Microsoft Store channel" in workflow
+assert "needs: validate" in workflow
+assert "if: ${{ github.event_name == 'workflow_dispatch' }}" in workflow, (
+    "Real Partner Center package construction must remain manual/provider-bound."
+)
 
 print("OK: Microsoft Store/MSIX source checks passed")

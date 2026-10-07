@@ -15,6 +15,7 @@ This file is the app-level infrastructure audit for Michel's Life. It complement
 - State integrity uses SHA-256 metadata plus the existing Michel's Life conflict-resolution semantics.
 - Local restore points exist before risky update/sync operations.
 - Build-time Google credential values are injected through environment/GitHub Actions rather than committed to source.
+- Microsoft Store source/package contracts validate automatically on `main` and `fix/**`; the real Partner Center package job remains manual because it requires provider identity inputs and the approved OAuth build credential.
 
 ### Android
 - Uses the same Michel's Life cloud-state contract as Windows.
