@@ -696,3 +696,21 @@ Public state:
 
 ### Validation status
 - Current-commit UI/Windows/Android/source checks must pass before the reconciliation is considered verified.
+
+## 2026-10-06 — Exact master portrait synchronized; interim repair retired
+
+### Master authority
+- Michel moved the approved portrait to its final canonical master path: `realmichelduarte/Michel-Software-Standards/shared-assets/michel_duarte_avatar.jpg`.
+- Master canonical blob is `18fe1a68722850c3d8f918dc0799f46ffeb6dbaf` (459,806 bytes, 1440 × 1920 JPEG).
+- Master policy now marks this portrait binary immutable: no resize, crop, recompression, conversion, retouching, regeneration or AI modification. Presentation-only sizing/masking is allowed at render time.
+
+### Michel's Life action
+- `branding/michel_duarte_avatar.jpg` now vendors the exact same Git blob as the master authority.
+- `tools/validate_brand_identity.py` now requires that exact blob.
+- Temporary `.github/workflows/recover-canonical-avatar.yml` is removed; the earlier repair/reconstruction attempts are superseded and must not be reintroduced.
+- Shared child-agent contract synchronized to `2026-10-06.4` in `AGENTS.md` and `.github/copilot-instructions.md`.
+
+### Validation boundary
+- No version bump or release publication is authorized by this synchronization.
+- Current-commit CI must pass before the branch reconciliation is considered verified.
+
