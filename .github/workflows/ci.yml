@@ -95,3 +95,97 @@ jobs:
             throw 'MichelsLife.exe does not expose a valid Windows application icon.'
           }
           Write-Host "Windows icon OK: $($icon.Width)x$($icon.Height)"
+
+      - name: Publish Windows runtime smoke candidate
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts/publish | Out-Null
+          dotnet publish src/MichelsLife/MichelsLife.csproj `
+            -c Release -r win-x64 --self-contained true `
+            -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true `
+            -o artifacts/publish
+          if (-not (Test-Path 'artifacts/publish/MichelsLife.exe')) {
+            throw 'Published MichelsLife.exe not found.'
+          }
+
+      - name: Portable Windows runtime launch smoke
+        shell: pwsh
+        run: |
+          pwsh -File tools/windows_launch_smoke.ps1 `
+            -ExePath artifacts/publish/MichelsLife.exe `
+            -MinimumAliveSeconds 8 `
+            -WindowTimeoutSeconds 20 `
+            -EvidencePath artifacts/windows-portable-launch.txt
+
+      - name: Build Windows installer smoke candidate
+        shell: pwsh
+        run: |
+          choco install innosetup --yes --no-progress
+          [xml]$proj = Get-Content 'src/MichelsLife/MichelsLife.csproj'
+          $v = [string]$proj.Project.PropertyGroup.Version
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DMyAppVersion=$v" "/DPublishDir=$((Resolve-Path 'artifacts/publish').Path)" installer/MichelsLife.iss
+          if ($LASTEXITCODE -ne 0) { throw 'Michel''s Life installer build failed.' }
+          if (-not (Test-Path "artifacts/MichelsLife-Setup-v$v.exe")) {
+            throw 'Michel''s Life installer artifact was not created.'
+          }
+
+      - name: Installed Windows runtime launch smoke
+        shell: pwsh
+        run: |
+          [xml]$proj = Get-Content 'src/MichelsLife/MichelsLife.csproj'
+          $v = [string]$proj.Project.PropertyGroup.Version
+          $installer=(Resolve-Path "artifacts/MichelsLife-Setup-v$v.exe").Path
+          $installDir=Join-Path (Resolve-Path 'artifacts').Path 'installed-runtime-smoke'
+          if (Test-Path $installDir) { Remove-Item $installDir -Recurse -Force }
+
+          $install=Start-Process -FilePath $installer -ArgumentList @(
+            '/VERYSILENT',
+            '/SUPPRESSMSGBOXES',
+            '/NORESTART',
+            '/SP-',
+            '/CURRENTUSER',
+            "/DIR=`"$installDir`""
+          ) -PassThru
+          if (-not $install.WaitForExit(60000)) {
+            try { $install.Kill($true) } catch {}
+            throw 'Michel''s Life installer timed out.'
+          }
+          if ($install.ExitCode -ne 0) {
+            throw "Michel's Life installer failed with exit code $($install.ExitCode)."
+          }
+
+          $installedExe=Join-Path $installDir 'MichelsLife.exe'
+          if (-not (Test-Path $installedExe)) {
+            throw "MichelsLife.exe was not installed to $installDir."
+          }
+
+          pwsh -File tools/windows_launch_smoke.ps1 `
+            -ExePath $installedExe `
+            -MinimumAliveSeconds 8 `
+            -WindowTimeoutSeconds 20 `
+            -EvidencePath artifacts/windows-installed-launch.txt
+
+          $uninstaller=Join-Path $installDir 'unins000.exe'
+          if (-not (Test-Path $uninstaller)) {
+            throw 'Michel''s Life uninstaller missing after installation.'
+          }
+          $uninstall=Start-Process -FilePath $uninstaller -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART') -PassThru
+          if (-not $uninstall.WaitForExit(60000)) {
+            try { $uninstall.Kill($true) } catch {}
+            throw 'Michel''s Life uninstall cleanup timed out.'
+          }
+          if ($uninstall.ExitCode -ne 0) {
+            throw "Michel's Life uninstall cleanup failed with exit code $($uninstall.ExitCode)."
+          }
+          Write-Host "BUILD PASS + INSTALL PASS + LAUNCH PASS for Michel's Life Windows."
+
+      - name: Upload Windows runtime smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-runtime-smoke
+          path: |
+            artifacts/windows-portable-launch.txt
+            artifacts/windows-installed-launch.txt
+          if-no-files-found: warn
+          retention-days: 7
