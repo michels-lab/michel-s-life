@@ -149,6 +149,16 @@ jobs:
           $v='${{ steps.ver.outputs.version }}'
           Copy-Item artifacts/publish/MichelsLife.exe "artifacts/MichelsLife-v$v.exe"
 
+      - name: Launch-smoke portable Michel's Life executable
+        shell: pwsh
+        run: |
+          $v='${{ steps.ver.outputs.version }}'
+          pwsh -File tools/windows_launch_smoke.ps1 \
+            -ExePath "artifacts/MichelsLife-v$v.exe" \
+            -MinimumAliveSeconds 8 \
+            -WindowTimeoutSeconds 20 \
+            -EvidencePath artifacts/MichelsLife-Portable-launch.txt
+
       - name: Optional Authenticode signing for portable EXE
         if: ${{ env.HAS_WINDOWS_CERT == 'true' }}
         shell: pwsh
@@ -177,6 +187,57 @@ jobs:
           $v='${{ steps.ver.outputs.version }}'
           & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DMyAppVersion=$v" "/DPublishDir=$((Resolve-Path 'artifacts/publish').Path)" installer/MichelsLife.iss
 
+      - name: Install and launch-smoke Michel's Life installer
+        shell: pwsh
+        run: |
+          $v='${{ steps.ver.outputs.version }}'
+          $installer=(Resolve-Path "artifacts/MichelsLife-Setup-v$v.exe").Path
+          $installDir=Join-Path (Resolve-Path 'artifacts').Path 'installed-launch-smoke'
+          if (Test-Path $installDir) { Remove-Item $installDir -Recurse -Force }
+
+          $installArgs=@(
+            '/VERYSILENT',
+            '/SUPPRESSMSGBOXES',
+            '/NORESTART',
+            '/SP-',
+            '/CURRENTUSER',
+            "/DIR=`"$installDir`""
+          )
+          $install=Start-Process -FilePath $installer -ArgumentList $installArgs -PassThru
+          if (-not $install.WaitForExit(60000)) {
+            try { $install.Kill($true) } catch {}
+            throw 'Michel''s Life installer timed out during silent installation.'
+          }
+          if ($install.ExitCode -ne 0) {
+            throw "Michel's Life installer failed with exit code $($install.ExitCode)."
+          }
+
+          $installedExe=Join-Path $installDir 'MichelsLife.exe'
+          if (-not (Test-Path $installedExe)) {
+            throw "MichelsLife.exe was not installed to $installDir."
+          }
+
+          pwsh -File tools/windows_launch_smoke.ps1 \
+            -ExePath $installedExe \
+            -MinimumAliveSeconds 8 \
+            -WindowTimeoutSeconds 20 \
+            -EvidencePath artifacts/MichelsLife-Installed-launch.txt
+
+          $uninstaller=Join-Path $installDir 'unins000.exe'
+          if (-not (Test-Path $uninstaller)) {
+            throw "Michel's Life uninstaller was not created."
+          }
+          $uninstall=Start-Process -FilePath $uninstaller -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART') -PassThru
+          if (-not $uninstall.WaitForExit(60000)) {
+            try { $uninstall.Kill($true) } catch {}
+            throw 'Michel''s Life uninstall cleanup timed out.'
+          }
+          if ($uninstall.ExitCode -ne 0) {
+            throw "Michel's Life uninstall cleanup failed with exit code $($uninstall.ExitCode)."
+          }
+
+          Write-Host "BUILD PASS + INSTALL PASS + LAUNCH PASS for Michel's Life Windows Setup."
+
       - name: Optional Authenticode signing for installer
         if: ${{ env.HAS_WINDOWS_CERT == 'true' }}
         shell: pwsh
@@ -204,6 +265,8 @@ jobs:
             artifacts/MichelsLife-v${{ steps.ver.outputs.version }}.exe
             artifacts/MichelsLife-v${{ steps.ver.outputs.version }}.exe.sha256
             artifacts/MichelsLife-Setup-v${{ steps.ver.outputs.version }}.exe
+            artifacts/MichelsLife-Portable-launch.txt
+            artifacts/MichelsLife-Installed-launch.txt
             artifacts/AppBundle.zip
             artifacts/michels_life_icon.ico
 
