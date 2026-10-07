@@ -28,15 +28,12 @@ for name in ('Program.cs','GoogleCalendarService.cs'):
         raise SystemExit(f'{name} still contains stale app version markers: {stale}')
     if name=='Program.cs' and f'CurrentAppVersion = new("{APP_VERSION}")' not in text:
         raise SystemExit(f'Program.cs missing CurrentAppVersion {APP_VERSION}')
-    if name=='Program.cs':
-        legacy_portable_name='MichelsLife-v'
-        canonical_portable_name='MichelsLife-Portable-v'
-        if legacy_portable_name not in text:
-            raise SystemExit('Program.cs missing legacy portable release asset naming anchor')
-        text=text.replace(legacy_portable_name,canonical_portable_name)
-        if legacy_portable_name in text or canonical_portable_name not in text:
-            raise SystemExit('Program.cs portable release asset naming migration failed')
+    # v3.0.216 canonicalizes any fixed portable release asset references.
+    # Older releases still receive a byte-identical legacy alias from CI so
+    # pre-v3.0.216 updaters are not stranded.
+    text=text.replace('MichelsLife-v','MichelsLife-Portable-v')
 
+    if name=='Program.cs':
         webview_anchor='            await _webView.EnsureCoreWebView2Async(env);'
         if text.count(webview_anchor)!=1:
             raise SystemExit(f'Program.cs expected exactly one WebView2 initialization anchor, found {text.count(webview_anchor)}')
