@@ -20,7 +20,8 @@ WORKFLOWS=[
     ROOT/'.github/workflows/release-windows.yml',
     ROOT/'.github/workflows/build-store-msix.yml',
 ]
-for p in (PROGRAM,GOOGLE,SECRETS,FRONTEND,LOGO,AVATAR,PROFILE,LICENSE,*WORKFLOWS):
+WINDOWS_LAUNCH_SMOKE=ROOT/'tools/windows_launch_smoke.ps1'
+for p in (PROGRAM,GOOGLE,SECRETS,FRONTEND,LOGO,AVATAR,PROFILE,LICENSE,WINDOWS_LAUNCH_SMOKE,*WORKFLOWS):
     assert p.exists(),f'missing {p}'
 
 program=read(PROGRAM)
@@ -68,8 +69,16 @@ for stale in ('3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207','3.0.2
 workflow_text='\n'.join(read(p) for p in WORKFLOWS)
 for forbidden in ('build_frontend_v30202.py','AppPatches/v3.0.202.html','branding/michels_life_mark.svg'):
     assert forbidden not in workflow_text, f'legacy frontend build dependency remains: {forbidden}'
-for required in ('src/MichelsLife/frontend/index.html','branding/michels_life_logo.webp','assets/michels_life_logo.webp'):
-    assert required in workflow_text, f'canonical build dependency missing: {required}'
+for required in (
+    'src/MichelsLife/frontend/index.html',
+    'branding/michels_life_logo.webp',
+    'assets/michels_life_logo.webp',
+    'windows_launch_smoke.ps1',
+    "Install and launch-smoke Michel's Life installer",
+    "MainWindowHandle",
+    "Get-WinEvent",
+):
+    assert required in workflow_text or required in read(WINDOWS_LAUNCH_SMOKE), f'canonical build/runtime dependency missing: {required}'
 
 security='\n'.join(read(p) for p in (PROGRAM,GOOGLE,SECRETS,FRONTEND,PROFILE,LICENSE))
 for forbidden in ('GOCSPX-','github_pat_','ghp_','client_secret_794181'):
