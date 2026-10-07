@@ -794,3 +794,23 @@ Public state:
 ### Validation boundary
 - Current-commit CI must pass before this correction is considered verified.
 
+
+
+## 2026-10-06 — Windows Setup release gate hardened
+
+### Finding
+- The v3.0.216 Windows workflow built the Inno Setup installer but did not install/uninstall that generated Setup in CI.
+- Only the portable executable received a SHA-256 sidecar; the Setup installer had no published checksum.
+- This left the branch short of the current Michel's Lab Windows release contract even though the existing build job was green.
+
+### Corrective action
+- Added a Windows-runner Setup smoke gate that silently installs the generated `MichelsLife-Setup-v3.0.216.exe` into an isolated current-user directory, verifies the installed executable and product version, runs the generated uninstaller, and confirms the executable is removed.
+- Added `MichelsLife-Setup-v3.0.216.exe.sha256` generation after optional Authenticode signing.
+- Added the Setup checksum to temporary build artifacts and public-release asset publication.
+- Updated `docs/RELEASE_CHANNEL.md` to document the Setup checksum and install/verify/uninstall requirement.
+- No product version bump, merge, tag or public release was performed.
+
+### Validation boundary
+- The workflow change itself must pass on the new branch commit before this release gate is considered verified.
+- Physical Windows interaction checks (tray, global Quick Capture hotkey, taskbar Current Mission and Sync Center) remain manual.
+- Portable asset naming still follows the legacy updater contract and must be reconciled separately before adopting the newer explicit `-Portable-` naming rule.
