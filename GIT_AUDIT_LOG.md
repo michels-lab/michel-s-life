@@ -359,3 +359,14 @@ Michel's Life now treats Windows evidence separately as BUILD / INSTALL / LAUNCH
 
 Startup failure evidence includes process exit/lifetime plus available Windows Application/.NET crash events from `tools/windows_launch_smoke.ps1`. Public release upload remains downstream of these launch gates.
 
+## 2026-10-07 — Microsoft Store default-branch validation hardening
+
+FoamLens exposed a reusable multi-channel CI gap: a Store workflow can remain healthy only when manually dispatched while shared runtime changes on `main` silently bypass Store validation.
+
+Michel's Life had the same pattern. The Store workflow is now split into two evidence levels:
+- `validate` runs automatically on `main` and `fix/**` for Store/runtime/tooling/branding changes and executes current source/release/Store validation without provider secrets;
+- `package` depends on `validate` but remains restricted to `workflow_dispatch`, preserving the exact Partner Center identity and approved OAuth credential boundary.
+
+`tools/store_smoke_test.py` now guards both invariants so future edits cannot silently remove default-branch Store validation or accidentally turn provider-bound packaging into an automatic job.
+
+No version bump, release publication, Partner Center upload or Store certification is authorized by this hardening change.
