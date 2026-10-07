@@ -169,7 +169,7 @@ try{
     };
   });
   ok(aboutBrand.avatar.src==='assets/michel_duarte_avatar.jpg','About is not using the canonical developer portrait');
-  ok(aboutBrand.avatar.w===480&&aboutBrand.avatar.h===640&&aboutBrand.avatar.cw>=170&&aboutBrand.avatar.ch>=220,'About canonical portrait is missing or incorrectly rendered: '+JSON.stringify(aboutBrand.avatar));
+  ok(aboutBrand.avatar.w===1440&&aboutBrand.avatar.h===1920&&aboutBrand.avatar.cw>=170&&aboutBrand.avatar.ch>=220,'About canonical portrait is missing or incorrectly rendered: '+JSON.stringify(aboutBrand.avatar));
   ok(aboutBrand.productSrc==='assets/michels_life_lockup.svg'&&aboutBrand.productWidth>100,'About product identity is not using the canonical Michel’s Life lockup');
   ok(aboutBrand.author,'About author hierarchy is missing');
   ok(aboutBrand.labSrc==='assets/michels_lab_lockup.png'&&aboutBrand.labWidth>100,'About parent brand is not using the canonical Michel’s Lab lockup');

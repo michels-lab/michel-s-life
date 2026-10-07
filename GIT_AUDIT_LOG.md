@@ -714,3 +714,16 @@ Public state:
 - No version bump or release publication is authorized by this synchronization.
 - Current-commit CI must pass before the branch reconciliation is considered verified.
 
+## 2026-10-06 — UI smoke aligned with immutable canonical portrait dimensions
+
+### Finding
+- UI smoke on commit `2efaf78fa61156bba74c664f6c068bd6e45f8e59` loaded the canonical portrait correctly at natural size 1440 × 1920 and rendered it at 210 × 280 from `assets/michel_duarte_avatar.jpg`.
+- The test still asserted the superseded 480 × 640 processed derivative dimensions, causing a false failure.
+
+### Corrective action
+- Updated only the UI smoke assertion to require the immutable master portrait dimensions 1440 × 1920 while retaining the existing rendered-size threshold and canonical path check.
+- No image bytes, UI layout, product behavior, version or release state changed.
+
+### Validation boundary
+- Current-commit CI must pass before this correction is considered verified.
+
