@@ -814,3 +814,23 @@ Public state:
 - The workflow change itself must pass on the new branch commit before this release gate is considered verified.
 - Physical Windows interaction checks (tray, global Quick Capture hotkey, taskbar Current Mission and Sync Center) remain manual.
 - Portable asset naming still follows the legacy updater contract and must be reconciled separately before adopting the newer explicit `-Portable-` naming rule.
+
+
+## 2026-10-06 — Explicit Windows portable asset naming with backward compatibility
+
+### Finding
+- Michel's Lab release policy requires the portable executable to be explicitly named `MichelsLife-Portable-vX.Y.Z.exe` when both Setup and portable builds are shipped.
+- Existing Michel's Life updater hosts and the public release contract still used ambiguous `MichelsLife-vX.Y.Z.exe` asset names.
+- Removing the legacy name immediately would strand older installed builds that still request that asset.
+
+### Corrective action
+- The generated v3.0.216 Windows host now prefers `MichelsLife-Portable-vX.Y.Z.exe` and its matching checksum.
+- The release workflow builds/signs/checksums the canonical portable binary first.
+- It then creates a byte-identical `MichelsLife-vX.Y.Z.exe` compatibility alias plus checksum for older updaters.
+- Temporary CI artifacts and public release publication include the canonical portable, compatibility alias, Setup installer and all matching checksum files.
+- UI update smoke and release documentation now use the explicit portable name.
+- No version bump, merge, tag or public release was performed.
+
+### Validation boundary
+- Current-commit Source validation, UI smoke and Windows release build must pass before this migration is considered verified.
+- The compatibility alias is transitional and should only be removed after the installed user base no longer depends on the pre-v3.0.216 updater naming contract.
