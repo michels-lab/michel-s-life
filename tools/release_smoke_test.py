@@ -20,12 +20,13 @@ LAB_LOCKUP=ROOT/'branding/michels_lab_lockup.png'
 AVATAR=ROOT/'branding/michel_duarte_avatar.jpg'
 PROFILE=ROOT/'branding/developer-profile.json'
 LICENSE=ROOT/'LICENSE.txt'
+WINDOWS_LAUNCH_SMOKE=ROOT/'tools/windows_launch_smoke.ps1'
 WORKFLOWS=[
     ROOT/'.github/workflows/build-test-windows.yml',
     ROOT/'.github/workflows/release-windows.yml',
     ROOT/'.github/workflows/build-store-msix.yml',
 ]
-for p in (PROGRAM,GOOGLE,SECRETS,DESKTOP_SHELL,FRONTEND,APP_ICON,MARK,LOCKUP,LAB_MARK,LAB_LOCKUP,AVATAR,PROFILE,LICENSE,*WORKFLOWS):
+for p in (PROGRAM,GOOGLE,SECRETS,DESKTOP_SHELL,FRONTEND,APP_ICON,MARK,LOCKUP,LAB_MARK,LAB_LOCKUP,AVATAR,PROFILE,LICENSE,WINDOWS_LAUNCH_SMOKE,*WORKFLOWS):
     assert p.exists(),f'missing {p}'
 
 program=read(PROGRAM)
@@ -97,8 +98,22 @@ for stale in ('3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207','3.0.2
 workflow_text='\n'.join(read(p) for p in WORKFLOWS)
 for forbidden in ('build_frontend_v30202.py','AppPatches/v3.0.202.html','branding/michels_life_logo.webp'):
     assert forbidden not in workflow_text, f'legacy frontend build dependency remains: {forbidden}'
-for required in ('src/MichelsLife/frontend/index.html','branding/michels_life_app_icon.svg','assets/michels_life_mark.svg','assets/michels_life_lockup.svg','assets/michels_lab_lockup.png'):
-    assert required in workflow_text, f'canonical build dependency missing: {required}'
+for required in (
+    'src/MichelsLife/frontend/index.html',
+    'branding/michels_life_app_icon.svg',
+    'assets/michels_life_mark.svg',
+    'assets/michels_life_lockup.svg',
+    'assets/michels_lab_lockup.png',
+    'windows_launch_smoke.ps1',
+    "Install and launch-smoke Michel's Life installer",
+    'Launch-smoke canonical portable executable',
+    'MichelsLife-Portable-v',
+    'Create legacy updater compatibility alias',
+):
+    assert required in workflow_text, f'canonical build/runtime dependency missing: {required}'
+launch_smoke=read(WINDOWS_LAUNCH_SMOKE)
+for required in ('MainWindowHandle','Get-WinEvent','MinimumAliveSeconds','WindowTimeoutSeconds'):
+    assert required in launch_smoke, f'Windows launch smoke helper missing: {required}'
 
 security='\n'.join(read(p) for p in (PROGRAM,GOOGLE,SECRETS,FRONTEND,PROFILE,LICENSE))
 for forbidden in ('GOCSPX-','github_pat_','ghp_','client_secret_794181','sb_secret_','service_role'):
