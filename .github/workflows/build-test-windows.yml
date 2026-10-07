@@ -135,6 +135,15 @@ jobs:
           This is a private test build. It is not a public release.
           "@ | Set-Content artifacts/test/TEST_BUILD.txt -Encoding UTF8
 
+      - name: Launch-smoke portable Michel's Life test build
+        shell: pwsh
+        run: |
+          pwsh -File tools/windows_launch_smoke.ps1 \
+            -ExePath artifacts/test/MichelsLife.exe \
+            -MinimumAliveSeconds 8 \
+            -WindowTimeoutSeconds 20 \
+            -EvidencePath artifacts/test/windows-portable-launch.txt
+
       - name: Create test ZIP
         shell: pwsh
         run: |
