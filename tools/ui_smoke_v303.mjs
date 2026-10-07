@@ -159,7 +159,7 @@ try{
     const author=document.querySelector('[data-mlv-author-brand="canonical"]');
     const lab=document.querySelector('.mlvdev-studio-lockup img');
     const socials=[...document.querySelectorAll('.mlvdev-social')];
-    const version=[...document.querySelectorAll('.mlvdev-meta b')].map(x=>(x.textContent||'').trim()).find(x=>/^v3\\.0\\.216$/.test(x))||'';
+    const version=[...document.querySelectorAll('.mlvdev-meta b')].map(x=>(x.textContent||'').trim()).find(x=>/^v3\.0\.216$/.test(x))||'';
     return {
       avatar:{w:avatar?.naturalWidth||0,h:avatar?.naturalHeight||0,cw:avatar?.getBoundingClientRect().width||0,ch:avatar?.getBoundingClientRect().height||0,src:avatar?.getAttribute('src')||''},
       productSrc:product?.getAttribute('src')||'',productWidth:product?.naturalWidth||0,

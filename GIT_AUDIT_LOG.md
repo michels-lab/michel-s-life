@@ -742,3 +742,16 @@ Public state:
 ### Validation boundary
 - Current-commit CI must pass before this correction is considered verified.
 
+## 2026-10-06 — About version smoke regex corrected
+
+### Finding
+- UI smoke on `d9999ebf537c8a047e6861fbc7c3b5fff5e3ebc5` successfully validated the canonical 1440 × 1920 portrait, Michel's Life lockup, author block, restored Michel's Lab lockup (natural width 2172), and all five visible social icon+name links.
+- The remaining About failure came from an over-escaped test regex that looked for literal backslashes instead of matching `v3.0.216`.
+
+### Corrective action
+- Corrected only the UI smoke version matcher to recognize `v3.0.216`.
+- No product UI, assets, version, sync behavior or release state changed.
+
+### Validation boundary
+- Current-commit CI must pass before this test correction is considered verified.
+
