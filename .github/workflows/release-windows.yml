@@ -204,6 +204,62 @@ jobs:
           & $signtool.FullName sign /fd SHA256 /f artifacts/signing.pfx /p $env:WINDOWS_CERT_PASSWORD /tr http://timestamp.digicert.com /td SHA256 "artifacts/MichelsLife-Setup-v${{ steps.ver.outputs.version }}.exe"
           Remove-Item artifacts/signing.pfx -Force
 
+      - name: Smoke-test generated Setup installer
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $v='${{ steps.ver.outputs.version }}'
+          $setup=(Resolve-Path "artifacts/MichelsLife-Setup-v$v.exe").Path
+          $installDir=Join-Path $env:RUNNER_TEMP 'MichelsLife-Setup-Smoke'
+          if (Test-Path $installDir) {
+            Remove-Item $installDir -Recurse -Force
+          }
+          $install=Start-Process -FilePath $setup -ArgumentList @(
+            '/VERYSILENT',
+            '/SUPPRESSMSGBOXES',
+            '/NORESTART',
+            '/SP-',
+            '/CURRENTUSER',
+            "/DIR=$installDir"
+          ) -Wait -PassThru
+          if ($install.ExitCode -ne 0) {
+            throw "Installer smoke failed with exit code $($install.ExitCode)."
+          }
+          $installedExe=Join-Path $installDir 'MichelsLife.exe'
+          if (-not (Test-Path $installedExe)) {
+            throw "Installer smoke did not create $installedExe."
+          }
+          $installedVersion=(Get-Item $installedExe).VersionInfo.ProductVersion
+          if (-not $installedVersion.StartsWith($v)) {
+            throw "Installed executable version '$installedVersion' does not match v$v."
+          }
+          $uninstaller=Join-Path $installDir 'unins000.exe'
+          if (-not (Test-Path $uninstaller)) {
+            throw "Installer smoke did not create an uninstaller."
+          }
+          $uninstall=Start-Process -FilePath $uninstaller -ArgumentList @(
+            '/VERYSILENT',
+            '/SUPPRESSMSGBOXES',
+            '/NORESTART'
+          ) -Wait -PassThru
+          if ($uninstall.ExitCode -ne 0) {
+            throw "Uninstaller smoke failed with exit code $($uninstall.ExitCode)."
+          }
+          if (Test-Path $installedExe) {
+            throw "Uninstaller smoke left the installed executable behind."
+          }
+          if (Test-Path $installDir) {
+            Remove-Item $installDir -Recurse -Force
+          }
+
+      - name: Create installer checksum
+        shell: pwsh
+        run: |
+          $v='${{ steps.ver.outputs.version }}'
+          $setup="artifacts/MichelsLife-Setup-v$v.exe"
+          $hash=(Get-FileHash $setup -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  MichelsLife-Setup-v$v.exe" | Set-Content "$setup.sha256" -Encoding ascii
+
       - name: Keep bootstrap assets for next release
         shell: pwsh
         run: |
@@ -219,6 +275,7 @@ jobs:
             artifacts/MichelsLife-v${{ steps.ver.outputs.version }}.exe
             artifacts/MichelsLife-v${{ steps.ver.outputs.version }}.exe.sha256
             artifacts/MichelsLife-Setup-v${{ steps.ver.outputs.version }}.exe
+            artifacts/MichelsLife-Setup-v${{ steps.ver.outputs.version }}.exe.sha256
             artifacts/AppBundle.zip
             artifacts/michels_life_icon.ico
 
@@ -234,6 +291,7 @@ jobs:
             "artifacts/MichelsLife-v$v.exe",
             "artifacts/MichelsLife-v$v.exe.sha256",
             "artifacts/MichelsLife-Setup-v$v.exe",
+            "artifacts/MichelsLife-Setup-v$v.exe.sha256",
             "artifacts/AppBundle.zip",
             "artifacts/michels_life_icon.ico"
           )
