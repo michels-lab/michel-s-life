@@ -727,3 +727,18 @@ Public state:
 ### Validation boundary
 - Current-commit CI must pass before this correction is considered verified.
 
+## 2026-10-06 — Canonical Michel's Lab lockup restored from original source
+
+### Finding
+- UI smoke on `8737b68c16375c57c23235c5658a71c01d8f09d5` passed the immutable Michel Duarte portrait check, then failed the Michel's Lab parent-brand lockup check.
+- About markup and asset path were correct. Binary inspection showed both child and master lockup blob `7819ef5c7d1a5c338c67c9bbd517e5448724a5cf` were truncated mid-`IDAT`, so Chromium could not decode the PNG.
+
+### Corrective action
+- Master authority restored the exact approved original lockup source at blob `7fd48093968b31ddacd3098f5b15d962de580652` (2172 × 724 RGBA PNG, 526,482 bytes).
+- Michel's Life now vendors that exact same canonical blob at `branding/michels_lab_lockup.png`.
+- Brand-integrity validation now requires the restored blob.
+- No redesign, image-generation replacement, UI layout change, version bump or release publication occurred.
+
+### Validation boundary
+- Current-commit CI must pass before this correction is considered verified.
+
