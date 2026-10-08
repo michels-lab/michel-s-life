@@ -906,3 +906,11 @@ Still required before Play submission:
 - GitHub artifact from native build: `MichelsLife-Android-TEST-v0.2.2`, artifact `11572098070`. Log reported `PLAY_BUNDLE_SIGNING=UNSIGNED`, so the Play release AAB cannot be submitted until the existing upload key is configured in GitHub Actions secret variables and signed-AAB validation succeeds.
 - Pending: physical device/emulator installed APK tests (onboarding, swipe/back, settings, About and launcher), Google Play Console setup/signing fingerprint/policy fields, actual Play-delivered installation and cross-device Supabase upload/download/conflict/restore with a real account.
 - No Google Play release, published Windows v3.0.216 release, live user sync or physical device test is claimed by this entry.
+
+## 2026-10-08 — Last Android v0.2.2 published in SAME public release as Windows v3.0.216
+
+- Owner-directed unified publication succeeded: https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.216. Same page contains the official Windows v3.0.216 Setup/Portable and the latest Android **v0.2.2 (versionCode 4)**. No separate Android product release tag.
+- Fresh current-source Android build via reusable `android-build.yml`, staging Actions run `37834743732`: manifest package `com.michelslab.michelslife`, code 4/name 0.2.2, APK signature verification and SHA-256 checks succeeded.
+- APK `MichelsLife-Android-v0.2.2-TEST.apk`, SHA-256 `a6ae2debe8f55d58e41d35b8b85b26feac1235d27216ac8668fac7cc27d085c8`, size 68,943,481 bytes. **Debug/test signing** — not stable direct distribution signing and not a Play-delivered app. A previously installed APK with a different certificate cannot be replaced as an in-place update; a backup is required before uninstall/reinstall.
+- Public publisher run `37835085327` uploaded/edited successfully but failed final script due to GitHub CLI unsupported field `title` (correct: `name`). Separate public verifier run `37835372113` SUCCESS downloaded the actual APK, validated SHA-256/manifest and all 12 assets co-located on stable Windows `v3.0.216`.
+- Still PENDING: persistent Android direct signing credential continuity, Play upload signing secrets/Console distribution, real Android phone/emulator testing and same-account Windows↔Android Supabase sync/conflict/restore. Do not report those as complete merely because a TEST APK is publicly downloadable.
