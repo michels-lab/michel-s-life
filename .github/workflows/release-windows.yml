@@ -1,6 +1,18 @@
 name: Build Windows release
 
 on:
+  workflow_call:
+    inputs:
+      bundle_url:
+        description: Optional AppBundle.zip bootstrap URL.
+        required: false
+        type: string
+        default: ''
+      publish:
+        description: Publish the candidate to the public Michel's Lab release repository.
+        required: false
+        type: boolean
+        default: false
   workflow_dispatch:
     inputs:
       bundle_url:
@@ -340,5 +352,10 @@ jobs:
           if ($LASTEXITCODE -eq 0) {
             gh release upload $tag @assets --repo $env:RELEASES_REPO --clobber
           } else {
-            gh release create $tag @assets --repo $env:RELEASES_REPO --title "Michel's Life $tag" --notes "Release $tag. See the source changelog for full details."
+            $notesFile="docs/releases/v$v.md"
+            if (Test-Path $notesFile) {
+              gh release create $tag @assets --repo $env:RELEASES_REPO --title "Michel's Life $tag" --notes-file $notesFile
+            } else {
+              gh release create $tag @assets --repo $env:RELEASES_REPO --title "Michel's Life $tag" --notes "Release $tag. See the source changelog for full details."
+            }
           }
