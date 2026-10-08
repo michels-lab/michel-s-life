@@ -898,3 +898,11 @@ Still required before Play submission:
 1. Configure `ANDROID_UPLOAD_KEYSTORE_BASE64`, `ANDROID_UPLOAD_STORE_PASSWORD`, `ANDROID_UPLOAD_KEY_ALIAS`, and `ANDROID_UPLOAD_KEY_PASSWORD` as repository secrets.
 2. Rerun the Android build and require a validated `Play-SIGNED` AAB.
 3. Test same-account Supabase sync on real Windows + Android and perform physical-device / Play-delivered validation.
+
+## 2026-10-08 — Android v0.2.2 integrated into main (source/CI, not Play release)
+
+- Merge PR #27 on `main` includes v0.2.2 (`versionCode 4`) with the shared Supabase client, Android namespace attribution, The Ascent adaptive launcher and native splash source, and current frontend integration.
+- Candidate commit `27fc043bd97e9a0d23383d171cf295ab10d56538` passed Android UI smoke `37828392618`, Android native build `37828392642`, shared UI smoke `37828392673`, Source validation `37828392687` and Windows build `37828392647`.
+- GitHub artifact from native build: `MichelsLife-Android-TEST-v0.2.2`, artifact `11572098070`. Log reported `PLAY_BUNDLE_SIGNING=UNSIGNED`, so the Play release AAB cannot be submitted until the existing upload key is configured in GitHub Actions secret variables and signed-AAB validation succeeds.
+- Pending: physical device/emulator installed APK tests (onboarding, swipe/back, settings, About and launcher), Google Play Console setup/signing fingerprint/policy fields, actual Play-delivered installation and cross-device Supabase upload/download/conflict/restore with a real account.
+- No Google Play release, published Windows v3.0.216 release, live user sync or physical device test is claimed by this entry.
