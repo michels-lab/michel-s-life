@@ -862,3 +862,14 @@ Public state:
 - Carried forward a second viewport's About browser screenshot and measured portrait/link geometry from PR #25, without changing approved UI layout, themes, backgrounds or chapter visuals.
 - Canonical app-icon, mark and lockup SVGs remain byte-identical to the Michel's Lab product manifest assets. No user data or signing secrets were changed.
 - Evidence boundary: source integrations require same-SHA CI revalidation. No installed-device physical UI inspection, same-account Windows ↔ Android Supabase sync, or Play-delivered signing/provider test has yet been carried out by this integration. Do not call the candidate a published stable release until verified.
+
+## 2026-10-08 — v3.0.216 source integrated and candidate CI passed
+
+- Merged integration PR #27 into `main` with commit `02b4231a3a4481fc9d7114fe10c6d09fc3ff7eea`; the old v3.0.216 PR #10 was automatically marked merged. The separate PR #25 became redundant because its responsive About browser test was included.
+- Candidate source commit `27fc043bd97e9a0d23383d171cf295ab10d56538` passed all five independent Actions workflows on 2026-10-08: Source validation `37828392687`, UI smoke `37828392673`, Android UI smoke `37828392618`, Android APK/AAB build `37828392642`, and Windows release build `37828392647`.
+- Windows build performed packaged portable and Setup build/launch checks; successful compilation is not evidence that tray/hotkeys/taskbar were interactively operated by a human.
+- Android v0.2.2 generated test APK and `MichelsLife-Android-Play-UNSIGNED-v0.2.2.aab`; Actions logs positively show `PLAY_BUNDLE_SIGNING=UNSIGNED`, so upload signing remains pending.
+- Canonical The Ascent product SVG sources match Michel's Lab master assets; Windows and Android logo packaging passed CI. Pixel-perfect review of the installed apps remains pending post-release and actual packaged About screenshots remain a separate automation issue (#23).
+- Public distribution `michels-lab/michel-s-life-releases` still lists v3.0.215 as the latest verified stable Windows release at this entry. **v3.0.216 is merged source, NOT a verified public GitHub release, Microsoft Store publication or Google Play publication.**
+- Real Windows↔Android same-account Supabase upload/download, conflict/restore, Android physical phone and Google Play signing/provider checks remain NOT VERIFIED. Microsoft Store submission is postponed by the owner.
+- This is an audit-only update. PR candidate validation is documented exactly; new default-branch commit/CI outcomes must be read separately.
