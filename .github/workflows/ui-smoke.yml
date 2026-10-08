@@ -17,7 +17,7 @@ permissions:
   contents: read
 
 env:
-  RELEASES_REPO: realmichelduarte/michel-s-life-releases
+  RELEASES_REPO: michels-lab/michel-s-life-releases
 
 jobs:
   ui-smoke:
