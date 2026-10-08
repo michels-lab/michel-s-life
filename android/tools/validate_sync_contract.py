@@ -2,8 +2,10 @@
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[1]
+repo = root.parent
 cloud = (root / "app/src/main/java/com/michelslab/michelslife/CloudSync.kt").read_text(encoding="utf-8")
 bridge = (root / "app/src/main/java/com/michelslab/michelslife/AndroidBridge.kt").read_text(encoding="utf-8")
+frontend = (repo / "src/MichelsLife/frontend/index.html").read_text(encoding="utf-8")
 
 required = {
     'https://www.googleapis.com/auth/drive.appdata': cloud,
@@ -20,8 +22,32 @@ required = {
     'cloudAccept': bridge,
     'cloudOverview': bridge,
     'cloudRestoreBackup': bridge,
+    'SupabaseSyncV30216': frontend,
+    'lqnkcqredlxrykynacwr.supabase.co': frontend,
+    'sb_publishable_': frontend,
+    "__MICHELSLIFE_PLATFORM__": frontend,
+    "source_platform:platform()": frontend,
 }
 missing = [needle for needle, text in required.items() if needle not in text]
 if missing:
     raise SystemExit("Android cloud contract missing: " + ", ".join(missing))
-print("OK: Android cloud contract matches Michel's Life Windows sync primitives")
+scan_suffixes = {".kt", ".kts", ".js", ".py", ".xml", ".properties"}
+security_sources = [repo / "src/MichelsLife/frontend/index.html"]
+security_sources.extend(
+    p for p in root.rglob("*")
+    if p.is_file()
+    and p.resolve() != Path(__file__).resolve()
+    and p.suffix.lower() in scan_suffixes
+)
+for forbidden in ("sb_secret_", "service_role", "github_pat_", "ghp_"):
+    offenders = [
+        str(p.relative_to(repo))
+        for p in security_sources
+        if forbidden.lower() in p.read_text(encoding="utf-8", errors="replace").lower()
+    ]
+    if offenders:
+        raise SystemExit(
+            "Android executable/config source contains forbidden secret marker "
+            + forbidden + ": " + ", ".join(offenders)
+        )
+print("OK: Android uses shared Supabase primary sync and executable/config sources contain no secret-role credentials")

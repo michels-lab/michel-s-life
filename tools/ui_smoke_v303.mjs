@@ -65,8 +65,8 @@ try{
       imgCenter:ir.left+ir.width/2,titleCenter:tr.left+tr.width/2,subCenter:sr.left+sr.width/2,brandCenter:br.left+br.width/2
     };
   });
-  ok(logo.src==='assets/michels_life_logo.webp','sidebar is not using the real celestial logo asset');
-  ok(logo.w>20&&logo.h>20&&logo.cw>=80&&logo.ch>=80&&logo.display!=='none'&&logo.visibility!=='hidden'&&logo.opacity!=='0','celestial sidebar logo is not visibly rendered');
+  ok(logo.src==='assets/michels_life_mark.svg','sidebar is not using the canonical Michel’s Life mark');
+  ok(logo.w>20&&logo.h>20&&logo.cw>=80&&logo.ch>=80&&logo.display!=='none'&&logo.visibility!=='hidden'&&logo.opacity!=='0','canonical sidebar mark is not visibly rendered');
   console.log('BRAND_GEOMETRY '+JSON.stringify(logo));
   ok(logo.direction==='column','Michel’s Life brand is not stacked vertically: '+JSON.stringify(logo));
   ok(logo.imgBottom<=logo.titleTop+2&&logo.titleBottom<=logo.subTop+2,'Michel’s Life mark/title/subtitle are not in the approved vertical order: '+JSON.stringify(logo));
@@ -153,9 +153,29 @@ try{
 
   await page.click('[data-v30171-setting="about"]');
   await page.waitForSelector('[data-v30171-pane="about"].active .mlvdev-avatar',{timeout:10000});
-  const avatar=await page.$eval('.mlvdev-avatar',img=>({w:img.naturalWidth,h:img.naturalHeight,cw:img.getBoundingClientRect().width,ch:img.getBoundingClientRect().height,src:img.getAttribute('src')}));
-  ok(avatar.src==='assets/michel_duarte_avatar.jpg','About is not using the canonical developer portrait');
-  ok(avatar.w>100&&avatar.h>100&&avatar.cw>=180&&avatar.ch>=220,'About portrait is missing or still rendered as a thumbnail');
+  const aboutBrand=await page.evaluate(()=>{
+    const avatar=document.querySelector('.mlvdev-avatar');
+    const product=document.querySelector('[data-mlv-product-brand="canonical"] img');
+    const author=document.querySelector('[data-mlv-author-brand="canonical"]');
+    const lab=document.querySelector('.mlvdev-studio-lockup img');
+    const socials=[...document.querySelectorAll('.mlvdev-social')];
+    const version=[...document.querySelectorAll('.mlvdev-meta b')].map(x=>(x.textContent||'').trim()).find(x=>/^v3\.0\.216$/.test(x))||'';
+    return {
+      avatar:{w:avatar?.naturalWidth||0,h:avatar?.naturalHeight||0,cw:avatar?.getBoundingClientRect().width||0,ch:avatar?.getBoundingClientRect().height||0,src:avatar?.getAttribute('src')||''},
+      productSrc:product?.getAttribute('src')||'',productWidth:product?.naturalWidth||0,
+      author:!!author,labSrc:lab?.getAttribute('src')||'',labWidth:lab?.naturalWidth||0,
+      socialCount:socials.length,socialNames:socials.map(x=>x.querySelector('strong')?.textContent?.trim()||''),
+      socialIcons:socials.filter(x=>x.querySelector('svg.mlvdev-social-icon')).length,version
+    };
+  });
+  ok(aboutBrand.avatar.src==='assets/michel_duarte_avatar.jpg','About is not using the canonical developer portrait');
+  ok(aboutBrand.avatar.w===1440&&aboutBrand.avatar.h===1920&&aboutBrand.avatar.cw>=170&&aboutBrand.avatar.ch>=220,'About canonical portrait is missing or incorrectly rendered: '+JSON.stringify(aboutBrand.avatar));
+  ok(aboutBrand.productSrc==='assets/michels_life_lockup.svg'&&aboutBrand.productWidth>100,'About product identity is not using the canonical Michel’s Life lockup');
+  ok(aboutBrand.author,'About author hierarchy is missing');
+  ok(aboutBrand.labSrc==='assets/michels_lab_lockup.png'&&aboutBrand.labWidth>100,'About parent brand is not using the canonical Michel’s Lab lockup: '+JSON.stringify(aboutBrand));
+  ok(aboutBrand.socialCount===5&&aboutBrand.socialIcons===5,'About socials must expose five visible icon+name links: '+JSON.stringify(aboutBrand));
+  ok(JSON.stringify(aboutBrand.socialNames)===JSON.stringify(['Instagram','Facebook','LinkedIn','GitHub','Email']),'About social order/names drifted: '+JSON.stringify(aboutBrand.socialNames));
+  ok(aboutBrand.version==='v3.0.216','About does not show the current build version: '+JSON.stringify(aboutBrand));
   await page.screenshot({path:`${out}/03-about.png`,fullPage:true});
 
   await page.evaluate(()=>{
@@ -187,7 +207,45 @@ try{
   await page.waitForTimeout(600);
   await page.screenshot({path:`${out}/05-dashboard.png`,fullPage:true});
 
-  console.log(JSON.stringify({logo,typographyRoute,typographyPaletteCheck,headingFonts,avatar,chapterTarget:target,typography:'midnights',cloudPopups:cloudCount},null,2));
+  // A second real browser viewport catches About clipping missed at 1600x1000.
+  // This is browser-render evidence, NOT proof of packaged Windows or Android runtime.
+  await page.setViewportSize({width:1280,height:800});
+  await page.evaluate(()=>window.LeftNavV30171.route('settings'));
+  await page.waitForSelector('[data-v30171-setting="about"]',{timeout:10000});
+  await page.click('[data-v30171-setting="about"]');
+  await page.waitForSelector('[data-v30171-pane="about"].active .mlvdev-avatar',{timeout:10000});
+  await page.waitForTimeout(350);
+  const compactAbout=await page.evaluate(()=>{
+    const pane=document.querySelector('[data-v30171-pane="about"].active');
+    const avatar=pane?.querySelector('.mlvdev-avatar');
+    const rect=el=>{
+      const r=el?.getBoundingClientRect();
+      return r?{x:r.x,y:r.y,width:r.width,height:r.height,right:r.right,bottom:r.bottom}:null;
+    };
+    const links=[...pane?.querySelectorAll('a[href]')||[]].map(a=>{
+      const r=a.getBoundingClientRect(),cs=getComputedStyle(a);
+      return {text:(a.innerText||a.textContent||'').trim().slice(0,100),
+        href:a.getAttribute('href')||'',visible:r.width>0&&r.height>0&&cs.display!=='none'&&cs.visibility!=='hidden',
+        rect:rect(a)};
+    });
+    return {viewport:{width:innerWidth,height:innerHeight},pane:rect(pane),portrait:rect(avatar),
+      portraitLoaded:!!(avatar?.naturalWidth&&avatar?.naturalHeight),
+      pageOverflow:document.documentElement.scrollWidth-innerWidth,
+      links,
+      aboutText:(pane?.innerText||'').slice(0,600)};
+  });
+  ok(compactAbout.pane&&compactAbout.pane.width>200&&compactAbout.pane.height>150,
+    'Compact About has a missing/collapsed panel: '+JSON.stringify(compactAbout));
+  ok(compactAbout.portraitLoaded&&compactAbout.portrait&&
+     compactAbout.portrait.width>=90&&compactAbout.portrait.height>=100,
+    'Compact About has invisible/zero-size author portrait: '+JSON.stringify(compactAbout));
+  ok(compactAbout.links.some(link=>link.visible),
+    'Compact About has no rendered external/contact links: '+JSON.stringify(compactAbout));
+  await page.screenshot({path:`${out}/06-about-1280x800-full.png`,fullPage:true});
+  await page.screenshot({path:`${out}/07-about-1280x800-initial.png`,fullPage:false});
+
+
+  console.log(JSON.stringify({logo,typographyRoute,typographyPaletteCheck,headingFonts,avatar:aboutBrand.avatar,chapterTarget:target,typography:'midnights',cloudPopups:cloudCount},null,2));
 } finally {
   await browser.close();
 }

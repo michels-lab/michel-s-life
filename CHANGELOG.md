@@ -1,7 +1,118 @@
+## 3.0.216 — Supabase primary sync migration (pre-release)
+
+### Windows portable naming transition — 2026-10-06
+- Canonical portable release asset is now `MichelsLife-Portable-vX.Y.Z.exe` with a matching SHA-256 sidecar.
+- The v3.0.216 updater host is materialized to prefer the explicit portable asset name.
+- Releases retain byte-identical `MichelsLife-vX.Y.Z.exe` + checksum aliases temporarily so older installed updaters can still discover v3.0.216.
+- The Setup installer remains the recommended normal-user download.
+- No release publication or version bump is part of this migration; current-commit CI must validate the transition.
+
+### Canonical Michel's Lab identity adoption — 2026-10-06
+- Adopted the approved Michel's Life **The Ascent** mountain/path/star geometry as the product identity source for Windows, Android, startup and in-app branding.
+- Rebuilt About around the governed hierarchy: product identity/version → canonical Michel Duarte portrait → official Michel's Lab parent brand → Instagram/Facebook/LinkedIn/GitHub/Email links with visible icons and network names.
+- Windows icon generation now derives from the canonical app-icon SVG; Android now uses canonical launcher/adaptive-icon geometry and Android 12+ splash branding.
+- Added a cross-platform identity validator and expanded UI smoke coverage so legacy logo drift, stale About identity and missing social icons fail CI.
+- This entry records implementation only; CI validation is recorded separately after the new branch head runs.
+
+### Supabase backend
+- Created a dedicated **michels-life** Supabase project for Michel's Life rather than sharing the unrelated IG Cleaner backend.
+- Added authenticated master-state sync through `ml_state`, revision history through `ml_state_history`, and cross-device presence/activity through `ml_devices`.
+- Enabled Row Level Security on every Michel's Life table and scoped all policies to the authenticated user's `auth.uid()`.
+- Explicitly revoked anonymous table privileges. Supabase Security Advisor reports zero findings after the final hardening migration.
+- Desktop/mobile clients use only the modern Supabase publishable key. Release validation rejects `sb_secret_` and `service_role` markers.
+
+- Android PR validation now overlays the branch's canonical frontend before running mobile/Supabase smoke tests and uses the same version-bump/i18n/validation sequence as the production Android build.
+
+### Cross-platform sync
+- Authentication UX rule: **password-first**. Email + password is the default sign-in surface on Desktop and Android; email OTP/code is an explicit fallback and never persists as the next-session default.
+- Added optional 6-digit email OTP request/verification for existing accounts only (`create_user:false`), while account creation remains password-based.
+- Added email/password Supabase Auth, access-token refresh, persistent session handling and a dedicated Settings → Sync surface.
+- Reused the existing full Michel's Life backup payload as the initial canonical snapshot format so Missions, Journal, Projects, Stats, Chapters and settings migrate without a parallel data model.
+- Sync uses monotonic revisions and a dirty flag: unchanged polling does not create new revisions.
+- If another device has a newer revision, automatic sync refuses to overwrite it and surfaces a conflict; cloud/local replacement remains an explicit user action.
+- The previous remote snapshot is preserved in Supabase history before overwrites.
+- The global Sync Center, Command Palette and Windows tray Sync Now now prefer Supabase.
+- Google Drive remains available only as a temporary manual recovery/migration fallback. Its automatic sync is disabled whenever a Supabase session is active.
+- Google Calendar remains an independent optional integration.
+
+### Android 0.2.2
+- The Android WebView reuses the same Supabase client as Windows and reports `source_platform='android'` with a separate Android device identity.
+- Android version bumped to **0.2.2 / versionCode 4**.
+- Android builds now overlay the branch's canonical frontend into the base AppBundle before APK/AAB packaging, preventing test builds from silently embedding an older public-release frontend.
+- Android sync validation requires the Supabase contract and rejects privileged Supabase keys.
+- Native Google Drive code remains temporarily available as a fallback only.
+
+### Sync hardening — 2026-10-06
+- Automatic Supabase uploads now use revision compare-and-swap semantics. If another device changes the same remote revision between read and write, the conditional update affects zero rows and Michel's Life surfaces a conflict instead of overwriting the winner.
+- **Use this PC** remains an explicit force action and preserves the replaced remote snapshot in `ml_state_history`.
+- **Use cloud** now writes the current local state to Supabase history with reason `before_download_local` before applying the remote snapshot.
+- Backup Timeline restores preserve Supabase session/device metadata and republish restored state to Supabase first; Google Drive is used only when Supabase is not connected.
+- Tightened database grants to least privilege: `ml_state` and `ml_devices` get authenticated CRUD; `ml_state_history` gets authenticated SELECT/INSERT only. Client roles no longer have TRUNCATE/TRIGGER/REFERENCES privileges. Security Advisor remains at zero findings.
+- Versioned the three production Supabase migrations under `supabase/migrations/`.
+- Added a Michel's Life-specific AppBundle resolver for the shared releases repository. Builds no longer use GitHub `releases/latest`, which broke when LouderMe became the repository's newest release; they now select the highest stable `vX.Y.Z` release containing `AppBundle.zip`.
+
+### Validation
+- Final functional commit `e28e8ce36aebf2d38aeca9699877f2f1beefd5bc`: **UI smoke #657 — success**, **Android UI smoke #79 — success**, **Source validation #771 — success**, **Windows release build #48 — success**, **Android test build #102 — success**.
+- Supabase production schema: RLS enabled, anonymous table privileges revoked, Security Advisor **0 findings**.
+- Release-candidate validation on `aefcffb9`: **Source validation #746 — success**, **UI smoke #632 — success**, **Android UI smoke #54 — success**, **Windows release build #23 — success**, and **Android native build #77 — success**.
+- Source validation **#721 — success** on the shared Windows/Android Supabase product code.
+- UI smoke **#611 — success**, including Supabase sign-in simulation, first master upload, dirty-state revision upload, newer-remote conflict protection, explicit cloud restore and the existing bilingual/UI regression suite.
+- Android-mode Supabase smoke validates Android platform detection, `and_` device identity, Android master-state attribution and Android device registration without privileged keys.
+- Windows build #23 produced the correctly versioned `MichelsLife-v3.0.216` candidate. Android build #77 produced `MichelsLife-Android-TEST-v0.2.2`; its Play AAB is intentionally marked `UNSIGNED` until the repository signing secrets are configured.
+- Supabase production tables currently contain 0 rows, confirming that no live user account has yet written production sync data.
+- Real same-account Windows ↔ Android sync/restore/conflict validation and interactive native-device checks are still required before public release; no v3.0.216 release has been published.
+
+### Handoff / `limon`
+- Project handoff keyword: **`limon`**.
+- Meaning: update the permanent project logs, capture the exact current branch/CI/pending state, and leave a clean continuation point for a new chat.
+- Current continuation point: Supabase primary sync is implemented and CI-green on Desktop/shared frontend and Android WebView contract; public v3.0.216 remains unpublished.
+- Remaining release gates: live same-account Windows ↔ Android sync/restore/conflict test, interactive Windows candidate verification, configure Android Play signing secrets + device/Play-delivered validation, then merge/release completion.
+
 # Changelog
 
 > Official development log for Michel's Life. Every meaningful app change must be recorded here before a version is considered complete. Entries should describe verified changes only and be grouped by version/date.
 
+
+## 3.0.216 — 2026-10-05 — Desktop Quick Capture, tray and automatic update detection (validated pre-release)
+
+### Desktop workflow
+- Added a native Windows system-tray shell without changing the approved Michel's Life visual baseline.
+- Closing or minimizing the desktop window now keeps Michel's Life resident in the tray.
+- The tray menu exposes Open Michel's Life, Quick Capture, Current Mission, Sync Now, Start with Windows and Exit.
+- Tray labels follow the active English/Spanish interface language, and a failed global Quick Capture hotkey registration is surfaced instead of failing silently.
+- Current Mission reuses the existing Current Mission authority; Sync Now reuses the existing Google Drive Cloud Sync API; Start with Windows is an optional per-user Windows startup toggle.
+- Added a global `Ctrl + Shift + Space` hotkey that restores Michel's Life and opens Quick Capture.
+- Added bilingual Quick Capture for fast Mission or Journal capture while preserving the existing mission and journal data models.
+- Quick Capture Mission creation supports category selection; Journal capture appends a timestamped note to the current day.
+
+### Desktop experience expansion
+- Added a compact Sync Center that surfaces cloud state, last sync, this PC, connected-device activity and real cloud conflicts without duplicating the existing Google Drive sync engine.
+- The existing cloud badge is now a persistent compact entry point: healthy, syncing, attention and conflict states remain visible without opening Settings.
+- Expanded the global `Ctrl + K` Command Palette with keyboard navigation and commands for Quick Capture, Sync Center, Sync Now, update checks, Current Mission, Focus, planning, main sections, Settings destinations and starting individual missions.
+- Added progressive startup scheduling: critical UI renders first while initial Google/cloud status and cloud-overview work is deferred until browser idle time (with bounded fallbacks), reducing competition with first paint.
+- Added native Windows taskbar integration for Current Mission. Running missions use the Windows indeterminate progress state; paused missions use the paused taskbar state; the taskbar/window title and tray tooltip include mission name and focused time.
+- Taskbar integration is best-effort and isolated from the app: unsupported/failing Windows taskbar APIs cannot break Michel's Life.
+
+### Automatic updates
+- Reused the existing safe GitHub Releases updater instead of introducing a second update system.
+- Michel's Life now checks the public release channel automatically shortly after desktop startup, every six hours while open, and on refocus when the previous check is old enough.
+- A newer online release produces one persistent bilingual notification per version per app session.
+- Automatic network-check failures stay silent; the existing manual update check continues to surface errors.
+- Installation remains user-initiated and retains the existing SHA-256 verification and pre-update restore point.
+
+### Validation
+- Source validation #702 — **success**, including release-readiness checks, bilingual corpus checks, Store packaging and Windows host compilation with tray + taskbar integration.
+- UI smoke #594 — **success** with the same product code and the dedicated Sync Center / Command Palette smoke included.
+- Dedicated automatic-update smoke — **success**.
+- Dedicated Quick Capture smoke — **success**, including categorized Mission creation, Journal append and Spanish UI.
+- Dedicated desktop-experience smoke — **success**, including Ctrl+K opening, Spanish command search, arrow-key selection, Sync Center rendering/actions and progressive-startup timing markers.
+- Existing Spanish first-run, Missions, exhaustive UI, language round trip, Settings, Dashboard and seasonal-animation continuity tests all remained green.
+- UI smoke #587 exposed a timing-flaky animation assertion: the same seasonal canvas remained mounted and the tab switched in 17.5 ms, but the frame counter had not advanced within the first requestAnimationFrame. The test now samples across ~80 ms without changing product animation code; #588 passed.
+
+### Release state
+- Work is isolated on `desktop-v3.0.216` / draft PR #10.
+- No v3.0.216 public release has been published and `main` has not been changed by this pre-release cycle.
+- Windows release candidate build #22 — **success** on `25054d18`, producing the correctly versioned `MichelsLife-v3.0.216` artifact with the current Supabase/Desktop code. The PR now builds native Windows candidates automatically without publishing them.
 
 ## 3.0.215 — 2026-09-30 — Spanish navigation performance
 
@@ -166,3 +277,13 @@
 ## 3.0.199 — Final Five Worlds
 
 - Added Obsidian Empire, Celestial Garden, The Last Observatory, Cathedral of the Moon, and Golden Dunes as six-stage dynamic world packs.
+
+### Final Supabase packaging verification — 2026-10-05
+- Final branch HEAD `d70c1e07e1cac63d13d74ca0e621f22b06815461` passed Source validation **#748**, UI smoke **#634**, Android UI smoke **#56**, Android native build **#79** and Windows release build **#25**.
+- Windows artifact `MichelsLife-v3.0.216` was downloaded and inspected. It contains `MichelsLife-v3.0.216.exe`, installer, AppBundle and SHA-256 manifest; the embedded AppBundle contains the Supabase primary-sync module.
+- Windows artifact ZIP SHA-256: `1ea8e0d09eb48b3cc1eaae137de87b6d325d7dee7a1527f2ee1c7012c1702e54`.
+- Android artifact `MichelsLife-Android-TEST-v0.2.2` was downloaded and inspected. The APK contains the canonical frontend with the Supabase primary-sync module plus the Android bridge/platform marker.
+- Android artifact ZIP SHA-256: `ab7658be649ee2090df4ff7e8d1ad624dddb17289e0870f383d680aa130d618b`.
+- Direct package scans found no `sb_secret_` or `service_role` credentials in either Windows or Android application payloads.
+- Supabase Security Advisor for project `michels-life`: **0 security findings**. All three sync tables have RLS enabled.
+- Remaining migration gate is live same-account validation between a physical Windows install and Android device; no further schema/client implementation is pending for the snapshot-based migration phase.

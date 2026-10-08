@@ -6,67 +6,71 @@ This file is the app-level infrastructure audit for Michel's Life. It complement
 
 ## Current architecture
 
+### Primary state sync — Supabase
+- Dedicated project: **michels-life** (`lqnkcqredlxrykynacwr`).
+- Supabase is the primary authority for Michel's Life account/state/device synchronization across Windows and Android.
+- Canonical tables:
+  - `public.ml_state` — one master state snapshot per authenticated user.
+  - `public.ml_state_history` — revision history before overwrites/restores.
+  - `public.ml_devices` — per-device identity and last activity.
+- Every table has Row Level Security enabled.
+- Every user-data policy is scoped to `auth.uid()`.
+- Anonymous table access is not part of the product contract.
+- Desktop and Android bundle only the modern Supabase publishable key; secret/service-role keys are prohibited from client source and validated in CI.
+- The current snapshot format reuses the full Michel's Life backup payload so Missions, Journal, Projects, Stats, Chapters, settings and related local state migrate together.
+- Sync uses monotonically increasing revisions plus a dirty flag; unchanged polling does not manufacture revisions.
+- A newer remote revision is never silently overwritten by automatic sync.
+
 ### Windows
-- Cloud provider: **Google Drive**.
-- Scope: Drive application data (`drive.appdata` / appDataFolder), not the user's normal visible Drive files.
-- Canonical cloud state: `michels_life_cloud_state.json`.
-- Cloud history prefix: `michels_life_backup_`.
-- Device-presence prefix: `michels_life_device_`.
-- State integrity uses SHA-256 metadata plus the existing Michel's Life conflict-resolution semantics.
-- Local restore points exist before risky update/sync operations.
-- Build-time Google credential values are injected through environment/GitHub Actions rather than committed to source.
-- Microsoft Store source/package contracts validate automatically on `main` and `fix/**`; the real Partner Center package job remains manual because it requires provider identity inputs and the approved OAuth build credential.
+- Windows uses the shared canonical Supabase client.
+- Windows device IDs use the `win_` namespace and report platform `windows`.
+- Native tray Sync Now prefers Supabase when available.
+- Local restore points remain independent of cloud provider.
+- Windows automatic application updates continue to use the GitHub Releases updater and are not coupled to Supabase.
 
 ### Android
-- Uses the same Michel's Life cloud-state contract as Windows.
-- Google Identity authorization coordinator exists.
-- Drive appDataFolder sync primitives exist.
-- No Android OAuth client secret is embedded in the APK.
-- Production distribution/update path is Google Play.
-- Release signing is supplied through environment/Actions secrets.
+- Android uses the same canonical Supabase client embedded in the packaged frontend.
+- Android device IDs use the `and_` namespace and report platform `android`.
+- The Android build overlays the current canonical frontend into the AppBundle before APK/AAB packaging.
+- Native Google Drive code remains temporarily available only as migration/recovery fallback.
+- Production distribution/update path remains Google Play.
+
+### Google
+- **Google Calendar** remains an independent optional integration.
+- **Google Drive** is no longer the primary Michel's Life state authority.
+- Existing Drive state/history support is retained temporarily as a manual migration/recovery fallback while Supabase live-device validation completes.
+- Google OAuth credentials/tokens remain outside source control.
 
 ## Verified strengths
-- Desktop and Android intentionally share one cloud-state contract instead of maintaining separate data models.
-- Cloud data are separated from Git repository data.
-- User OAuth tokens, personal data, diagnostics and backups are not committed.
-- Android has explicit cloud status/connect/disconnect/sync/overview/restore bridge actions.
-- CI contains build/version checks and Android cloud-contract validation.
+- One shared state/sync implementation is used across Windows and Android.
+- Supabase ownership is enforced at the database layer through RLS, not only in client code.
+- Client builds contain no Supabase privileged key.
+- Supabase Security Advisor reported zero findings after schema hardening.
+- Automated UI coverage tests first upload, dirty-state upload, remote-newer conflict protection, explicit cloud download and Android platform/device attribution.
+- Local restore/recovery remains available independently of the cloud authority.
 
-## Gaps / required follow-up
-1. **Android live OAuth and Drive sync still require physical-device end-to-end validation.**
-2. Validate Windows → Android and Android → Windows state round trips with a real account.
-3. Exercise an actual simultaneous-edit conflict and verify both platforms resolve it identically.
-4. Validate cloud-history restore and local restore-point recovery on a real Android device.
-5. Finish production signing + Play internal-testing workflow.
-6. Root README still describes v3.0.207 as the current desktop baseline while current project metadata is v3.0.215; reconcile documentation.
-7. The Windows desktop OAuth client is an installed/public client. Any embedded or build-injected OAuth client secret must **not** be treated as a confidential security boundary; migrate/verify the flow around PKCE/public-client assumptions.
-8. Supabase is **not currently part of Michel's Life production architecture**. Do not duplicate the Google Drive state into Supabase unless a concrete product requirement justifies a backend migration.
-
-## Supabase decision boundary
-Supabase becomes appropriate if Michel's Life needs structured server-side features that Drive appDataFolder is poor at, for example:
-- multi-user/shared data;
-- server-side queries/analytics;
-- cross-user collaboration;
-- account-level relational data;
-- server-triggered workflows.
-
-If adopted, migration must be explicit:
-1. define relational schema;
-2. enable RLS on every exposed user-data table;
-3. scope every row to authenticated user ownership;
-4. use only a publishable client key in the app;
-5. keep secret/service-role keys server-side only;
-6. implement migration from existing Drive state;
-7. preserve offline/local restore behavior;
-8. regression-test conflict semantics before switching authority.
+## Remaining release gates
+1. Sign into one real Supabase account on an actual Windows installation.
+2. Sign into that same account on an actual Android installation.
+3. Verify Windows → Android and Android → Windows state transfer with real network/auth sessions.
+4. Exercise a real simultaneous-edit conflict and explicit cloud/local choice.
+5. Verify restore behavior using a real Supabase history snapshot.
+6. Complete Android production signing / Play internal-test workflow and physical-device UX approval.
 
 ## Secret inventory rule
 Record **secret names and storage locations only**, never values.
 
 Known categories:
-- Google OAuth configuration → Google Cloud + GitHub Actions/environment.
+- Supabase client access → publishable key may be bundled in public clients.
+- Supabase privileged access → secret/service-role keys, if ever needed, remain server-side only and are forbidden from app bundles/source.
+- Google OAuth configuration → Google Cloud + GitHub Actions/environment where applicable.
 - Android signing material → secure keystore/password manager + GitHub Actions secrets.
-- Supabase secret/service-role keys, if ever introduced → server/Edge Function secret store only.
+- User sessions/refresh tokens → local application storage only; never Git.
+
+## Michel's Lab governance
+- Shared engineering/cloud/security standards live in `michels-lab/Michel-Software-Standards`.
+- App-specific implementation truth stays in this repository.
+- This Supabase migration is a cross-app architecture/auth/cloud decision and must be reported upstream without including credential values.
 
 ## Validation gate
-Cloud work is not DONE until the real provider is exercised end to end on the target platform. Mock/unit validation alone is insufficient for OAuth, sync, conflict handling, restore, or Play-delivered builds.
+Cloud work is not considered fully production-validated until the real provider is exercised end-to-end on the target platforms. Mock/CI validation is necessary but not sufficient for final release approval.

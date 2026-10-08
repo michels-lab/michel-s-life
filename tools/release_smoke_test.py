@@ -10,26 +10,44 @@ subprocess.run([sys.executable,str(ROOT/'tools/materialize_host_source.py')],che
 PROGRAM=ROOT/'src/MichelsLife/Program.cs'
 GOOGLE=ROOT/'src/MichelsLife/GoogleCalendarService.cs'
 SECRETS=ROOT/'src/MichelsLife/BuildSecrets.cs'
+DESKTOP_SHELL=ROOT/'src/MichelsLife/DesktopShell.cs'
 FRONTEND=ROOT/'src/MichelsLife/frontend/index.html'
-LOGO=ROOT/'branding/michels_life_logo.webp'
+APP_ICON=ROOT/'branding/michels_life_app_icon.svg'
+MARK=ROOT/'branding/michels_life_mark.svg'
+LOCKUP=ROOT/'branding/michels_life_lockup.svg'
+LAB_MARK=ROOT/'branding/michels_lab_mark.png'
+LAB_LOCKUP=ROOT/'branding/michels_lab_lockup.png'
 AVATAR=ROOT/'branding/michel_duarte_avatar.jpg'
 PROFILE=ROOT/'branding/developer-profile.json'
 LICENSE=ROOT/'LICENSE.txt'
+WINDOWS_LAUNCH_SMOKE=ROOT/'tools/windows_launch_smoke.ps1'
 WORKFLOWS=[
     ROOT/'.github/workflows/build-test-windows.yml',
     ROOT/'.github/workflows/release-windows.yml',
     ROOT/'.github/workflows/build-store-msix.yml',
 ]
-WINDOWS_LAUNCH_SMOKE=ROOT/'tools/windows_launch_smoke.ps1'
-for p in (PROGRAM,GOOGLE,SECRETS,FRONTEND,LOGO,AVATAR,PROFILE,LICENSE,WINDOWS_LAUNCH_SMOKE,*WORKFLOWS):
+for p in (PROGRAM,GOOGLE,SECRETS,DESKTOP_SHELL,FRONTEND,APP_ICON,MARK,LOCKUP,LAB_MARK,LAB_LOCKUP,AVATAR,PROFILE,LICENSE,WINDOWS_LAUNCH_SMOKE,*WORKFLOWS):
     assert p.exists(),f'missing {p}'
 
 program=read(PROGRAM)
-assert 'CurrentAppVersion = new("3.0.215")' in program
-for stale in ('3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207','3.0.208','3.0.209','3.0.210','3.0.211','3.0.212','3.0.213','3.0.214'):
+assert 'CurrentAppVersion = new("3.0.216")' in program
+for stale in ('3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207','3.0.208','3.0.209','3.0.210','3.0.211','3.0.212','3.0.213','3.0.214','3.0.215'):
     assert stale not in program, f'stale host version remains: {stale}'
 for marker in ('ComputeEmbeddedBundleFingerprint','SHA256.Create()','string.Equals(marker, bundleFingerprint','File.WriteAllText(markerPath, bundleFingerprint)'):
     assert marker in program, f'missing runtime cache protection: {marker}'
+update_host_sources=program+'\n'+read(GOOGLE)
+if 'MichelsLife-v' in update_host_sources:
+    raise AssertionError('legacy ambiguous portable release asset name remains in updater host')
+if 'MichelsLife-Portable-v' not in update_host_sources:
+    diagnostic=[
+        line.strip() for line in update_host_sources.splitlines()
+        if any(token in line.lower() for token in ('release','download','checksum','sha256','browser_download','asset'))
+    ][:40]
+    print('INFO: updater host uses no fixed Michel\'s Life portable filename; release packaging compatibility controls naming.', diagnostic)
+assert 'MichelsLife.DesktopShell.Attach(this, _webView);' in program, 'desktop shell is not attached to the Windows host'
+desktop_shell=read(DESKTOP_SHELL)
+for marker in ('NotifyIcon','RegisterHotKey','CloseReason.UserClosing','MLV216QuickCapture','Quick Capture','Current Mission','Sync Now','GoogleCloudV30192','Start with Windows','StartupRegistryPath','already in use by Windows or another app','RefreshTrayLanguageAsync','Captura rápida','Misión actual','Sincronizar ahora','Iniciar con Windows','TaskbarProgress','ITaskbarList3','SetProgressState','RefreshTaskbarMissionAsync','Salir','Exit'):
+    assert marker in desktop_shell, f'missing desktop shell behavior: {marker}'
 assert '__BUILD_SECRET_GOOGLE__' in read(SECRETS)
 assert 'NormalizeGoogleClientSecret' in read(SECRETS)
 assert 'JsonDocument.Parse' in read(SECRETS)
@@ -47,8 +65,12 @@ subprocess.run([sys.executable,str(ROOT/'tools/bump_frontend_version.py'),'--ind
 subprocess.run([sys.executable,str(ROOT/'tools/enable_i18n.py'),'--index',str(FRONTEND)],check=True)
 frontend=read(FRONTEND)
 for marker in (
-    "const VERSION='3.0.215'",
-    "assets/michels_life_logo.webp",
+    "const VERSION='3.0.216'",
+    "assets/michels_life_mark.svg",
+    "assets/michels_life_lockup.svg",
+    "assets/michels_lab_lockup.png",
+    'data-mlv-product-brand="canonical"',
+    'data-mlv-author-brand="canonical"',
     "assets/michel_duarte_avatar.jpg",
     "['typography','Aa','Typography'",
     "midnights:{name:'Midnights'",
@@ -59,14 +81,29 @@ for marker in (
     "michelsLife.typography.v303",
     "<script data-mlv-language-guard=\"v1\">",
     "<script src=\"i18n.js\" data-mlv-i18n=\"v1\"></script>",
+    "MLV216QuickCapture",
+    "automaticUpdateCheck",
+    "AUTO_UPDATE_INTERVAL_MS=6*60*60*1000",
+    "MLV216CommandPalette",
+    "MLV216SyncCenter",
+    "MLV216DesktopExperience",
+    "SupabaseSyncV30216",
+    "lqnkcqredlxrykynacwr.supabase.co",
+    "/auth/v1/otp",
+    "/auth/v1/verify",
+    "create_user:false",
+    "authModeState='password'",
+    "sb_publishable_",
+    "requestIdleCallback",
 ):
     assert marker in frontend, f'missing canonical frontend source: {marker}'
 for forbidden in ('data:image/png;base64,','data:image/jpeg;base64,',"artist:'Taylor Swift'","artist:'Lana Del Rey'","data-mlv-font-artist="):
     assert forbidden not in frontend, f'non-canonical frontend content remains: {forbidden}'
-for stale in ('3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207','3.0.208','3.0.209','3.0.210','3.0.211','3.0.212','3.0.213'):
+for stale in ('3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207','3.0.208','3.0.209','3.0.210','3.0.211','3.0.212','3.0.213','3.0.214','3.0.215'):
     assert stale not in frontend, f'stale frontend version remains: {stale}'
 
-# The moved public release channel must be authoritative for every active build/smoke consumer.
+
+# Regression: all active release-asset consumers use the Michel's Lab channel.
 release_consumers=[
     ROOT/'.github/workflows/android-ui-smoke.yml',
     ROOT/'.github/workflows/build-test-windows.yml',
@@ -78,25 +115,33 @@ release_consumers=[
 ]
 for consumer in release_consumers:
     source=read(consumer)
-    assert 'realmichelduarte/michel-s-life-releases' not in source, f'stale pre-organization release channel in {consumer}'
-    assert 'michels-lab/michel-s-life-releases' in source, f'canonical release channel missing in {consumer}'
+    assert 'realmichelduarte/michel-s-life-releases' not in source, f'stale release channel: {consumer}'
+    assert 'michels-lab/michel-s-life-releases' in source, f'missing canonical release channel: {consumer}'
 
 workflow_text='\n'.join(read(p) for p in WORKFLOWS)
-for forbidden in ('build_frontend_v30202.py','AppPatches/v3.0.202.html','branding/michels_life_mark.svg'):
+for forbidden in ('build_frontend_v30202.py','AppPatches/v3.0.202.html','branding/michels_life_logo.webp'):
     assert forbidden not in workflow_text, f'legacy frontend build dependency remains: {forbidden}'
 for required in (
     'src/MichelsLife/frontend/index.html',
-    'branding/michels_life_logo.webp',
-    'assets/michels_life_logo.webp',
+    'branding/michels_life_app_icon.svg',
+    'assets/michels_life_mark.svg',
+    'assets/michels_life_lockup.svg',
+    'assets/michels_lab_lockup.png',
     'windows_launch_smoke.ps1',
     "Install and launch-smoke Michel's Life installer",
-    "MainWindowHandle",
-    "Get-WinEvent",
+    'Launch-smoke canonical portable executable',
+    'MichelsLife-Portable-v',
+    'Create legacy updater compatibility alias',
 ):
-    assert required in workflow_text or required in read(WINDOWS_LAUNCH_SMOKE), f'canonical build/runtime dependency missing: {required}'
+    assert required in workflow_text, f'canonical build/runtime dependency missing: {required}'
+launch_smoke=read(WINDOWS_LAUNCH_SMOKE)
+for required in ('MainWindowHandle','Get-WinEvent','MinimumAliveSeconds','WindowTimeoutSeconds'):
+    assert required in launch_smoke, f'Windows launch smoke helper missing: {required}'
 
 security='\n'.join(read(p) for p in (PROGRAM,GOOGLE,SECRETS,FRONTEND,PROFILE,LICENSE))
-for forbidden in ('GOCSPX-','github_pat_','ghp_','client_secret_794181'):
+for forbidden in ('GOCSPX-','github_pat_','ghp_','client_secret_794181','sb_secret_','service_role'):
     assert forbidden.lower() not in security.lower(), f'committed secret-like value: {forbidden}'
 
-print('OK: v3.0.215 host + bilingual canonical frontend + branding + clean build pipeline')
+subprocess.run([sys.executable,str(ROOT/'tools/validate_brand_identity.py')],check=True)
+
+print('OK: v3.0.216 host + desktop shell + Quick Capture + automatic updates + bilingual canonical frontend + canonical identity + clean build pipeline')

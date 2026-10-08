@@ -12,6 +12,20 @@ on:
         required: false
         default: false
         type: boolean
+  pull_request:
+    paths:
+      - 'src/MichelsLife/**'
+      - 'branding/**'
+      - 'installer/**'
+      - 'tools/materialize_host_source.py'
+      - 'tools/release_smoke_test.py'
+      - 'tools/bump_frontend_version.py'
+      - 'tools/enable_i18n.py'
+      - 'tools/validate_generated_index.py'
+      - 'tools/replace_bundle_index.py'
+      - 'tools/inject_bundle_asset.py'
+      - 'tools/windows_launch_smoke.ps1'
+      - '.github/workflows/release-windows.yml'
   push:
     tags:
       - 'v*'
@@ -26,6 +40,7 @@ env:
 
 jobs:
   build:
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -67,13 +82,9 @@ jobs:
         shell: pwsh
         env:
           INPUT_BUNDLE_URL: ${{ inputs.bundle_url }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          $base = $env:INPUT_BUNDLE_URL
-          if ([string]::IsNullOrWhiteSpace($base)) {
-            python tools/download_release_asset.py --repo $env:RELEASES_REPO --asset AppBundle.zip --tag-prefix v --output src/MichelsLife/AppBundle.zip
-          } else {
-            Invoke-WebRequest -Uri $base -OutFile 'src/MichelsLife/AppBundle.zip'
-          }
+          python tools/download_latest_michels_life_bundle.py --repo "$env:RELEASES_REPO" --output src/MichelsLife/AppBundle.zip --url "$env:INPUT_BUNDLE_URL"
 
       - name: Generate current Michel's Life icon
         shell: pwsh
@@ -86,20 +97,25 @@ jobs:
             if (-not $exe) { throw 'ImageMagick magick.exe not found.' }
             $magickPath = $exe.FullName
           } else { $magickPath = $magick.Source }
-          & $magickPath -background none 'branding/michels_life_logo.webp' -define icon:auto-resize=256,128,64,48,32,16 'src/MichelsLife/Assets/michels_life_icon.ico'
+          & $magickPath -background none 'branding/michels_life_app_icon.svg' -define icon:auto-resize=256,128,64,48,32,16 'src/MichelsLife/Assets/michels_life_icon.ico'
           if ($LASTEXITCODE -ne 0) { throw 'App icon generation failed.' }
 
-      - name: Package canonical v3.0.215 bilingual frontend
+      - name: Package canonical v3.0.216 bilingual frontend
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
           $PSNativeCommandUseErrorActionPreference = $true
+          python tools/bump_frontend_version.py --index src/MichelsLife/frontend/index.html
           python tools/enable_i18n.py --index src/MichelsLife/frontend/index.html
           python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
           python tools/replace_bundle_index.py --bundle src/MichelsLife/AppBundle.zip --index src/MichelsLife/frontend/index.html
           python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source src/MichelsLife/frontend/i18n.js --arcname i18n.js
           python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source branding/michel_duarte_avatar.jpg --arcname assets/michel_duarte_avatar.jpg
-          python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source branding/michels_life_logo.webp --arcname assets/michels_life_logo.webp
+          python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source branding/michels_life_app_icon.svg --arcname assets/michels_life_app_icon.svg
+          python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source branding/michels_life_mark.svg --arcname assets/michels_life_mark.svg
+          python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source branding/michels_life_lockup.svg --arcname assets/michels_life_lockup.svg
+          python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source branding/michels_lab_mark.png --arcname assets/michels_lab_mark.png
+          python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source branding/michels_lab_lockup.png --arcname assets/michels_lab_lockup.png
 
       - name: Inject Google OAuth build credential
         shell: pwsh
@@ -147,17 +163,7 @@ jobs:
             -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true `
             -o artifacts/publish
           $v='${{ steps.ver.outputs.version }}'
-          Copy-Item artifacts/publish/MichelsLife.exe "artifacts/MichelsLife-v$v.exe"
-
-      - name: Launch-smoke portable Michel's Life executable
-        shell: pwsh
-        run: |
-          $v='${{ steps.ver.outputs.version }}'
-          pwsh -File tools/windows_launch_smoke.ps1 \
-            -ExePath "artifacts/MichelsLife-v$v.exe" \
-            -MinimumAliveSeconds 8 \
-            -WindowTimeoutSeconds 20 \
-            -EvidencePath artifacts/MichelsLife-Portable-launch.txt
+          Copy-Item artifacts/publish/MichelsLife.exe "artifacts/MichelsLife-Portable-v$v.exe"
 
       - name: Optional Authenticode signing for portable EXE
         if: ${{ env.HAS_WINDOWS_CERT == 'true' }}
@@ -169,16 +175,39 @@ jobs:
           [IO.File]::WriteAllBytes('artifacts/signing.pfx',[Convert]::FromBase64String($env:WINDOWS_CERT_BASE64))
           $signtool = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin" -Filter signtool.exe -Recurse | Where-Object {$_.FullName -match '\\x64\\'} | Sort-Object FullName -Descending | Select-Object -First 1
           if (-not $signtool) { throw 'signtool.exe not found' }
-          & $signtool.FullName sign /fd SHA256 /f artifacts/signing.pfx /p $env:WINDOWS_CERT_PASSWORD /tr http://timestamp.digicert.com /td SHA256 "artifacts/MichelsLife-v${{ steps.ver.outputs.version }}.exe"
+          & $signtool.FullName sign /fd SHA256 /f artifacts/signing.pfx /p $env:WINDOWS_CERT_PASSWORD /tr http://timestamp.digicert.com /td SHA256 "artifacts/MichelsLife-Portable-v${{ steps.ver.outputs.version }}.exe"
           Remove-Item artifacts/signing.pfx -Force
+
+      - name: Launch-smoke canonical portable executable
+        shell: pwsh
+        run: |
+          $v='${{ steps.ver.outputs.version }}'
+          pwsh -File tools/windows_launch_smoke.ps1 `
+            -ExePath "artifacts/MichelsLife-Portable-v$v.exe" `
+            -MinimumAliveSeconds 8 `
+            -WindowTimeoutSeconds 20 `
+            -EvidencePath artifacts/MichelsLife-Portable-launch.txt
 
       - name: Create portable checksum
         shell: pwsh
         run: |
           $v='${{ steps.ver.outputs.version }}'
-          $exe="artifacts/MichelsLife-v$v.exe"
+          $exe="artifacts/MichelsLife-Portable-v$v.exe"
           $hash=(Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
-          "$hash  MichelsLife-v$v.exe" | Set-Content "$exe.sha256" -Encoding ascii
+          "$hash  MichelsLife-Portable-v$v.exe" | Set-Content "$exe.sha256" -Encoding ascii
+
+      - name: Create legacy updater compatibility alias
+        shell: pwsh
+        run: |
+          $v='${{ steps.ver.outputs.version }}'
+          $canonical="artifacts/MichelsLife-Portable-v$v.exe"
+          $legacy="artifacts/MichelsLife-v$v.exe"
+          Copy-Item $canonical $legacy -Force
+          $hash=(Get-FileHash $legacy -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  MichelsLife-v$v.exe" | Set-Content "$legacy.sha256" -Encoding ascii
+          if ((Get-FileHash $canonical -Algorithm SHA256).Hash -ne (Get-FileHash $legacy -Algorithm SHA256).Hash) {
+            throw 'Legacy updater compatibility alias does not match canonical portable binary.'
+          }
 
       - name: Build installer
         shell: pwsh
@@ -187,12 +216,25 @@ jobs:
           $v='${{ steps.ver.outputs.version }}'
           & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DMyAppVersion=$v" "/DPublishDir=$((Resolve-Path 'artifacts/publish').Path)" installer/MichelsLife.iss
 
+      - name: Optional Authenticode signing for installer
+        if: ${{ env.HAS_WINDOWS_CERT == 'true' }}
+        shell: pwsh
+        env:
+          WINDOWS_CERT_BASE64: ${{ secrets.WINDOWS_CERT_BASE64 }}
+          WINDOWS_CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
+        run: |
+          [IO.File]::WriteAllBytes('artifacts/signing.pfx',[Convert]::FromBase64String($env:WINDOWS_CERT_BASE64))
+          $signtool = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin" -Filter signtool.exe -Recurse | Where-Object {$_.FullName -match '\\x64\\'} | Sort-Object FullName -Descending | Select-Object -First 1
+          & $signtool.FullName sign /fd SHA256 /f artifacts/signing.pfx /p $env:WINDOWS_CERT_PASSWORD /tr http://timestamp.digicert.com /td SHA256 "artifacts/MichelsLife-Setup-v${{ steps.ver.outputs.version }}.exe"
+          Remove-Item artifacts/signing.pfx -Force
+
       - name: Install and launch-smoke Michel's Life installer
         shell: pwsh
         run: |
+          $ErrorActionPreference = 'Stop'
           $v='${{ steps.ver.outputs.version }}'
           $installer=(Resolve-Path "artifacts/MichelsLife-Setup-v$v.exe").Path
-          $installDir=Join-Path (Resolve-Path 'artifacts').Path 'installed-launch-smoke'
+          $installDir=Join-Path $env:RUNNER_TEMP 'MichelsLife-Setup-Launch-Smoke'
           if (Test-Path $installDir) { Remove-Item $installDir -Recurse -Force }
 
           $installArgs=@(
@@ -216,11 +258,15 @@ jobs:
           if (-not (Test-Path $installedExe)) {
             throw "MichelsLife.exe was not installed to $installDir."
           }
+          $installedVersion=(Get-Item $installedExe).VersionInfo.ProductVersion
+          if (-not $installedVersion.StartsWith($v)) {
+            throw "Installed executable version '$installedVersion' does not match v$v."
+          }
 
-          pwsh -File tools/windows_launch_smoke.ps1 \
-            -ExePath $installedExe \
-            -MinimumAliveSeconds 8 \
-            -WindowTimeoutSeconds 20 \
+          pwsh -File tools/windows_launch_smoke.ps1 `
+            -ExePath $installedExe `
+            -MinimumAliveSeconds 8 `
+            -WindowTimeoutSeconds 20 `
             -EvidencePath artifacts/MichelsLife-Installed-launch.txt
 
           $uninstaller=Join-Path $installDir 'unins000.exe'
@@ -235,20 +281,19 @@ jobs:
           if ($uninstall.ExitCode -ne 0) {
             throw "Michel's Life uninstall cleanup failed with exit code $($uninstall.ExitCode)."
           }
-
+          if (Test-Path $installedExe) {
+            throw "Michel's Life uninstall left the installed executable behind."
+          }
+          if (Test-Path $installDir) { Remove-Item $installDir -Recurse -Force }
           Write-Host "BUILD PASS + INSTALL PASS + LAUNCH PASS for Michel's Life Windows Setup."
 
-      - name: Optional Authenticode signing for installer
-        if: ${{ env.HAS_WINDOWS_CERT == 'true' }}
+      - name: Create installer checksum
         shell: pwsh
-        env:
-          WINDOWS_CERT_BASE64: ${{ secrets.WINDOWS_CERT_BASE64 }}
-          WINDOWS_CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
         run: |
-          [IO.File]::WriteAllBytes('artifacts/signing.pfx',[Convert]::FromBase64String($env:WINDOWS_CERT_BASE64))
-          $signtool = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin" -Filter signtool.exe -Recurse | Where-Object {$_.FullName -match '\\x64\\'} | Sort-Object FullName -Descending | Select-Object -First 1
-          & $signtool.FullName sign /fd SHA256 /f artifacts/signing.pfx /p $env:WINDOWS_CERT_PASSWORD /tr http://timestamp.digicert.com /td SHA256 "artifacts/MichelsLife-Setup-v${{ steps.ver.outputs.version }}.exe"
-          Remove-Item artifacts/signing.pfx -Force
+          $v='${{ steps.ver.outputs.version }}'
+          $setup="artifacts/MichelsLife-Setup-v$v.exe"
+          $hash=(Get-FileHash $setup -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  MichelsLife-Setup-v$v.exe" | Set-Content "$setup.sha256" -Encoding ascii
 
       - name: Keep bootstrap assets for next release
         shell: pwsh
@@ -260,11 +305,14 @@ jobs:
         if: ${{ !((startsWith(github.ref, 'refs/tags/') || inputs.publish == true) && env.HAS_RELEASE_TOKEN == 'true') }}
         uses: actions/upload-artifact@v4
         with:
-          name: MichelsLife-v${{ steps.ver.outputs.version }}
+          name: MichelsLife-Windows-v${{ steps.ver.outputs.version }}
           path: |
+            artifacts/MichelsLife-Portable-v${{ steps.ver.outputs.version }}.exe
+            artifacts/MichelsLife-Portable-v${{ steps.ver.outputs.version }}.exe.sha256
             artifacts/MichelsLife-v${{ steps.ver.outputs.version }}.exe
             artifacts/MichelsLife-v${{ steps.ver.outputs.version }}.exe.sha256
             artifacts/MichelsLife-Setup-v${{ steps.ver.outputs.version }}.exe
+            artifacts/MichelsLife-Setup-v${{ steps.ver.outputs.version }}.exe.sha256
             artifacts/MichelsLife-Portable-launch.txt
             artifacts/MichelsLife-Installed-launch.txt
             artifacts/AppBundle.zip
@@ -279,9 +327,12 @@ jobs:
           $v='${{ steps.ver.outputs.version }}'
           if ($env:GITHUB_REF_NAME -like 'v*') { $tag=$env:GITHUB_REF_NAME } else { $tag="v$v" }
           $assets=@(
+            "artifacts/MichelsLife-Portable-v$v.exe",
+            "artifacts/MichelsLife-Portable-v$v.exe.sha256",
             "artifacts/MichelsLife-v$v.exe",
             "artifacts/MichelsLife-v$v.exe.sha256",
             "artifacts/MichelsLife-Setup-v$v.exe",
+            "artifacts/MichelsLife-Setup-v$v.exe.sha256",
             "artifacts/AppBundle.zip",
             "artifacts/michels_life_icon.ico"
           )

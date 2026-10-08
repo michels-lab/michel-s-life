@@ -1,45 +1,37 @@
 # Michel's Life
 
-RPG-inspired productivity and life-management desktop app for Windows.
+Michel's Life is an RPG-inspired productivity and life-management application for Windows and Android, developed by Michel Duarte / Michel's Lab.
 
-## Current line
+## Current development and release lines
 
-**v3.0.207 — Google Cloud Baseline** is the approved desktop baseline. It preserves the accepted typography and Developer/About systems and includes verified Google OAuth + persistent Google Drive Cloud Sync.
+- **Windows v3.0.215:** latest stable line recorded in the project release log (September 30, 2026). Confirm the distribution repository for the latest publicly downloadable artifact.
+- **Windows v3.0.216:** desktop integration candidate, not a published version by virtue of source/CI alone.
+- **Android v0.2.2:** integrated Android development candidate (versionCode 4); the previous mainline test line was v0.2.1.
+- Google Play and Microsoft Store distribution have separate provider, signing and validation states; a generated APK/AAB/MSIX does not mean provider publication.
 
-## Repository layout
+## Product
 
-```text
-src/MichelsLife/                 Windows host
-src/MichelsLife/AppPatches/      readable frontend release deltas
-installer/                       Inno Setup definition
-tools/                           build/validation utilities
-docs/                            release-channel documentation
-.github/workflows/               CI and Windows release pipeline
-```
+Michel's Life manages missions, recurring tasks, Premium Contracts, Current Chapter, goals, Journal, achievements, statistics, focus and productivity, themes, English/Spanish interface, and local import/export backups.
 
-The app currently has **204 JPG visual assets**. They live in the official `AppBundle.zip` release asset rather than being duplicated in Git history. CI downloads the previous bundle, applies the source-controlled frontend patch, validates the complete generated `index.html`, then embeds the rebuilt bundle in the Windows executable.
+The v3.0.216 candidate adds a native Windows tray, Quick Capture, Start with Windows, a global Command Palette, Sync Center, update detection and a shared Supabase sync client for Windows and Android. Google Calendar remains independent; Google Drive serves as a temporary migration/recovery fallback. Real same-account two-device sync/conflict/restore testing is still pending.
 
-## Secrets
+## Code, releases and validation
 
-The Google OAuth build credential is **not committed**. Local builds can use `MICHELSLIFE_GOOGLE_CLIENT_SECRET`; official CI injects the GitHub Actions secret `GOOGLE_CLIENT_SECRET` at build time. CI validates that the injected secret belongs to the approved v3.0.207 Desktop OAuth client before publishing.
+- Source: `michels-lab/michel-s-life`.
+- Canonical public binaries and AppBundle bootstrap: `michels-lab/michel-s-life-releases`.
+- Recommended Windows installer: `MichelsLife-Setup-vX.Y.Z.exe`. Optional portable binary: `MichelsLife-Portable-vX.Y.Z.exe`; transitional older updater aliases are documented in `docs/RELEASE_CHANNEL.md`.
+- Canonical frontend: `src/MichelsLife/frontend/`. CI reconstructs the visual bundle using previously published bootstrap assets and overlays the source-controlled frontend and official branding.
 
-User OAuth tokens, backups, diagnostics, and personal app data are never stored in this repository.
+Local smoke/validation entry points: `python tools/release_smoke_test.py`, `python tools/store_smoke_test.py` and platform-specific Android validators. GitHub Actions performs source, browser-render/UI, Android APK/AAB and Windows build/installer checks on the relevant branch.
 
-## Validation
+## Identity / About
 
-```bash
-python tools/release_smoke_test.py
-```
+The Michel's Life official product identity is **The Ascent** (mountain, path, star), governed by `michels-lab/Michel-Software-Standards/shared-assets/product-logos/manifest.json`. Canonical app-icon, mark and lockup files live under `branding/`. The author's portrait is immutable source artwork. The About composition includes product/version, Michel Duarte, Michel's Lab, `TOOLS WITH IDENTITY.` and visible social icons plus names.
 
-A full release build additionally reconstructs the frontend and runs `tools/validate_generated_index.py`, including migration checks and syntax validation for every inline script.
+Preserve the approved Themes, backgrounds, Current Chapter and layout. Automated build/security/integrity controls apply before publication; Michel's visual review of captured candidate screenshots takes place **after** publication, not as a manual release block.
 
+## Security, privacy and licensing
 
-## Developer & licensing
+Do not commit user states, private OAuth tokens, signing keystores or secrets. Supabase browser clients use a publishable key only, with per-user RLS in the backend. GitHub repository signing credentials and Play Console setup are separate from source code. The source repository is public, but redistribution and reuse rights depend on `LICENSE.txt`, not the public repository visibility.
 
-Michel's Life is developed by **Michel Duarte / Michel’s Lab** and is distributed
-free for personal use. Free distribution does **not** make the project open
-source. The source repository remains private and the application, branding,
-visual assets, and redistribution rights are protected under `LICENSE.txt`.
-
-Developer links: Instagram, Facebook, LinkedIn, GitHub, and
-`realmichelduarte@gmail.com` are exposed from the in-app Developer panel.
+Project state and known gaps are recorded in `GIT_AUDIT_LOG.md`, `android/ANDROID_AUDIT_LOG.md` and `docs/INFRASTRUCTURE_AUDIT.md`.
