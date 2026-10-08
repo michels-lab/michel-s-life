@@ -34,7 +34,7 @@ For any tracked Michel's Lab task, return enough machine-readable continuation c
 
 Do not list planned tests/builds/device checks as completed validation. If required validation was not performed, the task must be released/handed back with that work pending rather than described as complete.
 
-<!-- MICHELSLAB_SHARED_CONTRACT_BEGIN id=child-agent-core version=2026-10-07.2 -->
+<!-- MICHELSLAB_SHARED_CONTRACT_BEGIN id=child-agent-core version=2026-10-08.1 -->
 # Michel's Lab shared child-agent contract
 
 This managed block is cross-project policy. Repository-specific instructions may add stricter local rules outside this block, but they must not weaken or contradict it.
@@ -51,10 +51,19 @@ This managed block is cross-project policy. Repository-specific instructions may
 
 - Preserve the approved product-logo geometry; contextual color, material, lighting and motion may adapt without identity drift.
 - Branding is a design language, not sticker placement.
-- About hierarchy is **Product identity → About the author → Michel's Lab → social profiles**.
+- About hierarchy is **Product identity → paired author/studio composition → social profiles**.
+- The paired author/studio composition should show **Michel Duarte** and **Michel's Lab** side by side when width permits: portrait + name + developer role on one side; official Michel's Lab logo/lockup + studio name + canonical slogan **`TOOLS WITH IDENTITY.`** on the other.
+- Narrow/mobile layouts may stack responsively, but the author and studio must remain visually grouped as one intentional composition.
+- Do not replace the Michel's Lab slogan with a paragraph-length studio review by default.
 - Use the current canonical Michel Duarte portrait and the official Michel's Lab parent-brand assets from the master authority when implementing/updating About.
 - The canonical portrait file is immutable: child repositories must vendor it byte-for-byte. Never resize, crop, recompress, retouch, regenerate, convert or rewrite the portrait asset itself; use render-time layout/object-fit/masking only.
 - Visible social controls use recognizable network icon **and** visible network name with canonical profile URLs.
+
+## Rendered visual brand release gate — mandatory for every app
+
+- For launch, splash, About, launcher or product-identity changes, follow `standards/BRAND_VISUAL_VALIDATION_STANDARD.md`. Checking that an official asset exists/decodes or that a build passes is **not** visual acceptance.
+- Inspect computed final UI geometry, theme/text contrast, clipping/overlap and duplicate lockup/heading. CI must fail for known visual violations; require screenshots from the exact candidate and human visual review before release.
+- Validate relevant viewport sizes/themes in the actual browser/native/mobile runtime, including the packaged app where possible. If evidence is missing, explicitly report `pending visual review`; never say branding is complete from static tests alone.
 
 ## Canonical identity asset precedence
 
