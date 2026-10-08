@@ -370,3 +370,14 @@ Michel's Life had the same pattern. The Store workflow is now split into two evi
 `tools/store_smoke_test.py` now guards both invariants so future edits cannot silently remove default-branch Store validation or accidentally turn provider-bound packaging into an automatic job.
 
 No version bump, release publication, Partner Center upload or Store certification is authorized by this hardening change.
+
+
+## 2026-10-07 — Repository transferred to Michel's Lab organization
+
+**Change:** repository ownership moved from `realmichelduarte/michel-s-life` to `michels-lab/michel-s-life`.
+
+**Active references updated:** project governance now points to `michels-lab/Michel-Software-Standards`; the Windows release workflow and release-channel documentation now target `michels-lab/michel-s-life-releases`.
+
+**Preserved intentionally:** Michel Duarte personal developer/social identity remains under `realmichelduarte`. No product release is authorized by this migration change.
+
+**Validation:** branch CI is required before merge.
