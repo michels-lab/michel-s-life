@@ -4,8 +4,8 @@ Michel's Life is an RPG-inspired productivity and life-management application fo
 
 ## Current development and release lines
 
-- **Windows v3.0.215:** latest stable line recorded in the project release log (September 30, 2026). Confirm the distribution repository for the latest publicly downloadable artifact.
-- **Windows v3.0.216:** desktop integration candidate, not a published version by virtue of source/CI alone.
+- **Windows v3.0.216:** published stable on 2026-10-08: https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.216. Installer, Portable and checksums were published from a tested Windows build.
+- **Windows v3.0.215:** previous stable release (2026-09-30).
 - **Android v0.2.2:** integrated Android development candidate (versionCode 4); the previous mainline test line was v0.2.1.
 - Google Play and Microsoft Store distribution have separate provider, signing and validation states; a generated APK/AAB/MSIX does not mean provider publication.
 
@@ -13,7 +13,7 @@ Michel's Life is an RPG-inspired productivity and life-management application fo
 
 Michel's Life manages missions, recurring tasks, Premium Contracts, Current Chapter, goals, Journal, achievements, statistics, focus and productivity, themes, English/Spanish interface, and local import/export backups.
 
-The v3.0.216 candidate adds a native Windows tray, Quick Capture, Start with Windows, a global Command Palette, Sync Center, update detection and a shared Supabase sync client for Windows and Android. Google Calendar remains independent; Google Drive serves as a temporary migration/recovery fallback. Real same-account two-device sync/conflict/restore testing is still pending.
+The released v3.0.216 Windows app adds a native Windows tray, Quick Capture, Start with Windows, a global Command Palette, Sync Center, update detection and a shared Supabase sync client for Windows and Android. Google Calendar remains independent; Google Drive serves as a temporary migration/recovery fallback. Real same-account two-device sync/conflict/restore testing is still pending.
 
 ## Code, releases and validation
 

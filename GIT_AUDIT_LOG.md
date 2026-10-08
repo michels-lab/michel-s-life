@@ -873,3 +873,14 @@ Public state:
 - Public distribution `michels-lab/michel-s-life-releases` still lists v3.0.215 as the latest verified stable Windows release at this entry. **v3.0.216 is merged source, NOT a verified public GitHub release, Microsoft Store publication or Google Play publication.**
 - Real Windows↔Android same-account Supabase upload/download, conflict/restore, Android physical phone and Google Play signing/provider checks remain NOT VERIFIED. Microsoft Store submission is postponed by the owner.
 - This is an audit-only update. PR candidate validation is documented exactly; new default-branch commit/CI outcomes must be read separately.
+
+## 2026-10-08 — Official Windows v3.0.216 public release verified
+
+- **OWNER-AUTHORIZED RELEASE: SUCCESS.** Public GitHub release `v3.0.216` exists, stable/non-prerelease, at https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.216 (published 2026-10-08 19:28:58 UTC).
+- Initial direct publication run `37830732713` built the Windows app and passed packaged Setup install/launch smoke, but publishing failed with `HTTP 403: Resource not accessible by personal access token` against the release repository. Presence of `RELEASES_REPO_TOKEN` did not imply write permission.
+- Recovered using a repository-local two-stage publisher consistent with existing LouderMe practice: source staging run `37831575656` built and launch-smoked current Windows v3.0.216, verified SHA-256 sidecars and published a prerelease `michels-life-transfer-v3.0.216` in the source repo with its own `GITHUB_TOKEN`. Public distribution run `37832207895` downloaded the staged assets, rechecked all hashes/portable alias identity and created public stable `v3.0.216` using the release repo's `GITHUB_TOKEN` with contents-write.
+- Public assets independently enumerated: Setup EXE + .sha256, Portable EXE + .sha256, legacy portable alias + .sha256, AppBundle.zip, official icon `michels_life_icon.ico` (8 files).
+- Verified publisher-reported binary SHA-256: Setup `4073906a62c5aeae00b98d51f69381c86cfba1350ffde589dcea568eac24ca8f`; Portable and byte-identical alias `e7dfd5c2f66354395fb1b0bf067a6bcf9e190450c56eea402e003c28606aebb1`.
+- Included honest v3.0.216 release notes and local-backup warning: live same-account Supabase sync/conflict/restore, owner-installed Windows visual/tray/hotkey/taskbar behavior and Android device tests remain **NOT VERIFIED**; Google Play signing and Microsoft Store distribution are **NOT** part of this Windows release.
+- No Authenticode certificate was configured; Windows Unknown publisher/SmartScreen warnings remain possible. Human visual review is post-release only and must not be reported as already completed.
+- The one-shot source/publication triggers can be removed after confirmation. The old direct cross-repo workflow publish branch remains known to fail until rearchitected; preserve this as explicit release-engineering debt rather than hiding it.
