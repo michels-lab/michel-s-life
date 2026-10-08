@@ -2,6 +2,22 @@ name: Build Android test APK
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'android/app/**'
+      - 'android/android-bridge.js'
+      - 'android/tools/**'
+      - 'android/build.gradle.kts'
+      - 'android/settings.gradle.kts'
+      - 'android/gradle.properties'
+      - 'src/MichelsLife/frontend/**'
+      - 'branding/**'
+      - 'tools/bump_frontend_version.py'
+      - 'tools/enable_i18n.py'
+      - 'tools/validate_generated_index.py'
+      - 'tools/replace_bundle_index.py'
+      - 'tools/inject_bundle_asset.py'
+      - '.github/workflows/android-build.yml'
   push:
     branches: [main]
     paths:
@@ -11,6 +27,13 @@ on:
       - 'android/build.gradle.kts'
       - 'android/settings.gradle.kts'
       - 'android/gradle.properties'
+      - 'src/MichelsLife/frontend/**'
+      - 'branding/**'
+      - 'tools/bump_frontend_version.py'
+      - 'tools/enable_i18n.py'
+      - 'tools/validate_generated_index.py'
+      - 'tools/replace_bundle_index.py'
+      - 'tools/inject_bundle_asset.py'
       - '.github/workflows/android-build.yml'
 
 permissions:
@@ -18,7 +41,7 @@ permissions:
 
 env:
   RELEASES_REPO: michels-lab/michel-s-life-releases
-  ANDROID_VERSION: 0.2.1
+  ANDROID_VERSION: 0.2.2
   ANDROID_UPLOAD_KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
   ANDROID_UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
   ANDROID_UPLOAD_KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
@@ -52,15 +75,32 @@ jobs:
         run: |
           node --check android/android-bridge.js
           python android/tools/validate_android_mobile_ux.py
+          python tools/validate_brand_identity.py
 
       - name: Download current Michel's Life AppBundle
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p android/build
-          python tools/download_release_asset.py --repo "$RELEASES_REPO" --asset AppBundle.zip --tag-prefix v --output android/build/AppBundle.zip
+          python tools/download_latest_michels_life_bundle.py --repo "$RELEASES_REPO" --output android/build/AppBundle.zip
+
+      - name: Package canonical Michel's Life frontend
+        run: |
+          python tools/bump_frontend_version.py --index src/MichelsLife/frontend/index.html
+          python tools/enable_i18n.py --index src/MichelsLife/frontend/index.html
+          python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
+          python tools/replace_bundle_index.py --bundle android/build/AppBundle.zip --index src/MichelsLife/frontend/index.html
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source src/MichelsLife/frontend/i18n.js --arcname i18n.js
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michel_duarte_avatar.jpg --arcname assets/michel_duarte_avatar.jpg
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_life_app_icon.svg --arcname assets/michels_life_app_icon.svg
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_life_mark.svg --arcname assets/michels_life_mark.svg
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_life_lockup.svg --arcname assets/michels_life_lockup.svg
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_lab_mark.png --arcname assets/michels_lab_mark.png
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_lab_lockup.png --arcname assets/michels_lab_lockup.png
 
       - name: Prepare Android web assets
         run: |
-          python android/tools/prepare_bundle.py             --bundle android/build/AppBundle.zip             --assets android/app/src/main/assets/app
+          python android/tools/prepare_bundle.py --bundle android/build/AppBundle.zip --assets android/app/src/main/assets/app
 
       - uses: gradle/actions/setup-gradle@v4
         with:

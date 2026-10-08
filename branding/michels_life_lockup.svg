@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 600">
+<defs>
+  <linearGradient id="navy" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#173f69"/><stop offset="1" stop-color="#06172b"/></linearGradient>
+  <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffe4a0"/><stop offset=".55" stop-color="#d89a32"/><stop offset="1" stop-color="#a96b14"/></linearGradient>
+</defs>
+<g transform="translate(42 28)">
+  <path d="M60 350 230 95 385 350Z" fill="url(#navy)"/>
+  <path d="M265 350 445 80 650 350Z" fill="#0a3158"/>
+  <path d="M45 390 200 245 325 390Z" fill="#08233f"/>
+  <path d="M250 390 410 230 575 390Z" fill="#0c4776"/>
+  <path d="M325 430 C302 382 242 363 250 315 C258 265 350 290 355 215" fill="none" stroke="#fff5df" stroke-width="28" stroke-linecap="round"/>
+  <path d="M60 250 Q355 20 650 250" fill="none" stroke="url(#gold)" stroke-width="4" opacity=".7"/>
+  <g transform="translate(355 70)" fill="url(#gold)"><path d="M0-54 13-13 54 0 13 13 0 54-13 13-54 0-13-13Z"/></g>
+</g>
+<text x="735" y="305" font-family="Georgia, 'Times New Roman', serif" font-size="132" fill="#071a31">Michel’s</text>
+<text x="1170" y="305" font-family="Georgia, 'Times New Roman', serif" font-size="132" fill="url(#gold)">Life</text>
+<text x="742" y="370" font-family="Arial, sans-serif" font-size="25" letter-spacing="8" fill="#45617f">HIGHER VERSIONS AHEAD</text>
+</svg>

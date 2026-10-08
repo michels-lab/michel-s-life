@@ -53,21 +53,20 @@ html.v3084-start-cover::before{
   background-repeat:no-repeat;
 }
 html.v3084-start-cover::after{
-  content:"MICHEL’S LIFE";
+  content:"";
   position:fixed;
   left:50%;
   top:50%;
   z-index:2147483647;
   pointer-events:none;
+  width:min(620px,82vw);
+  aspect-ratio:1600/600;
   transform:translate(-50%,-50%);
-  padding:13px 20px;
-  border:1px solid rgba(var(--ui-accent-rgb,117,228,255),.28);
-  border-radius:999px;
-  background:rgba(3,8,16,.82);
-  color:var(--ui-text,#eef6ff);
-  font:900 13px/1.1 var(--mlv-ui-font,Inter,"Segoe UI",Arial,sans-serif);
-  letter-spacing:.16em;
-  box-shadow:0 18px 54px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.08);
+  border:1px solid rgba(var(--ui-accent-rgb,117,228,255),.24);
+  border-radius:28px;
+  background:url("assets/michels_life_lockup.svg") center/92% auto no-repeat,linear-gradient(145deg,rgba(249,252,255,.94),rgba(224,236,248,.90));
+  box-shadow:0 24px 74px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.72);
+  backdrop-filter:blur(18px);
 }
 html.v3084-start-cover *,html.v3084-start-cover *::before,html.v3084-start-cover *::after{
   animation:none!important;
@@ -78,6 +77,7 @@ html.v3084-start-cover *,html.v3084-start-cover *::before,html.v3084-start-cover
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Michel's Life — Personal Progress System</title>
+<link rel="icon" href="assets/michels_life_app_icon.svg" type="image/svg+xml" data-mlv-product-icon="canonical">
 <script id="v343-theme-preload">
 (function(){
   try{
@@ -727,22 +727,23 @@ select, option{color:#eaf4ff!important;background:#0c172b!important}select:focus
 .v30171-brand-mark{width:82px!important;height:82px!important;border-radius:0!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;overflow:visible!important}
 .v30171-brand-mark>img{width:82px!important;height:82px!important;display:block!important;visibility:visible!important;opacity:1!important;position:static!important;object-fit:contain!important;filter:drop-shadow(0 8px 18px rgba(0,0,0,.28))}
 .v30171-brand-copy{min-width:0}
-.mlvdev-card{position:relative;overflow:hidden;padding:20px!important}
-.mlvdev-main{display:grid;grid-template-columns:220px minmax(0,1fr);gap:24px;align-items:stretch}
-.mlvdev-avatar-wrap{position:relative;min-width:0}
-.mlvdev-avatar{width:220px;height:270px;border-radius:24px;object-fit:cover;object-position:center 68%;display:block;border:2px solid rgba(231,187,92,.58);box-shadow:0 16px 36px rgba(0,0,0,.32)}
-.mlvdev-info{min-width:0;display:flex;flex-direction:column;justify-content:center}
-.mlvdev-title h2{margin:0;font-size:24px;line-height:1.05}.mlvdev-title p{margin:6px 0 0;color:var(--muted);font-size:11px;line-height:1.4}
-.mlvdev-copy{margin-top:15px;color:var(--muted);font-size:10.5px;line-height:1.6;max-width:720px}
-.mlvdev-contact{margin-top:11px;font-size:10px;color:var(--muted)}.mlvdev-contact a{color:inherit;text-decoration:none;border-bottom:1px dotted rgba(255,255,255,.22)}
-.mlvdev-socials{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:16px;max-width:660px}
-.mlvdev-social{min-height:58px;border-radius:13px;display:flex;align-items:center;padding:9px 12px;text-decoration:none;color:inherit;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.025);transition:transform .15s ease,border-color .15s ease,background .15s ease}
-.mlvdev-social:hover{transform:translateY(-2px);border-color:rgba(231,187,92,.42);background:rgba(231,187,92,.07)}.mlvdev-social strong{font-size:10.5px}.mlvdev-social small{display:block;margin-top:2px;font-size:8px;color:var(--muted);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mlvdev-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}.mlvdev-meta>div{padding:9px 10px;border-radius:11px;border:1px solid rgba(255,255,255,.07);background:rgba(0,0,0,.08)}.mlvdev-meta small{display:block;color:var(--muted);font-size:7.5px;font-weight:800;letter-spacing:.06em}.mlvdev-meta b{display:block;margin-top:2px;font-size:9.5px}
-.mlvdev-legal{margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,.055);font-size:8.2px;line-height:1.45;color:rgba(255,255,255,.48)}.mlvdev-copyright{display:block;margin-top:6px;font-size:7.8px;color:rgba(255,255,255,.42)}
+.brand-mark>img{width:100%;height:100%;display:block;object-fit:contain}
+.mlvdev-card{position:relative;overflow:hidden;padding:20px!important;background:radial-gradient(circle at 92% 6%,rgba(var(--ui-accent2-rgb,167,121,255),.10),transparent 34%),linear-gradient(180deg,rgba(255,255,255,.052),rgba(255,255,255,.025))!important}
+.mlvdev-product{display:grid;grid-template-columns:minmax(260px,390px) minmax(0,1fr) auto;gap:18px;align-items:center;padding-bottom:15px}
+.mlvdev-product-lockup{min-height:132px;padding:14px 18px;display:grid;place-items:center;border-radius:20px;border:1px solid rgba(var(--ui-accent-rgb,117,228,255),.18);background:linear-gradient(145deg,rgba(249,252,255,.94),rgba(224,236,248,.90));box-shadow:0 14px 34px rgba(0,0,0,.22)}
+.mlvdev-product-lockup img{display:block;width:100%;height:auto;max-height:118px;object-fit:contain}
+.mlvdev-product-copy small,.mlvdev-title small,.mlvdev-studio small,.mlvdev-version-chip small{display:block;color:var(--muted);font-size:8px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+.mlvdev-product-copy h2{margin:6px 0 4px;font-size:25px;line-height:1}.mlvdev-product-copy p{margin:0;color:var(--muted);font-size:10.5px;line-height:1.55;max-width:520px}
+.mlvdev-version-chip{min-width:102px;padding:12px 13px;border-radius:15px;border:1px solid rgba(var(--ui-gold-rgb,255,209,102),.24);background:rgba(var(--ui-gold-rgb,255,209,102),.055);text-align:right}.mlvdev-version-chip b{display:block;margin-top:5px;font-size:13px}
+.mlvdev-ascent-line{position:relative;height:28px;margin:0 0 13px}.mlvdev-ascent-line::before{content:"";position:absolute;left:2%;right:2%;bottom:7px;height:2px;border-radius:999px;background:linear-gradient(90deg,transparent,rgba(var(--ui-accent-rgb,117,228,255),.38),rgba(var(--ui-gold-rgb,255,209,102),.52),transparent);transform:skewY(-1.2deg)}.mlvdev-ascent-line::after{content:"✦";position:absolute;right:5%;top:-4px;color:var(--ui-gold,#ffd166);font-size:18px;text-shadow:0 0 18px rgba(var(--ui-gold-rgb,255,209,102),.45)}
+.mlvdev-main{display:grid;grid-template-columns:210px minmax(0,1fr);gap:24px;align-items:stretch}.mlvdev-avatar-wrap{position:relative;min-width:0}.mlvdev-avatar{width:210px;height:280px;border-radius:24px;object-fit:cover;object-position:center 42%;display:block;border:1px solid rgba(var(--ui-gold-rgb,255,209,102),.44);box-shadow:0 16px 36px rgba(0,0,0,.32)}
+.mlvdev-info{min-width:0;display:flex;flex-direction:column;justify-content:center}.mlvdev-title h2{margin:5px 0 0;font-size:23px;line-height:1.05}.mlvdev-title p{margin:6px 0 0;color:var(--muted);font-size:10.5px;line-height:1.4}
+.mlvdev-studio{display:grid;grid-template-columns:150px minmax(0,1fr);gap:13px;align-items:center;margin-top:13px;padding:10px 12px;border-radius:15px;border:1px solid rgba(var(--ui-accent2-rgb,167,121,255),.18);background:rgba(var(--ui-accent2-rgb,167,121,255),.045)}.mlvdev-studio-lockup{min-height:52px;display:grid;place-items:center;padding:6px 9px;border-radius:11px;background:rgba(255,255,255,.90)}.mlvdev-studio-lockup img{display:block;width:100%;max-height:48px;object-fit:contain}.mlvdev-studio b{display:block;margin-top:3px;font-size:11px}.mlvdev-studio p{margin:3px 0 0;color:var(--muted);font-size:9px}
+.mlvdev-socials{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:13px;max-width:690px}.mlvdev-social{min-height:54px;border-radius:13px;display:flex;align-items:center;gap:10px;padding:8px 11px;text-decoration:none;color:inherit;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.025);transition:transform .15s ease,border-color .15s ease,background .15s ease}.mlvdev-social:hover{transform:translateY(-2px);border-color:rgba(var(--ui-gold-rgb,255,209,102),.42);background:rgba(var(--ui-gold-rgb,255,209,102),.07)}.mlvdev-social-icon{width:22px;height:22px;flex:0 0 22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;color:var(--ui-accent,#75e4ff)}.mlvdev-social-icon path:not([fill="none"]){fill:currentColor;stroke:none}.mlvdev-social strong{font-size:10.5px}.mlvdev-social small{display:block;margin-top:2px;font-size:8px;color:var(--muted);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mlvdev-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:13px}.mlvdev-meta>div{padding:9px 10px;border-radius:11px;border:1px solid rgba(255,255,255,.07);background:rgba(0,0,0,.08)}.mlvdev-meta small{display:block;color:var(--muted);font-size:7.5px;font-weight:800;letter-spacing:.06em}.mlvdev-meta b{display:block;margin-top:2px;font-size:9.5px}.mlvdev-legal{margin-top:13px;padding-top:10px;border-top:1px solid rgba(255,255,255,.055);font-size:8.2px;line-height:1.45;color:rgba(255,255,255,.48)}.mlvdev-copyright{display:block;margin-top:6px;font-size:7.8px;color:rgba(255,255,255,.42)}
 .mlv-toast-unified .mlv197-toast-close{display:flex!important}
-@media(max-width:1050px){.mlvdev-main{grid-template-columns:180px minmax(0,1fr);gap:18px}.mlvdev-avatar{width:180px;height:225px}.mlvdev-socials{grid-template-columns:1fr 1fr}}
-@media(max-width:760px){.mlvdev-main{grid-template-columns:1fr}.mlvdev-avatar{width:min(100%,320px);height:360px}.mlvdev-socials,.mlvdev-meta{grid-template-columns:1fr}}
+@media(max-width:1050px){.mlvdev-product{grid-template-columns:minmax(230px,330px) minmax(0,1fr)}.mlvdev-version-chip{grid-column:2}.mlvdev-main{grid-template-columns:180px minmax(0,1fr);gap:18px}.mlvdev-avatar{width:180px;height:240px}.mlvdev-socials{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.mlvdev-product,.mlvdev-main,.mlvdev-studio{grid-template-columns:1fr}.mlvdev-version-chip{grid-column:auto;text-align:left}.mlvdev-product-lockup{min-height:110px}.mlvdev-avatar{width:min(100%,300px);height:auto;aspect-ratio:3/4}.mlvdev-socials,.mlvdev-meta{grid-template-columns:1fr}}
 </style>
 <script id="mlv-v303-typography-preload">(function(){try{var v=localStorage.getItem('michelsLife.typography.v303')||'midnights';document.documentElement.dataset.mlvTypography=v}catch(_){document.documentElement.dataset.mlvTypography='midnights'}})();</script>
 </head>
@@ -760,7 +761,7 @@ select, option{color:#eaf4ff!important;background:#0c172b!important}select:focus
 </div>
 <div class="app">
   <header class="topbar">
-    <div class="brand"><div class="brand-mark" aria-hidden="true">M</div><div><h1>Michel\'s Life</h1><p>Personal Progress System</p></div></div>
+    <div class="brand"><div class="brand-mark" aria-hidden="true"><img src="assets/michels_life_mark.svg" alt=""></div><div><h1>Michel\'s Life</h1><p>Personal Progress System</p></div></div>
     <nav class="tabs" id="tabs"></nav>
   </header>
   <section id="fixedStatusBar" class="status-strip" aria-live="polite"></section>
@@ -24911,7 +24912,7 @@ const v30106OldCompleteMission=window.completeMission;window.completeMission=fun
 const oldRenderTab=window.renderTab;window.renderTab=function(id){if(id==='projects')return renderProjects();if(id==='inbox'){state.activeTab='dashboard';return typeof oldRenderTab==='function'?oldRenderTab.call(this,'dashboard'):'';}if(id==='annual-heatmap')return renderHeatmap();if(id==='daily-shutdown'){state.activeTab='dashboard';return typeof oldRenderTab==='function'?oldRenderTab.call(this,'dashboard'):'';}if(id==='maintenance')return renderMaintenance();return typeof oldRenderTab==='function'?oldRenderTab.apply(this,arguments):'';};
 const oldRenderTabs=window.renderTabs;window.renderTabs=function(){if(typeof oldRenderTabs==='function')oldRenderTabs.apply(this,arguments);ensureTabs();};
 const oldRenderAll=window.renderAll;window.renderAll=function(){const out=typeof oldRenderAll==='function'?oldRenderAll.apply(this,arguments):undefined;scheduleEnhance();return out;};try{renderAll=window.renderAll;}catch(e){}
-document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openCommand();}else if(e.key==='Escape'){closeCommand();closeFocus();}},true);
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if(window.MLV216CommandPalette?.open)window.MLV216CommandPalette.open();else openCommand();}else if(e.key==='Escape'){window.MLV216CommandPalette?.close?.();window.MLV216SyncCenter?.close?.();closeCommand();closeFocus();}},true);
 document.addEventListener('change',e=>{const sel=e.target.closest('#tabs select');if(sel&&CUSTOM_TABS.has(sel.value)){e.preventDefault();e.stopPropagation();state.activeTab=sel.value;renderAll();}},true);
 document.addEventListener('click',e=>{if(e.target.closest('[data-v30105-action],[data-cm131-action]'))setTimeout(()=>{const r=document.getElementById('v30106Focus');if(r&&!r.hidden)renderFocus();},120);const complete=e.target.closest('[data-action="complete"],[data-v3093-action="complete"],[data-cm131-action="complete"]');if(complete){let id=complete.dataset.id||idFromCard(complete.closest(CARD_SEL));if(complete.dataset.cm131Action==='complete')id=current()?.id;const m=mission(id);if(m&&!dependenciesMet(m)){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();toastSafe('Mission blocked','Complete '+unmetDependencies(m).map(x=>x.name).join(', ')+' first.');return;}if(m&&/plan my day|journal.*plan.*day/i.test(norm(m.name))&&S().v30106AutoPlan!==false&&S().v30106PlanDate!==today()){planTriggerId=String(m.id);setTimeout(()=>{const x=mission(planTriggerId);if(x&&doneOn(x,today())&&S().v30106PlanDate!==today())openTodayPlan(false);},550);}}
 const cmd=e.target.closest('[data-v30106-command]');if(cmd){runCommand(cmd.dataset.v30106Command);return;}const b=e.target.closest('[data-v30106-action]');if(!b)return;const a=b.dataset.v30106Action,id=b.dataset.id;e.preventDefault();if(a==='quick-capture')openQuickCapture();else if(a==='focus')openFocus();else if(a==='close-focus')closeFocus();else if(a==='open-plan')openTodayPlan(b.dataset.tomorrow==='1');else if(a==='new-project')openProjectEditor();else if(a==='edit-project')openProjectEditor(id);else if(a==='delete-project'){const p=project(id);if(p&&confirm('Delete project “'+p.name+'”? Missions will remain.')){projectTasks(p).forEach(m=>{if(String(m.v30106ProjectId)===String(id))delete m.v30106ProjectId;});S().v30106Projects=projects().filter(x=>String(x.id)!==String(id));saveSafe();renderAll();}}else if(a==='add-decision')openDecision(b.dataset.project||'');else if(a==='delete-decision'){S().v30106Decisions=decisions().filter(x=>String(x.id)!==String(id));saveSafe();renderAll();}else if(a==='link-project')openMissionProjectLink(id);else if(a==='open-mission')openMission(id);else if(a==='refresh-heatmap'){S().v30106HeatYear=Number(document.getElementById('v30106HeatYear')?.value||new Date().getFullYear());S().v30106HeatCategory=document.getElementById('v30106HeatCategory')?.value||'all';saveSafe();renderAll();}else if(a==='safe-cleanup')safeCleanup();else if(a==='run-self-test'){toastSafe('Self-test complete',maintenanceReport().map(x=>x.name).join(' · '));renderAll();}else if(a==='open-settings'){state.activeTab='settings';renderAll();}else if(a==='make-easier'){const m=mission(id);if(m){m.difficulty='easy';m.xp=Math.min(Number(m.xp||10),10);saveSafe();toastSafe('Mission recalibrated',m.name+' is now Easy.');renderAll();}}else if(a==='mute-calibration'){const m=mission(id);if(m){m.v30106CalibrationMuteUntil=addDate(today(),30)+'T23:59:59';saveSafe();renderAll();}}else if(a==='save-settings'){S().v30106AutoPlan=document.getElementById('v30106AutoPlan')?.value!=='false';S().v30106Streaks=document.getElementById('v30106Streaks')?.value!=='false';saveSafe();toastSafe('Settings saved','Planning and streak settings updated.');renderAll();}else if(a.startsWith('inbox-')){const item=inbox().find(x=>String(x.id)===String(id));if(!item)return;if(a==='inbox-mission'){createMission(item.text,'order',{type:'oneoff',difficulty:'easy'});S().v30106Inbox=inbox().filter(x=>String(x.id)!==String(id));saveSafe();renderAll();}else if(a==='inbox-project'){createProject({name:item.text});S().v30106Inbox=inbox().filter(x=>String(x.id)!==String(id));saveSafe();renderAll();}else if(a==='inbox-decision')openDecision('',item.text,item.id);else if(a==='inbox-delete'){S().v30106Inbox=inbox().filter(x=>String(x.id)!==String(id));saveSafe();renderAll();}}},true);
@@ -28444,7 +28445,8 @@ const SETTINGS=[
  ['focus','⏱','Focus & Timers','Pomodoro, focus sessions and timer behavior.'],
  ['notifications','◉','Notifications','Alerts and notification behavior.'],
  ['planning','☷','Planning & Next Up','Day planning, Next Up and mission time-of-day rules.'],
- ['google','G','Google','Cloud-sync all Michel’s Life data and optionally connect Calendar.'],
+ ['sync','☁','Sync','Supabase account, devices and cross-platform data sync.'],
+ ['google','G','Google','Optional Google Calendar integration and temporary Drive fallback.'],
  ['data','▣','Data & Backup','Export, import, recovery and maintenance tools.'],
  ['chapters','⌁','Chapter Scenes','Cinematic worlds used only by Current Chapter.'],
  ['about','ⓘ','About','Developer, license and build information.']
@@ -28459,7 +28461,7 @@ function syncNavState(wrap,a=normalizedNavTab()){
 }
 function enforceBrandLockup(side){
  if(!side)return null;
- const markup='<div class="brand v30171-brand" data-mlv-brand-lockup="v303"><div class="brand-mark v30171-brand-mark" aria-hidden="true"><img src="assets/michels_life_logo.webp" alt=""></div><div class="v30171-brand-copy"><h1 class="v30171-brand-title">MICHEL\'S LIFE</h1><p class="v30171-brand-sub">Personal Progress System</p></div></div>';
+ const markup='<div class="brand v30171-brand" data-mlv-brand-lockup="v303"><div class="brand-mark v30171-brand-mark" aria-hidden="true"><img src="assets/michels_life_mark.svg" alt=""></div><div class="v30171-brand-copy"><h1 class="v30171-brand-title">MICHEL\'S LIFE</h1><p class="v30171-brand-sub">Personal Progress System</p></div></div>';
  let brand=side.querySelector(':scope > .v30171-brand');
  if(!brand||brand.dataset.mlvBrandLockup!=='v303'){
    const t=document.createElement('template');t.innerHTML=markup;const next=t.content.firstElementChild;
@@ -28652,7 +28654,42 @@ function applyFocusSettings(preset,workValue,breakValue){
 }
 
 
-function aboutPane(){return `<section class="card mlvdev-card" data-mlv-about-core data-mlv-developer data-v30171-owner="about"><div class="mlvdev-main"><div class="mlvdev-avatar-wrap"><img class="mlvdev-avatar" src="assets/michel_duarte_avatar.jpg" alt="Michel Duarte"></div><div class="mlvdev-info"><div class="mlvdev-title"><h2>Michel Duarte</h2><p>Developer · Michel’s Lab</p></div><div class="mlvdev-copy">Michel’s Life is created and maintained by Michel Duarte under Michel’s Lab. Independent software focused on productivity, life systems and personal tools.</div><div class="mlvdev-contact">Contact: <a href="mailto:realmichelduarte@gmail.com">realmichelduarte@gmail.com</a></div><div class="mlvdev-socials"><a class="mlvdev-social" href="https://www.instagram.com/realmichelduarte/" target="_blank" rel="noopener noreferrer"><span><strong>Instagram</strong><small>@realmichelduarte</small></span></a><a class="mlvdev-social" href="https://www.facebook.com/realmichelduarte" target="_blank" rel="noopener noreferrer"><span><strong>Facebook</strong><small>realmichelduarte</small></span></a><a class="mlvdev-social" href="https://www.linkedin.com/in/realmichelduart/" target="_blank" rel="noopener noreferrer"><span><strong>LinkedIn</strong><small>realmichelduart</small></span></a><a class="mlvdev-social" href="https://github.com/realmichelduarte" target="_blank" rel="noopener noreferrer"><span><strong>GitHub</strong><small>realmichelduarte</small></span></a><a class="mlvdev-social" href="mailto:realmichelduarte@gmail.com" target="_blank" rel="noopener noreferrer"><span><strong>Email</strong><small>realmichelduarte@gmail.com</small></span></a></div><div class="mlvdev-meta"><div><small>APP</small><b>Michel’s Life</b></div><div><small>VERSION</small><b>v3.0.209</b></div><div><small>LICENSE</small><b>Proprietary · Personal use</b></div></div><div class="mlvdev-legal">Free for personal use. Unauthorized copying, modification, redistribution, rebranding, resale, sublicensing, or claiming this software as your own is not permitted without prior written permission.<span class="mlvdev-copyright">© 2026 Michel Duarte / Michel’s Lab. All rights reserved.</span></div></div></div></section>`}
+function mlvAboutSocialIcon(kind){
+ const common='class="mlvdev-social-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"';
+ if(kind==='instagram')return '<svg '+common+'><rect x="3.5" y="3.5" width="17" height="17" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.6" cy="6.6" r="1"></circle></svg>';
+ if(kind==='facebook')return '<svg '+common+'><path d="M14.2 21v-8h2.8l.5-3.2h-3.3V7.7c0-.9.4-1.8 1.9-1.8h1.6V3.1c-.3 0-1.4-.1-2.6-.1-2.6 0-4.4 1.6-4.4 4.5v2.3H8v3.2h2.7v8h3.5z"></path></svg>';
+ if(kind==='linkedin')return '<svg '+common+'><rect x="3.4" y="9" width="3.7" height="11.5" rx=".5" fill="currentColor" stroke="none"></rect><circle cx="5.25" cy="5.35" r="2.05" fill="currentColor" stroke="none"></circle><path d="M10 9h3.5v1.6h.1c.5-.9 1.7-2 3.6-2 3.8 0 4.5 2.5 4.5 5.8v6.1H18v-5.4c0-1.3 0-3-1.9-3-1.9 0-2.2 1.4-2.2 2.9v5.5H10V9z"></path></svg>';
+ if(kind==='github')return '<svg '+common+'><path d="M12 2.6a9.6 9.6 0 0 0-3 18.7c.5.1.7-.2.7-.5v-1.8c-2.8.6-3.4-1.2-3.4-1.2-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.6 1.1 1.6 1.1.9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.7-1.3-2.3-.3-4.7-1.1-4.7-5.1 0-1.1.4-2.1 1.1-2.8-.1-.3-.5-1.3.1-2.7 0 0 .9-.3 2.9 1.1a10 10 0 0 1 5.2 0c2-1.4 2.9-1.1 2.9-1.1.6 1.4.2 2.4.1 2.7.7.7 1.1 1.7 1.1 2.8 0 4-2.4 4.8-4.7 5.1.4.3.7 1 .7 1.9v2.5c0 .3.2.6.7.5A9.6 9.6 0 0 0 12 2.6z"></path></svg>';
+ return '<svg '+common+'><rect x="3" y="5" width="18" height="14" rx="2"></rect><path fill="none" d="M4 7l8 6 8-6"></path></svg>';
+}
+function mlvAboutSocialLink(kind,label,detail,href){return '<a class="mlvdev-social" href="'+href+'" target="_blank" rel="noopener noreferrer" aria-label="'+label+'">'+mlvAboutSocialIcon(kind)+'<span><strong>'+label+'</strong><small>'+detail+'</small></span></a>'}
+function aboutPane(){
+ const build=String(window.__MICHELS_LIFE_BUILD__||'3.0.216');
+ return `<section class="card mlvdev-card" data-mlv-about-core data-mlv-developer data-v30171-owner="about">
+ <div class="mlvdev-product" data-mlv-product-brand="canonical">
+  <div class="mlvdev-product-lockup"><img src="assets/michels_life_lockup.svg" alt="Michel’s Life"></div>
+  <div class="mlvdev-product-copy"><small>Product identity</small><h2>Michel’s Life</h2><p>Private personal productivity system for missions, focus, progress and cross-device sync.</p></div>
+  <div class="mlvdev-version-chip"><small>VERSION</small><b>v${esc(build)}</b></div>
+ </div>
+ <div class="mlvdev-ascent-line" aria-hidden="true"></div>
+ <div class="mlvdev-main">
+  <div class="mlvdev-avatar-wrap"><img class="mlvdev-avatar" src="assets/michel_duarte_avatar.jpg" alt="Michel Duarte"></div>
+  <div class="mlvdev-info" data-mlv-author-brand="canonical">
+   <div class="mlvdev-title"><small>About the author</small><h2>Michel Duarte</h2><p>Created and maintained by Michel Duarte.</p></div>
+   <div class="mlvdev-studio"><div class="mlvdev-studio-lockup"><img src="assets/michels_lab_lockup.png" alt="Michel’s Lab"></div><div><small>STUDIO</small><b>Part of Michel’s Lab</b><p>Independent software studio</p></div></div>
+   <div class="mlvdev-socials">
+    ${mlvAboutSocialLink('instagram','Instagram','@realmichelduarte','https://www.instagram.com/realmichelduarte/')}
+    ${mlvAboutSocialLink('facebook','Facebook','realmichelduarte','https://www.facebook.com/realmichelduarte')}
+    ${mlvAboutSocialLink('linkedin','LinkedIn','realmichelduart','https://www.linkedin.com/in/realmichelduart/')}
+    ${mlvAboutSocialLink('github','GitHub','realmichelduarte','https://github.com/realmichelduarte')}
+    ${mlvAboutSocialLink('email','Email','realmichelduarte@gmail.com','mailto:realmichelduarte@gmail.com')}
+   </div>
+   <div class="mlvdev-meta"><div><small>APP</small><b>Michel’s Life</b></div><div><small>VERSION</small><b>v${esc(build)}</b></div><div><small>LICENSE</small><b>Proprietary · Personal use</b></div></div>
+   <div class="mlvdev-legal">Free for personal use. Unauthorized copying, modification, redistribution, rebranding, resale, sublicensing, or claiming this software as your own is not permitted without prior written permission.<span class="mlvdev-copyright">© 2026 Michel Duarte / Michel’s Lab. All rights reserved.</span></div>
+  </div>
+ </div>
+ </section>`
+}
 function moveDataActions(panes){
  const general=panes.general,data=panes.data;if(!general||!data)return;
  const buttons=[...general.querySelectorAll('[data-v30116-action="export-unified"],[data-action="export-json"],[data-action="export-backup"],[data-action="import-json"],[data-action="import-backup"],[data-action="reset-app"]')];
@@ -28763,6 +28800,7 @@ function activateSetting(key,root){
  root.querySelectorAll('[data-v30171-setting]').forEach(b=>b.classList.toggle('active',b.dataset.v30171Setting===key));
  root.querySelectorAll('[data-v30171-pane]').forEach(p=>p.classList.toggle('active',p.dataset.v30171Pane===key));
  try{localStorage.setItem('michelsLife.settingsSection.v30171',key)}catch(_){}
+  if(key==='sync')queueMicrotask(()=>window.SupabaseSyncV30216?.mount?.());
 }
 function enhance(){renderNav();if(String(state?.activeTab||'')==='settings')buildSettings()}
 const oldTabs=window.renderTabs;window.renderTabs=function(){renderNav();};try{renderTabs=window.renderTabs}catch(_){}
@@ -29378,7 +29416,7 @@ function transparencyHTML(){const v=transparency();return `<section class="card"
 function previewSurface(el,value,kind){if(!el)return;const a=Math.max(0,Math.min(1,Number(value)/100));const base=kind==='card'?'--ui-card-rgb':'--ui-panel-rgb';el.style.setProperty('background',`rgba(var(${base},10,18,28),${a.toFixed(3)})`,'important');el.style.setProperty('background-image','none','important');el.style.setProperty('border-color',a===0?'rgba(255,255,255,.22)':'rgba(255,255,255,.12)','important')}
 function syncTransparencyPreview(v=transparency()){const root=document.querySelector('[data-mlv185-opacity-preview]');if(!root)return;const bg=assetUrl(themeAsset(theme(),'afternoon'));root.style.backgroundImage=`linear-gradient(rgba(0,0,0,.06),rgba(0,0,0,.06)),url("${bg}")`;for(const k of ['header','panel','card','sidebar','settingsnav','dock'])previewSurface(root.querySelector(`[data-mlv185-preview-surface="${k}"]`),v[k],k==='card'?'card':'panel')}
 function syncTransparencyUI(v=transparency()){for(const k of ['header','panel','card','sidebar','settingsnav','dock']){const x=document.querySelector(`[data-mlv184-tr-value="${k}"]`);if(x)x.textContent=v[k]+'%';const i=document.querySelector(`[data-mlv184-tr="${k}"]`);if(i&&document.activeElement!==i)i.value=v[k]}const t=document.getElementById('v3060TransparencyEnabled');if(t&&document.activeElement!==t)t.checked=v.enabled;syncTransparencyPreview(v)}
-function renderSettingsOwned(){if(activeTabId()!=='settings')return;try{window.LeftNavV30171?.buildSettings?.()}catch(_){}const root=document.getElementById('tab-settings');if(!root)return;const themes=root.querySelector('[data-v30171-pane="themes"]'),ui=root.querySelector('[data-v30171-pane="ui"]'),chap=root.querySelector('[data-v30171-pane="chapters"]');if(themes){let card=themes.querySelector('[data-mlv184-theme-card]');if(!card){themes.querySelectorAll('[data-mlv183-theme-card],[data-v3049-bgset-card]').forEach(x=>x.remove());themes.insertAdjacentHTML('beforeend',themesHTML());card=themes.querySelector('[data-mlv184-theme-card]')}const cur=theme();card?.querySelectorAll('[data-mlv184-theme]').forEach(b=>{const on=b.dataset.mlv184Theme===cur;b.classList.toggle('active',on);const c=b.querySelector('.mlv184-preview-check');if(c){c.textContent=on?'✓':'';c.classList.toggle('selected',on)}});const pill=card?.querySelector('.pill.hot');if(pill)pill.textContent=THEMES[cur].name}if(ui){let card=ui.querySelector('[data-mlv184-transparency-card]');if(!card){ui.querySelectorAll('[data-mlv183-transparency-card],[data-v3058-transparency-card],[data-v3060-transparency-card]').forEach(x=>x.remove());ui.insertAdjacentHTML('beforeend',transparencyHTML())}syncTransparencyUI()}if(chap){let card=chap.querySelector('[data-mlv184-chapter-card]');if(!card){chap.querySelectorAll('[data-mlv183-chapter-card],.v30171-scene-card').forEach(x=>{const c=x.closest('section.card')||x;if(c&&c.parentElement===chap)c.remove();else x.remove()});[...chap.querySelectorAll(':scope>section.card')].forEach(x=>{/Chapter Scene Packs/i.test(x.textContent||'')&&x.remove()});chap.insertAdjacentHTML('beforeend',chaptersHTML());card=chap.querySelector('[data-mlv184-chapter-card]')}const cur=chapter();card?.querySelectorAll('[data-mlv184-chapter]').forEach(b=>{const on=b.dataset.mlv184Chapter===cur;b.classList.toggle('active',on);const c=b.querySelector('.mlv184-preview-check');if(c){c.textContent=on?'✓':'';c.classList.toggle('selected',on)}});const pill=card?.querySelector('.pill.hot');if(pill)pill.textContent=CHAPTERS[cur].name}validatePreviewImages(root);applyTransparency(transparency())}
+function renderSettingsOwned(){if(activeTabId()!=='settings')return;try{window.LeftNavV30171?.buildSettings?.()}catch(_){}const root=document.getElementById('tab-settings');if(!root)return;const themes=root.querySelector('[data-v30171-pane="themes"]'),ui=root.querySelector('[data-v30171-pane="ui"]'),chap=root.querySelector('[data-v30171-pane="chapters"]');if(themes){let card=themes.querySelector('[data-mlv184-theme-card]');if(!card){themes.querySelectorAll('[data-mlv183-theme-card],[data-v3049-bgset-card]').forEach(x=>x.remove());themes.insertAdjacentHTML('beforeend',themesHTML());card=themes.querySelector('[data-mlv184-theme-card]')}const cur=theme();card?.querySelectorAll('[data-mlv184-theme]').forEach(b=>{const on=b.dataset.mlv184Theme===cur;b.classList.toggle('active',on);const c=b.querySelector('.mlv184-preview-check');if(c){c.textContent=on?'✓':'';c.classList.toggle('selected',on)}});const pill=card?.querySelector('.pill.hot');if(pill)pill.textContent=THEMES[cur].name}if(ui){let card=ui.querySelector('[data-mlv184-transparency-card]');if(!card){ui.querySelectorAll('[data-mlv183-transparency-card],[data-v3058-transparency-card],[data-v3060-transparency-card]').forEach(x=>x.remove());ui.insertAdjacentHTML('beforeend',transparencyHTML())}syncTransparencyUI()}if(chap){let card=chap.querySelector('[data-mlv184-chapter-card]');const canonicalChapterIds=Object.keys(CHAPTERS),renderedChapterIds=[...(card?.querySelectorAll('[data-mlv184-chapter]')||[])].map(x=>x.dataset.mlv184Chapter);const chapterCardValid=!!card&&renderedChapterIds.length===canonicalChapterIds.length&&canonicalChapterIds.every(id=>renderedChapterIds.includes(id));if(!chapterCardValid){card?.remove();chap.querySelectorAll('[data-mlv183-chapter-card],.v30171-scene-card').forEach(x=>{const c=x.closest('section.card')||x;if(c&&c.parentElement===chap)c.remove();else x.remove()});[...chap.querySelectorAll(':scope>section.card')].forEach(x=>{/Chapter Scene Packs/i.test(x.textContent||'')&&x.remove()});chap.insertAdjacentHTML('beforeend',chaptersHTML());card=chap.querySelector('[data-mlv184-chapter-card]')}const cur=chapter();card?.querySelectorAll('[data-mlv184-chapter]').forEach(b=>{const on=b.dataset.mlv184Chapter===cur;b.classList.toggle('active',on);const c=b.querySelector('.mlv184-preview-check');if(c){c.textContent=on?'✓':'';c.classList.toggle('selected',on)}});const pill=card?.querySelector('.pill.hot');if(pill)pill.textContent=CHAPTERS[cur].name}validatePreviewImages(root);applyTransparency(transparency())}
 
 /* Journal */
 function todayKey(){try{return typeof dateKey==='function'?dateKey():new Date().toISOString().slice(0,10)}catch(_){return new Date().toISOString().slice(0,10)}}
@@ -29479,19 +29517,19 @@ function statusLabel(){if(runtime.busy||runtime.cloudBusy)return ['busy','Connec
 function lastSyncText(){const s=settings(),raw=s.lastSync;if(!raw)return 'Never';const d=new Date(raw);return Number.isNaN(d.getTime())?String(raw):d.toLocaleString()}
 function cloudLastSyncText(){const raw=runtime.cloudLastSync;if(!raw)return 'Never';const d=new Date(raw);return Number.isNaN(d.getTime())?String(raw):d.toLocaleString()}
 function googleConfirmCopy(){const a=runtime.confirmAction;if(a==='disconnect')return ['Disconnect Google?','Your cloud save and Google Calendar events will not be deleted.'];if(a==='cloud-upload'||a==='cloud-conflict-local')return ['Overwrite the cloud copy?','This PC will become the master copy and replace the Michel’s Life save in Google Drive.'];if(a==='cloud-download'||a==='cloud-conflict-cloud')return ['Replace this PC with the cloud copy?','A local safety backup will be created first, then Google Drive will replace this PC’s Michel’s Life data.'];return null}
-function googlePaneHTML(){const s=settings(),[cls,label]=statusLabel(),account=runtime.account||'—',project=runtime.credentialProject||'—',cloudState=!runtime.connected?'Disconnected':runtime.cloudReady?'Ready':'Needs reconnect',confirmCopy=googleConfirmCopy();return `<section class="card mlv190-google-card" data-mlv190-google-card>
-<div class="mlv190-google-head"><div class="mlv190-google-brand"><span class="mlv190-google-logo">G</span><div><h2 style="margin:0">Google</h2><p class="muted" style="margin:3px 0 0">Sync your complete Michel’s Life between PCs with Google Drive. Calendar remains optional.</p></div></div><span class="mlv190-google-badge ${cls}">${label}</span></div>
+function googlePaneHTML(){const s=settings(),[cls,label]=statusLabel(),account=runtime.account||'—',project=runtime.credentialProject||'—',supaActive=!!window.SupabaseSyncV30216?.runtime?.connected,cloudState=!runtime.connected?'Disconnected':runtime.cloudReady?(supaActive?'Fallback ready':'Ready'):'Needs reconnect',confirmCopy=googleConfirmCopy();return `<section class="card mlv190-google-card" data-mlv190-google-card>
+<div class="mlv190-google-head"><div class="mlv190-google-brand"><span class="mlv190-google-logo">G</span><div><h2 style="margin:0">Google</h2><p class="muted" style="margin:3px 0 0">Google Calendar integration. Drive remains available only as a manual migration and recovery fallback while Supabase is the primary sync backend.</p></div></div><span class="mlv190-google-badge ${cls}">${label}</span></div>
 ${runtime.busy?`<div class="mlv204-google-state busy"><b>Connecting to Google…</b><br>Finish sign-in in your browser. This panel will update automatically.</div>`:''}
 ${runtime.notice&&!runtime.busy?`<div class="mlv204-google-state notice">${esc(runtime.notice)}</div>`:''}
-<div class="mlv190-google-status-grid"><div><small>Google account</small><b title="${esc(account)}">${esc(account)}</b></div><div><small>Cloud Sync</small><b class="${runtime.cloudReady?'mlv191-cloud-ok':runtime.connected?'mlv191-cloud-warn':''}">${esc(cloudState)}</b></div><div><small>Sign-in</small><b>${runtime.connected?'Linked':'Google OAuth'}</b></div></div>
+<div class="mlv190-google-status-grid"><div><small>Google account</small><b title="${esc(account)}">${esc(account)}</b></div><div><small>Drive fallback</small><b class="${runtime.cloudReady?'mlv191-cloud-ok':runtime.connected?'mlv191-cloud-warn':''}">${esc(cloudState)}</b></div><div><small>Sign-in</small><b>${runtime.connected?'Linked':'Google OAuth'}</b></div></div>
 <div class="mlv190-google-actions"><button class="btn primary" type="button" data-mlv190-google="connect" ${(!runtime.connected||!runtime.cloudReady)&&!runtime.busy?'':'disabled'}>${runtime.busy?'Connecting…':runtime.connected&&!runtime.cloudReady?'Reconnect Google':'Connect Google'}</button><button class="btn danger" type="button" data-mlv190-google="disconnect" ${runtime.connected&&!runtime.busy?'':'disabled'}>Disconnect</button></div>
 ${confirmCopy?`<div class="mlv191-cloud-conflict"><b>${esc(confirmCopy[0])}</b><p>${esc(confirmCopy[1])}</p><div class="mlv191-cloud-actions"><button class="btn danger" type="button" data-mlv190-google="confirm-yes">Confirm</button><button class="btn ghost" type="button" data-mlv190-google="confirm-no">Cancel</button></div></div>`:''}
 <div class="mlv191-cloud-block">
-<div class="mlv191-cloud-head"><div><h3>Michel’s Life Cloud Sync</h3><p>Journal, daily tasks, missions, Premium Contracts, stats, chapters, settings, history, progress and the complete restorable local state.</p></div><span class="mlv190-google-badge ${runtime.cloudReady?'connected':''}">${runtime.cloudBusy?'Syncing…':runtime.cloudAction?esc(runtime.cloudAction):runtime.cloudReady?'Ready':'Offline'}</span></div>
-<div class="mlv190-google-status-grid"><div><small>Last cloud sync</small><b>${esc(cloudLastSyncText())}</b></div><div><small>Automatic</small><b>${s.cloudAutoSync?'On':'Off'}</b></div><div><small>Storage</small><b>Private Google Drive app data</b></div></div>
-<div class="mlv191-cloud-actions"><button class="btn primary" type="button" data-mlv190-google="cloud-sync" ${runtime.cloudReady&&!runtime.cloudBusy?'':'disabled'}>Sync Michel’s Life now</button><button class="btn ghost" type="button" data-mlv190-google="cloud-upload" ${runtime.cloudReady&&!runtime.cloudBusy?'':'disabled'}>Keep this PC → Cloud</button><button class="btn ghost" type="button" data-mlv190-google="cloud-download" ${runtime.cloudReady&&!runtime.cloudBusy?'':'disabled'}>Use Cloud → This PC</button></div>
-<label class="mlv190-google-option" style="margin-top:10px"><input type="checkbox" data-mlv190-google-option="cloudAutoSync" ${s.cloudAutoSync?'checked':''}><span><b>Keep all Michel’s Life data synced automatically</b><small>Uploads about 30 seconds after you stop making changes, checks Drive every 10 minutes, and checks again after returning to the app.</small></span></label>
-${runtime.cloudConflict?`<div class="mlv191-cloud-conflict"><b>Cloud conflict</b><p>${esc(runtime.cloudConflict.message||'Both copies changed.')}</p><div class="mlv191-cloud-actions"><button class="btn" data-mlv190-google="cloud-conflict-local">Keep this PC</button><button class="btn" data-mlv190-google="cloud-conflict-cloud">Use cloud</button></div></div>`:''}
+<div class="mlv191-cloud-head"><div><h3>Google Drive recovery fallback</h3><p>${supaActive?'Supabase is currently the source of truth. Drive automatic sync is suppressed; use these controls only for migration or recovery.':'Supabase is not connected. Drive can still be used manually as a temporary migration/recovery path.'}</p></div><span class="mlv190-google-badge ${runtime.cloudReady?'connected':''}">${runtime.cloudBusy?'Working…':supaActive?'Fallback':runtime.cloudAction?esc(runtime.cloudAction):runtime.cloudReady?'Ready':'Offline'}</span></div>
+<div class="mlv190-google-status-grid"><div><small>Last Drive sync</small><b>${esc(cloudLastSyncText())}</b></div><div><small>Automatic Drive sync</small><b>${supaActive?'Suppressed':s.cloudAutoSync?'On':'Off'}</b></div><div><small>Storage</small><b>Private Google Drive app data</b></div></div>
+<div class="mlv191-cloud-actions"><button class="btn" type="button" data-mlv190-google="cloud-sync" ${runtime.cloudReady&&!runtime.cloudBusy?'':'disabled'}>Run Drive fallback now</button><button class="btn ghost" type="button" data-mlv190-google="cloud-upload" ${runtime.cloudReady&&!runtime.cloudBusy?'':'disabled'}>This device → Drive</button><button class="btn ghost" type="button" data-mlv190-google="cloud-download" ${runtime.cloudReady&&!runtime.cloudBusy?'':'disabled'}>Drive → This device</button></div>
+<label class="mlv190-google-option" style="margin-top:10px"><input type="checkbox" data-mlv190-google-option="cloudAutoSync" ${s.cloudAutoSync?'checked':''} ${supaActive?'disabled':''}><span><b>Legacy Drive automatic sync</b><small>${supaActive?'Disabled while your Supabase session is active.':'Temporary compatibility option until Supabase migration is complete.'}</small></span></label>
+${runtime.cloudConflict?`<div class="mlv191-cloud-conflict"><b>Drive fallback conflict</b><p>${esc(runtime.cloudConflict.message||'Both copies changed.')}</p><div class="mlv191-cloud-actions"><button class="btn" data-mlv190-google="cloud-conflict-local">Keep this device</button><button class="btn" data-mlv190-google="cloud-conflict-cloud">Use Drive</button></div></div>`:''}
 ${runtime.cloudError?`<div class="mlv190-google-error">${esc(runtime.cloudError)}</div>`:''}
 </div>
 <div class="mlv190-google-options">
@@ -29507,11 +29545,11 @@ function mountGoogleSettings(){if(mounting)return;mounting=true;try{if(String(st
 function captureCloudBackup(){const ls={};for(const [k,v] of Object.entries(localStorage)){if(!String(k).startsWith('michelsLife.internal.'))ls[k]=v}return JSON.stringify({app:"Michel's Life",type:'cloud-sync',cloudPayloadVersion:1,version:BUILD,state:JSON.parse(JSON.stringify(state)),localStorage:ls})}
 async function applyCloudRestore(res){if(!res?.backupJson)throw new Error('Google Drive returned no Michel’s Life cloud data.');const backup=JSON.parse(res.backupJson),ls=backup.localStorage&&typeof backup.localStorage==='object'?backup.localStorage:null,incoming=backup.state&&typeof backup.state==='object'?backup.state:null;if(!ls&&!incoming)throw new Error('Cloud save is not restorable.');runtime.restoring=true;clearTimeout(cloudSaveTimer);try{localStorage.clear();if(ls)for(const [k,v] of Object.entries(ls))localStorage.setItem(k,String(v));if(incoming)localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(incoming));await bridge('cloudAccept',{hash:res.remoteHash||res.localHash||'',remoteModifiedAt:res.remoteModifiedAt||null});sessionStorage.setItem('mlv191CloudRestored','1');location.reload()}finally{runtime.restoring=false}}
 function cloudActionLabel(a){return ({created:'Cloud save created',uploaded:'Uploaded',downloaded:'Restored from cloud',noop:'Up to date',conflict:'Conflict'})[a]||a||''}
-async function syncCloud(mode='auto',opts={}){if(runtime.cloudBusy)return null;if(!runtime.connected){if(!opts.silent)toastSafe('Michel’s Life Cloud','Connect Google first.');return null}if(!runtime.cloudReady){runtime.cloudError='Reconnect Google once to grant Google Drive Cloud Sync permission.';mountGoogleSettings();if(!opts.silent)toastSafe('Michel’s Life Cloud',runtime.cloudError);return null}runtime.cloudBusy=true;runtime.cloudError='';mountGoogleSettings();try{const backupJson=captureCloudBackup();const res=await bridge('cloudSync',{backupJson,localChangedAt:runtime.lastDirtyAt,mode});runtime.cloudAction=cloudActionLabel(res?.action);runtime.cloudLastSync=new Date().toISOString();if(res?.conflict){runtime.cloudConflict=res;if(!opts.silent)toastSafe('Cloud conflict','Both this PC and Google Drive changed. Choose which copy to keep in Settings → Google.');mountGoogleSettings();return res}runtime.cloudConflict=null;if(res?.requiresRestore){await applyCloudRestore(res);return res}runtime.lastDirtyAt=null;if(!opts.silent)toastSafe('Michel’s Life Cloud',res?.message||runtime.cloudAction||'Synced.');return res}catch(err){runtime.cloudError=String(err?.message||err);if(!opts.silent)toastSafe('Michel’s Life Cloud',runtime.cloudError);return null}finally{runtime.cloudBusy=false;mountGoogleSettings()}}
-function scheduleCloudSave(){if(!runtime.cloudInitialDone||runtime.restoring||!settings().cloudAutoSync||!runtime.connected||!runtime.cloudReady)return;clearTimeout(cloudSaveTimer);cloudSaveTimer=setTimeout(()=>{cloudSaveTimer=null;syncCloud('auto',{silent:true})},30000)}
+async function syncCloud(mode='auto',opts={}){if(mode==='auto'&&window.SupabaseSyncV30216?.runtime?.connected)return null;if(runtime.cloudBusy)return null;if(!runtime.connected){if(!opts.silent)toastSafe('Michel’s Life Cloud','Connect Google first.');return null}if(!runtime.cloudReady){runtime.cloudError='Reconnect Google once to grant Google Drive Cloud Sync permission.';mountGoogleSettings();if(!opts.silent)toastSafe('Michel’s Life Cloud',runtime.cloudError);return null}runtime.cloudBusy=true;runtime.cloudError='';mountGoogleSettings();try{const backupJson=captureCloudBackup();const res=await bridge('cloudSync',{backupJson,localChangedAt:runtime.lastDirtyAt,mode});runtime.cloudAction=cloudActionLabel(res?.action);runtime.cloudLastSync=new Date().toISOString();if(res?.conflict){runtime.cloudConflict=res;if(!opts.silent)toastSafe('Cloud conflict','Both this PC and Google Drive changed. Choose which copy to keep in Settings → Google.');mountGoogleSettings();return res}runtime.cloudConflict=null;if(res?.requiresRestore){await applyCloudRestore(res);return res}runtime.lastDirtyAt=null;if(!opts.silent)toastSafe('Michel’s Life Cloud',res?.message||runtime.cloudAction||'Synced.');return res}catch(err){runtime.cloudError=String(err?.message||err);if(!opts.silent)toastSafe('Michel’s Life Cloud',runtime.cloudError);return null}finally{runtime.cloudBusy=false;mountGoogleSettings()}}
+function scheduleCloudSave(){if(window.SupabaseSyncV30216?.runtime?.connected)return;if(!runtime.cloudInitialDone||runtime.restoring||!settings().cloudAutoSync||!runtime.connected||!runtime.cloudReady)return;clearTimeout(cloudSaveTimer);cloudSaveTimer=setTimeout(()=>{cloudSaveTimer=null;syncCloud('auto',{silent:true})},30000)}
 function onLocalMutation(){if(runtime.restoring||!runtime.cloudInitialDone)return;const at=new Date().toISOString();runtime.lastDirtyAt=at;bridge('cloudDirty',{changedAt:at}).catch(()=>{});scheduleCloudSave()}
 function installStorageWatch(){if(storageWatchInstalled)return;storageWatchInstalled=true;const proto=window.Storage&&Storage.prototype;if(!proto)return;for(const name of ['setItem','removeItem','clear']){const original=proto[name];if(typeof original!=='function'||original.__mlv191Cloud)continue;const wrapped=function(){const isLocal=this===localStorage;let changed=false,internal=false;if(isLocal){try{if(name==='setItem'){const k=String(arguments[0]),v=String(arguments[1]);internal=k.startsWith('michelsLife.internal.');changed=this.getItem(k)!==v}else if(name==='removeItem'){const k=String(arguments[0]);internal=k.startsWith('michelsLife.internal.');changed=this.getItem(k)!==null}else if(name==='clear'){changed=this.length>0}}catch(_){changed=true}}const out=original.apply(this,arguments);if(isLocal&&changed&&!internal)onLocalMutation();return out};wrapped.__mlv191Cloud=true;proto[name]=wrapped}}
-function scheduleCloudPoll(){clearInterval(cloudPollTimer);cloudPollTimer=null;if(runtime.connected&&runtime.cloudReady&&settings().cloudAutoSync){cloudPollTimer=setInterval(()=>syncCloud('auto',{silent:true}),10*60*1000)}}
+function scheduleCloudPoll(){clearInterval(cloudPollTimer);cloudPollTimer=null;if(window.SupabaseSyncV30216?.runtime?.connected)return;if(runtime.connected&&runtime.cloudReady&&settings().cloudAutoSync){cloudPollTimer=setInterval(()=>syncCloud('auto',{silent:true}),10*60*1000)}}
 function validDateKey(v){return /^\d{4}-\d{2}-\d{2}$/.test(String(v||''))}
 function missionDate(m){for(const k of ['scheduledDate','date','due','deadline']){const v=String(m?.[k]||'').slice(0,10);if(validDateKey(v))return v}return ''}
 function localMissions(){const out=[];for(const m of (state.missions||[])){if(!m||m.archived||m.hidden)continue;const date=missionDate(m);if(!date)continue;out.push({missionId:String(m.id||''),title:String(m.name||m.title||'Mission'),date,notes:String(m.description||m.notes||'')})}return out}
@@ -29540,7 +29578,7 @@ if(a==='cloud-download'||a==='cloud-conflict-cloud'){if(!confirmed){runtime.conf
 if(a==='sync'){await syncNow();return}if(a==='open'){await bridge('openCalendar');return}
 }catch(err){runtime.busy=false;runtime.cloudBusy=false;runtime.confirmAction='';runtime.notice='';runtime.error=String(err?.message||err);mountGoogleSettings()}return}const cs=e.target.closest?.('[data-mlv190-calendar-sync]');if(cs){e.preventDefault();e.stopPropagation();await syncNow();return}if(e.target.closest?.('[data-tab="settings"],[data-v30171-setting="google"]'))[0,40,120,260].forEach(ms=>setTimeout(mountGoogleSettings,ms));if(e.target.closest?.('[data-tab="calendar"],[data-v30135-cal],[data-v30137-calendar-action]'))setTimeout(decorateCalendar,100)},true);
 document.addEventListener('change',e=>{const key=e.target?.dataset?.mlv190GoogleOption;if(!key)return;const s=settings();s[key]=!!e.target.checked;saveSafe();if(key==='showEvents')decorateCalendar();if(key==='autoSync')scheduleAutoSync();if(key==='cloudAutoSync'){scheduleCloudPoll();if(s[key]&&runtime.cloudReady)syncCloud('auto',{silent:true})}if(key==='pushMissions'&&s[key]&&runtime.connected)syncNow({silent:true});mountGoogleSettings()},true);
-window.addEventListener('focus',()=>{mountGoogleSettings();refreshStatus({sync:false,cloud:false});if(runtime.cloudInitialDone&&runtime.connected&&runtime.cloudReady&&settings().cloudAutoSync){const t=Date.parse(runtime.cloudLastSync||'');if(!Number.isFinite(t)||Date.now()-t>2*60*1000)syncCloud('auto',{silent:true})}});
+window.addEventListener('focus',()=>{mountGoogleSettings();refreshStatus({sync:false,cloud:false});if(window.SupabaseSyncV30216?.runtime?.connected)return;if(runtime.cloudInitialDone&&runtime.connected&&runtime.cloudReady&&settings().cloudAutoSync){const t=Date.parse(runtime.cloudLastSync||'');if(!Number.isFinite(t)||Date.now()-t>2*60*1000)syncCloud('auto',{silent:true})}});
 
 let googlePanePinned=false;
 function forceGooglePaneOpen(){
@@ -29563,7 +29601,7 @@ document.addEventListener('click',e=>{
 },true);
 const googleSettingsObserver=new MutationObserver(()=>{if(String(state?.activeTab||'')!=='settings')return;const pane=document.querySelector('[data-v30171-pane="google"]');if(pane?.classList.contains('active'))requestAnimationFrame(mountGoogleSettings);else if(googlePanePinned)requestAnimationFrame(forceGooglePaneOpen)});
 try{const main=document.getElementById('main');if(main)googleSettingsObserver.observe(main,{childList:true,subtree:true})}catch(_){}
-queueMicrotask(mountGoogleSettings);setTimeout(mountGoogleSettings,0);setTimeout(()=>{mountGoogleSettings();decorateCalendar();refreshStatus({sync:true,cloud:true})},80);
+queueMicrotask(mountGoogleSettings);requestAnimationFrame(()=>mountGoogleSettings());const mlv216Idle=(fn,timeout=1400)=>{if(typeof requestIdleCallback==='function')requestIdleCallback(()=>fn(),{timeout});else setTimeout(fn,650)};mlv216Idle(()=>{mountGoogleSettings();decorateCalendar();refreshStatus({sync:true,cloud:true})},1400);
 window.GoogleCalendarV30190={version:BUILD,runtime,settings,status:()=>refreshStatus({sync:false,cloud:false}),sync:syncNow,cloudSync:syncCloud,decorateCalendar,mountSettings:mountGoogleSettings,openSettings:forceGooglePaneOpen,localMissions};window.GoogleCloudV30192={version:BUILD,runtime,sync:syncCloud,capture:captureCloudBackup,mountSettings:mountGoogleSettings,openSettings:forceGooglePaneOpen};window.GoogleCloudV30191=window.GoogleCloudV30192;
 window.__MICHELS_LIFE_BUILD__=BUILD;
 console.info("Michel's Life build "+BUILD+' — Google Drive Cloud Sync + Calendar loaded');
@@ -29667,47 +29705,52 @@ function notification(title,msg='',opts={}){return toast(title,msg,opts.kind||''
 
 function api(){return window.GoogleCloudV30192||window.GoogleCloudV30191}
 function rt(){return api()?.runtime||{}}
+function activeApi(){const supa=window.SupabaseSyncV30216;return supa?.runtime?.connected?supa:api()}
+function activeRt(){return activeApi()?.runtime||{}}
 function capture(){try{return api()?.capture?.()||''}catch(_){return ''}}
 
 function ensureBadge(){
   let b=document.getElementById('mlv197CloudBadge');
-  if(!b){b=document.createElement('div');b.id='mlv197CloudBadge';b.title='Open Google Cloud Sync';b.addEventListener('click',()=>{try{state.activeTab='settings';save?.();renderAll?.();setTimeout(()=>window.GoogleCalendarV30190?.openSettings?.(),80)}catch(_){}});document.body.appendChild(b)}
+  if(!b){b=document.createElement('div');b.id='mlv197CloudBadge';b.title='Open Sync Center';b.addEventListener('click',()=>{if(window.MLV216SyncCenter?.open){window.MLV216SyncCenter.open();return}try{state.activeTab='settings';save?.();renderAll?.();setTimeout(()=>window.GoogleCalendarV30190?.openSettings?.(),80)}catch(_){}});document.body.appendChild(b)}
   return b;
 }
+function syncRelative(v){if(!v)return'';const d=new Date(v),ms=Date.now()-d.getTime();if(!Number.isFinite(ms))return'';const min=Math.max(0,Math.floor(ms/60000));if(min<1)return'now';if(min<60)return min+'m';const h=Math.floor(min/60);if(h<24)return h+'h';return Math.floor(h/24)+'d'}
 function updateBadge(){
-  const r=rt(),b=ensureBadge();let cls='',label='',show=false;
-  if(r.cloudConflict){cloudBusySince=0;cls='conflict';label='Cloud conflict';show=true}
-  else if(r.cloudError||r.error){cloudBusySince=0;cls='error';label='Cloud needs attention';show=true}
-  else if(r.cloudBusy){if(!cloudBusySince)cloudBusySince=Date.now();if(Date.now()-cloudBusySince>=3500){cls='syncing';label='Cloud syncing…';show=true}}
-  else{cloudBusySince=0}
-  b.className=cls;b.textContent=(window.MichelsLifeI18n?.mapText?.(label)||label);b.style.display=show?'flex':'none';
+  const r=activeRt(),b=ensureBadge(),es=window.MichelsLifeI18n?.language==='es';let cls='',label='',show=true;
+  if(r.cloudConflict){cloudBusySince=0;cls='conflict';label=es?'Nube · Conflicto':'Cloud · Conflict'}
+  else if(r.cloudError||r.error){cloudBusySince=0;cls='error';label=es?'Nube · Revisar':'Cloud · Attention'}
+  else if(r.cloudBusy){if(!cloudBusySince)cloudBusySince=Date.now();cls='syncing';label=es?'Nube · Sincronizando…':'Cloud · Syncing…'}
+  else if(r.connected&&r.cloudReady){cloudBusySince=0;cls='synced';const age=syncRelative(r.cloudLastSync);label=age?(es?'Nube · '+age:'Cloud · '+age):(es?'Nube · Lista':'Cloud · Ready')}
+  else if(r.connected){cloudBusySince=0;cls='error';label=es?'Nube · Reconectar':'Cloud · Reconnect'}
+  else{cloudBusySince=0;cls='';label=es?'Nube · Sin conectar':'Cloud · Offline'}
+  b.className=cls;b.textContent=label;b.style.display=show?'flex':'none';b.title=es?'Abrir Centro de sincronización':'Open Sync Center';
 }
 
 function ensureConflictModal(){
   let o=document.getElementById('mlv197CloudConflictOverlay');
   if(o)return o;
   o=document.createElement('div');o.id='mlv197CloudConflictOverlay';
-  o.innerHTML='<div class="mlv197-conflict-card"><h3>Cloud conflict</h3><p data-mlv197-conflict-text>Both this PC and Google Drive changed. Choose which copy becomes the master.</p><div class="mlv197-conflict-actions"><button class="btn primary" type="button" data-mlv197-conflict="local">Keep this PC</button><button class="btn" type="button" data-mlv197-conflict="cloud">Use cloud</button><button class="btn ghost" type="button" data-mlv197-conflict="later">Decide later</button></div></div>';
+  o.innerHTML='<div class="mlv197-conflict-card"><h3>Cloud conflict</h3><p data-mlv197-conflict-text>This device and cloud both changed. Choose which copy becomes the master.</p><div class="mlv197-conflict-actions"><button class="btn primary" type="button" data-mlv197-conflict="local">Keep this PC</button><button class="btn" type="button" data-mlv197-conflict="cloud">Use cloud</button><button class="btn ghost" type="button" data-mlv197-conflict="later">Decide later</button></div></div>';
   document.body.appendChild(o);
   o.addEventListener('click',async e=>{
     const b=e.target.closest?.('[data-mlv197-conflict]');if(!b)return;
     const choice=b.dataset.mlv197Conflict;
-    if(choice==='later'){dismissedConflictSig=String(rt().cloudConflict?.localHash||'')+'|'+String(rt().cloudConflict?.remoteHash||'')+'|'+String(rt().cloudConflict?.message||'');o.classList.remove('show');return}
-    const r=rt();if(!r.cloudConflict){o.classList.remove('show');return}
+    if(choice==='later'){const r=activeRt();dismissedConflictSig=String(r.cloudConflict?.localHash||r.cloudConflict?.localRevision||'')+'|'+String(r.cloudConflict?.remoteHash||r.cloudConflict?.remoteRevision||'')+'|'+String(r.cloudConflict?.message||'');o.classList.remove('show');return}
+    const provider=activeApi(),r=activeRt();if(!r.cloudConflict||!provider){o.classList.remove('show');return}
     try{
       o.classList.remove('show');
-      if(choice==='local'){notification('Michel’s Life Cloud','Keeping this PC and saving the previous cloud version in backup history.',{persistent:true});await api().sync('upload')}
-      else{notification('Michel’s Life Cloud','Loading the cloud copy. A local restore point is being created first.',{persistent:true});await api().sync('download')}
-      setTimeout(refreshOverview,700);
+      if(choice==='local'){notification('Michel’s Life Cloud','Keeping this device and preserving the previous cloud version in backup history.',{persistent:true});await provider.sync('upload')}
+      else{notification('Michel’s Life Cloud','Saving the current state, then loading the cloud copy.',{persistent:true});await provider.sync('download')}
+      setTimeout(()=>{if(provider===window.SupabaseSyncV30216)provider.refreshOverview?.();else refreshOverview()},700);
     }catch(err){notification('Cloud error',String(err?.message||err),{kind:'error',persistent:true})}
   });
   return o;
 }
 function updateConflictModal(){
-  const r=rt(),o=ensureConflictModal();
+  const r=activeRt(),o=ensureConflictModal();
   if(r.cloudConflict){
-    const sig=String(r.cloudConflict.localHash||'')+'|'+String(r.cloudConflict.remoteHash||'')+'|'+String(r.cloudConflict.message||'');
-    const p=o.querySelector('[data-mlv197-conflict-text]');if(p)p.textContent=r.cloudConflict.message||'Both this PC and Google Drive changed. Choose which copy becomes the master.';
+    const sig=String(r.cloudConflict.localHash||r.cloudConflict.localRevision||'')+'|'+String(r.cloudConflict.remoteHash||r.cloudConflict.remoteRevision||'')+'|'+String(r.cloudConflict.message||'');
+    const p=o.querySelector('[data-mlv197-conflict-text]');if(p)p.textContent=r.cloudConflict.message||'This device and cloud both changed. Choose which copy becomes the master.';
     if(sig!==dismissedConflictSig)o.classList.add('show');
   }else{dismissedConflictSig='';o.classList.remove('show')}
 }
@@ -29732,7 +29775,7 @@ function reliabilityHTML(){
   </section>`;
 }
 function mountReliability(){
-  if(String(window.state?.activeTab||'')!=='settings')return;
+  if(String(state?.activeTab||'')!=='settings')return;
   const pane=document.querySelector('[data-v30171-pane="google"]');if(!pane)return;
   const sig=JSON.stringify([overviewBusy,overview.currentDeviceId,overview.backups,overview.devices]);
   let old=pane.querySelector('[data-mlv197-reliability]');
@@ -29798,7 +29841,7 @@ setInterval(()=>{
   if(stamp!==previousCloudStamp){previousCloudStamp=stamp;if(r.connected&&r.cloudReady&&Date.now()-lastOverviewAt>1500)setTimeout(refreshOverview,500)}
 },900);
 
-setTimeout(()=>{updateBadge();updateConflictModal();mountReliability();refreshOverview()},900);
+(typeof requestIdleCallback==='function'?requestIdleCallback(()=>{updateBadge();updateConflictModal();mountReliability();refreshOverview()},{timeout:1900}):setTimeout(()=>{updateBadge();updateConflictModal();mountReliability();refreshOverview()},950));
 window.MLV197Reliability={version:BUILD,notification,refreshOverview,getOverview:()=>overview};
 })();
 </script>
@@ -30231,7 +30274,7 @@ try{
 
 installGenericProfileGuards();
 sanitizeFreshInstall();
-setTimeout(()=>{mountOnboarding();postRender();checkUpdates().catch(()=>{})},420);
+setTimeout(()=>{mountOnboarding();postRender()},420);
 window.MLV200FinishSystem={version:VERSION,mountOnboarding,mountRecap,checkUpdates,recap:()=>recap(recapMode)};
 })();
 
@@ -30290,7 +30333,7 @@ function cardHTML(){const rows=items(),groups=groupItems(rows),connected=!!runti
 function ensureOverlay(){let o=document.getElementById('mlv201RestoreOverlay');if(o)return o;o=document.createElement('div');o.id='mlv201RestoreOverlay';o.innerHTML='<div class="mlv201-restore-card"><h3>Restore this saved state?</h3><p data-mlv201-modal-copy></p><div class="mlv201-compare"><div class="mlv201-compare-box"><small>Current state</small><b>Right now</b><span data-mlv201-current-summary></span></div><div class="mlv201-compare-box"><small>Selected backup</small><b data-mlv201-selected-title></b><span data-mlv201-selected-summary></span></div></div><div class="mlv201-restore-warning"><b>Safety first:</b> Michel’s Life will create a new restore point of your current state before loading the selected backup.</div><div class="mlv201-restore-actions"><button class="btn ghost" type="button" data-mlv201-modal="cancel">Cancel</button><button class="btn primary" type="button" data-mlv201-modal="restore">Restore saved state</button></div></div>';document.body.appendChild(o);return o}
 function openRestore(x){selected=x;const o=ensureOverlay(),cur=currentSummary();o.querySelector('[data-mlv201-modal-copy]').textContent=`You are about to return Michel’s Life to ${dateOf(x.createdAt)?.toLocaleString()||'this saved state'}.`;o.querySelector('[data-mlv201-current-summary]').textContent=summaryText(cur)||'Current summary unavailable.';o.querySelector('[data-mlv201-selected-title]').textContent=reasonLabel(x.reason);o.querySelector('[data-mlv201-selected-summary]').textContent=(summaryText(x)||'Legacy backup · summary unavailable')+` · ${x.deviceName||'Unknown device'}`;o.classList.add('show')}
 function closeRestore(){selected=null;document.getElementById('mlv201RestoreOverlay')?.classList.remove('show')}
-function applyBackupJson(backupJson,cloudMeta=null,uploadAfter=false){const backup=JSON.parse(backupJson),ls=backup.localStorage&&typeof backup.localStorage==='object'?backup.localStorage:null,incoming=backup.state&&typeof backup.state==='object'?backup.state:null;if(!ls&&!incoming)throw new Error('The selected backup is not restorable.');localStorage.clear();if(ls)for(const [k,v] of Object.entries(ls))localStorage.setItem(k,String(v));if(incoming)localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(incoming));if(uploadAfter)sessionStorage.setItem('mlv201UploadRestoredLocal','1');sessionStorage.setItem('mlv201TimelineRestored','1');if(cloudMeta){return bridge('cloudAccept',{hash:cloudMeta.remoteHash||cloudMeta.localHash||'',remoteModifiedAt:cloudMeta.remoteModifiedAt||null}).then(()=>location.reload())}location.reload()}
+function applyBackupJson(backupJson,cloudMeta=null,uploadAfter=false){const backup=JSON.parse(backupJson),ls=backup.localStorage&&typeof backup.localStorage==='object'?backup.localStorage:null,incoming=backup.state&&typeof backup.state==='object'?backup.state:null;if(!ls&&!incoming)throw new Error('The selected backup is not restorable.');const preserve={};['michelsLife.supabase.session.v30216','michelsLife.supabase.meta.v30216','michelsLife.supabase.device.v30216'].forEach(k=>{const v=localStorage.getItem(k);if(v!=null)preserve[k]=v});localStorage.clear();if(ls)for(const [k,v] of Object.entries(ls))localStorage.setItem(k,String(v));for(const [k,v] of Object.entries(preserve))localStorage.setItem(k,v);if(incoming)localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(incoming));if(uploadAfter||window.SupabaseSyncV30216?.runtime?.connected)sessionStorage.setItem('mlv201UploadRestoredLocal','1');sessionStorage.setItem('mlv201TimelineRestored','1');if(cloudMeta){return bridge('cloudAccept',{hash:cloudMeta.remoteHash||cloudMeta.localHash||'',remoteModifiedAt:cloudMeta.remoteModifiedAt||null}).then(()=>location.reload())}location.reload()}
 async function doRestore(){if(!selected)return;const x=selected,button=document.querySelector('[data-mlv201-modal="restore"]');try{if(button){button.disabled=true;button.textContent='Restoring…'}const backupJson=capture();if(!backupJson)throw new Error('Could not capture the current state for the required safety backup.');if(x.source==='cloud'){const res=await bridge('cloudRestoreBackup',{fileId:x.fileId,backupJson});await applyBackupJson(res.backupJson,res,false)}else{const res=await bridge('restoreLocalPoint',{fileName:x.fileName,backupJson});applyBackupJson(res.backupJson,null,true)}}catch(err){if(button){button.disabled=false;button.textContent='Restore saved state'}notify('Restore failed',String(err?.message||err),{kind:'error',persistent:true})}}
 function mount(){if(String(state?.activeTab||'')!=='settings')return;const p=pane();if(!p)return;const old=p.querySelector('[data-mlv201-timeline]'),tmp=document.createElement('template');tmp.innerHTML=cardHTML();const next=tmp.content.firstElementChild;if(!next)return;if(old)old.replaceWith(next);else{const maintenance=p.querySelector('[data-mlv198-maintenance]');maintenance?p.insertBefore(next,maintenance):p.appendChild(next)}}
 async function refresh(force=false){if(busy)return;if(!force&&Date.now()-lastLoad<30000){mount();return}busy=true;mount();try{localOverview=await bridge('restorePointOverview');const r=runtime();if(r.connected&&r.cloudReady){try{cloudOverview=await bridge('cloudOverview')}catch(err){cloudOverview={backups:[],devices:[]};notify('Backup Timeline','Local restore points loaded, but Drive history could not be refreshed: '+String(err?.message||err),{kind:'error'})}}else cloudOverview={backups:[],devices:[]};lastLoad=Date.now()}catch(err){notify('Backup Timeline',String(err?.message||err),{kind:'error',persistent:true})}finally{busy=false;mount()}}
@@ -30298,7 +30341,7 @@ document.addEventListener('click',async e=>{const refreshBtn=e.target.closest?.(
 setInterval(()=>{if(String(state?.activeTab||'')==='settings'&&pane()?.classList.contains('active'))mount()},2500);
 setTimeout(()=>{mount();if(String(state?.activeTab||'')==='settings'&&pane()?.classList.contains('active'))refresh(false)},700);
 if(sessionStorage.getItem('mlv201TimelineRestored')){sessionStorage.removeItem('mlv201TimelineRestored');setTimeout(()=>notify('Backup restored','Michel’s Life loaded the selected saved state.'),900)}
-if(sessionStorage.getItem('mlv201UploadRestoredLocal')){sessionStorage.removeItem('mlv201UploadRestoredLocal');setTimeout(async()=>{try{const api=window.GoogleCloudV30192||window.GoogleCloudV30191;if(api?.runtime?.connected&&api?.runtime?.cloudReady){await api.sync?.('upload',{silent:false});notify('Cloud updated','The restored local state is now the current Google Drive copy.')}}catch(err){notify('Cloud update after restore',String(err?.message||err),{kind:'error',persistent:true})}},2600)}
+if(sessionStorage.getItem('mlv201UploadRestoredLocal')){sessionStorage.removeItem('mlv201UploadRestoredLocal');setTimeout(async()=>{try{const supa=window.SupabaseSyncV30216;if(supa?.runtime?.connected&&supa?.runtime?.cloudReady){await supa.sync?.('upload',{silent:false});notify('Cloud updated','The restored local state is now the current Supabase copy.');return}const drive=window.GoogleCloudV30192||window.GoogleCloudV30191;if(drive?.runtime?.connected&&drive?.runtime?.cloudReady){await drive.sync?.('upload',{silent:false});notify('Cloud updated','The restored local state is now the current Google Drive fallback copy.')}}catch(err){notify('Cloud update after restore',String(err?.message||err),{kind:'error',persistent:true})}},2600)}
 window.MLV201BackupTimeline={version:VERSION,refresh,mount,items};
 })();
 </script>
@@ -30313,7 +30356,8 @@ window.MLV201BackupTimeline={version:VERSION,refresh,mount,items};
 'use strict';
 if(window.MLV202ReleaseReadiness)return;
 const VERSION='3.0.209',CHANNEL='michels-life-google-calendar',RESPONSE='michels-life-google-calendar-response';
-let seq=0,diag=null,diagBusy=false,update=null,updateBusy=false;const pending=new Map();
+const AUTO_UPDATE_INTERVAL_MS=6*60*60*1000,AUTO_UPDATE_FOCUS_RECHECK_MS=30*60*1000;
+let seq=0,diag=null,diagBusy=false,update=null,updateBusy=false,lastAutoUpdateCheckAt=0;const pending=new Map();
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function notify(t,m='',o={}){try{return window.MLV197Reliability?.notification?.(t,m,o)||window.toast?.(t,m)}catch(_){}}
 function bridge(action,payload={}){return new Promise((resolve,reject)=>{if(!window.chrome?.webview?.postMessage){reject(new Error('This action requires the Windows app.'));return}const requestId='mlv202-'+Date.now()+'-'+(++seq),timer=setTimeout(()=>{pending.delete(requestId);reject(new Error('Request timed out.'))},120000);pending.set(requestId,{resolve,reject,timer});window.chrome.webview.postMessage({channel:CHANNEL,requestId,action,payload})})}
@@ -30323,18 +30367,25 @@ function dataPane(){return document.querySelector('[data-v30171-pane="data"]')}f
 function applyBackupJson(raw){const b=JSON.parse(raw),ls=b.localStorage&&typeof b.localStorage==='object'?b.localStorage:null,st=b.state&&typeof b.state==='object'?b.state:(b.runtimeState&&typeof b.runtimeState==='object'?b.runtimeState:null);if(!ls&&!st)throw new Error('This file does not contain a restorable Michel’s Life state.');localStorage.clear();if(ls)for(const [k,v] of Object.entries(ls))localStorage.setItem(k,String(v));if(st)localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(st));sessionStorage.setItem('mlv202Imported','1');location.reload()}
 function diagCard(){const checks=Array.isArray(diag?.checks)?diag.checks:[];const overall=diag?.overall||'idle';return `<section class="card" data-mlv202-diagnostics><div class="section-title"><div><h2>App health & diagnostics</h2><p>Checks the installation without uploading your personal data.</p></div><span class="pill mlv202-status ${esc(overall)}">${diagBusy?'Checking…':overall==='idle'?'Not checked':esc(overall.toUpperCase())}</span></div><div class="mlv202-actions"><button class="btn" type="button" data-mlv202-action="diagnostics" ${diagBusy?'disabled':''}>${diagBusy?'Running…':'Run diagnostics'}</button><button class="btn ghost" type="button" data-mlv202-action="diagnostic-report">Save diagnostic snapshot</button><button class="btn ghost" type="button" data-mlv202-action="open-diagnostics">Open diagnostics folder</button></div>${checks.length?`<div class="mlv202-checks">${checks.map(x=>`<div class="mlv202-check ${esc(x.status)}"><i class="mlv202-dot"></i><b>${esc(x.name)}</b><span>${esc(x.detail)}</span></div>`).join('')}</div>`:'<div class="mlv202-note">Run diagnostics to verify WebView2, the visual bundle, storage permissions, backups, Google status and the update channel.</div>'}</section>`}
 function portableCard(){return `<section class="card" data-mlv202-portable><div class="section-title"><div><h2>Portable backup</h2><p>Move the complete profile between PCs without depending on Google Drive.</p></div><span class="pill">.michelslife</span></div><div class="mlv202-actions"><button class="btn" type="button" data-mlv202-action="export-portable">Export .michelslife</button><button class="btn ghost" type="button" data-mlv202-action="import-portable">Import .michelslife</button></div><div class="mlv202-note">The file contains the restorable application state and local settings. OAuth tokens and internal technical logs are excluded. Import always creates a restore point of the current state first.</div></section>`}
-function updateCard(){const u=update||{currentVersion:VERSION,onlineChannelConfigured:true};const online=!!u.onlineAvailable,local=!!u.candidatePath;return `<section class="card" data-mlv202-update><div class="section-title"><div><h2>Updates</h2><p>Local safe updates plus a GitHub Releases channel prepared for public distribution.</p></div><span class="pill gold">v${esc(u.currentVersion||VERSION)}</span></div><div class="mlv202-grid"><div class="mlv202-kpi"><small>Installed</small><b>v${esc(u.currentVersion||VERSION)}</b></div><div class="mlv202-kpi"><small>GitHub channel</small><b>${esc(u.onlineStatus||'Not checked')}</b></div><div class="mlv202-kpi"><small>Available</small><b>${online?'v'+esc(u.onlineVersion):local?'v'+esc(u.candidateVersion):'None detected'}</b></div></div><div class="mlv202-actions"><button class="btn" type="button" data-mlv202-action="check-update" ${updateBusy?'disabled':''}>${updateBusy?'Checking…':'Check for updates'}</button>${online?'<button class="btn primary" type="button" data-mlv202-action="install-online">Install GitHub update</button>':''}${local?'<button class="btn ghost" type="button" data-mlv202-action="install-local">Install local update</button>':''}<button class="btn ghost" type="button" data-mlv202-action="choose-local">Choose EXE…</button></div>${u.onlineReleaseNotes?`<div class="mlv202-release-note">${esc(u.onlineReleaseNotes)}</div>`:''}<div class="mlv202-note">Online builds are accepted only from the configured GitHub release channel and must include a SHA-256 checksum. A restore point is created before replacement.</div></section>`}
+function updateCard(){const u=update||{currentVersion:VERSION,onlineChannelConfigured:true};const online=!!u.onlineAvailable,local=!!u.candidatePath;return `<section class="card" data-mlv202-update><div class="section-title"><div><h2>Updates</h2><p>Local safe updates plus a GitHub Releases channel prepared for public distribution.</p></div><span class="pill gold">v${esc(u.currentVersion||VERSION)}</span></div><div class="mlv202-grid"><div class="mlv202-kpi"><small>Installed</small><b>v${esc(u.currentVersion||VERSION)}</b></div><div class="mlv202-kpi"><small>GitHub channel</small><b>${esc(u.onlineStatus||'Not checked')}</b></div><div class="mlv202-kpi"><small>Available</small><b>${online?'v'+esc(u.onlineVersion):local?'v'+esc(u.candidateVersion):'None detected'}</b></div></div><div class="mlv202-actions"><button class="btn" type="button" data-mlv202-action="check-update" ${updateBusy?'disabled':''}>${updateBusy?'Checking…':'Check for updates'}</button>${online?'<button class="btn primary" type="button" data-mlv202-action="install-online">Install GitHub update</button>':''}${local?'<button class="btn ghost" type="button" data-mlv202-action="install-local">Install local update</button>':''}<button class="btn ghost" type="button" data-mlv202-action="choose-local">Choose EXE…</button></div>${u.onlineReleaseNotes?`<div class="mlv202-release-note">${esc(u.onlineReleaseNotes)}</div>`:''}<div class="mlv202-note">Michel’s Life checks the public release channel automatically when the desktop app starts and every six hours while it stays open. Updates are never installed without your approval. Online builds must include a matching SHA-256 checksum, and a restore point is created before replacement.</div></section>`}
 function changeCard(){return `<section class="card" data-mlv202-changelog><div class="section-title"><div><h2>What’s new</h2><p>Release-readiness work, not another visual redesign.</p></div><span class="pill">3.0.209</span></div><div class="mlv202-changelog"><div class="mlv202-change"><b>v3.0.209 · Release Readiness</b><ul><li>App diagnostics and local error reports.</li><li>Portable .michelslife export/import.</li><li>GitHub release channel with SHA-256 verification.</li><li>Personal account hardcodes removed from product logic.</li><li>Source/release workflow prepared for GitHub.</li></ul></div><div class="mlv202-change"><b>v3.0.201</b><ul><li>Unified Backup Timeline and safe restore previews.</li></ul></div><div class="mlv202-change"><b>v3.0.200</b><ul><li>First-run onboarding, safe local updater and weekly/monthly recaps.</li></ul></div></div></section>`}
 function mount(){if(String(state?.activeTab||'')!=='settings')return;const d=dataPane(),a=aboutPane();if(d){let x=d.querySelector('[data-mlv202-portable]');const t=document.createElement('template');t.innerHTML=portableCard();x?x.replaceWith(t.content.firstElementChild):d.prepend(t.content.firstElementChild);x=d.querySelector('[data-mlv202-diagnostics]');const q=document.createElement('template');q.innerHTML=diagCard();x?x.replaceWith(q.content.firstElementChild):d.appendChild(q.content.firstElementChild)}if(a){a.querySelector('[data-mlv200-update]')?.remove();let x=a.querySelector('[data-mlv202-update]'),t=document.createElement('template');t.innerHTML=updateCard();x?x.replaceWith(t.content.firstElementChild):a.appendChild(t.content.firstElementChild);x=a.querySelector('[data-mlv202-changelog]');const q=document.createElement('template');q.innerHTML=changeCard();x?x.replaceWith(q.content.firstElementChild):a.appendChild(q.content.firstElementChild)}}
 async function runDiag(){diagBusy=true;mount();try{diag=await bridge('diagnostics',{backupJson:capture()})}catch(e){notify('Diagnostics',String(e?.message||e),{kind:'error',persistent:true})}finally{diagBusy=false;mount()}}
-async function checkUpdate(){updateBusy=true;mount();try{update=await bridge('updateStatus')}catch(e){notify('Update check',String(e?.message||e),{kind:'error',persistent:true})}finally{updateBusy=false;mount()}}
+function notifyAutomaticUpdate(u){const version=String(u?.onlineVersion||'').trim();if(!u?.onlineAvailable||!version)return;const key='mlv216-update-notice:'+version;try{if(sessionStorage.getItem(key)==='1')return;sessionStorage.setItem(key,'1')}catch(_){}const es=window.MichelsLifeI18n?.language==='es';notify(es?'Actualización disponible':'Update available',es?`Michel’s Life v${version} está disponible. Abre Configuración → Acerca de para revisarla e instalarla.`:`Michel’s Life v${version} is available. Open Settings → About to review and install it.`,{persistent:true})}
+function shouldAutoCheck(force=false){return force||!lastAutoUpdateCheckAt||Date.now()-lastAutoUpdateCheckAt>=AUTO_UPDATE_FOCUS_RECHECK_MS}
+async function checkUpdate(options={}){const automatic=!!options.automatic;if(updateBusy)return update;updateBusy=true;if(!automatic)mount();try{update=await bridge('updateStatus');lastAutoUpdateCheckAt=Date.now();if(automatic)notifyAutomaticUpdate(update)}catch(e){if(!automatic)notify('Update check',String(e?.message||e),{kind:'error',persistent:true})}finally{updateBusy=false;mount()}return update}
+function automaticUpdateCheck(force=false){if(!shouldAutoCheck(force))return Promise.resolve(update);return checkUpdate({automatic:true})}
 async function installOnline(){const u=update||await checkUpdate();if(!u?.onlineAvailable)return;if(!confirm(`Install Michel’s Life v${u.onlineVersion} from GitHub? A restore point will be created first.`))return;const backupJson=capture();if(!backupJson)throw new Error('Could not capture current state.');const r=await bridge('installOnlineUpdate',{backupJson,downloadUrl:u.onlineDownloadUrl,checksumUrl:u.onlineChecksumUrl,version:u.onlineVersion});notify('Update prepared',`v${r?.toVersion||u.onlineVersion} verified and ready. Michel’s Life will restart.`,{persistent:true})}
 async function installLocal(path=''){if(!confirm('Install the newer local executable? A restore point will be created first.'))return;const backupJson=capture();if(!backupJson)throw new Error('Could not capture current state.');await bridge('installUpdate',{backupJson,candidatePath:path})}
 document.addEventListener('click',async e=>{const b=e.target.closest?.('[data-mlv202-action]');if(!b)return;e.preventDefault();e.stopPropagation();const a=b.dataset.mlv202Action;try{if(a==='diagnostics')await runDiag();else if(a==='diagnostic-report'){const r=await bridge('createDiagnosticReport',{backupJson:capture()});notify('Diagnostic snapshot saved',r?.fileName||'Saved locally.')}else if(a==='open-diagnostics')await bridge('openDiagnosticsFolder');else if(a==='export-portable'){const raw=capture();if(!raw)throw new Error('Could not capture current state.');const r=await bridge('exportPortable',{backupJson:raw});if(!r?.cancelled)notify('Portable backup exported',r?.fileName||'Saved.')}else if(a==='import-portable'){const r=await bridge('importPortable');if(r?.cancelled)return;if(!confirm(`Import ${r.fileName||'this backup'}? The current state will be saved first.`))return;const cur=capture();if(cur)await bridge('createRestorePoint',{backupJson:cur,reason:'before_portable_import'});applyBackupJson(r.backupJson)}else if(a==='check-update')await checkUpdate();else if(a==='install-online')await installOnline();else if(a==='install-local'){const u=update||await checkUpdate();if(u?.candidatePath)await installLocal(u.candidatePath)}else if(a==='choose-local')await installLocal('')}catch(err){notify('Michel’s Life',String(err?.message||err),{kind:'error',persistent:true})}},true);
 const mo=new MutationObserver(()=>{clearTimeout(mo._t);mo._t=setTimeout(mount,100)});try{mo.observe(document.body,{childList:true,subtree:true})}catch(_){}
 document.addEventListener('click',e=>{if(e.target.closest?.('[data-v30171-setting="data"],[data-v30171-setting="about"]'))setTimeout(()=>{mount();if(e.target.closest?.('[data-v30171-setting="about"]')&&!update)checkUpdate()},140)},true);
 if(sessionStorage.getItem('mlv202Imported')){sessionStorage.removeItem('mlv202Imported');setTimeout(()=>notify('Backup imported','Portable Michel’s Life state restored.'),800)}
-setTimeout(mount,800);window.MLV202ReleaseReadiness={version:VERSION,mount,runDiagnostics:runDiag,checkUpdates:checkUpdate};
+setTimeout(mount,800);
+setTimeout(()=>automaticUpdateCheck(true).catch(()=>{}),2600);
+setInterval(()=>automaticUpdateCheck(true).catch(()=>{}),AUTO_UPDATE_INTERVAL_MS);
+window.addEventListener('focus',()=>automaticUpdateCheck(false).catch(()=>{}));
+window.MLV202ReleaseReadiness={version:VERSION,mount,runDiagnostics:runDiag,checkUpdates:checkUpdate,automaticUpdateCheck};
 })();
 </script>
 
@@ -30494,5 +30545,434 @@ body.ml-theme-ui button.mlv303-font-card[aria-pressed="true"] .mlv303-font-state
 </style>
 
 <script src="i18n.js" data-mlv-i18n="v1"></script>
+
+<!-- v3.0.216: desktop Quick Capture -->
+<style id="mlv-v30216-quick-capture-style">
+[data-mlv216-qc][hidden]{display:none!important}
+[data-mlv216-qc]{position:fixed;inset:0;z-index:2147482000;display:grid;place-items:start center;padding-top:min(16vh,150px);background:rgba(4,7,12,.62);backdrop-filter:blur(8px)}
+.mlv216-qc-card{width:min(620px,calc(100vw - 32px));border:1px solid rgba(255,255,255,.12);border-radius:18px;background:color-mix(in srgb,var(--panel,#141821) 94%,transparent);box-shadow:0 24px 80px rgba(0,0,0,.42);padding:16px}
+.mlv216-qc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.mlv216-qc-head h2{margin:0;font-size:16px}.mlv216-qc-head p{margin:4px 0 0;color:var(--muted);font-size:10px}
+.mlv216-qc-close{border:0;background:transparent;color:var(--muted);font-size:20px;line-height:1;cursor:pointer;padding:2px 6px}
+.mlv216-qc-input{width:100%;box-sizing:border-box;border:1px solid rgba(255,255,255,.11);border-radius:13px;background:rgba(0,0,0,.16);color:var(--text);padding:13px 14px;font:inherit;font-size:14px;outline:none}
+.mlv216-qc-input:focus{border-color:color-mix(in srgb,var(--accent,#8aa7ff) 70%,white 10%);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent,#8aa7ff) 18%,transparent)}
+.mlv216-qc-options{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px;margin-top:10px}
+.mlv216-qc-options select{width:100%;border:1px solid rgba(255,255,255,.09);border-radius:11px;background:rgba(0,0,0,.14);color:var(--text);padding:9px 10px;font:inherit}
+.mlv216-qc-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:13px}
+.mlv216-qc-hint{font-size:9px;color:var(--muted)}.mlv216-qc-buttons{display:flex;gap:8px}
+@media(max-width:620px){[data-mlv216-qc]{padding-top:70px}.mlv216-qc-options{grid-template-columns:1fr}.mlv216-qc-actions{align-items:flex-end;flex-direction:column}.mlv216-qc-buttons{width:100%}.mlv216-qc-buttons .btn{flex:1}}
+</style>
+<script id="mlv-v30216-quick-capture-script">
+(function(){
+'use strict';
+if(window.MLV216QuickCapture)return;
+let root=null;
+const isEs=()=>window.MichelsLifeI18n?.language==='es';
+const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const copy=()=>isEs()?{
+ title:'Captura rápida',help:'Guarda una idea sin abandonar lo que estás haciendo.',placeholder:'¿Qué quieres capturar?',mission:'Misión',journal:'Diario',type:'Tipo',category:'Categoría',save:'Guardar',cancel:'Cancelar',hint:'Ctrl + Shift + Espacio',savedMission:'Misión capturada',savedJournal:'Nota guardada en el diario',empty:'Escribe algo primero.',
+ cats:{physical:'Físico',mental:'Mental',order:'Orden',career:'Carrera',academic:'Académico',finance:'Finanzas',autonomy:'Autonomía',culture:'Cultura',selflove:'Autocuidado'}
+}:{
+ title:'Quick Capture',help:'Save an idea without leaving what you are doing.',placeholder:'What do you want to capture?',mission:'Mission',journal:'Journal',type:'Type',category:'Category',save:'Save',cancel:'Cancel',hint:'Ctrl + Shift + Space',savedMission:'Mission captured',savedJournal:'Journal note saved',empty:'Write something first.',
+ cats:{physical:'Physical',mental:'Mental',order:'Order',career:'Career',academic:'Academic',finance:'Finance',autonomy:'Autonomy',culture:'Culture',selflove:'Self care'}
+};
+function notify(title,message=''){try{return window.MLV197Reliability?.notification?.(title,message)||window.toast?.(title,message)}catch(_){}}
+function todayKey(){const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())}
+function ensure(){
+ if(root&&document.body.contains(root))return root;
+ root=document.createElement('div');root.dataset.mlv216Qc='1';root.hidden=true;root.setAttribute('role','dialog');root.setAttribute('aria-modal','true');
+ root.addEventListener('click',e=>{
+   if(e.target===root||e.target.closest?.('[data-mlv216-qc-close]')){close();return}
+   if(e.target.closest?.('[data-mlv216-qc-save]'))saveCapture();
+ });
+ root.addEventListener('change',e=>{if(e.target?.dataset?.mlv216QcType)renderOptions()});
+ root.addEventListener('keydown',e=>{
+   if(e.key==='Escape'){e.preventDefault();close();return}
+   if(e.key==='Enter'&&!e.shiftKey&&e.target?.matches?.('[data-mlv216-qc-input]')){e.preventDefault();saveCapture()}
+ });
+ document.body.appendChild(root);render();
+ return root;
+}
+function render(){
+ if(!root)return;const c=copy(),prevType=root.querySelector('[data-mlv216-qc-type]')?.value||'mission',prevCat=root.querySelector('[data-mlv216-qc-category]')?.value||'order',prevText=root.querySelector('[data-mlv216-qc-input]')?.value||'';
+ root.innerHTML=`<div class="mlv216-qc-card"><div class="mlv216-qc-head"><div><h2>${esc(c.title)}</h2><p>${esc(c.help)}</p></div><button class="mlv216-qc-close" type="button" data-mlv216-qc-close aria-label="${esc(c.cancel)}">×</button></div><input class="mlv216-qc-input" data-mlv216-qc-input autocomplete="off" placeholder="${esc(c.placeholder)}" value="${esc(prevText)}"><div class="mlv216-qc-options"><label><small>${esc(c.type)}</small><select data-mlv216-qc-type><option value="mission" ${prevType==='mission'?'selected':''}>${esc(c.mission)}</option><option value="journal" ${prevType==='journal'?'selected':''}>${esc(c.journal)}</option></select></label><label data-mlv216-qc-category-wrap><small>${esc(c.category)}</small><select data-mlv216-qc-category>${Object.entries(c.cats).map(([k,v])=>`<option value="${esc(k)}" ${prevCat===k?'selected':''}>${esc(v)}</option>`).join('')}</select></label></div><div class="mlv216-qc-actions"><span class="mlv216-qc-hint">${esc(c.hint)}</span><div class="mlv216-qc-buttons"><button class="btn ghost" type="button" data-mlv216-qc-close>${esc(c.cancel)}</button><button class="btn primary" type="button" data-mlv216-qc-save>${esc(c.save)}</button></div></div></div>`;
+ renderOptions();
+}
+function renderOptions(){if(!root)return;const type=root.querySelector('[data-mlv216-qc-type]')?.value||'mission',wrap=root.querySelector('[data-mlv216-qc-category-wrap]');if(wrap)wrap.hidden=type!=='mission'}
+function open(){
+ ensure();render();root.hidden=false;
+ requestAnimationFrame(()=>root.querySelector('[data-mlv216-qc-input]')?.focus());
+ return true;
+}
+function close(){if(root)root.hidden=true}
+function saveCapture(){
+ ensure();const c=copy(),input=root.querySelector('[data-mlv216-qc-input]'),text=String(input?.value||'').trim();
+ if(!text){notify(c.title,c.empty);input?.focus();return false}
+ const type=root.querySelector('[data-mlv216-qc-type]')?.value||'mission';
+ if(type==='journal'){
+   const api=window.JournalV30189||window.JournalV30188||window.JournalV30184;
+   if(!api?.save)throw new Error('Journal API unavailable');
+   const key=todayKey(),old=api.entry?.(key)||{title:'',body:''},stamp=new Date().toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'}),line='• '+stamp+' — '+text;
+   api.save(key,old.title||'',String(old.body||'').trim()?String(old.body).trimEnd()+'\n\n'+line:line);
+   notify(c.savedJournal,text);
+ }else{
+   if(typeof makeMission!=='function')throw new Error('Mission API unavailable');
+   if(!Array.isArray(state.missions))state.missions=[];
+   const category=root.querySelector('[data-mlv216-qc-category]')?.value||'order';
+   const mission=makeMission(text,category,'daily','medium',[new Date().getDay()],{description:isEs()?'Creada desde Captura rápida.':'Created from Quick Capture.'});
+   state.missions.push(mission);
+   try{save?.()}catch(_){}
+   try{renderAll?.()}catch(_){}
+   notify(c.savedMission,text);
+ }
+ input.value='';close();return true;
+}
+document.addEventListener('keydown',e=>{if(e.ctrlKey&&e.shiftKey&&e.code==='Space'){e.preventDefault();e.stopPropagation();open()}},true);
+window.addEventListener('michelslife:languagechange',()=>{if(root&&!root.hidden)render()});
+window.MLV216QuickCapture={open,close,capture:saveCapture};
+})();
+</script>
+
+
+
+<!-- v3.0.216: Supabase primary cloud sync -->
+<style id="mlv-v30216-supabase-sync-style">
+.mlv216-supa-card{margin-top:12px!important}
+.mlv216-supa-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.mlv216-supa-kpi{border:1px solid rgba(255,255,255,.07);border-radius:11px;padding:9px;background:rgba(255,255,255,.02)}
+.mlv216-supa-kpi small,.mlv216-supa-kpi b{display:block}.mlv216-supa-kpi small{font-size:8px;color:var(--muted)}.mlv216-supa-kpi b{font-size:10.5px;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mlv216-supa-auth{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.mlv216-supa-auth label{display:grid;gap:4px;font-size:9px;color:var(--muted)}
+.mlv216-supa-auth input{width:100%}.mlv216-supa-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.mlv216-supa-auth-modes{display:inline-flex;gap:4px;padding:3px;margin-top:11px;border:1px solid rgba(255,255,255,.08);border-radius:10px;background:rgba(255,255,255,.02)}.mlv216-supa-auth-mode{border:0;background:transparent;color:var(--muted);padding:6px 9px;border-radius:7px;font-size:9px;cursor:pointer}.mlv216-supa-auth-mode.active{background:rgba(117,228,255,.10);color:var(--text)}.mlv216-supa-code-hint{font-size:8.5px;color:var(--muted);margin-top:7px}
+.mlv216-supa-device-list{display:grid;gap:6px;margin-top:10px}.mlv216-supa-device{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px;border:1px solid rgba(255,255,255,.06);border-radius:10px}.mlv216-supa-device small{display:block;color:var(--muted);font-size:8.5px;margin-top:2px}
+.mlv216-supa-note{font-size:9px;color:var(--muted);line-height:1.45;margin-top:9px}.mlv216-supa-error{color:#ffcf8a}
+@media(max-width:680px){.mlv216-supa-grid,.mlv216-supa-auth{grid-template-columns:1fr}}
+</style>
+<script id="mlv-v30216-supabase-sync-script">
+(function(){
+'use strict';
+if(window.SupabaseSyncV30216)return;
+const BUILD='3.0.216';
+const SUPABASE_URL='https://lqnkcqredlxrykynacwr.supabase.co';
+const PUBLISHABLE_KEY='sb_publishable_ugWnaeKPRdH55vVNOtugjw_lBAqG7tr';
+const SESSION_KEY='michelsLife.supabase.session.v30216';
+const META_KEY='michelsLife.supabase.meta.v30216';
+const DEVICE_KEY='michelsLife.supabase.device.v30216';
+const OTP_EMAIL_KEY='michelsLife.supabase.otpEmail.v30216';
+const POLL_MS=30000;
+let syncTimer=0,pollTimer=0,applying=false,mountTimer=0,lastOverviewAt=0,authModeState='password';
+let overview={devices:[],backups:[],currentDeviceId:'',currentDeviceName:''};
+const runtime={connected:false,cloudReady:false,cloudBusy:false,cloudError:'',cloudConflict:null,cloudAction:'',cloudLastSync:'',account:'',revision:0,lastRemoteAt:'',provider:'Supabase'};
+function es(){return window.MichelsLifeI18n?.language==='es'}
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function safeJson(v,fallback=null){try{return JSON.parse(v)}catch(_){return fallback}}
+function session(){return safeJson(localStorage.getItem(SESSION_KEY)||'',null)}
+function meta(){return safeJson(localStorage.getItem(META_KEY)||'',{})||{}}
+function saveMeta(patch){const next={...meta(),...patch};localStorage.setItem(META_KEY,JSON.stringify(next));return next}
+function platform(){return String(window.__MICHELSLIFE_PLATFORM__||'windows').toLowerCase()==='android'?'android':'windows'}
+function deviceId(){let id=localStorage.getItem(DEVICE_KEY);if(!id){id=(platform()==='android'?'and_':'win_')+crypto.randomUUID();localStorage.setItem(DEVICE_KEY,id)}return id}
+function deviceName(){if(platform()==='android'){try{return navigator.userAgentData?.platform||navigator.platform||'Android'}catch(_){return'Android'}}try{return navigator.userAgentData?.platform||navigator.platform||'Windows PC'}catch(_){return'Windows PC'}}
+function capture(){try{return window.GoogleCloudV30192?.capture?.()||window.GoogleCloudV30191?.capture?.()||''}catch(_){return''}}
+function notify(title,msg,kind=''){try{window.toast?.(title,msg,kind,{persistent:kind==='error'})}catch(_){}}
+function authHeaders(access){const h={'apikey':PUBLISHABLE_KEY,'Content-Type':'application/json'};if(access)h.Authorization='Bearer '+access;return h}
+async function request(path,{method='GET',body=null,access=null,prefer='',headers={}}={}){
+ const res=await fetch(SUPABASE_URL+path,{method,headers:{...authHeaders(access),...(prefer?{'Prefer':prefer}:{}),...headers},body:body==null?null:JSON.stringify(body)});
+ let data=null,text='';try{text=await res.text();data=text?safeJson(text,text):null}catch(_){}
+ if(!res.ok){const message=(data&&typeof data==='object'&&(data.msg||data.message||data.error_description||data.error))||String(text||res.statusText||('HTTP '+res.status));const err=new Error(message);err.status=res.status;throw err}
+ return data
+}
+function storeSession(data){
+ if(!data?.access_token)return null;
+ const expiresAt=Date.now()+Math.max(30,Number(data.expires_in||3600))*1000;
+ const next={access_token:data.access_token,refresh_token:data.refresh_token||session()?.refresh_token||'',expires_at:expiresAt,user:data.user||session()?.user||null};
+ localStorage.setItem(SESSION_KEY,JSON.stringify(next));syncRuntime();return next
+}
+async function ensureSession(){
+ let s=session();if(!s?.access_token)return null;
+ if(Number(s.expires_at||0)-Date.now()>120000)return s;
+ if(!s.refresh_token){signOutLocal();return null}
+ try{const data=await request('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:{refresh_token:s.refresh_token}});return storeSession(data)}
+ catch(err){signOutLocal();throw err}
+}
+function syncRuntime(){
+ const s=session(),m=meta();runtime.connected=!!s?.access_token;runtime.cloudReady=runtime.connected;runtime.account=s?.user?.email||'';runtime.cloudLastSync=m.lastSync||'';runtime.revision=Number(m.revision||0);runtime.lastRemoteAt=m.lastRemoteAt||'';scheduleMount()
+}
+async function signIn(email,password){
+ runtime.cloudBusy=true;runtime.cloudAction='auth';runtime.cloudError='';scheduleMount();
+ try{const data=await request('/auth/v1/token?grant_type=password',{method:'POST',body:{email,password}});storeSession(data);await initializeAfterAuth();return data}
+ catch(err){runtime.cloudError=String(err.message||err);throw err}finally{runtime.cloudBusy=false;runtime.cloudAction='';scheduleMount()}
+}
+async function signUp(email,password){
+ runtime.cloudBusy=true;runtime.cloudAction='auth';runtime.cloudError='';scheduleMount();
+ try{const data=await request('/auth/v1/signup',{method:'POST',body:{email,password}});
+   if(data?.access_token){storeSession(data);await initializeAfterAuth()}
+   else notify(es()?'Cuenta creada':'Account created',es()?'Revisa tu correo para confirmar la cuenta y después inicia sesión.':'Check your email to confirm the account, then sign in.');
+   return data
+ }catch(err){runtime.cloudError=String(err.message||err);throw err}finally{runtime.cloudBusy=false;runtime.cloudAction='';scheduleMount()}
+}
+function authMode(){return authModeState==='code'?'code':'password'}
+function setAuthMode(mode){authModeState=mode==='code'?'code':'password';runtime.cloudError='';scheduleMount()}
+async function requestOtp(email){
+ runtime.cloudBusy=true;runtime.cloudAction='auth-code';runtime.cloudError='';scheduleMount();
+ try{await request('/auth/v1/otp',{method:'POST',body:{email,create_user:false}});localStorage.setItem(OTP_EMAIL_KEY,email);notify(es()?'Código enviado':'Code sent',es()?'Revisa tu correo e introduce el código de 6 dígitos.':'Check your email and enter the 6-digit code.');return true}
+ catch(err){runtime.cloudError=String(err.message||err);throw err}finally{runtime.cloudBusy=false;runtime.cloudAction='';scheduleMount()}
+}
+async function verifyOtp(email,token){
+ runtime.cloudBusy=true;runtime.cloudAction='auth-code';runtime.cloudError='';scheduleMount();
+ try{const data=await request('/auth/v1/verify',{method:'POST',body:{email,token,type:'email'}});storeSession(data);localStorage.removeItem(OTP_EMAIL_KEY);await initializeAfterAuth();return data}
+ catch(err){runtime.cloudError=String(err.message||err);throw err}finally{runtime.cloudBusy=false;runtime.cloudAction='';scheduleMount()}
+}
+function signOutLocal(){localStorage.removeItem(SESSION_KEY);runtime.connected=false;runtime.cloudReady=false;runtime.account='';runtime.cloudLastSync='';runtime.revision=0;overview={devices:[],backups:[],currentDeviceId:deviceId(),currentDeviceName:deviceName()};scheduleMount()}
+async function signOut(){
+ const s=await ensureSession().catch(()=>null);try{if(s?.access_token)await request('/auth/v1/logout',{method:'POST',access:s.access_token})}catch(_){}signOutLocal()
+}
+async function remoteState(s){
+ const rows=await request('/rest/v1/ml_state?select=user_id,snapshot,revision,source_device_id,source_platform,app_version,updated_at&limit=1',{access:s.access_token});
+ return Array.isArray(rows)&&rows.length?rows[0]:null
+}
+async function touchDevice(s,action='connected'){
+ const user=s.user?.id;if(!user)return;
+ const row={user_id:user,device_id:deviceId(),platform:platform(),label:deviceName(),app_version:BUILD,last_action:action,last_seen_at:new Date().toISOString()};
+ await request('/rest/v1/ml_devices?on_conflict=user_id,device_id',{method:'POST',access:s.access_token,body:row,prefer:'resolution=merge-duplicates,return=minimal'})
+}
+async function writeHistory(s,row,reason){
+ if(!row?.snapshot||!s.user?.id)return;
+ const body={user_id:s.user.id,snapshot:row.snapshot,revision:Number(row.revision||1),source_device_id:String(row.source_device_id||''),source_platform:String(row.source_platform||'other'),app_version:String(row.app_version||''),reason:String(reason||'before_sync')};
+ await request('/rest/v1/ml_state_history',{method:'POST',access:s.access_token,body,prefer:'return=minimal'})
+}
+async function push(reason='manual',opts={}){
+ const s=await ensureSession();if(!s)throw new Error(es()?'Inicia sesión en Supabase.':'Sign in to Supabase.');
+ const raw=capture();if(!raw)throw new Error('Michel’s Life could not capture a sync snapshot.');
+ const snapshot=safeJson(raw,null);if(!snapshot)throw new Error('Snapshot is not valid JSON.');
+ const localRevision=Number(meta().revision||0),remote=await remoteState(s),remoteRevision=Number(remote?.revision||0),force=!!opts.force;
+ if(remote&&!force&&remoteRevision!==localRevision){runtime.cloudConflict={message:'Remote revision '+remoteRevision+' changed before upload.',remoteRevision,localRevision};return {conflict:true,remoteRevision,localRevision}}
+ const nextRevision=Math.max(remoteRevision,localRevision)+1,now=new Date().toISOString(),row={user_id:s.user.id,snapshot,revision:nextRevision,source_device_id:deviceId(),source_platform:platform(),app_version:BUILD,updated_at:now};
+ if(!remote){
+   try{await request('/rest/v1/ml_state',{method:'POST',access:s.access_token,body:row,prefer:'return=representation'})}
+   catch(err){if(err?.status===409){const latest=await remoteState(s),latestRevision=Number(latest?.revision||0);runtime.cloudConflict={message:'Another device created the Supabase master first.',remoteRevision:latestRevision,localRevision};return {conflict:true,remoteRevision:latestRevision,localRevision}}throw err}
+ }else if(force){
+   await writeHistory(s,remote,'before_'+reason);
+   await request('/rest/v1/ml_state?on_conflict=user_id',{method:'POST',access:s.access_token,body:row,prefer:'resolution=merge-duplicates,return=representation'})
+ }else{
+   const path='/rest/v1/ml_state?user_id=eq.'+encodeURIComponent(s.user.id)+'&revision=eq.'+remoteRevision;
+   const updated=await request(path,{method:'PATCH',access:s.access_token,body:{snapshot,revision:nextRevision,source_device_id:row.source_device_id,source_platform:row.source_platform,app_version:BUILD,updated_at:now},prefer:'return=representation'});
+   if(!Array.isArray(updated)||updated.length!==1){const latest=await remoteState(s),latestRevision=Number(latest?.revision||0);runtime.cloudConflict={message:'Another device updated Supabase during this upload.',remoteRevision:latestRevision,localRevision};return {conflict:true,remoteRevision:latestRevision,localRevision}}
+   try{await writeHistory(s,remote,'before_'+reason)}catch(_){}
+ }
+ runtime.cloudConflict=null;saveMeta({revision:nextRevision,lastSync:now,lastRemoteAt:now,lastLocalHash:raw.length,dirty:false});
+ runtime.cloudLastSync=now;runtime.revision=nextRevision;runtime.lastRemoteAt=now;await touchDevice(s,'upload');return row
+}
+function applySnapshot(snapshot){
+ if(!snapshot||typeof snapshot!=='object')throw new Error('Supabase snapshot is not restorable.');
+ const ls=snapshot.localStorage&&typeof snapshot.localStorage==='object'?snapshot.localStorage:null,incoming=snapshot.state&&typeof snapshot.state==='object'?snapshot.state:null;
+ if(!ls&&!incoming)throw new Error('Supabase snapshot has no Michel’s Life state.');
+ applying=true;
+ try{
+   const preserved={};[SESSION_KEY,META_KEY,DEVICE_KEY].forEach(k=>{const v=localStorage.getItem(k);if(v!=null)preserved[k]=v});
+   const restoredState=incoming?(typeof migrate==='function'?migrate(JSON.parse(JSON.stringify(incoming))):JSON.parse(JSON.stringify(incoming))):null;
+   localStorage.clear();if(ls)for(const [k,v] of Object.entries(ls))localStorage.setItem(k,String(v));for(const [k,v] of Object.entries(preserved))localStorage.setItem(k,v);
+   if(restoredState){state=restoredState;localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(restoredState))}
+ }finally{applying=false}
+}
+async function pull({reload=true}={}){
+ const s=await ensureSession();if(!s)throw new Error(es()?'Inicia sesión en Supabase.':'Sign in to Supabase.');
+ const remote=await remoteState(s);if(!remote)return null;
+ const localRaw=capture(),localSnapshot=safeJson(localRaw,null);
+ if(localSnapshot){await writeHistory(s,{snapshot:localSnapshot,revision:Math.max(1,Number(meta().revision||1)),source_device_id:deviceId(),source_platform:platform(),app_version:BUILD},'before_download_local')}
+ applySnapshot(remote.snapshot);const now=new Date().toISOString();saveMeta({revision:Number(remote.revision||0),lastSync:now,lastRemoteAt:remote.updated_at||now,dirty:false});runtime.cloudLastSync=now;runtime.revision=Number(remote.revision||0);runtime.lastRemoteAt=remote.updated_at||now;runtime.cloudConflict=null;await touchDevice(s,'download');if(reload)location.reload();return remote
+}
+async function sync(mode='auto',opts={}){
+ if(runtime.cloudBusy)return null;runtime.cloudBusy=true;runtime.cloudAction=mode;runtime.cloudError='';scheduleMount();
+ try{
+  const s=await ensureSession();if(!s){if(!opts.silent)notify(es()?'Supabase':'Supabase',es()?'Inicia sesión para sincronizar.':'Sign in to sync.');return null}
+  const remote=await remoteState(s),m=meta();
+  if(!remote){const out=await push('first_upload');if(!out?.conflict&&!opts.silent)notify(es()?'Sincronizado':'Synced',es()?'Este equipo creó el estado maestro en Supabase.':'This PC created the master state in Supabase.');return out}
+  if(mode==='download')return await pull({reload:opts.reload!==false});
+  if(mode==='upload')return await push('manual_upload',{force:true});
+  const remoteRev=Number(remote.revision||0),localRev=Number(m.revision||0);
+  if(remoteRev>localRev){if(!opts.silent)notify(es()?'Cambio remoto disponible':'Remote change available',es()?'Supabase tiene una revisión más nueva. Abre Sync Center para usarla.':'Supabase has a newer revision. Open Sync Center to use it.');runtime.cloudConflict={message:'Remote revision '+remoteRev+' is newer than local revision '+localRev,remoteRevision:remoteRev,localRevision:localRev};return remote}
+  runtime.cloudConflict=null;if(m.dirty)return await push('auto');await touchDevice(s,'online');return remote;
+ }catch(err){runtime.cloudError=String(err.message||err);if(!opts.silent)notify(es()?'Error de Supabase':'Supabase error',runtime.cloudError,'error');throw err}
+ finally{runtime.cloudBusy=false;runtime.cloudAction='';scheduleMount()}
+}
+function scheduleAutoSync(){
+ if(applying||!runtime.connected)return;saveMeta({dirty:true});clearTimeout(syncTimer);syncTimer=setTimeout(()=>sync('auto',{silent:true}).catch(()=>{}),2500)
+}
+async function refreshOverview(){
+ const s=await ensureSession().catch(()=>null);if(!s){overview={devices:[],backups:[],currentDeviceId:deviceId(),currentDeviceName:deviceName()};scheduleMount();return overview}
+ try{
+  const [devices,history]=await Promise.all([
+   request('/rest/v1/ml_devices?select=device_id,platform,label,app_version,last_action,last_seen_at&order=last_seen_at.desc&limit=12',{access:s.access_token}),
+   request('/rest/v1/ml_state_history?select=id,revision,source_device_id,source_platform,app_version,reason,created_at&order=created_at.desc&limit=10',{access:s.access_token})
+  ]);
+  overview={devices:(devices||[]).map(d=>({deviceId:d.device_id,deviceName:d.label||d.platform,lastSeenAt:d.last_seen_at,appVersion:d.app_version,lastAction:d.last_action,platform:d.platform})),backups:(history||[]).map(h=>({fileId:h.id,createdAt:h.created_at,reason:h.reason,appVersion:h.app_version,sourceDeviceId:h.source_device_id,revision:h.revision})),currentDeviceId:deviceId(),currentDeviceName:deviceName()};lastOverviewAt=Date.now();await touchDevice(s,'online')
+ }catch(err){runtime.cloudError=String(err.message||err)}
+ scheduleMount();return overview
+}
+function getOverview(){return overview}
+async function initializeAfterAuth(){
+ syncRuntime();await refreshOverview();const remote=await remoteState(await ensureSession());if(!remote)await push('first_upload');else{const m=meta();if(!m.revision){runtime.cloudConflict={message:'Existing Supabase data requires an explicit first-device choice.',remoteRevision:Number(remote.revision||0),localRevision:0};runtime.lastRemoteAt=remote.updated_at||''}}scheduleMount()
+}
+function copy(){return es()?{title:'Sync de Michel’s Life',desc:'Supabase es la nube principal para Desktop y Android.',account:'Cuenta',status:'Estado',revision:'Revisión',signed:'Conectado',offline:'Sin sesión',email:'Correo',password:'Contraseña',login:'Iniciar sesión',signup:'Crear cuenta',logout:'Cerrar sesión',sync:'Sincronizar ahora',upload:'Usar este PC',download:'Usar nube',devices:'Dispositivos',none:'Todavía no hay dispositivos sincronizados.',primary:'Supabase es la fuente de verdad. Google Drive queda temporalmente como respaldo de transición.',passwordMode:'Contraseña',codeMode:'Código',sendCode:'Enviar código',verifyCode:'Entrar con código',code:'Código de 6 dígitos',codeHint:'La contraseña es el método principal. Usa código solo cuando lo prefieras o no tengas tu contraseña a la mano.'}:{title:'Michel’s Life Sync',desc:'Supabase is the primary cloud for Desktop and Android.',account:'Account',status:'Status',revision:'Revision',signed:'Connected',offline:'Signed out',email:'Email',password:'Password',login:'Sign in',signup:'Create account',logout:'Sign out',sync:'Sync now',upload:'Use this PC',download:'Use cloud',devices:'Devices',none:'No synced devices yet.',primary:'Supabase is the source of truth. Google Drive remains temporarily as a transition fallback.',passwordMode:'Password',codeMode:'Code',sendCode:'Send code',verifyCode:'Sign in with code',code:'6-digit code',codeHint:'Password is the primary sign-in method. Use a code only when you prefer it or do not have your password handy.'}}
+function cardHtml(){
+ const c=copy(),s=session(),devices=overview.devices||[],mode=authMode(),otpEmail=localStorage.getItem(OTP_EMAIL_KEY)||'';
+ const authHtml=runtime.connected?'':'<div class="mlv216-supa-auth-modes" role="tablist"><button type="button" class="mlv216-supa-auth-mode '+(mode==='password'?'active':'')+'" data-mlv216-supa="mode-password">'+esc(c.passwordMode)+'</button><button type="button" class="mlv216-supa-auth-mode '+(mode==='code'?'active':'')+'" data-mlv216-supa="mode-code">'+esc(c.codeMode)+'</button></div>'+
+ (mode==='password'?'<div class="mlv216-supa-auth"><label>'+esc(c.email)+'<input type="email" autocomplete="username" data-mlv216-supa-email></label><label>'+esc(c.password)+'<input type="password" autocomplete="current-password" data-mlv216-supa-password></label></div><div class="mlv216-supa-actions"><button class="btn primary" data-mlv216-supa="login">'+esc(c.login)+'</button><button class="btn ghost" data-mlv216-supa="signup">'+esc(c.signup)+'</button></div>':'<div class="mlv216-supa-auth"><label>'+esc(c.email)+'<input type="email" autocomplete="username" value="'+esc(otpEmail)+'" data-mlv216-supa-email></label><label>'+esc(c.code)+'<input type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" data-mlv216-supa-code></label></div><div class="mlv216-supa-actions"><button class="btn primary" data-mlv216-supa="send-code">'+esc(c.sendCode)+'</button><button class="btn ghost" data-mlv216-supa="verify-code">'+esc(c.verifyCode)+'</button></div><div class="mlv216-supa-code-hint">'+esc(c.codeHint)+'</div>');
+ return '<section class="card mlv216-supa-card" data-mlv216-supabase-card data-v30171-owner="sync"><div class="section-title"><div><h2>'+esc(c.title)+'</h2><p>'+esc(c.desc)+'</p></div><span class="pill '+(runtime.connected?'good':'')+'">Supabase</span></div>'+
+ '<div class="mlv216-supa-grid"><div class="mlv216-supa-kpi"><small>'+esc(c.status)+'</small><b>'+esc(runtime.connected?c.signed:c.offline)+'</b></div><div class="mlv216-supa-kpi"><small>'+esc(c.account)+'</small><b>'+esc(runtime.account||'—')+'</b></div><div class="mlv216-supa-kpi"><small>'+esc(c.revision)+'</small><b>'+esc(String(runtime.revision||'—'))+'</b></div></div>'+
+ (runtime.connected?'<div class="mlv216-supa-actions"><button class="btn primary" data-mlv216-supa="sync" '+(runtime.cloudBusy?'disabled':'')+'>'+esc(c.sync)+'</button><button class="btn" data-mlv216-supa="upload" '+(runtime.cloudBusy?'disabled':'')+'>'+esc(c.upload)+'</button><button class="btn ghost" data-mlv216-supa="download" '+(runtime.cloudBusy?'disabled':'')+'>'+esc(c.download)+'</button><button class="btn ghost" data-mlv216-supa="logout">'+esc(c.logout)+'</button></div>':authHtml)+
+ (runtime.cloudError?'<div class="mlv216-supa-note mlv216-supa-error">'+esc(runtime.cloudError)+'</div>':'')+
+ '<div class="mlv216-supa-note">'+esc(c.primary)+'</div><div class="section-title" style="margin-top:12px"><div><h3>'+esc(c.devices)+'</h3></div></div><div class="mlv216-supa-device-list">'+(devices.length?devices.map(d=>'<div class="mlv216-supa-device"><div><b>'+esc(d.deviceName||d.platform||'Device')+(d.deviceId===deviceId()?' · '+(es()?'Este equipo':'This PC'):'')+'</b><small>'+esc(d.platform||'')+' · v'+esc(d.appVersion||'—')+'</small></div><span class="pill">'+esc(d.lastAction||'synced')+'</span></div>').join(''):'<div class="mlv216-supa-note">'+esc(c.none)+'</div>')+'</div></section>'
+}
+function pane(){return document.querySelector('[data-v30171-pane="sync"]')}
+function cardSignature(){return JSON.stringify([authMode(),localStorage.getItem(OTP_EMAIL_KEY)||'',runtime.connected,runtime.cloudReady,runtime.cloudBusy,runtime.cloudError,runtime.account,runtime.revision,runtime.cloudLastSync,runtime.cloudConflict?.message||'',overview.currentDeviceId,overview.devices])}
+function mount(){
+ if(String(state?.activeTab||'')!=='settings')return;const p=pane();if(!p)return;const old=p.querySelector('[data-mlv216-supabase-card]'),sig=cardSignature();if(old&&old.dataset.mlv216Sig===sig)return;const tmp=document.createElement('template');tmp.innerHTML=cardHtml();const next=tmp.content.firstElementChild;if(!next)return;next.dataset.mlv216Sig=sig;if(old)old.replaceWith(next);else p.appendChild(next)
+}
+function scheduleMount(){clearTimeout(mountTimer);mountTimer=setTimeout(mount,30)}
+document.addEventListener('click',async e=>{
+ const b=e.target.closest?.('[data-mlv216-supa]');if(!b)return;e.preventDefault();e.stopPropagation();const a=b.dataset.mlv216Supa;
+ try{
+  if(a==='mode-password'){setAuthMode('password');return}
+  if(a==='mode-code'){setAuthMode('code');return}
+  if(a==='login'||a==='signup'){const root=b.closest('[data-mlv216-supabase-card]'),email=root?.querySelector('[data-mlv216-supa-email]')?.value.trim(),password=root?.querySelector('[data-mlv216-supa-password]')?.value||'';if(!email||password.length<6){notify('Supabase',es()?'Escribe correo y una contraseña de al menos 6 caracteres.':'Enter an email and a password with at least 6 characters.');return}await (a==='login'?signIn(email,password):signUp(email,password))}
+  else if(a==='send-code'){const root=b.closest('[data-mlv216-supabase-card]'),email=root?.querySelector('[data-mlv216-supa-email]')?.value.trim();if(!email){notify('Supabase',es()?'Escribe tu correo para recibir el código.':'Enter your email to receive the code.');return}await requestOtp(email)}
+  else if(a==='verify-code'){const root=b.closest('[data-mlv216-supabase-card]'),email=root?.querySelector('[data-mlv216-supa-email]')?.value.trim(),token=(root?.querySelector('[data-mlv216-supa-code]')?.value||'').replace(/\D/g,'');if(!email||token.length!==6){notify('Supabase',es()?'Escribe tu correo y el código de 6 dígitos.':'Enter your email and the 6-digit code.');return}await verifyOtp(email,token)}
+  else if(a==='logout')await signOut();else if(a==='sync')await sync('auto',{silent:false});else if(a==='upload')await sync('upload',{silent:false});else if(a==='download'){if(confirm(es()?'¿Usar la copia de Supabase en este equipo? Se conservará la sesión.':'Use the Supabase copy on this PC? Your session will be preserved.'))await sync('download',{silent:false})}
+ }catch(err){notify(es()?'Supabase':'Supabase',String(err.message||err),'error')}finally{scheduleMount()}
+},true);
+document.addEventListener('click',e=>{if(e.target.closest?.('[data-v30171-setting="sync"]')){setTimeout(()=>{mount();refreshOverview()},80)}},true);
+let syncPaneObserverTimer=0;
+const syncPaneObserver=new MutationObserver(()=>{
+ clearTimeout(syncPaneObserverTimer);
+ syncPaneObserverTimer=setTimeout(()=>{
+  if(String(state?.activeTab||'')!=='settings')return;
+  const p=pane();if(!p?.classList.contains('active'))return;
+  if(!p.querySelector('[data-mlv216-supabase-card]'))mount();
+ },35);
+});
+try{syncPaneObserver.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']})}catch(_){}
+const oldSave=window.save;if(typeof oldSave==='function'&&!oldSave.__mlv216Supabase){const wrapped=function(){const out=oldSave.apply(this,arguments);scheduleAutoSync();return out};wrapped.__mlv216Supabase=true;window.save=wrapped;try{save=wrapped}catch(_){}}
+window.addEventListener('focus',()=>{if(runtime.connected){refreshOverview();if(Date.now()-Date.parse(runtime.cloudLastSync||0)>POLL_MS)sync('auto',{silent:true}).catch(()=>{})}});
+syncRuntime();
+ensureSession().then(s=>{if(s){refreshOverview();clearInterval(pollTimer);pollTimer=setInterval(()=>{refreshOverview();sync('auto',{silent:true}).catch(()=>{})},POLL_MS)}}).catch(err=>{runtime.cloudError=String(err.message||err);scheduleMount()});
+setTimeout(mount,500);
+window.SupabaseSyncV30216={version:BUILD,provider:'Supabase',runtime,signIn,signUp,requestOtp,verifyOtp,authMode,setAuthMode,signOut,sync,push,pull,capture,refreshOverview,getOverview,session,deviceId,platform,applySnapshot,mount};
+})();
+</script>
+
+<!-- v3.0.216: desktop command palette + sync center + progressive startup -->
+<style id="mlv-v30216-desktop-experience-style">
+#mlv216CommandPalette[hidden],#mlv216SyncCenter[hidden]{display:none!important}
+#mlv216CommandPalette{position:fixed;inset:0;z-index:2147483720;background:rgba(2,5,11,.66);backdrop-filter:blur(10px);display:grid;place-items:start center;padding-top:min(10vh,96px)}
+.mlv216-command-box{width:min(760px,calc(100vw - 28px));max-height:76vh;overflow:hidden;border:1px solid rgba(255,255,255,.12);border-radius:20px;background:color-mix(in srgb,var(--panel,#111722) 97%,transparent);box-shadow:0 28px 100px rgba(0,0,0,.55)}
+.mlv216-command-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+.mlv216-command-head input{flex:1;border:0!important;background:transparent!important;outline:0!important;padding:4px!important;font:inherit;font-size:16px!important;color:var(--text)!important}
+.mlv216-command-key{font-size:9px;color:var(--muted);border:1px solid rgba(255,255,255,.12);border-radius:7px;padding:4px 7px}
+.mlv216-command-list{max-height:60vh;overflow:auto;padding:8px}
+.mlv216-command-item{width:100%;border:0;background:transparent;color:inherit;display:flex;justify-content:space-between;gap:12px;align-items:center;text-align:left;padding:10px 11px;border-radius:12px;cursor:pointer}
+.mlv216-command-item.active,.mlv216-command-item:hover{background:rgba(117,228,255,.09)}
+.mlv216-command-item b,.mlv216-command-item small{display:block}.mlv216-command-item small{margin-top:2px;color:var(--muted);font-size:9px}.mlv216-command-empty{padding:20px;text-align:center;color:var(--muted)}
+#mlv216SyncCenter{position:fixed;inset:0;z-index:2147483710;background:rgba(2,5,11,.30);display:block}
+.mlv216-sync-panel{position:absolute;top:76px;right:18px;width:min(430px,calc(100vw - 28px));max-height:calc(100vh - 96px);overflow:auto;border:1px solid rgba(255,255,255,.12);border-radius:18px;background:color-mix(in srgb,var(--panel,#111722) 97%,transparent);box-shadow:0 24px 80px rgba(0,0,0,.48);padding:14px}
+.mlv216-sync-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.mlv216-sync-head h3{margin:0;font-size:15px}.mlv216-sync-head p{margin:4px 0 0;color:var(--muted);font-size:9px}
+.mlv216-sync-close{border:0;background:transparent;color:var(--muted);font-size:20px;cursor:pointer}
+.mlv216-sync-state{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:12px}.mlv216-sync-kpi{border:1px solid rgba(255,255,255,.07);border-radius:11px;padding:9px;background:rgba(255,255,255,.02)}.mlv216-sync-kpi small,.mlv216-sync-kpi b{display:block}.mlv216-sync-kpi small{font-size:8px;color:var(--muted)}.mlv216-sync-kpi b{margin-top:3px;font-size:10.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mlv216-sync-devices{display:grid;gap:6px;margin-top:11px}.mlv216-sync-device{display:flex;justify-content:space-between;gap:10px;align-items:center;border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:8px}.mlv216-sync-device b,.mlv216-sync-device small{display:block}.mlv216-sync-device small{font-size:8.5px;color:var(--muted);margin-top:2px}.mlv216-sync-current{color:#9ff7c2}.mlv216-sync-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.mlv216-sync-note{margin-top:9px;font-size:9px;color:var(--muted);line-height:1.4}
+@media(max-width:640px){.mlv216-sync-panel{left:10px;right:10px;top:62px;width:auto}.mlv216-sync-state{grid-template-columns:1fr}}
+</style>
+<script id="mlv-v30216-desktop-experience-script">
+(function(){
+'use strict';
+if(window.MLV216DesktopExperience)return;
+const isEs=()=>window.MichelsLifeI18n?.language==='es';
+const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+const route=id=>{try{if(window.LeftNavV30171?.route)return window.LeftNavV30171.route(id);state.activeTab=id;save?.();renderAll?.();return true}catch(_){return false}};
+const settingsSection=key=>{route('settings');[40,120,300].forEach(ms=>setTimeout(()=>{try{window.LeftNavV30171?.buildSettings?.();window.LeftNavV30171?.activateSetting?.(key)}catch(_){}},ms))};
+const actionButton=name=>{const b=document.createElement('button');b.dataset.v30106Action=name;b.style.display='none';document.body.appendChild(b);b.click();b.remove()};
+const cloudApi=()=>window.SupabaseSyncV30216||window.GoogleCloudV30192||window.GoogleCloudV30191;
+const cloudRuntime=()=>cloudApi()?.runtime||{};
+const reliability=()=>window.SupabaseSyncV30216||window.MLV197Reliability;
+function relative(v){if(!v)return isEs()?'Nunca':'Never';const d=new Date(v),ms=Date.now()-d.getTime();if(!Number.isFinite(ms))return String(v);const min=Math.max(0,Math.floor(ms/60000));if(min<1)return isEs()?'Ahora':'Now';if(min<60)return isEs()?'Hace '+min+' min':min+' min ago';const h=Math.floor(min/60);if(h<24)return isEs()?'Hace '+h+' h':h+' h ago';const days=Math.floor(h/24);return isEs()?'Hace '+days+' d':days+' d ago'}
+function currentMissionName(){try{const c=window.CurrentMissionV131?.getState?.();if(!c)return'';return (state.missions||[]).find(m=>String(m?.id)===String(c.id))?.name||''}catch(_){return''}}
+function copy(){return isEs()?{
+ command:'Comandos',placeholder:'Busca una acción, sección o misión…',none:'No se encontró ningún comando.',syncTitle:'Centro de sincronización',syncHelp:'Estado de este equipo, nube y dispositivos conectados.',status:'Estado',last:'Último sync',device:'Este equipo',devices:'Dispositivos',syncNow:'Sincronizar ahora',google:'Abrir Google',close:'Cerrar',current:'Este equipo',latest:'Actividad más reciente',noDevices:'Todavía no hay registros de dispositivos.',offline:'Sin conectar',ready:'Al día',syncing:'Sincronizando',conflict:'Conflicto',attention:'Revisar conexión'
+}:{
+ command:'Commands',placeholder:'Search an action, section, or mission…',none:'No command found.',syncTitle:'Sync Center',syncHelp:'Status for this PC, cloud, and connected devices.',status:'Status',last:'Last sync',device:'This PC',devices:'Devices',syncNow:'Sync now',google:'Open Google',close:'Close',current:'This PC',latest:'Latest activity',noDevices:'No device records yet.',offline:'Not connected',ready:'Up to date',syncing:'Syncing',conflict:'Conflict',attention:'Check connection'
+}}
+function commandItems(query=''){
+ const es=isEs(),base=[
+  ['quick',es?'Captura rápida':'Quick Capture',es?'Crear una misión o nota sin salir de lo que haces.':'Create a mission or journal note without leaving your work.','capture mission journal'],
+  ['sync-center',es?'Centro de sincronización':'Sync Center',es?'Ver nube, este equipo y otros dispositivos.':'See cloud, this PC, and other devices.','cloud devices google'],
+  ['sync-now',es?'Sincronizar ahora':'Sync now',es?'Sincronizar Michel’s Life con Google Drive.':'Sync Michel’s Life with Google Drive.','cloud google drive'],
+  ['update',es?'Buscar actualizaciones':'Check for updates',es?'Consultar el canal oficial de releases.':'Check the official release channel.','update version release'],
+  ['current',es?'Misión actual':'Current Mission',currentMissionName()|| (es?'Abrir la misión activa.':'Open the active mission.'),'focus timer'],
+  ['focus',es?'Modo Focus':'Focus Mode',es?'Abrir el modo de concentración.':'Open focus mode.','focus timer'],
+  ['plan',es?'Planear hoy':'Plan today',es?'Ordenar Main, Important y Optional.':'Order Main, Important, and Optional missions.','today next up planning'],
+  ['tab:dashboard',es?'Dashboard':'Dashboard',es?'Volver a la vista principal.':'Return to the main view.','home'],
+  ['tab:missions',es?'Misiones':'Missions',es?'Abrir todas las misiones.':'Open all missions.','tasks'],
+  ['tab:calendar',es?'Calendario':'Calendar',es?'Abrir calendario.':'Open calendar.','dates'],
+  ['journal',es?'Diario':'Journal',es?'Abrir el diario de hoy.':'Open today’s journal.','notes'],
+  ['tab:stats',es?'Estadísticas':'Stats',es?'Abrir estadísticas.':'Open statistics.','analytics'],
+  ['tab:achievements',es?'Logros':'Achievements',es?'Abrir logros.':'Open achievements.','badges'],
+  ['tab:projects',es?'Proyectos':'Projects',es?'Abrir proyectos y decisiones.':'Open projects and decisions.','outcomes'],
+  ['tab:weekly-review',es?'Revisión semanal':'Weekly Review',es?'Revisar progreso y salud del sistema.':'Review progress and system health.','review'],
+  ['tab:maintenance',es?'Mantenimiento':'Maintenance',es?'Abrir herramientas de mantenimiento.':'Open maintenance tools.','health repair'],
+  ['settings:sync',es?'Configuración · Sync':'Settings · Sync',es?'Abrir cuenta y sincronización de Supabase.':'Open Supabase account and sync settings.','settings cloud supabase'],
+  ['settings:google',es?'Configuración · Google':'Settings · Google',es?'Abrir Google Calendar y fallback de Drive.':'Open Google Calendar and Drive fallback.','calendar google'],
+  ['settings:data',es?'Configuración · Datos y respaldos':'Settings · Data & backups',es?'Abrir respaldos y recuperación.':'Open backups and recovery.','backup timeline restore'],
+  ['settings:themes',es?'Configuración · Temas':'Settings · Themes',es?'Cambiar apariencia visual.':'Change visual appearance.','appearance theme'],
+  ['settings:about',es?'Configuración · Acerca de':'Settings · About',es?'Versión, diagnósticos y actualizaciones.':'Version, diagnostics, and updates.','about version']
+ ];
+ try{(state.missions||[]).filter(m=>m&&!m.archived&&!m.hidden).slice(0,120).forEach(m=>base.push(['mission:'+m.id,(es?'Iniciar: ':'Start: ')+m.name,es?'Usar como Misión actual.':'Set as Current Mission.','mission '+(m.category||'')]))}catch(_){}
+ const q=norm(query);return base.filter(x=>!q||norm(x.slice(1).join(' ')).includes(q)).slice(0,40)
+}
+let commandRoot=null,commandIndex=0;
+function ensureCommand(){
+ if(commandRoot&&document.body.contains(commandRoot))return commandRoot;
+ commandRoot=document.createElement('div');commandRoot.id='mlv216CommandPalette';commandRoot.hidden=true;
+ commandRoot.innerHTML='<div class="mlv216-command-box"><div class="mlv216-command-head"><input autocomplete="off"><span class="mlv216-command-key">Ctrl K</span></div><div class="mlv216-command-list"></div></div>';
+ document.body.appendChild(commandRoot);
+ commandRoot.addEventListener('click',e=>{if(e.target===commandRoot){closeCommand();return}const b=e.target.closest?.('[data-mlv216-command]');if(b)runCommand(b.dataset.mlv216Command)});
+ const input=commandRoot.querySelector('input');
+ input.addEventListener('input',()=>{commandIndex=0;renderCommands()});
+ input.addEventListener('keydown',e=>{const items=[...commandRoot.querySelectorAll('[data-mlv216-command]')];if(e.key==='ArrowDown'){e.preventDefault();commandIndex=Math.min(items.length-1,commandIndex+1);paintCommandSelection()}else if(e.key==='ArrowUp'){e.preventDefault();commandIndex=Math.max(0,commandIndex-1);paintCommandSelection()}else if(e.key==='Enter'){e.preventDefault();items[commandIndex]?.click()}else if(e.key==='Escape'){e.preventDefault();closeCommand()}});
+ return commandRoot
+}
+function paintCommandSelection(){const items=[...commandRoot.querySelectorAll('[data-mlv216-command]')];items.forEach((x,i)=>x.classList.toggle('active',i===commandIndex));items[commandIndex]?.scrollIntoView?.({block:'nearest'})}
+function renderCommands(){const root=ensureCommand(),c=copy(),input=root.querySelector('input'),items=commandItems(input.value),list=root.querySelector('.mlv216-command-list');input.placeholder=c.placeholder;list.innerHTML=items.length?items.map((x,i)=>'<button class="mlv216-command-item '+(i===commandIndex?'active':'')+'" data-mlv216-command="'+esc(x[0])+'"><span><b>'+esc(x[1])+'</b><small>'+esc(x[2])+'</small></span><span class="mlv216-command-key">↵</span></button>').join(''):'<div class="mlv216-command-empty">'+esc(c.none)+'</div>'}
+function openCommand(){const root=ensureCommand();commandIndex=0;root.hidden=false;const input=root.querySelector('input');input.value='';renderCommands();requestAnimationFrame(()=>input.focus())}
+function closeCommand(){if(commandRoot)commandRoot.hidden=true}
+async function runCommand(cmd){closeCommand();if(cmd==='quick'){window.MLV216QuickCapture?.open?.({source:'command'})}else if(cmd==='sync-center'){openSync()}else if(cmd==='sync-now'){await cloudApi()?.sync?.('auto',{silent:false})}else if(cmd==='update'){await window.MLV202ReleaseReadiness?.checkUpdates?.();settingsSection('about')}else if(cmd==='current'){const c=window.CurrentMissionV131?.getState?.();c?.id?window.CurrentMissionV131.open?.(c.id):route('missions')}else if(cmd==='focus'){actionButton('focus')}else if(cmd==='plan'){actionButton('open-plan')}else if(cmd==='journal'){window.JournalV30189?.open?.()}else if(cmd.startsWith('tab:')){route(cmd.slice(4))}else if(cmd.startsWith('settings:')){settingsSection(cmd.slice(9))}else if(cmd.startsWith('mission:')){window.CurrentMissionV131?.start?.(cmd.slice(8))}}
+let syncRoot=null;
+function syncStatus(r){const c=copy();if(r.cloudConflict)return c.conflict;if(r.cloudBusy)return c.syncing;if(r.cloudError||r.error)return c.attention;if(r.connected&&r.cloudReady)return c.ready;return c.offline}
+function latestDevice(devices){return devices.slice().sort((a,b)=>Date.parse(b?.lastSeenAt||0)-Date.parse(a?.lastSeenAt||0))[0]||null}
+function ensureSync(){
+ if(syncRoot&&document.body.contains(syncRoot))return syncRoot;
+ syncRoot=document.createElement('div');syncRoot.id='mlv216SyncCenter';syncRoot.hidden=true;document.body.appendChild(syncRoot);
+ syncRoot.addEventListener('click',async e=>{if(e.target===syncRoot||e.target.closest?.('[data-mlv216-sync-close]')){closeSync();return}if(e.target.closest?.('[data-mlv216-sync-now]')){await cloudApi()?.sync?.('auto',{silent:false});renderSync();setTimeout(()=>reliability()?.refreshOverview?.().then?.(renderSync),500)}if(e.target.closest?.('[data-mlv216-sync-settings]')){closeSync();settingsSection(window.SupabaseSyncV30216?'sync':'google')}});
+ return syncRoot
+}
+function renderSync(){
+ const root=ensureSync(),c=copy(),r=cloudRuntime(),o=reliability()?.getOverview?.()||{},devices=Array.isArray(o.devices)?o.devices:[],current=devices.find(x=>String(x.deviceId||'')===String(o.currentDeviceId||'')),latest=latestDevice(devices);
+ root.innerHTML='<div class="mlv216-sync-panel"><div class="mlv216-sync-head"><div><h3>'+esc(c.syncTitle)+'</h3><p>'+esc(c.syncHelp)+'</p></div><button class="mlv216-sync-close" data-mlv216-sync-close aria-label="'+esc(c.close)+'">×</button></div>'+
+ '<div class="mlv216-sync-state"><div class="mlv216-sync-kpi"><small>'+esc(c.status)+'</small><b>'+esc(syncStatus(r))+'</b></div><div class="mlv216-sync-kpi"><small>'+esc(c.last)+'</small><b>'+esc(relative(r.cloudLastSync))+'</b></div><div class="mlv216-sync-kpi"><small>'+esc(c.device)+'</small><b>'+esc(current?.deviceName||o.currentDeviceName||c.current)+'</b></div></div>'+
+ '<div class="mlv216-sync-note"><b>'+esc(c.latest)+':</b> '+esc(latest?((latest.deviceName||'Device')+' · '+relative(latest.lastSeenAt)):(c.noDevices))+'</div>'+
+ '<div class="mlv216-sync-devices">'+(devices.length?devices.slice().sort((a,b)=>Date.parse(b?.lastSeenAt||0)-Date.parse(a?.lastSeenAt||0)).slice(0,6).map(x=>{const cur=String(x.deviceId||'')===String(o.currentDeviceId||'');return '<div class="mlv216-sync-device"><div><b class="'+(cur?'mlv216-sync-current':'')+'">'+esc(x.deviceName||'Device')+(cur?' · '+esc(c.current):'')+'</b><small>'+esc(relative(x.lastSeenAt))+' · v'+esc(x.appVersion||'—')+'</small></div><span class="pill">'+esc(x.lastAction||'synced')+'</span></div>'}).join(''):'<div class="mlv216-sync-note">'+esc(c.noDevices)+'</div>')+'</div>'+
+ '<div class="mlv216-sync-actions"><button class="btn primary" data-mlv216-sync-now '+(r.connected&&r.cloudReady&&!r.cloudBusy?'':'disabled')+'>'+esc(c.syncNow)+'</button><button class="btn ghost" data-mlv216-sync-settings>'+esc(c.google)+'</button></div></div>'
+}
+async function openSync(){ensureSync();syncRoot.hidden=false;renderSync();try{await reliability()?.refreshOverview?.()}catch(_){}renderSync()}
+function closeSync(){if(syncRoot)syncRoot.hidden=true}
+document.addEventListener('click',e=>{if(e.target?.closest?.('#mlv197CloudBadge')){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();openSync()}},true);
+window.addEventListener('michelslife:languagechange',()=>{if(commandRoot&&!commandRoot.hidden)renderCommands();if(syncRoot&&!syncRoot.hidden)renderSync()});
+const startup={criticalReadyAt:performance.now(),idleScheduledAt:null,idleReadyAt:null};
+const idle=fn=>{startup.idleScheduledAt=performance.now();const run=()=>{startup.idleReadyAt=performance.now();fn?.()};if(typeof requestIdleCallback==='function')requestIdleCallback(run,{timeout:1800});else setTimeout(run,700)};
+idle(()=>{try{reliability()?.refreshOverview?.()}catch(_){}});
+window.MLV216CommandPalette={open:openCommand,close:closeCommand,items:commandItems,run:runCommand};
+window.MLV216SyncCenter={open:openSync,close:closeSync,render:renderSync,status:()=>({runtime:cloudRuntime(),overview:reliability()?.getOverview?.()||{}})};
+window.MLV216DesktopExperience={startup,openCommand,openSync};
+})();
+</script>
+
 </body>
 </html>

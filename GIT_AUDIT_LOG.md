@@ -1,4 +1,144 @@
+## 2026-10-06 — Canonical Michel's Life identity adoption (implementation)
+
+- **Agent route:** Michel's Lab queue P1 → `app-maintainer`; QA validation is the next gate.
+- Replaced active legacy celestial-M/generic-star branding with the approved **The Ascent** mountain/path/star product geometry.
+- Vendored canonical product app-icon/mark/lockup assets, the approved 480×640 Michel Duarte forest-trail portrait, and current Michel's Lab mark/lockup from `Michel-Software-Standards`.
+- Windows build/Store/release/CI icon generation now derives from the canonical product app icon.
+- Android manifest now targets canonical mipmap launcher resources; Android 8+ receives an adaptive icon and Android 12+ receives a system splash using the canonical foreground geometry.
+- About now follows Product → Author → Michel's Lab → Socials, uses the canonical portrait/parent brand, displays the runtime build version, and gives every social destination a visible icon + name.
+- Added `tools/validate_brand_identity.py` and expanded Playwright UI smoke assertions.
+- **State:** source implementation complete; CI validation required before marking this work VALIDATED or closing issue #11. No release was published.
+
+## 2026-10-06 — GitHub AppBundle resolver authentication fix
+
+- Source validation #785 failed only in the Windows compile job while resolving the bootstrap AppBundle: GitHub API returned HTTP 403 rate-limit exceeded.
+- The resolver already supported `GITHUB_TOKEN`, but the workflows invoking it did not expose the Actions token to that step.
+- Updated Windows release/test/Store, source validation, UI smoke, Android build and Android UI smoke download steps to pass `secrets.GITHUB_TOKEN` only to the AppBundle resolver step.
+- Product validation before the download failure was green; this change addresses CI infrastructure rather than Michel's Life runtime behavior.
+
+## 2026-10-06 — Password-first authentication contract
+
+### Product rule
+- Michel's Life authentication is **password-first** on both Windows and Android.
+- The default signed-out surface is email + password with Sign in / Create account actions.
+- Email OTP is an explicit fallback tab for existing accounts; OTP requests use `create_user:false` so asking for a code cannot silently create a new account.
+- OTP mode is in-memory only and is not persisted. Returning to the sign-in surface defaults back to Password.
+- Release/UI smoke now fails if Password is not the default, if Code mode persists, or if OTP request/verification payloads change unexpectedly.
+- Supabase's hosted email template must contain `{{ .Token }}` for the fallback email to display the six-digit code; the connected Supabase tooling does not expose auth-template mutation, so that project-dashboard configuration remains an external activation step.
+
+## 2026-10-06 — Supabase concurrency, restore safety and shared-release fix
+
+### Findings and fixes
+- Root cause of simultaneous Windows/Android/Source/UI failures was external to the product code: `realmichelduarte/michel-s-life-releases` is shared, and the LouderMe `louderme-v0.1.4` release became GitHub's repository-wide `latest`. Every Michel's Life workflow that requested `releases/latest/download/AppBundle.zip` therefore received 404.
+- Added `tools/download_latest_michels_life_bundle.py`, which selects the highest non-draft/non-prerelease `vX.Y.Z` release that actually contains `AppBundle.zip`. Updated Windows release/test/Store, Android build/UI, source validation and UI smoke pipelines to use it.
+- Confirmed the resolver selects Michel's Life `v3.0.215` even while LouderMe is the newest repository release.
+- Automatic Supabase upload now performs a conditional PATCH against the expected remote revision. A concurrent writer wins exactly once; the losing client enters conflict state without overwriting remote data.
+- Explicit `Use this PC` remains a force overwrite path and archives the replaced remote revision first.
+- Supabase cloud download now saves the current local snapshot to `ml_state_history` as `before_download_local` before applying cloud state.
+- Backup Timeline restore preserves current Supabase session/meta/device keys and publishes restored state to Supabase before considering the Google Drive fallback.
+- Global cloud badge/conflict actions now follow Supabase when Supabase is connected instead of displaying stale Google Drive authority.
+- Database privilege audit found authenticated roles also had TRUNCATE/TRIGGER/REFERENCES privileges. Migration `20261006070456_least_privilege_michels_life_sync` revoked all client privileges and re-granted only required operations.
+- Verified final grants: `ml_state` + `ml_devices` = SELECT/INSERT/UPDATE/DELETE; `ml_state_history` = SELECT/INSERT; `anon` = none. Supabase Security Advisor remains **0 findings**.
+- Production migrations are now mirrored in source under `supabase/migrations/`.
+
+### Validation status
+- Desktop Supabase smoke passed the new CAS race simulation: a synthetic Android write between read and PATCH was preserved, the Windows upload count did not advance, local dirty state remained pending, and explicit force upload advanced the master exactly once while preserving history.
+- Android UI smoke #79 — **success** on the final provider/restore code.
+- Source validation #771 — **success** on the final provider/restore code.
+- Final functional commit `e28e8ce36aebf2d38aeca9699877f2f1beefd5bc`: UI smoke #657 — **success**; Android UI smoke #79 — **success**; Source validation #771 — **success**; Windows release build #48 — **success**; Android test build #102 — **success**.
+
+
+## 2026-10-05 — Final Supabase migration audit
+
+### Current state
+- Dedicated Supabase project: `michels-life` (`lqnkcqredlxrykynacwr`) is ACTIVE_HEALTHY.
+- Tables `ml_state`, `ml_state_history` and `ml_devices` have RLS enabled and authenticated ownership policies based on `auth.uid()`.
+- Supabase Security Advisor reports **0 findings**.
+- Desktop and Android share the same canonical Supabase sync client; Android identifies itself with platform `android` and an `and_` device ID namespace, while Windows uses `windows` / `win_`.
+- Client bundles contain only the publishable Supabase key. Source validation rejects `sb_secret_` and `service_role`.
+- Google Drive is a temporary manual fallback only; Google Calendar remains independent.
+
+### Validation
+- Source validation #746 — **success**.
+- UI smoke #632 — **success**.
+- Supabase smoke covers first upload, dirty-state revision upload, remote-newer conflict protection and explicit cloud download.
+- Android-mode Supabase smoke covers Android platform/device attribution and rejects privileged-key leakage.
+- Android UI smoke #54 — **success**.
+- Android native build #77 — **success**, artifact `MichelsLife-Android-TEST-v0.2.2`.
+- Windows release build #23 — **success**, artifact `MichelsLife-v3.0.216`.
+- Production row count is still zero across `ml_state`, `ml_state_history` and `ml_devices`; the backend is configured but has not yet received a real account sync.
+- Remaining release gate: live login/sync on actual Windows + Android installations using one real Supabase account.
+
+
 # Michel's Life — Git Audit Log
+
+## 2026-10-05 — Desktop v3.0.216 pre-release: Quick Capture, tray and automatic update detection
+
+### Goal
+- Make the Windows app useful as a resident desktop application instead of requiring navigation back into Michel's Life for every capture.
+- Make Michel's Life discover new public desktop releases automatically while preserving explicit user approval for installation.
+- Keep the v3.0.211-approved visual presentation unchanged.
+
+### Automatic update architecture
+- Reused the existing `updateStatus` / `installOnlineUpdate` host bridge and the public `realmichelduarte/michel-s-life-releases` channel.
+- Removed the obsolete duplicate startup update request from the older finish-system layer.
+- Added automatic online checks after startup, every six hours while the app remains open, and on focus when the previous check is sufficiently old.
+- Added session-level duplicate suppression so the same available version does not repeatedly notify.
+- Automatic connectivity failures are silent; manual update checks still report errors.
+- No automatic installation was added. SHA-256 verification and the mandatory pre-update restore point remain authoritative.
+
+### Desktop shell and Quick Capture
+- Added `src/MichelsLife/DesktopShell.cs` as a separate native WinForms responsibility rather than expanding the already-large host class.
+- The materialized Windows host attaches the desktop shell after WebView2 initialization.
+- Added tray actions for Open Michel's Life, Quick Capture, Current Mission, Sync Now, Start with Windows and Exit, plus resident close/minimize behavior.
+- Current Mission routes through `CurrentMissionV131`; Sync Now routes through `GoogleCloudV30192`/`GoogleCloudV30191`; Start with Windows writes only the current-user Windows Run entry.
+- Registered `Ctrl + Shift + Space` through the Windows hotkey API and routes it to the existing WebView2 document.
+- The tray language is refreshed from the active Michel's Life interface when the menu opens, with the installed Windows-language preference as fallback.
+- Hotkey registration failure is detected and reported through a Windows notification while Quick Capture remains available from the tray.
+- Added `window.MLV216QuickCapture` in the canonical frontend.
+- Quick Capture writes Missions through the existing `makeMission` / `state.missions` path and Journal notes through `JournalV30189`; no parallel data model was introduced.
+
+### Sync Center, Command Palette and progressive startup
+- Reused `MLV197Reliability`, `GoogleCloudV30192` / `GoogleCloudV30191` and their existing `cloudOverview` contract to build a compact Sync Center rather than creating a second synchronization model.
+- The center reports actual connection/conflict state, last sync, current device identity and the most recent connected-device activity. It does not infer that Android/PC data is newer unless the cloud metadata supports that conclusion.
+- Upgraded the global command experience behind `Ctrl + K` with bilingual search, arrow-key selection, Enter execution and navigation/action commands, including per-mission Current Mission starts.
+- Initial Google/cloud status and cloud-overview requests are scheduled after critical UI through `requestIdleCallback` when available, with bounded timer fallbacks.
+- Critical Dashboard rendering and visual layers remain synchronous; automatic update detection was already delayed and remains non-blocking.
+
+### Windows taskbar integration
+- Added an isolated `ITaskbarList3` wrapper inside `DesktopShell.cs`.
+- The desktop host polls the existing `CurrentMissionV131` state through WebView2 every 1.5 seconds.
+- Running Current Mission → Windows indeterminate taskbar progress; paused Current Mission → paused taskbar state; no Current Mission → no taskbar progress.
+- Window/taskbar title and tray tooltip surface the active mission name; the title also includes focused elapsed time.
+- COM/taskbar failures are intentionally swallowed so Windows shell integration can never break Michel's Life core behavior.
+
+### Test findings and corrections
+- UI smoke #557 initially failed the Spanish source-copy audit because the new translation used the anglicism `app`. The wording was corrected to `aplicación de escritorio`; the audit was not weakened.
+- Early Quick Capture smoke runs #567–#569 exposed test-harness assumptions that top-level lexical bindings such as `state` and `makeMission` were properties of `window`. The test was corrected to inspect the actual lexical application state rather than changing product code to satisfy the test.
+- Automatic update detection had already passed UI smoke #558 before the desktop-shell work was layered on top.
+- UI smoke #587 later exposed a timing-flaky seasonal-animation assertion: tab navigation preserved the exact same canvas and completed in 17.5 ms, but the frame counter had not advanced within the first requestAnimationFrame. The test was corrected to observe multiple frames across ~80 ms; no product animation code was changed. UI smoke #588 then passed the complete suite.
+
+### Final validation
+- Branch: `desktop-v3.0.216`.
+- Draft PR: #10.
+- Final validated functional head: `757a92014cf78943bf76c8e3c7f0c59508e9da13`.
+- Source validation #702 — **success**.
+  - Release-readiness smoke — success.
+  - Canonical frontend validation — success.
+  - Spanish source-copy audit — success.
+  - Generated bilingual corpus audit — success.
+  - Microsoft Store packaging smoke — success.
+  - Windows host compile with embedded icon and native `DesktopShell` — success.
+- UI smoke #594 — **success** for the complete product code and dedicated desktop-experience smoke.
+  - Automatic desktop update detection — success.
+  - Desktop Quick Capture — success.
+  - Existing Spanish/UI/Settings/Dashboard/animation regression suite — success.
+- UI smoke #594 validated the new desktop experience end-to-end: Ctrl+K palette, bilingual search, keyboard selection, Sync Center and progressive-startup markers all passed before the legacy regression suite completed green.
+
+### Release state
+- No merge to `main` has been performed.
+- No v3.0.216 release has been published.
+- Windows test build #49 remains the last downloadable candidate and predates the final Sync Center/Command Palette/progressive-startup/taskbar additions. The final code is validated by Source validation #702 and UI smoke #594. A refreshed test ZIP was not generated because the connected GitHub tool blocked temporarily changing the manual-only test-build workflow trigger. Public release remains blocked on an interactive native Windows check of the final code.
 
 ## 2026-10-01 — Android v0.1.0 synchronized-client prototype
 
@@ -286,113 +426,439 @@ For every meaningful future Michel's Life development cycle, record:
 6. any temporary infrastructure or repository-setting changes;
 7. final clean-up state.
 
-## 2026-10-05 — Cross-service infrastructure audit
 
-Added `docs/INFRASTRUCTURE_AUDIT.md` as the durable inventory for Google Drive sync, OAuth/secrets, Android/Play, backup/recovery, and future Supabase decision boundaries.
+## 2026-10-05 — Supabase becomes Michel's Life primary sync backend
 
-Key finding: the existing Google Drive architecture remains the production cloud authority. Android still needs real-device OAuth/bidirectional-sync/conflict/restore validation. Supabase is not a production dependency and must not be added without a concrete backend requirement. Desktop OAuth must be treated as a public installed-app client rather than assuming an embedded client secret is confidential.
+Decision:
+- Google Drive was useful as the first full-state sync transport but is no longer the preferred source of truth for a Windows + Android product.
+- A dedicated Supabase project named `michels-life` was created under Michel's Lab. The unrelated `ig-cleaner-sync` project was deliberately not reused.
+- Supabase becomes the automatic primary sync authority. Google Drive remains temporarily available for manual migration/recovery and Google Calendar remains independent.
 
-## 2026-10-05 — Michel's Lab parent/child governance contract
+Production backend:
+- Project ref: `lqnkcqredlxrykynacwr`.
+- Region: `us-east-2`.
+- Tables: `ml_state`, `ml_state_history`, `ml_devices`.
+- Migration `michels_life_initial_sync_schema` created the state/history/device model, indexes, authenticated grants and RLS policies.
+- Migration `lock_michels_life_sync_to_authenticated` explicitly revoked all table access from `anon`.
+- Verification confirmed RLS=true on all three tables; authenticated has required CRUD privileges; anon SELECT/INSERT are false.
+- Supabase Security Advisor: zero findings after hardening.
+- Only the publishable client key is embedded; privileged `sb_secret_` / `service_role` markers are prohibited by source validation.
 
-Added the repository-level Michel's Lab governance declaration:
+Sync behavior:
+- The canonical existing Michel's Life cloud backup JSON remains the initial snapshot payload; no second Missions/Journal/etc. model was introduced.
+- Supabase Auth supports email/password sign-in, signup, refresh and logout.
+- Per-device revision metadata prevents automatic overwrites when a different device has a higher remote revision.
+- Local saves mark the Supabase state dirty; automatic upload happens only when dirty instead of creating a revision on every poll.
+- Before overwriting a remote master, the previous remote snapshot is stored in history.
+- Device records capture platform, app version, activity and last-seen time.
+- Initial login on a device that finds existing cloud data requires an explicit local-vs-cloud choice rather than silently replacing either copy.
 
-- `.michelslab/project.yml` identifies `realmichelduarte/Michel-Software-Standards` as the shared standards authority.
-- `MICHELS_LAB_PROJECT.md` documents the human-readable reporting contract.
-- App-specific implementation evidence remains in this repository.
-- Reusable/cross-app decisions are promoted to the master standards repository.
-- The master repository polls child status centrally; this repository receives no credential that can write to the master.
-- Secret values remain prohibited from both repositories.
+Google transition:
+- `syncCloud('auto')`, Drive save scheduling, Drive polling and focus-triggered Drive autosync all short-circuit while a Supabase session is connected.
+- Manual Drive functions remain available as a recovery bridge during migration.
+- Google Calendar functionality is retained.
 
-## 2026-10-06 — GitHub Copilot agent delegation
+Windows:
+- Settings gains a dedicated Sync section.
+- Sync Center, Command Palette and tray Sync Now prefer `SupabaseSyncV30216`.
+- The Supabase settings card mounts for both direct clicks and programmatic Settings routing.
+- Root-cause correction during testing: the first implementation read `window.state`, but Michel's Life uses lexical `state`; switching to canonical `state` fixed routed Sync-pane mounting.
 
-Added repository-level Copilot instructions and custom App Maintainer, QA Regression and Release Manager agents. The agent contract preserves the accepted visual base, generated AppBundle/frontend release architecture, Desktop/Android platform separation, animation validation rule, cloud/OAuth secret boundary and project-log discipline.
+Android:
+- Shared canonical frontend reads `window.__MICHELSLIFE_PLATFORM__='android'` from the Android bridge.
+- Android sync rows use Android platform metadata and a distinct device id.
+- Android version advanced to 0.2.2 / versionCode 4.
+- Android build workflow now overlays the current branch frontend into the downloaded base AppBundle before packaging.
+- Android contract validation requires Supabase markers and forbids privileged keys.
+- Android-specific audit details remain in `android/ANDROID_AUDIT_LOG.md`.
 
-Purpose: delegate bounded implementation, regression checks and release preparation to GitHub agents so cross-project ChatGPT work can focus on diagnosis, architecture and coordination.
+Validation:
+- Source validation #717: SUCCESS on shared Supabase product code.
+- UI smoke #607: SUCCESS, including dedicated Supabase flow.
+- The dedicated smoke verifies sign in, first remote master creation, one revision per dirty sync, no overwrite of a simulated newer Android revision, and explicit cloud restore.
+- Later Android metadata/workflow/documentation commits do not alter the tested Supabase runtime; native APK/AAB compilation for 0.2.2 still requires the Android workflow to be dispatched or run after merge.
+- Real cross-device production validation still requires signing into the same Michel's Life Supabase account on Windows and Android.
+- Public v3.0.216 release remains intentionally unpublished.
 
-No product behavior, version or release artifact changed in this infrastructure-only update.
 
-## 2026-10-06 — ChatGPT-ready task intake
+## 2026-10-05 — Reconcile Michel's Lab governance with Supabase migration
 
-Added `.github/ISSUE_TEMPLATE/chatgpt-task.yml` so new implementation/audit tasks can capture the desired outcome, evidence, scope, acceptance criteria, required validation and release permission up front.
+- Merged the newer `main` governance/infrastructure work into the Supabase migration branch.
+- `.michelslab/project.yml` and `MICHELS_LAB_PROJECT.md` remain authoritative for the parent/child reporting contract with `realmichelduarte/Michel-Software-Standards`.
+- The earlier infrastructure audit conclusion that Google Drive should remain the cloud authority is superseded by the explicit product decision in this development cycle to migrate Michel's Life to Supabase.
+- Current authority: Supabase for Michel's Life state/account/device sync; Google Drive only as a temporary manual migration/recovery fallback; Google Calendar remains optional and independent.
+- Shared cloud/auth/security decisions from this migration must be promoted to the Michel's Lab standards repository without copying secret values.
 
-Purpose: reduce repeated context reconstruction in future ChatGPT sessions and make repository work resumable from a bounded GitHub Issue without changing product behavior.
-\n
 
-## 2026-10-06 — Shared release repository broke AppBundle bootstrap
+### 2026-10-05 — Android Supabase PR gate hardened
+- Added `pull_request` execution to the independent Android UI smoke workflow so Android/Supabase regressions are blocked before merge rather than only after reaching `main`.
+- Root cause found in first Android PR-gate attempt (#40): the smoke downloaded the latest public AppBundle and injected only the Android bridge, so the new Supabase smoke could have exercised stale public-release frontend code.
+- Corrected the Android UI smoke to overlay the current branch's canonical `index.html`, `i18n.js` and branding before preparing browser assets.
+- The first corrected attempt exposed a second pipeline mismatch: Android workflows skipped `tools/bump_frontend_version.py`, causing canonical validation to reject the source version before packaging.
+- Corrected both `.github/workflows/android-ui-smoke.yml` and `.github/workflows/android-build.yml` so their canonical frontend sequence matches Desktop: version bump → i18n enablement → canonical validation → bundle overlay/injection → Android asset preparation.
+- Source validation #734: **SUCCESS**, including Windows host compile, release-readiness, canonical frontend validation and Android Supabase contract validation.
+- Android UI smoke #42: **SUCCESS**, including canonical frontend overlay, Android mobile UX at 412×915 and Android Supabase sync contract.
+- UI smoke #620 is the final shared-regression run for this pipeline hardening and was still running when this entry was written.
+
+
+## 2026-10-05 — `limon` handoff checkpoint
+
+Workflow keyword:
+- **`limon`** means: update all relevant permanent project logs, record the exact branch/CI/pending state, and leave a clean handoff so development can continue in a new chat without reconstructing context.
+- This is a development-workflow convention, not an app feature or user-facing command.
+
+Current repository state:
+- Branch: `desktop-v3.0.216`.
+- Draft PR: **#10 — v3.0.216: Supabase sync, desktop shell and Android integration**.
+- PR is currently mergeable.
+- Handoff HEAD before this log-only checkpoint: `419de33c4038e371debd1a74fd8d13db0d9907e7`.
+- Public **v3.0.216 is not published**.
+
+Current validation at the handoff HEAD:
+- Source validation **#736 — SUCCESS**.
+- UI smoke **#622 — SUCCESS**.
+- Android UI smoke **#44 — SUCCESS**.
+- Supabase production schema remains hardened with RLS enabled, anonymous table access revoked and Security Advisor at zero findings.
+
+Implemented / stable:
+- Supabase is the primary Michel's Life state/account/device sync backend.
+- Windows and Android share the canonical Supabase sync client.
+- Dirty/revision logic prevents poll-driven revision spam and refuses automatic overwrite of a newer remote revision.
+- Sync Center, Command Palette and Windows tray prefer Supabase.
+- Google Drive is transitional manual recovery/migration fallback only; Google Calendar remains independent.
+- Android PR smoke tests the branch's exact canonical frontend, not the public-release bundle.
+- Desktop shell improvements from the same pre-release cycle remain in place: Quick Capture, tray residency/actions, automatic update detection, Command Palette, progressive startup and Current Mission taskbar integration.
+
+Remaining gates for the next chat:
+1. Perform a real same-account cross-device validation: Windows ↔ Android, including first-device choice, upload/download, newer-remote conflict and explicit restore.
+2. Generate a refreshed native Windows candidate containing the final Supabase code and interactively test tray/hotkey/taskbar/Sync Center.
+3. Run the native Android APK/AAB build for **0.2.2 / versionCode 4**, configure signing secrets if still absent, and test on device/emulator.
+4. Only after those native gates pass: bump/finalize release metadata as needed, merge PR #10, publish v3.0.216 and verify final assets.
+
+
+## 2026-10-05 — Native PR candidates + v3.0.216 version-alignment gate
+
+Problem found:
+- Native candidate workflows were not running automatically on the pull request, leaving a gap between browser/source validation and the actual Windows/Android packages.
+- The first new Windows candidate exposed release-version drift: branch/product target was v3.0.216 but the .NET project, installer default, host materializer, frontend bump/validator and several build labels still targeted v3.0.215.
+- The first Android native PR run exposed a stale mobile UX validator that still required Android bridge v0.2.1 even though the bridge/version metadata had already advanced to v0.2.2.
+
+Corrections:
+- Windows release workflow now builds a non-publishing native candidate on same-repository pull requests.
+- Android build workflow now builds native APK/AAB candidates on relevant pull-request changes.
+- Android UX validator now follows bridge v0.2.2.
+- Desktop release metadata is aligned end-to-end at **v3.0.216**: .NET assembly/file version, generated host version, installer default, frontend bump/validation, Windows test build, Store packaging path and UI artifact naming.
+- Windows test/Store/release packaging now runs the canonical frontend version bump before validation/injection.
+
+Validated candidate HEAD: `25054d186a8bf62ef04b146f45938879f8cb2876`.
+- Source validation **#745 — SUCCESS**.
+- UI smoke **#631 — SUCCESS**, including update detection, Quick Capture, desktop experience, Supabase primary sync, Android-mode Supabase sync and bilingual/animation regressions.
+- Android UI smoke **#53 — SUCCESS**.
+- Windows release build **#22 — SUCCESS**.
+  - Artifact: `MichelsLife-v3.0.216`.
+  - Artifact id: `11379613249`.
+- Android native build **#76 — SUCCESS**.
+  - Artifact: `MichelsLife-Android-TEST-v0.2.2`.
+  - Artifact id: `11379078581`.
+  - Debug APK + release AAB paths compile successfully.
+  - Play AAB remains `MichelsLife-Android-Play-UNSIGNED-v0.2.2.aab` because the repository signing secrets are not configured.
+
+Remaining release gates:
+1. Real same-account Windows ↔ Android Supabase validation: first-device authority choice, upload/download, newer-remote conflict protection and explicit restore.
+2. Interactive Windows candidate test for tray, global Quick Capture hotkey, taskbar Current Mission and Sync Center.
+3. Configure the four Android upload-signing repository secrets, rerun build to obtain a `Play-SIGNED` AAB, then validate on physical device / Play testing delivery.
+4. Merge draft PR #10 and publish v3.0.216 only after the live/native gates above pass.
+
+Public state:
+- **v3.0.216 remains unpublished.**
+
+## 2026-10-05 — Final Supabase artifact audit
+- Audited branch HEAD: `d70c1e07e1cac63d13d74ca0e621f22b06815461`.
+- CI: Source validation #748 success; UI smoke #634 success; Android UI smoke #56 success; Android build #79 success; Windows release build #25 success.
+- Supabase production project `michels-life` remains security-clean: Security Advisor returned 0 findings; `ml_state`, `ml_state_history`, and `ml_devices` all report `rls_enabled=true`.
+- Downloaded Windows artifact ID `11382211312` (`MichelsLife-v3.0.216`), verified GitHub digest and local ZIP SHA-256 `1ea8e0d09eb48b3cc1eaae137de87b6d325d7dee7a1527f2ee1c7012c1702e54`.
+- Windows package contents verified: v3.0.216 portable EXE, v3.0.216 installer, AppBundle, checksum and icon. Embedded AppBundle contains `SupabaseSyncV30216` and the configured Michel’s Life Supabase project URL.
+- Downloaded Android artifact ID `11382022229` (`MichelsLife-Android-TEST-v0.2.2`), verified GitHub digest and local ZIP SHA-256 `ab7658be649ee2090df4ff7e8d1ad624dddb17289e0870f383d680aa130d618b`.
+- Android package contents verified: test APK, unsigned Play AAB, their checksum files and signing-certificate report. APK includes the canonical Supabase module plus `window.__MICHELSLIFE_PLATFORM__='android'`.
+- Binary payload scans of Windows AppBundle and Android app assets found no `sb_secret_` or `service_role` credentials.
+- Migration phase status: implementation complete; live same-account Windows ↔ Android behavior remains the final functional gate before disabling the Google Drive fallback and publishing the release.
+
+
+## 2026-10-05 — LIMON canonical handoff refresh
+
+- Created `docs/CURRENT_HANDOFF.md` as the canonical resume point for the current Michel's Life development state.
+- Branch at checkpoint: `desktop-v3.0.216`.
+- Draft PR #10 remains open and mergeable.
+- Checkpoint HEAD before the handoff commit: `0f329a6e2700604e5cc5d96446a1d0dccaa6c84c`.
+- Current validation at that HEAD:
+  - Source validation #750: **SUCCESS**.
+  - UI smoke #636: **SUCCESS**.
+  - Android UI smoke #58: **SUCCESS**.
+  - Android native build #81: **SUCCESS**.
+  - Windows release build #27: **SUCCESS**.
+- Supabase project `michels-life` (`lqnkcqredlxrykynacwr`) is `ACTIVE_HEALTHY` and Security Advisor reports **0 findings**.
+- Supabase remains the primary sync authority; Google Drive remains temporary manual migration/recovery fallback only; Google Calendar remains independent.
+- Public v3.0.216 remains unpublished.
+- Remaining gates are live Windows↔Android same-account Supabase validation, interactive Windows shell validation, Android upload signing / signed Play AAB, then merge + GitHub Release.
+- Distribution constraint carried forward: do not send APK/ZIP/build artifacts through chat; final distributable artifacts are handled through GitHub Release.
+
+
+## 2026-10-06 — Final continuation verification before live device gate
+
+- Branch HEAD before this documentation update: `b031ab5a76a0ff09c7fe871e9cade1a84bc62b30`.
+- PR #10 remains open, draft and mergeable.
+- Current-HEAD validation is fully green:
+  - Source validation #752 — SUCCESS.
+  - UI smoke #638 — SUCCESS.
+  - Android UI smoke #60 — SUCCESS.
+  - Android native build #83 — SUCCESS.
+  - Windows release build #29 — SUCCESS.
+- Current native artifacts:
+  - Windows `MichelsLife-v3.0.216` artifact id `11383451755`, GitHub digest `sha256:8d7c89aab311166d0e9b24ab96c5fa35aa7ddf9b4e45daafafdd89e8f9dc6712`.
+  - Android `MichelsLife-Android-TEST-v0.2.2` artifact id `11382903182`, GitHub digest `sha256:45dbf60c0392249490a30daf8fadd3b8d7279a83a1cb93eeda160e22334bc5ab`.
+- Android CI still reports `PLAY_BUNDLE_SIGNING=UNSIGNED` because the repository upload-signing secrets are empty. The connected GitHub integration does not expose repository-secret write APIs, so this cannot be completed programmatically from this chat.
+- Supabase project `michels-life` remains security-clean: Security Advisor has 0 findings and all three production tables have RLS enabled.
+- Production table row counts remain zero. Therefore the remaining Supabase gate is genuinely live-account/native validation, not missing implementation or CI coverage.
+- Public Michel's Life release remains v3.0.215. v3.0.216 must remain unpublished until the real Windows↔Android account test and Windows native-shell interaction are completed.
+
+## 2026-10-06 — Reconcile desktop-v3.0.216 with current main governance
+
+### Integration
+- Reconciled the v3.0.216 Desktop/Supabase branch with current `main` governance without discarding branch functionality or the newly adopted canonical Michel's Life identity.
+- Integrated `AGENTS.md`, GitHub Copilot instructions, App Maintainer / QA Regression / Release Manager agents, and the ChatGPT-ready task template from current `main`.
+- Current Michel's Lab identity/About/claim/handoff contracts become authoritative on this branch.
+
+### Shared release bootstrap resolution
+- Kept v3.0.216's active `tools/download_latest_michels_life_bundle.py` path because it is Michel's Life-specific: stable `vX.Y.Z` only, no draft/prerelease, required `AppBundle.zip`, highest semantic version selected from the shared release repository.
+- Also integrated the reusable `tools/download_release_asset.py` + unit test from `main`; Source validation runs the test as an additional regression guard.
+
+### Animation regression merge
+- Adopted current `main`'s bounded requestAnimationFrame frame-advance check for Spanish seasonal tab switching, separating first-paint latency from actual animation progress.
+
+### Release boundary
+- No version bump or release publication is authorized by this reconciliation.
+- Current-commit CI is required before this reconciliation is treated as verified.
+
+## 2026-10-06 — Branding validator regression after branch reconciliation
 
 ### Finding
-- Master governance detected Source validation run `37437098395` as P0 because the Windows icon smoke job failed before compilation.
-- The failing step downloaded `AppBundle.zip` from `realmichelduarte/michel-s-life-releases/releases/latest/download/AppBundle.zip`.
-- The shared release repository's newest release was `louderme-v0.1.5`, which does not contain Michel's Life `AppBundle.zip`; GitHub therefore returned `Not Found`.
-- The same fragile `releases/latest` assumption existed in Source validation, Windows test ZIP, Microsoft Store MSIX and Windows release workflows.
+- UI smoke on reconciled commit `da6c0a66e40685dab11617f5233debf130ab6c96` failed during generated frontend validation before browser tests ran.
+- `tools/validate_generated_index.py` still required legacy marker `assets/michels_life_logo.webp`, while the canonical branding migration intentionally removed that asset and `tools/validate_brand_identity.py` explicitly forbids it.
+- This was a stale QA contract, not a product-UI regression.
 
 ### Corrective action
-- Added `tools/download_release_asset.py`, which pages GitHub Releases and selects the newest non-draft release that actually contains the requested asset and matches the requested tag prefix.
-- Michel's Life bootstrap calls now require asset `AppBundle.zip` and tag prefix `v`, so unrelated shared-channel releases such as `louderme-*` cannot hijack bootstrap resolution.
-- Explicit `bundle_url` input remains supported by the Windows release workflow.
-- Added `tools/test_download_release_asset.py` and wired it into Source validation.
-
-### Scope
-- Distribution/bootstrap resolution only. No visual, generated frontend, cloud-sync or product behavior changes.
-- No release/version bump is authorized by this repair.
+- Updated generated frontend validation to require the canonical Michel's Life app icon, mark, lockup and Michel's Lab lockup assets instead of the removed legacy logo marker.
+- No product behavior, version or release state changed.
 
 ### Validation status
-- Branch CI must demonstrate the resolver unit test plus a real Windows download/compile path before the P0 can be closed.
+- Commit `f85daf15f8c1f88c4578e69251e81d0591139787` contains the validator correction.
+- Current-commit CI must pass before this fix is considered verified.
 
-### UI smoke follow-up
+## 2026-10-06 — Android launcher validator stale after canonical identity adoption
 
-After the shared-release resolver was fixed, Source validation passed but UI smoke exposed a timing-sensitive assertion in `ui_spanish_seasonal_animation_smoke.mjs`. The seasonal canvas object remained identical and the tab's next paint completed quickly, but the test sampled the animation counter on that same first paint and could observe the same frame number.
+### Finding
+- Android build run `37544565748` failed in `Validate Android mobile UX layer` before Gradle packaging.
+- `android/tools/validate_android_mobile_ux.py` still required the retired drawable/JPEG launcher contract (`@drawable/michels_life_logo`).
+- The canonical identity migration intentionally moved Android to `@mipmap/ic_launcher` / `@mipmap/ic_launcher_round` with adaptive foreground/background resources, which `tools/validate_brand_identity.py` already validates.
 
-The test now measures first-paint latency separately and then requires a real seasonal frame-counter advance within a bounded 350 ms requestAnimationFrame window. This preserves the required functional animation evidence while avoiding a false failure caused by two checks landing in the same animation frame.
+### Corrective action
+- Updated the Android UX validator to require the canonical mipmap launcher references plus adaptive icon foreground/background wiring.
+- Removed the obsolete JPEG/hash requirement from the UX validator; canonical product asset integrity remains enforced by `tools/validate_brand_identity.py`.
 
-## 2026-10-06 — Intelligent Michel's Lab brand-adoption guidance
+### Validation status
+- Commit `2e463ad00d307893a6a2f404ec18f117be6ee184` contains the correction.
+- Current-commit CI must pass before the fix is considered verified.
 
-Repository instructions now explicitly route logo, launcher, splash/startup and About work through the Michel-Software-Standards Product Identity Standard and Brand Adoption Playbook.
+## 2026-10-06 — Cross-platform canonical brand hash validation
 
-The required interpretation is structural integration rather than sticker placement: replace active legacy identity, adapt canonical geometry to the existing product design language, preserve unrelated behavior, validate the build, and keep release publication separate unless explicitly authorized.
+### Finding
+- Windows release validation failed even though the branch SVG blobs exactly match the canonical Michel-Software-Standards assets.
+- The validator computed Git blob SHAs from working-tree bytes. Windows checkout line-ending conversion changed LF SVG bytes to CRLF, producing a false hash mismatch while Linux/GitHub blob identity remained correct.
 
-## 2026-10-07 — Windows installed-app launch validation
+### Corrective action
+- Canonical text assets are normalized to repository LF bytes before Git blob SHA calculation; binary portrait/PNG assets remain byte-exact.
+- This keeps the integrity gate strict while making it deterministic across Linux and Windows runners.
 
-A LouderMe false-green exposed a cross-app QA gap: successful Setup installation is not proof that an installed GUI application actually starts.
+### Validation status
+- Commit `f266bfc019dcee9d6e12ecf40cb2242c16d53a94` contains the cross-platform correction.
+- Current-commit Windows and source validation must pass before this is considered verified.
 
-Michel's Life now treats Windows evidence separately as BUILD / INSTALL / LAUNCH / FUNCTIONAL. The test workflow launch-smokes the portable executable. The release workflow launch-smokes the distributed portable executable, silently installs the generated Setup into an isolated test directory, launches `MichelsLife.exe` from that installed path, requires the process to remain alive and expose a real top-level window, records launch evidence, and only then uninstalls.
+## 2026-10-06 — Canonical About portrait JPEG integrity repair
 
-Startup failure evidence includes process exit/lifetime plus available Windows Application/.NET crash events from `tools/windows_launch_smoke.ps1`. Public release upload remains downstream of these launch gates.
+### Finding
+- UI smoke loaded `assets/michel_duarte_avatar.jpg` with HTTP 200, but Chromium reported `naturalWidth=0` / `naturalHeight=0`.
+- The child portrait blob matched the master asset exactly, so this was not app-local drift.
+- Binary inspection found the approved 480 × 640 progressive JPEG ended with a truncated `FF F6` marker instead of required EOI `FF D9`.
 
-## 2026-10-07 — Microsoft Store default-branch validation hardening
+### Corrective action
+- Master authority `realmichelduarte/Michel-Software-Standards` was repaired at commit `418730a7f0a8bb9e74860e80e1ffe2ed1e12f12b` by changing only the terminal marker byte; no recompression, crop, retouching or pixel-data substitution occurred.
+- Michel's Life now vendors that exact repaired canonical portrait blob `9454e22ee91f26f98723457ad5132d950270cc36` and the brand-integrity validator expects the repaired master hash.
 
-FoamLens exposed a reusable multi-channel CI gap: a Store workflow can remain healthy only when manually dispatched while shared runtime changes on `main` silently bypass Store validation.
+### Validation status
+- Current-commit UI/Windows/Android/source checks must pass before the reconciliation is considered verified.
 
-Michel's Life had the same pattern. The Store workflow is now split into two evidence levels:
-- `validate` runs automatically on `main` and `fix/**` for Store/runtime/tooling/branding changes and executes current source/release/Store validation without provider secrets;
-- `package` depends on `validate` but remains restricted to `workflow_dispatch`, preserving the exact Partner Center identity and approved OAuth credential boundary.
+## 2026-10-06 — Exact master portrait synchronized; interim repair retired
 
-`tools/store_smoke_test.py` now guards both invariants so future edits cannot silently remove default-branch Store validation or accidentally turn provider-bound packaging into an automatic job.
+### Master authority
+- Michel moved the approved portrait to its final canonical master path: `realmichelduarte/Michel-Software-Standards/shared-assets/michel_duarte_avatar.jpg`.
+- Master canonical blob is `18fe1a68722850c3d8f918dc0799f46ffeb6dbaf` (459,806 bytes, 1440 × 1920 JPEG).
+- Master policy now marks this portrait binary immutable: no resize, crop, recompression, conversion, retouching, regeneration or AI modification. Presentation-only sizing/masking is allowed at render time.
 
-No version bump, release publication, Partner Center upload or Store certification is authorized by this hardening change.
+### Michel's Life action
+- `branding/michel_duarte_avatar.jpg` now vendors the exact same Git blob as the master authority.
+- `tools/validate_brand_identity.py` now requires that exact blob.
+- Temporary `.github/workflows/recover-canonical-avatar.yml` is removed; the earlier repair/reconstruction attempts are superseded and must not be reintroduced.
+- Shared child-agent contract synchronized to `2026-10-06.4` in `AGENTS.md` and `.github/copilot-instructions.md`.
+
+### Validation boundary
+- No version bump or release publication is authorized by this synchronization.
+- Current-commit CI must pass before the branch reconciliation is considered verified.
+
+## 2026-10-06 — UI smoke aligned with immutable canonical portrait dimensions
+
+### Finding
+- UI smoke on commit `2efaf78fa61156bba74c664f6c068bd6e45f8e59` loaded the canonical portrait correctly at natural size 1440 × 1920 and rendered it at 210 × 280 from `assets/michel_duarte_avatar.jpg`.
+- The test still asserted the superseded 480 × 640 processed derivative dimensions, causing a false failure.
+
+### Corrective action
+- Updated only the UI smoke assertion to require the immutable master portrait dimensions 1440 × 1920 while retaining the existing rendered-size threshold and canonical path check.
+- No image bytes, UI layout, product behavior, version or release state changed.
+
+### Validation boundary
+- Current-commit CI must pass before this correction is considered verified.
+
+## 2026-10-06 — Canonical Michel's Lab lockup restored from original source
+
+### Finding
+- UI smoke on `8737b68c16375c57c23235c5658a71c01d8f09d5` passed the immutable Michel Duarte portrait check, then failed the Michel's Lab parent-brand lockup check.
+- About markup and asset path were correct. Binary inspection showed both child and master lockup blob `7819ef5c7d1a5c338c67c9bbd517e5448724a5cf` were truncated mid-`IDAT`, so Chromium could not decode the PNG.
+
+### Corrective action
+- Master authority restored the exact approved original lockup source at blob `7fd48093968b31ddacd3098f5b15d962de580652` (2172 × 724 RGBA PNG, 526,482 bytes).
+- Michel's Life now vendors that exact same canonical blob at `branding/michels_lab_lockup.png`.
+- Brand-integrity validation now requires the restored blob.
+- No redesign, image-generation replacement, UI layout change, version bump or release publication occurred.
+
+### Validation boundary
+- Current-commit CI must pass before this correction is considered verified.
+
+## 2026-10-06 — About version smoke regex corrected
+
+### Finding
+- UI smoke on `d9999ebf537c8a047e6861fbc7c3b5fff5e3ebc5` successfully validated the canonical 1440 × 1920 portrait, Michel's Life lockup, author block, restored Michel's Lab lockup (natural width 2172), and all five visible social icon+name links.
+- The remaining About failure came from an over-escaped test regex that looked for literal backslashes instead of matching `v3.0.216`.
+
+### Corrective action
+- Corrected only the UI smoke version matcher to recognize `v3.0.216`.
+- No product UI, assets, version, sync behavior or release state changed.
+
+### Validation boundary
+- Current-commit CI must pass before this test correction is considered verified.
+
+## 2026-10-06 — UI smoke final summary variable repaired
+
+### Finding
+- UI smoke on `0aa272e502961819c4f535dbf6862d1c93ce9021` completed the About, Chapters and Cloud-popup assertions, then failed only while printing its final JSON summary because it referenced removed variable `avatar`.
+
+### Corrective action
+- Final smoke summary now reports `aboutBrand.avatar`, the already validated canonical portrait object.
+- No application behavior or UI changed.
+
+### Validation boundary
+- Current-commit CI must pass before this test repair is considered verified.
+
+## 2026-10-06 — Incomplete Chapter Scene card reconstruction
+
+### Finding
+- UI smoke on `e86a43d3cbce3b679fd4ad45c6214fe97a826cb2` reached the Chapters interaction test and found no alternate scene option even though the canonical `CHAPTERS` registry defines 11 scene packs.
+- `renderSettingsOwned()` treated any existing `[data-mlv184-chapter-card]` as valid and reused it without checking its contents. A stale/incomplete card could therefore survive with only the current scene.
+
+### Corrective action
+- Chapters ownership now validates the rendered scene IDs against the complete canonical `CHAPTERS` registry.
+- If the card is missing, incomplete, duplicated or otherwise does not contain the full canonical set, Michel's Life removes it and reconstructs the Chapter Scene Packs UI from `chaptersHTML()`.
+- Existing selected-scene state is preserved through the normal `chapter()` / `setChapter()` path.
+
+### Validation boundary
+- Current-commit UI smoke must demonstrate an actual alternate Chapter Scene click/state change before this regression is considered fixed.
+
+## 2026-10-06 — Spanish UI smoke aligned with canonical Michel’s Life mark
+
+### Finding
+- UI smoke advanced past the canonical portrait and Michel’s Lab About checks, then failed in `ui_spanish_smoke.mjs` because the test still required legacy `assets/michels_life_logo.webp`.
+- The rendered Spanish sidebar correctly used the canonical `assets/michels_life_mark.svg` at visible 82 × 82 CSS pixels with a valid 150 × 150 intrinsic render.
+
+### Corrective action
+- Updated only the Spanish logo assertion to require `assets/michels_life_mark.svg`.
+- No app UI, logo geometry, image binary, version or release state changed.
+
+### Validation boundary
+- Current-commit CI must pass before this correction is considered verified.
 
 
-## 2026-10-07 — Repository transferred to Michel's Lab organization
 
-**Change:** repository ownership moved from `realmichelduarte/michel-s-life` to `michels-lab/michel-s-life`.
+## 2026-10-06 — Windows Setup release gate hardened
 
-**Active references updated:** project governance now points to `michels-lab/Michel-Software-Standards`; the Windows release workflow and release-channel documentation now target `michels-lab/michel-s-life-releases`.
+### Finding
+- The v3.0.216 Windows workflow built the Inno Setup installer but did not install/uninstall that generated Setup in CI.
+- Only the portable executable received a SHA-256 sidecar; the Setup installer had no published checksum.
+- This left the branch short of the current Michel's Lab Windows release contract even though the existing build job was green.
 
-**Preserved intentionally:** Michel Duarte personal developer/social identity remains under `realmichelduarte`. No product release is authorized by this migration change.
+### Corrective action
+- Added a Windows-runner Setup smoke gate that silently installs the generated `MichelsLife-Setup-v3.0.216.exe` into an isolated current-user directory, verifies the installed executable and product version, runs the generated uninstaller, and confirms the executable is removed.
+- Added `MichelsLife-Setup-v3.0.216.exe.sha256` generation after optional Authenticode signing.
+- Added the Setup checksum to temporary build artifacts and public-release asset publication.
+- Updated `docs/RELEASE_CHANNEL.md` to document the Setup checksum and install/verify/uninstall requirement.
+- No product version bump, merge, tag or public release was performed.
 
-**Validation:** branch CI is required before merge.
+### Validation boundary
+- The workflow change itself must pass on the new branch commit before this release gate is considered verified.
+- Physical Windows interaction checks (tray, global Quick Capture hotkey, taskbar Current Mission and Sync Center) remain manual.
+- Portable asset naming still follows the legacy updater contract and must be reconciled separately before adopting the newer explicit `-Portable-` naming rule.
 
-## 2026-10-08 — Align visual review with owner post-release policy
 
-- Governance mismatch: the canonical rendered UI standard and latest master shared child contract specify Michel's visual review **after** publication, but Michel's Life AGENTS.md and Copilot instructions still embedded a previous protected human pre-release approval gate.
-- Synced the managed child-agent-core block to the canonical master text (2026-10-08.2). No app runtime, Android UI, Google OAuth, sync, binary/version or publishing workflow was altered.
-- Release policy: automated build/security/functional/render/integrity checks retain their own outcomes; human screenshot review is **post-release only**, never protected pre-publication approval.
-- The pending rendered screenshot capture issue remains an automated QA improvement, separate from human approval, and must not become a manual publication block.
-- Evidence: source-contract sync performed on governance branch. Same-SHA application CI and actual packaged screenshot capture are not yet run; no release was published.
+## 2026-10-06 — Explicit Windows portable asset naming with backward compatibility
 
-## 2026-10-08 — Complete active release-channel path migration
+### Finding
+- Michel's Lab release policy requires the portable executable to be explicitly named `MichelsLife-Portable-vX.Y.Z.exe` when both Setup and portable builds are shipped.
+- Existing Michel's Life updater hosts and the public release contract still used ambiguous `MichelsLife-vX.Y.Z.exe` asset names.
+- Removing the legacy name immediately would strand older installed builds that still request that asset.
 
-- Confirmed six active Android/Windows/UI/Store/CI workflows still referenced `realmichelduarte/michel-s-life-releases` after repository ownership moved to Michel's Lab. The Windows release workflow already used the correct new owner.
-- Updated only those active release download URLs to `michels-lab/michel-s-life-releases`, leaving personal author/social identities and unrelated application behavior untouched.
-- Added `release_smoke_test.py` assertions covering all seven workflow consumers so the obsolete release owner cannot be reintroduced silently.
-- Validation: new branch/PR CI pending. No app version bump, binaries, visual assets, OAuth, cloud sync, Store/Play publication or release changed.
+### Corrective action
+- The generated v3.0.216 Windows host now prefers `MichelsLife-Portable-vX.Y.Z.exe` and its matching checksum.
+- The release workflow builds/signs/checksums the canonical portable binary first.
+- It then creates a byte-identical `MichelsLife-vX.Y.Z.exe` compatibility alias plus checksum for older updaters.
+- Temporary CI artifacts and public release publication include the canonical portable, compatibility alias, Setup installer and all matching checksum files.
+- UI update smoke and release documentation now use the explicit portable name.
+- No version bump, merge, tag or public release was performed.
+
+### Validation boundary
+- Current-commit Source validation, UI smoke and Windows release build must pass before this migration is considered verified.
+- The compatibility alias is transitional and should only be removed after the installed user base no longer depends on the pre-v3.0.216 updater naming contract.
+
+
+## 2026-10-07 — Windows BUILD / INSTALL / LAUNCH evidence integrated from main
+
+### Finding
+- Main advanced during the v3.0.216 portable-naming work with a stricter Michel's Lab Windows runtime QA contract.
+- Installer existence/version checks alone are not sufficient evidence that the installed GUI application actually starts.
+
+### Corrective action
+- Synchronized the shared child-agent contract to `2026-10-06.5`.
+- Added `tools/windows_launch_smoke.ps1` to require a live process plus a real top-level window and to emit Windows Application/.NET crash evidence on failure.
+- Source validation now launch-smokes both a portable runtime candidate and an isolated installed Setup candidate.
+- The manual Windows test ZIP launch-smokes its portable executable.
+- The release workflow launch-smokes the canonical `MichelsLife-Portable-vX.Y.Z.exe` after optional signing, then installs the signed Setup, validates installed version, launches the installed executable, requires a real top-level window, captures evidence, and only then uninstalls.
+- The explicit portable naming migration and legacy updater compatibility alias remain preserved.
+
+### Validation boundary
+- These merged runtime gates must pass on the reconciled branch HEAD before BUILD / INSTALL / LAUNCH can be claimed for v3.0.216.
+- Device-level functional checks and live Windows ↔ Android Supabase validation remain separate release gates.
+
+## 2026-10-08 — Mainline integration of Desktop 3.0.216 / Android 0.2.2
+
+- Reconciled the v3.0.216 development source against Michel's Lab main, preserving current post-release-only human review governance and latest child agent instructions.
+- Kept automatic Microsoft Store source validation on the default branch while preserving v3.0.216's canonical The Ascent identity and actual desktop/Android build pipelines; Store package submission remains provider-bound.
+- Replaced legacy GitHub release asset ownership references across all seven build workflows; added a permanent source smoke assertion against regressions.
+- Carried forward a second viewport's About browser screenshot and measured portrait/link geometry from PR #25, without changing approved UI layout, themes, backgrounds or chapter visuals.
+- Canonical app-icon, mark and lockup SVGs remain byte-identical to the Michel's Lab product manifest assets. No user data or signing secrets were changed.
+- Evidence boundary: source integrations require same-SHA CI revalidation. No installed-device physical UI inspection, same-account Windows ↔ Android Supabase sync, or Play-delivered signing/provider test has yet been carried out by this integration. Do not call the candidate a published stable release until verified.

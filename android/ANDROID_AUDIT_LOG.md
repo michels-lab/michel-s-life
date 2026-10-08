@@ -1,3 +1,20 @@
+## 2026-10-06 — Canonical Michel's Life Android identity (implementation)
+
+- Replaced the active legacy JPEG launcher reference with `@mipmap/ic_launcher` / `@mipmap/ic_launcher_round`.
+- Added a flat Android vector derivative of the approved Michel's Life mountain/path/star geometry plus Android 8+ adaptive-icon resources.
+- Added Android 12+ branded splash configuration using the same canonical foreground geometry and the Michel's Life navy base.
+- Android packaging now injects the same canonical product/About assets as Desktop.
+- Cross-platform identity validation is part of the Android build contract.
+- **State:** IN PROGRESS — source implementation complete; Android CI/UI smoke must pass before this entry advances to VALIDATED. Physical-device branding review remains a separate device gate.
+
+## 2026-10-06 — Shared Supabase authentication UX
+
+- Android uses the same Michel's Life Supabase account surface as Desktop.
+- Email + password is the required default login experience.
+- Email OTP/code is available only as an explicit fallback for existing accounts and must never replace Password as the default after restart/reload.
+- OTP requests do not auto-create accounts; account creation stays in the password flow.
+- Android inherits the shared frontend smoke contract for this behavior.
+
 # Michel's Life Android — Development Audit Log
 
 > Permanent Android-specific record of what has been done, what is pending, what was validated, and what still needs verification.
@@ -776,84 +793,108 @@ State:
 - **VALIDATED AUTOMATICALLY / PLAY SUBMISSION IN PROGRESS**.
 
 
-## 2026-10-05 — Android v0.2.1 single-pass Settings navigation validation
+## 2026-10-05 — Android v0.2.2 Supabase primary sync migration
 
-Follow-up source change:
-- Commit `cbe3278e` — **Make Android Settings category switching single-pass**.
-- Android capture-phase navigation now intercepts permanent-nav tabs, Today, and Settings-category buttons before the desktop handlers can schedule repeated repair/rebuild passes.
-- Settings-category changes call the canonical category activator once; Google settings mounts once on the next animation frame when selected.
+Architecture change:
+- Supabase project `michels-life` is now the primary shared sync backend for Windows + Android.
+- Android reuses the same canonical frontend Supabase client as Windows instead of duplicating sync logic in Kotlin.
+- The shared client records Android device IDs with an `and_` prefix and writes `source_platform='android'`.
+- Supabase tables: `ml_state`, `ml_state_history`, `ml_devices`.
+- RLS is enabled on all three tables and every policy is scoped to `auth.uid()`.
+- Anonymous table privileges were explicitly revoked; Supabase Security Advisor reports zero findings.
+- Only the Supabase publishable key is bundled in the client. Secret/service-role keys are forbidden by validation.
+- Existing Google Drive native code is retained as a temporary manual recovery/migration fallback. Automatic Drive sync is disabled whenever a Supabase session is active.
+- Google Calendar remains independent and available.
 
-Android UI smoke:
-- Workflow: **Android UI smoke #39**
-- Run: `37288373859`
-- Result: **SUCCESS**
+Android build pipeline:
+- Android build now overlays the branch's canonical Michel's Life frontend into the downloaded base AppBundle before WebView assets are prepared, preventing test APKs from silently packaging an older public-release frontend.
+- Android sync contract validation now requires the shared Supabase module/platform markers and rejects secret/service-role markers.
+- Android version bumped to **0.2.2 / versionCode 4**.
 
-Measured phone-like viewport (412×915):
-- Settings route: **73.9 ms**, router `android-render-main`.
-- Arrow navigation to Missions: **87.6 ms**.
-- Fresh-install onboarding checkbox: **22×22 px**.
-- Fresh-install onboarding row: **44 px** high.
-- Action Dock parent: `#v30171Sidebar`, computed `position: sticky`.
-- Quick/Focus controls remain off-canvas with the closed drawer and do not overlay Settings/Journal content.
-- Drawer explicitly displays: **“Swipe ↔ or use ‹ › to change sections”**.
-- Seasonal animation continued during route test: frame `120 → 128`.
-
-Measured wide PC-hosted Android emulator viewport (1536×864):
-- Android shell remained active; desktop top bar stayed hidden.
-- Main content width bounded to **1180 px**.
-- No horizontal overflow.
-- Settings route: **74.7 ms**, router `android-render-main`.
-- Existing profile did not re-open onboarding.
-
-Validation state:
-- **VALIDATED** — Android UI smoke #39.
-- **VALIDATED** — Source validation run `37288373924`.
-- **IN PROGRESS** — native Android build #70 / run `37288373900` is compiling the Play AAB at the time of this entry.
-- **NEEDS USER RETEST** — install the resulting v0.2.1 APK on physical phone and PC emulator for perceived responsiveness and real touch behavior.
+State:
+- **IMPLEMENTED** — shared Supabase sync path + Android platform/device identity.
+- **BACKEND VALIDATED** — RLS, authenticated grants, anonymous revoke and Security Advisor.
+- **PENDING NATIVE APK/AAB CI** — current branch cannot dispatch the manual Android workflow through the connected GitHub tool; the workflow is prepared to build the canonical Supabase frontend when run/merged.
+- **NEEDS DEVICE/EMULATOR RETEST** — sign in to the same Supabase account on Windows + Android, verify first-device choice, cross-device revision conflict behavior and explicit cloud restore.
 
 
-## 2026-10-05 — Android v0.2.1 build #70 ready for phone + emulator retest
+### 2026-10-05 — Android Supabase platform smoke added
 
-Final source for this test build:
-- Commit `cbe3278e` — **Make Android Settings category switching single-pass**.
+Change:
+- Added `tools/ui_supabase_android_sync_smoke.mjs`.
+- The test boots the shared canonical frontend with `window.__MICHELSLIFE_PLATFORM__='android'`.
+- It verifies the shared Supabase client reports `platform() === 'android'`, creates an `and_*` device id, writes the initial master snapshot with `source_platform='android'`, registers the device as Android, and contains no `sb_secret_` / `service_role` marker.
+- Added this Android-mode smoke to the main UI smoke workflow.
+- Added `android/tools/validate_sync_contract.py` to the pull-request Source validation workflow so the Android/Supabase contract is no longer only checked by the manual Android build workflow.
 
-CI:
-- **VALIDATED** — Android UI smoke #39 / run `37288373859`: SUCCESS.
-- **VALIDATED** — Source validation run `37288373924`: SUCCESS.
-- **VALIDATED** — Android build #70 / run `37288373900`: SUCCESS.
-- Build artifact id: `11335805656`.
-- Artifact name: `MichelsLife-Android-TEST-v0.2.1`.
-- Artifact digest: `sha256:4c62fa44c30286b6ae380ef8cb35f98f8391b7d4cead76355f062ae23d89517f`.
+State:
+- **IMPLEMENTED** — Android-specific Supabase smoke + PR CI contract check.
+- **PENDING CURRENT-HEAD CI** — GitHub had not yet surfaced new Source/UI runs for head `7af80e9427bc62740aeb11215decf6dda100b2e4` at the time of this log entry.
+- **PREVIOUS SHARED RUNTIME VALIDATION GREEN** — Source validation #721 and UI smoke #611 passed on the immediately preceding Supabase runtime head.
 
-Extracted device-test APK:
-- File: `MichelsLife-Android-TEST-v0.2.1.apk`.
-- Size: approximately **64.8 MB**.
-- SHA-256: `df152df5f0520dc5a74eb6dc031ec14b5675e6d7851cca383c34f22a6001db1a`.
 
-What this build specifically addresses from user evidence:
-- Approved Michel's Life celestial launcher icon instead of the temporary generic star.
-- Fresh-install onboarding checkboxes constrained to 22×22 px with compact rows.
-- Existing profiles do not reopen stale onboarding when entering Settings.
-- Action Dock (Focus + Quick Capture) lives inside the off-canvas drawer instead of floating over Journal/content.
-- Explicit ‹/› top-bar controls plus swipe and drawer guidance for section navigation.
-- Android navigation uses active-surface `renderMain()` rather than the desktop global rerender cascade.
-- Settings-category clicks are intercepted in Android and activated once instead of running the desktop delayed 0/90/260/760 ms rebuild sequence.
-- Wide PC-hosted Android emulator remains in Android mode rather than falling back to desktop UI.
+## 2026-10-05 — Governance/infrastructure reconciliation after Supabase migration
 
-Measured automated route timings:
-- Phone-like Settings: **73.9 ms**.
-- Phone-like arrow navigation to Missions: **87.6 ms**.
-- Wide-emulator Settings: **74.7 ms**.
+- Inherited the repository-level Michel's Lab governance contract from `.michelslab/project.yml`.
+- The pre-migration infrastructure audit that described Google Drive as the Android cloud authority is historical context only.
+- Android v0.2.2 now uses the shared Supabase primary-sync client from the canonical frontend; native Google Drive support remains a temporary manual fallback.
+- Android-specific implementation evidence remains in this log; reusable cloud/auth/security patterns are promoted to `Michel-Software-Standards`.
 
-Next gate:
-- **NEEDS USER RETEST** — install this exact APK on the physical phone and PC emulator and verify perceived smoothness, launcher icon, onboarding/check geometry, Journal clearance, Settings section switching, swipe/arrow navigation and Android Back behavior.
 
-## 2026-10-05 — Infrastructure audit synchronization
+### 2026-10-05 — Android PR smoke now uses the exact canonical Supabase frontend
 
-The repository-level cloud audit is now documented in `docs/INFRASTRUCTURE_AUDIT.md`.
+Problem found:
+- The independent Android UI smoke originally downloaded the public AppBundle and injected only `android-bridge.js`.
+- That meant an Android Supabase test could accidentally validate the public-release frontend instead of the branch being reviewed.
+- First PR-gate run #40 then failed earlier at canonical validation because the workflow also omitted the frontend version-bump step.
 
-Android remains on the shared Google Drive appDataFolder contract. The remaining cloud gate is real-device validation of OAuth persistence, Windows↔Android synchronization, conflict handling and restore behavior. Supabase is not part of the Android production path at this stage.
+Root-cause correction:
+- Android UI smoke now overlays branch `index.html`, `i18n.js`, developer avatar and Michel's Life logo before `prepare_bundle.py`.
+- Android UI smoke now runs on pull requests.
+- Both Android UI smoke and Android build run `bump_frontend_version.py` before i18n/canonical validation, matching the Desktop packaging sequence.
+- The Android UI workflow now executes `ui_supabase_android_sync_smoke.mjs` directly, so Android platform/device attribution is independently gated.
 
-## 2026-10-05 — Michel's Lab parent/child governance contract
+Validation:
+- Source validation #734 — **SUCCESS**.
+- Android UI smoke #42 — **SUCCESS**:
+  - canonical branch frontend overlay — success;
+  - Android fixture preparation — success;
+  - mobile UX 412×915 — success;
+  - Supabase Android sync smoke — success.
+- This closes the previous “pending native Android PR validation” gap for the browser/WebView contract. Physical-device/account validation is still the final native behavioral gate.
 
-Android now inherits the repository-level Michel's Lab governance contract declared in `.michelslab/project.yml`. Android-specific technical evidence remains in this log; cross-app/cloud/security patterns are promoted to `Michel-Software-Standards` when reusable.
+
+## 2026-10-05 — `limon` Android handoff
+
+- Shared Supabase/Android browser-WebView contract is green on current handoff HEAD `419de33c4038e371debd1a74fd8d13db0d9907e7`.
+- Android UI smoke **#44 — SUCCESS**.
+- Source validation **#736 — SUCCESS** and shared UI smoke **#622 — SUCCESS** on the same HEAD.
+- Android remains **0.2.2 / versionCode 4**.
+- Supabase is the primary sync authority; native Google Drive remains transitional fallback only.
+- Still pending: native APK/AAB workflow/build, signing configuration if absent, physical-device/emulator retest, and real same-account Windows ↔ Android Supabase validation.
+- `limon` is the project handoff keyword: update logs and preserve the exact continuation state before moving development to another chat.
+
+
+## 2026-10-05 — Android v0.2.2 native PR build gate validated
+
+Pipeline correction:
+- The Android native build now runs on relevant pull requests, so APK/AAB compilation is tested before merge instead of waiting for main/manual dispatch.
+- First PR run #71 correctly caught an obsolete validator marker: `validate_android_mobile_ux.py` expected bridge v0.2.1 while the app bridge/version metadata was v0.2.2.
+- The validator was aligned to v0.2.2 without changing Android UX behavior.
+
+Validation on candidate HEAD `25054d18`:
+- Android UI smoke **#53 — SUCCESS**.
+- Native Android build **#76 — SUCCESS**.
+- Android version contract remains **0.2.2 / versionCode 4**.
+- Windows-compatible Supabase cloud contract, Android UX validator, debug APK assembly and release AAB assembly all passed.
+- Artifact: `MichelsLife-Android-TEST-v0.2.2` (artifact id `11379078581`).
+
+Signing state:
+- CI explicitly reports `PLAY_BUNDLE_SIGNING=UNSIGNED`.
+- Generated Play preparation bundle: `MichelsLife-Android-Play-UNSIGNED-v0.2.2.aab`.
+- The permanent upload-key credential file exists outside source control, but the four GitHub Actions repository secrets are still absent. The connected GitHub integration cannot write repository secrets.
+
+Still required before Play submission:
+1. Configure `ANDROID_UPLOAD_KEYSTORE_BASE64`, `ANDROID_UPLOAD_STORE_PASSWORD`, `ANDROID_UPLOAD_KEY_ALIAS`, and `ANDROID_UPLOAD_KEY_PASSWORD` as repository secrets.
+2. Rerun the Android build and require a validated `Play-SIGNED` AAB.
+3. Test same-account Supabase sync on real Windows + Android and perform physical-device / Play-delivered validation.

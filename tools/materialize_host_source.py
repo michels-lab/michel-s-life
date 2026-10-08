@@ -3,8 +3,8 @@ from pathlib import Path
 import base64,gzip
 
 ROOT=Path(__file__).resolve().parents[1]/'src'/'MichelsLife'
-APP_VERSION='3.0.215'
-LEGACY_APP_VERSIONS=('3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207','3.0.208','3.0.209','3.0.210','3.0.211','3.0.212','3.0.213','3.0.214')
+APP_VERSION='3.0.216'
+LEGACY_APP_VERSIONS=('3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207','3.0.208','3.0.209','3.0.210','3.0.211','3.0.212','3.0.213','3.0.214','3.0.215')
 GOOGLE_CLIENT_ID='256320502181-fvfuhkbijecscl1p3g41f8n28cr2541i.apps.googleusercontent.com'
 LEGACY_GOOGLE_CLIENT_IDS=(
     '794181282949-v3ufh901g9rlec673qd0kho1karaqacj.apps.googleusercontent.com',
@@ -28,6 +28,11 @@ for name in ('Program.cs','GoogleCalendarService.cs'):
         raise SystemExit(f'{name} still contains stale app version markers: {stale}')
     if name=='Program.cs' and f'CurrentAppVersion = new("{APP_VERSION}")' not in text:
         raise SystemExit(f'Program.cs missing CurrentAppVersion {APP_VERSION}')
+    # v3.0.216 canonicalizes any fixed portable release asset references.
+    # Older releases still receive a byte-identical legacy alias from CI so
+    # pre-v3.0.216 updaters are not stranded.
+    text=text.replace('MichelsLife-v','MichelsLife-Portable-v')
+
     if name=='Program.cs':
         webview_anchor='            await _webView.EnsureCoreWebView2Async(env);'
         if text.count(webview_anchor)!=1:
@@ -56,11 +61,14 @@ for name in ('Program.cs','GoogleCalendarService.cs'):
                 // above will apply the installer language on the next navigation.
             }
 '''
-        text=text.replace(webview_anchor,webview_anchor+language_bridge)
+        desktop_shell='            MichelsLife.DesktopShell.Attach(this, _webView);\n'
+        text=text.replace(webview_anchor,webview_anchor+desktop_shell+language_bridge)
         if '__MICHELSLIFE_INSTALL_LANGUAGE__' not in text:
             raise SystemExit('Program.cs installer-language bridge injection failed')
         if 'applyInstalledLanguage' not in text or 'ExecuteScriptAsync(installerLanguageScript)' not in text:
             raise SystemExit('Program.cs installer-language bridge is missing the late-document reconciliation path')
+        if 'MichelsLife.DesktopShell.Attach(this, _webView);' not in text:
+            raise SystemExit('Program.cs desktop shell injection failed')
     data=text.encode('utf-8')
     (ROOT/name).write_bytes(data)
     print('materialized',name)

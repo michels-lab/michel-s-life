@@ -50,9 +50,11 @@ jobs:
           "version=$v" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Download visual bundle
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: pwsh
         run: |
-          python tools/download_release_asset.py --repo $env:RELEASES_REPO --asset AppBundle.zip --tag-prefix v --output src/MichelsLife/AppBundle.zip
+          python tools/download_latest_michels_life_bundle.py --repo "$env:RELEASES_REPO" --output src/MichelsLife/AppBundle.zip
 
       - name: Generate current app icon
         shell: pwsh
@@ -65,20 +67,25 @@ jobs:
             if (-not $exe) { throw 'ImageMagick magick.exe not found.' }
             $magickPath = $exe.FullName
           } else { $magickPath = $magick.Source }
-          & $magickPath -background none 'branding/michels_life_logo.webp' -define icon:auto-resize=256,128,64,48,32,16 'src/MichelsLife/Assets/michels_life_icon.ico'
+          & $magickPath -background none 'branding/michels_life_app_icon.svg' -define icon:auto-resize=256,128,64,48,32,16 'src/MichelsLife/Assets/michels_life_icon.ico'
           if ($LASTEXITCODE -ne 0) { throw 'App icon generation failed.' }
 
-      - name: Package canonical v3.0.215 bilingual frontend
+      - name: Package canonical v3.0.216 bilingual frontend
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
           $PSNativeCommandUseErrorActionPreference = $true
+          python tools/bump_frontend_version.py --index src/MichelsLife/frontend/index.html
           python tools/enable_i18n.py --index src/MichelsLife/frontend/index.html
           python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
           python tools/replace_bundle_index.py --bundle src/MichelsLife/AppBundle.zip --index src/MichelsLife/frontend/index.html
           python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source src/MichelsLife/frontend/i18n.js --arcname i18n.js
           python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source branding/michel_duarte_avatar.jpg --arcname assets/michel_duarte_avatar.jpg
-          python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source branding/michels_life_logo.webp --arcname assets/michels_life_logo.webp
+          python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source branding/michels_life_app_icon.svg --arcname assets/michels_life_app_icon.svg
+          python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source branding/michels_life_mark.svg --arcname assets/michels_life_mark.svg
+          python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source branding/michels_life_lockup.svg --arcname assets/michels_life_lockup.svg
+          python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source branding/michels_lab_mark.png --arcname assets/michels_lab_mark.png
+          python tools/inject_bundle_asset.py --bundle src/MichelsLife/AppBundle.zip --source branding/michels_lab_lockup.png --arcname assets/michels_lab_lockup.png
 
       - name: Inject Google OAuth build credential
         shell: pwsh
@@ -138,10 +145,10 @@ jobs:
       - name: Launch-smoke portable Michel's Life test build
         shell: pwsh
         run: |
-          pwsh -File tools/windows_launch_smoke.ps1 \
-            -ExePath artifacts/test/MichelsLife.exe \
-            -MinimumAliveSeconds 8 \
-            -WindowTimeoutSeconds 20 \
+          pwsh -File tools/windows_launch_smoke.ps1 `
+            -ExePath artifacts/test/MichelsLife.exe `
+            -MinimumAliveSeconds 8 `
+            -WindowTimeoutSeconds 20 `
             -EvidencePath artifacts/test/windows-portable-launch.txt
 
       - name: Create test ZIP

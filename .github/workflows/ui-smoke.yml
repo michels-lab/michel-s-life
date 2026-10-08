@@ -34,16 +34,22 @@ jobs:
           node-version: '22'
 
       - name: Build browser-test bundle from canonical frontend
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p artifacts/ui-bundle
-          python tools/download_release_asset.py --repo "$RELEASES_REPO" --asset AppBundle.zip --tag-prefix v --output artifacts/AppBundle.zip
+          python tools/download_latest_michels_life_bundle.py --repo "$RELEASES_REPO" --output artifacts/AppBundle.zip
           python tools/bump_frontend_version.py --index src/MichelsLife/frontend/index.html
           python tools/enable_i18n.py --index src/MichelsLife/frontend/index.html
           python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
           python tools/replace_bundle_index.py --bundle artifacts/AppBundle.zip --index src/MichelsLife/frontend/index.html
           python tools/inject_bundle_asset.py --bundle artifacts/AppBundle.zip --source src/MichelsLife/frontend/i18n.js --arcname i18n.js
           python tools/inject_bundle_asset.py --bundle artifacts/AppBundle.zip --source branding/michel_duarte_avatar.jpg --arcname assets/michel_duarte_avatar.jpg
-          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle.zip --source branding/michels_life_logo.webp --arcname assets/michels_life_logo.webp
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle.zip --source branding/michels_life_app_icon.svg --arcname assets/michels_life_app_icon.svg
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle.zip --source branding/michels_life_mark.svg --arcname assets/michels_life_mark.svg
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle.zip --source branding/michels_life_lockup.svg --arcname assets/michels_life_lockup.svg
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle.zip --source branding/michels_lab_mark.png --arcname assets/michels_lab_mark.png
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle.zip --source branding/michels_lab_lockup.png --arcname assets/michels_lab_lockup.png
           python - <<'PY'
           from zipfile import ZipFile
           with ZipFile('artifacts/AppBundle.zip') as z:
@@ -64,6 +70,36 @@ jobs:
           export MLV_UI_URL=http://127.0.0.1:4173
           export MLV_UI_SCREENSHOTS=artifacts/ui-smoke
           node tools/ui_smoke_v303.mjs
+
+      - name: Audit automatic desktop update detection
+        run: |
+          export MLV_UI_URL=http://127.0.0.1:4173
+          node tools/ui_auto_update_smoke.mjs
+
+      - name: Audit desktop Quick Capture
+        run: |
+          export MLV_UI_URL=http://127.0.0.1:4173
+          node tools/ui_quick_capture_smoke.mjs
+
+      - name: Audit desktop Sync Center and Command Palette
+        run: |
+          export MLV_UI_URL=http://127.0.0.1:4173
+          node tools/ui_desktop_experience_smoke.mjs
+
+      - name: Audit Supabase primary sync
+        run: |
+          export MLV_UI_URL=http://127.0.0.1:4173
+          node tools/ui_supabase_sync_smoke.mjs
+
+      - name: Audit Supabase sync in Android mode
+        run: |
+          export MLV_UI_URL=http://127.0.0.1:4173
+          node tools/ui_supabase_android_sync_smoke.mjs
+
+      - name: Audit Supabase cross-device Windows Android sync
+        run: |
+          export MLV_UI_URL=http://127.0.0.1:4173
+          node tools/ui_supabase_cross_device_smoke.mjs
 
       - name: Audit Spanish first run
         run: |
@@ -124,7 +160,7 @@ jobs:
         if: always()
         continue-on-error: true
         with:
-          name: ui-smoke-v3.0.215
+          name: ui-smoke-v3.0.216
           path: |
             artifacts/ui-smoke
             /tmp/mlv-http.log
