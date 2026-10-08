@@ -6,7 +6,7 @@ Michel's Life is an RPG-inspired productivity and life-management application fo
 
 - **Windows v3.0.216:** published stable on 2026-10-08: https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.216. Installer, Portable and checksums were published from a tested Windows build.
 - **Windows v3.0.215:** previous stable release (2026-09-30).
-- **Android v0.2.2:** integrated Android development candidate (versionCode 4); the previous mainline test line was v0.2.1.
+- **Android v0.2.2 (versionCode 4):** latest Android APK published alongside Windows in the **same** stable GitHub release `v3.0.216`. Download `MichelsLife-Android-v0.2.2-TEST.apk`; it is debug/test signed, not a Play Store or stable-sideload-signed package. Back up before considering uninstall/reinstall.
 - Google Play and Microsoft Store distribution have separate provider, signing and validation states; a generated APK/AAB/MSIX does not mean provider publication.
 
 ## Product
@@ -18,6 +18,7 @@ The released v3.0.216 Windows app adds a native Windows tray, Quick Capture, Sta
 ## Code, releases and validation
 
 - Source: `michels-lab/michel-s-life`.
+- **One customer-facing release for both platforms:** https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.216. Windows v3.0.216 and Android v0.2.2 have independent version numbers and live on the **same page**. All future Michel's Lab multi-platform product releases must preserve this structure.
 - Canonical public binaries and AppBundle bootstrap: `michels-lab/michel-s-life-releases`.
 - Recommended Windows installer: `MichelsLife-Setup-vX.Y.Z.exe`. Optional portable binary: `MichelsLife-Portable-vX.Y.Z.exe`; transitional older updater aliases are documented in `docs/RELEASE_CHANNEL.md`.
 - Canonical frontend: `src/MichelsLife/frontend/`. CI reconstructs the visual bundle using previously published bootstrap assets and overlays the source-controlled frontend and official branding.
