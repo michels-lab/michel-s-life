@@ -184,7 +184,7 @@ jobs:
           mkdir -p artifacts/android-direct
           APK="artifacts/android-direct/MichelsLife-Android-Direct-v${ANDROID_VERSION}.apk"
           cp android/app/build/outputs/apk/directRelease/app-directRelease.apk "$APK"
-          ANDROID_CODE="$(python -c 'import pathlib,re; s=pathlib.Path("android/app/build.gradle.kts").read_text(); print(re.search(r"versionCode\\s*=\\s*(\\d+)",s).group(1))')"
+          ANDROID_CODE="$(awk '/versionCode = / { print $3; exit }' android/app/build.gradle.kts)"
           python android/tools/verify_direct_apk.py \
             --apk "$APK" \
             --apksigner "$ANDROID_HOME/build-tools/36.0.0/apksigner" \
