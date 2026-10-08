@@ -66,6 +66,21 @@ for forbidden in ('data:image/png;base64,','data:image/jpeg;base64,',"artist:'Ta
 for stale in ('3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207','3.0.208','3.0.209','3.0.210','3.0.211','3.0.212','3.0.213'):
     assert stale not in frontend, f'stale frontend version remains: {stale}'
 
+# The moved public release channel must be authoritative for every active build/smoke consumer.
+release_consumers=[
+    ROOT/'.github/workflows/android-ui-smoke.yml',
+    ROOT/'.github/workflows/build-test-windows.yml',
+    ROOT/'.github/workflows/android-build.yml',
+    ROOT/'.github/workflows/ui-smoke.yml',
+    ROOT/'.github/workflows/ci.yml',
+    ROOT/'.github/workflows/build-store-msix.yml',
+    ROOT/'.github/workflows/release-windows.yml',
+]
+for consumer in release_consumers:
+    source=read(consumer)
+    assert 'realmichelduarte/michel-s-life-releases' not in source, f'stale pre-organization release channel in {consumer}'
+    assert 'michels-lab/michel-s-life-releases' in source, f'canonical release channel missing in {consumer}'
+
 workflow_text='\n'.join(read(p) for p in WORKFLOWS)
 for forbidden in ('build_frontend_v30202.py','AppPatches/v3.0.202.html','branding/michels_life_mark.svg'):
     assert forbidden not in workflow_text, f'legacy frontend build dependency remains: {forbidden}'
