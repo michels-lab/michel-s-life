@@ -184,12 +184,13 @@ jobs:
           mkdir -p artifacts/android-direct
           APK="artifacts/android-direct/MichelsLife-Android-Direct-v${ANDROID_VERSION}.apk"
           cp android/app/build/outputs/apk/directRelease/app-directRelease.apk "$APK"
+          ANDROID_CODE="$(python -c 'import pathlib,re; s=pathlib.Path("android/app/build.gradle.kts").read_text(); print(re.search(r"versionCode\\s*=\\s*(\\d+)",s).group(1))')"
           python android/tools/verify_direct_apk.py \
             --apk "$APK" \
             --apksigner "$ANDROID_HOME/build-tools/36.0.0/apksigner" \
             --aapt "$ANDROID_HOME/build-tools/36.0.0/aapt" \
             --expected-cert-sha256 "$ANDROID_DIRECT_CERT_SHA256" \
-            --version-name "$ANDROID_VERSION" --version-code 4 \
+            --version-name "$ANDROID_VERSION" --version-code "$ANDROID_CODE" \
             --manifest-output artifacts/android-direct/direct-release-manifest.json
           (cd artifacts/android-direct && sha256sum "MichelsLife-Android-Direct-v${ANDROID_VERSION}.apk" > "MichelsLife-Android-Direct-v${ANDROID_VERSION}.apk.sha256")
           echo "PASS: direct build signed with permanent pinned key, not Android Debug"
