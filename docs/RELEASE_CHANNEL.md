@@ -2,7 +2,7 @@
 
 The source repository is private. Desktop clients must not contain a GitHub token just to read updates, so public binaries are published from a separate **public** repository:
 
-`realmichelduarte/michel-s-life-releases`
+`michels-lab/michel-s-life-releases`
 
 The updater expects a GitHub Release containing:
 
