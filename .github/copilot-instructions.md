@@ -1,5 +1,10 @@
 # Copilot instructions — Michel's Life
 
+
+## Desktop About placement (mandatory)
+
+Every desktop application must display a clearly labeled, usable **About** action in its **fixed top application header** from initial launch and in every workspace. It must remain visible when the window is compact/high-DPI, the body is scrolled or a sidebar is collapsed; footer-only, Home-only, offscreen or hidden-overflow About is forbidden. Keep the header outside the scroll container and validate its actual rendered visibility and click bounds. Source of truth: `michels-lab/Michel-Software-Standards/standards/BRAND_NATIVE_INTERFACE_STANDARD.md`.
+
 Read `AGENTS.md`, `.michelslab/project.yml`, `MICHELS_LAB_PROJECT.md` and the relevant audit log before making changes.
 
 Keep requested changes surgical. Preserve the accepted visual system unless redesign is explicitly in scope. Do not silently alter unrelated themes, backgrounds, Current Chapter, typography or assets.
