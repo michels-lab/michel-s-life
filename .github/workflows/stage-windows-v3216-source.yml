@@ -1,0 +1,96 @@
+name: Stage Michel's Life Windows v3.0.216 from validated source build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.michelslab/release-requests/source-transfer-windows-v3.0.216.json'
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: michels-life-windows-3-0-216-transfer
+  cancel-in-progress: false
+
+jobs:
+  verify-intent:
+    if: >-
+      github.repository == 'michels-lab/michel-s-life' &&
+      github.ref == 'refs/heads/main' &&
+      startsWith(github.event.head_commit.message, '[stage windows v3.0.216]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify owner authorization and exact intended source version
+        run: |
+          python3 - <<'PY'
+          import json, xml.etree.ElementTree as ET
+          from pathlib import Path
+          r=json.loads(Path('.michelslab/release-requests/source-transfer-windows-v3.0.216.json').read_text())
+          v=ET.parse('src/MichelsLife/MichelsLife.csproj').getroot().findtext('./PropertyGroup/Version')
+          assert r['authorized'] is True
+          assert r['version'] == v == '3.0.216'
+          assert r['transfer_tag'] == 'michels-life-transfer-v3.0.216'
+          assert r['public_release_repo'] == 'michels-lab/michel-s-life-releases'
+          print('Valid authorized source transfer for Windows v3.0.216')
+          PY
+
+  build-validated-artifacts:
+    needs: verify-intent
+    uses: ./.github/workflows/release-windows.yml
+    with:
+      publish: false
+    secrets: inherit
+
+  publish-transfer:
+    needs: build-validated-artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download exact artifacts from this successful Windows build
+        uses: actions/download-artifact@v4
+        with:
+          name: MichelsLife-Windows-v3.0.216
+          path: dist
+      - name: Validate Setup/Portable/legacy checksums and bootstrap assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in MichelsLife-Setup-v3.0.216.exe MichelsLife-Portable-v3.0.216.exe MichelsLife-v3.0.216.exe; do
+            test -s "dist/$name"
+            test -s "dist/$name.sha256"
+            expected="$(awk '{print $1}' "dist/$name.sha256" | tr -d '\r')"
+            actual="$(sha256sum "dist/$name" | awk '{print $1}')"
+            test "$expected" = "$actual" || { echo "::error::Checksum mismatch $name"; exit 1; }
+          done
+          test -s dist/AppBundle.zip
+          test -s dist/michels_life_icon.ico
+          test -s dist/MichelsLife-Portable-launch.txt
+          test -s dist/MichelsLife-Installed-launch.txt
+          cp docs/releases/v3.0.216.md dist/v3.0.216.md
+          echo 'Validated all Windows executable checksums and installed/portable launch evidence'
+      - name: Stage public source artifacts with native repository publication token
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG=michels-life-transfer-v3.0.216
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::Source transfer tag already exists; refuse to replace binaries"
+            exit 1
+          fi
+          gh release create "$TAG" \
+            dist/MichelsLife-Setup-v3.0.216.exe \
+            dist/MichelsLife-Setup-v3.0.216.exe.sha256 \
+            dist/MichelsLife-Portable-v3.0.216.exe \
+            dist/MichelsLife-Portable-v3.0.216.exe.sha256 \
+            dist/MichelsLife-v3.0.216.exe \
+            dist/MichelsLife-v3.0.216.exe.sha256 \
+            dist/AppBundle.zip dist/michels_life_icon.ico dist/v3.0.216.md \
+            --repo "$GITHUB_REPOSITORY" --title "Michel's Life v3.0.216 source transfer" \
+            --notes "Intermediate validated Windows assets for Michel's Lab public binary distribution. Not the customer-facing update channel." \
+            --prerelease
+          echo "Staged validated source assets under $TAG"
