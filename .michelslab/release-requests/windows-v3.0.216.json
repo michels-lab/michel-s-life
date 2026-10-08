@@ -1,0 +1,33 @@
+{
+  "product": "Michel's Life",
+  "version": "3.0.216",
+  "channel": "direct-windows",
+  "public_repository": "michels-lab/michel-s-life-releases",
+  "authorized": true,
+  "authorization": "Owner explicitly requested 'dale release' in chat on 2026-10-08",
+  "candidate_sha": "27fc043bd97e9a0d23383d171cf295ab10d56538",
+  "candidate_ci": {
+    "source_validation": 37828392687,
+    "ui_smoke": 37828392673,
+    "android_ui_smoke": 37828392618,
+    "android_native_build": 37828392642,
+    "windows_build_installer_launch": 37828392647
+  },
+  "windows_assets": [
+    "MichelsLife-Setup-v3.0.216.exe",
+    "MichelsLife-Setup-v3.0.216.exe.sha256",
+    "MichelsLife-Portable-v3.0.216.exe",
+    "MichelsLife-Portable-v3.0.216.exe.sha256",
+    "MichelsLife-v3.0.216.exe",
+    "MichelsLife-v3.0.216.exe.sha256",
+    "AppBundle.zip",
+    "michels_life_icon.ico"
+  ],
+  "excluded": ["Microsoft Store", "Google Play", "Android production AAB"],
+  "unverified": [
+    "Real same-account Windows and Android Supabase sync and conflict/restore",
+    "Interactive Windows tray/hotkey/taskbar on owner's PC",
+    "Installed-app screenshots and owner's post-release visual review",
+    "Android Play signing and physical-device validation"
+  ]
+}
