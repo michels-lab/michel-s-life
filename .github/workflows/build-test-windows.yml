@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  RELEASES_REPO: realmichelduarte/michel-s-life-releases
+  RELEASES_REPO: michels-lab/michel-s-life-releases
 
 jobs:
   build-test:
