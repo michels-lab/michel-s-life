@@ -381,3 +381,11 @@ No version bump, release publication, Partner Center upload or Store certificati
 **Preserved intentionally:** Michel Duarte personal developer/social identity remains under `realmichelduarte`. No product release is authorized by this migration change.
 
 **Validation:** branch CI is required before merge.
+
+## 2026-10-08 — Align visual review with owner post-release policy
+
+- Governance mismatch: the canonical rendered UI standard and latest master shared child contract specify Michel's visual review **after** publication, but Michel's Life AGENTS.md and Copilot instructions still embedded a previous protected human pre-release approval gate.
+- Synced the managed child-agent-core block to the canonical master text (2026-10-08.2). No app runtime, Android UI, Google OAuth, sync, binary/version or publishing workflow was altered.
+- Release policy: automated build/security/functional/render/integrity checks retain their own outcomes; human screenshot review is **post-release only**, never protected pre-publication approval.
+- The pending rendered screenshot capture issue remains an automated QA improvement, separate from human approval, and must not become a manual publication block.
+- Evidence: source-contract sync performed on governance branch. Same-SHA application CI and actual packaged screenshot capture are not yet run; no release was published.
