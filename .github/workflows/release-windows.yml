@@ -20,7 +20,7 @@ permissions:
   contents: read
 
 env:
-  RELEASES_REPO: realmichelduarte/michel-s-life-releases
+  RELEASES_REPO: michels-lab/michel-s-life-releases
   HAS_WINDOWS_CERT: ${{ secrets.WINDOWS_CERT_BASE64 != '' }}
   HAS_RELEASE_TOKEN: ${{ secrets.RELEASES_REPO_TOKEN != '' }}
 
