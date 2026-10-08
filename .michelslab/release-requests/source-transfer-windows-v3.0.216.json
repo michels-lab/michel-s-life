@@ -1,0 +1,10 @@
+{
+  "version": "3.0.216",
+  "authorized": true,
+  "authorized_by": "Owner: 'dale release', 2026-10-08",
+  "channel": "Windows direct/GitHub Releases",
+  "source_repository": "michels-lab/michel-s-life",
+  "transfer_tag": "michels-life-transfer-v3.0.216",
+  "public_release_repo": "michels-lab/michel-s-life-releases",
+  "why": "Previous RELESES_REPO_TOKEN was configured but lacked write scope and failed HTTP 403; use repository-local GITHUB_TOKEN with contents:write to stage validated assets, then publish from public release repository."
+}
