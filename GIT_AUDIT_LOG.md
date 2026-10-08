@@ -389,3 +389,10 @@ No version bump, release publication, Partner Center upload or Store certificati
 - Release policy: automated build/security/functional/render/integrity checks retain their own outcomes; human screenshot review is **post-release only**, never protected pre-publication approval.
 - The pending rendered screenshot capture issue remains an automated QA improvement, separate from human approval, and must not become a manual publication block.
 - Evidence: source-contract sync performed on governance branch. Same-SHA application CI and actual packaged screenshot capture are not yet run; no release was published.
+
+## 2026-10-08 — Complete active release-channel path migration
+
+- Confirmed six active Android/Windows/UI/Store/CI workflows still referenced `realmichelduarte/michel-s-life-releases` after repository ownership moved to Michel's Lab. The Windows release workflow already used the correct new owner.
+- Updated only those active release download URLs to `michels-lab/michel-s-life-releases`, leaving personal author/social identities and unrelated application behavior untouched.
+- Added `release_smoke_test.py` assertions covering all seven workflow consumers so the obsolete release owner cannot be reintroduced silently.
+- Validation: new branch/PR CI pending. No app version bump, binaries, visual assets, OAuth, cloud sync, Store/Play publication or release changed.
