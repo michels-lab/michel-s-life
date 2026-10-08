@@ -1,0 +1,11 @@
+{
+  "authorized": true,
+  "authorized_by": "Owner: publish the latest Android alongside Windows in the same release, 2026-10-08",
+  "android_version": "0.2.2",
+  "android_version_code": 4,
+  "windows_version": "3.0.216",
+  "source_tag": "michels-life-android-transfer-v0.2.2",
+  "public_release_repo": "michels-lab/michel-s-life-releases",
+  "public_release_tag": "v3.0.216",
+  "constraints": ["Never use an older Android APK", "Verify manifest version and signing", "Keep existing Windows assets", "No Google Play publication claimed"]
+}

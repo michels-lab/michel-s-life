@@ -1,6 +1,7 @@
 name: Build Android test APK
 
 on:
+  workflow_call:
   workflow_dispatch:
   pull_request:
     paths:
