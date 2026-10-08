@@ -36,6 +36,9 @@ jobs:
       - name: Validate Android Supabase sync contract
         run: python android/tools/validate_sync_contract.py
 
+      - name: Reject ephemeral Android debug signing as stable direct distribution
+        run: python android/tools/verify_direct_apk.py --self-test
+
       - name: Spanish source copy audit
         run: node tools/spanish_copy_source_audit.mjs
 

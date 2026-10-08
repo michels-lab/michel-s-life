@@ -2,7 +2,19 @@ name: Build Android test APK
 
 on:
   workflow_call:
+    inputs:
+      build_direct:
+        description: Also build the stable-signature Android Direct APK (fails closed when key is not configured).
+        type: boolean
+        required: false
+        default: false
   workflow_dispatch:
+    inputs:
+      build_direct:
+        description: Build a permanently signed Android Direct APK (requires secure signing secrets).
+        type: boolean
+        required: false
+        default: false
   pull_request:
     paths:
       - 'android/app/**'
@@ -47,6 +59,11 @@ env:
   ANDROID_UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
   ANDROID_UPLOAD_KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
   ANDROID_UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+  ANDROID_DIRECT_KEYSTORE_BASE64: ${{ secrets.ANDROID_DIRECT_KEYSTORE_BASE64 }}
+  ANDROID_DIRECT_STORE_PASSWORD: ${{ secrets.ANDROID_DIRECT_STORE_PASSWORD }}
+  ANDROID_DIRECT_KEY_ALIAS: ${{ secrets.ANDROID_DIRECT_KEY_ALIAS }}
+  ANDROID_DIRECT_KEY_PASSWORD: ${{ secrets.ANDROID_DIRECT_KEY_PASSWORD }}
+  ANDROID_DIRECT_CERT_SHA256: ${{ vars.ANDROID_DIRECT_CERT_SHA256 }}
 
 jobs:
   android:
@@ -133,6 +150,59 @@ jobs:
       - name: Build Play Store app bundle
         working-directory: android
         run: gradle --no-daemon :app:bundleRelease
+
+      - name: Validate permanent direct APK signing policy
+        run: python android/tools/verify_direct_apk.py --self-test
+
+      - name: Prepare persistent direct distribution signing key
+        if: ${{ inputs.build_direct == true }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for required in ANDROID_DIRECT_KEYSTORE_BASE64 ANDROID_DIRECT_STORE_PASSWORD ANDROID_DIRECT_KEY_ALIAS ANDROID_DIRECT_KEY_PASSWORD ANDROID_DIRECT_CERT_SHA256; do
+            if [[ -z "${!required:-}" ]]; then
+              echo "::error::Missing $required: cannot build a stable Android Direct APK. Do not publish a debug APK instead."
+              exit 1
+            fi
+          done
+          KEYSTORE_PATH="$RUNNER_TEMP/michels-life-direct-release.jks"
+          umask 077
+          printf '%s' "$ANDROID_DIRECT_KEYSTORE_BASE64" | base64 --decode > "$KEYSTORE_PATH"
+          test -s "$KEYSTORE_PATH"
+          echo "ANDROID_DIRECT_KEYSTORE_PATH=$KEYSTORE_PATH" >> "$GITHUB_ENV"
+
+      - name: Build permanently signed Android Direct APK
+        if: ${{ inputs.build_direct == true }}
+        working-directory: android
+        run: gradle --no-daemon :app:assembleDirectRelease
+
+      - name: Verify pinned direct certificate, APK package, version and digest
+        if: ${{ inputs.build_direct == true }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/android-direct
+          APK="artifacts/android-direct/MichelsLife-Android-Direct-v${ANDROID_VERSION}.apk"
+          cp android/app/build/outputs/apk/directRelease/app-directRelease.apk "$APK"
+          ANDROID_CODE="$(awk '/versionCode = / { print $3; exit }' android/app/build.gradle.kts)"
+          python android/tools/verify_direct_apk.py \
+            --apk "$APK" \
+            --apksigner "$ANDROID_HOME/build-tools/36.0.0/apksigner" \
+            --aapt "$ANDROID_HOME/build-tools/36.0.0/aapt" \
+            --expected-cert-sha256 "$ANDROID_DIRECT_CERT_SHA256" \
+            --version-name "$ANDROID_VERSION" --version-code "$ANDROID_CODE" \
+            --manifest-output artifacts/android-direct/direct-release-manifest.json
+          (cd artifacts/android-direct && sha256sum "MichelsLife-Android-Direct-v${ANDROID_VERSION}.apk" > "MichelsLife-Android-Direct-v${ANDROID_VERSION}.apk.sha256")
+          echo "PASS: direct build signed with permanent pinned key, not Android Debug"
+
+      - name: Upload VERIFIED production-signed Android Direct APK
+        if: ${{ inputs.build_direct == true }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: MichelsLife-Android-Direct-v${{ env.ANDROID_VERSION }}
+          path: artifacts/android-direct/
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Name APK
         run: |
