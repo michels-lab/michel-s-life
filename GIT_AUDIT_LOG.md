@@ -396,3 +396,10 @@ No version bump, release publication, Partner Center upload or Store certificati
 - Updated only those active release download URLs to `michels-lab/michel-s-life-releases`, leaving personal author/social identities and unrelated application behavior untouched.
 - Added `release_smoke_test.py` assertions covering all seven workflow consumers so the obsolete release owner cannot be reintroduced silently.
 - Validation: new branch/PR CI pending. No app version bump, binaries, visual assets, OAuth, cloud sync, Store/Play publication or release changed.
+
+## 2026-10-08 — Second-viewport About browser regression evidence
+
+- Added a compact 1280×800 browser-runtime About check to the existing Playwright UI smoke, without editing the canonical frontend, layouts, themes, current chapter or visual assets.
+- The new smoke measures active About panel and portrait rectangles, confirms that the portrait is loaded/rendered and at least one contact link has nonzero display geometry, records link/panel details, and archives two additional screenshots (full-page and initial viewport).
+- Existing 1600×1000 screenshots remain intact. This is browser fixture evidence only; installed Windows GUI and packaged Android APK/emulator evidence remain pending under issue #23.
+- Validation pending same-SHA UI smoke CI on the proposed branch; no product release requested or published.

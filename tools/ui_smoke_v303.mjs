@@ -187,7 +187,45 @@ try{
   await page.waitForTimeout(600);
   await page.screenshot({path:`${out}/05-dashboard.png`,fullPage:true});
 
-  console.log(JSON.stringify({logo,typographyRoute,typographyPaletteCheck,headingFonts,avatar,chapterTarget:target,typography:'midnights',cloudPopups:cloudCount},null,2));
+  // A second real browser viewport catches About clipping missed at 1600x1000.
+  // This is browser-render evidence, NOT proof of packaged Windows or Android runtime.
+  await page.setViewportSize({width:1280,height:800});
+  await page.evaluate(()=>window.LeftNavV30171.route('settings'));
+  await page.waitForSelector('[data-v30171-setting="about"]',{timeout:10000});
+  await page.click('[data-v30171-setting="about"]');
+  await page.waitForSelector('[data-v30171-pane="about"].active .mlvdev-avatar',{timeout:10000});
+  await page.waitForTimeout(350);
+  const compactAbout=await page.evaluate(()=>{
+    const pane=document.querySelector('[data-v30171-pane="about"].active');
+    const avatar=pane?.querySelector('.mlvdev-avatar');
+    const rect=el=>{
+      const r=el?.getBoundingClientRect();
+      return r?{x:r.x,y:r.y,width:r.width,height:r.height,right:r.right,bottom:r.bottom}:null;
+    };
+    const links=[...pane?.querySelectorAll('a[href]')||[]].map(a=>{
+      const r=a.getBoundingClientRect(),cs=getComputedStyle(a);
+      return {text:(a.innerText||a.textContent||'').trim().slice(0,100),
+        href:a.getAttribute('href')||'',visible:r.width>0&&r.height>0&&cs.display!=='none'&&cs.visibility!=='hidden',
+        rect:rect(a)};
+    });
+    return {viewport:{width:innerWidth,height:innerHeight},pane:rect(pane),portrait:rect(avatar),
+      portraitLoaded:!!(avatar?.naturalWidth&&avatar?.naturalHeight),
+      pageOverflow:document.documentElement.scrollWidth-innerWidth,
+      links,
+      aboutText:(pane?.innerText||'').slice(0,600)};
+  });
+  ok(compactAbout.pane&&compactAbout.pane.width>200&&compactAbout.pane.height>150,
+    'Compact About has a missing/collapsed panel: '+JSON.stringify(compactAbout));
+  ok(compactAbout.portraitLoaded&&compactAbout.portrait&&
+     compactAbout.portrait.width>=90&&compactAbout.portrait.height>=100,
+    'Compact About has invisible/zero-size author portrait: '+JSON.stringify(compactAbout));
+  ok(compactAbout.links.some(link=>link.visible),
+    'Compact About has no rendered external/contact links: '+JSON.stringify(compactAbout));
+  await page.screenshot({path:`${out}/06-about-1280x800-full.png`,fullPage:true});
+  await page.screenshot({path:`${out}/07-about-1280x800-initial.png`,fullPage:false});
+
+
+  console.log(JSON.stringify({logo,typographyRoute,typographyPaletteCheck,headingFonts,avatar,compactAbout,chapterTarget:target,typography:'midnights',cloudPopups:cloudCount},null,2));
 } finally {
   await browser.close();
 }
