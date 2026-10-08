@@ -7,6 +7,13 @@ val uploadStorePassword = System.getenv("ANDROID_UPLOAD_STORE_PASSWORD")
 val uploadKeyAlias = System.getenv("ANDROID_UPLOAD_KEY_ALIAS")
 val uploadKeyPassword = System.getenv("ANDROID_UPLOAD_KEY_PASSWORD")
 
+// Direct-distribution APKs must use a persistent owner-controlled key, NEVER the
+// runner-generated Android debug certificate. Play upload signing is separate.
+val directKeystorePath = System.getenv("ANDROID_DIRECT_KEYSTORE_PATH")
+val directStorePassword = System.getenv("ANDROID_DIRECT_STORE_PASSWORD")
+val directKeyAlias = System.getenv("ANDROID_DIRECT_KEY_ALIAS")
+val directKeyPassword = System.getenv("ANDROID_DIRECT_KEY_PASSWORD")
+
 android {
     namespace = "com.michelslab.michelslife"
     compileSdk = 36
@@ -31,12 +38,32 @@ android {
                 keyPassword = uploadKeyPassword
             }
         }
+        if (!directKeystorePath.isNullOrBlank() &&
+            !directStorePassword.isNullOrBlank() &&
+            !directKeyAlias.isNullOrBlank() &&
+            !directKeyPassword.isNullOrBlank()) {
+            create("directDistribution") {
+                storeFile = file(directKeystorePath)
+                storePassword = directStorePassword
+                keyAlias = directKeyAlias
+                keyPassword = directKeyPassword
+            }
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
             signingConfigs.findByName("playUpload")?.let { signingConfig = it }
+        }
+        create("directRelease") {
+            initWith(getByName("release"))
+            matchingFallbacks += listOf("release")
+            isDebuggable = false
+            // Do NOT inherit the Play upload key; a direct APK has its own
+            // independently pinned signing identity. Missing key = unsigned
+            // build (CI must reject it), never a debug-signed fallback.
+            signingConfig = signingConfigs.findByName("directDistribution")
         }
     }
 
