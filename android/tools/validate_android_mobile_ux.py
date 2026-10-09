@@ -41,7 +41,7 @@ required_bridge = [
     ".v132-check",
     ".v132-mission-actions{grid-column:2",
     ".topbar{display:none",
-    "#mlv200Onboarding{padding:8px!important",
+    "#mlv200Onboarding{position:fixed!important",
     "#mlv200Onboarding .mlv200-focus input[type=\"checkbox\"]",
     "width:22px!important",
     "#v30175ActionDock{position:sticky",
