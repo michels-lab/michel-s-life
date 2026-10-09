@@ -371,6 +371,63 @@ try{
   ok(freshInstallOnboarding.visible,'Fresh-install onboarding disappeared before focus step');
   ok(freshInstallOnboarding.checkbox&&freshInstallOnboarding.checkbox.width<=24&&freshInstallOnboarding.checkbox.height<=24,'Fresh-install onboarding checkbox is oversized: '+JSON.stringify(freshInstallOnboarding));
   ok(freshInstallOnboarding.row&&freshInstallOnboarding.row.height<=64,'Fresh-install onboarding row is too tall: '+JSON.stringify(freshInstallOnboarding));
+
+  // Regression: actual phone screenshot showed bottom Continue under Android's
+  // navigation overlay and the permanent app topbar bleeding through the wizard.
+  // Test hit-testing and progression, not mere presence of an enabled button.
+  await fresh.waitForFunction(()=>!!document.querySelector('#mlv200Onboarding .mlv-android-onboard-scroll'),null,{timeout:5000});
+  const onboardingActionGeometry=await fresh.evaluate(()=>{
+    const root=document.querySelector('#mlv200Onboarding');
+    const card=root?.querySelector('.mlv200-onboard-card');
+    const scroll=root?.querySelector('.mlv-android-onboard-scroll');
+    const actions=root?.querySelector('.mlv200-onboard-actions');
+    const next=root?.querySelector('[data-mlv200-onboard="next"]');
+    const header=document.getElementById('mlv-android-topbar');
+    const rc=e=>{const x=e?.getBoundingClientRect();return x?{left:x.left,right:x.right,top:x.top,bottom:x.bottom,width:x.width,height:x.height}:null};
+    const buttonRect=next?.getBoundingClientRect();
+    const hit=buttonRect?document.elementFromPoint(buttonRect.left+buttonRect.width/2,buttonRect.top+buttonRect.height/2):null;
+    return {viewport:{width:innerWidth,height:innerHeight},root:rc(root),card:rc(card),scroll:rc(scroll),actions:rc(actions),next:rc(next),
+      hitAction:!!hit?.closest('[data-mlv200-onboard="next"]'),hiddenByNativeChrome:header?getComputedStyle(header).visibility==='hidden':true,
+      nextDisabled:!!next?.disabled,overflow:document.documentElement.scrollWidth-innerWidth};
+  });
+  ok(onboardingActionGeometry.scroll?.height>100,'Android onboarding lacks a bounded content scroller: '+JSON.stringify(onboardingActionGeometry));
+  ok(onboardingActionGeometry.hiddenByNativeChrome,'Android app navigation obscures the onboarding wizard: '+JSON.stringify(onboardingActionGeometry));
+  ok(onboardingActionGeometry.next&&!onboardingActionGeometry.nextDisabled,'Continue missing or disabled despite checked goals: '+JSON.stringify(onboardingActionGeometry));
+  ok(onboardingActionGeometry.hitAction,'Continue is not the topmost touch target: '+JSON.stringify(onboardingActionGeometry));
+  ok(onboardingActionGeometry.next.bottom<=onboardingActionGeometry.viewport.height-35,'Continue is beneath Android navigation gesture area: '+JSON.stringify(onboardingActionGeometry));
+  ok(onboardingActionGeometry.overflow<=2,'Onboarding introduced horizontal overflow: '+JSON.stringify(onboardingActionGeometry));
+
+  const themeBeforeTap=await fresh.evaluate(()=>({
+    palette:getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
+    stored:localStorage.getItem('michelsLifeTheme.v343')||'',
+    background:document.body.className
+  }));
+  await fresh.locator('#mlv200Onboarding .mlv200-focus input[type="checkbox"]').nth(2).click();
+  const themeAfterTap=await fresh.evaluate(()=>({
+    palette:getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),
+    stored:localStorage.getItem('michelsLifeTheme.v343')||'',
+    background:document.body.className
+  }));
+  ok(JSON.stringify(themeBeforeTap)===JSON.stringify(themeAfterTap),
+    'Choosing focus unexpectedly changed theme colors: '+JSON.stringify({themeBeforeTap,themeAfterTap}));
+  await mkdir(dirname(screenshot),{recursive:true});
+  await fresh.screenshot({path:screenshot.endsWith('.png')?screenshot.slice(0,-4)+'-onboarding-step2.png':screenshot+'-onboarding-step2.png'});
+
+  await fresh.locator('#mlv200Onboarding [data-mlv200-onboard="next"]').click({timeout:5000});
+  await fresh.waitForSelector('#mlv200Schedule',{state:'visible',timeout:5000});
+  const finishGeometry=await fresh.evaluate(()=>{
+    const btn=document.querySelector('#mlv200Onboarding [data-mlv200-onboard="finish"]');
+    const b=btn?.getBoundingClientRect();
+    const top=b?document.elementFromPoint(b.left+b.width/2,b.top+b.height/2):null;
+    return {button:!!btn,disabled:!!btn?.disabled,touchable:!!top?.closest('[data-mlv200-onboard="finish"]'),
+      bottom:b?.bottom,viewport:innerHeight};
+  });
+  ok(finishGeometry.button&&!finishGeometry.disabled&&finishGeometry.touchable&&finishGeometry.bottom<=finishGeometry.viewport-35,
+    'Finish setup is still trapped beneath Android navigation: '+JSON.stringify(finishGeometry));
+  await fresh.locator('#mlv200Onboarding [data-mlv200-onboard="finish"]').click({timeout:5000});
+  await fresh.waitForFunction(()=>!document.getElementById('mlv200Onboarding'),null,{timeout:5000});
+  ok(await fresh.evaluate(()=>localStorage.getItem('michelsLife.onboarding.v30200')==='done'),
+    'Android onboarding did not persist completion after real Continue and Finish clicks');
   await freshContext.close();
 
   // PC-hosted Android emulator / landscape validation.

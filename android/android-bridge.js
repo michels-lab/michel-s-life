@@ -296,9 +296,32 @@
     el.style.setProperty(prop,value,'important');
   }
 
+  // A first-run wizard is a modal workflow, not a scrollable desktop page.
+  // Keep the controls outside the content scroller so they cannot slip behind
+  // the Android system navigation bar on compact/edge-to-edge phones.
+  function layoutAndroidOnboarding(root){
+    const card=q('.mlv200-onboard-card',root);
+    const head=q('.mlv200-onboard-head',card);
+    const actions=q('.mlv200-onboard-actions',card);
+    if(!card||!head||!actions)return false;
+    if(!q('.mlv-android-onboard-scroll',card)){
+      const scroller=document.createElement('div');
+      scroller.className='mlv-android-onboard-scroll';
+      let node=head.nextSibling;
+      while(node&&node!==actions){
+        const next=node.nextSibling;
+        scroller.appendChild(node);
+        node=next;
+      }
+      card.insertBefore(scroller,actions);
+    }
+    return true;
+  }
+
   function stabilizeAndroidOnboardingControls(){
     const root=q('#mlv200Onboarding');
     if(!root||!isMobile())return false;
+    layoutAndroidOnboarding(root);
 
     qa('.mlv200-focus',root).forEach(row=>{
       setImportantOnce(row,'display','grid');
@@ -511,8 +534,19 @@
         html[data-mlv-platform="android"] body{overscroll-behavior-y:none;padding-top:calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px))!important;touch-action:pan-y!important}
         html[data-mlv-platform="android"] #main *,html[data-mlv-platform="android"] #v30171Sidebar *,#mlv-android-topbar{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
         #v3000SkyImg{filter:none!important;transform:none!important}
-        #mlv200Onboarding{padding:8px!important;place-items:start center!important;padding-top:calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px) + 8px)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(3,7,13,.90)!important}
-        #mlv200Onboarding .mlv200-onboard-card{width:calc(100vw - 16px)!important;max-width:none!important;max-height:calc(100dvh - var(--mlv-android-topbar-h) - env(safe-area-inset-top,0px) - 16px)!important;padding:14px!important;border-radius:18px!important}
+        /* The wizard owns the whole foreground. Fixed Android chrome must never
+           sit on top of first-run steps or hijack taps before Continue. */
+        #mlv200Onboarding{position:fixed!important;inset:0!important;z-index:2147483500!important;display:flex!important;justify-content:center!important;align-items:stretch!important;width:100vw!important;height:100dvh!important;max-height:100dvh!important;min-height:0!important;box-sizing:border-box!important;padding:max(12px,env(safe-area-inset-top,0px)) 8px max(42px,env(safe-area-inset-bottom,0px))!important;overflow:hidden!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(3,7,13,.96)!important}
+        body:has(#mlv200Onboarding:not([hidden])) #mlv-android-topbar{visibility:hidden!important;pointer-events:none!important}
+        #mlv200Onboarding .mlv200-onboard-card{display:flex!important;flex-direction:column!important;width:100%!important;max-width:560px!important;height:100%!important;max-height:100%!important;min-height:0!important;min-width:0!important;overflow:hidden!important;box-sizing:border-box!important;padding:14px!important;border-radius:18px!important}
+        #mlv200Onboarding .mlv200-onboard-head{flex:0 0 auto!important;min-width:0!important;margin-bottom:12px!important}
+        #mlv200Onboarding .mlv200-onboard-head h1{font-size:clamp(22px,6.5vw,30px)!important;overflow-wrap:anywhere!important}
+        #mlv200Onboarding .mlv-android-onboard-scroll{flex:1 1 0!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:0 1px 12px!important}
+        #mlv200Onboarding .mlv200-onboard-actions{flex:0 0 auto!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:7px!important;position:relative!important;bottom:auto!important;margin:0!important;padding:12px 0 2px!important;min-height:68px!important;box-sizing:border-box!important;background:rgba(var(--ui-panel-rgb,8,16,26),.98)!important;z-index:2!important}
+        #mlv200Onboarding .mlv200-onboard-actions>div{display:flex!important;gap:6px!important;min-width:0!important;justify-content:flex-end!important}
+        #mlv200Onboarding .mlv200-onboard-actions button{position:relative!important;min-height:48px!important;min-width:0!important;max-width:100%!important;padding:8px 11px!important;font-size:12px!important;opacity:1!important;pointer-events:auto!important;touch-action:manipulation!important;white-space:nowrap!important}
+        #mlv200Onboarding .mlv200-onboard-actions [data-mlv200-onboard="next"],#mlv200Onboarding .mlv200-onboard-actions [data-mlv200-onboard="finish"]{flex:0 0 auto!important;min-width:96px!important}
+        @media(max-width:360px){#mlv200Onboarding .mlv200-onboard-actions button{padding-inline:7px!important;font-size:11px!important}#mlv200Onboarding .mlv200-onboard-actions [data-mlv200-onboard="next"],#mlv200Onboarding .mlv200-onboard-actions [data-mlv200-onboard="finish"]{min-width:85px!important}}
         #mlv200Onboarding .mlv200-focus-grid{grid-template-columns:1fr!important;gap:6px!important}
         #mlv200Onboarding .mlv200-focus{display:grid!important;grid-template-columns:28px minmax(0,1fr)!important;align-items:center!important;gap:8px!important;min-height:46px!important;padding:7px 10px!important;border-radius:12px!important}
         #mlv200Onboarding .mlv200-focus input[type="checkbox"],#mlv200Onboarding .mlv200-option input[type="checkbox"]{-webkit-appearance:checkbox!important;appearance:auto!important;width:22px!important;height:22px!important;min-width:22px!important;min-height:22px!important;max-width:22px!important;max-height:22px!important;margin:0!important;padding:0!important;transform:none!important;accent-color:var(--ui-accent,var(--accent,#ff7ad9))!important}
