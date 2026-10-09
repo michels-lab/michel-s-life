@@ -64,7 +64,7 @@ jobs:
           disable-animations: true
           emulator-boot-timeout: 600
           script: |
-            set -euo pipefail
+            set -eu
             APK="artifacts/public/MichelsLife-Android-v0.2.2-TEST.apk"
             mkdir -p artifacts/installed
             adb wait-for-device
