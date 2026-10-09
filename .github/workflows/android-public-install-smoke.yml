@@ -55,7 +55,7 @@ jobs:
       - name: Test clean installation and launch of EXACT public APK
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 35
+          api-level: 36
           target: google_apis
           arch: x86_64
           profile: pixel_6
@@ -63,39 +63,7 @@ jobs:
           emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
           disable-animations: true
           emulator-boot-timeout: 600
-          script: |
-            set -eu
-            APK="artifacts/public/MichelsLife-Android-v0.2.2-TEST.apk"
-            mkdir -p artifacts/installed
-            adb wait-for-device
-            adb shell getprop ro.build.version.sdk | tee artifacts/installed/android-sdk.txt
-            echo "Checking that the emulator starts without the Michel's Life package:"
-            adb shell pm list packages com.michelslab.michelslife | tee artifacts/installed/before-install.txt
-            if grep -Fq 'com.michelslab.michelslife' artifacts/installed/before-install.txt; then
-              echo "::error::Expected clean Android installation target"
-              exit 1
-            fi
-            if adb install -r -t "$APK" > artifacts/installed/install-output.txt 2>&1; then
-              cat artifacts/installed/install-output.txt
-            else
-              cat artifacts/installed/install-output.txt
-              adb logcat -d -t 2000 > artifacts/installed/install-failure-logcat.txt || true
-              echo "::error::Real Android PackageManager rejected the public APK"
-              exit 1
-            fi
-            adb shell dumpsys package com.michelslab.michelslife > artifacts/installed/package-info.txt
-            grep -E 'versionCode=4|versionName=0.2.2' artifacts/installed/package-info.txt | head -8
-            adb shell am start -W -n com.michelslab.michelslife/.MainActivity | tee artifacts/installed/launch-output.txt
-            sleep 15
-            adb shell pidof com.michelslab.michelslife | tee artifacts/installed/process-id.txt
-            adb exec-out screencap -p > artifacts/installed/home-screenshot.png
-            python3 - <<'PY'
-            from pathlib import Path
-            screenshot=Path('artifacts/installed/home-screenshot.png').read_bytes()
-            if not screenshot.startswith(bytes.fromhex('89504e470d0a1a0a')) or len(screenshot)<10000:
-                raise SystemExit("Failed to obtain meaningful Android emulator screenshot")
-            print("Android clean INSTALL + START + RUN + SCREENSHOT checked:",len(screenshot),"screenshot bytes")
-            PY
+          script: bash android/tools/smoke_published_apk_install.sh
 
       - name: Keep genuine emulator install/launch output, even if test failed
         if: always()
