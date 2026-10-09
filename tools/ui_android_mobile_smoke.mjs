@@ -411,7 +411,7 @@ try{
   ok(JSON.stringify(themeBeforeTap)===JSON.stringify(themeAfterTap),
     'Choosing focus unexpectedly changed theme colors: '+JSON.stringify({themeBeforeTap,themeAfterTap}));
   await mkdir(dirname(screenshot),{recursive:true});
-  await fresh.screenshot({path:screenshot.replace(/\\.png$/i,'-onboarding-step2.png')});
+  await fresh.screenshot({path:screenshot.endsWith('.png')?screenshot.slice(0,-4)+'-onboarding-step2.png':screenshot+'-onboarding-step2.png'});
 
   await fresh.locator('#mlv200Onboarding [data-mlv200-onboard="next"]').click({timeout:5000});
   await fresh.waitForSelector('#mlv200Schedule',{state:'visible',timeout:5000});
