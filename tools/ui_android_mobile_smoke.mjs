@@ -426,8 +426,8 @@ try{
     'Finish setup is still trapped beneath Android navigation: '+JSON.stringify(finishGeometry));
   await fresh.locator('#mlv200Onboarding [data-mlv200-onboard="finish"]').click({timeout:5000});
   await fresh.waitForFunction(()=>!document.getElementById('mlv200Onboarding'),null,{timeout:5000});
-  ok(await fresh.evaluate(()=>!!window.state?.settings?.onboardingCompletedAt),
-    'Android onboarding did not complete after real Continue and Finish clicks');
+  ok(await fresh.evaluate(()=>localStorage.getItem('michelsLife.onboarding.v30200')==='done'),
+    'Android onboarding did not persist completion after real Continue and Finish clicks');
   await freshContext.close();
 
   // PC-hosted Android emulator / landscape validation.
