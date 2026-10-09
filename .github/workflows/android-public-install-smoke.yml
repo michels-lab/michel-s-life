@@ -1,0 +1,107 @@
+name: Validate actual public Michel's Life Android APK installation
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/android-public-install-smoke.yml'
+      - 'android/tools/**'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/android-public-install-smoke.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  install-published-apk:
+    name: Download actual GitHub release APK, install and launch on Android emulator
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Android v0.2.2 directly from SAME customer-facing Windows release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/public
+          gh release download v3.0.216 \
+            --repo michels-lab/michel-s-life-releases \
+            --pattern 'MichelsLife-Android-v0.2.2-TEST.apk*' \
+            --pattern 'android-v0.2.2-manifest.json' \
+            --dir artifacts/public
+          cd artifacts/public
+          sha256sum -c MichelsLife-Android-v0.2.2-TEST.apk.sha256
+          jq -e '.versionName == "0.2.2" and .versionCode == 4 and .applicationId == "com.michelslab.michelslife"' android-v0.2.2-manifest.json
+          actual="$(sha256sum MichelsLife-Android-v0.2.2-TEST.apk | awk '{print $1}')"
+          test "$actual" = "$(jq -r .sha256 android-v0.2.2-manifest.json)"
+          unzip -tq MichelsLife-Android-v0.2.2-TEST.apk >/dev/null
+          echo "Downloaded unmodified public 0.2.2 APK: $actual"
+          echo "APK bytes: $(stat -c '%s' MichelsLife-Android-v0.2.2-TEST.apk)"
+
+      - name: Enable emulator KVM acceleration on GitHub hosted runner
+        shell: bash
+        run: |
+          if [ -e /dev/kvm ]; then
+            sudo chmod 666 /dev/kvm
+          else
+            echo "::warning::Runner has no /dev/kvm; emulator will use software acceleration"
+          fi
+
+      - name: Test clean installation and launch of EXACT public APK
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          avd-name: life-public-apk
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: |
+            set -euo pipefail
+            APK="artifacts/public/MichelsLife-Android-v0.2.2-TEST.apk"
+            mkdir -p artifacts/installed
+            adb wait-for-device
+            adb shell getprop ro.build.version.sdk | tee artifacts/installed/android-sdk.txt
+            echo "Checking that the emulator starts without the Michel's Life package:"
+            adb shell pm list packages com.michelslab.michelslife | tee artifacts/installed/before-install.txt
+            if grep -Fq 'com.michelslab.michelslife' artifacts/installed/before-install.txt; then
+              echo "::error::Expected clean Android installation target"
+              exit 1
+            fi
+            if adb install -r -t "$APK" > artifacts/installed/install-output.txt 2>&1; then
+              cat artifacts/installed/install-output.txt
+            else
+              cat artifacts/installed/install-output.txt
+              adb logcat -d -t 2000 > artifacts/installed/install-failure-logcat.txt || true
+              echo "::error::Real Android PackageManager rejected the public APK"
+              exit 1
+            fi
+            adb shell dumpsys package com.michelslab.michelslife > artifacts/installed/package-info.txt
+            grep -E 'versionCode=4|versionName=0.2.2' artifacts/installed/package-info.txt | head -8
+            adb shell am start -W -n com.michelslab.michelslife/.MainActivity | tee artifacts/installed/launch-output.txt
+            sleep 15
+            adb shell pidof com.michelslab.michelslife | tee artifacts/installed/process-id.txt
+            adb exec-out screencap -p > artifacts/installed/home-screenshot.png
+            python3 - <<'PY'
+            from pathlib import Path
+            screenshot=Path('artifacts/installed/home-screenshot.png').read_bytes()
+            if not screenshot.startswith(bytes.fromhex('89504e470d0a1a0a')) or len(screenshot)<10000:
+                raise SystemExit("Failed to obtain meaningful Android emulator screenshot")
+            print("Android clean INSTALL + START + RUN + SCREENSHOT checked:",len(screenshot),"screenshot bytes")
+            PY
+
+      - name: Keep genuine emulator install/launch output, even if test failed
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MichelsLife-Android-v0.2.2-public-install-evidence
+          path: artifacts/installed/
+          retention-days: 30
+          if-no-files-found: warn
