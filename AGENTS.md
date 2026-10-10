@@ -114,7 +114,7 @@ For any tracked Michel's Lab task, return enough machine-readable continuation c
 
 Do not list planned tests/builds/device checks as completed validation. If required validation was not performed, the task must be released/handed back with that work pending rather than described as complete.
 
-<!-- MICHELSLAB_SHARED_CONTRACT_BEGIN id=child-agent-core version=2026-10-08.2 -->
+<!-- MICHELSLAB_SHARED_CONTRACT_BEGIN id=child-agent-core version=2026-10-09.1 -->
 # Michel's Lab shared child-agent contract
 
 This managed block is cross-project policy. Repository-specific instructions may add stricter local rules outside this block, but they must not weaken or contradict it.
@@ -229,6 +229,15 @@ After a merge, release, tag or provider mutation, re-read authoritative state be
 - Publish SHA-256 for direct Windows binaries. Authenticode/code signing, when available, must happen before final checksum publication. Without a publisher certificate, do not hide or misrepresent Windows Unknown publisher/SmartScreen behavior.
 - FoamLens and Michel's Life are the current Windows release references; Michel's Life also demonstrates optional Authenticode and a separate Microsoft Store MSIX path.
 
+## Android first-run modal + persistent theme acceptance (master shared rule)
+
+- **Every Android/mobile app with first-run onboarding or a blocking form/modal** must keep the modal above underlying app chrome and prevent header/drawer/section gestures from receiving taps until the modal closes.
+- The primary Continue/Finish controls must remain *physically reachable* and clickable above the Android bottom navigation/gesture region, even on a compact/tall-form step: use true window/safe-area insets, bounded content scrolling **independent of a persistent action footer**; do not rely on a lone desktop overflow container.
+- Add real interaction regression coverage: test the **longest** onboarding step using touch/hit-target verification, tap Continue→Finish and confirm persisted completion; check at least one compact and one materially different viewport, including the effect of system status/navigation bars.
+- Selecting goal/focus/category checkboxes must not implicitly change the chosen theme. Validate persisted palette/settings and rendered colors before/after category and navigation interaction.
+- Keep original approved themes/backgrounds and desktop layout stable unless redesign is explicitly requested. Capture actual installed-APK UI and distinguish browser-harness PASS from native emulator/physical-device evidence. A fixed source/PR is **not** a corrected customer release until the new signed candidate is built, tested, packaged, and published.
+- Canonical authority: `platforms/ANDROID.md`, `standards/UI_UX_STANDARD.md`, `standards/RENDERED_UI_RELEASE_GATE.md`. Originating real-world regression: Michel's Life source PR #37 (2026-10-09).
+
 ## P0 mandatory rendered-UI release gate (master-owned; every app)
 
 - Source scans/XML assertions, build success, CI green, icon/blob hashes and file presence never prove the app **visibly renders**. Every release of a user-facing app MUST open the actual built/installed candidate and capture **Home + About + changed screens** across two supported viewport sizes; the capture must show meaningful nonblank content, visible author portrait, Michel's Lab logo and **`TOOLS WITH IDENTITY.`**, appropriate icons + network names, working scroll and Close/Back. Test native view bounds/visibility and navigation, not just inflation.
@@ -236,4 +245,8 @@ After a merge, release, tag or provider mutation, re-read authoritative state be
 - Mandatory reference: `michels-lab/Michel-Software-Standards/standards/RENDERED_UI_RELEASE_GATE.md`; validator: `tools/visual_release_gate.py` (vendor/consume with tests). Never fabricate images, attestations or user approval; agents cannot self-certify independent visual review. Do not claim device/store testing from an emulator. A pure no-UI-change release needs documented same-artifact UI identity and bounded exception as defined in the standard.
 - Release manager: report missing visual evidence and open P0 for confirmed visual regressions; do not block publication solely for pending human review. QA agent: inspect actual pixels and record **SOURCE, BUILD, LAUNCH, RENDER, VISUAL REVIEW and DEVICE** independently. App maintainer: implement real UI smoke tests and screenshot capture at appropriate viewports. Static PASS is not visual PASS.
 - **Important rollout boundary:** this shared contract does NOT, on its own, modify the child release workflow. Until a repository demonstrably captures and validates rendered evidence, mark its visual QA **NOT VERIFIED** without blocking releases solely for missing human approval.
+
+## HTML Desktop delivery (conditional standard for local browser apps)
+
+If a child app's Desktop distribution is a local HTML browser application, its **primary GitHub Release Desktop asset MUST be a direct, self-contained, versioned `.html` file**, with embedded required imagery/branding so it works without the ZIP or an `assets/` directory. An additional ZIP is allowed but never sufficient by itself. Enforce via manifest + publisher + CI assertion + actual offline browser launch, verify SHA-256 for the standalone HTML, and check that GitHub actually exposes the HTML next to APK and other assets. See master `standards/REPOSITORY_DISTRIBUTION_STANDARD.md`. Native installer apps are unaffected.
 <!-- MICHELSLAB_SHARED_CONTRACT_END id=child-agent-core -->
