@@ -44,6 +44,17 @@ if [ "$RENDERED" -ne 1 ]; then
   adb shell dumpsys window windows >"$OUT/window-diagnostics.txt" || true
   exit 1
 fi
+# A non-black *early* frame is NOT proof that WebView completed rendering:
+# v0.2.3 produced a cropped giant logo/white slab on the first nonblack image.
+# Keep separate later screenshots for pixel review instead of inventing RENDER PASS.
+cp "$OUT/step0.png" "$OUT/step0-first-visible.png"
+sleep 30
+adb exec-out screencap -p >"$OUT/step0-after-30s.png"
+sleep 25
+adb exec-out screencap -p >"$OUT/step0-after-55s.png"
+for frame in "$OUT/step0-after-30s.png" "$OUT/step0-after-55s.png"; do
+  python3 -c 'import pathlib,sys;d=pathlib.Path(sys.argv[1]).read_bytes();sys.exit(0 if d.startswith(bytes.fromhex("89504e470d0a1a0a")) and len(d)>30000 else 1)' "$frame"
+done
 # Accessibility on Android WebView exposes actual screen buttons in XML.
 # Record tree first; treat missing accessibility support separately, never
 # fabricate an end-to-end tap PASS from source code or emulator startup alone.
@@ -55,7 +66,7 @@ p=Path("artifacts/candidate-install")
 s=(p/"step0.png").read_bytes()
 if not s.startswith(bytes.fromhex("89504e470d0a1a0a")) or len(s)<10000:
     raise SystemExit("Failed to capture real Android candidate app screenshot")
-print("PASS: current candidate APK fresh-installed and launched in Android 16")
+print("INSTALL + LAUNCH PASS; multiple native screenshots captured. Visual approval pending pixel review.")
 if (p/"step0-hierarchy.xml").exists():
     xml=(p/"step0-hierarchy.xml").read_text(errors="replace")
     print("Accessibility tree available:",len(xml),"bytes, Continue visible:", "Continue" in xml)
