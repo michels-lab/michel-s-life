@@ -150,7 +150,23 @@ try{
     return {items:all,mainTop:main?.getBoundingClientRect().top,cardTop:card?.getBoundingClientRect().top};
   });
   ok(initial.main&&initial.main.top<190,'Primary content starts too low and still requires an initial scroll: '+JSON.stringify(initial));
-  ok(initial.firstCard&&initial.firstCard.top<240,'First dashboard card starts too low: '+JSON.stringify({initial,preCardGeometry}));
+  // A real first-run "pending mission from yesterday" carry-over prompt
+  // appears ABOVE Today's card and adds ~147px. Treat the prompt as content,
+  // never as an unexplained blank gap or a license to hide user reminders.
+  const carryoverPrompt=await page.evaluate(()=>{
+    const main=document.getElementById('main');
+    const card=main?.querySelector('.card');
+    const buttons=Array.from(main?.querySelectorAll('button')||[]);
+    const decline=buttons.find(x=>/Do not move anything/i.test(x.textContent||''));
+    const accept=buttons.find(x=>/Move all without duplicates/i.test(x.textContent||''));
+    const bb=x=>{const b=x?.getBoundingClientRect();return b?{top:b.top,bottom:b.bottom,width:b.width,height:b.height}:null};
+    const a=bb(decline),b=bb(accept),c=bb(card);
+    return {visible:!!(a&&b&&c&&a.width>30&&b.width>30&&a.bottom<=c.top&&b.bottom<=c.top),
+      decline:a,accept:b,card:c,bodyContains:!!main?.textContent?.includes('pending mission from yesterday')};
+  });
+  const firstCardMaxTop=carryoverPrompt.visible?410:240;
+  ok(initial.firstCard&&initial.firstCard.top<firstCardMaxTop,
+    'First dashboard card starts too low, accounting for actionable carry-over prompt: '+JSON.stringify({initial,carryoverPrompt,preCardGeometry}));
   ok(initial.overflow<=2,'Android page has horizontal overflow: '+JSON.stringify(initial));
 
   await page.locator('#mlv-android-menu-button').click();
