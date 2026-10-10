@@ -8,8 +8,6 @@ OUT="artifacts/candidate-install"
 mkdir -p "$OUT"
 test -s "$APK"
 adb wait-for-device
-adb shell wm size 412x915
-adb shell wm density 160
 adb shell settings put global window_animation_scale 0
 adb shell settings put global transition_animation_scale 0
 adb shell settings put global animator_duration_scale 0
@@ -24,9 +22,28 @@ cat "$OUT/install-result.txt"
 adb shell dumpsys package "$PKG" >"$OUT/package-info.txt"
 grep -F "versionName=${ANDROID_VERSION}" "$OUT/package-info.txt"
 adb shell am start -W -n "$PKG/.MainActivity" | tee "$OUT/launch-result.txt"
-sleep 16
+sleep 10
 adb shell pidof "$PKG" | tee "$OUT/process-id.txt"
-adb exec-out screencap -p >"$OUT/step0.png"
+# Do not override emulator WM size/density: physical native WebView surface may
+# go blank after a forced display configuration change on API 36.
+# Wait until ACTUAL rendered app pixels exist instead of passing a black window.
+RENDERED=0
+for attempt in 1 2 3 4 5 6 7 8; do
+  adb exec-out screencap -p >"$OUT/step0.png"
+  if python3 -c 'import pathlib,sys; p=pathlib.Path(sys.argv[1]);d=p.read_bytes();sys.exit(0 if d.startswith(bytes.fromhex("89504e470d0a1a0a")) and len(d)>30000 else 1)' "$OUT/step0.png"; then
+    echo "Native Android pixels present at screenshot attempt $attempt"
+    RENDERED=1
+    break
+  fi
+  sleep 10
+done
+if [ "$RENDERED" -ne 1 ]; then
+  echo "::error::Activity started, but native Android WebView never rendered meaningful pixels"
+  adb logcat -d -t 4000 >"$OUT/native-blank-screen-logcat.txt" || true
+  adb shell dumpsys activity activities >"$OUT/activity-diagnostics.txt" || true
+  adb shell dumpsys window windows >"$OUT/window-diagnostics.txt" || true
+  exit 1
+fi
 # Accessibility on Android WebView exposes actual screen buttons in XML.
 # Record tree first; treat missing accessibility support separately, never
 # fabricate an end-to-end tap PASS from source code or emulator startup alone.
