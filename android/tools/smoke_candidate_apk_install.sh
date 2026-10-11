@@ -13,7 +13,7 @@ test -s "$APK"
 capture_png(){
   local dest="$1" attempt tmp="${1}.partial"
   for attempt in 1 2 3 4 5; do
-    if timeout 25s capture_png "$tmp" 2>"$OUT/adb-screencap-last-error.txt" &&
+    if timeout 25s adb exec-out screencap -p > "$tmp" 2>"$OUT/adb-screencap-last-error.txt" &&
        python3 -c 'import pathlib,sys;d=pathlib.Path(sys.argv[1]).read_bytes();sys.exit(0 if d.startswith(bytes.fromhex("89504e470d0a1a0a")) and len(d)>30000 else 1)' "$tmp"; then
       mv "$tmp" "$dest"
       return 0
