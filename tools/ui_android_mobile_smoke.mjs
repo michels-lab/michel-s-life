@@ -318,6 +318,18 @@ try{
   });
   ok(missionSaveBounds.bottom<=915&&missionSaveBounds.top>=0&&missionSaveBounds.width>=115,
     'Android Mission Save is hidden below the system navigation bar: '+JSON.stringify(missionSaveBounds));
+  const modalTouchOwner=await page.evaluate(()=>{
+    const button=document.querySelector('#missionEditForm .actions button[type="submit"]');
+    const box=button?.getBoundingClientRect(),center=box&&{x:(box.left+box.right)/2,y:(box.top+box.bottom)/2};
+    const hit=center&&document.elementFromPoint(center.x,center.y);
+    const nav=document.querySelector('#mlv-android-bottom-nav'),topbar=document.querySelector('#mlv-android-topbar');
+    return {active:document.body.classList.contains('mlv-android-mission-edit-open'),
+      saveReceivesTap:!!hit&&(hit===button||button?.contains(hit)),
+      navHidden:!!nav&&getComputedStyle(nav).visibility==='hidden',
+      topbarHidden:!!topbar&&getComputedStyle(topbar).visibility==='hidden'};
+  });
+  ok(modalTouchOwner.active&&modalTouchOwner.saveReceivesTap&&modalTouchOwner.navHidden&&modalTouchOwner.topbarHidden,
+    'Android navigation intercepted a mission modal Save tap: '+JSON.stringify(modalTouchOwner));
   await page.locator('#missionEditForm .actions button[type="submit"]').click();
   await page.waitForFunction(()=>{
     const data=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}');
@@ -328,6 +340,10 @@ try{
   },null,{timeout:6500});
   ok(await page.locator('#modalRoot #missionEditForm').count()===0,
     'Mission editor did not dismiss after canonical state persisted');
+  await page.waitForFunction(()=>!document.body.classList.contains('mlv-android-mission-edit-open'),null,{timeout:1500});
+  ok(await page.evaluate(()=>getComputedStyle(document.getElementById('mlv-android-bottom-nav')).visibility!=='hidden'),
+    'Android bottom navigation was not restored after mission editor closed');
+
 
   // Settings was the slowest Android transition because legacy code rebuilt it repeatedly.
   await page.evaluate(()=>window.__mlvAndroidFastRoute?.('settings'));
