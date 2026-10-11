@@ -2174,6 +2174,18 @@ function replaceEmbeddedSystemPhrases(value,targetLanguage){
 
 function normalizeDynamicSystemCopy(value,targetLanguage){
   let out=String(value);
+  // The Dashboard time-range caption is generated at runtime as
+  // "day · YYYY-MM-DD" (or week/month), so the static label dictionary
+  // cannot see the full changing text. Translate the narrowly scoped
+  // date-caption shape in the canonical i18n authority, not via a DOM patch.
+  // Preserve user-entered prose, standalone mode words and the date itself.
+  out=out.replace(/^(\s*)(day|week|month|día|semana|mes)(\s*·\s*)(\d{4}-\d{2}-\d{2})(\s*)$/i,
+    (_,lead,period,separator,date,tail)=>{
+      const key=String(period).toLowerCase();
+      const modes={day:['day','día'],week:['week','semana'],month:['month','mes'],
+        'día':['day','día'],semana:['week','semana'],mes:['month','mes']};
+      return lead+modes[key][targetLanguage==='es'?1:0]+separator+date+tail;
+    });
   if(targetLanguage==='es'){
     out=out.replace(
       /(?:You have|Tienes)\s+(\d+)\s+(?:(?:pending|pendiente|pendientes)\s+)?(?:mission|missions|misión|misiones)(?:\s+(?:pending|pendiente|pendientes))?\s+(?:from yesterday|de ayer)\.?/gi,
