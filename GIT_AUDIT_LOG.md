@@ -1,5 +1,13 @@
 ## 2026-10-06 — Canonical Michel's Life identity adoption (implementation)
 
+## 2026-10-11 — Michel's Lab master UI evidence: browser integration candidate
+
+- Central QA reported a P0 missing common screenshot validator and release-channel invocations. Branch `fix/master-visual-evidence-gate-20261011` vendors the immutable master `tools/visual_release_gate.py`; the existing Chromium UI smoke now records both Home/About at wide and compact sizes and validates manifest coverage, screenshot integrity, source SHA and the exact candidate UI bundle SHA-256.
+- This scope validates `desktop-browser` only, not the shipped native Windows installed executable or APK. Android native screenshots already exist for a single emulator display in `android/tools/smoke_candidate_apk_install.sh`, but no evidence of two device size classes and Home/About surfaces has been verified; do **not** certify the Android P0 or add a pretend pass.
+- No changes to Themes, Current Chapter, background assets, product version, release authorization or signed artifacts. Follow-up: capture final packaged Windows executable Home/About on two supported window sizes; Android APK installed Home/About at compact and wide emulators; gate both actual release channels with their exact artifact digest.
+- State: candidate PR pending exact-head CI. Human visual review is post-release, real phone still separately pending.
+
+
 - **Agent route:** Michel's Lab queue P1 → `app-maintainer`; QA validation is the next gate.
 - Replaced active legacy celestial-M/generic-star branding with the approved **The Ascent** mountain/path/star product geometry.
 - Vendored canonical product app-icon/mark/lockup assets, the approved 480×640 Michel Duarte forest-trail portrait, and current Michel's Lab mark/lockup from `Michel-Software-Standards`.
