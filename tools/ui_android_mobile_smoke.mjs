@@ -460,6 +460,50 @@ try{
   await page.screenshot({path:screenshot.endsWith('.png')?screenshot.slice(0,-4)+'-mobile-shell.png':screenshot+'-mobile-shell.png'});
 
 
+  // Dedicated Android sections must preserve the canonical desktop renderers
+  // while fitting real 412px portrait geometry and their touch controls.
+  await page.evaluate(()=>window.__mlvAndroidFastRoute?.('missions'));
+  await page.waitForFunction(()=>!!document.querySelector('#main .v132-mission'),null,{timeout:7000});
+  const mobileMission=await page.evaluate(()=>{
+    const card=document.querySelector('#main .v132-mission');
+    const check=card?.querySelector('.v132-check');
+    const actions=card?.querySelector('.v132-mission-actions');
+    const rect=e=>{const x=e?.getBoundingClientRect();return x?{left:x.left,top:x.top,width:x.width,height:x.height,right:x.right}:null};
+    return {card:rect(card),check:rect(check),actions:rect(actions)};
+  });
+  ok(mobileMission.card?.width<=412&&mobileMission.check?.width>=44&&mobileMission.check?.height>=44
+    &&mobileMission.check?.left>=mobileMission.card.left&&mobileMission.check?.right<=mobileMission.card.right,
+    'Android Missions retains cramped desktop completion controls: '+JSON.stringify(mobileMission));
+  await page.evaluate(()=>window.__mlvAndroidFastRoute?.('calendar'));
+  await page.waitForFunction(()=>document.querySelector('#main .v30135-grid')?.children.length>=7,null,{timeout:10000});
+  const mobileCalendar=await page.evaluate(()=>{
+    const grid=document.querySelector('#main .v30135-grid');
+    const day=grid?.querySelector('.v30135-day');
+    const rect=e=>{const x=e?.getBoundingClientRect();return x?{left:x.left,top:x.top,right:x.right,width:x.width,height:x.height}:null};
+    const columns=getComputedStyle(grid).gridTemplateColumns.trim().split(/\\s+/);
+    return {grid:rect(grid),day:rect(day),columns,overflow:document.documentElement.scrollWidth-innerWidth};
+  });
+  ok(mobileCalendar.grid?.width<=412&&mobileCalendar.columns.length===7
+    &&mobileCalendar.day?.height>=60&&mobileCalendar.day?.width>=28
+    &&mobileCalendar.overflow<=2,
+    'Android Calendar still uses a sideways desktop grid: '+JSON.stringify(mobileCalendar));
+  await page.screenshot({path:screenshot.endsWith('.png')?screenshot.slice(0,-4)+'-mobile-calendar.png':screenshot+'-mobile-calendar.png'});
+  await page.evaluate(()=>window.__mlvAndroidFastRoute?.('journal'));
+  await page.waitForSelector('#main #mlv184JournalBody',{state:'visible',timeout:9000});
+  const mobileJournal=await page.evaluate(()=>{
+    const sheet=document.querySelector('#main .mlv184-journal-sheet');
+    const editor=document.querySelector('#main #mlv184JournalBody');
+    const history=document.querySelector('#main .mlv184-journal-history');
+    const rect=e=>{const x=e?.getBoundingClientRect();return x?{left:x.left,top:x.top,right:x.right,width:x.width,height:x.height}:null};
+    return {sheet:rect(sheet),editor:rect(editor),history:rect(history),
+      editorFont:getComputedStyle(editor).fontSize,overflow:document.documentElement.scrollWidth-innerWidth};
+  });
+  ok(mobileJournal.sheet?.width<=412&&mobileJournal.editor?.width<=412
+    &&parseFloat(mobileJournal.editorFont)>=16&&mobileJournal.editor?.height>=150
+    &&mobileJournal.overflow<=2,
+    'Android Journal editor is still a clipped desktop column: '+JSON.stringify(mobileJournal));
+  await page.screenshot({path:screenshot.endsWith('.png')?screenshot.slice(0,-4)+'-mobile-journal.png':screenshot+'-mobile-journal.png'});
+
   await page.evaluate(()=>window.__mlvAndroidFastRoute?.('dashboard'));
   await page.waitForFunction(
     ()=>!!document.getElementById('tab-dashboard') && (
