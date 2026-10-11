@@ -68,24 +68,67 @@ if [[ "$DEVICE_SIZE" =~ ^([0-9]+)x([0-9]+)$ ]]; then
   adb shell input tap "$X" "$Y"
   sleep 8
   adb exec-out screencap -p >"$OUT/step2-after-native-continue.png"
+  # On the pinned 1080x2400 Pixel 6 emulator, the step 2 focus footer
+  # Continue is lower than the step 1 button (roughly 84% of display height).
+  # Capture the next real packaged-WebView state separately. Do not call
+  # this a native Finish pass until the resulting screenshot is inspected.
+  NEXT_X="$((W * 83 / 100))"
+  NEXT_Y="$((H * 84 / 100))"
+  echo "Tapping installed WebView step-2 Continue at pixel $NEXT_X,$NEXT_Y on $DEVICE_SIZE"
+  adb shell input tap "$NEXT_X" "$NEXT_Y"
+  sleep 8
+  adb exec-out screencap -p >"$OUT/step3-after-native-continue.png"
+  # The step-3 Finish setup control is at ~81% width, 62% height on
+  # this pinned device. This coordinate is grounded in the same-run
+  # step-3 screenshot, not guessed from the browser-only fixture.
+  FINISH_X="$((W * 81 / 100))"
+  FINISH_Y="$((H * 62 / 100))"
+  echo "Tapping installed WebView Finish setup at pixel $FINISH_X,$FINISH_Y on $DEVICE_SIZE"
+  adb shell input tap "$FINISH_X" "$FINISH_Y"
+  sleep 12
+  adb exec-out screencap -p >"$OUT/step4-after-native-finish.png"
+  sleep 20
+  adb exec-out screencap -p >"$OUT/step4-after-native-finish-30s.png"
+  # A mere disappearing card may not mean the onboarding completion was
+  # persisted. Restart the exact installed app without clearing data and
+  # record whether it wrongly reappears.
+  adb shell am force-stop "$PKG"
+  adb shell am start -W -n "$PKG/.MainActivity" | tee "$OUT/relaunch-result.txt"
+  sleep 20
+  adb shell pidof "$PKG" >"$OUT/relaunch-process-id.txt"
+  adb exec-out screencap -p >"$OUT/step5-after-relaunch.png"
+  # WebView can still be mid-paint even after PackageManager / ActivityManager
+  # have reported success. Keep time-separated same-process evidence rather
+  # than classifying the initial cropped-logo/slab frame as a stable UI defect.
+  sleep 30
+  adb exec-out screencap -p >"$OUT/step5-after-relaunch-30s.png"
+  sleep 30
+  adb exec-out screencap -p >"$OUT/step5-after-relaunch-60s.png"
 else
   echo "::warning::Could not resolve native device dimensions: $DEVICE_SIZE; touch step not verified"
 fi
-# Accessibility on Android WebView exposes actual screen buttons in XML.
-# Record tree first; treat missing accessibility support separately, never
-# fabricate an end-to-end tap PASS from source code or emulator startup alone.
+# Native WebView accessibility may expose only a WebView container rather than
+# HTML controls. Save the real tree; do not fabricate button-press or completion
+# evidence when the actual native accessibility nodes are missing.
 adb shell uiautomator dump --compressed /sdcard/michel-candidate-ui.xml >"$OUT/accessibility-dump-output.txt" 2>&1 || true
-adb shell cat /sdcard/michel-candidate-ui.xml >"$OUT/step0-hierarchy.xml" 2>/dev/null || true
+adb shell cat /sdcard/michel-candidate-ui.xml >"$OUT/step5-hierarchy.xml" 2>/dev/null || true
 python3 - <<'PY'
 from pathlib import Path
 p=Path("artifacts/candidate-install")
 s=(p/"step0.png").read_bytes()
 if not s.startswith(bytes.fromhex("89504e470d0a1a0a")) or len(s)<10000:
     raise SystemExit("Failed to capture real Android candidate app screenshot")
-print("INSTALL + LAUNCH PASS; multiple native screenshots captured. Visual approval pending pixel review.")
-if (p/"step0-hierarchy.xml").exists():
-    xml=(p/"step0-hierarchy.xml").read_text(errors="replace")
-    print("Accessibility tree available:",len(xml),"bytes, Continue visible:", "Continue" in xml)
+for name in ("step2-after-native-continue.png", "step3-after-native-continue.png", "step4-after-native-finish.png", "step4-after-native-finish-30s.png", "step5-after-relaunch.png", "step5-after-relaunch-30s.png", "step5-after-relaunch-60s.png"):
+    frame = p/name
+    if not frame.exists():
+        raise SystemExit(f"Required native onboarding capture missing: {name}")
+    data = frame.read_bytes()
+    if not data.startswith(bytes.fromhex("89504e470d0a1a0a")) or len(data) < 30000:
+        raise SystemExit(f"Native onboarding screenshot is not a valid nontrivial PNG: {name}")
+print("INSTALL + LAUNCH + RELAUNCH PASS; captured two Continue taps, Finish tap and post-relaunch screenshots. Actual onboarding completion/persistence requires pixel review.")
+if (p/"step5-hierarchy.xml").exists():
+    xml=(p/"step5-hierarchy.xml").read_text(errors="replace")
+    print("Accessibility tree after native relaunch available:",len(xml),"bytes; WebView exposes label:", "Continue" in xml or "Finish" in xml)
 else:
-    print("Accessibility tree unavailable; onboarding native gesture test NOT VERIFIED")
+    print("Accessibility tree unavailable; verify native Finish/relaunch screenshots before claiming successful completion")
 PY
