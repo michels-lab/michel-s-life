@@ -155,6 +155,18 @@ try{
     clockStatus.date.bottom<=clockStatus.panel.bottom+3,
     'Android clock panel clips or omits its local date: '+JSON.stringify(clockStatus));
   const verticalStart=await page.evaluate(()=>{
+    window.__mlvTouchPreventTrace=[];
+    if(!window.__mlvPreventDefaultTracing){
+      window.__mlvPreventDefaultTracing=true;
+      const original=Event.prototype.preventDefault;
+      Event.prototype.preventDefault=function(...args){
+        if(this.type==='touchstart'||this.type==='touchmove'||this.type==='pointermove'){
+          window.__mlvTouchPreventTrace.push({type:this.type,element:this.target?.tagName||'',
+            stack:String(new Error().stack||'').slice(0,800)});
+        }
+        return original.apply(this,args);
+      };
+    }
     const root=document.scrollingElement;
     const cards=[...document.querySelectorAll('#tab-dashboard .v131-kpi')];
     const target=cards.find(el=>{
@@ -164,7 +176,13 @@ try{
     const r=target?.getBoundingClientRect();
     return {x:r?.left+r?.width/2,y:r?.top+r?.height/2,
       scrollTop:root?.scrollTop,range:(root?.scrollHeight||0)-innerHeight,
-      touched:target?.className||'',touchAction:target?getComputedStyle(target).touchAction:''};
+      touched:target?.className||'',touchAction:target?getComputedStyle(target).touchAction:'',
+      parents:(()=>{const path=[];let e=document.elementFromPoint(r?.left+r?.width/2,r?.top+r?.height/2);
+        while(e&&path.length<11){const css=getComputedStyle(e);
+          path.push({tag:e.tagName,id:e.id,className:String(e.className||'').slice(0,55),
+            touchAction:css.touchAction,overflowY:css.overflowY,position:css.position});
+          e=e.parentElement;
+        }return path;})()};
   });
   ok(Number.isFinite(verticalStart.x)&&Number.isFinite(verticalStart.y)&&verticalStart.range>250,
     'Cannot exercise real one-finger Android scrolling: '+JSON.stringify(verticalStart));
@@ -183,7 +201,8 @@ try{
     scrollTop:document.scrollingElement.scrollTop,
     range:document.scrollingElement.scrollHeight-innerHeight,
     active:document.querySelector('#v30171PrimaryNav .active[data-tab]')?.dataset?.tab||'',
-    gesture:window.__mlvAndroidGestureDebug?.result||''
+    gesture:window.__mlvAndroidGestureDebug?.result||'',
+    defaultPreventedBy:window.__mlvTouchPreventTrace?.slice(0,5)||[]
   }));
   ok(verticalEnd.scrollTop>=verticalStart.scrollTop+55,
     'A genuine one-finger upward drag did not scroll the Android dashboard: '+
