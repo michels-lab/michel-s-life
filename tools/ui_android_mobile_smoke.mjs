@@ -255,9 +255,26 @@ try{
     ok(missionGeometry.actions.left>=missionGeometry.content.left-2,'Mission actions are falling into the checkbox column: '+JSON.stringify(missionGeometry));
   }
 
-  const missionEditTouchTargets=await page.locator(
-    'article.v132-mission [data-action="edit"], article.quest-card [data-action="edit-mission"], article.mission-card [data-action="edit-mission"]'
-  ).first().evaluate(el=>{
+  // Full editing belongs to the Missions section, not every compact Today
+  // summary variant. Navigate there before requiring the editor action.
+  await page.evaluate(()=>window.__mlvAndroidFastRoute?.('missions'));
+  await page.waitForFunction(()=>{
+    const entry=document.querySelector('#v30171PrimaryNav [data-tab="missions"]');
+    return entry?.classList.contains('active') || entry?.getAttribute('aria-current')==='page';
+  },null,{timeout:5000});
+  await page.waitForSelector('#tab-missions',{state:'visible',timeout:5000});
+  const editSelector='#tab-missions [data-action="edit-mission"],#tab-missions [data-action="edit"]';
+  const candidateActions=await page.locator(editSelector).count();
+  if(!candidateActions){
+    const missionDiagnostics=await page.evaluate(()=>({
+      tabExists:!!document.querySelector('#tab-missions'),
+      visible:!!document.querySelector('#tab-missions')?.getBoundingClientRect().height,
+      rows:[...document.querySelectorAll('#tab-missions article')].slice(0,5).map(x=>({class:x.className,buttons:[...x.querySelectorAll('button')].map(b=>({action:b.dataset.action,text:b.textContent?.trim()?.slice(0,50)}))})),
+      available:[...document.querySelectorAll('#tab-missions button')].slice(0,30).map(b=>({text:b.textContent?.trim()?.slice(0,40),action:b.dataset.action}))
+    }));
+    throw new Error('Android Missions full editor action is missing: '+JSON.stringify(missionDiagnostics));
+  }
+  const missionEditTouchTargets=await page.locator(editSelector).first().evaluate(el=>{
     const r=el.getBoundingClientRect();return {width:r.width,height:r.height,left:r.left,right:r.right};
   });
   ok(missionEditTouchTargets.width>=43&&missionEditTouchTargets.height>=43,
@@ -265,9 +282,7 @@ try{
   // Mission editing must be a genuine mobile interaction and save to the
   // same canonical mission data as the Windows editor. Check touch targets,
   // scrollable form and sticky Save, not merely the existence of CSS.
-  const firstMissionEdit=page.locator(
-    'article.v132-mission [data-action="edit"], article.quest-card [data-action="edit-mission"], article.mission-card [data-action="edit-mission"]'
-  ).first();
+  const firstMissionEdit=page.locator(editSelector).first();
   ok(await firstMissionEdit.count()>0,'No working mission edit action on Android Today');
   await firstMissionEdit.click();
   await page.waitForSelector('#modalRoot #missionEditForm',{state:'visible',timeout:5000});
