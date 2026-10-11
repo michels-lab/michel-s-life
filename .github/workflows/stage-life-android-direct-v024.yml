@@ -52,7 +52,7 @@ jobs:
             .package == "com.michelslab.michelslife"
             and .platform == "android"
             and .distribution == "production-signed"
-            and .versionName == "0.2.3"
+            and .versionName == "0.2.4"
             and .versionCode == 6
             and .signerCertSha256 == $expected_cert
             and .sourceSha == $source

@@ -1,3 +1,11 @@
+## 2026-10-11 — v0.2.4 signed staging blocked by emulator relaunch / stale manifest gate (in repair)
+
+- **Source release-intent `a241dac6e42274dfe59685a61227c2af66280f08`:** Source validation, UI smoke, Android UI smoke all returned **success**, and signed build step produced the v0.2.4/code 6 Direct artifact with configured permanent certificate.
+- **Native-gate failure:** run `38127996025` failed after successfully building APK, launching candidate Android 16 and capturing initial onboarding, because the hosted emulator's ADB transport lost its process/port at relaunch. Required post-relaunch images were not available. This is a CI device disconnection, **not proof of successful native restart**. Failed native job was rerun without disabling screenshots/persistence gates; await its actual result.
+- **Independently found release defect:** `.github/workflows/stage-life-android-direct-v024.yml` still required JSON `.versionName == "0.2.3"` while actual v0.2.4 Gradle versionCode is 6. Even with green device CI that stale gate would reject the *correct* signed artifact. Updated staged manifest identity to `0.2.4 / code 6`, preserving cert, checksum, source-provenance and all CI gates.
+- **Permanent regression prevention:** `android/tools/validate_android_version.py` now checks the signed staging manifest's versionName and versionCode against Gradle and fails if either drifts. No credentials or signing keys changed; no loosening CI.
+- **Public release at the time of diagnosis:** still Windows v3.0.216 + Android Direct v0.2.3. **PENDING:** current PR validation and merge, exact-source signed v0.2.4 staging, public unified publish and independent verification; physical Galaxy UX and real Windows↔Galaxy sync remain unverified.
+
 ## 2026-10-11 — Android v0.2.4 (code 6) mobile sections + permanent-identity update candidate
 
 - **Request:** Ship already merged Android-specific navigation, touch-first Focus/Pomodoro, Quick Capture (PRs #51, #52, #57) and cloud data/credential boundary (PR #56), then continue designing Missions, Calendar and Journal for actual phones. No desktop visual/theme changes.
