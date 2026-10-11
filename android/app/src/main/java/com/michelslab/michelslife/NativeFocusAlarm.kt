@@ -68,14 +68,14 @@ internal object NativeFocusAlarm {
     }
 
     fun sync(context: Context, state: JSONObject): JSONObject {
-        val status = state.optString("status")
+        val phaseStatus = state.optString("status")
         val deadline = state.optLong("deadlineAt", 0L)
         val mode = if (state.optString("mode") == "break") "break" else "work"
         val now = System.currentTimeMillis()
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
         // Idle, paused or invalid states must remove the previous notification.
-        if (status != "running" || deadline <= 0L || deadline > now + MAX_FUTURE_MS) {
+        if (phaseStatus != "running" || deadline <= 0L || deadline > now + MAX_FUTURE_MS) {
             cancel(context)
             return status(context).put("scheduled", false)
         }
