@@ -383,6 +383,39 @@
       setImportantOnce(dashboardMetrics,'grid-template-columns','repeat(2,minmax(0,1fr))');
       setImportantOnce(dashboardMetrics,'gap','8px');
     }
+    // The canonical desktop Settings authority injects !important layout
+    // after Android's stylesheet. Own the live selector too: only Android
+    // uses this shallow horizontal pane navigator, Desktop remains unchanged.
+    const mobileSettings=q('#tab-settings > .v30171-settings-shell');
+    if(mobileSettings){
+      setImportantOnce(mobileSettings,'display','block');
+      setImportantOnce(mobileSettings,'grid-template-columns','minmax(0,1fr)');
+      setImportantOnce(mobileSettings,'width','100%');
+      setImportantOnce(mobileSettings,'max-height','none');
+      const nav=q('.v30171-settings-nav',mobileSettings);
+      if(nav){
+        [
+          ['position','relative'],['top','auto'],['display','flex'],
+          ['flex-direction','row'],['flex-wrap','nowrap'],['align-items','center'],
+          ['height','auto'],['min-height','0'],['max-height','none'],
+          ['width','100%'],['max-width','100%'],
+          ['overflow-x','auto'],['overflow-y','hidden'],
+          ['touch-action','pan-x'],['padding','7px'],['gap','6px'],
+          ['margin','0 0 10px']
+        ].forEach(([key,value])=>setImportantOnce(nav,key,value));
+        const heading=q('.v30171-settings-title',nav);
+        if(heading)setImportantOnce(heading,'display','none');
+        qa('button[data-v30171-setting]',nav).forEach(btn=>{
+          [
+            ['flex','0 0 auto'],['width','auto'],['min-width','75px'],
+            ['max-width','none'],['height','auto'],['min-height','40px'],
+            ['padding','8px 10px'],['white-space','nowrap']
+          ].forEach(([key,value])=>setImportantOnce(btn,key,value));
+          if(btn.dataset.v30171Setting==='sync')setImportantOnce(btn,'order','-2');
+          if(btn.dataset.v30171Setting==='google')setImportantOnce(btn,'order','-1');
+        });
+      }
+    }
     const app=q('.app');
     if(app){
       setImportantOnce(app,'padding','0');
