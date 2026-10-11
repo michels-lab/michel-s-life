@@ -582,6 +582,27 @@ try{
     'Mobile navigation is not touch-accessible above bottom system area: '+JSON.stringify(mobileNav));
   ok(mobileNav.tabs.join(',')==='dashboard,missions,focus,calendar,settings',
     'Mobile primary destinations diverged from platform navigation contract: '+JSON.stringify(mobileNav));
+  // Browser-only harness for the Android native alarm bridge. Validate that
+  // existing Focus mutations drive native alarm requests without a second
+  // session store; the actual BroadcastReceiver is built in Android CI.
+  await page.evaluate(()=>{
+    window.__mlvPreviousNativeBridge=window.MichelsLifeAndroid;
+    window.__mlvFocusNativeCalls=[];
+    window.MichelsLifeAndroid=Object.assign(
+      {},window.__mlvPreviousNativeBridge||{},{
+        requestFocusNotificationPermission(){
+          window.__mlvFocusNativeCalls.push({kind:'permission'});
+          return '{"notificationsGranted":true}';
+        },
+        focusNotificationStatus(){return '{"notificationsGranted":true}';},
+        syncFocusAlarm(payload){
+          const state=JSON.parse(payload);
+          window.__mlvFocusNativeCalls.push({kind:'sync',...state});
+          return '{"scheduled":true}';
+        }
+      }
+    );
+  });
   await page.locator('#mlv-android-bottom-nav [data-mobile-tab="focus"]').click();
   await page.waitForSelector('#mlv-android-focus-overlay:not([hidden])',{state:'visible'});
 
@@ -617,6 +638,11 @@ try{
   }));
   ok(Number(startedFocus.deadline)>Date.now()&&startedFocus.stored==='running',
     'Android Focus did not start/persist authoritative desktop timer: '+JSON.stringify(startedFocus));
+  const nativeStarted=await page.evaluate(()=>window.__mlvFocusNativeCalls.slice());
+  ok(nativeStarted.some(x=>x.kind==='permission')&&
+      nativeStarted.some(x=>x.kind==='sync'&&x.status==='running'&&x.deadlineAt>Date.now()),
+    'Starting Focus did not synchronize a native Android alarm after explicit notification consent: '+
+    JSON.stringify(nativeStarted));
   await page.locator('#mlv-android-focus-overlay [data-mobile-focus="toggle"]').click();
   await page.waitForFunction(()=>window.FocusStoryV30162?.focusState?.().status==='paused');
   const pausedFocus=await page.evaluate(()=>({
@@ -626,6 +652,9 @@ try{
   }));
   ok(pausedFocus.stored==='paused'&&pausedFocus.remaining>0,
     'Android Focus did not pause/persist the shared timer: '+JSON.stringify(pausedFocus));
+  const nativePaused=await page.evaluate(()=>window.__mlvFocusNativeCalls.slice());
+  ok(nativePaused.some(x=>x.kind==='sync'&&x.status==='paused'&&x.deadlineAt===0),
+    'Pausing Focus did not revoke Android background alarm: '+JSON.stringify(nativePaused));
   ok(await page.evaluate(()=>window.__mlvAndroidHandleBack?.()),'Android Back did not close Focus sheet');
   ok(await page.evaluate(()=>document.getElementById('mlv-android-focus-overlay').hidden),
     'Mobile Focus remained over content after system Back');
@@ -664,6 +693,14 @@ try{
   });
   ok(miniOnMissions.visible&&miniOnMissions.remaining.includes(':'),
     'Focus mini-timer disappeared after navigating to Missions: '+JSON.stringify(miniOnMissions));
+  const nativeAfterMini=await page.evaluate(()=>{
+    const calls=window.__mlvFocusNativeCalls.slice();
+    window.MichelsLifeAndroid=window.__mlvPreviousNativeBridge;
+    return calls;
+  });
+  ok(nativeAfterMini.filter(x=>x.kind==='sync'&&x.status==='running').length>=2,
+    'Resuming from the persistent mini-timer did not re-arm Android native alarm: '+
+    JSON.stringify(nativeAfterMini));
   // Real touch-first Quick Capture: the phone header action must work from
   // Missions and must reuse shared mission and Journal engines.
   await page.waitForSelector('#mlv-android-capture-button',{state:'visible'});
