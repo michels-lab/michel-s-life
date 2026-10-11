@@ -1,3 +1,11 @@
+## 2026-10-11 — Signed Direct v0.2.5 (code 7) published with Windows 3.0.217
+
+- **Released:** https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.217; both platform installers in the same non-draft public release. Exact source intent `05ccaa52c2899ba969d2d0ad396669d2552b0f2f`.
+- **UX:** PR #63 rebased the full touch-first Missions editor to current Android presentation. Name, description and actual canonical persistence passed Android Playwright smoke. Original test falsely toggled off a preselected Saturday; corrected test checked existing weekday state before manipulating it. No Themes/Chapter/Desktop visual redesign.
+- **Signing:** permanent Android Direct certificate fingerprint `36a9f5144243d14ebade9d38559cfd7d4d9207c1edba01e6f0fbdd5f076a50fa`, `com.michelslab.michelslife`, versionName 0.2.5/versionCode 7. APK exact SHA-256 `40db54f86058367235107c2ccadbc0555c1b8d9f864ae931f9db61e348c13613`.
+- **Verification:** source run [38175360615](https://github.com/michels-lab/michel-s-life/actions/runs/38175360615): green signed binary build and real Android 16 install/relaunch screenshots, Windows Setup install/launch, same-SHA Source/UI/Android UI checks. Destination-owned [run 38176304417](https://github.com/michels-lab/michel-s-life-releases/actions/runs/38176304417) verified checksum and signer again, then published.
+- **Caveats:** in-place upgrade should preserve data for v0.2.4 permanent Direct signer, but physical Galaxy data-retention remains unverified. Old debug-signed TEST v0.2.2 cannot upgrade in place; back up before removal. Real cloud account conflicts, mobile keyboard and native background alarms remain separate.
+
 ## 2026-10-11 — VERIFIED public unified release: Windows v3.0.216 + Android Direct v0.2.4 (code 6)
 
 - **Published:** existing single public GitHub release `michels-lab/michel-s-life-releases` tag `v3.0.216`, now titled Windows v3.0.216 + Android v0.2.4. All real Windows EXE/AppBundle/icon and SHA256 assets preserved. Old superseded Android v0.2.3 assets removed.
