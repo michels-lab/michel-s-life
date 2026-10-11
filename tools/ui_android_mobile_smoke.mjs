@@ -344,6 +344,10 @@ try{
     return {
       canonicalMissionCount:missions.length,
       mission:mission?{id:mission.id,name:mission.name,description:mission.description,days:mission.days,type:mission.type}:null,
+      editedMissions:missions.filter(m=>(m.name||'').includes('Android edited')||(m.description||'').includes('Mobile mission')).map(m=>({id:m.id,name:m.name,description:m.description,days:m.days})),
+      firstMissions:missions.slice(0,5).map(m=>({id:m.id,name:m.name,days:m.days})),
+      liveEditedMissions:(typeof state!=='undefined'&&state?.missions||[]).filter(m=>(m.name||'').includes('Android edited')).map(m=>({id:m.id,name:m.name,description:m.description,days:m.days})),
+      dataStorageKeys:Object.keys(localStorage).filter(k=>/rpg|michelsLife/i.test(k)),
       formOpen:!!editor,
       formName:editor?.querySelector('input[name="name"]')?.value??null,
       formDescription:editor?.querySelector('textarea[name="description"]')?.value??null,
