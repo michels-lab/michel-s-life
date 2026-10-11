@@ -210,6 +210,8 @@ try{
   // A second real browser viewport catches About clipping missed at 1600x1000.
   // This is browser-render evidence, NOT proof of packaged Windows or Android runtime.
   await page.setViewportSize({width:1280,height:800});
+  // Exact runtime compact Home candidate, paired with the existing wide dashboard and About captures.
+  await page.screenshot({path:`${out}/08-home-1280x800.png`,fullPage:false});
   await page.evaluate(()=>window.LeftNavV30171.route('settings'));
   await page.waitForSelector('[data-v30171-setting="about"]',{timeout:10000});
   await page.click('[data-v30171-setting="about"]');
