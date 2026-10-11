@@ -115,6 +115,13 @@
         min-width:44px!important;min-height:44px!important;
         border-radius:13px!important
       }
+      html[data-mlv-platform="android"] #tab-missions [data-action="v133-edit"],
+      html[data-mlv-platform="android"] #tab-dashboard [data-action="v133-edit"],
+      html[data-mlv-platform="android"] #tab-missions .v133-more-btn{
+        min-height:44px!important;height:44px!important;
+        min-width:44px!important;width:44px!important;
+        font-size:16px!important;touch-action:manipulation!important
+      }
       html[data-mlv-platform="android"] article.quest-card .quest-actions button,
       html[data-mlv-platform="android"] article.mission-card .actions button{
         min-height:44px!important;min-width:44px!important;
