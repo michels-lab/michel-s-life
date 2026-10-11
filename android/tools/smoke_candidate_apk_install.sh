@@ -92,7 +92,14 @@ p=Path("artifacts/candidate-install")
 s=(p/"step0.png").read_bytes()
 if not s.startswith(bytes.fromhex("89504e470d0a1a0a")) or len(s)<10000:
     raise SystemExit("Failed to capture real Android candidate app screenshot")
-print("INSTALL + LAUNCH PASS; step 1/2/3 native screenshots captured. Native Continue progression and Finish still require pixel review.")
+for name in ("step2-after-native-continue.png", "step3-after-native-continue.png"):
+    frame = p/name
+    if not frame.exists():
+        raise SystemExit(f"Required native onboarding capture missing: {name}")
+    data = frame.read_bytes()
+    if not data.startswith(bytes.fromhex("89504e470d0a1a0a")) or len(data) < 30000:
+        raise SystemExit(f"Native onboarding screenshot is not a valid nontrivial PNG: {name}")
+print("INSTALL + LAUNCH PASS; captured both Continue tap results as real native screenshots. Actual navigation/Finish still require pixel review.")
 if (p/"step3-hierarchy.xml").exists():
     xml=(p/"step3-hierarchy.xml").read_text(errors="replace")
     print("Accessibility tree after second native Continue available:",len(xml),"bytes; WebView exposes label:", "Continue" in xml or "Finish" in xml)
