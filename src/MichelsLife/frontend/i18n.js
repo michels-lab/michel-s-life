@@ -2389,6 +2389,9 @@ function mapTextUncached(raw){
     out=repairLegacyMixedSystemCopy(out);
     out=normalizeDynamicSystemCopy(out,'es');
     out=replaceEmbeddedSystemPhrases(out,'es');
+    // Dynamic dashboard date-mode label is rebuilt as "day · YYYY-MM-DD";
+    // translate only this generated system pattern, never arbitrary user text.
+    out=out.replace(/^(\s*)day(\s*·\s*\d{4}-\d{2}-\d{2}\s*)$/i,(_,lead,tail)=>lead+'día'+tail);
     for(const [canonicalEnglish,spanishDefault] of SPANISH_SYSTEM_DEFAULT_ENTRIES){
       if(out.includes(canonicalEnglish))out=out.split(canonicalEnglish).join(spanishDefault);
     }

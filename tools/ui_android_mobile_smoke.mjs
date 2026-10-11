@@ -139,8 +139,34 @@ try{
     ok(initial.actionDock.right<=8,'Closed Android drawer leaves quick actions over app content: '+JSON.stringify(initial));
   }
   if(initial.focusDock)ok(initial.focusDock.width===0&&initial.focusDock.height===0,'Legacy Focus dock still occupies Android content space: '+JSON.stringify(initial));
+  // Preserve a real screenshot for diagnosing user-visible layout drift when a regression gate fails.
+  await mkdir(dirname(screenshot),{recursive:true});
+  await page.screenshot({path:screenshot.endsWith('.png')?screenshot.slice(0,-4)+'-initial-dashboard.png':screenshot+'-initial-dashboard.png'});
+  const preCardGeometry=await page.evaluate(()=>{
+    const main=document.getElementById('main'),card=main?.querySelector('.card');
+    const all=Array.from(main?.querySelectorAll('section,header,.card')||[])
+      .filter(x=>x.getBoundingClientRect().height>0&&x.getBoundingClientRect().bottom<card?.getBoundingClientRect().top+3)
+      .slice(0,8).map(x=>({tag:x.tagName,id:x.id,className:String(x.className||'').slice(0,120),top:x.getBoundingClientRect().top,height:x.getBoundingClientRect().height,text:(x.innerText||'').trim().slice(0,100)}));
+    return {items:all,mainTop:main?.getBoundingClientRect().top,cardTop:card?.getBoundingClientRect().top};
+  });
   ok(initial.main&&initial.main.top<190,'Primary content starts too low and still requires an initial scroll: '+JSON.stringify(initial));
-  ok(initial.firstCard&&initial.firstCard.top<240,'First dashboard card starts too low: '+JSON.stringify(initial));
+  // A real first-run "pending mission from yesterday" carry-over prompt
+  // appears ABOVE Today's card and adds ~147px. Treat the prompt as content,
+  // never as an unexplained blank gap or a license to hide user reminders.
+  const carryoverPrompt=await page.evaluate(()=>{
+    const main=document.getElementById('main');
+    const card=main?.querySelector('.card');
+    const buttons=Array.from(main?.querySelectorAll('button')||[]);
+    const decline=buttons.find(x=>/Do not move anything/i.test(x.textContent||''));
+    const accept=buttons.find(x=>/Move all without duplicates/i.test(x.textContent||''));
+    const bb=x=>{const b=x?.getBoundingClientRect();return b?{top:b.top,bottom:b.bottom,width:b.width,height:b.height}:null};
+    const a=bb(decline),b=bb(accept),c=bb(card);
+    return {visible:!!(a&&b&&c&&a.width>30&&b.width>30&&a.bottom<=c.top&&b.bottom<=c.top),
+      decline:a,accept:b,card:c,bodyContains:!!main?.textContent?.includes('pending mission from yesterday')};
+  });
+  const firstCardMaxTop=carryoverPrompt.visible?410:240;
+  ok(initial.firstCard&&initial.firstCard.top<firstCardMaxTop,
+    'First dashboard card starts too low, accounting for actionable carry-over prompt: '+JSON.stringify({initial,carryoverPrompt,preCardGeometry}));
   ok(initial.overflow<=2,'Android page has horizontal overflow: '+JSON.stringify(initial));
 
   await page.locator('#mlv-android-menu-button').click();
@@ -349,6 +375,17 @@ try{
     }catch(_){}
     window.__MICHELSLIFE_INSTALL_LANGUAGE__='en';
     window.MichelsLifeAndroid={postMessage(){}};
+    // Temporary regression diagnostics: capture the source of unintended
+    // palette writes, including JS stacks, without changing app behavior.
+    window.__mlPaletteWrites=[];
+    const nativeSet=CSSStyleDeclaration.prototype.setProperty;
+    CSSStyleDeclaration.prototype.setProperty=function(k,v,p){
+      if(k==='--accent'){
+        const w=window.__mlPaletteWrites;
+        if(w&&w.length<300)w.push({value:String(v),stack:String(new Error().stack).split(/\n/).slice(1,9).join(' | ')});
+      }
+      return nativeSet.call(this,k,v,p);
+    };
   });
   await fresh.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
   await fresh.waitForSelector('#mlv200Onboarding',{state:'visible',timeout:60000});
@@ -357,7 +394,34 @@ try{
   if(!(await fresh.locator('#mlv200Onboarding .mlv200-focus input[type="checkbox"]').count())){
     const next=fresh.locator('#mlv200Onboarding [data-mlv200-onboard="next"]');
     ok(await next.count(),'Fresh onboarding has no Continue button');
+    await fresh.waitForTimeout(1600);
+    const colorState=()=>fresh.evaluate(()=>{
+      const tokens=['--accent','--ui-accent-rgb','--ui-panel-rgb','--ui-card-rgb','--ui-gold-rgb'];
+      const get=(el)=>Object.fromEntries(tokens.map(k=>[k,getComputedStyle(el).getPropertyValue(k).trim()]));
+      const card=document.querySelector('#mlv200Onboarding .mlv200-onboard-card');
+      return {html:get(document.documentElement),body:get(document.body),card:card?get(card):null,
+        cardBackground:card?getComputedStyle(card).backgroundImage:null,
+        savedTheme:localStorage.getItem('michelsLifeTheme.v343')||'',
+        chosenWorld:document.querySelector('[data-mlv200-theme].active')?.getAttribute('data-mlv200-theme')||null
+      };
+    });
+    const colorsStep1=await colorState();
     await next.click();
+    await fresh.waitForTimeout(900);
+    const colorsStep2=await colorState();
+    const paletteTrace=await fresh.evaluate(()=>({
+      writes:(window.__mlPaletteWrites||[]).slice(-24),
+      persisted:Object.fromEntries(['michelsLifeTheme.v3000','michelsLife.theme.v343','michelsLife.themePreset.v343','michelsLifeTheme.v343'].map(k=>[k,localStorage.getItem(k)])),
+      settings:{onboardingRequired:window.state?.settings?.onboardingRequired,
+        v3000Theme:window.state?.settings?.v3000Theme,
+        v133Theme:window.state?.settings?.v133Theme}
+    }));
+    console.log('ANDROID_ONBOARD_THEME_STEP1_TO_STEP2',JSON.stringify({colorsStep1,colorsStep2,paletteTrace}));
+    ok(JSON.stringify(colorsStep1.html)===JSON.stringify(colorsStep2.html)&&
+       JSON.stringify(colorsStep1.body)===JSON.stringify(colorsStep2.body)&&
+       JSON.stringify(colorsStep1.card)===JSON.stringify(colorsStep2.card)&&
+       colorsStep1.cardBackground===colorsStep2.cardBackground,
+       'Unexpected Android onboarding palette recolor on Continue: '+JSON.stringify({colorsStep1,colorsStep2}));
   }
   await fresh.waitForSelector('#mlv200Onboarding .mlv200-focus input[type="checkbox"]',{state:'visible',timeout:5000});
   const freshInstallOnboarding=await fresh.evaluate(()=>{
