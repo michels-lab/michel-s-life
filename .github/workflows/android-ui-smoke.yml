@@ -8,6 +8,7 @@ on:
     paths:
       - 'android/android-bridge.js'
       - 'android/mobile-experience.js'
+      - 'android/mobile-sections.js'
       - 'android/tools/prepare_bundle.py'
       - 'tools/ui_android_mobile_smoke.mjs'
       - 'tools/ui_supabase_android_sync_smoke.mjs'
@@ -19,6 +20,7 @@ on:
       - 'tools/replace_bundle_index.py'
       - 'tools/inject_bundle_asset.py'
       - '.michelslab/release-intents/android-v023.txt'
+      - '.michelslab/release-intents/android-v024.txt'
       - '.github/workflows/android-ui-smoke.yml'
 
 permissions:
