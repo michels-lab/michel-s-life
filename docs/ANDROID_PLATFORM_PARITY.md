@@ -1,0 +1,48 @@
+# Michel's Life — Desktop ↔ Android capability and experience contract
+
+**Authority:** this is the Android-specific implementation matrix, not a replacement for Michel's Lab shared standards or the Android audit log. Keep the approved desktop Themes, chapter backgrounds, typography and identity assets unchanged. See `android/ANDROID_AUDIT_LOG.md` for chronological evidence.
+
+## Product rule
+
+**One domain/state model; two platform-appropriate experiences.** A platform-specific presentation must never clone domain objects, timers or sync loops. Maintain a single canonical contract for missions, contracts, journal, chapters, projects, focus sessions and user preferences. Android may expose native entry points and navigation to those domain APIs. UI code availability is **not** proof of real-device usability, account synchronization or alarms.
+
+### Parity acceptance matrix
+
+| Area | Shared desktop functionality | Android experience acceptance | Evidence / next gate |
+| --- | --- | --- | --- |
+| Dashboard **P0** | Today metrics, daily missions, Premium, progress and layout options | Compact two-by-two metrics; actual missions/controls high in viewport; no hidden touch actions | 412×915 mobile computed bounds pass on current SHA; physical Galaxy review required |
+| Navigation / Quick Capture **P0** | All major tabs, quick task/journal capture | Fixed phone bottom shortcuts for Today, Missions, Focus, Calendar and Settings; drawer provides all remaining sections; correct Android Back & gesture safe areas | Android-specific Playwright and installed-emulator smoke; confirm device |
+| Missions **P0** | Create/edit/complete/filter/recurrence, due dates, XP, project/Next Up links | Touch-sized checks and editing; no hover-only actions; keyboard doesn't cover save; completion persists across reload | Mobile per-action test + Windows↔Galaxy same-account |
+| Focus/Pomodoro **P0** | Work/break presets, timer state, mission linkage, session history | Dedicated mobile Focus sheet using **FocusStoryV30162**; touch start/pause/reset/skip; don't hide the sole Focus entry in a zero-width desktop dock | Mobile timer shared-storage and back tests; physical device foreground/background test still pending |
+| Background alarms/notifications **P0** | Web notification center and soft in-app Focus sound | OS-managed scheduling, notification permission, firing while Android is backgrounded/locked, cancellation, recurrence, vibration; desktop uses OS-appropriate notifications | **NOT IMPLEMENTED** in native Android host. Separate native scheduler/receiver and real locked-device tests required |
+| Settings **P0** | General, Themes, Color Theme, Typography, UI, Focus, Notifications, Planning, Sync, Google, Data, Chapter Scenes, About | Horizontal reachable category navigation; selected pane immediately visible; full vertical document scroll; no nav-bar clipping | Mobile geometry/scroll/select tests; Galaxy recheck pending |
+| Supabase sync **P0** | Per-user snapshot, revisioned history, device presence, conflict UI | Same test account syncs both directions, cold start, offline edits, conflicts, recovery without duplicate XP/progress | Mock cross-device CI exists; physical Windows+Galaxy integration **NOT YET VERIFIED**, issue #28 |
+| Theme and profile parity **P0** | Chapter atmosphere, backgrounds, accents, typography, visual preferences | Equivalent persisted values; per-platform layout density separate; no duplicated theme engines | Source shared state; cross-device same-account and rendered screenshot tests pending |
+| Backup and restore **P0** | Snapshot/restore points and Google Drive fallback | Explicit export/import with SAF picker, safe local backup before overwrite, tested recovery | Shared frontend + Android restore points exist; Android file-picker paths and real recovery unverified |
+| Premium Contracts **P1** | Contract progress, rewards, mission links | Compact cards, readable rewards, touch-first detail | Mobile card flow and state test pending |
+| Calendar **P1** | Scheduling and optional Google Calendar | Month/agenda toggles, tap targets, accessibility and calendar consent/fallback | Mobile flow/provider consent tests pending |
+| Journal **P1** | Rich journal and history | Keyboard-aware editor, reliable save, readable history | Device keyboard and sync tests pending |
+| Projects / Planning **P1** | Projects, mission links, Next Up, ordering | Mobile project list/detail, drag/reorder alternative, correct mission links | Mobile touch tests pending |
+| Statistics / Compare / Weekly Review **P1** | Stats and comparison/report logic | Small-screen charts and tabs; avoid desktop-wide KPI layouts | Screenshot and period controls pending |
+| Story / Chapters **P1** | Current Chapter state, moments, backgrounds | Narrative screens with maintained approved visual identity, no expensive hidden animations | Two-frame animation, mobile render, sync tests pending |
+| Achievements / Affirmations **P2** | Full galleries/progression/text | Touch-sized cards, readable preview/detail, favorites | Touch/scroll and sync tests pending |
+| About **P1** | Product → author/studio → social identity | Narrow portrait/logo pairing, visible labeled external links | Dedicated mobile About screenshots and URL test pending |
+
+### State boundaries
+
+- **Sync:** domain state (mission history/XP, contracts, projects, journal, chapters, Focus presets/completed session history, theme identity and allowed user preferences). Compute statistics from synchronized domain data rather than uploading a parallel counter per platform.
+- **Remain local/device-scoped:** OAuth/refresh/session tokens, Android notification permission, push IDs, device installation/channel, Android locally scheduled alarm IDs, local file paths, open overlay/scroll positions, transient UI geometry, Windows hotkeys/tray state.
+- **Timer concurrency:** same stored Focus state/historical sessions does **not** guarantee one actual OS-level foreground/background timer between devices. Introduce explicit running-session ownership/recovery rules before claiming reliable cross-device live Focus handoff. The current Android overlay is an interface over the existing frontend clock, not a native background alarm.
+- **Conflict and safety:** every restore/import must create a local safety backup; compare revision + account before overwrite. No raw secrets or user content in CI logs. Validate deliberate simultaneous same-revision edits, Use Cloud/Use This Device and offline-reconnect flows on real devices.
+- **Platform UX:** desktop About remains in fixed header; Android bottom navigation must never obscure the app, keyboard, system navigation bar or modal controls. Hide redundant desktop dock entry points only if an equivalent working mobile entry point exists.
+
+## Release-level gates
+
+1. Static source validation and unit/domain tests for affected shared state.
+2. Real Android phone-viewport geometry, touch/Back, mobile Focus and onboarding tests against the **exact candidate**.
+3. Build signed candidate; install and launch the **same APK** in Android emulator; verify screenshot, state persistence and package signature.
+4. Windows installed app launch/regression if shared runtime or domain code changed.
+5. Real-device Windows↔Galaxy Supabase test for features claiming provider integration. CI mocks must not be relabeled as provider/device verification.
+6. Publish Windows and Android on **one** GitHub release only when explicitly authorized; owner performs visual review after release; documented regressions still require repair.
+
+**Current public baseline:** Windows v3.0.216 + Android v0.2.3. Android code on `main` can be ahead of that release; never infer a v0.2.4 public APK solely from merged source or passing CI.

@@ -351,6 +351,60 @@ try{
   await page.screenshot({path:screenshot.endsWith('.png')?screenshot.slice(0,-4)+'-settings-mobile-scroll.png':screenshot+'-settings-mobile-scroll.png'});
 
 
+  // Phone-owned navigation must be genuinely usable in the first viewport.
+  await page.waitForSelector('#mlv-android-bottom-nav [data-mobile-tab="focus"]',{state:'visible'});
+  const mobileNav=await page.evaluate(()=>{
+    const nav=document.getElementById('mlv-android-bottom-nav');
+    const bounds=nav?.getBoundingClientRect();
+    return {count:nav?.querySelectorAll('button[data-mobile-tab]').length,
+      geometry:bounds?{top:bounds.top,bottom:bounds.bottom,width:bounds.width,height:bounds.height}:null,
+      tabs:[...(nav?.querySelectorAll('button[data-mobile-tab]')||[])].map(el=>el.dataset.mobileTab)};
+  });
+  ok(mobileNav.count===5&&mobileNav.geometry&&mobileNav.geometry.bottom<=916&&mobileNav.geometry.top>780,
+    'Mobile navigation is not touch-accessible above bottom system area: '+JSON.stringify(mobileNav));
+  ok(mobileNav.tabs.join(',')==='dashboard,missions,focus,calendar,settings',
+    'Mobile primary destinations diverged from platform navigation contract: '+JSON.stringify(mobileNav));
+  await page.locator('#mlv-android-bottom-nav [data-mobile-tab="focus"]').click();
+  await page.waitForSelector('#mlv-android-focus-overlay:not([hidden])',{state:'visible'});
+  const focusStart=await page.evaluate(()=>({
+    sharedReady:!!window.FocusStoryV30162?.focusState,
+    time:document.getElementById('mlv-android-focus-time')?.textContent,
+    status:window.FocusStoryV30162?.focusState?.().status,
+    hasDuplicateStore:window.MichelsLifeMobileExperience?.focusState!==undefined
+  }));
+  ok(focusStart.sharedReady&&focusStart.time?.includes(':')&&focusStart.status==='ready'&&!focusStart.hasDuplicateStore,
+    'Mobile Focus must use existing shared Pomodoro state: '+JSON.stringify(focusStart));
+  await page.locator('#mlv-android-focus-overlay [data-mobile-focus="toggle"]').click();
+  await page.waitForFunction(()=>window.FocusStoryV30162?.focusState?.().status==='running');
+  const startedFocus=await page.evaluate(()=>({
+    deadline:window.FocusStoryV30162.focusState().deadlineAt,
+    status:window.FocusStoryV30162.focusState().status,
+    stored:JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}').v30162FocusTimer?.status
+  }));
+  ok(Number(startedFocus.deadline)>Date.now()&&startedFocus.stored==='running',
+    'Android Focus did not start/persist authoritative desktop timer: '+JSON.stringify(startedFocus));
+  await page.locator('#mlv-android-focus-overlay [data-mobile-focus="toggle"]').click();
+  await page.waitForFunction(()=>window.FocusStoryV30162?.focusState?.().status==='paused');
+  const pausedFocus=await page.evaluate(()=>({
+    status:window.FocusStoryV30162.focusState().status,
+    stored:JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}').v30162FocusTimer?.status,
+    remaining:window.FocusStoryV30162.remaining()
+  }));
+  ok(pausedFocus.stored==='paused'&&pausedFocus.remaining>0,
+    'Android Focus did not pause/persist the shared timer: '+JSON.stringify(pausedFocus));
+  ok(await page.evaluate(()=>window.__mlvAndroidHandleBack?.()),'Android Back did not close Focus sheet');
+  ok(await page.evaluate(()=>document.getElementById('mlv-android-focus-overlay').hidden),
+    'Mobile Focus remained over content after system Back');
+  await page.locator('#mlv-android-bottom-nav [data-mobile-tab="missions"]').click();
+  await page.waitForFunction(()=>
+    !!document.getElementById('tab-missions') && (
+      document.querySelector('#v30171PrimaryNav [data-tab="missions"]')?.classList.contains('active') ||
+      document.querySelector('#v30171PrimaryNav [data-tab="missions"]')?.getAttribute('aria-current')==='page'
+    ),null,{timeout:5000});
+  ok(await page.evaluate(()=>document.querySelector('#mlv-android-bottom-nav [data-mobile-tab="missions"]')?.getAttribute('aria-current')==='page'),
+    'Mobile nav did not reflect Missions selection');
+  await page.screenshot({path:screenshot.endsWith('.png')?screenshot.slice(0,-4)+'-mobile-shell.png':screenshot+'-mobile-shell.png'});
+
   await page.evaluate(()=>window.__mlvAndroidFastRoute?.('dashboard'));
   await page.waitForFunction(
     ()=>!!document.getElementById('tab-dashboard') && (
