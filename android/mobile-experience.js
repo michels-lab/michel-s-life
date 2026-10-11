@@ -463,7 +463,8 @@
       }
       #mlv-android-focus-sheet .mlv-android-focus-close{
         flex:0 0 48px!important;width:48px!important;height:48px!important;
-        min-width:48px!important;min-height:48px!important;
+        min-width:48px!important;min-height:48px!important;max-width:48px!important;
+        max-height:48px!important;padding:0!important;
         font-size:24px!important;border-radius:15px!important
       }
       #mlv-android-focus-sheet .mlv-android-focus-clock{
@@ -503,16 +504,18 @@
         grid-template-columns:repeat(2,minmax(0,1fr));gap:10px
       }
       #mlv-android-focus-sheet .mlv-android-focus-presets button{
-        min-height:56px;border-radius:16px!important;font-size:14px
+        min-height:56px!important;height:auto!important;padding:14px 12px!important;
+        border-radius:16px!important;font-size:14px!important
       }
       #mlv-android-focus-sheet .mlv-android-focus-main-actions{
         grid-template-columns:repeat(2,minmax(0,1fr));gap:10px
       }
       #mlv-android-focus-sheet .mlv-android-focus-main-actions button{
-        min-height:56px;border-radius:17px!important;font-size:14px
+        min-height:56px!important;height:auto!important;padding:14px 12px!important;
+        border-radius:17px!important;font-size:14px!important
       }
       #mlv-android-focus-sheet .mlv-android-focus-main-actions button.primary{
-        grid-column:span 2;min-height:62px;font-size:17px;
+        grid-column:span 2;min-height:62px!important;font-size:17px!important;
         box-shadow:0 9px 26px rgba(var(--ui-accent-rgb,117,228,255),.14)
       }
       #mlv-android-focus-sheet .mlv-android-focus-stats{
@@ -651,7 +654,7 @@
             <button type="button" class="mlv-android-focus-close" data-mobile-focus="close" aria-label="Close Focus">×</button>
           </div>
           <div class="mlv-android-focus-clock">
-            <div id="mlv-android-focus-progress-ring" aria-hidden="true">
+            <div id="mlv-android-focus-progress-ring">
               <div class="mlv-android-focus-dial">
                 <span class="mlv-android-focus-phase" id="mlv-android-focus-phase">FOCUS</span>
                 <strong id="mlv-android-focus-time" role="timer" aria-live="off">25:00</strong>
