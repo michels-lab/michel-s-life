@@ -331,6 +331,27 @@ try{
   ok(modalTouchOwner.active&&modalTouchOwner.saveReceivesTap&&modalTouchOwner.navHidden&&modalTouchOwner.topbarHidden,
     'Android navigation intercepted a mission modal Save tap: '+JSON.stringify(modalTouchOwner));
   await page.locator('#missionEditForm .actions button[type="submit"]').click();
+  // This test uses only the generated smoke profile (no user data).
+  // Show the exact form/status and saved canonical mission fields, so a
+  // failing Save test diagnoses the actual domain mismatch, not a timeout.
+  await page.waitForTimeout(350);
+  const syntheticSaveDiagnostics=await page.evaluate(()=>{
+    const key='vida_rpg_personal_progress_v2';
+    const stored=JSON.parse(localStorage.getItem(key)||'{}');
+    const missions=stored.missions||[];
+    const mission=missions.find(m=>m.id==='smoke-mission')||missions[0];
+    const editor=document.querySelector('#modalRoot #missionEditForm');
+    return {
+      canonicalMissionCount:missions.length,
+      mission:mission?{id:mission.id,name:mission.name,description:mission.description,days:mission.days,type:mission.type}:null,
+      formOpen:!!editor,
+      formName:editor?.querySelector('input[name="name"]')?.value??null,
+      formDescription:editor?.querySelector('textarea[name="description"]')?.value??null,
+      chosenDays:editor?[...editor.querySelectorAll('input[name="days"]:checked')].map(x=>x.value):null
+    };
+  });
+  console.log('MISSION_SAVE_DIAGNOSTICS '+JSON.stringify(syntheticSaveDiagnostics));
+
   await page.waitForFunction(()=>{
     const data=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}');
     return data.missions?.some(m=>
