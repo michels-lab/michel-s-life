@@ -15913,15 +15913,23 @@ body.ml-theme-ui [data-tab-panel="contracts"] .v216-contract-card{
 
   function theme(t){
     t=t||{};
+    // Legacy michelsLifeTheme.v3000 may contain ONLY glassAtmosphere/text/
+    // premium settings, without any palette fields. Falling back to literal
+    // PINK for missing fields silently recolored Android onboarding on every
+    // render/Continue event, despite no theme selection. Default to Android's
+    // existing cyan system palette and preserve explicit saved color fields.
+    // Desktop's historically approved default remains pink.
+    const onAndroid=window.__MICHELSLIFE_PLATFORM__==='android'||!!window.MichelsLifeAndroid;
+    const defaults=onAndroid?PALETTES.cyan:PALETTES.pink;
     return {
-      bg:t.bg||'#10070f',
-      shell:t.shell||t.panel||'#180b16',
-      panel:t.panel||'#261321',
-      card:t.card||'#170d16',
-      control:t.control||t.bg||'#11070e',
-      accent:t.accent||'#ff8ed0',
-      accent2:t.accent2||'#c18cff',
-      gold:t.gold||'#ffd166'
+      bg:t.bg||defaults.bg,
+      shell:t.shell||t.panel||defaults.shell||defaults.panel,
+      panel:t.panel||defaults.panel,
+      card:t.card||defaults.card,
+      control:t.control||t.bg||defaults.control||defaults.bg,
+      accent:t.accent||defaults.accent,
+      accent2:t.accent2||defaults.accent2,
+      gold:t.gold||defaults.gold
     };
   }
 
