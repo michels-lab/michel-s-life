@@ -375,6 +375,17 @@ try{
     }catch(_){}
     window.__MICHELSLIFE_INSTALL_LANGUAGE__='en';
     window.MichelsLifeAndroid={postMessage(){}};
+    // Temporary regression diagnostics: capture the source of unintended
+    // palette writes, including JS stacks, without changing app behavior.
+    window.__mlPaletteWrites=[];
+    const nativeSet=CSSStyleDeclaration.prototype.setProperty;
+    CSSStyleDeclaration.prototype.setProperty=function(k,v,p){
+      if(k==='--accent'){
+        const w=window.__mlPaletteWrites;
+        if(w&&w.length<250)w.push({value:String(v),stack:String(new Error().stack).split('\\n').slice(1,6).join(' | ')});
+      }
+      return nativeSet.call(this,k,v,p);
+    };
   });
   await fresh.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
   await fresh.waitForSelector('#mlv200Onboarding',{state:'visible',timeout:60000});
@@ -398,7 +409,14 @@ try{
     await next.click();
     await fresh.waitForTimeout(900);
     const colorsStep2=await colorState();
-    console.log('ANDROID_ONBOARD_THEME_STEP1_TO_STEP2',JSON.stringify({colorsStep1,colorsStep2}));
+    const paletteTrace=await fresh.evaluate(()=>({
+      writes:(window.__mlPaletteWrites||[]).slice(-24),
+      persisted:Object.fromEntries(['michelsLifeTheme.v3000','michelsLife.theme.v343','michelsLife.themePreset.v343','michelsLifeTheme.v343'].map(k=>[k,localStorage.getItem(k)])),
+      settings:{onboardingRequired:window.state?.settings?.onboardingRequired,
+        v3000Theme:window.state?.settings?.v3000Theme,
+        v133Theme:window.state?.settings?.v133Theme}
+    }));
+    console.log('ANDROID_ONBOARD_THEME_STEP1_TO_STEP2',JSON.stringify({colorsStep1,colorsStep2,paletteTrace}));
     ok(JSON.stringify(colorsStep1.html)===JSON.stringify(colorsStep2.html)&&
        JSON.stringify(colorsStep1.body)===JSON.stringify(colorsStep2.body)&&
        JSON.stringify(colorsStep1.card)===JSON.stringify(colorsStep2.card)&&
