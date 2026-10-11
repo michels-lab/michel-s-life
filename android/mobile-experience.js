@@ -925,13 +925,18 @@
       adaptMissionEditor();
     }
     // Hide floating timer while text input/IME owns the phone viewport.
+    const typingField=el=>!!el?.closest?.(
+      'textarea,[contenteditable="true"],input:not([type]),'+
+      'input[type="text"],input[type="search"],input[type="email"],'+
+      'input[type="password"],input[type="url"],input[type="tel"],input[type="number"]'
+    );
     document.addEventListener('focusin',event=>{
-      if(event.target?.closest?.('input,textarea,[contenteditable="true"]'))
+      if(typingField(event.target))
         document.body.classList.add('mlv-android-keyboard-editing');
     });
     document.addEventListener('focusout',()=>{
       setTimeout(()=>{
-        if(!document.activeElement?.closest?.('input,textarea,[contenteditable="true"]'))
+        if(!typingField(document.activeElement))
           document.body.classList.remove('mlv-android-keyboard-editing');
       },0);
     });
