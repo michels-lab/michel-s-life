@@ -155,6 +155,36 @@
       style.textContent=css;document.head.appendChild(style);
     }
   }
+  // Shared frontend and the Android bridge both re-render mission cards,
+  // sometimes adding late !important/inline geometry from older layouts.
+  // Own the final touch targets for Android without touching the desktop DOM.
+  function enforceRendered(){
+    if(!owned())return;
+    const main=document.getElementById('main');
+    if(!main)return;
+    main.querySelectorAll('.v132-mission .v132-check').forEach(el=>{
+      for(const key of ['width','height','min-width','min-height'])
+        if(el.style.getPropertyValue(key)!=='44px'||el.style.getPropertyPriority(key)!=='important')
+          el.style.setProperty(key,'44px','important');
+    });
+    main.querySelectorAll('.v30135-grid').forEach(el=>{
+      const val='repeat(7,minmax(0,1fr))';
+      if(el.style.getPropertyValue('grid-template-columns')!==val)
+        el.style.setProperty('grid-template-columns',val,'important');
+    });
+    const body=main.querySelector('#mlv184JournalBody');
+    if(body&&body.style.getPropertyValue('font-size')!=='16px')
+      body.style.setProperty('font-size','16px','important');
+  }
+  let observer=null;
+  function startOwnership(){
+    ensure();enforceRendered();
+    const main=document.getElementById('main');
+    if(!main||observer)return;
+    observer=new MutationObserver(()=>enforceRendered());
+    observer.observe(main,{childList:true,subtree:true});
+    document.addEventListener('click',()=>requestAnimationFrame(enforceRendered),true);
+  }
   function audit(){
     const mission=document.querySelector('#main .v132-mission');
     const cal=document.querySelector('#main .v30135-grid');
@@ -164,7 +194,7 @@
       columns:getComputedStyle(el).gridTemplateColumns}:null;
     return {mobile:owned(),missions:props(mission),calendar:props(cal),journal:props(journal)};
   }
-  window.MichelsLifeAndroidSections={ensure,audit};
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensure,{once:true});
-  else ensure();
+  window.MichelsLifeAndroidSections={ensure,audit,enforceRendered};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',startOwnership,{once:true});
+  else startOwnership();
 })();
