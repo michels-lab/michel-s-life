@@ -255,7 +255,9 @@ try{
     ok(missionGeometry.actions.left>=missionGeometry.content.left-2,'Mission actions are falling into the checkbox column: '+JSON.stringify(missionGeometry));
   }
 
-  const missionEditTouchTargets=await page.locator('article.v132-mission .v132-action-btn').first().evaluate(el=>{
+  const missionEditTouchTargets=await page.locator(
+    'article.v132-mission [data-action="edit"], article.quest-card [data-action="edit-mission"], article.mission-card [data-action="edit-mission"]'
+  ).first().evaluate(el=>{
     const r=el.getBoundingClientRect();return {width:r.width,height:r.height,left:r.left,right:r.right};
   });
   ok(missionEditTouchTargets.width>=43&&missionEditTouchTargets.height>=43,
