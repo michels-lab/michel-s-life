@@ -95,6 +95,138 @@
       html[data-mlv-platform="android"] [data-mlv216-qc] .mlv216-qc-buttons button{
         min-width:0;width:100%;margin:0
       }
+      /* Active mission editor owns the foreground and cannot be covered by
+         Android tab bar or header. On close these controls are restored. */
+      html[data-mlv-platform="android"] body.mlv-android-mission-edit-open #mlv-android-bottom-nav,
+      html[data-mlv-platform="android"] body.mlv-android-mission-edit-open #mlv-android-topbar{
+        visibility:hidden!important;pointer-events:none!important
+      }
+      /* Missions: touch-first rows + editor, same canonical mission FormData.
+         Editor stays an independent scroller with a sticky save region; native
+         adjustResize constrains the available viewport when IME is open. */
+      html[data-mlv-platform="android"] article.v132-mission>.v132-check,
+      html[data-mlv-platform="android"] article.v137-mission>.v132-check,
+      html[data-mlv-platform="android"] .mission-card .v132-check{
+        width:44px!important;height:44px!important;min-width:44px!important;
+        min-height:44px!important;grid-column:1!important;
+        border-radius:13px!important
+      }
+      html[data-mlv-platform="android"] article.v132-mission,
+      html[data-mlv-platform="android"] article.v137-mission{
+        grid-template-columns:46px minmax(0,1fr)!important;
+        gap:8px!important;align-items:start!important
+      }
+      html[data-mlv-platform="android"] article.v132-mission .v132-action-btn{
+        width:44px!important;height:44px!important;
+        min-width:44px!important;min-height:44px!important;
+        border-radius:13px!important
+      }
+      html[data-mlv-platform="android"] #tab-missions [data-action="v133-edit"],
+      html[data-mlv-platform="android"] #tab-dashboard [data-action="v133-edit"],
+      html[data-mlv-platform="android"] #tab-missions .v133-more-btn{
+        min-height:44px!important;height:44px!important;
+        min-width:44px!important;width:44px!important;
+        font-size:16px!important;touch-action:manipulation!important
+      }
+      html[data-mlv-platform="android"] article.quest-card .quest-actions button,
+      html[data-mlv-platform="android"] article.mission-card .actions button{
+        min-height:44px!important;min-width:44px!important;
+        font-size:13px!important;touch-action:manipulation!important
+      }
+      html[data-mlv-platform="android"] article.v132-mission .v132-menu-body button{
+        min-height:44px!important;text-align:left!important
+      }
+      html[data-mlv-platform="android"] #modalRoot:has(#missionEditForm) .modal-backdrop{
+        position:fixed!important;inset:0!important;display:flex!important;
+        flex-direction:column!important;align-items:center!important;
+        justify-content:flex-end!important;box-sizing:border-box!important;
+        padding:0!important;overflow:hidden!important;
+        z-index:2147483150!important
+      }
+      html[data-mlv-platform="android"] #modalRoot:has(#missionEditForm) .modal{
+        width:100%!important;max-width:700px!important;
+        height:auto!important;max-height:calc(100dvh - 8px)!important;
+        min-height:0!important;margin:0!important;
+        display:flex!important;flex-direction:column!important;
+        overflow-x:hidden!important;overflow-y:auto!important;
+        overscroll-behavior:contain!important;
+        padding:15px 15px calc(20px + env(safe-area-inset-bottom,0px))!important;
+        border-radius:22px 22px 0 0!important
+      }
+      html[data-mlv-platform="android"] #modalRoot:has(#missionEditForm) .modal-head{
+        position:sticky!important;top:-16px!important;z-index:3!important;
+        flex:0 0 auto!important;min-width:0!important;
+        align-items:flex-start!important;margin:0 0 10px!important;
+        padding:6px 0 10px!important;
+        background:rgba(var(--ui-panel-rgb,8,15,27),.99)!important
+      }
+      html[data-mlv-platform="android"] #modalRoot:has(#missionEditForm) .modal-head h2{
+        font-size:21px!important;line-height:1.12!important
+      }
+      html[data-mlv-platform="android"] #modalRoot:has(#missionEditForm) .modal-head p{
+        font-size:11px!important;line-height:1.32!important
+      }
+      html[data-mlv-platform="android"] #modalRoot:has(#missionEditForm) .modal-head .icon-btn{
+        flex:0 0 44px!important;width:44px!important;height:44px!important;
+        min-width:44px!important;min-height:44px!important
+      }
+      html[data-mlv-platform="android"] #missionEditForm{
+        flex:0 0 auto!important;width:100%!important;
+        min-width:0!important;display:block!important
+      }
+      html[data-mlv-platform="android"] #missionEditForm .form-grid{
+        display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+        gap:10px!important;min-width:0!important
+      }
+      html[data-mlv-platform="android"] #missionEditForm .form-grid label:first-child,
+      html[data-mlv-platform="android"] #missionEditForm .form-grid label:has(input[name="deadline"]){
+        grid-column:span 2!important
+      }
+      html[data-mlv-platform="android"] #missionEditForm label{
+        min-width:0!important;max-width:100%!important;overflow-wrap:anywhere!important
+      }
+      html[data-mlv-platform="android"] #missionEditForm input:not([type="checkbox"]),
+      html[data-mlv-platform="android"] #missionEditForm select,
+      html[data-mlv-platform="android"] #missionEditForm textarea{
+        box-sizing:border-box!important;width:100%!important;
+        min-width:0!important;min-height:48px!important;
+        font-size:16px!important;line-height:1.35!important;
+        padding:10px!important
+      }
+      html[data-mlv-platform="android"] #missionEditForm textarea{
+        min-height:88px!important;resize:vertical!important
+      }
+      html[data-mlv-platform="android"] #missionEditForm .days{
+        display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+        gap:7px!important;width:100%!important;min-width:0!important
+      }
+      html[data-mlv-platform="android"] #missionEditForm .day-chip{
+        display:flex!important;align-items:center!important;gap:7px!important;
+        min-height:45px!important;min-width:0!important;
+        padding:8px!important;box-sizing:border-box!important;
+        white-space:normal!important;touch-action:manipulation!important
+      }
+      html[data-mlv-platform="android"] #missionEditForm .day-chip input[type="checkbox"]{
+        appearance:checkbox!important;-webkit-appearance:checkbox!important;
+        flex:0 0 22px!important;width:22px!important;height:22px!important;
+        min-width:22px!important;min-height:22px!important;
+        margin:0!important
+      }
+      html[data-mlv-platform="android"] #missionEditForm > .actions{
+        display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+        gap:8px!important;position:sticky!important;
+        bottom:calc(-20px - env(safe-area-inset-bottom,0px))!important;
+        z-index:4!important;width:100%!important;min-width:0!important;
+        margin-top:12px!important;padding:12px 0
+          calc(12px + env(safe-area-inset-bottom,0px))!important;
+        border-top:1px solid rgba(255,255,255,.12)!important;
+        background:rgba(var(--ui-panel-rgb,8,15,27),.99)!important
+      }
+      html[data-mlv-platform="android"] #missionEditForm > .actions button{
+        min-width:0!important;width:100%!important;
+        min-height:49px!important;font-size:13px!important;
+        margin:0!important;padding:10px!important
+      }
       @media(min-width:700px){
         html[data-mlv-platform="android"] [data-mlv216-qc] .mlv216-qc-card{
           margin-bottom:12px!important;border-radius:24px
@@ -178,6 +310,55 @@
       }
     `;
     document.head.appendChild(style);
+  }
+  // Shared mission editor is recreated by desktop renderers. Android owns
+  // its final form geometry after DOM insertion, so desktop !important and
+  // late-injected styles cannot re-introduce narrow weekday hit areas.
+  function adaptMissionEditor(){
+    const form=q('#modalRoot #missionEditForm');
+    const isAndroid=document.documentElement.dataset.mlvPlatform==='android';
+    // A full-screen editor is an exclusive interaction layer, not content
+    // above still-clickable fixed navigation. Observer restores it on close.
+    document.body.classList.toggle('mlv-android-mission-edit-open',!!(isAndroid&&form));
+    if(!form||!isAndroid)return;
+    const host=q('#modalRoot'),backdrop=q('.modal-backdrop',host),modal=q('.modal',backdrop);
+    const force=(el,property,value)=>{
+      if(!el)return;
+      if(el.style.getPropertyValue(property)===value&&el.style.getPropertyPriority(property)==='important')return;
+      el.style.setProperty(property,value,'important');
+    };
+    [
+      ['display','flex'],['flex-direction','column'],['align-items','center'],
+      ['justify-content','flex-end'],['padding','0'],['inset','0'],['overflow','hidden']
+    ].forEach(([property,value])=>force(backdrop,property,value));
+    [
+      ['width','100vw'],['max-width','100vw'],['min-width','0'],
+      ['height','auto'],['max-height','calc(100dvh - 8px)'],
+      ['margin','0'],['box-sizing','border-box'],['overflow-y','auto'],
+      ['overflow-x','hidden'],['border-radius','22px 22px 0 0'],
+      ['padding','15px 15px calc(20px + env(safe-area-inset-bottom,0px))']
+    ].forEach(([property,value])=>force(modal,property,value));
+    form.querySelectorAll('.days').forEach(days=>{
+      [['display','grid'],['grid-template-columns','repeat(2,minmax(0,1fr))'],
+       ['width','100%'],['min-width','0'],['gap','8px']].forEach(([property,value])=>force(days,property,value));
+    });
+    form.querySelectorAll('label.day-chip').forEach(label=>{
+      [['display','flex'],['align-items','center'],['min-height','46px'],
+       ['padding','8px'],['box-sizing','border-box'],['min-width','0'],
+       ['touch-action','manipulation'],['white-space','normal']]
+        .forEach(([property,value])=>force(label,property,value));
+    });
+    const actions=q(':scope > .actions',form);
+    if(actions){
+      [['position','sticky'],['bottom','0'],['display','grid'],
+       ['grid-template-columns','repeat(2,minmax(0,1fr))'],
+       ['width','100%'],['min-width','0'],['gap','8px'],
+       ['z-index','4'],['padding','12px 0 calc(12px + env(safe-area-inset-bottom,0px))']]
+        .forEach(([property,value])=>force(actions,property,value));
+      actions.querySelectorAll('button').forEach(button=>{
+        [['min-height','49px'],['width','100%'],['min-width','0']].forEach(([property,value])=>force(button,property,value));
+      });
+    }
   }
   function adaptQuickCaptureControls(){
     const field=q('[data-mlv216-qc]:not([hidden]) [data-mlv216-qc-input]');
@@ -368,6 +549,12 @@
     };
     const observer=new MutationObserver(updateActive);
     observer.observe(document.body,{attributes:true,attributeFilter:['data-mlv-android-tab']});
+    const modalHost=q('#modalRoot');
+    if(modalHost){
+      const missionObserver=new MutationObserver(adaptMissionEditor);
+      missionObserver.observe(modalHost,{childList:true,subtree:true});
+      adaptMissionEditor();
+    }
     ticker=window.setInterval(()=>{if(!document.body.isConnected){window.clearInterval(ticker);return;}updateFocus();},1000);
   }
   window.MichelsLifeMobileExperience={openFocus:open,closeFocus:close,updateFocus,isFocusOpen};
