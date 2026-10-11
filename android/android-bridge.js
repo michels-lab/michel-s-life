@@ -483,7 +483,16 @@
       setImportantOnce(status,'position','relative');
       setImportantOnce(status,'top','auto');
       setImportantOnce(status,'max-height','88px');
-      setImportantOnce(status,'overflow','visible');
+      // Exact one-finger CI hit-testing exposed an invisible, absolutely
+      // positioned desktop status card above Dashboard metrics. A stylesheet
+      // display:none was not sufficient against late inline !important
+      // owners. Remove those old tiles from layout AND hit-testing at runtime.
+      status.querySelectorAll('.v176-card').forEach(card=>{
+        setImportantOnce(card,'display','none');
+        setImportantOnce(card,'visibility','hidden');
+        setImportantOnce(card,'pointer-events','none');
+      });
+      setImportantOnce(status,'overflow','hidden');
       let summary=status.querySelector('#mlv-android-time-summary');
       if(!summary){
         summary=document.createElement('div');
