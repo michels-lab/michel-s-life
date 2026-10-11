@@ -186,6 +186,8 @@ try{
   });
   ok(Number.isFinite(verticalStart.x)&&Number.isFinite(verticalStart.y)&&verticalStart.range>250,
     'Cannot exercise real one-finger Android scrolling: '+JSON.stringify(verticalStart));
+  ok(!String(verticalStart.parents?.[0]?.className||'').includes('v176-card'),
+    'Invisible desktop status overlay intercepts Dashboard touches: '+JSON.stringify(verticalStart));
   const verticalCdp=await context.newCDPSession(page);
   const x=verticalStart.x, y=verticalStart.y, distance=Math.min(320,y-108);
   await verticalCdp.send('Input.dispatchTouchEvent',{type:'touchStart',
