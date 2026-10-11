@@ -900,3 +900,10 @@ Public state:
 - Owner reports generic Android *App not installed*. On-device status and signer fingerprint were not inspected, so installer causal certainty remains pending. Warn to export verified local backup before uninstall/reinstall.
 - Fix in development: separate direct-distribution Gradle build/signing credentials from CI debug and Google Play upload, verify pinned certificate and current version, prohibit unconfigured/rotated direct signers, document safe migration path. CI must validate this on the candidate HEAD; a green debug APK build alone is not release signing proof.
 - Do not create a new public GitHub release or overwrite the existing unified Windows+Android page with yet another ephemeral debug-signed APK. Future stable Direct APK release requires an owner-controlled signing key, configured secret variables, current build/CI evidence, and explicit release authorization.
+
+## 2026-10-10 — Dynamic dashboard period caption localization (issue #40)
+
+- Earlier live UI smoke run `38010718967` failed on visible English `day · 2026-10-11` while Spanish was selected. This is a generated runtime period/date caption, so static translation entries for `DAY`, `Day`, etc. do not match the changing full text.
+- Implemented **one canonical translation rule** in `src/MichelsLife/frontend/i18n.js`, `normalizeDynamicSystemCopy`, limited to exact `day|week|month · YYYY-MM-DD` captions, preserving date and spacing. It also restores `día|semana|mes` to canonical English on language switch; arbitrary sentences are excluded.
+- Added focused Spanish period probes + English round-trip probes to `tools/ui_spanish_smoke.mjs`, preserving existing DOM-wide visible English audits. No palette, visual base, theme, platform version or release changes.
+- Required validation: current-commit source/UI smoke; do not close #40 until live Spanish DOM no longer leaks `day · date`. Branch `fix/dashboard-dynamic-period-i18n`, unreleased.
