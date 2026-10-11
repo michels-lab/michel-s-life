@@ -305,6 +305,51 @@
     `;
     document.head.appendChild(style);
   }
+  // Shared mission editor is recreated by desktop renderers. Android owns
+  // its final form geometry after DOM insertion, so desktop !important and
+  // late-injected styles cannot re-introduce narrow weekday hit areas.
+  function adaptMissionEditor(){
+    const form=q('#modalRoot #missionEditForm');
+    if(!form||document.documentElement.dataset.mlvPlatform!=='android')return;
+    const host=q('#modalRoot'),backdrop=q('.modal-backdrop',host),modal=q('.modal',backdrop);
+    const force=(el,property,value)=>{
+      if(!el)return;
+      if(el.style.getPropertyValue(property)===value&&el.style.getPropertyPriority(property)==='important')return;
+      el.style.setProperty(property,value,'important');
+    };
+    [
+      ['display','flex'],['flex-direction','column'],['align-items','center'],
+      ['justify-content','flex-end'],['padding','0'],['inset','0'],['overflow','hidden']
+    ].forEach(([property,value])=>force(backdrop,property,value));
+    [
+      ['width','100vw'],['max-width','100vw'],['min-width','0'],
+      ['height','auto'],['max-height','calc(100dvh - 8px)'],
+      ['margin','0'],['box-sizing','border-box'],['overflow-y','auto'],
+      ['overflow-x','hidden'],['border-radius','22px 22px 0 0'],
+      ['padding','15px 15px calc(20px + env(safe-area-inset-bottom,0px))']
+    ].forEach(([property,value])=>force(modal,property,value));
+    form.querySelectorAll('.days').forEach(days=>{
+      [['display','grid'],['grid-template-columns','repeat(2,minmax(0,1fr))'],
+       ['width','100%'],['min-width','0'],['gap','8px']].forEach(([property,value])=>force(days,property,value));
+    });
+    form.querySelectorAll('label.day-chip').forEach(label=>{
+      [['display','flex'],['align-items','center'],['min-height','46px'],
+       ['padding','8px'],['box-sizing','border-box'],['min-width','0'],
+       ['touch-action','manipulation'],['white-space','normal']]
+        .forEach(([property,value])=>force(label,property,value));
+    });
+    const actions=q(':scope > .actions',form);
+    if(actions){
+      [['position','sticky'],['bottom','0'],['display','grid'],
+       ['grid-template-columns','repeat(2,minmax(0,1fr))'],
+       ['width','100%'],['min-width','0'],['gap','8px'],
+       ['z-index','4'],['padding','12px 0 calc(12px + env(safe-area-inset-bottom,0px))']]
+        .forEach(([property,value])=>force(actions,property,value));
+      actions.querySelectorAll('button').forEach(button=>{
+        [['min-height','49px'],['width','100%'],['min-width','0']].forEach(([property,value])=>force(button,property,value));
+      });
+    }
+  }
   function adaptQuickCaptureControls(){
     const field=q('[data-mlv216-qc]:not([hidden]) [data-mlv216-qc-input]');
     if(!field)return;
@@ -494,6 +539,12 @@
     };
     const observer=new MutationObserver(updateActive);
     observer.observe(document.body,{attributes:true,attributeFilter:['data-mlv-android-tab']});
+    const modalHost=q('#modalRoot');
+    if(modalHost){
+      const missionObserver=new MutationObserver(adaptMissionEditor);
+      missionObserver.observe(modalHost,{childList:true,subtree:true});
+      adaptMissionEditor();
+    }
     ticker=window.setInterval(()=>{if(!document.body.isConnected){window.clearInterval(ticker);return;}updateFocus();},1000);
   }
   window.MichelsLifeMobileExperience={openFocus:open,closeFocus:close,updateFocus,isFocusOpen};
