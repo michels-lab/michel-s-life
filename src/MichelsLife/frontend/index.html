@@ -29568,8 +29568,31 @@ ${runtime.error?`<div class="mlv190-google-error">${esc(runtime.error)}</div>`:'
 <div class="mlv190-google-note"><strong>Google sign-in:</strong> press <b>Connect Google</b>, finish authorization in your browser, then return to Michel’s Life. Status and errors stay in this panel.</div>
 </section>`}
 function mountGoogleSettings(){if(mounting)return;mounting=true;try{if(String(state?.activeTab||'')!=='settings')return;const pane=document.querySelector('[data-v30171-pane="google"]');if(!pane)return;const s=settings(),sig=JSON.stringify([runtime.hasCredentials,runtime.connected,runtime.cloudReady,runtime.account,runtime.busy,runtime.cloudBusy,runtime.error,runtime.cloudError,runtime.cloudAction,runtime.cloudLastSync,runtime.cloudConflict?.message||'',runtime.notice,runtime.confirmAction,s.showEvents,s.pushMissions,s.autoSync,s.cloudAutoSync,s.lastSync||'']);let card=pane.querySelector('[data-mlv190-google-card]');if(card&&card.dataset.mlv190Sig===sig)return;const html=googlePaneHTML(),t=document.createElement('template');t.innerHTML=html;const next=t.content.firstElementChild;if(!next)return;next.dataset.mlv190Sig=sig;if(!card)pane.appendChild(next);else card.replaceWith(next)}finally{mounting=false}}
-function captureCloudBackup(){const ls={};for(const [k,v] of Object.entries(localStorage)){if(!String(k).startsWith('michelsLife.internal.'))ls[k]=v}return JSON.stringify({app:"Michel's Life",type:'cloud-sync',cloudPayloadVersion:1,version:BUILD,state:JSON.parse(JSON.stringify(state)),localStorage:ls})}
-async function applyCloudRestore(res){if(!res?.backupJson)throw new Error('Google Drive returned no Michel’s Life cloud data.');const backup=JSON.parse(res.backupJson),ls=backup.localStorage&&typeof backup.localStorage==='object'?backup.localStorage:null,incoming=backup.state&&typeof backup.state==='object'?backup.state:null;if(!ls&&!incoming)throw new Error('Cloud save is not restorable.');runtime.restoring=true;clearTimeout(cloudSaveTimer);try{localStorage.clear();if(ls)for(const [k,v] of Object.entries(ls))localStorage.setItem(k,String(v));if(incoming)localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(incoming));await bridge('cloudAccept',{hash:res.remoteHash||res.localHash||'',remoteModifiedAt:res.remoteModifiedAt||null});sessionStorage.setItem('mlv191CloudRestored','1');location.reload()}finally{runtime.restoring=false}}
+/* Cloud identity boundary: user preferences belong in backups, but local
+   Supabase/Google login, tokens, device IDs, permissions and future unknown
+   storage keys MUST NOT cross account devices. */
+const MLV_SHARED_STORAGE_KEYS=new Set(["vida_rpg_personal_progress_v2","michelsLife.backgroundSet.v3049","michelsLifeTheme.v3000","michelsLifeTheme.v341","michelsLife.theme.v342","michelsLife.theme.v343","michelsLifeThemePreset.v341","michelsLife.themePreset.v342","michelsLife.themePreset.v343","michelsLife.colorTheme.v30184","michelsLife.typography.v303","michelsLife.glassAtmosphere.v3042","michelsLife.panelTransparency.v3060","michelsLife.premiumColor.v3044","michelsLife.textColor.v3042","michelsLife.mutedTextColor.v3042","michelsLife.dayText.v3072","michelsLife.dayText.v3073","michelsLife.dayChipText.v3062","michelsLife.dayChipText.v3064","michelsLifePalette.v264","michelsLife.journal.v30184","michelsLifeBackgroundSetsV3088","michelsLife.language.v1"]);
+function mlvSharedStorageSnapshot(){
+  const out={};for(const k of MLV_SHARED_STORAGE_KEYS){const v=localStorage.getItem(k);if(v!=null)out[k]=v}
+  return out;
+}
+function mlvRestoreSharedStorageKeys(raw){
+  if(!raw||typeof raw!=='object')return;
+  for(const k of MLV_SHARED_STORAGE_KEYS)localStorage.removeItem(k);
+  for(const [k,v] of Object.entries(raw)){
+    if(MLV_SHARED_STORAGE_KEYS.has(k)&&typeof v==='string')localStorage.setItem(k,v);
+  }
+}
+window.MLVCloudSharedStorageV30216={
+  allowed:key=>MLV_SHARED_STORAGE_KEYS.has(String(key)),
+  capture:mlvSharedStorageSnapshot,
+  restore:mlvRestoreSharedStorageKeys
+};
+function captureCloudBackup(){
+  return JSON.stringify({app:"Michel's Life",type:'cloud-sync',cloudPayloadVersion:2,
+    version:BUILD,state:JSON.parse(JSON.stringify(state)),localStorage:mlvSharedStorageSnapshot()});
+}
+async function applyCloudRestore(res){if(!res?.backupJson)throw new Error('Google Drive returned no Michel’s Life cloud data.');const backup=JSON.parse(res.backupJson),ls=backup.localStorage&&typeof backup.localStorage==='object'?backup.localStorage:null,incoming=backup.state&&typeof backup.state==='object'?backup.state:null;if(!ls&&!incoming)throw new Error('Cloud save is not restorable.');runtime.restoring=true;clearTimeout(cloudSaveTimer);try{if(ls)mlvRestoreSharedStorageKeys(ls);if(incoming)localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(incoming));await bridge('cloudAccept',{hash:res.remoteHash||res.localHash||'',remoteModifiedAt:res.remoteModifiedAt||null});sessionStorage.setItem('mlv191CloudRestored','1');location.reload()}finally{runtime.restoring=false}}
 function cloudActionLabel(a){return ({created:'Cloud save created',uploaded:'Uploaded',downloaded:'Restored from cloud',noop:'Up to date',conflict:'Conflict'})[a]||a||''}
 async function syncCloud(mode='auto',opts={}){if(mode==='auto'&&window.SupabaseSyncV30216?.runtime?.connected)return null;if(runtime.cloudBusy)return null;if(!runtime.connected){if(!opts.silent)toastSafe('Michel’s Life Cloud','Connect Google first.');return null}if(!runtime.cloudReady){runtime.cloudError='Reconnect Google once to grant Google Drive Cloud Sync permission.';mountGoogleSettings();if(!opts.silent)toastSafe('Michel’s Life Cloud',runtime.cloudError);return null}runtime.cloudBusy=true;runtime.cloudError='';mountGoogleSettings();try{const backupJson=captureCloudBackup();const res=await bridge('cloudSync',{backupJson,localChangedAt:runtime.lastDirtyAt,mode});runtime.cloudAction=cloudActionLabel(res?.action);runtime.cloudLastSync=new Date().toISOString();if(res?.conflict){runtime.cloudConflict=res;if(!opts.silent)toastSafe('Cloud conflict','Both this PC and Google Drive changed. Choose which copy to keep in Settings → Google.');mountGoogleSettings();return res}runtime.cloudConflict=null;if(res?.requiresRestore){await applyCloudRestore(res);return res}runtime.lastDirtyAt=null;if(!opts.silent)toastSafe('Michel’s Life Cloud',res?.message||runtime.cloudAction||'Synced.');return res}catch(err){runtime.cloudError=String(err?.message||err);if(!opts.silent)toastSafe('Michel’s Life Cloud',runtime.cloudError);return null}finally{runtime.cloudBusy=false;mountGoogleSettings()}}
 function scheduleCloudSave(){if(window.SupabaseSyncV30216?.runtime?.connected)return;if(!runtime.cloudInitialDone||runtime.restoring||!settings().cloudAutoSync||!runtime.connected||!runtime.cloudReady)return;clearTimeout(cloudSaveTimer);cloudSaveTimer=setTimeout(()=>{cloudSaveTimer=null;syncCloud('auto',{silent:true})},30000)}
@@ -30793,9 +30816,10 @@ function applySnapshot(snapshot){
  if(!ls&&!incoming)throw new Error('Supabase snapshot has no Michel’s Life state.');
  applying=true;
  try{
-   const preserved={};[SESSION_KEY,META_KEY,DEVICE_KEY].forEach(k=>{const v=localStorage.getItem(k);if(v!=null)preserved[k]=v});
    const restoredState=incoming?(typeof migrate==='function'?migrate(JSON.parse(JSON.stringify(incoming))):JSON.parse(JSON.stringify(incoming))):null;
-   localStorage.clear();if(ls)for(const [k,v] of Object.entries(ls))localStorage.setItem(k,String(v));for(const [k,v] of Object.entries(preserved))localStorage.setItem(k,v);
+   // A legacy remote snapshot may contain auth/session or source-device keys:
+   // ignore them. Never clear an Android/Windows device's own login context.
+   if(ls)window.MLVCloudSharedStorageV30216.restore(ls);
    if(restoredState){state=restoredState;localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(restoredState))}
  }finally{applying=false}
 }
