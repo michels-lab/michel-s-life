@@ -19,6 +19,7 @@ on:
     paths:
       - 'android/app/**'
       - 'android/android-bridge.js'
+      - 'android/mobile-experience.js'
       - 'android/tools/**'
       - 'android/build.gradle.kts'
       - 'android/settings.gradle.kts'
@@ -36,6 +37,7 @@ on:
     paths:
       - 'android/app/**'
       - 'android/android-bridge.js'
+      - 'android/mobile-experience.js'
       - 'android/tools/**'
       - 'android/build.gradle.kts'
       - 'android/settings.gradle.kts'
@@ -92,6 +94,7 @@ jobs:
       - name: Validate Android mobile UX layer
         run: |
           node --check android/android-bridge.js
+          node --check android/mobile-experience.js
           python android/tools/validate_android_mobile_ux.py
           python tools/validate_brand_identity.py
 
