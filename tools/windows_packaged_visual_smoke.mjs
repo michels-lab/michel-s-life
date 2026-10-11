@@ -11,7 +11,8 @@
  */
 import {spawn, spawnSync} from "node:child_process";
 import {createHash} from "node:crypto";
-import {existsSync, mkdirSync, readFileSync, writeFileSync} from "node:fs";
+import {existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync} from "node:fs";
+import {tmpdir} from "node:os";
 import {resolve, dirname, join} from "node:path";
 import {chromium} from "playwright-core";
 
@@ -32,6 +33,10 @@ const setupSha = hash(setup);
 const installedSha = hash(executable);
 const pause = ms => new Promise(r => setTimeout(r, ms));
 const port = 9397;
+// Never share the profile with the preceding installed-launch smoke. Existing
+// WebView2 browser subprocesses can survive closing the UI host, so a second
+// launch otherwise reuses an old browser started without the CDP flag.
+const visualUserDataFolder = mkdtempSync(join(tmpdir(), "michels-life-visual-webview2-"));
 let proc, browser;
 const captures = [];
 async function poll(debuggerUrl, deadline) {
@@ -95,9 +100,21 @@ try {
     windowsHide: false,
     stdio: "ignore",
     env: {...process.env,
-      WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: "--remote-debugging-port=" + port}
+      WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: "--remote-debugging-port=" + port,
+      WEBVIEW2_USER_DATA_FOLDER: visualUserDataFolder}
   });
-  await poll("http://127.0.0.1:" + port + "/json/version", Date.now() + 90000);
+  try {
+    await poll("http://127.0.0.1:" + port + "/json/version", Date.now() + 45000);
+  } catch (error) {
+    // Diagnostic only: do not invent screenshots or bypass the failure.
+    const check = spawnSync("pwsh", ["-NoProfile", "-Command",
+      "$child = Get-CimInstance Win32_Process | Where-Object { $_.Name -match 'msedgewebview2' }; " +
+      "'WEBVIEW_CHILD_COUNT=' + @($child).Count; " +
+      "'HAS_CDP_FLAG=' + @($child | Where-Object { $_.CommandLine -match '--remote-debugging-port=" + port + "' }).Count"
+    ], {encoding: "utf8", timeout: 12000});
+    console.error("Installed WebView2 startup diagnostics:", check.stdout, check.stderr);
+    throw error;
+  }
   browser = await chromium.connectOverCDP("http://127.0.0.1:" + port, {timeout:30000});
   const page = await applicationPage();
   await page.evaluate(() => {
