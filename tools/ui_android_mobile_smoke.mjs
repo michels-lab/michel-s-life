@@ -263,7 +263,7 @@ try{
     return entry?.classList.contains('active') || entry?.getAttribute('aria-current')==='page';
   },null,{timeout:5000});
   await page.waitForSelector('#tab-missions',{state:'visible',timeout:5000});
-  const editSelector='#tab-missions [data-action="edit-mission"],#tab-missions [data-action="edit"]';
+  const editSelector='#tab-missions [data-action="v133-edit"],#tab-missions [data-action="edit-mission"],#tab-missions [data-action="edit"]';
   const candidateActions=await page.locator(editSelector).count();
   if(!candidateActions){
     const missionDiagnostics=await page.evaluate(()=>({
