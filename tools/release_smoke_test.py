@@ -31,6 +31,7 @@ for p in (PROGRAM,GOOGLE,SECRETS,DESKTOP_SHELL,FRONTEND,APP_ICON,MARK,LOCKUP,LAB
 
 program=read(PROGRAM)
 assert 'CurrentAppVersion = new("3.0.217")' in program
+assert 'PublicReleaseRepository = "michels-lab/michel-s-life-releases";' in program, 'Windows updater must use product-only Michel\'s Life release repository'
 for stale in ('3.0.216','3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207','3.0.208','3.0.209','3.0.210','3.0.211','3.0.212','3.0.213','3.0.214','3.0.215'):
     assert stale not in program, f'stale host version remains: {stale}'
 for marker in ('ComputeEmbeddedBundleFingerprint','SHA256.Create()','string.Equals(marker, bundleFingerprint','File.WriteAllText(markerPath, bundleFingerprint)'):

@@ -29,9 +29,9 @@ try{
           onlineChannelConfigured:true,
           onlineStatus:'Connected',
           onlineAvailable:true,
-          onlineVersion:'3.0.216',
-          onlineDownloadUrl:'https://example.invalid/MichelsLife-Portable-v3.0.216.exe',
-          onlineChecksumUrl:'https://example.invalid/MichelsLife-Portable-v3.0.216.exe.sha256',
+          onlineVersion:'3.0.217',
+          onlineDownloadUrl:'https://example.invalid/MichelsLife-Portable-v3.0.217.exe',
+          onlineChecksumUrl:'https://example.invalid/MichelsLife-Portable-v3.0.217.exe.sha256',
           onlineReleaseNotes:'Automatic update smoke test',
           candidatePath:'',
           candidateVersion:''

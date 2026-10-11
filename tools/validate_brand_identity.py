@@ -49,7 +49,7 @@ for marker in (
     'data-mlv-author-brand="canonical"',
     'About the author',
     'mlvdev-social-icon',
-    "window.__MICHELS_LIFE_BUILD__||'3.0.216'",
+    "window.__MICHELS_LIFE_BUILD__||'3.0.217'",
 ):
     assert marker in frontend, f"frontend missing canonical identity marker: {marker}"
 assert 'assets/michels_life_logo.webp' not in frontend, 'legacy product logo is still active in frontend'

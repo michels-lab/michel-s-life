@@ -69,6 +69,8 @@ for name in ('Program.cs','GoogleCalendarService.cs'):
             raise SystemExit('Program.cs installer-language bridge is missing the late-document reconciliation path')
         if 'MichelsLife.DesktopShell.Attach(this, _webView);' not in text:
             raise SystemExit('Program.cs desktop shell injection failed')
+    if name=='Program.cs':
+        text=text.replace('realmichelduarte/michel-s-life-releases','michels-lab/michel-s-life-releases')
     data=text.encode('utf-8')
     (ROOT/name).write_bytes(data)
     print('materialized',name)
