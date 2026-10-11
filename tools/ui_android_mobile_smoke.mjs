@@ -480,7 +480,7 @@ try{
     const grid=document.querySelector('#main .v30135-grid');
     const day=grid?.querySelector('.v30135-day');
     const rect=e=>{const x=e?.getBoundingClientRect();return x?{left:x.left,top:x.top,right:x.right,width:x.width,height:x.height}:null};
-    const columns=getComputedStyle(grid).gridTemplateColumns.trim().split(/\\s+/);
+    const columns=getComputedStyle(grid).gridTemplateColumns.trim().split(/\s+/);
     return {grid:rect(grid),day:rect(day),columns,overflow:document.documentElement.scrollWidth-innerWidth};
   });
   ok(mobileCalendar.grid?.width<=412&&mobileCalendar.columns.length===7
