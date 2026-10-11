@@ -310,7 +310,16 @@ try{
   ok(missionEditGeometry.modalScrollable,'Android Mission editor must scroll independently to all options: '+JSON.stringify(missionEditGeometry));
   await page.locator('#missionEditForm input[name="name"]').fill('Android edited canonical mission');
   await page.locator('#missionEditForm textarea[name="description"]').fill('Mobile mission editor saves actual shared state');
-  await page.locator('#missionEditForm .day-chip:has(input[name="days"][value="6"])').click();
+  const saturdayChip=page.locator('#missionEditForm .day-chip:has(input[name="days"][value="6"])');
+  const saturdayInput=page.locator('#missionEditForm input[name="days"][value="6"]');
+  // The chosen mission may already recur on Saturday. Exercise a real
+  // touch toggle without accidentally disabling a preselected weekday.
+  if(await saturdayInput.isChecked()){
+    await saturdayChip.click();
+    ok(!(await saturdayInput.isChecked()),'Saturday did not toggle off in the mobile editor');
+  }
+  await saturdayChip.click();
+  ok(await saturdayInput.isChecked(),'Saturday did not toggle on in the mobile editor');
   await page.locator('#missionEditForm .actions button[type="submit"]').scrollIntoViewIfNeeded();
   const missionSaveBounds=await page.evaluate(()=>{
     const modal=document.querySelector('#modalRoot .modal'),btn=document.querySelector('#missionEditForm .actions button[type="submit"]');
