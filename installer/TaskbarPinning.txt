@@ -1,0 +1,15 @@
+Michel's Life — Pin to Windows taskbar / Anclar a la barra de tareas
+
+ENGLISH
+This is a user guide, not an automatic taskbar pin.
+1. Find and open Michel's Life from the Windows Start menu.
+2. While Michel's Life is open, right-click its taskbar icon.
+3. Select "Pin to taskbar". Windows policies may prohibit pinning.
+4. If you want to remove it, right-click the icon and select "Unpin from taskbar".
+
+ESPAÑOL
+Estas son instrucciones, no un anclaje automático.
+1. Busca y abre Michel's Life desde el menú Inicio de Windows.
+2. Con Michel's Life abierta, haz clic derecho en el icono de la barra de tareas.
+3. Selecciona "Anclar a la barra de tareas". Algunas políticas de Windows pueden impedirlo.
+4. Para quitarlo, haz clic derecho y selecciona "Desanclar de la barra de tareas".

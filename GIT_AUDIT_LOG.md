@@ -923,3 +923,8 @@ Public state:
 - Implemented **one canonical translation rule** in `src/MichelsLife/frontend/i18n.js`, `normalizeDynamicSystemCopy`, limited to exact `day|week|month · YYYY-MM-DD` captions, preserving date and spacing. It also restores `día|semana|mes` to canonical English on language switch; arbitrary sentences are excluded.
 - Added focused Spanish period probes + English round-trip probes to `tools/ui_spanish_smoke.mjs`, preserving existing DOM-wide visible English audits. No palette, visual base, theme, platform version or release changes.
 - Required validation: current-commit source/UI smoke; do not close #40 until live Spanish DOM no longer leaks `day · date`. Branch `fix/dashboard-dynamic-period-i18n`, unreleased.
+
+## 2026-10-11 — Native Windows setup acceptance and shortcut choices
+- Inno Setup welcomes users and displays the complete existing `LICENSE.txt` personal-use license with interactive accept/decline before file installation.
+- Existing optional desktop shortcut retained. Added optional unchecked post-install bilingual user-directed Windows taskbar pinning guide via Notepad; explicitly no forced silent taskbar pin. Installer language selection remains English/Spanish; version, app identity, and Android behavior untouched.
+- Full Windows installer CI and interactive wizard rendered evidence pending; no new app version or release. Standard: `michels-lab/Michel-Software-Standards/standards/WINDOWS_INSTALLER_EXPERIENCE_STANDARD.md`.

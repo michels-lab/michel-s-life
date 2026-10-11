@@ -18,6 +18,8 @@ OutputBaseFilename=MichelsLife-Setup-v{#MyAppVersion}
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
+DisableWelcomePage=no
+LicenseFile=..\LICENSE.txt
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 UninstallDisplayIcon={app}\MichelsLife.exe
@@ -35,8 +37,11 @@ english.AdditionalIcons=Additional icons:
 spanish.AdditionalIcons=Iconos adicionales:
 english.LaunchApp=Launch Michel's Life
 spanish.LaunchApp=Abrir Michel's Life
+english.PinTaskbarHelp=Show how to pin Michel's Life to the taskbar
+spanish.PinTaskbarHelp=Ver cómo anclar Michel's Life a la barra de tareas
 
 [Files]
+Source: "TaskbarPinning.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#PublishDir}\MichelsLife.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
@@ -51,3 +56,4 @@ Root: HKCU; Subkey: "Software\Michel's Life"; ValueType: string; ValueName: "Lan
 
 [Run]
 Filename: "{app}\MichelsLife.exe"; Description: "{cm:LaunchApp}"; Flags: nowait postinstall skipifsilent
+Filename: "{sys}\notepad.exe"; Parameters: """{app}\TaskbarPinning.txt"""; Description: "{cm:PinTaskbarHelp}"; Flags: nowait postinstall skipifsilent unchecked
