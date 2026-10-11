@@ -235,7 +235,12 @@
     const active=document.activeElement;
     if(active?.id!=='mlv-android-focus-work')q('#mlv-android-focus-work',root).value=String(f.workMin);
     if(active?.id!=='mlv-android-focus-break')q('#mlv-android-focus-break',root).value=String(f.breakMin);
-    const mission=(window.state?.missions||[]).find(m=>String(m.id)===String(f.linkedMissionId||''));
+    // Top-level desktop "state" is a global lexical binding, not
+    // window.state. Read the canonical persisted snapshot for display only.
+    // All timer mutations remain in FocusStoryV30162.
+    let savedState={};
+    try{savedState=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')||{}}catch(_){}
+    const mission=(savedState.missions||[]).find(m=>String(m.id)===String(f.linkedMissionId||''));
     q('#mlv-android-focus-linked',root).textContent=mission?'Mission: '+mission.name:'No mission linked';
     const today=new Date(),local=String(today.getFullYear())+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
     const completed=(api.focusSessions?.()||[]).filter(x=>x.status==='completed'&&x.date===local).length;
