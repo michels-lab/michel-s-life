@@ -271,6 +271,20 @@ try{
     'Android Dashboard metrics still stack in an oversized desktop column: '+JSON.stringify(mobileDashboardDensity));
 
 
+
+  // Focus is a first-class Today action, before daily KPI cards, not
+  // something a phone user must discover in Settings.
+  const todayFocus=await page.evaluate(()=>{
+    const hero=document.querySelector('#tab-dashboard .v131-hero');
+    const tile=hero?.querySelector('#mlv-android-today-focus');
+    const kpis=hero?.querySelector('.v131-kpis');
+    const button=tile?.querySelector('button');
+    const r=el=>{const x=el?.getBoundingClientRect();return x?{top:x.top,bottom:x.bottom,width:x.width,height:x.height}:null};
+    return {tile:r(tile),metrics:r(kpis),button:r(button),label:button?.textContent?.trim()||''};
+  });
+  ok(todayFocus.tile&&todayFocus.button&&todayFocus.button.height>=44&&
+      todayFocus.tile.bottom<=todayFocus.metrics.top+2&&todayFocus.label==='Start',
+    'Today does not expose a touch-size Focus entry above metrics: '+JSON.stringify(todayFocus));
   await page.locator('#mlv-android-menu-button').click();
   await page.waitForTimeout(260);
   const drawerOpen=await page.evaluate(()=>{
@@ -570,6 +584,22 @@ try{
     'Mobile primary destinations diverged from platform navigation contract: '+JSON.stringify(mobileNav));
   await page.locator('#mlv-android-bottom-nav [data-mobile-tab="focus"]').click();
   await page.waitForSelector('#mlv-android-focus-overlay:not([hidden])',{state:'visible'});
+
+  const focusPresentation=await page.evaluate(()=>{
+    const area=document.getElementById('mlv-android-focus-sheet');
+    const ring=document.getElementById('mlv-android-focus-progress-ring');
+    const presets=[...document.querySelectorAll('#mlv-android-focus-sheet [data-mobile-preset]')];
+    const r=el=>{const x=el?.getBoundingClientRect();return x?{left:x.left,right:x.right,top:x.top,bottom:x.bottom,width:x.width,height:x.height}:null};
+    return {screen:r(area),ring:r(ring),presets:presets.map(r),close:r(document.querySelector('[data-mobile-focus="close"]')),
+      buttons:[...document.querySelectorAll('#mlv-android-focus-sheet [data-mobile-focus]')].map(el=>({
+        action:el.dataset.mobileFocus,...r(el)})),viewport:{w:innerWidth,h:innerHeight}};
+  });
+  ok(focusPresentation.screen&&focusPresentation.screen.top<=1&&
+      focusPresentation.screen.height>=880&&focusPresentation.screen.width<=412&&
+      focusPresentation.ring?.width>=175&&focusPresentation.close?.width>=44&&
+      focusPresentation.presets.length===2&&focusPresentation.presets.every(x=>x.height>=48),
+    'Focus is not a full-viewport, touch-first Android workspace: '+JSON.stringify(focusPresentation));
+  await page.screenshot({path:screenshot.endsWith('.png')?screenshot.slice(0,-4)+'-focus-mobile.png':screenshot+'-focus-mobile.png'});
   const focusStart=await page.evaluate(()=>({
     sharedReady:!!window.FocusStoryV30162?.focusState,
     time:document.getElementById('mlv-android-focus-time')?.textContent,
@@ -599,6 +629,24 @@ try{
   ok(await page.evaluate(()=>window.__mlvAndroidHandleBack?.()),'Android Back did not close Focus sheet');
   ok(await page.evaluate(()=>document.getElementById('mlv-android-focus-overlay').hidden),
     'Mobile Focus remained over content after system Back');
+
+  // The session must survive closing the workspace and remain one tap away
+  // from every section. Its controls call the SAME FocusStory business API.
+  const miniAfterBack=await page.evaluate(()=>{
+    const mini=document.getElementById('mlv-android-mini-focus');
+    const bottom=document.getElementById('mlv-android-bottom-nav');
+    const a=mini?.getBoundingClientRect(),b=bottom?.getBoundingClientRect();
+    return {visible:!!mini&&!mini.hidden,top:a?.top,bottom:a?.bottom,navTop:b?.top,
+      remaining:mini?.querySelector('#mlv-android-mini-time')?.textContent||'',
+      control:mini?.querySelector('.mlv-mini-toggle')?.textContent||''};
+  });
+  ok(miniAfterBack.visible&&miniAfterBack.bottom<=miniAfterBack.navTop-2&&
+      miniAfterBack.remaining.includes(':')&&miniAfterBack.control==='Resume',
+    'Paused Focus timer is not persistent, or hides mobile navigation: '+JSON.stringify(miniAfterBack));
+  await page.locator('#mlv-android-mini-focus .mlv-mini-toggle').click();
+  await page.waitForFunction(()=>window.FocusStoryV30162?.focusState?.().status==='running');
+  await page.locator('#mlv-android-mini-focus .mlv-mini-toggle').click();
+  await page.waitForFunction(()=>window.FocusStoryV30162?.focusState?.().status==='paused');
   await page.locator('#mlv-android-bottom-nav [data-mobile-tab="missions"]').click();
   await page.waitForFunction(()=>
     !!document.getElementById('tab-missions') && (
@@ -608,6 +656,14 @@ try{
   ok(await page.evaluate(()=>document.querySelector('#mlv-android-bottom-nav [data-mobile-tab="missions"]')?.getAttribute('aria-current')==='page'),
     'Mobile nav did not reflect Missions selection');
 
+
+  const miniOnMissions=await page.evaluate(()=>{
+    const mini=document.getElementById('mlv-android-mini-focus');
+    return {visible:!!mini&&!mini.hidden,remaining:mini?.querySelector('#mlv-android-mini-time')?.textContent||'',
+      activeTab:document.body.dataset.mlvAndroidTab||''};
+  });
+  ok(miniOnMissions.visible&&miniOnMissions.remaining.includes(':'),
+    'Focus mini-timer disappeared after navigating to Missions: '+JSON.stringify(miniOnMissions));
   // Real touch-first Quick Capture: the phone header action must work from
   // Missions and must reuse shared mission and Journal engines.
   await page.waitForSelector('#mlv-android-capture-button',{state:'visible'});
