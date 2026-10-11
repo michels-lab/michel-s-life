@@ -255,6 +255,58 @@ try{
     ok(missionGeometry.actions.left>=missionGeometry.content.left-2,'Mission actions are falling into the checkbox column: '+JSON.stringify(missionGeometry));
   }
 
+  // Mission editing must be a genuine mobile interaction and save to the
+  // same canonical mission data as the Windows editor. Check touch targets,
+  // scrollable form and sticky Save, not merely the existence of CSS.
+  const firstMissionEdit=page.locator(
+    'article.v132-mission [data-action="edit"], article.quest-card [data-action="edit-mission"], article.mission-card [data-action="edit-mission"]'
+  ).first();
+  ok(await firstMissionEdit.count()>0,'No working mission edit action on Android Today');
+  await firstMissionEdit.click();
+  await page.waitForSelector('#modalRoot #missionEditForm',{state:'visible',timeout:5000});
+  const missionEditGeometry=await page.evaluate(()=>{
+    const form=document.querySelector('#modalRoot #missionEditForm');
+    const modal=document.querySelector('#modalRoot .modal');
+    const save=form?.querySelector('.actions button[type="submit"]');
+    const name=form?.querySelector('input[name="name"]');
+    const days=[...(form?.querySelectorAll('label.day-chip')||[])];
+    const box=el=>{const r=el?.getBoundingClientRect();return r?{top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height}:null};
+    return {
+      modal:box(modal),save:box(save),name:box(name),
+      font:name?parseFloat(getComputedStyle(name).fontSize):0,
+      days:days.slice(0,8).map(box),cols:form?.querySelector('.form-grid')?getComputedStyle(form.querySelector('.form-grid')).gridTemplateColumns:'',
+      modalScrollable:!!modal&&modal.scrollHeight>modal.clientHeight,
+      scrollTop:modal?.scrollTop||0,viewport:innerHeight
+    };
+  });
+  ok(missionEditGeometry.modal&&missionEditGeometry.modal.top>=0&&
+    missionEditGeometry.modal.bottom<=916&&missionEditGeometry.modal.width<=412,
+    'Android Mission editor is clipped by viewport or navigation bar: '+JSON.stringify(missionEditGeometry));
+  ok(missionEditGeometry.name?.height>=47&&missionEditGeometry.font>=16&&
+    missionEditGeometry.days.length>=7&&missionEditGeometry.days.every(r=>r?.height>=44),
+    'Android Mission form controls are too small for touch and keyboard: '+JSON.stringify(missionEditGeometry));
+  ok(missionEditGeometry.modalScrollable,'Android Mission editor must scroll independently to all options: '+JSON.stringify(missionEditGeometry));
+  await page.locator('#missionEditForm input[name="name"]').fill('Android edited canonical mission');
+  await page.locator('#missionEditForm textarea[name="description"]').fill('Mobile mission editor saves actual shared state');
+  await page.locator('#missionEditForm .day-chip:has(input[name="days"][value="6"])').click();
+  await page.locator('#missionEditForm .actions button[type="submit"]').scrollIntoViewIfNeeded();
+  const missionSaveBounds=await page.evaluate(()=>{
+    const modal=document.querySelector('#modalRoot .modal'),btn=document.querySelector('#missionEditForm .actions button[type="submit"]');
+    const r=btn?.getBoundingClientRect();return {top:r?.top,bottom:r?.bottom,width:r?.width,modalScroll:modal?.scrollTop};
+  });
+  ok(missionSaveBounds.bottom<=915&&missionSaveBounds.top>=0&&missionSaveBounds.width>=115,
+    'Android Mission Save is hidden below the system navigation bar: '+JSON.stringify(missionSaveBounds));
+  await page.locator('#missionEditForm .actions button[type="submit"]').click();
+  await page.waitForFunction(()=>{
+    const data=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}');
+    return data.missions?.some(m=>
+      m.name==='Android edited canonical mission'&&
+      m.description==='Mobile mission editor saves actual shared state'&&
+      m.days?.includes(6));
+  },null,{timeout:6500});
+  ok(await page.locator('#modalRoot #missionEditForm').count()===0,
+    'Mission editor did not dismiss after canonical state persisted');
+
   // Settings was the slowest Android transition because legacy code rebuilt it repeatedly.
   await page.evaluate(()=>window.__mlvAndroidFastRoute?.('settings'));
   await page.waitForFunction(
