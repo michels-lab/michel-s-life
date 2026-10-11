@@ -37,6 +37,67 @@
         background:rgba(var(--ui-panel-rgb,7,13,25),.97);
         box-shadow:0 -12px 30px rgba(0,0,0,.24)
       }
+      /* Same canonical Quick Capture engine as desktop; Android only owns
+         its touch-sized, keyboard-resilient sheet and always-available entry. */
+      html[data-mlv-platform="android"] #mlv-android-capture-button{
+        flex:0 0 42px;width:42px;height:42px;min-width:42px;min-height:42px;
+        display:grid;place-items:center;padding:0;border-radius:12px;
+        border:1px solid rgba(var(--ui-accent-rgb,117,228,255),.35);
+        color:var(--text,#eff6ff);
+        background:rgba(var(--ui-accent-rgb,117,228,255),.15);
+        font:700 27px/1 system-ui,sans-serif;touch-action:manipulation;
+        -webkit-tap-highlight-color:transparent
+      }
+      html[data-mlv-platform="android"] [data-mlv216-qc]:not([hidden]){
+        display:flex!important;align-items:flex-end;justify-content:center;
+        box-sizing:border-box;position:fixed;inset:0;
+        padding:0!important;max-height:100dvh;z-index:2147483200!important;
+        overflow:hidden;touch-action:pan-y
+      }
+      html[data-mlv-platform="android"] [data-mlv216-qc] .mlv216-qc-card{
+        flex:0 1 auto;box-sizing:border-box;position:relative;
+        width:100%!important;max-width:700px!important;
+        max-height:calc(100dvh - env(safe-area-inset-top,0px) - 12px);
+        margin:0!important;overflow-x:hidden;overflow-y:auto;
+        overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+        border-radius:24px 24px 0 0;
+        padding:18px 16px calc(16px + env(safe-area-inset-bottom,0px));
+        background:rgba(var(--ui-panel-rgb,8,15,27),.99)
+      }
+      html[data-mlv-platform="android"] [data-mlv216-qc] .mlv216-qc-head h2{
+        font-size:21px;line-height:1.2
+      }
+      html[data-mlv-platform="android"] [data-mlv216-qc] .mlv216-qc-input{
+        min-height:51px;font-size:16px
+      }
+      html[data-mlv-platform="android"] [data-mlv216-qc] select{
+        font-size:16px;min-height:46px
+      }
+      html[data-mlv-platform="android"] [data-mlv216-qc] button{
+        min-height:46px;touch-action:manipulation
+      }
+      html[data-mlv-platform="android"] [data-mlv216-qc] .mlv216-qc-close{
+        min-width:44px;min-height:44px
+      }
+      html[data-mlv-platform="android"] [data-mlv216-qc] .mlv216-qc-hint{
+        display:none
+      }
+      html[data-mlv-platform="android"] [data-mlv216-qc] .mlv216-qc-actions{
+        position:sticky;bottom:0;z-index:1;justify-content:flex-end;
+        margin-top:12px;padding:10px 0 0;
+        background:rgba(var(--ui-panel-rgb,8,15,27),.99)
+      }
+      html[data-mlv-platform="android"] [data-mlv216-qc] .mlv216-qc-buttons{
+        width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px
+      }
+      html[data-mlv-platform="android"] [data-mlv216-qc] .mlv216-qc-buttons button{
+        min-width:0;width:100%;margin:0
+      }
+      @media(min-width:700px){
+        html[data-mlv-platform="android"] [data-mlv216-qc] .mlv216-qc-card{
+          margin-bottom:12px!important;border-radius:24px
+        }
+      }
       #mlv-android-bottom-nav button{
         display:flex;flex-direction:column;align-items:center;justify-content:center;
         gap:2px;min-width:0;min-height:51px;padding:5px 1px;
@@ -214,6 +275,21 @@
       });
       document.body.appendChild(root);
     }
+    // One visible action from every Android section, no desktop shortcut
+    // dependency. The canonical MLV216QuickCapture owns data and saving.
+    const topbar=q('#mlv-android-topbar');
+    if(topbar&&!q('#mlv-android-capture-button',topbar)){
+      const capture=document.createElement('button');
+      capture.type='button';capture.id='mlv-android-capture-button';
+      capture.textContent='+';capture.setAttribute('aria-label','Quick capture');
+      capture.setAttribute('title','Quick capture: mission or journal note');
+      capture.addEventListener('click',()=>{
+        close();
+        window.MLV216QuickCapture?.open?.();
+      });
+      const arrows=q('.mlv-android-section-controls',topbar);
+      topbar.insertBefore(capture,arrows||null);
+    }
     updateActive();return true;
   }
   function updateActive(){
@@ -266,6 +342,12 @@
     if(!ensure())return;
     const oldBack=window.__mlvAndroidHandleBack;
     window.__mlvAndroidHandleBack=function(){
+      // Native Back closes Quick Capture without losing a mission draft via
+      // implicit browser history; its storage is owned by the shared engine.
+      if(q('[data-mlv216-qc]:not([hidden])')){
+        window.MLV216QuickCapture?.close?.();
+        return true;
+      }
       if(isFocusOpen()){close();return true;}
       return typeof oldBack==='function'?oldBack():false;
     };
