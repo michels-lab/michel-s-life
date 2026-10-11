@@ -146,7 +146,7 @@ try{
     const r=el=>{const x=el?.getBoundingClientRect();return x?{top:x.top,bottom:x.bottom,height:x.height,width:x.width}:null;};
     const panel=document.getElementById('v176StatusPanel');
     const date=document.getElementById('mlv-android-clock-date');
-    const clock=panel?.querySelector('.v176-time');
+    const clock=panel?.querySelector('#mlv-android-clock-time');
     return {panel:r(panel),date:r(date),time:r(clock),dateText:date?.textContent?.trim()||'',
       clockFont:clock?getComputedStyle(clock).fontSize:null};
   });
