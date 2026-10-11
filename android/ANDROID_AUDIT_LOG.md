@@ -1,3 +1,12 @@
+## 2026-10-11 — Android v0.2.4 (code 6) mobile sections + permanent-identity update candidate
+
+- **Request:** Ship already merged Android-specific navigation, touch-first Focus/Pomodoro, Quick Capture (PRs #51, #52, #57) and cloud data/credential boundary (PR #56), then continue designing Missions, Calendar and Journal for actual phones. No desktop visual/theme changes.
+- **Implementing in source:** `android/mobile-sections.js` is an Android-only responsive presentation over canonical mission/calendar/journal DOM and business logic. Missions use readable two-column touch targets; Calendar owns a seven-day compact portrait grid with selected-day details still intact; Journal uses a one-column writing area and keyboard-size inputs; no duplicated state or source HTML/Windows asset changes.
+- **Version update:** `versionName=0.2.4`, **versionCode=6** (greater than public 0.2.3/code 5); `applicationId=com.michelslab.michelslife` unchanged; stable owner's direct-signing identity **must** stay pinned to cert SHA-256 `36a9f5144243d14ebade9d38559cfd7d4d9207c1edba01e6f0fbdd5f076a50fa`. Never rotate credentials or issue an Android Debug public APK.
+- **Binaries/publication:** source `stage-life-android-direct-v024.yml` stages only after exact-SHA CI and signed APK provenance; separate releases repo `publish-life-unified-android-v024.yml` can update the **same public release** Windows v3.0.216 + latest Android, removing superseded v0.2.3 Android assets but keeping all Windows assets. No public release from source PR.
+- **Tests added:** phone viewport geometry and click/scroll for Missions/Calendar/Journal plus existing Settings/Dashboard/Focus/Quick Capture, native Android 16 same-candidate install, Windows CI, public signed APK installation; jobs must pass current SHA. CI is *not* a substitute for Galaxy screenshot, soft keyboard, actual Windows↔Galaxy Supabase tests or real native background notification scheduling.
+- **PENDING:** CI results, PR merge, one-shot v024 release intent, signed source transfer, destination publication/post-release independent verifier, device testing. Native alarm scheduling issue #53 and broader mobile parity issue #54 remain open.
+
 ## 2026-10-11 — Android Quick Capture: touch-first mission and Journal sheet
 
 - **Task:** Continue Android-native-feeling UX across every major section, without duplicating Desktop data engines or changing accepted themes, assets, desktop layout.

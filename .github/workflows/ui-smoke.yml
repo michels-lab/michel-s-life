@@ -11,6 +11,7 @@ on:
       - 'android/android-bridge.js'
       - 'android/tools/prepare_bundle.py'
       - '.michelslab/release-intents/android-v023.txt'
+      - '.michelslab/release-intents/android-v024.txt'
       - '.github/workflows/ui-smoke.yml'
   workflow_dispatch:
 

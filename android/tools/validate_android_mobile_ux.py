@@ -4,6 +4,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 bridge = (ROOT / "android-bridge.js").read_text(encoding="utf-8")
 mobile_experience = (ROOT / "mobile-experience.js").read_text(encoding="utf-8")
+mobile_sections = (ROOT / "mobile-sections.js").read_text(encoding="utf-8")
 bundler = (ROOT / "tools/prepare_bundle.py").read_text(encoding="utf-8")
 main = (ROOT / "app/src/main/java/com/michelslab/michelslife/MainActivity.kt").read_text(encoding="utf-8")
 manifest = (ROOT / "app/src/main/AndroidManifest.xml").read_text(encoding="utf-8")
@@ -12,7 +13,7 @@ adaptive_round_icon = ROOT / "app/src/main/res/mipmap-anydpi-v26/ic_launcher_rou
 launcher_foreground = ROOT / "app/src/main/res/drawable/ic_launcher_foreground.xml"
 
 required_bridge = [
-    "window.__MICHELSLIFE_ANDROID_BRIDGE__='0.2.3'",
+    "window.__MICHELSLIFE_ANDROID_BRIDGE__='0.2.4'",
     "const MOBILE_BREAKPOINT=4096;",
     "@media(min-width:900px) and (max-width:${MOBILE_BREAKPOINT}px)",
     "mlv-android-topbar",
@@ -76,6 +77,11 @@ if missing_mobile_experience:
     raise SystemExit("Android mobile experience missing: " + ", ".join(missing_mobile_experience))
 if "MOBILE_EXPERIENCE = ROOT / \"mobile-experience.js\"" not in bundler or "shutil.copy2(MOBILE_EXPERIENCE" not in bundler:
     raise SystemExit("Android app bundling no longer includes its mobile-specific UI script")
+
+if "mobile-sections.js" not in bundler or "MOBILE_SECTIONS" not in bundler:
+    raise SystemExit("Android bundle does not include mobile-specific Missions, Calendar and Journal layouts")
+if not all(term in mobile_sections for term in ("v132-mission", "v30135-grid", "mlv184-journal-layout", "mlv184JournalBody", "MichelsLifeAndroidSections")):
+    raise SystemExit("Android mission, calendar or journal mobile layout contract missing")
 
 native_required = [
     "setLayerType(View.LAYER_TYPE_HARDWARE",

@@ -4,7 +4,8 @@
 # here rather than in the workflow YAML.
 set -euo pipefail
 
-APK="artifacts/public/MichelsLife-Android-Direct-v0.2.3.apk"
+ANDROID_PUBLIC_VERSION="${ANDROID_PUBLIC_VERSION:-0.2.3}"
+APK="artifacts/public/MichelsLife-Android-Direct-v${ANDROID_PUBLIC_VERSION}.apk"
 PACKAGE="com.michelslab.michelslife"
 mkdir -p artifacts/installed
 test -s "$APK"
@@ -31,7 +32,9 @@ else
 fi
 
 adb shell dumpsys package "$PACKAGE" >artifacts/installed/package-info.txt
-grep -E 'versionCode=5|versionName=0.2.3' artifacts/installed/package-info.txt | head -8
+if [[ "$ANDROID_PUBLIC_VERSION" == "0.2.4" ]]; then EXPECTED_CODE=6; else EXPECTED_CODE=5; fi
+grep -F "versionCode=$EXPECTED_CODE" artifacts/installed/package-info.txt | head -8
+grep -F "versionName=$ANDROID_PUBLIC_VERSION" artifacts/installed/package-info.txt | head -8
 
 adb shell am start -W -n "$PACKAGE/.MainActivity" | tee artifacts/installed/launch-output.txt
 sleep 15

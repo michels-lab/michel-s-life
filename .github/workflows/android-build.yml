@@ -20,6 +20,7 @@ on:
       - 'android/app/**'
       - 'android/android-bridge.js'
       - 'android/mobile-experience.js'
+      - 'android/mobile-sections.js'
       - 'android/tools/**'
       - 'android/build.gradle.kts'
       - 'android/settings.gradle.kts'
@@ -38,6 +39,7 @@ on:
       - 'android/app/**'
       - 'android/android-bridge.js'
       - 'android/mobile-experience.js'
+      - 'android/mobile-sections.js'
       - 'android/tools/**'
       - 'android/build.gradle.kts'
       - 'android/settings.gradle.kts'
@@ -56,7 +58,7 @@ permissions:
 
 env:
   RELEASES_REPO: michels-lab/michel-s-life-releases
-  ANDROID_VERSION: 0.2.3
+  ANDROID_VERSION: 0.2.4
   ANDROID_UPLOAD_KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
   ANDROID_UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
   ANDROID_UPLOAD_KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
@@ -95,6 +97,7 @@ jobs:
         run: |
           node --check android/android-bridge.js
           node --check android/mobile-experience.js
+          node --check android/mobile-sections.js
           python android/tools/validate_android_mobile_ux.py
           python tools/validate_brand_identity.py
 
@@ -270,7 +273,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      ANDROID_VERSION: 0.2.3
+      ANDROID_VERSION: 0.2.4
     steps:
       - uses: actions/checkout@v4
 
