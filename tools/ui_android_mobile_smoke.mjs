@@ -247,13 +247,137 @@ try{
       overflow:card.scrollWidth-card.clientWidth
     };
   });
-  ok(missionGeometry.check&&missionGeometry.check.width>=35&&missionGeometry.check.height>=35,'Mission checkbox touch target is too small: '+JSON.stringify(missionGeometry));
+  ok(missionGeometry.check&&missionGeometry.check.width>=43&&missionGeometry.check.height>=43,'Mission checkbox must provide a 44px-class touch target: '+JSON.stringify(missionGeometry));
   ok(missionGeometry.content&&missionGeometry.check.right<=missionGeometry.content.left+2,'Mission checkbox overlaps content: '+JSON.stringify(missionGeometry));
   ok(missionGeometry.title&&Math.abs(missionGeometry.check.top-missionGeometry.title.top)<18,'Mission checkbox/title are vertically crooked: '+JSON.stringify(missionGeometry));
   ok(missionGeometry.overflow<=2,'Mission card horizontally overflows: '+JSON.stringify(missionGeometry));
   if(missionGeometry.actions){
     ok(missionGeometry.actions.left>=missionGeometry.content.left-2,'Mission actions are falling into the checkbox column: '+JSON.stringify(missionGeometry));
   }
+
+  // Full editing belongs to the Missions section, not every compact Today
+  // summary variant. Navigate there before requiring the editor action.
+  await page.evaluate(()=>window.__mlvAndroidFastRoute?.('missions'));
+  await page.waitForFunction(()=>{
+    const entry=document.querySelector('#v30171PrimaryNav [data-tab="missions"]');
+    return entry?.classList.contains('active') || entry?.getAttribute('aria-current')==='page';
+  },null,{timeout:5000});
+  await page.waitForSelector('#tab-missions',{state:'visible',timeout:5000});
+  const editSelector='#tab-missions [data-action="v133-edit"],#tab-missions [data-action="edit-mission"],#tab-missions [data-action="edit"]';
+  const candidateActions=await page.locator(editSelector).count();
+  if(!candidateActions){
+    const missionDiagnostics=await page.evaluate(()=>({
+      tabExists:!!document.querySelector('#tab-missions'),
+      visible:!!document.querySelector('#tab-missions')?.getBoundingClientRect().height,
+      rows:[...document.querySelectorAll('#tab-missions article')].slice(0,5).map(x=>({class:x.className,buttons:[...x.querySelectorAll('button')].map(b=>({action:b.dataset.action,text:b.textContent?.trim()?.slice(0,50)}))})),
+      available:[...document.querySelectorAll('#tab-missions button')].slice(0,30).map(b=>({text:b.textContent?.trim()?.slice(0,40),action:b.dataset.action}))
+    }));
+    throw new Error('Android Missions full editor action is missing: '+JSON.stringify(missionDiagnostics));
+  }
+  const missionEditTouchTargets=await page.locator(editSelector).first().evaluate(el=>{
+    const r=el.getBoundingClientRect();return {width:r.width,height:r.height,left:r.left,right:r.right};
+  });
+  ok(missionEditTouchTargets.width>=43&&missionEditTouchTargets.height>=43,
+    'Mission row action buttons must be accessible to a finger: '+JSON.stringify(missionEditTouchTargets));
+  // Mission editing must be a genuine mobile interaction and save to the
+  // same canonical mission data as the Windows editor. Check touch targets,
+  // scrollable form and sticky Save, not merely the existence of CSS.
+  const firstMissionEdit=page.locator(editSelector).first();
+  ok(await firstMissionEdit.count()>0,'No working mission edit action on Android Today');
+  await firstMissionEdit.click();
+  await page.waitForSelector('#modalRoot #missionEditForm',{state:'visible',timeout:5000});
+  const missionEditGeometry=await page.evaluate(()=>{
+    const form=document.querySelector('#modalRoot #missionEditForm');
+    const modal=document.querySelector('#modalRoot .modal');
+    const save=form?.querySelector('.actions button[type="submit"]');
+    const name=form?.querySelector('input[name="name"]');
+    const days=[...(form?.querySelectorAll('label.day-chip')||[])];
+    const box=el=>{const r=el?.getBoundingClientRect();return r?{top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width,height:r.height}:null};
+    return {
+      modal:box(modal),save:box(save),name:box(name),
+      font:name?parseFloat(getComputedStyle(name).fontSize):0,
+      days:days.slice(0,8).map(box),cols:form?.querySelector('.form-grid')?getComputedStyle(form.querySelector('.form-grid')).gridTemplateColumns:'',
+      modalScrollable:!!modal&&modal.scrollHeight>modal.clientHeight,
+      scrollTop:modal?.scrollTop||0,viewport:innerHeight
+    };
+  });
+  ok(missionEditGeometry.modal&&missionEditGeometry.modal.top>=0&&
+    missionEditGeometry.modal.bottom<=916&&missionEditGeometry.modal.width<=412,
+    'Android Mission editor is clipped by viewport or navigation bar: '+JSON.stringify(missionEditGeometry));
+  ok(missionEditGeometry.name?.height>=47&&missionEditGeometry.font>=16&&
+    missionEditGeometry.days.length>=7&&missionEditGeometry.days.every(r=>r?.height>=44),
+    'Android Mission form controls are too small for touch and keyboard: '+JSON.stringify(missionEditGeometry));
+  ok(missionEditGeometry.modalScrollable,'Android Mission editor must scroll independently to all options: '+JSON.stringify(missionEditGeometry));
+  await page.locator('#missionEditForm input[name="name"]').fill('Android edited canonical mission');
+  await page.locator('#missionEditForm textarea[name="description"]').fill('Mobile mission editor saves actual shared state');
+  const saturdayChip=page.locator('#missionEditForm .day-chip:has(input[name="days"][value="6"])');
+  const saturdayInput=page.locator('#missionEditForm input[name="days"][value="6"]');
+  // The chosen mission may already recur on Saturday. Exercise a real
+  // touch toggle without accidentally disabling a preselected weekday.
+  if(await saturdayInput.isChecked()){
+    await saturdayChip.click();
+    ok(!(await saturdayInput.isChecked()),'Saturday did not toggle off in the mobile editor');
+  }
+  await saturdayChip.click();
+  ok(await saturdayInput.isChecked(),'Saturday did not toggle on in the mobile editor');
+  await page.locator('#missionEditForm .actions button[type="submit"]').scrollIntoViewIfNeeded();
+  const missionSaveBounds=await page.evaluate(()=>{
+    const modal=document.querySelector('#modalRoot .modal'),btn=document.querySelector('#missionEditForm .actions button[type="submit"]');
+    const r=btn?.getBoundingClientRect();return {top:r?.top,bottom:r?.bottom,width:r?.width,modalScroll:modal?.scrollTop};
+  });
+  ok(missionSaveBounds.bottom<=915&&missionSaveBounds.top>=0&&missionSaveBounds.width>=115,
+    'Android Mission Save is hidden below the system navigation bar: '+JSON.stringify(missionSaveBounds));
+  const modalTouchOwner=await page.evaluate(()=>{
+    const button=document.querySelector('#missionEditForm .actions button[type="submit"]');
+    const box=button?.getBoundingClientRect(),center=box&&{x:(box.left+box.right)/2,y:(box.top+box.bottom)/2};
+    const hit=center&&document.elementFromPoint(center.x,center.y);
+    const nav=document.querySelector('#mlv-android-bottom-nav'),topbar=document.querySelector('#mlv-android-topbar');
+    return {active:document.body.classList.contains('mlv-android-mission-edit-open'),
+      saveReceivesTap:!!hit&&(hit===button||button?.contains(hit)),
+      navHidden:!!nav&&getComputedStyle(nav).visibility==='hidden',
+      topbarHidden:!!topbar&&getComputedStyle(topbar).visibility==='hidden'};
+  });
+  ok(modalTouchOwner.active&&modalTouchOwner.saveReceivesTap&&modalTouchOwner.navHidden&&modalTouchOwner.topbarHidden,
+    'Android navigation intercepted a mission modal Save tap: '+JSON.stringify(modalTouchOwner));
+  await page.locator('#missionEditForm .actions button[type="submit"]').click();
+  // This test uses only the generated smoke profile (no user data).
+  // Show the exact form/status and saved canonical mission fields, so a
+  // failing Save test diagnoses the actual domain mismatch, not a timeout.
+  await page.waitForTimeout(350);
+  const syntheticSaveDiagnostics=await page.evaluate(()=>{
+    const key='vida_rpg_personal_progress_v2';
+    const stored=JSON.parse(localStorage.getItem(key)||'{}');
+    const missions=stored.missions||[];
+    const mission=missions.find(m=>m.id==='smoke-mission')||missions[0];
+    const editor=document.querySelector('#modalRoot #missionEditForm');
+    return {
+      canonicalMissionCount:missions.length,
+      mission:mission?{id:mission.id,name:mission.name,description:mission.description,days:mission.days,type:mission.type}:null,
+      editedMissions:missions.filter(m=>(m.name||'').includes('Android edited')||(m.description||'').includes('Mobile mission')).map(m=>({id:m.id,name:m.name,description:m.description,days:m.days})),
+      firstMissions:missions.slice(0,5).map(m=>({id:m.id,name:m.name,days:m.days})),
+      liveEditedMissions:(typeof state!=='undefined'&&state?.missions||[]).filter(m=>(m.name||'').includes('Android edited')).map(m=>({id:m.id,name:m.name,description:m.description,days:m.days})),
+      dataStorageKeys:Object.keys(localStorage).filter(k=>/rpg|michelsLife/i.test(k)),
+      formOpen:!!editor,
+      formName:editor?.querySelector('input[name="name"]')?.value??null,
+      formDescription:editor?.querySelector('textarea[name="description"]')?.value??null,
+      chosenDays:editor?[...editor.querySelectorAll('input[name="days"]:checked')].map(x=>x.value):null
+    };
+  });
+  console.log('MISSION_SAVE_DIAGNOSTICS '+JSON.stringify(syntheticSaveDiagnostics));
+
+  await page.waitForFunction(()=>{
+    const data=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}');
+    return data.missions?.some(m=>
+      m.name==='Android edited canonical mission'&&
+      m.description==='Mobile mission editor saves actual shared state'&&
+      m.days?.includes(6));
+  },null,{timeout:6500});
+  ok(await page.locator('#modalRoot #missionEditForm').count()===0,
+    'Mission editor did not dismiss after canonical state persisted');
+  await page.waitForFunction(()=>!document.body.classList.contains('mlv-android-mission-edit-open'),null,{timeout:1500});
+  ok(await page.evaluate(()=>getComputedStyle(document.getElementById('mlv-android-bottom-nav')).visibility!=='hidden'),
+    'Android bottom navigation was not restored after mission editor closed');
+
 
   // Settings was the slowest Android transition because legacy code rebuilt it repeatedly.
   await page.evaluate(()=>window.__mlvAndroidFastRoute?.('settings'));

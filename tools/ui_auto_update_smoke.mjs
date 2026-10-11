@@ -29,9 +29,9 @@ try{
           onlineChannelConfigured:true,
           onlineStatus:'Connected',
           onlineAvailable:true,
-          onlineVersion:'3.0.216',
-          onlineDownloadUrl:'https://example.invalid/MichelsLife-Portable-v3.0.216.exe',
-          onlineChecksumUrl:'https://example.invalid/MichelsLife-Portable-v3.0.216.exe.sha256',
+          onlineVersion:'3.0.217',
+          onlineDownloadUrl:'https://example.invalid/MichelsLife-Portable-v3.0.217.exe',
+          onlineChecksumUrl:'https://example.invalid/MichelsLife-Portable-v3.0.217.exe.sha256',
           onlineReleaseNotes:'Automatic update smoke test',
           candidatePath:'',
           candidateVersion:''
@@ -92,7 +92,7 @@ try{
   }));
   ok(first.requests>=1,'Michel’s Life did not request updateStatus automatically at startup: '+JSON.stringify(first));
   ok(first.notices.length===1,'Expected exactly one automatic update notice after startup: '+JSON.stringify(first));
-  ok(/v3\.0\.216/.test(first.notices[0].message),'Automatic update notice did not identify the available version: '+JSON.stringify(first));
+  ok(/v3\.0\.217/.test(first.notices[0].message),'Automatic update notice did not identify the available version: '+JSON.stringify(first));
   ok(/Configuración/.test(first.notices[0].message),'Spanish automatic update notice was not rendered in Spanish: '+JSON.stringify(first));
   ok(first.api==='function','automaticUpdateCheck API is not exposed');
   ok(/revisa automáticamente el canal público de actualizaciones/i.test(first.translatedNote),'Automatic update Settings note is not translated: '+JSON.stringify(first));
