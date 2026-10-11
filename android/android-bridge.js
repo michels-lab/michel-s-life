@@ -478,6 +478,16 @@
       setImportantOnce(focusDock,'pointer-events','none');
     }
 
+    // Desktop Home's overflow:hidden hero traps one-finger vertical scroll.
+    // An overflow:clip visual crop has no independent scroll container.
+    const dashboardHero=q('#tab-dashboard .v131-hero');
+    if(dashboardHero){
+      setImportantOnce(dashboardHero,'overflow','clip');
+      setImportantOnce(dashboardHero,'touch-action','pan-y');
+    }
+    qa('#tab-dashboard .v131-kpis, #tab-dashboard .v131-kpi').forEach(el=>
+      setImportantOnce(el,'touch-action','pan-y')
+    );
     const status=q('#v176StatusPanel');
     if(status){
       setImportantOnce(status,'position','relative');
@@ -686,6 +696,17 @@
           display:block!important;position:static!important;
           font:500 12px/1.25 system-ui,sans-serif!important;
           opacity:.8!important;white-space:normal!important
+        }
+        /* overflow:hidden creates a non-scrollable scrolling ancestor in
+           Chromium WebView and traps one-finger panning on Today metrics.
+           overflow:clip preserves the rounded-card visual crop without
+           creating a scrolling container or blocking document pan-y. */
+        html[data-mlv-platform="android"] #tab-dashboard .v131-hero{
+          overflow:clip!important;touch-action:pan-y!important
+        }
+        html[data-mlv-platform="android"] #tab-dashboard .v131-kpis,
+        html[data-mlv-platform="android"] #tab-dashboard .v131-kpi{
+          touch-action:pan-y!important
         }
         .v134-ach-filter,.v140-cat-shortcuts,.v140-library-toggle,[data-horizontal-scroll],.tabs,.v30171-settings-nav{touch-action:pan-x!important}
         #mlv-android-topbar{position:fixed;display:flex;align-items:center;gap:10px;top:0;left:0;right:0;height:calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px));padding:env(safe-area-inset-top,0px) 12px 0;z-index:2147483000;background:rgba(6,9,19,.94);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.1);box-sizing:border-box}
