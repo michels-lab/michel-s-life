@@ -73,6 +73,20 @@ jobs:
           export MLV_UI_SCREENSHOTS=artifacts/ui-smoke
           node tools/ui_smoke_v303.mjs
 
+      - name: Verify candidate-bound browser Home/About screenshots using studio visual gate
+        run: |
+          python -m pip install Pillow==11.3.0
+          python tools/build_desktop_browser_visual_manifest.py \
+            --directory artifacts/ui-smoke \
+            --bundle artifacts/AppBundle.zip \
+            --commit "$GITHUB_SHA" \
+            --output artifacts/ui-smoke/michelslab-manifest.json
+          python tools/visual_release_gate.py \
+            --manifest artifacts/ui-smoke/michelslab-manifest.json \
+            --source-sha "$GITHUB_SHA" \
+            --platforms desktop-browser --surfaces home,about
+          echo "Browser rendered-UI PASS only; Windows installed and Android APK need independent candidate evidence."
+
       - name: Audit automatic desktop update detection
         run: |
           export MLV_UI_URL=http://127.0.0.1:4173
