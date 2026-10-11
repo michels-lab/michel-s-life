@@ -2,6 +2,10 @@ name: Stage signed Android v0.2.3 for unified Michel's Life release
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.michelslab/release-intents/android-v023.txt'
 
 permissions:
   contents: read
