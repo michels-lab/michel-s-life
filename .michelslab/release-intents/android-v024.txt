@@ -1,10 +1,10 @@
-Michel's Life Android Direct v0.2.4 (versionCode 6) — guarded signed customer candidate
-Unified public GitHub release: Windows v3.0.216 + latest Android v0.2.4 on SAME v3.0.216 release page.
-Verified signed-candidate source parent: c368dce9bc5f0e568f1d486a396aff232f784865
-Owner-controlled stable Direct certificate: 36a9f5144243d14ebade9d38559cfd7d4d9207c1edba01e6f0fbdd5f076a50fa
-Package: com.michelslab.michelslife ; signed Android versionName 0.2.4 versionCode 6.
-All three Source validation / UI smoke / Android UI smoke must be green for this EXACT release-intent SHA.
-The Android 16 same-run candidate install must succeed; verify production APK manifest, cert, signature and SHA256.
-Stage internal transfer only, not public release; the releases repository performs independent verification.
-This version changes Android UI only and stages no Windows artifact. Keep latest Windows installer, AppBundle and checksums unchanged.
-No native lockscreen alarms or physical Windows/Galaxy Supabase integration are asserted. Preserve user data; never rotate signing key.
+Michel's Life Android Direct v0.2.4 (versionCode 6) — guarded signed candidate, stage retry after PR #60
+Unified public release: Windows v3.0.216 plus Android v0.2.4 in the SAME public tag v3.0.216.
+Source parent for this release intent: 810219b5e9aa53ece1b02e9a367fd827e7c24bfe
+Customer source includes native-feeling Android Missions, Calendar, Journal, Dashboard, Settings, Focus/Pomodoro, Quick Capture and Supabase/Drive local-credential boundary.
+Signing: owner-controlled stable Direct certificate 36a9f5144243d14ebade9d38559cfd7d4d9207c1edba01e6f0fbdd5f076a50fa, with existing unchanged keystore.
+Package com.michelslab.michelslife; require versionName 0.2.4 and versionCode 6; SHA256 and actual APK signer must match.
+Source validation, UI smoke and Android UI smoke MUST succeed for this exact intent SHA, plus same-run Android 16 native install/relaunch evidence.
+Prior failed stage run 38127996025 did NOT stage any customer binary. PR #60 corrected the stale staging JSON version gate and added drift prevention.
+Stage INTERNAL transfer prerelease only; independent destination publisher separately verifies and updates sole public Windows v3.0.216+Android release.
+Known unverified: physical Galaxy UI, native background alarms and actual Windows↔Galaxy Supabase account sync. Do not remove Windows assets or rotate signing key.
