@@ -95,6 +95,120 @@
       html[data-mlv-platform="android"] [data-mlv216-qc] .mlv216-qc-buttons button{
         min-width:0;width:100%;margin:0
       }
+      /* Missions: touch-first rows + editor, same canonical mission FormData.
+         Editor stays an independent scroller with a sticky save region; native
+         adjustResize constrains the available viewport when IME is open. */
+      html[data-mlv-platform="android"] article.v132-mission>.v132-check,
+      html[data-mlv-platform="android"] article.v137-mission>.v132-check,
+      html[data-mlv-platform="android"] .mission-card .v132-check{
+        width:44px!important;height:44px!important;min-width:44px!important;
+        min-height:44px!important;grid-column:1!important;
+        border-radius:13px!important
+      }
+      html[data-mlv-platform="android"] article.v132-mission,
+      html[data-mlv-platform="android"] article.v137-mission{
+        grid-template-columns:46px minmax(0,1fr)!important;
+        gap:8px!important;align-items:start!important
+      }
+      html[data-mlv-platform="android"] article.v132-mission .v132-action-btn{
+        width:44px!important;height:44px!important;
+        min-width:44px!important;min-height:44px!important;
+        border-radius:13px!important
+      }
+      html[data-mlv-platform="android"] article.v132-mission .v132-menu-body button{
+        min-height:44px!important;text-align:left!important
+      }
+      html[data-mlv-platform="android"] #modalRoot:has(#missionEditForm) .modal-backdrop{
+        position:fixed!important;inset:0!important;display:flex!important;
+        flex-direction:column!important;align-items:center!important;
+        justify-content:flex-end!important;box-sizing:border-box!important;
+        padding:0!important;overflow:hidden!important;
+        z-index:2147483150!important
+      }
+      html[data-mlv-platform="android"] #modalRoot:has(#missionEditForm) .modal{
+        width:100%!important;max-width:700px!important;
+        height:auto!important;max-height:calc(100dvh - 8px)!important;
+        min-height:0!important;margin:0!important;
+        display:flex!important;flex-direction:column!important;
+        overflow-x:hidden!important;overflow-y:auto!important;
+        overscroll-behavior:contain!important;
+        padding:15px 15px calc(20px + env(safe-area-inset-bottom,0px))!important;
+        border-radius:22px 22px 0 0!important
+      }
+      html[data-mlv-platform="android"] #modalRoot:has(#missionEditForm) .modal-head{
+        position:sticky!important;top:-16px!important;z-index:3!important;
+        flex:0 0 auto!important;min-width:0!important;
+        align-items:flex-start!important;margin:0 0 10px!important;
+        padding:6px 0 10px!important;
+        background:rgba(var(--ui-panel-rgb,8,15,27),.99)!important
+      }
+      html[data-mlv-platform="android"] #modalRoot:has(#missionEditForm) .modal-head h2{
+        font-size:21px!important;line-height:1.12!important
+      }
+      html[data-mlv-platform="android"] #modalRoot:has(#missionEditForm) .modal-head p{
+        font-size:11px!important;line-height:1.32!important
+      }
+      html[data-mlv-platform="android"] #modalRoot:has(#missionEditForm) .modal-head .icon-btn{
+        flex:0 0 44px!important;width:44px!important;height:44px!important;
+        min-width:44px!important;min-height:44px!important
+      }
+      html[data-mlv-platform="android"] #missionEditForm{
+        flex:0 0 auto!important;width:100%!important;
+        min-width:0!important;display:block!important
+      }
+      html[data-mlv-platform="android"] #missionEditForm .form-grid{
+        display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+        gap:10px!important;min-width:0!important
+      }
+      html[data-mlv-platform="android"] #missionEditForm .form-grid label:first-child,
+      html[data-mlv-platform="android"] #missionEditForm .form-grid label:has(input[name="deadline"]){
+        grid-column:span 2!important
+      }
+      html[data-mlv-platform="android"] #missionEditForm label{
+        min-width:0!important;max-width:100%!important;overflow-wrap:anywhere!important
+      }
+      html[data-mlv-platform="android"] #missionEditForm input:not([type="checkbox"]),
+      html[data-mlv-platform="android"] #missionEditForm select,
+      html[data-mlv-platform="android"] #missionEditForm textarea{
+        box-sizing:border-box!important;width:100%!important;
+        min-width:0!important;min-height:48px!important;
+        font-size:16px!important;line-height:1.35!important;
+        padding:10px!important
+      }
+      html[data-mlv-platform="android"] #missionEditForm textarea{
+        min-height:88px!important;resize:vertical!important
+      }
+      html[data-mlv-platform="android"] #missionEditForm .days{
+        display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+        gap:7px!important;width:100%!important;min-width:0!important
+      }
+      html[data-mlv-platform="android"] #missionEditForm .day-chip{
+        display:flex!important;align-items:center!important;gap:7px!important;
+        min-height:45px!important;min-width:0!important;
+        padding:8px!important;box-sizing:border-box!important;
+        white-space:normal!important;touch-action:manipulation!important
+      }
+      html[data-mlv-platform="android"] #missionEditForm .day-chip input[type="checkbox"]{
+        appearance:checkbox!important;-webkit-appearance:checkbox!important;
+        flex:0 0 22px!important;width:22px!important;height:22px!important;
+        min-width:22px!important;min-height:22px!important;
+        margin:0!important
+      }
+      html[data-mlv-platform="android"] #missionEditForm > .actions{
+        display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+        gap:8px!important;position:sticky!important;
+        bottom:calc(-20px - env(safe-area-inset-bottom,0px))!important;
+        z-index:4!important;width:100%!important;min-width:0!important;
+        margin-top:12px!important;padding:12px 0
+          calc(12px + env(safe-area-inset-bottom,0px))!important;
+        border-top:1px solid rgba(255,255,255,.12)!important;
+        background:rgba(var(--ui-panel-rgb,8,15,27),.99)!important
+      }
+      html[data-mlv-platform="android"] #missionEditForm > .actions button{
+        min-width:0!important;width:100%!important;
+        min-height:49px!important;font-size:13px!important;
+        margin:0!important;padding:10px!important
+      }
       @media(min-width:700px){
         html[data-mlv-platform="android"] [data-mlv216-qc] .mlv216-qc-card{
           margin-bottom:12px!important;border-radius:24px
