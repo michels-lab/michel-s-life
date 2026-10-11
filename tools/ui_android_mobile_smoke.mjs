@@ -382,7 +382,7 @@ try{
     CSSStyleDeclaration.prototype.setProperty=function(k,v,p){
       if(k==='--accent'){
         const w=window.__mlPaletteWrites;
-        if(w&&w.length<250)w.push({value:String(v),stack:String(new Error().stack).split('\\n').slice(1,6).join(' | ')});
+        if(w&&w.length<300)w.push({value:String(v),stack:String(new Error().stack).split(/\n/).slice(1,9).join(' | ')});
       }
       return nativeSet.call(this,k,v,p);
     };
