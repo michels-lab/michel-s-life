@@ -1,0 +1,6 @@
+Michel's Life Android Direct v0.2.3 (versionCode 5)
+Requested customer update: Windows v3.0.216 + Android v0.2.3 on the same public GitHub release.
+Signing: permanently owner-controlled Direct keystore configured in GitHub Actions; never fallback to Debug.
+Source parent: 504866eb7164543a7e4fb0c02e5c61de0550abdb
+Release contract: fail closed until source/UI/native/signature/provenance checks pass.
+Intent: stage production-signed Android Direct artifact only; public release follows independent verification.
