@@ -1,3 +1,11 @@
+## 2026-10-11 — Missions: full-fidelity Android touch editing (source candidate)
+
+- **Product requirement:** Android missions must offer the same real edit fields as Windows while designing the workflow for mobile: name, category, type, difficulty, priority, deadline, description, notes, 7 recurring weekdays, and boss/fixed/hidden/archived/no-suggest flags. No second Android-only mission store is acceptable.
+- **Implementation candidate:** `android/mobile-experience.js` owns Android-only >=44px Today mission checkbox/edit/actions; `#missionEditForm` presents a bounded bottom sheet with an independently scrollable body, two-column compact controls, >=16px text/48px inputs, reachable weekday toggles and a sticky Save/Cancel footer. Native `adjustResize` is already in main; the existing shared desktop `saveMissionEdit` remains authoritative for persistence/reward logic.
+- **Regression test candidate:** `tools/ui_android_mobile_smoke.mjs` taps the real mission Edit action; measures editor bounds/fields/weekdays and scrollability on 412×915; edits name/description, toggles Saturday, scrolls to Save, clicks, and verifies the saved canonical mission including recurrence. Requires >=44px touch targets; this is **real functional UI testing**, not presence-only validation.
+- **Windows protection:** no changes to canonical desktop frontend CSS, themes, visuals or mission domain logic. Same-SHA Source, Windows UI, Android UI, native Gradle APK and Android 16 install tests required.
+- **State:** PR candidate only; CI and physical Galaxy keyboard/editor review still pending. The latest signed public APK is still Android v0.2.3 within Windows v3.0.216 release; this change is not yet published.
+
 ## 2026-10-11 — Android Quick Capture: touch-first mission and Journal sheet
 
 - **Task:** Continue Android-native-feeling UX across every major section, without duplicating Desktop data engines or changing accepted themes, assets, desktop layout.
