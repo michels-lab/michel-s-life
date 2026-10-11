@@ -68,6 +68,16 @@ if [[ "$DEVICE_SIZE" =~ ^([0-9]+)x([0-9]+)$ ]]; then
   adb shell input tap "$X" "$Y"
   sleep 8
   adb exec-out screencap -p >"$OUT/step2-after-native-continue.png"
+  # On the pinned 1080x2400 Pixel 6 emulator, the step 2 focus footer
+  # Continue is lower than the step 1 button (roughly 84% of display height).
+  # Capture the next real packaged-WebView state separately. Do not call
+  # this a native Finish pass until the resulting screenshot is inspected.
+  NEXT_X="$((W * 83 / 100))"
+  NEXT_Y="$((H * 84 / 100))"
+  echo "Tapping installed WebView step-2 Continue at pixel $NEXT_X,$NEXT_Y on $DEVICE_SIZE"
+  adb shell input tap "$NEXT_X" "$NEXT_Y"
+  sleep 8
+  adb exec-out screencap -p >"$OUT/step3-after-native-continue.png"
 else
   echo "::warning::Could not resolve native device dimensions: $DEVICE_SIZE; touch step not verified"
 fi
@@ -75,17 +85,17 @@ fi
 # Record tree first; treat missing accessibility support separately, never
 # fabricate an end-to-end tap PASS from source code or emulator startup alone.
 adb shell uiautomator dump --compressed /sdcard/michel-candidate-ui.xml >"$OUT/accessibility-dump-output.txt" 2>&1 || true
-adb shell cat /sdcard/michel-candidate-ui.xml >"$OUT/step0-hierarchy.xml" 2>/dev/null || true
+adb shell cat /sdcard/michel-candidate-ui.xml >"$OUT/step3-hierarchy.xml" 2>/dev/null || true
 python3 - <<'PY'
 from pathlib import Path
 p=Path("artifacts/candidate-install")
 s=(p/"step0.png").read_bytes()
 if not s.startswith(bytes.fromhex("89504e470d0a1a0a")) or len(s)<10000:
     raise SystemExit("Failed to capture real Android candidate app screenshot")
-print("INSTALL + LAUNCH PASS; multiple native screenshots captured. Visual approval pending pixel review.")
-if (p/"step0-hierarchy.xml").exists():
-    xml=(p/"step0-hierarchy.xml").read_text(errors="replace")
-    print("Accessibility tree available:",len(xml),"bytes, Continue visible:", "Continue" in xml)
+print("INSTALL + LAUNCH PASS; step 1/2/3 native screenshots captured. Native Continue progression and Finish still require pixel review.")
+if (p/"step3-hierarchy.xml").exists():
+    xml=(p/"step3-hierarchy.xml").read_text(errors="replace")
+    print("Accessibility tree after second native Continue available:",len(xml),"bytes; WebView exposes label:", "Continue" in xml or "Finish" in xml)
 else:
-    print("Accessibility tree unavailable; onboarding native gesture test NOT VERIFIED")
+    print("Accessibility tree unavailable; verify native step-3 screenshot before claiming successful navigation")
 PY
