@@ -1,0 +1,6 @@
+Michel's Life owner-authorized unified customer release.
+Windows Desktop 3.0.217; Android Direct 0.2.5 (versionCode 7).
+Source PR #63 integrated as commit 99ec532623a3c73ead0110bf477bd44ba5512637.
+Require exact intent SHA Source validation + Android UI + UI smoke, same-run installed Windows Setup, permanent owner-signed Android APK and installed Android16 candidate.
+Publish a single versioned release in michels-lab/michel-s-life-releases only if all gates succeed.
+No manual visual signoff gate; human post-release review remains pending.
