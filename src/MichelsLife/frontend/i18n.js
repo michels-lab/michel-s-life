@@ -2179,7 +2179,7 @@ function normalizeDynamicSystemCopy(value,targetLanguage){
   // cannot see the full changing text. Translate the narrowly scoped
   // date-caption shape in the canonical i18n authority, not via a DOM patch.
   // Preserve user-entered prose, standalone mode words and the date itself.
-  out=out.replace(/^(\\s*)(day|week|month|día|semana|mes)(\\s*·\\s*)(\\d{4}-\\d{2}-\\d{2})(\\s*)$/i,
+  out=out.replace(/^(\s*)(day|week|month|día|semana|mes)(\s*·\s*)(\d{4}-\d{2}-\d{2})(\s*)$/i,
     (_,lead,period,separator,date,tail)=>{
       const key=String(period).toLowerCase();
       const modes={day:['day','día'],week:['week','semana'],month:['month','mes'],
