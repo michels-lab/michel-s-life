@@ -91,6 +91,9 @@ if "__mlvAndroidHandleBack" not in main:
 
 if 'android:icon="@mipmap/ic_launcher"' not in manifest or 'android:roundIcon="@mipmap/ic_launcher_round"' not in manifest:
     raise SystemExit("Android manifest is not using the canonical Michel's Life launcher resources")
+if 'android:windowSoftInputMode="adjustResize"' not in manifest:
+    raise SystemExit("Android mission/Journal sheets must resize above the soft keyboard")
+
 for path in (adaptive_icon, adaptive_round_icon, launcher_foreground):
     if not path.exists() or path.stat().st_size == 0:
         raise SystemExit(f"Canonical Michel's Life Android launcher resource is missing: {path}")
