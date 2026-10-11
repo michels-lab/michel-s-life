@@ -55,6 +55,22 @@ adb exec-out screencap -p >"$OUT/step0-after-55s.png"
 for frame in "$OUT/step0-after-30s.png" "$OUT/step0-after-55s.png"; do
   python3 -c 'import pathlib,sys;d=pathlib.Path(sys.argv[1]).read_bytes();sys.exit(0 if d.startswith(bytes.fromhex("89504e470d0a1a0a")) and len(d)>30000 else 1)' "$frame"
 done
+# Exercise the real packaged WebView at its first-run Continue button,
+# following the fully rendered reference frame on this fixed Pixel 6 AVD.
+# Capture the result for human-independent comparison and later visual review.
+DEVICE_SIZE="$(adb shell wm size | tr -d '\r' | sed -n 's/^Physical size: //p' | head -1)"
+if [[ "$DEVICE_SIZE" =~ ^([0-9]+)x([0-9]+)$ ]]; then
+  W="${BASH_REMATCH[1]}"
+  H="${BASH_REMATCH[2]}"
+  X="$((W * 83 / 100))"
+  Y="$((H * 78 / 100))"
+  echo "Tapping installed WebView step-1 Continue at pixel $X,$Y on $DEVICE_SIZE"
+  adb shell input tap "$X" "$Y"
+  sleep 8
+  adb exec-out screencap -p >"$OUT/step2-after-native-continue.png"
+else
+  echo "::warning::Could not resolve native device dimensions: $DEVICE_SIZE; touch step not verified"
+fi
 # Accessibility on Android WebView exposes actual screen buttons in XML.
 # Record tree first; treat missing accessibility support separately, never
 # fabricate an end-to-end tap PASS from source code or emulator startup alone.
