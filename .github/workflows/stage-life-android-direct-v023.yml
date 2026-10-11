@@ -34,6 +34,8 @@ jobs:
       EXPECTED_ANDROID_CERT_SHA256: a01a0540165a00cd228a5fc78adc855bd1c1e6b8195391769c219d76ebd582f2
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - name: Download only production-signed v0.2.3 artifact from this run
         uses: actions/download-artifact@v4
         with:
@@ -57,15 +59,44 @@ jobs:
           ' direct-release-manifest.json
           test "$(jq -r .sha256 direct-release-manifest.json)" = "$(sha256sum MichelsLife-Android-Direct-v0.2.3.apk | awk '{print $1}')"
           cd ..
-          gh api -X GET "repos/$GITHUB_REPOSITORY/actions/runs" -f head_sha="$GITHUB_SHA" -f per_page=100 > ci-runs.json
-          for required in "Source validation" "Android UI smoke" "UI smoke"; do
-            if ! jq -e --arg name "$required" '
-              any(.workflow_runs[]; .name == $name and .conclusion == "success")
-            ' ci-runs.json >/dev/null; then
-              echo "::error::No successful $required CI found for source SHA $GITHUB_SHA"
-              exit 1
+          # A one-shot release-intent commit changes ONLY release metadata.
+          # For that bounded no-code-change case, validate UI on the literal
+          # parent source SHA and source smoke on BOTH parent and intent commit.
+          CI_SHA="$GITHUB_SHA"
+          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            changed="$(git diff --name-only HEAD^ HEAD)"
+            if [[ "$changed" != ".michelslab/release-intents/android-v023.txt" ]]; then
+              echo "::error::Release intent must be the ONLY change to this commit"; exit 1
             fi
+            CI_SHA="$(git rev-parse HEAD^)"
+            echo "CI equivalence: intent-only change $CI_SHA → $GITHUB_SHA (identical application source)"
+          fi
+          for attempt in $(seq 1 35); do
+            gh api -X GET "repos/$GITHUB_REPOSITORY/actions/runs" -f head_sha="$CI_SHA" -f per_page=100 > ci-runs.json
+            all_green=1
+            for required in "Source validation" "Android UI smoke" "UI smoke"; do
+              if ! jq -e --arg name "$required" '
+                any(.workflow_runs[]; .name == $name and .conclusion == "success")
+              ' ci-runs.json >/dev/null; then
+                all_green=0
+              fi
+            done
+            if [[ "$all_green" == "1" ]]; then break; fi
+            if [[ "$attempt" == "35" ]]; then
+              echo "::error::Source validation, Android UI and general UI CI were not all green for tested SHA $CI_SHA"; exit 1
+            fi
+            sleep 20
           done
+          if [[ "$CI_SHA" != "$GITHUB_SHA" ]]; then
+            for attempt in $(seq 1 35); do
+              gh api -X GET "repos/$GITHUB_REPOSITORY/actions/runs" -f head_sha="$GITHUB_SHA" -f per_page=100 > intent-ci.json
+              if jq -e 'any(.workflow_runs[]; .name=="Source validation" and .conclusion=="success")' intent-ci.json >/dev/null; then break; fi
+              if [[ "$attempt" == "35" ]]; then
+                echo "::error::Intent commit source validation never passed"; exit 1
+              fi
+              sleep 20
+            done
+          fi
           if gh release view michelslife-android-direct-transfer-v0.2.3 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "::error::Transfer staging tag already exists; never silently overwrite a previously reviewed signer/binary"
             exit 1
