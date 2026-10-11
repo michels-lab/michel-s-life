@@ -1,3 +1,13 @@
+## 2026-10-10 — Direct signing activated; CI PKIX false failure corrected (candidate)
+
+- Owner's Windows signing setup confirmed **8 Actions secrets** and public `ANDROID_DIRECT_CERT_SHA256` variable provisioned; Direct JKS has independent, stable signer identity. Never store credentials in project files.
+- GitHub signed-candidate run `38115236941`, commit `4dd3b04d0f384b07d94d67611e0b8b8cd2ee8887`: **Direct v0.2.3 APK build and signature verification succeeded**, package `com.michelslab.michelslife`, versionCode 5, signer matched pinned Direct certificate; its SHA-256 verified in CI. Not publicly released.
+- This same run's optional Play upload **AAB validation failed** when `jarsigner -verify -strict` treated the expected owner's self-signed Play **upload** certificate as an untrusted PKIX chain. The AAB was signed, but `-strict` enforces CA trust that a Play upload certificate is not required to possess. No signing keys are changed by the fix.
+- Fix preserves `jarsigner -verify` cryptographic signature validation **and** pins actual upload certificate SHA-256 to the owner's verified Play JKS (nonsecret fingerprint). Wrong signer or tampered artifact must still fail CI.
+- Release gate now requires `Source validation`, `UI smoke`, and `Android UI smoke` to succeed on the **exact release-intent commit**, rather than accepting previous source parent's results. Release intent push triggers all three.
+- Parent commit `504866eb7164543a7e4fb0c02e5c61de0550abdb` reported an intermittent failure in the cross-device mock smoke `Android dirty save did not advance master exactly once`; it requires rerun/diagnosis and MUST NOT be called successful until actual current candidate CI is green.
+- **PENDING:** PR CI, integration, fresh signed Android run, internal transfer provenance checks, destination unified release and post-publish independent public verification. Physical-device Windows↔Android Supabase QA remains outstanding.
+
 ## 2026-10-10 — Validate existing Play keystore and prepare Direct signing activation
 
 - **VALIDATED locally (not in GitHub Actions):** owner's 2026-10-05 Google Play **upload** JKS matches the existing Base64 copy in the private credentials file; `keytool` confirmed a `PrivateKeyEntry` with its recorded alias/password. The PEM certificate fingerprint matches the keystore certificate; SHA-256 sidecars also match. No private key, passwords, keystore Base64 or original credential file were committed.
