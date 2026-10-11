@@ -87,6 +87,8 @@ if [[ "$DEVICE_SIZE" =~ ^([0-9]+)x([0-9]+)$ ]]; then
   adb shell input tap "$FINISH_X" "$FINISH_Y"
   sleep 12
   adb exec-out screencap -p >"$OUT/step4-after-native-finish.png"
+  sleep 20
+  adb exec-out screencap -p >"$OUT/step4-after-native-finish-30s.png"
   # A mere disappearing card may not mean the onboarding completion was
   # persisted. Restart the exact installed app without clearing data and
   # record whether it wrongly reappears.
@@ -95,6 +97,13 @@ if [[ "$DEVICE_SIZE" =~ ^([0-9]+)x([0-9]+)$ ]]; then
   sleep 20
   adb shell pidof "$PKG" >"$OUT/relaunch-process-id.txt"
   adb exec-out screencap -p >"$OUT/step5-after-relaunch.png"
+  # WebView can still be mid-paint even after PackageManager / ActivityManager
+  # have reported success. Keep time-separated same-process evidence rather
+  # than classifying the initial cropped-logo/slab frame as a stable UI defect.
+  sleep 30
+  adb exec-out screencap -p >"$OUT/step5-after-relaunch-30s.png"
+  sleep 30
+  adb exec-out screencap -p >"$OUT/step5-after-relaunch-60s.png"
 else
   echo "::warning::Could not resolve native device dimensions: $DEVICE_SIZE; touch step not verified"
 fi
@@ -109,7 +118,7 @@ p=Path("artifacts/candidate-install")
 s=(p/"step0.png").read_bytes()
 if not s.startswith(bytes.fromhex("89504e470d0a1a0a")) or len(s)<10000:
     raise SystemExit("Failed to capture real Android candidate app screenshot")
-for name in ("step2-after-native-continue.png", "step3-after-native-continue.png", "step4-after-native-finish.png", "step5-after-relaunch.png"):
+for name in ("step2-after-native-continue.png", "step3-after-native-continue.png", "step4-after-native-finish.png", "step4-after-native-finish-30s.png", "step5-after-relaunch.png", "step5-after-relaunch-30s.png", "step5-after-relaunch-60s.png"):
     frame = p/name
     if not frame.exists():
         raise SystemExit(f"Required native onboarding capture missing: {name}")
