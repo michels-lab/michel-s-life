@@ -68,7 +68,9 @@
         font-size:21px;line-height:1.2
       }
       html[data-mlv-platform="android"] [data-mlv216-qc] .mlv216-qc-input{
-        min-height:51px;font-size:16px
+        min-height:51px!important;height:51px!important;
+        font-size:16px!important;line-height:1.25!important;
+        flex:0 0 auto!important
       }
       html[data-mlv-platform="android"] [data-mlv216-qc] select{
         font-size:16px;min-height:46px
