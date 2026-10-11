@@ -37,7 +37,23 @@ const port = 9397;
 // WebView2 browser subprocesses can survive closing the UI host, so a second
 // launch otherwise reuses an old browser started without the CDP flag.
 const visualUserDataFolder = mkdtempSync(join(tmpdir(), "michels-life-visual-webview2-"));
-let proc, browser;
+let proc, browser, policyAdded = false;
+const policyPath = 'HKCU:\\Software\\Policies\\Microsoft\\Edge\\WebView2\\AdditionalBrowserArguments';
+function powershell(command) {
+  const x = spawnSync('pwsh', ['-NoProfile','-NonInteractive','-Command',command], {encoding:'utf8',timeout:20000});
+  if(x.status!==0)throw new Error('Temporary WebView2 CI configuration failed: '+x.stdout+' '+x.stderr);
+  return x.stdout;
+}
+function addTemporaryWebViewDebuggerPolicy(){
+  powershell("$ErrorActionPreference='Stop'; $key='"+policyPath+"'; New-Item -Path $key -Force | Out-Null; " +
+    "if ((Get-ItemProperty -Path $key -Name 'MichelsLife.exe' -ErrorAction SilentlyContinue) -ne $null) { throw 'Existing WebView2 argument policy cannot be overwritten' }; " +
+    "New-ItemProperty -Path $key -Name 'MichelsLife.exe' -Value '--remote-debugging-port="+port+"' -PropertyType String -Force | Out-Null");
+  policyAdded=true;
+}
+function removeTemporaryWebViewDebuggerPolicy(){
+  if(!policyAdded)return;
+  powershell("$key='"+policyPath+"'; Remove-ItemProperty -Path $key -Name 'MichelsLife.exe' -ErrorAction Stop");
+}
 const captures = [];
 async function poll(debuggerUrl, deadline) {
   while (Date.now() < deadline) {
@@ -95,6 +111,10 @@ async function capture(page, surface, viewport) {
   });
 }
 try {
+  // Microsoft-supported per-executable WebView2 policy is used only on the
+  // disposable CI runner and is removed in finally. It complements the
+  // process-local environment override if app startup filters environment.
+  addTemporaryWebViewDebuggerPolicy();
   proc = spawn(executable, [], {
     cwd: dirname(executable),
     windowsHide: false,
@@ -158,6 +178,7 @@ try {
   console.log("Human post-release review and physical PC testing remain separate.");
 } finally {
   try {await browser?.close()} catch (_) {}
+  try {removeTemporaryWebViewDebuggerPolicy()} catch (e) {console.error("Failed to clean temporary WebView2 CI policy:",e);process.exitCode=1}
   if (proc && proc.exitCode === null) {
     try {proc.kill()} catch (_) {}
   }
