@@ -4,7 +4,7 @@
 # here rather than in the workflow YAML.
 set -euo pipefail
 
-APK="artifacts/public/MichelsLife-Android-v0.2.2-TEST.apk"
+APK="artifacts/public/MichelsLife-Android-Direct-v0.2.3.apk"
 PACKAGE="com.michelslab.michelslife"
 mkdir -p artifacts/installed
 test -s "$APK"
@@ -31,7 +31,7 @@ else
 fi
 
 adb shell dumpsys package "$PACKAGE" >artifacts/installed/package-info.txt
-grep -E 'versionCode=4|versionName=0.2.2' artifacts/installed/package-info.txt | head -8
+grep -E 'versionCode=5|versionName=0.2.3' artifacts/installed/package-info.txt | head -8
 
 adb shell am start -W -n "$PACKAGE/.MainActivity" | tee artifacts/installed/launch-output.txt
 sleep 15
