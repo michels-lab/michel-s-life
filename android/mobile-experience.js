@@ -179,6 +179,17 @@
     `;
     document.head.appendChild(style);
   }
+  function adaptQuickCaptureControls(){
+    const field=q('[data-mlv216-qc]:not([hidden]) [data-mlv216-qc-input]');
+    if(!field)return;
+    // Legacy desktop input authorities can reapply 14px/44px at runtime.
+    // Android owns the final touch target, without mutating the shared
+    // input renderer or changing Desktop.
+    for(const [property,value] of [
+      ['font-size','16px'],['min-height','51px'],['height','51px'],
+      ['line-height','1.25']
+    ])field.style.setProperty(property,value,'important');
+  }
   function ensure(){
     if(root&&nav)return true;
     if(!document.body||document.documentElement.dataset.mlvPlatform!=='android')return false;
@@ -288,6 +299,8 @@
       capture.addEventListener('click',()=>{
         close();
         window.MLV216QuickCapture?.open?.();
+        adaptQuickCaptureControls();
+        requestAnimationFrame(adaptQuickCaptureControls);
       });
       const arrows=q('.mlv-android-section-controls',topbar);
       topbar.insertBefore(capture,arrows||null);
