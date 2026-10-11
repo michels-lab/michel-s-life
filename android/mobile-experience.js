@@ -115,6 +115,11 @@
         min-width:44px!important;min-height:44px!important;
         border-radius:13px!important
       }
+      html[data-mlv-platform="android"] article.quest-card .quest-actions button,
+      html[data-mlv-platform="android"] article.mission-card .actions button{
+        min-height:44px!important;min-width:44px!important;
+        font-size:13px!important;touch-action:manipulation!important
+      }
       html[data-mlv-platform="android"] article.v132-mission .v132-menu-body button{
         min-height:44px!important;text-align:left!important
       }
