@@ -139,6 +139,86 @@ try{
     ok(initial.actionDock.right<=8,'Closed Android drawer leaves quick actions over app content: '+JSON.stringify(initial));
   }
   if(initial.focusDock)ok(initial.focusDock.width===0&&initial.focusDock.height===0,'Legacy Focus dock still occupies Android content space: '+JSON.stringify(initial));
+  // Reproduce the physical Galaxy report. Programmatic scrollTo() passing
+  // proves nothing about whether a single finger can pan a WebView page.
+  // Dispatch actual one-pointer Chromium touch events over a non-control KPI.
+  const clockStatus=await page.evaluate(()=>{
+    const r=el=>{const x=el?.getBoundingClientRect();return x?{top:x.top,bottom:x.bottom,height:x.height,width:x.width}:null;};
+    const panel=document.getElementById('v176StatusPanel');
+    const date=document.getElementById('mlv-android-clock-date');
+    const clock=panel?.querySelector('#mlv-android-clock-time');
+    return {panel:r(panel),date:r(date),time:r(clock),dateText:date?.textContent?.trim()||'',
+      clockFont:clock?getComputedStyle(clock).fontSize:null};
+  });
+  ok(clockStatus.panel&&clockStatus.panel.height<=90&&clockStatus.date&&clockStatus.dateText.length>=6 &&
+    clockStatus.date.top>=clockStatus.panel.top-2 &&
+    clockStatus.date.bottom<=clockStatus.panel.bottom+3,
+    'Android clock panel clips or omits its local date: '+JSON.stringify(clockStatus));
+  const verticalStart=await page.evaluate(()=>{
+    window.__mlvTouchPreventTrace=[];
+    if(!window.__mlvPreventDefaultTracing){
+      window.__mlvPreventDefaultTracing=true;
+      const original=Event.prototype.preventDefault;
+      Event.prototype.preventDefault=function(...args){
+        if(this.type==='touchstart'||this.type==='touchmove'||this.type==='pointermove'){
+          window.__mlvTouchPreventTrace.push({type:this.type,element:this.target?.tagName||'',
+            stack:String(new Error().stack||'').slice(0,800)});
+        }
+        return original.apply(this,args);
+      };
+    }
+    const root=document.scrollingElement;
+    const cards=[...document.querySelectorAll('#tab-dashboard .v131-kpi')];
+    const target=cards.find(el=>{
+      const rect=el.getBoundingClientRect();
+      return rect.top>100&&rect.bottom<innerHeight-115;
+    })||cards[0];
+    const r=target?.getBoundingClientRect();
+    return {x:r?.left+r?.width/2,y:r?.top+r?.height/2,
+      scrollTop:root?.scrollTop,range:(root?.scrollHeight||0)-innerHeight,
+      scrollElement:root?.tagName||'',
+      bodyOverflowY:getComputedStyle(document.body).overflowY,
+      bodyOverscrollY:getComputedStyle(document.body).overscrollBehaviorY,
+      touched:target?.className||'',touchAction:target?getComputedStyle(target).touchAction:'',
+      parents:(()=>{const path=[];let e=document.elementFromPoint(r?.left+r?.width/2,r?.top+r?.height/2);
+        while(e&&path.length<11){const css=getComputedStyle(e);
+          path.push({tag:e.tagName,id:e.id,className:String(e.className||'').slice(0,55),
+            touchAction:css.touchAction,overflowY:css.overflowY,position:css.position});
+          e=e.parentElement;
+        }return path;})()};
+  });
+  ok(Number.isFinite(verticalStart.x)&&Number.isFinite(verticalStart.y)&&verticalStart.range>250,
+    'Cannot exercise real one-finger Android scrolling: '+JSON.stringify(verticalStart));
+  ok(!String(verticalStart.parents?.[0]?.className||'').includes('v176-card'),
+    'Invisible desktop status overlay intercepts Dashboard touches: '+JSON.stringify(verticalStart));
+  ok(verticalStart.scrollElement==='HTML'&&
+    verticalStart.bodyOverscrollY==='auto',
+    'Android body traps native scroll chaining instead of letting the HTML document pan: '+
+    JSON.stringify(verticalStart));
+  const verticalCdp=await context.newCDPSession(page);
+  const x=verticalStart.x, y=verticalStart.y, distance=Math.min(320,y-108);
+  await verticalCdp.send('Input.dispatchTouchEvent',{type:'touchStart',
+    touchPoints:[{x,y,radiusX:3,radiusY:3,force:1,id:44}]});
+  for(const k of [0.2,0.4,0.6,0.8,1]){
+    await page.waitForTimeout(45);
+    await verticalCdp.send('Input.dispatchTouchEvent',{type:'touchMove',
+      touchPoints:[{x,y:y-distance*k,radiusX:3,radiusY:3,force:1,id:44}]});
+  }
+  await verticalCdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+  await page.waitForTimeout(450);
+  const verticalEnd=await page.evaluate(()=>({
+    scrollTop:document.scrollingElement.scrollTop,
+    range:document.scrollingElement.scrollHeight-innerHeight,
+    active:document.querySelector('#v30171PrimaryNav .active[data-tab]')?.dataset?.tab||'',
+    gesture:window.__mlvAndroidGestureDebug?.result||'',
+    defaultPreventedBy:window.__mlvTouchPreventTrace?.slice(0,5)||[]
+  }));
+  ok(verticalEnd.scrollTop>=verticalStart.scrollTop+55,
+    'A genuine one-finger upward drag did not scroll the Android dashboard: '+
+    JSON.stringify({verticalStart,verticalEnd,clockStatus}));
+  await page.evaluate(()=>window.scrollTo(0,0));
+  await page.waitForTimeout(120);
+
   // Preserve a real screenshot for diagnosing user-visible layout drift when a regression gate fails.
   await mkdir(dirname(screenshot),{recursive:true});
   await page.screenshot({path:screenshot.endsWith('.png')?screenshot.slice(0,-4)+'-initial-dashboard.png':screenshot+'-initial-dashboard.png'});

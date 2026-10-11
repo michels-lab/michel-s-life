@@ -416,6 +416,12 @@
         });
       }
     }
+    // Restore the HTML document as the only vertical scrollport on Android;
+    // BODY must not trap touch chains in an empty nested scroller.
+    if(document.body){
+      setImportantOnce(document.body,'overflow-y','visible');
+      setImportantOnce(document.body,'overscroll-behavior-y','auto');
+    }
     const app=q('.app');
     if(app){
       setImportantOnce(app,'padding','0');
@@ -478,12 +484,56 @@
       setImportantOnce(focusDock,'pointer-events','none');
     }
 
+    // Desktop Home's overflow:hidden hero traps one-finger vertical scroll.
+    // An overflow:clip visual crop has no independent scroll container.
+    const dashboardHero=q('#tab-dashboard .v131-hero');
+    if(dashboardHero){
+      setImportantOnce(dashboardHero,'overflow','clip');
+      setImportantOnce(dashboardHero,'touch-action','pan-y');
+    }
+    qa('#tab-dashboard .v131-kpis, #tab-dashboard .v131-kpi').forEach(el=>
+      setImportantOnce(el,'touch-action','pan-y')
+    );
     const status=q('#v176StatusPanel');
     if(status){
       setImportantOnce(status,'position','relative');
       setImportantOnce(status,'top','auto');
-      setImportantOnce(status,'max-height','64px');
+      setImportantOnce(status,'max-height','88px');
+      // Exact one-finger CI hit-testing exposed an invisible, absolutely
+      // positioned desktop status card above Dashboard metrics. A stylesheet
+      // display:none was not sufficient against late inline !important
+      // owners. Remove those old tiles from layout AND hit-testing at runtime.
+      status.querySelectorAll('.v176-card').forEach(card=>{
+        setImportantOnce(card,'display','none');
+        setImportantOnce(card,'visibility','hidden');
+        setImportantOnce(card,'pointer-events','none');
+      });
       setImportantOnce(status,'overflow','hidden');
+      let summary=status.querySelector('#mlv-android-time-summary');
+      if(!summary){
+        summary=document.createElement('div');
+        summary.id='mlv-android-time-summary';
+        summary.setAttribute('aria-label','Current time and date');
+        summary.innerHTML='<strong id="mlv-android-clock-time"></strong>'+
+          '<span id="mlv-android-clock-date"></span>';
+        status.appendChild(summary);
+      }
+      const locale=(document.documentElement.lang||'en').trim()||'en';
+      const now=new Date();
+      // Prefer the existing live clock text without relying on the desktop
+      // tile's absolute geometry; fall back to a localized device time.
+      const source=String(status.querySelector('.v176-time')?.textContent||'').trim();
+      const found=source.match(/\b\d{1,2}:\d{2}(?:\s*[aApP][mM])?\b/);
+      const clockText=found?found[0]:new Intl.DateTimeFormat(locale,{
+        hour:'2-digit',minute:'2-digit',hour12:true
+      }).format(now);
+      const today=new Intl.DateTimeFormat(locale,{
+        weekday:'long',month:'short',day:'numeric'
+      }).format(now);
+      const displayClock=summary.querySelector('#mlv-android-clock-time');
+      const displayDate=summary.querySelector('#mlv-android-clock-date');
+      if(displayClock&&displayClock.textContent!==clockText)displayClock.textContent=clockText;
+      if(displayDate&&displayDate.textContent!==today)displayDate.textContent=today;
       setImportantOnce(status,'margin','6px 8px');
     }
   }
@@ -600,7 +650,70 @@
         html[data-mlv-platform="android"][data-mlv-android-switching="1"] #mlv-android-topbar::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:currentColor;opacity:.38;animation:mlvAndroidSwitchPulse .55s ease-in-out infinite alternate}
         @keyframes mlvAndroidSwitchPulse{from{transform:scaleX(.22);opacity:.18}to{transform:scaleX(1);opacity:.52}}
         /* Do not intersect pan-y ancestors with Settings horizontal pan-x. */
-        #main,.layout{touch-action:auto!important}
+        /* Normal page movement must work with ONE finger. Desktop theme
+           surfaces occasionally own pointer/touch gestures and can suppress
+           native WebView scrolling. Keep horizontal carousels separate. */
+        html[data-mlv-platform="android"],
+        html[data-mlv-platform="android"] body,
+        html[data-mlv-platform="android"] .app,
+        html[data-mlv-platform="android"] .app-shell,
+        html[data-mlv-platform="android"] .layout,
+        html[data-mlv-platform="android"] .content,
+        html[data-mlv-platform="android"] #main,
+        html[data-mlv-platform="android"] #main>.tab,
+        html[data-mlv-platform="android"] #tab-dashboard,
+        html[data-mlv-platform="android"] #tab-dashboard .v131-hero,
+        html[data-mlv-platform="android"] #tab-dashboard .v131-kpis,
+        html[data-mlv-platform="android"] #tab-dashboard .v131-kpi,
+        html[data-mlv-platform="android"] #tab-dashboard .v132-panel,
+        html[data-mlv-platform="android"] #tab-dashboard .card,
+        html[data-mlv-platform="android"] #v176StatusPanel,
+        html[data-mlv-platform="android"] #v176StatusPanel .v176-card{
+          touch-action:pan-y!important
+        }
+        /* Status: one compact, complete time-and-date row, not a giant
+           clipped clock left over from the desktop multi-card overlay. */
+        html[data-mlv-platform="android"] #v176StatusPanel{
+          height:auto!important;min-height:0!important;max-height:88px!important;
+          padding:7px 10px!important;overflow:visible!important;
+          display:flex!important;align-items:center!important;
+          contain:layout!important
+        }
+        html[data-mlv-platform="android"] #v176StatusPanel .v176-card{
+          /* Desktop status tiles are absolutely laid out, so reflowing the
+             first one leaves descendants far outside the compact container. */
+          display:none!important
+        }
+        html[data-mlv-platform="android"] #v176StatusPanel #mlv-android-time-summary{
+          display:flex!important;position:relative!important;
+          flex:1 1 auto!important;flex-direction:column!important;
+          align-items:flex-start!important;justify-content:center!important;
+          width:100%!important;min-width:0!important;min-height:0!important;
+          height:auto!important;margin:0!important;padding:2px 5px!important;
+          transform:none!important;overflow:visible!important;gap:3px!important;
+          touch-action:pan-y!important
+        }
+        html[data-mlv-platform="android"] #v176StatusPanel #mlv-android-clock-time{
+          display:block!important;position:static!important;
+          font:800 clamp(21px,6.4vw,28px)/1.12 system-ui,sans-serif!important;
+          letter-spacing:-.03em!important;white-space:nowrap!important
+        }
+        html[data-mlv-platform="android"] #v176StatusPanel #mlv-android-clock-date{
+          display:block!important;position:static!important;
+          font:500 12px/1.25 system-ui,sans-serif!important;
+          opacity:.8!important;white-space:normal!important
+        }
+        /* overflow:hidden creates a non-scrollable scrolling ancestor in
+           Chromium WebView and traps one-finger panning on Today metrics.
+           overflow:clip preserves the rounded-card visual crop without
+           creating a scrolling container or blocking document pan-y. */
+        html[data-mlv-platform="android"] #tab-dashboard .v131-hero{
+          overflow:clip!important;touch-action:pan-y!important
+        }
+        html[data-mlv-platform="android"] #tab-dashboard .v131-kpis,
+        html[data-mlv-platform="android"] #tab-dashboard .v131-kpi{
+          touch-action:pan-y!important
+        }
         .v134-ach-filter,.v140-cat-shortcuts,.v140-library-toggle,[data-horizontal-scroll],.tabs,.v30171-settings-nav{touch-action:pan-x!important}
         #mlv-android-topbar{position:fixed;display:flex;align-items:center;gap:10px;top:0;left:0;right:0;height:calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px));padding:env(safe-area-inset-top,0px) 12px 0;z-index:2147483000;background:rgba(6,9,19,.94);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.1);box-sizing:border-box}
         #mlv-android-menu-button{width:42px;height:42px;min-width:42px;padding:0;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:inherit;font:inherit;font-size:22px;line-height:1;display:grid;place-items:center}
@@ -634,7 +747,15 @@
          * Settings category picker scrolls horizontally on its own.
          */
         html[data-mlv-platform="android"]{height:auto!important;min-height:100%!important;overflow-x:clip!important;overflow-y:auto!important}
-        html[data-mlv-platform="android"] body{height:auto!important;min-height:100dvh!important;max-height:none!important;overflow-x:clip!important;overflow-y:auto!important}
+        /* The HTML element is document.scrollingElement. If BODY also has
+           overflow-y:auto + overscroll-behavior:contain, native one-finger
+           scrolling cannot chain to HTML even though scrollTo works.
+           Leave BODY non-scrolling and let the root own the one scrollport. */
+        html[data-mlv-platform="android"] body{
+          height:auto!important;min-height:100dvh!important;max-height:none!important;
+          overflow-x:clip!important;overflow-y:visible!important;
+          overscroll-behavior-y:auto!important
+        }
         html[data-mlv-platform="android"] .app,
         html[data-mlv-platform="android"] .app-shell,
         html[data-mlv-platform="android"] .layout,
