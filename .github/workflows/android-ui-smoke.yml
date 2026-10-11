@@ -17,6 +17,7 @@ on:
       - 'tools/validate_generated_index.py'
       - 'tools/replace_bundle_index.py'
       - 'tools/inject_bundle_asset.py'
+      - '.michelslab/release-intents/android-v023.txt'
       - '.github/workflows/android-ui-smoke.yml'
 
 permissions:
