@@ -247,7 +247,7 @@ try{
       overflow:card.scrollWidth-card.clientWidth
     };
   });
-  ok(missionGeometry.check&&missionGeometry.check.width>=35&&missionGeometry.check.height>=35,'Mission checkbox touch target is too small: '+JSON.stringify(missionGeometry));
+  ok(missionGeometry.check&&missionGeometry.check.width>=43&&missionGeometry.check.height>=43,'Mission checkbox must provide a 44px-class touch target: '+JSON.stringify(missionGeometry));
   ok(missionGeometry.content&&missionGeometry.check.right<=missionGeometry.content.left+2,'Mission checkbox overlaps content: '+JSON.stringify(missionGeometry));
   ok(missionGeometry.title&&Math.abs(missionGeometry.check.top-missionGeometry.title.top)<18,'Mission checkbox/title are vertically crooked: '+JSON.stringify(missionGeometry));
   ok(missionGeometry.overflow<=2,'Mission card horizontally overflows: '+JSON.stringify(missionGeometry));
@@ -255,6 +255,11 @@ try{
     ok(missionGeometry.actions.left>=missionGeometry.content.left-2,'Mission actions are falling into the checkbox column: '+JSON.stringify(missionGeometry));
   }
 
+  const missionEditTouchTargets=await page.locator('article.v132-mission .v132-action-btn').first().evaluate(el=>{
+    const r=el.getBoundingClientRect();return {width:r.width,height:r.height,left:r.left,right:r.right};
+  });
+  ok(missionEditTouchTargets.width>=43&&missionEditTouchTargets.height>=43,
+    'Mission row action buttons must be accessible to a finger: '+JSON.stringify(missionEditTouchTargets));
   // Mission editing must be a genuine mobile interaction and save to the
   // same canonical mission data as the Windows editor. Check touch targets,
   // scrollable form and sticky Save, not merely the existence of CSS.
