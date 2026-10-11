@@ -15929,7 +15929,12 @@ body.ml-theme-ui [data-tab-panel="contracts"] .v216-contract-card{
     // existing cyan system palette and preserve explicit saved color fields.
     // Desktop's historically approved default remains pink.
     const onAndroid=window.__MICHELSLIFE_PLATFORM__==='android'||!!window.MichelsLifeAndroid;
-    const defaults=onAndroid?PALETTES.cyan:PALETTES.pink;
+    // v30184 owns the final Android palette tokens (including the app's
+    // accepted original-world panel/card colors). Read its normalized current
+    // palette rather than reintroducing an older cyan variant during Continue.
+    // Explicit user-selected values in t still have priority below.
+    const nativeCurrent=onAndroid&&window.ColorThemeV30184?.current?.();
+    const defaults=onAndroid?(nativeCurrent||PALETTES.cyan):PALETTES.pink;
     return {
       bg:t.bg||defaults.bg,
       shell:t.shell||t.panel||defaults.shell||defaults.panel,
