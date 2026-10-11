@@ -498,7 +498,7 @@
       // Prefer the existing live clock text without relying on the desktop
       // tile's absolute geometry; fall back to a localized device time.
       const source=String(status.querySelector('.v176-time')?.textContent||'').trim();
-      const found=source.match(/\\b\\d{1,2}:\\d{2}(?:\\s*[aApP][mM])?\\b/);
+      const found=source.match(/\b\d{1,2}:\d{2}(?:\s*[aApP][mM])?\b/);
       const clockText=found?found[0]:new Intl.DateTimeFormat(locale,{
         hour:'2-digit',minute:'2-digit',hour12:true
       }).format(now);
