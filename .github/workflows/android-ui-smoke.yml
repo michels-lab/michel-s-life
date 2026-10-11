@@ -7,6 +7,7 @@ on:
     branches: [main]
     paths:
       - 'android/android-bridge.js'
+      - 'android/mobile-experience.js'
       - 'android/tools/prepare_bundle.py'
       - 'tools/ui_android_mobile_smoke.mjs'
       - 'tools/ui_supabase_android_sync_smoke.mjs'
