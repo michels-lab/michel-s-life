@@ -172,6 +172,15 @@
       if(el.style.getPropertyValue('grid-template-columns')!==val)
         el.style.setProperty('grid-template-columns',val,'important');
     });
+    main.querySelectorAll('.v30135-day').forEach(el=>{
+      // Desktop month cells inherit a 112px minimum. A phone shows the day
+      // number/dots only; scheduled tasks remain accessible in day details.
+      for(const [key,val] of [
+        ['min-height','64px'],['height','64px'],['max-height','64px'],
+        ['overflow','hidden'],['padding','6px 2px']
+      ])if(el.style.getPropertyValue(key)!==val)
+        el.style.setProperty(key,val,'important');
+    });
     const body=main.querySelector('#mlv184JournalBody');
     if(body&&body.style.getPropertyValue('font-size')!=='16px')
       body.style.setProperty('font-size','16px','important');
