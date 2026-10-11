@@ -305,9 +305,251 @@
       .mlv-android-focus-footer{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:11px;color:var(--muted,#b2c3d1)}
       #mlv-android-focus-linked{overflow-wrap:anywhere}
       body.mlv-android-focus-open{overscroll-behavior:none!important}
-      @media(min-width:700px){
-        #mlv-android-focus-sheet{margin-bottom:12px;border-radius:24px;border-bottom:1px solid rgba(var(--ui-accent-rgb,117,228,255),.30)}
+
+      /* Android native-feeling hierarchy: one bottom navigation and a truly
+         independent Focus workspace. No Desktop theme/markup modifications. */
+      html[data-mlv-platform="android"] #mlv-android-bottom-nav{
+        grid-template-columns:repeat(5,minmax(0,1fr));
+        padding:7px 9px calc(9px + env(safe-area-inset-bottom,0px));
+        gap:4px;background:rgba(var(--ui-panel-rgb,7,13,25),.975);
+        border-top:1px solid rgba(var(--ui-accent-rgb,117,228,255),.16)
       }
+      html[data-mlv-platform="android"] #mlv-android-bottom-nav button{
+        border-radius:15px;min-height:56px;padding:7px 2px;
+        font-size:10px;letter-spacing:.015em
+      }
+      html[data-mlv-platform="android"] #mlv-android-bottom-nav button[data-mobile-tab="focus"]{
+        color:var(--text,#eff7ff);
+        background:linear-gradient(145deg,rgba(var(--ui-accent-rgb,117,228,255),.17),rgba(var(--ui-accent-rgb,117,228,255),.055));
+        border-color:rgba(var(--ui-accent-rgb,117,228,255),.30);
+        box-shadow:inset 0 1px rgba(255,255,255,.09)
+      }
+      html[data-mlv-platform="android"] #mlv-android-bottom-nav button[data-mobile-tab="focus"] .mlv-android-nav-glyph{
+        font-size:24px;color:var(--ui-accent,#75e4ff)
+      }
+      html[data-mlv-platform="android"] #mlv-android-topbar .mlv-android-topbar-copy strong{
+        font-size:16px!important;font-weight:800!important;letter-spacing:-.035em!important
+      }
+      html[data-mlv-platform="android"] #mlv-android-topbar .mlv-android-topbar-copy span{
+        font-size:12px!important;opacity:.78!important
+      }
+      html[data-mlv-platform="android"] #mlv-android-topbar .mlv-android-section-controls button{
+        width:38px!important;height:44px!important;min-width:38px!important;
+        border-radius:13px!important
+      }
+      html[data-mlv-platform="android"] #tab-dashboard .v131-hero{
+        border-color:rgba(var(--ui-accent-rgb,117,228,255),.19)!important;
+        box-shadow:0 10px 30px rgba(0,0,0,.16)!important
+      }
+      html[data-mlv-platform="android"] #tab-dashboard .v131-kpi{
+        border:1px solid rgba(255,255,255,.10)!important;
+        background:linear-gradient(165deg,rgba(var(--ui-panel-rgb,8,16,28),.47),rgba(8,12,25,.30))!important
+      }
+      /* Work begins at Today, not behind Settings. Compact inline access
+         comes before metrics without replacing a single desktop card. */
+      html[data-mlv-platform="android"] #mlv-android-today-focus{
+        display:flex;align-items:center;gap:10px;min-width:0;
+        min-height:57px;padding:10px 11px;margin:7px 0 2px;
+        border-radius:17px;
+        border:1px solid rgba(var(--ui-accent-rgb,117,228,255),.25);
+        background:linear-gradient(112deg,rgba(var(--ui-accent-rgb,117,228,255),.14),rgba(var(--ui-panel-rgb,8,16,27),.44));
+        box-sizing:border-box;touch-action:pan-y
+      }
+      #mlv-android-today-focus .mlv-focus-today-icon{
+        flex:0 0 39px;width:39px;height:39px;display:grid;place-items:center;
+        border-radius:13px;background:rgba(var(--ui-accent-rgb,117,228,255),.14);
+        color:var(--ui-accent,#75e4ff);font:800 25px/1 system-ui,sans-serif
+      }
+      #mlv-android-today-focus .mlv-focus-today-copy{
+        display:flex;flex:1 1 auto;min-width:0;flex-direction:column;gap:3px
+      }
+      #mlv-android-today-focus .mlv-focus-today-copy strong{
+        font:800 13px/1.2 system-ui,sans-serif;color:var(--text,#eff7ff)
+      }
+      #mlv-android-today-focus .mlv-focus-today-copy span{
+        font:500 11px/1.25 system-ui,sans-serif;color:var(--muted,#b6c7d8)
+      }
+      #mlv-android-today-focus button{
+        flex:0 0 auto;min-height:44px;min-width:71px;padding:8px 10px;
+        border:1px solid rgba(var(--ui-accent-rgb,117,228,255),.38);
+        border-radius:13px;background:rgba(var(--ui-accent-rgb,117,228,255),.17);
+        color:var(--text,#eff7ff);font:800 12px system-ui,sans-serif;
+        touch-action:manipulation
+      }
+      /* Running/paused timer belongs to the same shared FocusStoryV30162
+         engine; this is a view of its state, never an independent counter. */
+      #mlv-android-mini-focus{display:none}
+      html[data-mlv-platform="android"] #mlv-android-mini-focus:not([hidden]){
+        display:flex;position:fixed;left:10px;right:10px;
+        bottom:calc(82px + env(safe-area-inset-bottom,0px));
+        z-index:2147482978;align-items:center;gap:9px;
+        min-height:59px;box-sizing:border-box;padding:9px 10px;
+        border-radius:17px;border:1px solid rgba(var(--ui-accent-rgb,117,228,255),.36);
+        background:linear-gradient(125deg,rgba(var(--ui-panel-rgb,7,13,25),.99),rgba(18,29,44,.99));
+        box-shadow:0 9px 31px rgba(0,0,0,.45);
+        color:var(--text,#eff7ff);touch-action:pan-y
+      }
+      #mlv-android-mini-focus .mlv-mini-open{
+        flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:9px;
+        text-align:left;background:transparent;border:0;padding:0;
+        color:inherit;min-height:44px;touch-action:manipulation
+      }
+      #mlv-android-mini-focus .mlv-mini-symbol{
+        display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;
+        border-radius:12px;background:rgba(var(--ui-accent-rgb,117,228,255),.14);
+        color:var(--ui-accent,#75e4ff);font-size:23px
+      }
+      #mlv-android-mini-focus .mlv-mini-text{
+        display:flex;min-width:0;flex-direction:column;gap:2px;align-items:flex-start
+      }
+      #mlv-android-mini-focus .mlv-mini-text strong{
+        font:800 16px/1.16 system-ui,sans-serif;font-variant-numeric:tabular-nums
+      }
+      #mlv-android-mini-focus .mlv-mini-text span{
+        font:600 10px/1.2 system-ui,sans-serif;color:var(--muted,#b4c3d5)
+      }
+      #mlv-android-mini-focus .mlv-mini-toggle{
+        flex:0 0 77px;min-width:77px;min-height:44px;
+        border:1px solid rgba(var(--ui-accent-rgb,117,228,255),.45);
+        border-radius:12px;background:rgba(var(--ui-accent-rgb,117,228,255),.20);
+        font:800 12px system-ui,sans-serif;color:inherit;touch-action:manipulation
+      }
+      html[data-mlv-platform="android"] body.mlv-android-timer-active #main{
+        padding-bottom:calc(164px + env(safe-area-inset-bottom,0px))!important
+      }
+      html[data-mlv-platform="android"] body.mlv-android-focus-open #mlv-android-mini-focus,
+      html[data-mlv-platform="android"] body.mlv-android-mission-edit-open #mlv-android-mini-focus,
+      html[data-mlv-platform="android"] body:has(#mlv200Onboarding:not([hidden])) #mlv-android-mini-focus,
+      html[data-mlv-platform="android"] body:has([data-mlv216-qc]:not([hidden])) #mlv-android-mini-focus{
+        display:none!important;pointer-events:none!important
+      }
+      /* Focus is a full mobile workspace, not a desktop popover or a
+         Settings subsection. Its content scrolls safely on compact phones. */
+      html[data-mlv-platform="android"] #mlv-android-focus-overlay:not([hidden]){
+        display:flex!important;position:fixed;inset:0!important;
+        z-index:2147483100!important;justify-content:stretch!important;
+        align-items:stretch!important;flex-direction:column!important;
+        background:rgba(var(--ui-panel-rgb,7,13,25),1)!important;
+        overflow:hidden!important
+      }
+      html[data-mlv-platform="android"] #mlv-android-focus-dim{display:none!important}
+      html[data-mlv-platform="android"] #mlv-android-focus-sheet{
+        position:relative!important;width:100%!important;
+        max-width:700px!important;height:100dvh!important;
+        max-height:100dvh!important;min-height:0!important;
+        margin:0 auto!important;padding:
+          calc(22px + env(safe-area-inset-top,0px)) 20px
+          calc(29px + env(safe-area-inset-bottom,0px))!important;
+        border:0!important;border-radius:0!important;
+        gap:16px!important;overflow-y:auto!important;
+        box-shadow:none!important;
+        background:
+          radial-gradient(ellipse at 51% 27%,rgba(var(--ui-accent-rgb,117,228,255),.105),transparent 47%),
+          rgba(var(--ui-panel-rgb,7,13,25),.99)!important;
+        -webkit-overflow-scrolling:touch;touch-action:pan-y!important
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-head{
+        align-items:center;gap:14px;padding-bottom:4px
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-eyebrow{
+        display:block;margin-bottom:6px;text-transform:uppercase;
+        letter-spacing:.18em;font:800 10px system-ui,sans-serif;
+        color:var(--ui-accent,#75e4ff)
+      }
+      #mlv-android-focus-sheet h2{
+        font:800 clamp(25px,7vw,33px)/1.1 system-ui,sans-serif!important;
+        letter-spacing:-.035em!important
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-close{
+        flex:0 0 48px!important;width:48px!important;height:48px!important;
+        min-width:48px!important;min-height:48px!important;
+        font-size:24px!important;border-radius:15px!important
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-clock{
+        display:flex;flex-direction:column;align-items:center;justify-content:center;
+        flex:0 0 auto;min-height:260px;padding:5px 0;
+        border:0!important;border-radius:0!important;background:transparent!important
+      }
+      #mlv-android-focus-sheet #mlv-android-focus-progress-ring{
+        display:flex;align-items:center;justify-content:center;
+        width:min(65vw,240px);height:min(65vw,240px);
+        padding:8px;box-sizing:border-box;border-radius:50%;
+        background:conic-gradient(
+          var(--ui-accent,#75e4ff) var(--mlv-focus-progress,100%),
+          rgba(255,255,255,.12) 0
+        );
+        box-shadow:0 0 45px rgba(var(--ui-accent-rgb,117,228,255),.105)
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-dial{
+        display:flex;flex-direction:column;align-items:center;justify-content:center;
+        width:100%;height:100%;gap:4px;border-radius:50%;
+        background:rgba(var(--ui-panel-rgb,7,13,25),.99);
+        box-shadow:inset 0 0 22px rgba(0,0,0,.25)
+      }
+      #mlv-android-focus-time{
+        font-size:clamp(38px,11vw,54px)!important;
+        line-height:1.05!important;letter-spacing:-.065em!important
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-phase{
+        color:var(--ui-accent,#75e4ff);
+        font:800 11px system-ui,sans-serif;letter-spacing:.13em;text-transform:uppercase
+      }
+      #mlv-android-focus-sheet #mlv-android-focus-status{
+        margin-top:14px;font:700 13px/1.3 system-ui,sans-serif;
+        letter-spacing:.01em
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-presets{
+        grid-template-columns:repeat(2,minmax(0,1fr));gap:10px
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-presets button{
+        min-height:56px;border-radius:16px!important;font-size:14px
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-main-actions{
+        grid-template-columns:repeat(2,minmax(0,1fr));gap:10px
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-main-actions button{
+        min-height:56px;border-radius:17px!important;font-size:14px
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-main-actions button.primary{
+        grid-column:span 2;min-height:62px;font-size:17px;
+        box-shadow:0 9px 26px rgba(var(--ui-accent-rgb,117,228,255),.14)
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-stats{
+        display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:9px;border-top:1px solid rgba(255,255,255,.10);padding-top:14px
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-stats>div{
+        display:flex;flex-direction:column;gap:5px;padding:13px;
+        border-radius:15px;background:rgba(255,255,255,.045);
+        border:1px solid rgba(255,255,255,.065)
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-stats span{
+        color:var(--muted,#b6c6d8);font:600 11px/1.25 system-ui,sans-serif
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-stats strong{
+        font:800 14px/1.2 system-ui,sans-serif;overflow-wrap:anywhere
+      }
+      #mlv-android-focus-sheet details{
+        padding:12px 13px;border:1px solid rgba(255,255,255,.12);
+        border-radius:15px;background:rgba(255,255,255,.025)
+      }
+      #mlv-android-focus-sheet details summary{
+        font:700 12px system-ui,sans-serif;padding:5px 2px;
+        touch-action:manipulation;cursor:pointer
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-compact{margin-top:13px}
+      #mlv-android-focus-sheet .mlv-android-focus-footer{display:none}
+      #mlv-android-focus-sheet .mlv-android-focus-system-note{
+        font-size:11px!important;opacity:.8;line-height:1.4!important
+      }
+      @media(max-height:750px){
+        #mlv-android-focus-sheet{gap:11px!important}
+        #mlv-android-focus-sheet .mlv-android-focus-clock{min-height:209px}
+        #mlv-android-focus-sheet #mlv-android-focus-progress-ring{
+          width:185px;height:185px
+        }
+      }
+
     `;
     document.head.appendChild(style);
   }
