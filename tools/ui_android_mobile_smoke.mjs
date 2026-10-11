@@ -176,6 +176,9 @@ try{
     const r=target?.getBoundingClientRect();
     return {x:r?.left+r?.width/2,y:r?.top+r?.height/2,
       scrollTop:root?.scrollTop,range:(root?.scrollHeight||0)-innerHeight,
+      scrollElement:root?.tagName||'',
+      bodyOverflowY:getComputedStyle(document.body).overflowY,
+      bodyOverscrollY:getComputedStyle(document.body).overscrollBehaviorY,
       touched:target?.className||'',touchAction:target?getComputedStyle(target).touchAction:'',
       parents:(()=>{const path=[];let e=document.elementFromPoint(r?.left+r?.width/2,r?.top+r?.height/2);
         while(e&&path.length<11){const css=getComputedStyle(e);
@@ -188,6 +191,10 @@ try{
     'Cannot exercise real one-finger Android scrolling: '+JSON.stringify(verticalStart));
   ok(!String(verticalStart.parents?.[0]?.className||'').includes('v176-card'),
     'Invisible desktop status overlay intercepts Dashboard touches: '+JSON.stringify(verticalStart));
+  ok(verticalStart.scrollElement==='HTML'&&
+    verticalStart.bodyOverscrollY==='auto',
+    'Android body traps native scroll chaining instead of letting the HTML document pan: '+
+    JSON.stringify(verticalStart));
   const verticalCdp=await context.newCDPSession(page);
   const x=verticalStart.x, y=verticalStart.y, distance=Math.min(320,y-108);
   await verticalCdp.send('Input.dispatchTouchEvent',{type:'touchStart',
