@@ -482,8 +482,25 @@
     if(status){
       setImportantOnce(status,'position','relative');
       setImportantOnce(status,'top','auto');
-      setImportantOnce(status,'max-height','64px');
-      setImportantOnce(status,'overflow','hidden');
+      setImportantOnce(status,'max-height','88px');
+      setImportantOnce(status,'overflow','visible');
+      const clock=status.querySelector('.v176-card:first-child');
+      if(clock){
+        let date=clock.querySelector('#mlv-android-clock-date');
+        if(!date){
+          date=document.createElement('span');
+          date.id='mlv-android-clock-date';
+          date.setAttribute('aria-label',"Today's date");
+          clock.appendChild(date);
+        }
+        // The canonical shared frontend still owns the live time itself.
+        // Android only completes its compact status card with a local date.
+        const locale=(document.documentElement.lang||'en').trim()||'en';
+        const today=new Intl.DateTimeFormat(locale,{
+          weekday:'long',month:'short',day:'numeric'
+        }).format(new Date());
+        if(date.textContent!==today)date.textContent=today;
+      }
       setImportantOnce(status,'margin','6px 8px');
     }
   }
@@ -600,7 +617,53 @@
         html[data-mlv-platform="android"][data-mlv-android-switching="1"] #mlv-android-topbar::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:currentColor;opacity:.38;animation:mlvAndroidSwitchPulse .55s ease-in-out infinite alternate}
         @keyframes mlvAndroidSwitchPulse{from{transform:scaleX(.22);opacity:.18}to{transform:scaleX(1);opacity:.52}}
         /* Do not intersect pan-y ancestors with Settings horizontal pan-x. */
-        #main,.layout{touch-action:auto!important}
+        /* Normal page movement must work with ONE finger. Desktop theme
+           surfaces occasionally own pointer/touch gestures and can suppress
+           native WebView scrolling. Keep horizontal carousels separate. */
+        html[data-mlv-platform="android"],
+        html[data-mlv-platform="android"] body,
+        html[data-mlv-platform="android"] .app,
+        html[data-mlv-platform="android"] .app-shell,
+        html[data-mlv-platform="android"] .layout,
+        html[data-mlv-platform="android"] .content,
+        html[data-mlv-platform="android"] #main,
+        html[data-mlv-platform="android"] #main>.tab,
+        html[data-mlv-platform="android"] #tab-dashboard,
+        html[data-mlv-platform="android"] #tab-dashboard .v131-hero,
+        html[data-mlv-platform="android"] #tab-dashboard .v131-kpis,
+        html[data-mlv-platform="android"] #tab-dashboard .v131-kpi,
+        html[data-mlv-platform="android"] #tab-dashboard .v132-panel,
+        html[data-mlv-platform="android"] #tab-dashboard .card,
+        html[data-mlv-platform="android"] #v176StatusPanel,
+        html[data-mlv-platform="android"] #v176StatusPanel .v176-card{
+          touch-action:pan-y!important
+        }
+        /* Status: one compact, complete time-and-date row, not a giant
+           clipped clock left over from the desktop multi-card overlay. */
+        html[data-mlv-platform="android"] #v176StatusPanel{
+          height:auto!important;min-height:0!important;max-height:88px!important;
+          padding:7px 10px!important;overflow:visible!important;
+          display:flex!important;align-items:center!important;
+          contain:layout!important
+        }
+        html[data-mlv-platform="android"] #v176StatusPanel .v176-card:first-child{
+          display:flex!important;flex-direction:column!important;
+          align-items:flex-start!important;justify-content:center!important;
+          gap:3px!important;min-height:0!important;max-height:none!important;
+          height:auto!important;overflow:visible!important;
+          padding:2px 4px!important
+        }
+        html[data-mlv-platform="android"] #v176StatusPanel .v176-time,
+        html[data-mlv-platform="android"] #v176StatusPanel .v176-time *{
+          font-size:clamp(22px,6.4vw,29px)!important;line-height:1.12!important;
+          overflow:visible!important
+        }
+        html[data-mlv-platform="android"] #v176StatusPanel #mlv-android-clock-date{
+          display:block!important;max-width:100%!important;min-width:0!important;
+          font:500 12px/1.25 system-ui,sans-serif!important;
+          opacity:.78!important;white-space:normal!important;
+          overflow:visible!important
+        }
         .v134-ach-filter,.v140-cat-shortcuts,.v140-library-toggle,[data-horizontal-scroll],.tabs,.v30171-settings-nav{touch-action:pan-x!important}
         #mlv-android-topbar{position:fixed;display:flex;align-items:center;gap:10px;top:0;left:0;right:0;height:calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px));padding:env(safe-area-inset-top,0px) 12px 0;z-index:2147483000;background:rgba(6,9,19,.94);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.1);box-sizing:border-box}
         #mlv-android-menu-button{width:42px;height:42px;min-width:42px;padding:0;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:inherit;font:inherit;font-size:22px;line-height:1;display:grid;place-items:center}
