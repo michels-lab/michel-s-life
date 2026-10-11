@@ -1,3 +1,11 @@
+## 2026-10-11 — Public unified Windows v3.0.217 + Android Direct v0.2.5 delivered
+
+- **Code:** release-candidate PR #63 merged as `99ec532623a3c73ead0110bf477bd44ba5512637`. Exact publication intent commit `05ccaa52c2899ba969d2d0ad396669d2552b0f2f`.
+- **Source CI:** run [38175360615](https://github.com/michels-lab/michel-s-life/actions/runs/38175360615): source gate, current Windows Setup compile/install/launch, permanently signed Android v0.2.5 code 7 build, Android 16 native candidate install/relaunch all **success**. Source repo's final cross-repository publisher step failed **HTTP 403** on `RELEASES_REPO_TOKEN`; no code/build/security check failed.
+- **Authorized recovery without changing binaries:** [destination-owned release run 38176304417](https://github.com/michels-lab/michel-s-life-releases/actions/runs/38176304417) succeeded using the public release repo's scoped `GITHUB_TOKEN`, re-downloaded exact same source-run artifacts and verified Android cert/package/SHA, Windows binaries/SHA and launch evidence before publishing one unified **v3.0.217** release with 13 assets.
+- **Public link:** https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.217 (latest, non-draft), Windows v3.0.217 + Android v0.2.5 on one customer page; no LouderMe release assets.
+- **Continuing work:** PR #62 native WebView2 screenshot CDP capture gate still open/failing; native Windows launch is validated but not represented as complete native visual screenshot approval. Samsung Galaxy physical IME/gesture and Windows↔Galaxy real service sync remain separately pending. Fix source `RELEASES_REPO_TOKEN` scope or standardize a destination-owned release publisher for subsequent versions, to avoid repeat 403.
+
 ## 2026-10-06 — Canonical Michel's Life identity adoption (implementation)
 
 ## 2026-10-11 — Michel's Lab master UI evidence: browser integration candidate
