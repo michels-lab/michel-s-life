@@ -15960,7 +15960,11 @@ body.ml-theme-ui [data-tab-panel="contracts"] .v216-contract-card{
   function currentTheme(){
     let local=null;
     try{local=JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){}
-    return theme(local||settings().v3000Theme||settings().v133Theme||PALETTES.pink);
+    // Keep Android's original cyan palette stable until the user actually selects
+    // a preset. The former pink fallback was reapplied on EVERY generic button
+    // click, making first-run Continue silently recolor the entire app.
+    const androidFirstRun=window.__MICHELSLIFE_PLATFORM__==='android'||!!window.MichelsLifeAndroid;
+    return theme(local||settings().v3000Theme||settings().v133Theme||(androidFirstRun?PALETTES.cyan:PALETTES.pink));
   }
 
   function syncInputs(t){
