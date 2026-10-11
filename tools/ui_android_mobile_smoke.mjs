@@ -383,7 +383,27 @@ try{
   if(!(await fresh.locator('#mlv200Onboarding .mlv200-focus input[type="checkbox"]').count())){
     const next=fresh.locator('#mlv200Onboarding [data-mlv200-onboard="next"]');
     ok(await next.count(),'Fresh onboarding has no Continue button');
+    await fresh.waitForTimeout(1600);
+    const colorState=()=>fresh.evaluate(()=>{
+      const tokens=['--accent','--ui-accent-rgb','--ui-panel-rgb','--ui-card-rgb','--ui-gold-rgb'];
+      const get=(el)=>Object.fromEntries(tokens.map(k=>[k,getComputedStyle(el).getPropertyValue(k).trim()]));
+      const card=document.querySelector('#mlv200Onboarding .mlv200-onboard-card');
+      return {html:get(document.documentElement),body:get(document.body),card:card?get(card):null,
+        cardBackground:card?getComputedStyle(card).backgroundImage:null,
+        savedTheme:localStorage.getItem('michelsLifeTheme.v343')||'',
+        chosenWorld:document.querySelector('[data-mlv200-theme].active')?.getAttribute('data-mlv200-theme')||null
+      };
+    });
+    const colorsStep1=await colorState();
     await next.click();
+    await fresh.waitForTimeout(900);
+    const colorsStep2=await colorState();
+    console.log('ANDROID_ONBOARD_THEME_STEP1_TO_STEP2',JSON.stringify({colorsStep1,colorsStep2}));
+    ok(JSON.stringify(colorsStep1.html)===JSON.stringify(colorsStep2.html)&&
+       JSON.stringify(colorsStep1.body)===JSON.stringify(colorsStep2.body)&&
+       JSON.stringify(colorsStep1.card)===JSON.stringify(colorsStep2.card)&&
+       colorsStep1.cardBackground===colorsStep2.cardBackground,
+       'Unexpected Android onboarding palette recolor on Continue: '+JSON.stringify({colorsStep1,colorsStep2}));
   }
   await fresh.waitForSelector('#mlv200Onboarding .mlv200-focus input[type="checkbox"]',{state:'visible',timeout:5000});
   const freshInstallOnboarding=await fresh.evaluate(()=>{
