@@ -403,7 +403,62 @@ try{
     ),null,{timeout:5000});
   ok(await page.evaluate(()=>document.querySelector('#mlv-android-bottom-nav [data-mobile-tab="missions"]')?.getAttribute('aria-current')==='page'),
     'Mobile nav did not reflect Missions selection');
+
+  // Real touch-first Quick Capture: the phone header action must work from
+  // Missions and must reuse shared mission and Journal engines.
+  await page.waitForSelector('#mlv-android-capture-button',{state:'visible'});
+  const captureButton=await page.evaluate(()=>{
+    const r=document.getElementById('mlv-android-capture-button')?.getBoundingClientRect();
+    const title=document.querySelector('#mlv-android-section-title')?.getBoundingClientRect();
+    return {button:r?{left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height}:null,
+      title:title?{left:title.left,right:title.right}:null};
+  });
+  ok(captureButton.button&&captureButton.button.width>=42&&captureButton.button.height>=42&&
+    captureButton.button.right<=412&&captureButton.button.top>=0&&
+    captureButton.title?.right<=captureButton.button.left+2,
+    'Android Quick Capture header overlaps page title or misses touch-safe bounds: '+JSON.stringify(captureButton));
+  await page.locator('#mlv-android-capture-button').click();
+  await page.waitForSelector('[data-mlv216-qc]:not([hidden])',{state:'visible'});
+  const captureSheet=await page.evaluate(()=>{
+    const root=document.querySelector('[data-mlv216-qc]:not([hidden])');
+    const card=root?.querySelector('.mlv216-qc-card');
+    const input=root?.querySelector('[data-mlv216-qc-input]');
+    const save=root?.querySelector('[data-mlv216-qc-save]');
+    const r=el=>{const b=el?.getBoundingClientRect();return b?{top:b.top,bottom:b.bottom,left:b.left,right:b.right,height:b.height,width:b.width}:null};
+    return {card:r(card),save:r(save),input:r(input),fontSize:input?parseFloat(getComputedStyle(input).fontSize):0};
+  });
+  ok(captureSheet.card&&captureSheet.card.top>=0&&captureSheet.card.bottom<=916&&
+    captureSheet.card.width<=412&&captureSheet.save?.bottom<=916&&
+    captureSheet.input?.height>=45&&captureSheet.fontSize>=16,
+    'Mobile Quick Capture is a clipped desktop modal rather than keyboard-safe bottom sheet: '+JSON.stringify(captureSheet));
+  ok(await page.evaluate(()=>window.__mlvAndroidHandleBack?.()),
+    'Android system Back did not consume open Quick Capture');
+  ok(await page.evaluate(()=>document.querySelector('[data-mlv216-qc]')?.hidden),
+    'Quick Capture remained open after native system Back');
+  await page.locator('#mlv-android-capture-button').click();
+  await page.locator('[data-mlv216-qc] [data-mlv216-qc-type]').selectOption('mission');
+  await page.locator('[data-mlv216-qc] [data-mlv216-qc-input]').fill('Android quick capture parity mission');
+  await page.locator('[data-mlv216-qc] [data-mlv216-qc-save]').click();
+  await page.waitForFunction(()=>{
+    const state=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}');
+    return state.missions?.some(m=>m.name==='Android quick capture parity mission');
+  },null,{timeout:6000});
+  ok(await page.evaluate(()=>document.querySelector('[data-mlv216-qc]')?.hidden),
+    'Quick Capture did not close after saving the shared mission');
+  await page.locator('#mlv-android-capture-button').click();
+  await page.locator('[data-mlv216-qc] [data-mlv216-qc-type]').selectOption('journal');
+  await page.locator('[data-mlv216-qc] [data-mlv216-qc-input]').fill('Android quick capture parity journal note');
+  await page.locator('[data-mlv216-qc] [data-mlv216-qc-save]').click();
+  await page.waitForFunction(()=>{
+    const d=new Date(),two=n=>String(n).padStart(2,'0');
+    const today=d.getFullYear()+'-'+two(d.getMonth()+1)+'-'+two(d.getDate());
+    const api=window.JournalV30189||window.JournalV30188||window.JournalV30184;
+    return String(api?.entry?.(today)?.body||'').includes('Android quick capture parity journal note');
+  },null,{timeout:6000});
+  ok(await page.evaluate(()=>document.querySelector('[data-mlv216-qc]')?.hidden),
+    'Quick Capture did not close after writing to the canonical Journal');
   await page.screenshot({path:screenshot.endsWith('.png')?screenshot.slice(0,-4)+'-mobile-shell.png':screenshot+'-mobile-shell.png'});
+
 
   await page.evaluate(()=>window.__mlvAndroidFastRoute?.('dashboard'));
   await page.waitForFunction(

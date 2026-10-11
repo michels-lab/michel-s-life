@@ -1,3 +1,13 @@
+## 2026-10-11 — Android Quick Capture: touch-first mission and Journal sheet
+
+- **Task:** Continue Android-native-feeling UX across every major section, without duplicating Desktop data engines or changing accepted themes, assets, desktop layout.
+- **Implementation candidate:** `android/mobile-experience.js` now places one minimum-42px **+ Quick Capture** action inside the Android fixed topbar, visible from Today, Missions, Focus (after closing the Focus overlay), Calendar and Settings. Clicking it calls the canonical shared `MLV216QuickCapture.open()` rather than owning a second mission/journal store.
+- **Mobile presentation:** Android-only style gives the shared Quick Capture modal a screen-bottom sheet respecting `100dvh`, status/navigation safe areas, keyboard resize, minimum-16px text input, >=44px touch controls and scrollable card with sticky Save/Cancel. Shared Windows Quick Capture remains unchanged.
+- **Native Back behavior:** Android back handler closes visible Quick Capture before browser history/other modal handling; never silently leaves the app with a draft open.
+- **New rendered regression:** on 412×915 touch browser, assert header button and title do not overlap, sheet is wholly reachable, input is minimum 16px/45px, Back dismisses, a real mission is saved in canonical state and a real Journal note is read back via canonical Journal API. Android UI, source, build/emulator, Windows smoke required on **current commit**; results pending.
+- **Related work:** navigation/Focus Android PR #52 merged and green; cloud credential boundary PR #56 merged and green, with real-PC+Galaxy provider verification still tracked issue #28. Complete first-class redesign for other app sections is ongoing issue #54, scheduled alarms/notifications issue #53.
+- **Public binary:** still Windows v3.0.216 + Android v0.2.3; no new APK/release published from this PR; no real Galaxy screenshot/keyboard validation claimed.
+
 ## 2026-10-11 — Android-owned mobile navigation + shared Focus timer; section-parity audit
 
 - **User direction:** Michel's Life must be independently usable as a first-class phone app, not simply desktop panels fitted into a WebView; desktop/Android must preserve feature and account-state parity while allowing distinct UI. Pomodoro and alarms must respect their OS/runtime semantics.

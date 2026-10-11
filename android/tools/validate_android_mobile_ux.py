@@ -3,6 +3,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 bridge = (ROOT / "android-bridge.js").read_text(encoding="utf-8")
+mobile_experience = (ROOT / "mobile-experience.js").read_text(encoding="utf-8")
+bundler = (ROOT / "tools/prepare_bundle.py").read_text(encoding="utf-8")
 main = (ROOT / "app/src/main/java/com/michelslab/michelslife/MainActivity.kt").read_text(encoding="utf-8")
 manifest = (ROOT / "app/src/main/AndroidManifest.xml").read_text(encoding="utf-8")
 adaptive_icon = ROOT / "app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml"
@@ -57,6 +59,24 @@ missing = [needle for needle in required_bridge if needle not in bridge]
 if missing:
     raise SystemExit("Android mobile UX contract missing: " + ", ".join(missing))
 
+required_mobile_experience = [
+    "mlv-android-bottom-nav",
+    "mlv-android-focus-overlay",
+    "FocusStoryV30162",
+    "mlv-android-capture-button",
+    "MLV216QuickCapture",
+    "[data-mlv216-qc]",
+    "mlv-android-focus-sheet",
+    "mlv-android-focus-open",
+    "env(safe-area-inset-bottom,0px)",
+    "window.__mlvAndroidHandleBack=function()",
+]
+missing_mobile_experience = [needle for needle in required_mobile_experience if needle not in mobile_experience]
+if missing_mobile_experience:
+    raise SystemExit("Android mobile experience missing: " + ", ".join(missing_mobile_experience))
+if "MOBILE_EXPERIENCE = ROOT / \"mobile-experience.js\"" not in bundler or "shutil.copy2(MOBILE_EXPERIENCE" not in bundler:
+    raise SystemExit("Android app bundling no longer includes its mobile-specific UI script")
+
 native_required = [
     "setLayerType(View.LAYER_TYPE_HARDWARE",
     "setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_BOUND",
@@ -71,6 +91,9 @@ if "__mlvAndroidHandleBack" not in main:
 
 if 'android:icon="@mipmap/ic_launcher"' not in manifest or 'android:roundIcon="@mipmap/ic_launcher_round"' not in manifest:
     raise SystemExit("Android manifest is not using the canonical Michel's Life launcher resources")
+if 'android:windowSoftInputMode="adjustResize"' not in manifest:
+    raise SystemExit("Android mission/Journal sheets must resize above the soft keyboard")
+
 for path in (adaptive_icon, adaptive_round_icon, launcher_foreground):
     if not path.exists() or path.stat().st_size == 0:
         raise SystemExit(f"Canonical Michel's Life Android launcher resource is missing: {path}")
