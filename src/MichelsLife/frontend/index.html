@@ -16098,9 +16098,9 @@ body.ml-theme-ui [data-tab-panel="contracts"] .v216-contract-card{
       },0);
       return;
     }
-    if(ev.target.closest?.('[data-tab],.tab-btn,[data-action],button')){
-      setTimeout(()=>{apply(currentTheme(),null,false);fixPremiumLayout();},70);
-    }
+    // Theme presets are saved above, and renderAll() reapplies explicit state.
+    // Never call apply(currentTheme()) on unrelated buttons: the click-wide
+    // handler silently recolored Android onboarding from cyan to pink.
   },true);
 
   const oldRenderAll=window.renderAll;
