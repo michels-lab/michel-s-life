@@ -44,6 +44,8 @@ def main():
         # Keep the platform-owned shell next to the bridge, before the
         # shared frontend scripts; both boot at DOMContentLoaded.
         text = text.replace(marker, marker + "\n" + mobile_marker, 1)
+    if sections_marker not in text:
+        text = text.replace(mobile_marker, mobile_marker + "\n" + sections_marker, 1)
     index.write_text(text, encoding="utf-8", newline="\n")
 
     print("Prepared Michel's Life Android web bundle:", assets)
