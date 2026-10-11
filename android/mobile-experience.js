@@ -15,6 +15,35 @@
     {id:'settings',label:'Settings',glyph:'⚙'}
   ];
   let root=null,nav=null,mini=null,ticker=null;
+  let lastNativeAlarmKey=null;
+
+  function syncNativeFocusAlarm(state){
+    const native=window.MichelsLifeAndroid;
+    if(!native||typeof native.syncFocusAlarm!=='function'||!state)return;
+    const running=state.status==='running';
+    const deadline=Number(state.deadlineAt)||0;
+    const mode=state.mode==='break'?'break':'work';
+    const key=running?'running:'+mode+':'+deadline:'inactive';
+    if(key===lastNativeAlarmKey)return;
+    try{
+      const raw=native.syncFocusAlarm(JSON.stringify({
+        status:running?'running':'paused',deadlineAt:running?deadline:0,mode
+      }));
+      const result=JSON.parse(raw||'{}');
+      if(result.error)throw Error(result.error);
+      lastNativeAlarmKey=key;
+    }catch(error){
+      // Retry on the next tick rather than silently claiming OS delivery.
+      lastNativeAlarmKey=null;
+      console.warn('Focus native notification unavailable:',String(error));
+    }
+  }
+
+  function requestNativeFocusPermission(){
+    const native=window.MichelsLifeAndroid;
+    try{native?.requestFocusNotificationPermission?.();}
+    catch(error){console.warn('Focus notification permission unavailable:',String(error));}
+  }
   const isFocusOpen=()=>!!(root&&!root.hidden);
   function fmt(ms){
     let s=Math.max(0,Math.ceil((Number(ms)||0)/1000));
@@ -683,7 +712,7 @@
             <div><span>Linked mission</span><strong id="mlv-android-focus-linked">No mission linked</strong></div>
             <div><span>Finished today</span><strong id="mlv-android-focus-count">0 sessions</strong></div>
           </div>
-          <p class="mlv-android-focus-system-note">The timer uses your existing Michel’s Life progress. Background alarms and lock-screen alerts are not enabled yet.</p>
+          <p class="mlv-android-focus-system-note">The timer uses your existing Michel’s Life progress. Android notifications require permission and may be delayed by battery-saving settings.</p>
         </section>`;
       root.addEventListener('click',event=>{
         const source=event.target.closest('[data-mobile-focus],[data-mobile-preset],#mlv-android-focus-dim');
@@ -701,7 +730,10 @@
         const action=source.dataset.mobileFocus;
         if(action==='close'){close();return;}
         if(!api){return;}
-        if(action==='toggle')api.toggleFocus?.();
+        if(action==='toggle'){
+          if(api.focusState?.().status!=='running')requestNativeFocusPermission();
+          api.toggleFocus?.();
+        }
         if(action==='skip'){
           if(api.focusState?.().status==='running'&&!window.confirm('Skip the current focus phase?'))return;
           api.skipFocus?.();
@@ -740,6 +772,7 @@
         const api=focusApi();
         const state=api?.focusState?.();
         if(state?.status==='running'||state?.status==='paused'){
+          if(state.status==='paused')requestNativeFocusPermission();
           api.toggleFocus?.();
           updateFocus();
         }
@@ -788,6 +821,7 @@
       const api=focusApi(),state=api?.focusState?.();
       if(!state){open();return;}
       if(state.status==='ready'){
+        requestNativeFocusPermission();
         api.toggleFocus?.();
         updateFocus();
       }
@@ -835,6 +869,7 @@
       document.body.classList.remove('mlv-android-timer-active');
       return;
     }
+    syncNativeFocusAlarm(f);
     const active=f.status==='running'||f.status==='paused';
     const left=fmt(api.remaining?.(f));
     const mode=f.mode==='break'?'Break':'Focus';
@@ -886,6 +921,15 @@
       '-'+String(now.getDate()).padStart(2,'0');
     const done=(api.focusSessions?.()||[]).filter(x=>x.status==='completed'&&x.date===day).length;
     q('#mlv-android-focus-count',root).textContent=done+' session'+(done===1?'':'s');
+    const native=window.MichelsLifeAndroid;
+    if(typeof native?.focusNotificationStatus==='function'){
+      try{
+        const state=JSON.parse(native.focusNotificationStatus());
+        q('.mlv-android-focus-system-note',root).textContent=state.notificationsGranted?
+          'Android reminders are on. Battery saving may delay a completion alert.':
+          'Allow Michel’s Life notifications for reminders with the screen locked. Android may delay delivery.';
+      }catch(_){}
+    }
   }
   function open(){
     if(!ensure())return false;
