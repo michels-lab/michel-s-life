@@ -1,3 +1,11 @@
+## 2026-10-10 — Validate existing Play keystore and prepare Direct signing activation
+
+- **VALIDATED locally (not in GitHub Actions):** owner's 2026-10-05 Google Play **upload** JKS matches the existing Base64 copy in the private credentials file; `keytool` confirmed a `PrivateKeyEntry` with its recorded alias/password. The PEM certificate fingerprint matches the keystore certificate; SHA-256 sidecars also match. No private key, passwords, keystore Base64 or original credential file were committed.
+- **BLOCKED (repository admin operation):** Actions showed only `GOOGLE_CLIENT_SECRET` and `RELEASES_REPO_TOKEN`, not the required eight Android signing secret names. The connected GitHub application has no secrets-write operation. Signing credentials must be uploaded from the owner's local machine via GitHub CLI or repository Settings.
+- **IMPLEMENTED, pending CI:** Direct staging now reads public `vars.ANDROID_DIRECT_CERT_SHA256` instead of a stale literal fingerprint from a different prospective key. Direct build already used the repository variable; both gates must now agree on the **same owner-pinned Direct certificate**. Secrets remain mandatory; missing signer fails closed.
+- **DOCUMENTED:** `docs/ANDROID_SIGNING_OPERATOR.md` describes distinct Google Play upload and Android Direct signing, local custody/offline backup, debug-v0.2.2 upgrade incompatibility, and unified release safety.
+- **PENDING:** owner to configure `ANDROID_UPLOAD_*` and distinct `ANDROID_DIRECT_*` repository secrets + Direct SHA variable; then execute same-source signed APK, provenance, emulator smoke and unified-publication checks. Supabase real Windows↔Android account/device tests remain a separate gate. No release was published and no signing key was rotated in this repository.
+
 ## 2026-10-06 — Canonical Michel's Life Android identity (implementation)
 
 - Replaced the active legacy JPEG launcher reference with `@mipmap/ic_launcher` / `@mipmap/ic_launcher_round`.

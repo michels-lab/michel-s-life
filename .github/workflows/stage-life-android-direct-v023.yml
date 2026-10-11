@@ -31,7 +31,7 @@ jobs:
       actions: read
     env:
       GH_TOKEN: ${{ github.token }}
-      EXPECTED_ANDROID_CERT_SHA256: a01a0540165a00cd228a5fc78adc855bd1c1e6b8195391769c219d76ebd582f2
+      EXPECTED_ANDROID_CERT_SHA256: ${{ vars.ANDROID_DIRECT_CERT_SHA256 }}
     steps:
       - uses: actions/checkout@v4
         with:
