@@ -169,6 +169,28 @@ try{
     'First dashboard card starts too low, accounting for actionable carry-over prompt: '+JSON.stringify({initial,carryoverPrompt,preCardGeometry}));
   ok(initial.overflow<=2,'Android page has horizontal overflow: '+JSON.stringify(initial));
 
+  // Real phone screenshot regression: the 4 metrics used to stack vertically,
+  // consuming the viewport before the first mission. Require a true 2x2 grid.
+  const mobileDashboardDensity=await page.evaluate(()=>{
+    const grid=document.querySelector('#tab-dashboard .v131-kpis');
+    const cards=[...(grid?.querySelectorAll(':scope > .v131-kpi')||[])];
+    const rectangles=cards.map(card=>{const r=card.getBoundingClientRect();return {top:r.top,left:r.left,right:r.right,bottom:r.bottom,height:r.height,width:r.width}});
+    const bounds=grid?.getBoundingClientRect();
+    return {
+      found:!!grid,count:cards.length,columns:grid?getComputedStyle(grid).gridTemplateColumns:'',
+      height:bounds?.height||0,cards:rectangles
+    };
+  });
+  ok(mobileDashboardDensity.found&&mobileDashboardDensity.count===4,
+    'Missing canonical Today/Contracts/Level/Week indicators on Android: '+JSON.stringify(mobileDashboardDensity));
+  ok(Math.abs(mobileDashboardDensity.cards[0].top-mobileDashboardDensity.cards[1].top)<=3 &&
+    mobileDashboardDensity.cards[1].left>mobileDashboardDensity.cards[0].left+40 &&
+    Math.abs(mobileDashboardDensity.cards[2].top-mobileDashboardDensity.cards[3].top)<=3 &&
+    mobileDashboardDensity.cards[2].top>mobileDashboardDensity.cards[0].top+35 &&
+    mobileDashboardDensity.height<245,
+    'Android Dashboard metrics still stack in an oversized desktop column: '+JSON.stringify(mobileDashboardDensity));
+
+
   await page.locator('#mlv-android-menu-button').click();
   await page.waitForTimeout(260);
   const drawerOpen=await page.evaluate(()=>{
@@ -280,6 +302,54 @@ try{
   ok(actionDockState.exists&&actionDockState.parentId==='v30171Sidebar','Android Action Dock is not inside the drawer: '+JSON.stringify(actionDockState));
   ok(actionDockState.position==='sticky','Android Action Dock still floats over content: '+JSON.stringify(actionDockState));
   ok(/Swipe/.test(actionDockState.hint),'Android drawer does not explain swipe/arrow navigation: '+JSON.stringify(actionDockState));
+
+  // Native Settings is not a 13-row desktop sidebar on a phone: the category
+  // picker must be horizontally scrollable, and actual Sync/Google sections
+  // must be reachable by a vertical document scroll above Android navigation.
+  await page.waitForSelector('#tab-settings .v30171-settings-nav [data-v30171-setting="sync"]',{state:'visible',timeout:5000});
+  const settingsPhoneGeometry=await page.evaluate(()=>{
+    const nav=document.querySelector('#tab-settings .v30171-settings-nav');
+    const sync=nav?.querySelector('[data-v30171-setting="sync"]');
+    const google=nav?.querySelector('[data-v30171-setting="google"]');
+    const content=document.querySelector('#tab-settings .v30171-settings-content');
+    const bounds=e=>{const r=e?.getBoundingClientRect();return r?{left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:r.width,height:r.height}:null};
+    const doc=document.scrollingElement;
+    return {picker:bounds(nav),sync:bounds(sync),google:bounds(google),
+      pickerOverflow:nav?.scrollWidth-nav?.clientWidth,
+      content:bounds(content),documentHeight:doc?.scrollHeight,
+      viewportHeight:innerHeight,documentOverflow:getComputedStyle(doc).overflowY,
+      contentOverflow:content?getComputedStyle(content).overflowY:''};
+  });
+  ok(settingsPhoneGeometry.picker&&settingsPhoneGeometry.picker.height<94,
+    'Settings category selector still fills the entire phone display: '+JSON.stringify(settingsPhoneGeometry));
+  ok(settingsPhoneGeometry.sync&&settingsPhoneGeometry.google&&
+    settingsPhoneGeometry.sync.left>=0&&settingsPhoneGeometry.sync.right<=412&&
+    settingsPhoneGeometry.google.left>=0&&settingsPhoneGeometry.google.right<=412,
+    'Sync and Google are not immediately reachable on Android: '+JSON.stringify(settingsPhoneGeometry));
+  ok(settingsPhoneGeometry.content&&settingsPhoneGeometry.content.top<420,
+    'Settings content begins below the phone fold: '+JSON.stringify(settingsPhoneGeometry));
+  await page.evaluate(()=>window.scrollTo(0,document.scrollingElement.scrollHeight));
+  await page.waitForTimeout(250);
+  const settingsScroll=await page.evaluate(()=>({
+    scrolled:document.scrollingElement.scrollTop,
+    available:document.scrollingElement.scrollHeight-innerHeight,
+    contentBottom:document.querySelector('#tab-settings .v30171-settings-content')?.getBoundingClientRect().bottom
+  }));
+  ok(settingsScroll.available>120&&settingsScroll.scrolled>100,
+    'Settings document is still locked and cannot scroll to Sync/Google content: '+JSON.stringify({settingsScroll,settingsPhoneGeometry}));
+  await page.evaluate(()=>window.scrollTo(0,0));
+  await page.locator('#tab-settings .v30171-settings-nav [data-v30171-setting="sync"]').click();
+  await page.waitForFunction(()=>{
+    const pane=document.querySelector('#tab-settings [data-v30171-pane="sync"]');
+    return pane&&pane.getBoundingClientRect().height>20;
+  },null,{timeout:5000});
+  await page.locator('#tab-settings .v30171-settings-nav [data-v30171-setting="google"]').click();
+  await page.waitForFunction(()=>{
+    const pane=document.querySelector('#tab-settings [data-v30171-pane="google"]');
+    return pane&&pane.getBoundingClientRect().height>20;
+  },null,{timeout:5000});
+  await page.screenshot({path:screenshot.endsWith('.png')?screenshot.slice(0,-4)+'-settings-mobile-scroll.png':screenshot+'-settings-mobile-scroll.png'});
+
 
   await page.evaluate(()=>window.__mlvAndroidFastRoute?.('dashboard'));
   await page.waitForFunction(
