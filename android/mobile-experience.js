@@ -798,6 +798,33 @@
     else hero.appendChild(tile);
     return tile;
   }
+  // Canonical desktop renderer and dynamic visual style layers may reapply
+  // 46px button geometry after Android's theme stylesheet. Focus is an
+  // Android-owned full-screen workspace: enforce its accessible tap geometry
+  // on the real controls, rather than duplicating timer/domain state.
+  function enforceFocusTouchTargets(){
+    if(!root||root.hidden)return;
+    const sheet=q('#mlv-android-focus-sheet',root);
+    if(!sheet)return;
+    sheet.querySelectorAll('button').forEach(button=>{
+      const action=button.dataset.mobileFocus;
+      const height=action==='close'?48:action==='toggle'?62:56;
+      for(const [name,value] of [
+        ['min-height',height+'px'],['height','auto'],['max-height','none'],
+        ['touch-action','manipulation']
+      ])if(button.style.getPropertyValue(name)!==value||
+            button.style.getPropertyPriority(name)!=='important')
+          button.style.setProperty(name,value,'important');
+      if(action==='close'){
+        for(const [name,value] of [['width','48px'],['min-width','48px'],
+          ['max-width','48px'],['height','48px'],['max-height','48px']]){
+          if(button.style.getPropertyValue(name)!==value||
+             button.style.getPropertyPriority(name)!=='important')
+            button.style.setProperty(name,value,'important');
+        }
+      }
+    });
+  }
   function updateFocus(){
     if(!root||!nav)return;
     const api=focusApi(),f=api?.focusState?.();
@@ -830,6 +857,7 @@
       button.textContent=active?'Open':'Start';
     }
     if(root.hidden)return;
+    enforceFocusTouchTargets();
     q('#mlv-android-focus-time',root).textContent=left;
     q('#mlv-android-focus-phase',root).textContent=mode.toUpperCase();
     q('#mlv-android-focus-status',root).textContent=
