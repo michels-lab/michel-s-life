@@ -222,10 +222,20 @@ jobs:
         run: |
           unzip -t "$PLAY_AAB" >/dev/null
           if [[ "$PLAY_BUNDLE_SIGNING" == "SIGNED" ]]; then
-            jarsigner -verify -strict "$PLAY_AAB"
+            # Google Play upload keys are intentionally self-signed. A valid
+            # uploaded AAB fails jarsigner -strict for PKIX trust (not integrity).
+            # Verify the real JAR signature with jarsigner's normal mode and
+            # additionally pin the upload certificate's SHA-256 identity.
+            jarsigner -verify "$PLAY_AAB"
             keytool -printcert -jarfile "$PLAY_AAB" \
               | tee artifacts/android/play-upload-certificate.txt
-            echo "Validated signed Google Play upload bundle."
+            actual_upload_cert="$(sed -n 's/^[[:space:]]*SHA256:[[:space:]]*//p' artifacts/android/play-upload-certificate.txt | head -n 1 | tr -d ':' | tr '[:upper:]' '[:lower:]')"
+            expected_upload_cert="ba8cac8157b4e00b698efad7f2909005e72230797ac4032f7dbdcb17bc73c626"
+            if [[ "$actual_upload_cert" != "$expected_upload_cert" ]]; then
+              echo "::error::Wrong Google Play upload certificate; signed AAB rejected"
+              exit 1
+            fi
+            echo "Validated signed Google Play upload bundle with pinned upload certificate."
           else
             if jarsigner -verify "$PLAY_AAB" 2>&1 | grep -qi "jar is unsigned"; then
               echo "Validated expected unsigned Play preparation bundle."

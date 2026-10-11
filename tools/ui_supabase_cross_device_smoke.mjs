@@ -101,6 +101,23 @@ async function sessionSnapshot(page){
   }));
 }
 
+// Observe the asynchronous save contract rather than assuming GitHub runner
+// scheduling always completes within exactly 2900 ms. Still require *exactly*
+// one revision, and observe for at least the original 2.9 s to catch duplicates.
+async function waitForExactlyOneRevision(base,label,{timeoutMs=15000,minObservationMs=2900}={}){
+  const started=Date.now();
+  const expected=Number(base)+1;
+  while(Date.now()-started<timeoutMs){
+    const revision=Number(backend.remote?.revision||0);
+    if(revision>expected)throw new Error(label+' advanced more than once: '+JSON.stringify({expected,revision,writes:backend.writes}));
+    if(revision===expected && Date.now()-started>=minObservationMs)return;
+    await new Promise(resolve=>setTimeout(resolve,150));
+  }
+  throw new Error(label+' did not advance master exactly once within '+timeoutMs+'ms: '+JSON.stringify({
+    expected,actual:backend.remote?.revision,writes:backend.writes,source:backend.remote?.source_platform
+  }));
+}
+
 const browser=await chromium.launch({headless:true});
 let desktop,android;
 try{
@@ -117,9 +134,8 @@ try{
   const firstRevision=Number(backend.remote.revision);
 
   await desktop.page.evaluate(()=>{state.xp=Number(state.xp||0)+17;window.save();});
-  await desktop.page.waitForTimeout(2900);
+  await waitForExactlyOneRevision(firstRevision,'Desktop dirty save');
   const desktopAfter=await sessionSnapshot(desktop.page);
-  ok(Number(backend.remote.revision)===firstRevision+1,'Desktop dirty save did not advance master exactly once');
   ok(backend.remote.source_platform==='windows','Desktop update lost Windows attribution');
   const desktopRevision=Number(backend.remote.revision);
   const desktopXp=Number(backend.remote.snapshot?.state?.xp);
@@ -144,10 +160,9 @@ try{
   ok(androidAdopted.xp===desktopXp&&androidAdopted.storedXp===desktopXp,'Android startup changed the restored Windows master state: '+JSON.stringify({desktopXp,androidAdopted,remoteXp:backend.remote?.snapshot?.state?.xp}));
 
   await android.page.evaluate(()=>{state.xp=Number(state.xp||0)+23;window.save();});
-  await android.page.waitForTimeout(2900);
+  await waitForExactlyOneRevision(desktopRevision,'Android dirty save');
   const androidRevision=Number(backend.remote.revision);
   const androidXp=Number(backend.remote.snapshot?.state?.xp);
-  ok(androidRevision===desktopRevision+1,'Android dirty save did not advance master exactly once');
   ok(backend.remote.source_platform==='android','Android update did not carry Android source attribution');
   ok(androidXp===desktopXp+23,'Android master snapshot does not contain Android edit');
 
