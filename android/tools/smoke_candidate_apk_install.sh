@@ -109,7 +109,7 @@ p=Path("artifacts/candidate-install")
 s=(p/"step0.png").read_bytes()
 if not s.startswith(bytes.fromhex("89504e470d0a1a0a")) or len(s)<10000:
     raise SystemExit("Failed to capture real Android candidate app screenshot")
-for name in ("step2-after-native-continue.png", "step3-after-native-continue.png"):
+for name in ("step2-after-native-continue.png", "step3-after-native-continue.png", "step4-after-native-finish.png", "step5-after-relaunch.png"):
     frame = p/name
     if not frame.exists():
         raise SystemExit(f"Required native onboarding capture missing: {name}")
@@ -119,7 +119,7 @@ for name in ("step2-after-native-continue.png", "step3-after-native-continue.png
 print("INSTALL + LAUNCH + RELAUNCH PASS; captured two Continue taps, Finish tap and post-relaunch screenshots. Actual onboarding completion/persistence requires pixel review.")
 if (p/"step5-hierarchy.xml").exists():
     xml=(p/"step5-hierarchy.xml").read_text(errors="replace")
-    print("Accessibility tree after second native Continue available:",len(xml),"bytes; WebView exposes label:", "Continue" in xml or "Finish" in xml)
+    print("Accessibility tree after native relaunch available:",len(xml),"bytes; WebView exposes label:", "Continue" in xml or "Finish" in xml)
 else:
-    print("Accessibility tree unavailable; verify native step-3 screenshot before claiming successful navigation")
+    print("Accessibility tree unavailable; verify native Finish/relaunch screenshots before claiming successful completion")
 PY
