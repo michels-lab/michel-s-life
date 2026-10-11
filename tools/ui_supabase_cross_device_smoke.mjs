@@ -124,12 +124,24 @@ try{
   desktop=await newDevice(browser,'windows');
   android=await newDevice(browser,'android');
 
+  // Synthetic user preference. Auth and device identity must stay local even
+  // though the theme selection is captured in the same master state.
+  await desktop.page.evaluate(()=>localStorage.setItem('michelsLife.themePreset.v343','parity-theme-20261011'));
   await desktop.page.evaluate(async()=>window.SupabaseSyncV30216.signIn('cross-device@example.com','testpass123'));
   await desktop.page.waitForTimeout(120);
   const first=await sessionSnapshot(desktop.page);
   ok(first.platform==='windows','Desktop context did not identify as Windows');
   ok(first.runtime.connected,'Desktop did not establish Supabase session');
   ok(backend.remote&&Number(backend.remote.revision)>=1,'Desktop did not create first Supabase master');
+  const shareableStorage=backend.remote.snapshot?.localStorage||{};
+  const sharedKeys=Object.keys(shareableStorage);
+  ok(shareableStorage['michelsLife.themePreset.v343']==='parity-theme-20261011',
+    'Synced snapshot omitted intentional visual/theme user preference');
+  ok(!sharedKeys.some(k=>/session|device|oauth|token|credential|otpEmail|\.supabase\.meta/i.test(k)),
+    'Supabase snapshot contains forbidden device-specific auth/identity storage keys: '+sharedKeys.join(','));
+  const allowlist=await desktop.page.evaluate(()=>Object.keys(window.MLVCloudSharedStorageV30216.capture()));
+  ok(sharedKeys.every(k=>allowlist.includes(k)),'Supabase snapshot contained an unknown localStorage key');
+
   ok(backend.remote.source_platform==='windows','First master was not attributed to Windows');
   const firstRevision=Number(backend.remote.revision);
 
@@ -149,9 +161,33 @@ try{
   ok(androidFirst.runtime.cloudConflict?.remoteRevision===desktopRevision,'Second device did not require explicit first-device authority choice');
   ok(Number(androidFirst.meta.revision||0)===0,'Second device silently adopted remote revision before user choice');
   ok(Number(backend.remote.revision)===desktopRevision&&backend.remote.source_platform==='windows','Android sign-in overwrote existing Windows master');
+  // Simulate a legacy/compromised snapshot from an older release. It must NOT
+  // transplant an old Supabase token, source device ID or navigation state.
+  const fakeRemoteSession=JSON.stringify({access_token:'legacy-secret-do-not-copy',
+    refresh_token:'legacy-refresh-do-not-copy',user:{id:'wrong-user'}});
+  backend.remote.snapshot.localStorage={
+    ...(backend.remote.snapshot.localStorage||{}),
+    'michelsLife.supabase.session.v30216':fakeRemoteSession,
+    'michelsLife.supabase.device.v30216':'win_legacy_poison_device',
+    'michelsLife.settingsSection.v30171':'legacy_remote_navigation'
+  };
+
 
   await android.page.evaluate(async()=>window.SupabaseSyncV30216.pull({reload:false}));
   const androidStoredBeforeReload=await sessionSnapshot(android.page);
+  const androidIdentityAfterPull=await android.page.evaluate(()=>({
+    deviceId:window.SupabaseSyncV30216.deviceId(),
+    token:(JSON.parse(localStorage.getItem('michelsLife.supabase.session.v30216')||'{}')).access_token,
+    theme:localStorage.getItem('michelsLife.themePreset.v343'),
+    navigation:localStorage.getItem('michelsLife.settingsSection.v30171')
+  }));
+  ok(androidIdentityAfterPull.deviceId===androidFirst.deviceId &&
+    androidIdentityAfterPull.token==='access_shared' &&
+    androidIdentityAfterPull.theme==='parity-theme-20261011' &&
+    androidIdentityAfterPull.navigation!=='legacy_remote_navigation',
+    'Remote restore overwrote device login or local navigation, or lost user theme preference: '+
+      JSON.stringify({...androidIdentityAfterPull,token:'[redacted]'}));
+
   ok(androidStoredBeforeReload.storedXp===desktopXp,'Android pull did not persist Windows master before reload: '+JSON.stringify({desktopXp,androidStoredBeforeReload,remoteXp:backend.remote?.snapshot?.state?.xp}));
   await android.page.reload({waitUntil:'domcontentloaded'});
   await android.page.waitForFunction(()=>window.SupabaseSyncV30216,null,{timeout:60000});
@@ -165,6 +201,9 @@ try{
   const androidXp=Number(backend.remote.snapshot?.state?.xp);
   ok(backend.remote.source_platform==='android','Android update did not carry Android source attribution');
   ok(androidXp===desktopXp+23,'Android master snapshot does not contain Android edit');
+  ok(!Object.keys(backend.remote.snapshot?.localStorage||{}).some(k=>/session|device|oauth|token|credential|otpEmail|\.supabase\.meta/i.test(k)),
+    'Android upload reintroduced a forbidden credential/device key');
+
 
   const writesBeforeDesktopConflict=backend.writes;
   await desktop.page.evaluate(async()=>window.SupabaseSyncV30216.sync('auto',{silent:true}));

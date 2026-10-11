@@ -4,6 +4,14 @@ Last reviewed: **2026-10-05**
 
 This file is the app-level infrastructure audit for Michel's Life. It complements `GIT_AUDIT_LOG.md` and `android/ANDROID_AUDIT_LOG.md`. Update it whenever authentication, cloud storage, synchronization, backups, secrets, distribution, or external services change.
 
+## 2026-10-11 — P0 credential isolation in shared cloud snapshots (PR #56)
+
+- **Source evidence:** previous `captureCloudBackup()` enumerated nearly all `localStorage`, including `michelsLife.supabase.session.v30216` (Supabase access/refresh token), device namespace/identifier and metadata. Supabase `capture()` reused that same payload. Both restore paths could clear the caller's login/session and import cloud storage from another device. This is a **verified source-level boundary bug**, not evidence that personal tokens were accessed or leaked publicly.
+- **Implemented in candidate:** explicit allowlist of 24 shared local preferences, canonical `state` preserved; both Supabase and Drive capture strip unknown auth/device entries and both restores update only shareable keys, leaving the local session and device identity intact. Legacy cloud snapshots containing disallowed keys are filtered on restore.
+- **Tests added, result pending on current PR SHA:** mock Windows↔Android account test asserts theme setting follows cloud state, fake remote tokens/identifiers do not overwrite Android's own session/device, and subsequent upload does not reintroduce forbidden entries. Existing revision-conflict and history/restore checks stay mandatory.
+- **Remaining:** validate on actual Windows installation + Galaxy with the same test account, first-device adoption, offline changes, conflicts, recovery history and Drive fallback; do not claim provider/physical testing from CI mocks alone (issue #28).
+- **Release:** no version or release authorized; public Windows v3.0.216 + Android v0.2.3 unchanged.
+
 ## Current architecture
 
 ### Primary state sync — Supabase
@@ -17,7 +25,7 @@ This file is the app-level infrastructure audit for Michel's Life. It complement
 - Every user-data policy is scoped to `auth.uid()`.
 - Anonymous table access is not part of the product contract.
 - Desktop and Android bundle only the modern Supabase publishable key; secret/service-role keys are prohibited from client source and validated in CI.
-- The current snapshot format reuses the full Michel's Life backup payload so Missions, Journal, Projects, Stats, Chapters, settings and related local state migrate together.
+- Shared cloud snapshots contain the canonical Michel's Life domain state plus **allowlisted user preferences** (theme/background/typography/color/language/journal); unknown localStorage entries and device-specific sessions/identity are excluded. Both Supabase and Drive restore only allowlisted keys while preserving the current machine's account/device OAuth state.
 - Sync uses monotonically increasing revisions plus a dirty flag; unchanged polling does not manufacture revisions.
 - A newer remote revision is never silently overwritten by automatic sync.
 
