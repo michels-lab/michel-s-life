@@ -183,6 +183,9 @@
       }
       enforceMobileFlowGeometry();
       updateTopbarTitle();
+      // A new section begins at its own top, never at the preceding pane's
+      // offscreen scroll position (the Windows->Android shell is shared).
+      window.scrollTo(0,0);
     });
     persistNavLater();
     finishSectionSwitch(started,id,'android-render-main');
@@ -531,7 +534,7 @@
       #mlv-android-topbar,#mlv-android-drawer-backdrop{display:none}
       @media(max-width:${MOBILE_BREAKPOINT}px){
         :root{--mlv-android-topbar-h:56px}
-        html[data-mlv-platform="android"] body{overscroll-behavior-y:none;padding-top:calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px))!important;touch-action:pan-y!important}
+        html[data-mlv-platform="android"] body{overscroll-behavior-y:contain;padding-top:calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px))!important;touch-action:auto!important}
         html[data-mlv-platform="android"] #main *,html[data-mlv-platform="android"] #v30171Sidebar *,#mlv-android-topbar{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
         #v3000SkyImg{filter:none!important;transform:none!important}
         /* The wizard owns the whole foreground. Fixed Android chrome must never
@@ -554,7 +557,8 @@
         html[data-mlv-platform="android"][data-mlv-android-switching="1"] *{transition-duration:0s!important}
         html[data-mlv-platform="android"][data-mlv-android-switching="1"] #mlv-android-topbar::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:currentColor;opacity:.38;animation:mlvAndroidSwitchPulse .55s ease-in-out infinite alternate}
         @keyframes mlvAndroidSwitchPulse{from{transform:scaleX(.22);opacity:.18}to{transform:scaleX(1);opacity:.52}}
-        #main,.layout{touch-action:pan-y!important}
+        /* Do not intersect pan-y ancestors with Settings horizontal pan-x. */
+        #main,.layout{touch-action:auto!important}
         .v134-ach-filter,.v140-cat-shortcuts,.v140-library-toggle,[data-horizontal-scroll],.tabs,.v30171-settings-nav{touch-action:pan-x!important}
         #mlv-android-topbar{position:fixed;display:flex;align-items:center;gap:10px;top:0;left:0;right:0;height:calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px));padding:env(safe-area-inset-top,0px) 12px 0;z-index:2147483000;background:rgba(6,9,19,.94);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.1);box-sizing:border-box}
         #mlv-android-menu-button{width:42px;height:42px;min-width:42px;padding:0;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:inherit;font:inherit;font-size:22px;line-height:1;display:grid;place-items:center}
