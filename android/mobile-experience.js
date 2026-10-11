@@ -95,6 +95,12 @@
       html[data-mlv-platform="android"] [data-mlv216-qc] .mlv216-qc-buttons button{
         min-width:0;width:100%;margin:0
       }
+      /* Active mission editor owns the foreground and cannot be covered by
+         Android tab bar or header. On close these controls are restored. */
+      html[data-mlv-platform="android"] body.mlv-android-mission-edit-open #mlv-android-bottom-nav,
+      html[data-mlv-platform="android"] body.mlv-android-mission-edit-open #mlv-android-topbar{
+        visibility:hidden!important;pointer-events:none!important
+      }
       /* Missions: touch-first rows + editor, same canonical mission FormData.
          Editor stays an independent scroller with a sticky save region; native
          adjustResize constrains the available viewport when IME is open. */
@@ -310,7 +316,11 @@
   // late-injected styles cannot re-introduce narrow weekday hit areas.
   function adaptMissionEditor(){
     const form=q('#modalRoot #missionEditForm');
-    if(!form||document.documentElement.dataset.mlvPlatform!=='android')return;
+    const isAndroid=document.documentElement.dataset.mlvPlatform==='android';
+    // A full-screen editor is an exclusive interaction layer, not content
+    // above still-clickable fixed navigation. Observer restores it on close.
+    document.body.classList.toggle('mlv-android-mission-edit-open',!!(isAndroid&&form));
+    if(!form||!isAndroid)return;
     const host=q('#modalRoot'),backdrop=q('.modal-backdrop',host),modal=q('.modal',backdrop);
     const force=(el,property,value)=>{
       if(!el)return;
