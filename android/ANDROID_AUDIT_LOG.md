@@ -1,3 +1,11 @@
+## 2026-10-11 — Missions PR #58: QA blocker after functional Save tap
+
+- **Code branch:** `feat/android-missions-touch-editor-20261011` / [PR #58](https://github.com/michels-lab/michel-s-life/pull/58), not merged/released.
+- **Actual rendered evidence:** Android UI smoke run `38124200945`, commit `1abc176cb11fbb84d3ace8a91b73d734b46da8d9`, exercised the v13.3 `data-action="v133-edit"` mission editor. Android-only modal geometry was corrected: 412px viewport, 16px input, two-column 46px weekday chips and independent scrolling; the next blocker was the bottom navigation intercepting Save. Fixed by explicit modal foreground ownership and restoring bottom nav on close. **That regression is now past the hit-test and real click stage.**
+- **Remaining blocker:** on the same CI run, after clicking the real `#missionEditForm` Save button, the synthetic mission state did **not** match the combined expected name + description + added Saturday (`page.waitForFunction` timeout at `tools/ui_android_mobile_smoke.mjs:334`). The test must report which persisted field differs and whether the modal closed/which mission ID was actually edited. Multiple historical mission submit handlers exist; inspect their interaction rather than weakening parity assertions.
+- **Required next action:** instrument the smoke after Save with **synthetic-only**, redacted diagnostic of the edited mission ID, persisted name, description, checked day IDs and modal state. Confirm live UI state and the canonical `saveMissionEdit` submit path; correct the actual issue. Re-run same-commit Android UI, Source, Windows UI, APK build and Android 16 install. No bypass or CI green claim.
+- **Public APK and desktop remain unchanged:** Windows v3.0.216 + Android Direct v0.2.3. Real Galaxy keyboard/scroll/state QA remains pending even after passing automated tests.
+
 ## 2026-10-11 — Missions: full-fidelity Android touch editing (source candidate)
 
 - **Product requirement:** Android missions must offer the same real edit fields as Windows while designing the workflow for mobile: name, category, type, difficulty, priority, deadline, description, notes, 7 recurring weekdays, and boss/fixed/hidden/archived/no-suggest flags. No second Android-only mission store is acceptable.
