@@ -15384,6 +15384,15 @@ body.ml-theme-ui .v309-search-muted{
   }
 
   function applyVisual(t,saveIt){
+    // The legacy v3090 controller is kept for Desktop compatibility. On
+    // Android, v3130 owns the palette. Never reapply v3090's historical pink
+    // defaults on a generic render or onboarding Continue event: the legacy
+    // state may contain glass/text colors but no actual selected palette.
+    const android=window.__MICHELSLIFE_PLATFORM__==='android'||!!window.MichelsLifeAndroid;
+    if(android && typeof window.v313ApplyTheme==='function'){
+      window.v313ApplyTheme(saveIt?t:null,null,!!saveIt);
+      return;
+    }
     t=theme(t||storedTheme());
     document.body?.classList.add('ml-theme-ui');
     setVars(t);
