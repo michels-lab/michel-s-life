@@ -93,9 +93,10 @@ try{
   const translationProbe=await page.evaluate(()=>({
     dashboard:window.MichelsLifeI18n.mapText('Dashboard'),
     layout:window.MichelsLifeI18n.mapText('Dashboard layout'),
-    affirmation:window.MichelsLifeI18n.mapText('Today I choose execution over fantasy.')
+    affirmation:window.MichelsLifeI18n.mapText('Today I choose execution over fantasy.'),
+    dateMode:window.MichelsLifeI18n.mapText('day · 2026-10-11')
   }));
-  ok(translationProbe.dashboard==='Inicio'&&translationProbe.layout==='Diseño de Inicio'&&translationProbe.affirmation==='Hoy elijo ejecución sobre fantasía.','Spanish dictionary probe failed: '+JSON.stringify(translationProbe));
+  ok(translationProbe.dashboard==='Inicio'&&translationProbe.layout==='Diseño de Inicio'&&translationProbe.affirmation==='Hoy elijo ejecución sobre fantasía.'&&translationProbe.dateMode==='día · 2026-10-11','Spanish dictionary probe failed: '+JSON.stringify(translationProbe));
 
   const routes=['dashboard','missions','contracts','calendar','journal','stats','compare','weekly-review','projects','achievements','affirmations','story','settings'];
   for(const route of routes){
