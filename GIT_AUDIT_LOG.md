@@ -1,5 +1,12 @@
 ## 2026-10-06 — Canonical Michel's Life identity adoption (implementation)
 
+## 2026-10-11 — Native Windows screenshot gate: three evidence-backed CI failures, not merged
+
+- **PR #62 remains blocked/draft, no release.** Exact Windows PR runs `38133874928`, `38134212278`, and `38134524681` consistently passed Setup build and native installed EXE LAUNCH but failed the new visual evidence gate: the installed WebView2 browser never exposed the CI-only CDP port; **zero installed Home/About screenshots** were recorded.
+- Attempt 1 used a process-local `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS`; attempt 2 added an isolated `WEBVIEW2_USER_DATA_FOLDER`. Attempt 3 used a disposable per-executable WebView2 policy under runner-only HKCU with cleanup in `finally`. All failed to expose CDP, and the diagnostic checks saw **six** WebView2 processes, **zero** command lines bearing `--remote-debugging-port=9397`. This is *not* proof of an application runtime crash; startup and window handle are separately verified.
+- Correct follow-up: test UI Automation/accessibility tree of the **real installed** WebView2 window and a Windows native capture API; verify Home/About navigation and viewport geometry with the same Setup/source/screenshots SHA contract. Investigate why WebView2's effective argument policy ignores both supported CI overrides before any further CDP retry. Do **not** add source-HTML/browser screenshots as a substitute or weaken the fail-closed gate.
+- PR #61 Chromium/bundle evidence is already merged, but it remains **BROWSER PASS only**. Windows packaged `RENDER PASS`, Android actual APK compact/wide Home/About, owner post-release visual review and physical-device acceptance are separately pending. No version, theme or public release changed.
+
 ## 2026-10-11 — Native Windows WebView2 installed screenshot gate (candidate)
 
 - Follow-up to merged browser-evidence PR #61 (main `ca5efb5d81f2c3fc4e3907c824668e6765f829dc`). Browser-only rendered proof is insufficient for the actual Windows installer.
