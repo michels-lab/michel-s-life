@@ -484,23 +484,31 @@
       setImportantOnce(status,'top','auto');
       setImportantOnce(status,'max-height','88px');
       setImportantOnce(status,'overflow','visible');
-      const clock=status.querySelector('.v176-card:first-child');
-      if(clock){
-        let date=clock.querySelector('#mlv-android-clock-date');
-        if(!date){
-          date=document.createElement('span');
-          date.id='mlv-android-clock-date';
-          date.setAttribute('aria-label',"Today's date");
-          clock.appendChild(date);
-        }
-        // The canonical shared frontend still owns the live time itself.
-        // Android only completes its compact status card with a local date.
-        const locale=(document.documentElement.lang||'en').trim()||'en';
-        const today=new Intl.DateTimeFormat(locale,{
-          weekday:'long',month:'short',day:'numeric'
-        }).format(new Date());
-        if(date.textContent!==today)date.textContent=today;
+      let summary=status.querySelector('#mlv-android-time-summary');
+      if(!summary){
+        summary=document.createElement('div');
+        summary.id='mlv-android-time-summary';
+        summary.setAttribute('aria-label','Current time and date');
+        summary.innerHTML='<strong id="mlv-android-clock-time"></strong>'+
+          '<span id="mlv-android-clock-date"></span>';
+        status.appendChild(summary);
       }
+      const locale=(document.documentElement.lang||'en').trim()||'en';
+      const now=new Date();
+      // Prefer the existing live clock text without relying on the desktop
+      // tile's absolute geometry; fall back to a localized device time.
+      const source=String(status.querySelector('.v176-time')?.textContent||'').trim();
+      const found=source.match(/\\b\\d{1,2}:\\d{2}(?:\\s*[aApP][mM])?\\b/);
+      const clockText=found?found[0]:new Intl.DateTimeFormat(locale,{
+        hour:'2-digit',minute:'2-digit',hour12:true
+      }).format(now);
+      const today=new Intl.DateTimeFormat(locale,{
+        weekday:'long',month:'short',day:'numeric'
+      }).format(now);
+      const displayClock=summary.querySelector('#mlv-android-clock-time');
+      const displayDate=summary.querySelector('#mlv-android-clock-date');
+      if(displayClock&&displayClock.textContent!==clockText)displayClock.textContent=clockText;
+      if(displayDate&&displayDate.textContent!==today)displayDate.textContent=today;
       setImportantOnce(status,'margin','6px 8px');
     }
   }
@@ -646,23 +654,29 @@
           display:flex!important;align-items:center!important;
           contain:layout!important
         }
-        html[data-mlv-platform="android"] #v176StatusPanel .v176-card:first-child{
-          display:flex!important;flex-direction:column!important;
-          align-items:flex-start!important;justify-content:center!important;
-          gap:3px!important;min-height:0!important;max-height:none!important;
-          height:auto!important;overflow:visible!important;
-          padding:2px 4px!important
+        html[data-mlv-platform="android"] #v176StatusPanel .v176-card{
+          /* Desktop status tiles are absolutely laid out, so reflowing the
+             first one leaves descendants far outside the compact container. */
+          display:none!important
         }
-        html[data-mlv-platform="android"] #v176StatusPanel .v176-time,
-        html[data-mlv-platform="android"] #v176StatusPanel .v176-time *{
-          font-size:clamp(22px,6.4vw,29px)!important;line-height:1.12!important;
-          overflow:visible!important
+        html[data-mlv-platform="android"] #v176StatusPanel #mlv-android-time-summary{
+          display:flex!important;position:relative!important;
+          flex:1 1 auto!important;flex-direction:column!important;
+          align-items:flex-start!important;justify-content:center!important;
+          width:100%!important;min-width:0!important;min-height:0!important;
+          height:auto!important;margin:0!important;padding:2px 5px!important;
+          transform:none!important;overflow:visible!important;gap:3px!important;
+          touch-action:pan-y!important
+        }
+        html[data-mlv-platform="android"] #v176StatusPanel #mlv-android-clock-time{
+          display:block!important;position:static!important;
+          font:800 clamp(21px,6.4vw,28px)/1.12 system-ui,sans-serif!important;
+          letter-spacing:-.03em!important;white-space:nowrap!important
         }
         html[data-mlv-platform="android"] #v176StatusPanel #mlv-android-clock-date{
-          display:block!important;max-width:100%!important;min-width:0!important;
+          display:block!important;position:static!important;
           font:500 12px/1.25 system-ui,sans-serif!important;
-          opacity:.78!important;white-space:normal!important;
-          overflow:visible!important
+          opacity:.8!important;white-space:normal!important
         }
         .v134-ach-filter,.v140-cat-shortcuts,.v140-library-toggle,[data-horizontal-scroll],.tabs,.v30171-settings-nav{touch-action:pan-x!important}
         #mlv-android-topbar{position:fixed;display:flex;align-items:center;gap:10px;top:0;left:0;right:0;height:calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px));padding:env(safe-area-inset-top,0px) 12px 0;z-index:2147483000;background:rgba(6,9,19,.94);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.1);box-sizing:border-box}
