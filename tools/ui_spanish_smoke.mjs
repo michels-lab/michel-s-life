@@ -97,6 +97,18 @@ try{
   }));
   ok(translationProbe.dashboard==='Inicio'&&translationProbe.layout==='Diseño de Inicio'&&translationProbe.affirmation==='Hoy elijo ejecución sobre fantasía.','Spanish dictionary probe failed: '+JSON.stringify(translationProbe));
 
+  // A dynamic ISO-date caption is not a static dictionary key; it must
+  // translate at runtime without changing the date or swallowing user text.
+  const periodProbe=await page.evaluate(()=>({
+    day:window.MichelsLifeI18n.mapText('day · 2026-10-11'),
+    week:window.MichelsLifeI18n.mapText('week · 2026-10-11'),
+    month:window.MichelsLifeI18n.mapText('month · 2026-10-11'),
+    userText:window.MichelsLifeI18n.mapText('Please finish a day · 2026-10-11 plan')
+  }));
+  ok(periodProbe.day==='día · 2026-10-11'&&periodProbe.week==='semana · 2026-10-11'&&periodProbe.month==='mes · 2026-10-11'
+      &&periodProbe.userText==='Please finish a day · 2026-10-11 plan',
+    'Dynamic Dashboard period translation is broken: '+JSON.stringify(periodProbe));
+
   const routes=['dashboard','missions','contracts','calendar','journal','stats','compare','weekly-review','projects','achievements','affirmations','story','settings'];
   for(const route of routes){
     await page.evaluate(r=>window.LeftNavV30171.route(r),route);
@@ -158,6 +170,18 @@ try{
     const report=[...findings.entries()].map(([k,v])=>'['+k+']\n'+v.map(x=>'  - '+x).join('\n')).join('\n\n');
     throw new Error('Visible English remains in Spanish mode:\n'+report+'\n\nDOM_DIAGNOSTICS '+JSON.stringify(diagnostics,null,2));
   }
+  const reversePeriodProbe=await page.evaluate(()=>{
+    window.MichelsLifeI18n.setLanguage('en');
+    return {
+      day:window.MichelsLifeI18n.mapText('día · 2026-10-11'),
+      week:window.MichelsLifeI18n.mapText('semana · 2026-10-11'),
+      month:window.MichelsLifeI18n.mapText('mes · 2026-10-11')
+    };
+  });
+  ok(reversePeriodProbe.day==='day · 2026-10-11'
+      &&reversePeriodProbe.week==='week · 2026-10-11'
+      &&reversePeriodProbe.month==='month · 2026-10-11',
+    'English round-trip for dynamic Dashboard caption is broken: '+JSON.stringify(reversePeriodProbe));
   console.log('OK: Spanish UI audit passed across main routes, Settings sections, and affirmation bank');
 } finally {
   await browser.close();
