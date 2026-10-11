@@ -396,7 +396,11 @@ try{
   ok(await page.evaluate(()=>document.getElementById('mlv-android-focus-overlay').hidden),
     'Mobile Focus remained over content after system Back');
   await page.locator('#mlv-android-bottom-nav [data-mobile-tab="missions"]').click();
-  await page.waitForFunction(()=>document.getElementById('tab-missions')&&window.state?.activeTab==='missions');
+  await page.waitForFunction(()=>
+    !!document.getElementById('tab-missions') && (
+      document.querySelector('#v30171PrimaryNav [data-tab="missions"]')?.classList.contains('active') ||
+      document.querySelector('#v30171PrimaryNav [data-tab="missions"]')?.getAttribute('aria-current')==='page'
+    ),null,{timeout:5000});
   ok(await page.evaluate(()=>document.querySelector('#mlv-android-bottom-nav [data-mobile-tab="missions"]')?.getAttribute('aria-current')==='page'),
     'Mobile nav did not reflect Missions selection');
   await page.screenshot({path:screenshot.endsWith('.png')?screenshot.slice(0,-4)+'-mobile-shell.png':screenshot+'-mobile-shell.png'});
