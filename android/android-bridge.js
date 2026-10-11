@@ -374,6 +374,15 @@
     if(!isMobile())return;
     stabilizeAndroidOnboarding();
     stabilizeAndroidOnboardingControls();
+    // The shared Desktop layout reapplies a one-column mobile KPI rule with
+    // !important after stylesheet setup. Android's structural ownership must
+    // set the 2x2 metric grid on the live element after every Dashboard render.
+    const dashboardMetrics=q('#tab-dashboard .v131-kpis');
+    if(dashboardMetrics){
+      setImportantOnce(dashboardMetrics,'display','grid');
+      setImportantOnce(dashboardMetrics,'grid-template-columns','repeat(2,minmax(0,1fr))');
+      setImportantOnce(dashboardMetrics,'gap','8px');
+    }
     const app=q('.app');
     if(app){
       setImportantOnce(app,'padding','0');
