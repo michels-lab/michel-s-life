@@ -14,7 +14,7 @@
     {id:'calendar',label:'Calendar',glyph:'▦'},
     {id:'settings',label:'Settings',glyph:'⚙'}
   ];
-  let root=null,nav=null,ticker=null;
+  let root=null,nav=null,mini=null,ticker=null;
   const isFocusOpen=()=>!!(root&&!root.hidden);
   function fmt(ms){
     let s=Math.max(0,Math.ceil((Number(ms)||0)/1000));
@@ -420,7 +420,8 @@
       html[data-mlv-platform="android"] body.mlv-android-focus-open #mlv-android-mini-focus,
       html[data-mlv-platform="android"] body.mlv-android-mission-edit-open #mlv-android-mini-focus,
       html[data-mlv-platform="android"] body:has(#mlv200Onboarding:not([hidden])) #mlv-android-mini-focus,
-      html[data-mlv-platform="android"] body:has([data-mlv216-qc]:not([hidden])) #mlv-android-mini-focus{
+      html[data-mlv-platform="android"] body:has([data-mlv216-qc]:not([hidden])) #mlv-android-mini-focus,
+      html[data-mlv-platform="android"] body.mlv-android-keyboard-editing #mlv-android-mini-focus{
         display:none!important;pointer-events:none!important
       }
       /* Focus is a full mobile workspace, not a desktop popover or a
@@ -646,11 +647,16 @@
         <button type="button" id="mlv-android-focus-dim" aria-label="Close Focus"></button>
         <section id="mlv-android-focus-sheet" role="dialog" aria-modal="true" aria-labelledby="mlv-android-focus-heading">
           <div class="mlv-android-focus-head">
-            <div><h2 id="mlv-android-focus-heading">Focus session</h2><p>One timer shared with Michel's Life on desktop</p></div>
+            <div><span class="mlv-android-focus-eyebrow">YOUR FOCUS SPACE</span><h2 id="mlv-android-focus-heading">Stay in focus.</h2><p>Your session, your rhythm.</p></div>
             <button type="button" class="mlv-android-focus-close" data-mobile-focus="close" aria-label="Close Focus">×</button>
           </div>
           <div class="mlv-android-focus-clock">
-            <strong id="mlv-android-focus-time">25:00</strong>
+            <div id="mlv-android-focus-progress-ring" aria-hidden="true">
+              <div class="mlv-android-focus-dial">
+                <span class="mlv-android-focus-phase" id="mlv-android-focus-phase">FOCUS</span>
+                <strong id="mlv-android-focus-time" role="timer" aria-live="off">25:00</strong>
+              </div>
+            </div>
             <span id="mlv-android-focus-status">Ready · Work</span>
           </div>
           <div class="mlv-android-focus-presets" aria-label="Focus presets">
@@ -670,8 +676,11 @@
               <button type="button" id="mlv-android-focus-apply" data-mobile-focus="custom">Apply custom preset</button>
             </div>
           </details>
-          <div class="mlv-android-focus-footer"><span id="mlv-android-focus-linked">No mission linked</span><span id="mlv-android-focus-count">0 completed today</span></div>
-          <p>Note: the running timer is shared with desktop data. Background alarms and lock-screen notifications need the native scheduler and are not active yet.</p>
+          <div class="mlv-android-focus-stats">
+            <div><span>Linked mission</span><strong id="mlv-android-focus-linked">No mission linked</strong></div>
+            <div><span>Finished today</span><strong id="mlv-android-focus-count">0 sessions</strong></div>
+          </div>
+          <p class="mlv-android-focus-system-note">The timer uses your existing Michel’s Life progress. Background alarms and lock-screen alerts are not enabled yet.</p>
         </section>`;
       root.addEventListener('click',event=>{
         const source=event.target.closest('[data-mobile-focus],[data-mobile-preset],#mlv-android-focus-dim');
@@ -711,6 +720,29 @@
       });
       document.body.appendChild(root);
     }
+    // Only one persistent mini-view of the canonical Focus timer. Both
+    // buttons delegate to FocusStoryV30162; there is no Android timer store.
+    if(!mini){
+      mini=document.createElement('aside');
+      mini.id='mlv-android-mini-focus';
+      mini.hidden=true;
+      mini.setAttribute('aria-label','Active Focus timer');
+      mini.innerHTML='<button type="button" class="mlv-mini-open" aria-label="Open Focus timer">'+
+        '<span class="mlv-mini-symbol" aria-hidden="true">◷</span>'+
+        '<span class="mlv-mini-text"><strong id="mlv-android-mini-time">25:00</strong>'+
+        '<span id="mlv-android-mini-state">Focus session</span></span></button>'+
+        '<button type="button" class="mlv-mini-toggle" aria-label="Pause Focus timer">Pause</button>';
+      mini.querySelector('.mlv-mini-open').addEventListener('click',()=>open());
+      mini.querySelector('.mlv-mini-toggle').addEventListener('click',()=>{
+        const api=focusApi();
+        const state=api?.focusState?.();
+        if(state?.status==='running'||state?.status==='paused'){
+          api.toggleFocus?.();
+          updateFocus();
+        }
+      });
+      document.body.appendChild(mini);
+    }
     // One visible action from every Android section, no desktop shortcut
     // dependency. The canonical MLV216QuickCapture owns data and saving.
     const topbar=q('#mlv-android-topbar');
@@ -738,27 +770,91 @@
       else b.removeAttribute('aria-current');
     });
   }
+  function ensureTodayFocus(){
+    const hero=q('#tab-dashboard .v131-hero');
+    if(!hero)return null;
+    let tile=q('#mlv-android-today-focus',hero);
+    if(tile)return tile;
+    tile=document.createElement('div');
+    tile.id='mlv-android-today-focus';
+    tile.innerHTML='<span class="mlv-focus-today-icon" aria-hidden="true">◎</span>'+
+      '<span class="mlv-focus-today-copy"><strong>Focus session</strong>'+
+      '<span id="mlv-android-today-focus-status">Ready when you are</span></span>'+
+      '<button type="button" id="mlv-android-today-focus-action">Start</button>';
+    tile.querySelector('button').addEventListener('click',()=>{
+      const api=focusApi(),state=api?.focusState?.();
+      if(!state){open();return;}
+      if(state.status==='ready'){
+        api.toggleFocus?.();
+        updateFocus();
+      }
+      open();
+    });
+    const metrics=q('.v131-kpis',hero);
+    if(metrics)hero.insertBefore(tile,metrics);
+    else hero.appendChild(tile);
+    return tile;
+  }
   function updateFocus(){
-    if(!root||root.hidden)return;
+    if(!root||!nav)return;
     const api=focusApi(),f=api?.focusState?.();
-    if(!f){q('#mlv-android-focus-status',root).textContent='Focus is loading';return;}
-    q('#mlv-android-focus-time',root).textContent=fmt(api.remaining?.(f));
-    q('#mlv-android-focus-status',root).textContent=(f.status==='running'?'Running':f.status==='paused'?'Paused':'Ready')+' · '+(f.mode==='break'?'Break':'Work');
-    q('[data-mobile-focus="toggle"]',root).textContent=f.status==='running'?'Pause':f.status==='paused'?'Resume':'Start';
-    root.querySelectorAll('[data-mobile-preset]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mobilePreset===f.preset)));
-    const active=document.activeElement;
-    if(active?.id!=='mlv-android-focus-work')q('#mlv-android-focus-work',root).value=String(f.workMin);
-    if(active?.id!=='mlv-android-focus-break')q('#mlv-android-focus-break',root).value=String(f.breakMin);
-    // Top-level desktop "state" is a global lexical binding, not
-    // window.state. Read the canonical persisted snapshot for display only.
-    // All timer mutations remain in FocusStoryV30162.
-    let savedState={};
-    try{savedState=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')||{}}catch(_){}
-    const mission=(savedState.missions||[]).find(m=>String(m.id)===String(f.linkedMissionId||''));
-    q('#mlv-android-focus-linked',root).textContent=mission?'Mission: '+mission.name:'No mission linked';
-    const today=new Date(),local=String(today.getFullYear())+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
-    const completed=(api.focusSessions?.()||[]).filter(x=>x.status==='completed'&&x.date===local).length;
-    q('#mlv-android-focus-count',root).textContent=completed+' completed today';
+    const tile=ensureTodayFocus();
+    if(!f){
+      if(!root.hidden)q('#mlv-android-focus-status',root).textContent='Focus is loading';
+      if(mini)mini.hidden=true;
+      document.body.classList.remove('mlv-android-timer-active');
+      return;
+    }
+    const active=f.status==='running'||f.status==='paused';
+    const left=fmt(api.remaining?.(f));
+    const mode=f.mode==='break'?'Break':'Focus';
+    if(mini){
+      mini.hidden=!active;
+      if(active){
+        q('#mlv-android-mini-time',mini).textContent=left;
+        q('#mlv-android-mini-state',mini).textContent=mode+' · '+(f.status==='running'?'In progress':'Paused');
+        const control=q('.mlv-mini-toggle',mini);
+        control.textContent=f.status==='running'?'Pause':'Resume';
+        control.setAttribute('aria-label',control.textContent+' '+mode+' timer');
+      }
+    }
+    document.body.classList.toggle('mlv-android-timer-active',active);
+    if(tile){
+      const state=q('#mlv-android-today-focus-status',tile);
+      const button=q('#mlv-android-today-focus-action',tile);
+      state.textContent=active?mode+' · '+left+(f.status==='paused'?' paused':' remaining'):
+        'Start a distraction-free session';
+      button.textContent=active?'Open':'Start';
+    }
+    if(root.hidden)return;
+    q('#mlv-android-focus-time',root).textContent=left;
+    q('#mlv-android-focus-phase',root).textContent=mode.toUpperCase();
+    q('#mlv-android-focus-status',root).textContent=
+      (f.status==='running'?'Session in progress':f.status==='paused'?'Session paused':'Ready to begin')+
+      ' · '+(f.mode==='break'?'Recovery break':'Work session');
+    q('[data-mobile-focus="toggle"]',root).textContent=
+      f.status==='running'?'Pause session':f.status==='paused'?'Resume session':'Start focusing';
+    root.querySelectorAll('[data-mobile-preset]').forEach(b=>
+      b.setAttribute('aria-pressed',String(b.dataset.mobilePreset===f.preset))
+    );
+    const duration=(f.mode==='break'?Number(f.breakMin):Number(f.workMin))*60000;
+    const leftMs=Number(api.remaining?.(f))||0;
+    const pct=duration>0?Math.min(100,Math.max(0,100*leftMs/duration)):100;
+    q('#mlv-android-focus-progress-ring',root).style.setProperty('--mlv-focus-progress',pct.toFixed(2)+'%');
+    const focused=document.activeElement;
+    if(focused?.id!=='mlv-android-focus-work')q('#mlv-android-focus-work',root).value=String(f.workMin);
+    if(focused?.id!=='mlv-android-focus-break')q('#mlv-android-focus-break',root).value=String(f.breakMin);
+    // Read the authoritative state for mission labels and completed sessions;
+    // no copy of mission/timer data is stored by the Android UI.
+    let saved={};
+    try{saved=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')||{}}catch(_){}
+    const linked=(saved.missions||[]).find(m=>String(m.id)===String(f.linkedMissionId||''));
+    q('#mlv-android-focus-linked',root).textContent=linked?linked.name:'None yet';
+    const now=new Date();
+    const day=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+
+      '-'+String(now.getDate()).padStart(2,'0');
+    const done=(api.focusSessions?.()||[]).filter(x=>x.status==='completed'&&x.date===day).length;
+    q('#mlv-android-focus-count',root).textContent=done+' session'+(done===1?'':'s');
   }
   function open(){
     if(!ensure())return false;
@@ -797,6 +893,18 @@
       missionObserver.observe(modalHost,{childList:true,subtree:true});
       adaptMissionEditor();
     }
+    // Hide floating timer while text input/IME owns the phone viewport.
+    document.addEventListener('focusin',event=>{
+      if(event.target?.closest?.('input,textarea,[contenteditable="true"]'))
+        document.body.classList.add('mlv-android-keyboard-editing');
+    });
+    document.addEventListener('focusout',()=>{
+      setTimeout(()=>{
+        if(!document.activeElement?.closest?.('input,textarea,[contenteditable="true"]'))
+          document.body.classList.remove('mlv-android-keyboard-editing');
+      },0);
+    });
+    updateFocus();
     ticker=window.setInterval(()=>{if(!document.body.isConnected){window.clearInterval(ticker);return;}updateFocus();},1000);
   }
   window.MichelsLifeMobileExperience={openFocus:open,closeFocus:close,updateFocus,isFocusOpen};
