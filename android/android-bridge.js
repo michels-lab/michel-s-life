@@ -480,7 +480,7 @@
       startX=touch.clientX;startY=touch.clientY;startAt=performance.now();tracking=true;
       const target=event.target;
       interactive=!!target.closest('button,a,input,select,textarea,label,[contenteditable="true"],.modal,.v132-actions,.actions');
-      horizontalScroller=!!target.closest('.v134-ach-filter,.v140-cat-shortcuts,.v140-library-toggle,[data-horizontal-scroll],.tabs');
+      horizontalScroller=!!target.closest('.v134-ach-filter,.v140-cat-shortcuts,.v140-library-toggle,[data-horizontal-scroll],.tabs,.v30171-settings-nav');
       window.__mlvAndroidGestureDebug={
         phase:'start',startX,startY,target:target?.tagName||'',className:String(target?.className||''),
         interactive,horizontalScroller
@@ -555,7 +555,7 @@
         html[data-mlv-platform="android"][data-mlv-android-switching="1"] #mlv-android-topbar::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:currentColor;opacity:.38;animation:mlvAndroidSwitchPulse .55s ease-in-out infinite alternate}
         @keyframes mlvAndroidSwitchPulse{from{transform:scaleX(.22);opacity:.18}to{transform:scaleX(1);opacity:.52}}
         #main,.layout{touch-action:pan-y!important}
-        .v134-ach-filter,.v140-cat-shortcuts,.v140-library-toggle,[data-horizontal-scroll],.tabs{touch-action:pan-x!important}
+        .v134-ach-filter,.v140-cat-shortcuts,.v140-library-toggle,[data-horizontal-scroll],.tabs,.v30171-settings-nav{touch-action:pan-x!important}
         #mlv-android-topbar{position:fixed;display:flex;align-items:center;gap:10px;top:0;left:0;right:0;height:calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px));padding:env(safe-area-inset-top,0px) 12px 0;z-index:2147483000;background:rgba(6,9,19,.94);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.1);box-sizing:border-box}
         #mlv-android-menu-button{width:42px;height:42px;min-width:42px;padding:0;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);color:inherit;font:inherit;font-size:22px;line-height:1;display:grid;place-items:center}
         .mlv-android-topbar-copy{min-width:0;display:flex;flex:1 1 auto;flex-direction:column;gap:1px}.mlv-android-topbar-copy strong{font-size:13px;line-height:1.1}.mlv-android-topbar-copy span{font-size:11px;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:48vw}
@@ -580,6 +580,103 @@
         #v30171PrimaryNav{display:flex!important;flex-direction:column!important;grid-template-columns:none!important;gap:4px!important;padding:2px 0 8px!important}
         #v30171PrimaryNav .v30171-nav-btn{min-height:40px!important;padding:8px 9px!important;gap:8px!important;font-size:12px!important}
         #main,.content{margin:0!important;padding:8px!important}
+
+        /*
+         * Android screen owns its scrolling. The shared desktop layout uses
+         * sticky/height/overflow constraints that clipped Settings below the
+         * Galaxy navigation area. Keep document scroll vertical while the
+         * Settings category picker scrolls horizontally on its own.
+         */
+        html[data-mlv-platform="android"]{height:auto!important;min-height:100%!important;overflow-x:clip!important;overflow-y:auto!important}
+        html[data-mlv-platform="android"] body{height:auto!important;min-height:100dvh!important;max-height:none!important;overflow-x:clip!important;overflow-y:auto!important}
+        html[data-mlv-platform="android"] .app,
+        html[data-mlv-platform="android"] .app-shell,
+        html[data-mlv-platform="android"] .layout,
+        html[data-mlv-platform="android"] .content,
+        html[data-mlv-platform="android"] #main,
+        html[data-mlv-platform="android"] #tab-settings{
+          height:auto!important;max-height:none!important;overflow-y:visible!important;min-height:0!important
+        }
+        html[data-mlv-platform="android"] #main{padding-bottom:max(100px,calc(56px + env(safe-area-inset-bottom,0px)))!important}
+        /* Keep the 4 actual dashboard KPIs, but show them as compact 2x2. */
+        html[data-mlv-platform="android"] #tab-dashboard .v131-kpis{
+          display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+          gap:8px!important;margin-top:12px!important;align-items:stretch!important
+        }
+        html[data-mlv-platform="android"] #tab-dashboard .v131-kpi{
+          width:auto!important;min-width:0!important;min-height:0!important;height:auto!important;
+          padding:10px 11px!important;border-radius:14px!important
+        }
+        html[data-mlv-platform="android"] #tab-dashboard .v131-kpi small{
+          font-size:11px!important;line-height:1.25!important
+        }
+        html[data-mlv-platform="android"] #tab-dashboard .v131-kpi b{
+          margin-top:4px!important;font-size:24px!important;line-height:1.05!important
+        }
+        html[data-mlv-platform="android"] #tab-dashboard .v131-kpi span{
+          margin-top:4px!important;font-size:10px!important;line-height:1.2!important
+        }
+        html[data-mlv-platform="android"] #tab-dashboard .v131-hero-title h2{
+          font-size:22px!important;line-height:1.12!important
+        }
+        html[data-mlv-platform="android"] #tab-dashboard .v131-hero-title{
+          display:flex!important;align-items:flex-start!important;gap:8px!important;margin-bottom:8px!important
+        }
+        html[data-mlv-platform="android"] #tab-dashboard .v131-hero{
+          padding:12px!important;margin-bottom:10px!important
+        }
+        html[data-mlv-platform="android"] #tab-dashboard .v132-dashboard-grid > .v132-panel{
+          min-height:0!important;height:auto!important
+        }
+        /* The desktop dashboard panel toggles consume an entire phone row. */
+        html[data-mlv-platform="android"] #tab-dashboard .v30176-dashboard-layoutbar{
+          flex-direction:row!important;flex-wrap:wrap!important;align-items:center!important;
+          padding:6px 8px!important;gap:6px!important;margin-bottom:8px!important
+        }
+        html[data-mlv-platform="android"] #tab-dashboard .v30176-layout-label{display:none!important}
+        html[data-mlv-platform="android"] #tab-dashboard .v30176-layout-actions{
+          display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+          gap:6px!important;width:100%!important;min-width:0!important
+        }
+        html[data-mlv-platform="android"] #tab-dashboard .v30176-panel-toggle{
+          min-width:0!important;min-height:38px!important;padding:6px 8px!important;
+          font-size:11px!important;white-space:normal!important
+        }
+        /* Settings gets a shallow, swipeable section picker above actual content.
+           Sync and Google lead the mobile-only visual order for quick access;
+           DOM order and desktop section logic stay untouched. */
+        html[data-mlv-platform="android"] #tab-settings>.v30171-settings-shell{
+          display:block!important;grid-template-columns:minmax(0,1fr)!important;
+          width:100%!important;min-width:0!important;max-height:none!important
+        }
+        html[data-mlv-platform="android"] #tab-settings .v30171-settings-nav{
+          position:relative!important;top:auto!important;left:auto!important;
+          display:flex!important;flex-flow:row nowrap!important;align-items:center!important;
+          gap:6px!important;width:100%!important;max-width:100%!important;
+          min-height:0!important;max-height:none!important;margin:0 0 10px!important;
+          padding:7px!important;overflow-x:auto!important;overflow-y:hidden!important;
+          -webkit-overflow-scrolling:touch!important;touch-action:pan-x!important;
+          overscroll-behavior-x:contain!important;scrollbar-width:thin!important
+        }
+        html[data-mlv-platform="android"] #tab-settings .v30171-settings-title{display:none!important}
+        html[data-mlv-platform="android"] #tab-settings .v30171-settings-nav button{
+          flex:0 0 auto!important;width:auto!important;max-width:none!important;
+          min-height:40px!important;min-width:75px!important;
+          padding:8px 10px!important;white-space:nowrap!important;
+          font-size:11px!important;line-height:1.2!important
+        }
+        html[data-mlv-platform="android"] #tab-settings .v30171-settings-nav [data-v30171-setting="sync"]{order:-2}
+        html[data-mlv-platform="android"] #tab-settings .v30171-settings-nav [data-v30171-setting="google"]{order:-1}
+        html[data-mlv-platform="android"] #tab-settings .v30171-settings-content,
+        html[data-mlv-platform="android"] #tab-settings .v30171-settings-pane{
+          height:auto!important;min-height:0!important;max-height:none!important;
+          overflow:visible!important;width:100%!important;min-width:0!important
+        }
+        html[data-mlv-platform="android"] #v30171Sidebar{
+          bottom:max(0px,env(safe-area-inset-bottom,0px))!important;
+          padding-bottom:max(72px,calc(36px + env(safe-area-inset-bottom,0px)))!important
+        }
+
         .card,.v132-panel,.v131-hero{max-width:100%!important;box-sizing:border-box!important}
         .v131-stack,.dashboard-v13{gap:8px!important}
         .v132-dashboard-grid,.dash-row-v13{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:8px!important}
