@@ -416,6 +416,12 @@
         });
       }
     }
+    // Restore the HTML document as the only vertical scrollport on Android;
+    // BODY must not trap touch chains in an empty nested scroller.
+    if(document.body){
+      setImportantOnce(document.body,'overflow-y','visible');
+      setImportantOnce(document.body,'overscroll-behavior-y','auto');
+    }
     const app=q('.app');
     if(app){
       setImportantOnce(app,'padding','0');
@@ -741,7 +747,15 @@
          * Settings category picker scrolls horizontally on its own.
          */
         html[data-mlv-platform="android"]{height:auto!important;min-height:100%!important;overflow-x:clip!important;overflow-y:auto!important}
-        html[data-mlv-platform="android"] body{height:auto!important;min-height:100dvh!important;max-height:none!important;overflow-x:clip!important;overflow-y:auto!important}
+        /* The HTML element is document.scrollingElement. If BODY also has
+           overflow-y:auto + overscroll-behavior:contain, native one-finger
+           scrolling cannot chain to HTML even though scrollTo works.
+           Leave BODY non-scrolling and let the root own the one scrollport. */
+        html[data-mlv-platform="android"] body{
+          height:auto!important;min-height:100dvh!important;max-height:none!important;
+          overflow-x:clip!important;overflow-y:visible!important;
+          overscroll-behavior-y:auto!important
+        }
         html[data-mlv-platform="android"] .app,
         html[data-mlv-platform="android"] .app-shell,
         html[data-mlv-platform="android"] .layout,
