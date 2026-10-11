@@ -24,6 +24,35 @@ class AndroidBridge(
         private const val RESPONSE = "michels-life-google-calendar-response"
     }
 
+    /**
+     * Delivery-only native alarm API for the shared FocusStoryV30162 clock.
+     * Does not write WebView timer state, award XP or create sessions.
+     */
+    @JavascriptInterface
+    fun syncFocusAlarm(rawState: String): String = try {
+        NativeFocusAlarm.sync(activity, JSONObject(rawState)).toString()
+    } catch (e: Exception) {
+        JSONObject().put("scheduled", false)
+            .put("error", e.message ?: "Could not schedule Focus notification.").toString()
+    }
+
+    @JavascriptInterface
+    fun focusNotificationStatus(): String =
+        NativeFocusAlarm.status(activity).toString()
+
+    @JavascriptInterface
+    fun requestFocusNotificationPermission(): String {
+        if (android.os.Build.VERSION.SDK_INT >= 33 &&
+            !NativeFocusAlarm.notificationPermissionGranted(activity)) {
+            activity.runOnUiThread {
+                activity.requestPermissions(
+                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 4706
+                )
+            }
+        }
+        return NativeFocusAlarm.status(activity).toString()
+    }
+
     @JavascriptInterface
     fun postMessage(raw: String) {
         try {

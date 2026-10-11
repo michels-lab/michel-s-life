@@ -25,6 +25,7 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        NativeFocusAlarm.createChannel(this)
         val meta = CloudMetaStore(this)
         auth = GoogleAuthorizationCoordinator(this)
         cloud = DriveCloudEngine(this, meta)
