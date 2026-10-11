@@ -15384,6 +15384,15 @@ body.ml-theme-ui .v309-search-muted{
   }
 
   function applyVisual(t,saveIt){
+    // The legacy v3090 controller is kept for Desktop compatibility. On
+    // Android, v3130 owns the palette. Never reapply v3090's historical pink
+    // defaults on a generic render or onboarding Continue event: the legacy
+    // state may contain glass/text colors but no actual selected palette.
+    const android=window.__MICHELSLIFE_PLATFORM__==='android'||!!window.MichelsLifeAndroid;
+    if(android && typeof window.v313ApplyTheme==='function'){
+      window.v313ApplyTheme(saveIt?t:null,null,!!saveIt);
+      return;
+    }
     t=theme(t||storedTheme());
     document.body?.classList.add('ml-theme-ui');
     setVars(t);
@@ -15913,15 +15922,28 @@ body.ml-theme-ui [data-tab-panel="contracts"] .v216-contract-card{
 
   function theme(t){
     t=t||{};
+    // Legacy michelsLifeTheme.v3000 may contain ONLY glassAtmosphere/text/
+    // premium settings, without any palette fields. Falling back to literal
+    // PINK for missing fields silently recolored Android onboarding on every
+    // render/Continue event, despite no theme selection. Default to Android's
+    // existing cyan system palette and preserve explicit saved color fields.
+    // Desktop's historically approved default remains pink.
+    const onAndroid=window.__MICHELSLIFE_PLATFORM__==='android'||!!window.MichelsLifeAndroid;
+    // v30184 owns the final Android palette tokens (including the app's
+    // accepted original-world panel/card colors). Read its normalized current
+    // palette rather than reintroducing an older cyan variant during Continue.
+    // Explicit user-selected values in t still have priority below.
+    const nativeCurrent=onAndroid&&window.ColorThemeV30184?.current?.();
+    const defaults=onAndroid?(nativeCurrent||PALETTES.cyan):PALETTES.pink;
     return {
-      bg:t.bg||'#10070f',
-      shell:t.shell||t.panel||'#180b16',
-      panel:t.panel||'#261321',
-      card:t.card||'#170d16',
-      control:t.control||t.bg||'#11070e',
-      accent:t.accent||'#ff8ed0',
-      accent2:t.accent2||'#c18cff',
-      gold:t.gold||'#ffd166'
+      bg:t.bg||defaults.bg,
+      shell:t.shell||t.panel||defaults.shell||defaults.panel,
+      panel:t.panel||defaults.panel,
+      card:t.card||defaults.card,
+      control:t.control||t.bg||defaults.control||defaults.bg,
+      accent:t.accent||defaults.accent,
+      accent2:t.accent2||defaults.accent2,
+      gold:t.gold||defaults.gold
     };
   }
 
@@ -15960,7 +15982,11 @@ body.ml-theme-ui [data-tab-panel="contracts"] .v216-contract-card{
   function currentTheme(){
     let local=null;
     try{local=JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){}
-    return theme(local||settings().v3000Theme||settings().v133Theme||PALETTES.pink);
+    // Keep Android's original cyan palette stable until the user actually selects
+    // a preset. The former pink fallback was reapplied on EVERY generic button
+    // click, making first-run Continue silently recolor the entire app.
+    const androidFirstRun=window.__MICHELSLIFE_PLATFORM__==='android'||!!window.MichelsLifeAndroid;
+    return theme(local||settings().v3000Theme||settings().v133Theme||(androidFirstRun?PALETTES.cyan:PALETTES.pink));
   }
 
   function syncInputs(t){
@@ -16094,9 +16120,9 @@ body.ml-theme-ui [data-tab-panel="contracts"] .v216-contract-card{
       },0);
       return;
     }
-    if(ev.target.closest?.('[data-tab],.tab-btn,[data-action],button')){
-      setTimeout(()=>{apply(currentTheme(),null,false);fixPremiumLayout();},70);
-    }
+    // Theme presets are saved above, and renderAll() reapplies explicit state.
+    // Never call apply(currentTheme()) on unrelated buttons: the click-wide
+    // handler silently recolored Android onboarding from cyan to pink.
   },true);
 
   const oldRenderAll=window.renderAll;

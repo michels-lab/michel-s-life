@@ -93,9 +93,10 @@ try{
   const translationProbe=await page.evaluate(()=>({
     dashboard:window.MichelsLifeI18n.mapText('Dashboard'),
     layout:window.MichelsLifeI18n.mapText('Dashboard layout'),
-    affirmation:window.MichelsLifeI18n.mapText('Today I choose execution over fantasy.')
+    affirmation:window.MichelsLifeI18n.mapText('Today I choose execution over fantasy.'),
+    dateMode:window.MichelsLifeI18n.mapText('day · 2026-10-11')
   }));
-  ok(translationProbe.dashboard==='Inicio'&&translationProbe.layout==='Diseño de Inicio'&&translationProbe.affirmation==='Hoy elijo ejecución sobre fantasía.','Spanish dictionary probe failed: '+JSON.stringify(translationProbe));
+  ok(translationProbe.dashboard==='Inicio'&&translationProbe.layout==='Diseño de Inicio'&&translationProbe.affirmation==='Hoy elijo ejecución sobre fantasía.'&&translationProbe.dateMode==='día · 2026-10-11','Spanish dictionary probe failed: '+JSON.stringify(translationProbe));
 
   // A dynamic ISO-date caption is not a static dictionary key; it must
   // translate at runtime without changing the date or swallowing user text.
