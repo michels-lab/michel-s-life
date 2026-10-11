@@ -21,6 +21,7 @@ on:
       - 'tools/inject_bundle_asset.py'
       - '.michelslab/release-intents/android-v023.txt'
       - '.michelslab/release-intents/android-v024.txt'
+      - '.michelslab/release-intents/android-v025.txt'
       - '.github/workflows/android-ui-smoke.yml'
 
 permissions:

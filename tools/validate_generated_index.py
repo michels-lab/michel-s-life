@@ -10,8 +10,8 @@ p=Path(a.index)
 text=p.read_text(encoding='utf-8')
 
 required=(
-    "const VERSION='3.0.216'",
-    "window.__MICHELS_LIFE_BUILD__='3.0.216'",
+    "const VERSION='3.0.217'",
+    "window.__MICHELS_LIFE_BUILD__='3.0.217'",
     "assets/michels_life_app_icon.svg",
     "assets/michels_life_mark.svg",
     "assets/michels_life_lockup.svg",
@@ -30,7 +30,7 @@ required=(
     "--mlv-font-midnights",
     "Choose by era. Every card keeps its own permanent preview, so you can compare styles without selecting them first.",
     "function createCanonicalSettingsShell(root){",
-    "shell.dataset.v30171Canonical='3.0.216';",
+    "shell.dataset.v30171Canonical='3.0.217';",
     "panes.typography.insertAdjacentHTML('beforeend',typographyPane());",
     "panes.about.insertAdjacentHTML('beforeend',aboutPane());",
     "function activateSetting(key,root){",
@@ -43,7 +43,7 @@ required=(
 )
 for marker in required:
     assert marker in text, f'missing canonical frontend marker: {marker}'
-for stale in ('3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207','3.0.208','3.0.209','3.0.210','3.0.211','3.0.212','3.0.213','3.0.214','3.0.215'):
+for stale in ('3.0.216','3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207','3.0.208','3.0.209','3.0.210','3.0.211','3.0.212','3.0.213','3.0.214','3.0.215'):
     assert stale not in text, f'stale frontend version remains: {stale}'
 
 for forbidden in (
@@ -101,4 +101,4 @@ with tempfile.TemporaryDirectory() as td:
         if r.returncode:
             print(r.stderr,file=sys.stderr)
             raise SystemExit(f'JS syntax failed {i}')
-print(f'OK: canonical v3.0.216 frontend + migration checks + {len(parser.items)} inline scripts')
+print(f'OK: canonical v3.0.217 frontend + migration checks + {len(parser.items)} inline scripts')

@@ -12,6 +12,7 @@ on:
       - 'android/tools/prepare_bundle.py'
       - '.michelslab/release-intents/android-v023.txt'
       - '.michelslab/release-intents/android-v024.txt'
+      - '.michelslab/release-intents/android-v025.txt'
       - '.github/workflows/ui-smoke.yml'
   workflow_dispatch:
 
@@ -176,7 +177,7 @@ jobs:
         if: always()
         continue-on-error: true
         with:
-          name: ui-smoke-v3.0.216
+          name: ui-smoke-v3.0.217
           path: |
             artifacts/ui-smoke
             /tmp/mlv-http.log

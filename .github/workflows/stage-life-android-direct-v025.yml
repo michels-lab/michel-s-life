@@ -1,0 +1,107 @@
+name: Stage signed Android v0.2.5 for unified Michel's Life release
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.michelslab/release-intents/android-v025.txt'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: michelslife-android-v025-direct-stage
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build + verify production Android Direct APK
+    uses: ./.github/workflows/android-build.yml
+    with:
+      build_direct: true
+    secrets: inherit
+
+  stage:
+    name: Check same-SHA CI and securely stage signed public Android APK
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      EXPECTED_ANDROID_CERT_SHA256: ${{ vars.ANDROID_DIRECT_CERT_SHA256 }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Download only production-signed v0.2.5 artifact from this run
+        uses: actions/download-artifact@v4
+        with:
+          name: MichelsLife-Android-Direct-v0.2.5
+          path: signed
+      - name: Verify signer, package, digest, same-source and UI gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd signed
+          test -s MichelsLife-Android-Direct-v0.2.5.apk
+          sha256sum --check MichelsLife-Android-Direct-v0.2.5.apk.sha256
+          jq -e --arg expected_cert "$EXPECTED_ANDROID_CERT_SHA256" --arg source "$GITHUB_SHA" '
+            .package == "com.michelslab.michelslife"
+            and .platform == "android"
+            and .distribution == "production-signed"
+            and .versionName == "0.2.5"
+            and .versionCode == 7
+            and .signerCertSha256 == $expected_cert
+            and .sourceSha == $source
+          ' direct-release-manifest.json
+          test "$(jq -r .sha256 direct-release-manifest.json)" = "$(sha256sum MichelsLife-Android-Direct-v0.2.5.apk | awk '{print $1}')"
+          cd ..
+          # CI on the EXACT release-intent SHA is mandatory. The standalone
+          # UI and Android UI workflows explicitly trigger for this intent file.
+          # Avoid claiming an earlier parent commit's tests prove this candidate.
+          CI_SHA="$GITHUB_SHA"
+          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            changed="$(git diff --name-only HEAD^ HEAD)"
+            if [[ "$changed" != ".michelslab/release-intents/android-v025.txt" ]]; then
+              echo "::error::Release intent must be the ONLY change to this commit"; exit 1
+            fi
+          fi
+          for attempt in $(seq 1 35); do
+            gh api -X GET "repos/$GITHUB_REPOSITORY/actions/runs" -f head_sha="$CI_SHA" -f per_page=100 > ci-runs.json
+            all_green=1
+            for required in "Source validation" "Android UI smoke" "UI smoke"; do
+              if ! jq -e --arg name "$required" '
+                any(.workflow_runs[]; .name == $name and .conclusion == "success")
+              ' ci-runs.json >/dev/null; then
+                all_green=0
+              fi
+            done
+            if [[ "$all_green" == "1" ]]; then break; fi
+            if [[ "$attempt" == "35" ]]; then
+              echo "::error::Source, Android UI and UI smoke CI are not all green for exact release SHA $CI_SHA"; exit 1
+            fi
+            sleep 20
+          done
+          if gh release view michelslife-android-direct-transfer-v0.2.5 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::Transfer staging tag already exists; never silently overwrite a previously reviewed signer/binary"
+            exit 1
+          fi
+      - name: Stage transfer prerelease with verified stable-signed APK (NOT customer release)
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release create michelslife-android-direct-transfer-v0.2.5 \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --prerelease \
+            --title "Internal transfer — Michel's Life Android Direct v0.2.5 code 7" \
+            --notes "Verified production-signed Android Direct APK for inclusion in the existing single public Windows v3.0.217 + Android v0.2.5 release. Transfer/staging artifact only, not a customer release. Private signing credentials are never attached." \
+            signed/MichelsLife-Android-Direct-v0.2.5.apk \
+            signed/MichelsLife-Android-Direct-v0.2.5.apk.sha256 \
+            signed/direct-release-manifest.json
+          gh release view michelslife-android-direct-transfer-v0.2.5 \
+            --repo "$GITHUB_REPOSITORY" --json assets,name,isPrerelease \
+            --jq '{name, prerelease:.isPrerelease, assets:[.assets[].name]}'
