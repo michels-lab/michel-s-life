@@ -39,8 +39,8 @@ if version_code < 1:
 staging = REPO / ".github/workflows" / f"stage-life-android-direct-v{version_name.replace('.', '')}.yml"
 if staging.exists():
     contract = staging.read_text(encoding="utf-8")
-    stage_name = one(r'and\\s+\\.versionName\\s*==\\s*"([^"]+)"', contract, "staging manifest versionName")
-    stage_code = int(one(r'and\\s+\\.versionCode\\s*==\\s*(\\d+)', contract, "staging manifest versionCode"))
+    stage_name = one(r'and\s+\.versionName\s*==\s*"([^"]+)"', contract, "staging manifest versionName")
+    stage_code = int(one(r'and\s+\.versionCode\s*==\s*(\d+)', contract, "staging manifest versionCode"))
     if stage_name != version_name or stage_code != version_code:
         raise SystemExit(
             f"Signed-transfer staging manifest identity drift: Gradle {version_name}/code {version_code}, "
