@@ -1,0 +1,10 @@
+Michel's Life Android Direct v0.2.4 (versionCode 6) — guarded signed customer candidate
+Unified public GitHub release: Windows v3.0.216 + latest Android v0.2.4 on SAME v3.0.216 release page.
+Verified signed-candidate source parent: c368dce9bc5f0e568f1d486a396aff232f784865
+Owner-controlled stable Direct certificate: 36a9f5144243d14ebade9d38559cfd7d4d9207c1edba01e6f0fbdd5f076a50fa
+Package: com.michelslab.michelslife ; signed Android versionName 0.2.4 versionCode 6.
+All three Source validation / UI smoke / Android UI smoke must be green for this EXACT release-intent SHA.
+The Android 16 same-run candidate install must succeed; verify production APK manifest, cert, signature and SHA256.
+Stage internal transfer only, not public release; the releases repository performs independent verification.
+This version changes Android UI only and stages no Windows artifact. Keep latest Windows installer, AppBundle and checksums unchanged.
+No native lockscreen alarms or physical Windows/Galaxy Supabase integration are asserted. Preserve user data; never rotate signing key.
