@@ -87,8 +87,10 @@ jobs:
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" "platform-tools"
 
-      - name: Validate Windows-compatible cloud contract
-        run: python android/tools/validate_sync_contract.py
+      - name: Validate Windows-compatible cloud contract and safe backup restores
+        run: |
+          python android/tools/validate_sync_contract.py
+          node tools/test_cloud_restore_storage.mjs
 
       - name: Validate Android version metadata
         run: python android/tools/validate_android_version.py
