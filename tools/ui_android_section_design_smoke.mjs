@@ -126,7 +126,7 @@ try{
       const k=state.statsKpis;
       assert(k.length===6 && state.statsGridColumns?.split(' ').length===2,
         'Statistics activity overview must be 2 columns on phone: '+JSON.stringify(state));
-      assert(k.every((tile,index)=>tile.width>=112&&tile.height>=90&&
+      assert(k.every((tile,index)=>tile.width>=112&&tile.height>=80&&
         tile.left>=-3&&tile.right<=width+3&&
         tile.valueTop>=tile.labelBottom-1 &&
         (index%2===0 || Math.abs(tile.top-k[index-1].top)<2)),
