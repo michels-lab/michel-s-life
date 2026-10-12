@@ -645,6 +645,57 @@
       }
     }
 
+    /* Live Premium Contracts editor (v217), not the superseded Goals tab.
+       One shared contract model; Android owns only the phone presentation. */
+    @media(max-width:720px){
+      html[data-mlv-platform="android"] #modalRoot:has(#v217ContractEditForm) .modal-backdrop{
+        box-sizing:border-box!important;align-items:end!important;
+        padding:calc(8px + env(safe-area-inset-top,0px)) 0 0!important;
+        overflow:hidden!important
+      }
+      html[data-mlv-platform="android"] #modalRoot:has(#v217ContractEditForm) .modal{
+        box-sizing:border-box!important;width:100%!important;max-width:100%!important;
+        max-height:calc(100dvh - 8px - env(safe-area-inset-top,0px))!important;
+        margin:0!important;border-radius:22px 22px 0 0!important;
+        padding:16px 14px calc(16px + env(safe-area-inset-bottom,0px))!important;
+        overflow-x:hidden!important;overflow-y:auto!important;
+        overscroll-behavior:contain;-webkit-overflow-scrolling:touch
+      }
+      html[data-mlv-platform="android"] #v217ContractEditForm .v217-form-grid{
+        display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+        gap:10px!important
+      }
+      html[data-mlv-platform="android"] #v217ContractEditForm .v217-stat-grid{
+        display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+        gap:7px!important
+      }
+      html[data-mlv-platform="android"] #v217ContractEditForm .v217-stat{
+        min-width:0!important;padding:9px 6px!important;overflow-wrap:anywhere!important
+      }
+      html[data-mlv-platform="android"] #v217ContractEditForm :is(input:not([type="checkbox"]),select,textarea){
+        box-sizing:border-box!important;max-width:100%!important;width:100%!important;
+        min-width:0!important;min-height:48px!important;font-size:16px!important
+      }
+      html[data-mlv-platform="android"] #v217ContractEditForm .v217-picker{
+        max-height:min(38dvh,300px)!important;overscroll-behavior:contain!important
+      }
+      html[data-mlv-platform="android"] #v217ContractEditForm .v217-option{
+        min-height:44px!important;box-sizing:border-box!important
+      }
+      html[data-mlv-platform="android"] #modalRoot:has(#v217ContractEditForm) .modal-head .icon-btn{
+        min-width:44px!important;min-height:44px!important
+      }
+      html[data-mlv-platform="android"] #v217ContractEditForm > .actions{
+        position:sticky!important;bottom:0!important;z-index:3!important;
+        display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+        gap:8px!important;padding:10px 0 0!important;
+        background:rgba(var(--ui-panel-rgb,9,13,25),.99)!important
+      }
+      html[data-mlv-platform="android"] #v217ContractEditForm > .actions button{
+        box-sizing:border-box!important;min-height:48px!important;min-width:0!important
+      }
+    }
+
     /* The existing Projects/Decision-Log editor uses a desktop modal.
        Android owns only modal geometry and tap priority. Saving/mission links
        still go through the canonical v30106ProjectForm submit handler. */
