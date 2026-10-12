@@ -1118,6 +1118,31 @@
       const hint=hero.querySelector('#v216ContractSearchCount');
       if(hint?.textContent==='Cards stay rendered')hint.textContent='Matches appear first';
     });
+    // Enforce true phone typography/touch after shared Weekly Review redraws.
+    // This remains view-only: the canonical review engine owns the data.
+    if(window.innerWidth<=720){
+      main.querySelectorAll('#tab-weekly-review .v30105-review-item').forEach(row=>{
+        force(row,'display','grid');
+        force(row,'grid-template-columns','minmax(0,1fr)');
+        force(row,'min-width','0');
+        force(row,'max-width','100%');
+        force(row,'box-sizing','border-box');
+        for(const el of row.querySelectorAll('h4')){
+          force(el,'font-size','14px');
+          force(el,'line-height','1.35');
+        }
+        for(const el of row.querySelectorAll('p')){
+          force(el,'font-size','12px');
+          force(el,'line-height','1.5');
+        }
+        for(const button of row.querySelectorAll('.v30105-review-actions button')){
+          force(button,'min-width','44px');
+          force(button,'min-height','44px');
+          force(button,'font-size','12px');
+          force(button,'padding','9px 12px');
+        }
+      });
+    }
     const body=main.querySelector('#mlv184JournalBody');
     if(body&&body.style.getPropertyValue('font-size')!=='16px')
       body.style.setProperty('font-size','16px','important');
