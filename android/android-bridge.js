@@ -408,7 +408,7 @@
         qa('button[data-v30171-setting]',nav).forEach(btn=>{
           [
             ['flex','0 0 auto'],['width','auto'],['min-width','75px'],
-            ['max-width','none'],['height','auto'],['min-height','40px'],
+            ['max-width','none'],['height','auto'],['min-height','48px'],
             ['padding','8px 10px'],['white-space','nowrap']
           ].forEach(([key,value])=>setImportantOnce(btn,key,value));
           if(btn.dataset.v30171Setting==='sync')setImportantOnce(btn,'order','-2');
@@ -828,7 +828,7 @@
         html[data-mlv-platform="android"] #tab-settings .v30171-settings-title{display:none!important}
         html[data-mlv-platform="android"] #tab-settings .v30171-settings-nav button{
           flex:0 0 auto!important;width:auto!important;max-width:none!important;
-          min-height:40px!important;min-width:75px!important;
+          min-height:48px!important;min-width:75px!important;
           padding:8px 10px!important;white-space:nowrap!important;
           font-size:11px!important;line-height:1.2!important
         }
