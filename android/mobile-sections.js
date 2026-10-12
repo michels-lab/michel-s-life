@@ -219,6 +219,28 @@
     html[data-mlv-platform="android"] #tab-contracts .v216-top-actions .btn{
       min-width:0!important;white-space:normal!important
     }
+    html[data-mlv-platform="android"] #tab-contracts .v194-kpis{
+      display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+      gap:9px!important;min-width:0!important;margin-top:10px!important
+    }
+    html[data-mlv-platform="android"] #tab-contracts .v194-kpi{
+      display:flex!important;flex-direction:column!important;gap:5px!important;
+      box-sizing:border-box!important;min-width:0!important;
+      border-radius:13px!important;padding:12px!important;
+      border:1px solid rgba(255,255,255,.10)!important;
+      background:rgba(var(--ui-card-rgb,12,20,34),.42)!important
+    }
+    html[data-mlv-platform="android"] #tab-contracts .v194-kpi small,
+    html[data-mlv-platform="android"] #tab-contracts .v194-kpi b{
+      display:block!important;position:static!important;max-width:100%!important;
+      overflow-wrap:anywhere!important;line-height:1.25!important
+    }
+    html[data-mlv-platform="android"] #tab-contracts .v194-kpi small{
+      font-size:11px!important;color:var(--muted)!important
+    }
+    html[data-mlv-platform="android"] #tab-contracts .v194-kpi b{
+      font-size:20px!important;color:var(--text)!important
+    }
     /* Projects/Planning and Goals — original data, phone-native stacked cards. */
     html[data-mlv-platform="android"] #main .goal-card,
     html[data-mlv-platform="android"] #main .v169-weekly-template,
@@ -311,6 +333,45 @@
     }
     html[data-mlv-platform="android"] #tab-affirmations .table td{
       white-space:normal!important;vertical-align:top!important
+    }
+    /* Real mobile Affirmations: a readable list, not four cramped table
+       columns. The original table remains semantic and keyboard-accessible;
+       JS labels each cell from its actual localized <th> text. */
+    @media(max-width:720px){
+      html[data-mlv-platform="android"] #tab-affirmations .table-wrap{
+        overflow-x:hidden!important;touch-action:pan-y!important
+      }
+      html[data-mlv-platform="android"] #tab-affirmations .table,
+      html[data-mlv-platform="android"] #tab-affirmations .table tbody{
+        display:block!important;width:100%!important;max-width:100%!important;
+        min-width:0!important;box-sizing:border-box!important
+      }
+      html[data-mlv-platform="android"] #tab-affirmations .table thead{
+        position:absolute!important;width:1px!important;height:1px!important;
+        overflow:hidden!important;clip-path:inset(50%)!important
+      }
+      html[data-mlv-platform="android"] #tab-affirmations .table tbody tr{
+        display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+        gap:8px!important;min-width:0!important;max-width:100%!important;
+        border:1px solid rgba(255,255,255,.11)!important;
+        border-radius:15px!important;padding:12px!important;
+        margin-bottom:10px!important;background:rgba(var(--ui-card-rgb,12,20,34),.40)!important
+      }
+      html[data-mlv-platform="android"] #tab-affirmations .table tbody td{
+        display:flex!important;flex-direction:column!important;align-items:flex-start!important;
+        gap:4px!important;box-sizing:border-box!important;border:0!important;
+        padding:3px 0!important;min-width:0!important;max-width:100%!important;
+        white-space:normal!important;overflow-wrap:anywhere!important;
+        font-size:14px!important;line-height:1.4!important
+      }
+      html[data-mlv-platform="android"] #tab-affirmations .table tbody td::before{
+        content:attr(data-mlv-android-label);display:block!important;
+        font-size:10px!important;font-weight:800!important;letter-spacing:.06em!important;
+        text-transform:uppercase!important;color:var(--muted)!important
+      }
+      html[data-mlv-platform="android"] #tab-affirmations .table tbody td:last-child button{
+        min-height:44px!important;min-width:44px!important
+      }
     }
     /* Story/Chapters scenes keep original assets and scene transforms. */
     html[data-mlv-platform="android"] #tab-story{
@@ -463,6 +524,17 @@
         if(el.style.getPropertyValue(key)!==value||el.style.getPropertyPriority(key)!=='important')
           el.style.setProperty(key,value,'important');
       }
+    });
+    // Reuse each existing table header as the mobile field label, preserving
+    // translations and actions without rewriting user affirmation records.
+    main.querySelectorAll('#tab-affirmations table.table').forEach(table=>{
+      const labels=Array.from(table.querySelectorAll('thead th')).map(th=>(th.textContent||'').trim());
+      table.querySelectorAll('tbody tr').forEach(tr=>{
+        Array.from(tr.cells).forEach((cell,i)=>{
+          const label=labels[i]||'';
+          if(cell.dataset.mlvAndroidLabel!==label)cell.dataset.mlvAndroidLabel=label;
+        });
+      });
     });
     const body=main.querySelector('#mlv184JournalBody');
     if(body&&body.style.getPropertyValue('font-size')!=='16px')
