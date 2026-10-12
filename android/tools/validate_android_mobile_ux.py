@@ -103,6 +103,24 @@ if not (ROOT.parent / "tools/ui_android_section_design_smoke.mjs").exists():
     raise SystemExit("Android rendered mobile section design test is missing")
 
 
+# Story/Chapters and About must be phone-owned presentations of their
+# canonical desktop domain and identity, never a second mobile state model.
+story_about_contract = [
+    '[data-v30171-pane="about"] [data-mlv-about-core]',
+    '.mlvdev-product-lockup',
+    '.mlvdev-avatar',
+    '.mlvdev-socials',
+    '.v30162-story-form',
+    '.v30162-chapter-archive',
+]
+missing_story_about = [term for term in story_about_contract if term not in mobile_sections]
+if missing_story_about:
+    raise SystemExit("Android Story/About phone design missing: " + ", ".join(missing_story_about))
+phone_test = (ROOT.parent / "tools/ui_android_section_design_smoke.mjs").read_text(encoding="utf-8")
+if "Story still uses desktop multi-column edit geometry" not in phone_test or \
+        "About social cards are clipped" not in phone_test:
+    raise SystemExit("Android Story/About real viewport regression assertions missing")
+
 native_required = [
     "setLayerType(View.LAYER_TYPE_HARDWARE",
     "setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_BOUND",
