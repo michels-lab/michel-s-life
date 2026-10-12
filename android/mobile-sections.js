@@ -252,6 +252,40 @@
     html[data-mlv-platform="android"] #main .v131-kpi{
       min-width:0!important;overflow-wrap:anywhere!important;box-sizing:border-box!important
     }
+    /* Projects and Planning use the real v30106 project editor and actions,
+       never a mobile-only clone of projects or mission linking. */
+    html[data-mlv-platform="android"] #tab-projects .v30106-projects,
+    html[data-mlv-platform="android"] #tab-projects .v30106-grid,
+    html[data-mlv-platform="android"] #tab-projects .v30106-project-card{
+      min-width:0!important;max-width:100%!important;box-sizing:border-box!important
+    }
+    html[data-mlv-platform="android"] #tab-projects .v30106-project-head,
+    html[data-mlv-platform="android"] #tab-projects .v30106-project-actions,
+    html[data-mlv-platform="android"] #tab-projects .v30106-row-actions{
+      display:flex!important;flex-wrap:wrap!important;gap:8px!important
+    }
+    html[data-mlv-platform="android"] #tab-projects .v30106-project-head > div{
+      min-width:0!important;flex:1 1 175px!important
+    }
+    html[data-mlv-platform="android"] #tab-projects .v30106-project-actions button,
+    html[data-mlv-platform="android"] #tab-projects .v30106-row-actions button,
+    html[data-mlv-platform="android"] #tab-projects [data-v30106-action]{
+      min-height:44px!important;font-size:12px!important
+    }
+    html[data-mlv-platform="android"] #tab-projects .v30106-next-action,
+    html[data-mlv-platform="android"] #tab-projects .v30106-row{
+      min-width:0!important;max-width:100%!important;box-sizing:border-box!important;
+      overflow-wrap:anywhere!important
+    }
+    /* Weekly Review and decision rows: no desktop-width action columns. */
+    html[data-mlv-platform="android"] #tab-weekly-review .v30105-snapshot-row,
+    html[data-mlv-platform="android"] #tab-weekly-review .v30105-snapshot-list,
+    html[data-mlv-platform="android"] #tab-weekly-review .v30105-snapshot-actions{
+      max-width:100%!important;min-width:0!important;box-sizing:border-box!important
+    }
+    html[data-mlv-platform="android"] #tab-weekly-review button{
+      min-height:44px!important
+    }
     /* Achievements and affirmations: preserve badges, glow, favoriting. */
     html[data-mlv-platform="android"] #tab-achievements .v156-ach-card,
     html[data-mlv-platform="android"] #tab-achievements .v133-ach,
@@ -331,6 +365,32 @@
       html[data-mlv-platform="android"] #tab-achievements .v156-ach-grid,
       html[data-mlv-platform="android"] #tab-achievements .v133-ach-grid{
         grid-template-columns:minmax(0,1fr)!important;gap:12px!important
+      }
+      html[data-mlv-platform="android"] #tab-projects .v30106-grid,
+      html[data-mlv-platform="android"] #tab-projects .v30106-editor-grid,
+      html[data-mlv-platform="android"] #tab-projects .v30106-row,
+      html[data-mlv-platform="android"] #tab-projects .v30106-plan-row,
+      html[data-mlv-platform="android"] #tab-weekly-review .v30105-snapshot-row,
+      html[data-mlv-platform="android"] #tab-story .v30162-story-grid{
+        display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important
+      }
+      html[data-mlv-platform="android"] #tab-story .v30162-story-kpis{
+        display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+        gap:9px!important
+      }
+      html[data-mlv-platform="android"] #tab-story .v30162-story-kpi,
+      html[data-mlv-platform="android"] #tab-story .v30162-story-card{
+        min-width:0!important;max-width:100%!important;box-sizing:border-box!important
+      }
+      html[data-mlv-platform="android"] #tab-story .v30162-story-title{
+        font-size:clamp(24px,8vw,38px)!important;line-height:1.15!important;
+        overflow-wrap:anywhere!important
+      }
+      html[data-mlv-platform="android"] #tab-story .v30162-story-actions{
+        display:flex!important;flex-wrap:wrap!important;gap:8px!important
+      }
+      html[data-mlv-platform="android"] #tab-story .v30162-story-actions button{
+        min-height:44px!important
       }
       html[data-mlv-platform="android"] #tab-goals .goal-card,
       html[data-mlv-platform="android"] #tab-goals .v169-weekly-template{
