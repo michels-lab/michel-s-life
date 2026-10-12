@@ -75,10 +75,25 @@ try{
         .filter(e=>e.getClientRects().length).slice(0,6).map(e=>bb(e).height);
       const projectBtns=[...tab.querySelectorAll('#tab-projects [data-v30106-action]')]
         .filter(e=>e.getClientRects().length).slice(0,10).map(e=>bb(e).height);
+      const contractKpis=[...tab.querySelectorAll('.v194-kpi')].map(card=>{
+        const label=card.querySelector('small')?.getBoundingClientRect();
+        const value=card.querySelector('b')?.getBoundingClientRect();
+        return {labelBottom:label?.bottom,valueTop:value?.top,
+          width:card.getBoundingClientRect().width,
+          display:getComputedStyle(card).display};
+      });
+      const affirmationRows=[...tab.querySelectorAll('#tab-affirmations .table tbody tr')].slice(0,3).map(row=>({
+        width:row.getBoundingClientRect().width,
+        columns:[...row.cells].map(cell=>({
+          label:cell.dataset.mlvAndroidLabel||'',
+          display:getComputedStyle(cell).display,
+          width:cell.getBoundingClientRect().width
+        }))
+      }));
       return {
         id,viewport:vw,documentWidth:document.documentElement.scrollWidth,
         main:bb(active),tab:bb(tab),cardCount:card.length,escaped,
-        display:section.display,settingsButtons,contractBtns,projectBtns,
+        display:section.display,settingsButtons,contractBtns,projectBtns,contractKpis,affirmationRows,
         contractGrid:getComputedStyle(tab.querySelector('.v216-contract-grid')||tab).gridTemplateColumns,
         achievementGrid:getComputedStyle(tab.querySelector('.v156-ach-grid, .v133-ach-grid')||tab).gridTemplateColumns,
       };
@@ -89,6 +104,16 @@ try{
     assert(state.settingsButtons.every(x=>x>=43.5),'Android Settings touch targets too small: '+JSON.stringify(state));
     assert(state.contractBtns.every(x=>x>=43.5),'Android Contracts category targets too small: '+JSON.stringify(state));
     assert(state.projectBtns.every(x=>x>=43.5),'Android Projects action touch targets too small: '+JSON.stringify(state));
+    if(id==='contracts'){
+      assert(state.contractKpis.length===4&&state.contractKpis.every(x=>
+        x.width>=90&&x.display==='flex'&&x.valueTop>=x.labelBottom-1),
+        'Contracts metric labels/values overlap in mobile columns: '+JSON.stringify(state));
+    }
+    if(id==='affirmations'&&state.affirmationRows.length){
+      assert(state.affirmationRows.every(row=>row.width<=width-6&&row.columns.every(cell=>
+        cell.display==='flex'&&cell.label.length>0&&cell.width<=row.width)),
+        'Android affirmation editor still uses squeezed desktop columns: '+JSON.stringify(state));
+    }
     const filename=output+'/'+id+'-'+width+'.png';
     await page.screenshot({path:filename});
     screenshots.push(filename);
