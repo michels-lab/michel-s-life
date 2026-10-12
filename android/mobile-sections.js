@@ -424,6 +424,128 @@
     html[data-mlv-platform="android"] #tab-story .section-title{
       min-width:0!important;max-width:100%!important;box-sizing:border-box!important
     }
+    /* Story uses the unchanged Chapter engine and art. The desktop form has
+       four columns and 34px inputs; make the real mobile editing surface
+       keyboard-safe and thumb-usable without cloning a chapter renderer. */
+    @media(max-width:720px){
+      html[data-mlv-platform="android"] #tab-story .v30162-story{
+        display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+        gap:12px!important;min-width:0!important
+      }
+      html[data-mlv-platform="android"] #tab-story
+      :is(.v30162-story-hero,.v30162-story-card,.v30162-story-empty){
+        min-width:0!important;max-width:100%!important;
+        box-sizing:border-box!important;padding:clamp(14px,4vw,20px)!important;
+        border-radius:20px!important;overflow-wrap:anywhere!important
+      }
+      html[data-mlv-platform="android"] #tab-story .v30162-story-form{
+        display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+        gap:12px!important;align-items:stretch!important
+      }
+      html[data-mlv-platform="android"] #tab-story .v30162-story-form label{
+        display:grid!important;min-width:0!important;gap:5px!important;
+        font-size:12px!important;line-height:1.4!important
+      }
+      html[data-mlv-platform="android"] #tab-story
+      .v30162-story-form :is(input,textarea,select){
+        display:block!important;width:100%!important;min-width:0!important;
+        box-sizing:border-box!important;min-height:48px!important;
+        margin:0!important;padding:12px!important;font-size:16px!important
+      }
+      html[data-mlv-platform="android"] #tab-story .v30162-story-form button{
+        width:100%!important;min-height:48px!important;font-size:14px!important
+      }
+      html[data-mlv-platform="android"] #tab-story
+      :is(.v30162-story-form input,.v30162-story-actions button):focus-visible{
+        outline:2px solid var(--ui-accent,#75e4ff)!important;
+        outline-offset:2px!important
+      }
+      html[data-mlv-platform="android"] #tab-story
+      :is(.v30162-story-kpi,.v30162-archive-card,.v30162-event-body){
+        min-width:0!important;max-width:100%!important;
+        box-sizing:border-box!important;overflow-wrap:anywhere!important
+      }
+      html[data-mlv-platform="android"] #tab-story .v30162-chapter-archive{
+        display:grid!important;grid-template-columns:minmax(0,1fr)!important
+      }
+      html[data-mlv-platform="android"] #tab-story
+      :is(.v30162-event,.v30162-story-actions,.v30162-archive-stats){
+        min-width:0!important;max-width:100%!important;
+        overflow-wrap:anywhere!important
+      }
+
+      /* About remains the one canonical author/studio card. Shrink its
+         desktop 390px brand pane and 210px portrait to fit a real phone. */
+      html[data-mlv-platform="android"] #tab-settings
+      [data-v30171-pane="about"] [data-mlv-about-core]{
+        min-width:0!important;max-width:100%!important;
+        width:100%!important;box-sizing:border-box!important;
+        overflow-x:clip!important
+      }
+      html[data-mlv-platform="android"] #tab-settings
+      [data-v30171-pane="about"] :is(.mlvdev-product,.mlvdev-main,.mlvdev-studio){
+        display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+        gap:12px!important;min-width:0!important
+      }
+      html[data-mlv-platform="android"] #tab-settings
+      [data-v30171-pane="about"] .mlvdev-product-lockup{
+        min-width:0!important;min-height:88px!important;
+        box-sizing:border-box!important;padding:12px!important;
+        border-radius:16px!important
+      }
+      html[data-mlv-platform="android"] #tab-settings
+      [data-v30171-pane="about"] .mlvdev-product-lockup img{
+        display:block!important;width:100%!important;
+        max-height:90px!important;object-fit:contain!important
+      }
+      html[data-mlv-platform="android"] #tab-settings
+      [data-v30171-pane="about"] .mlvdev-version-chip{
+        grid-column:auto!important;min-width:0!important;
+        width:max-content!important;max-width:100%!important;
+        justify-self:start!important;text-align:left!important
+      }
+      html[data-mlv-platform="android"] #tab-settings
+      [data-v30171-pane="about"] .mlvdev-avatar-wrap{
+        display:grid!important;place-items:center!important
+      }
+      html[data-mlv-platform="android"] #tab-settings
+      [data-v30171-pane="about"] .mlvdev-avatar{
+        display:block!important;width:min(100%,180px)!important;
+        height:auto!important;aspect-ratio:3/4!important;
+        object-fit:cover!important;border-radius:18px!important
+      }
+      html[data-mlv-platform="android"] #tab-settings
+      [data-v30171-pane="about"] .mlvdev-studio-lockup img{
+        width:100%!important;max-height:58px!important;
+        object-fit:contain!important
+      }
+      html[data-mlv-platform="android"] #tab-settings
+      [data-v30171-pane="about"] .mlvdev-socials{
+        display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+        width:100%!important;max-width:100%!important;gap:9px!important
+      }
+      html[data-mlv-platform="android"] #tab-settings
+      [data-v30171-pane="about"] .mlvdev-social{
+        display:flex!important;align-items:center!important;
+        box-sizing:border-box!important;min-width:0!important;
+        min-height:48px!important;padding:10px 12px!important;
+        text-decoration:none!important
+      }
+      html[data-mlv-platform="android"] #tab-settings
+      [data-v30171-pane="about"] .mlvdev-social :is(small,strong){
+        overflow-wrap:anywhere!important;white-space:normal!important
+      }
+      html[data-mlv-platform="android"] #tab-settings
+      [data-v30171-pane="about"] .mlvdev-meta{
+        display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+        gap:9px!important
+      }
+      html[data-mlv-platform="android"] #tab-settings
+      [data-v30171-pane="about"] .mlvdev-meta > div{
+        min-width:0!important;overflow-wrap:anywhere!important
+      }
+    }
+
     /* Settings remains the original canonical pane system, not a second UI. */
     html[data-mlv-platform="android"] #tab-settings .v30171-settings-shell,
     html[data-mlv-platform="android"] #tab-settings .v30171-settings-content{
