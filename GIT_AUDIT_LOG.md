@@ -932,3 +932,10 @@ Public state:
 ## 2026-10-12 — Shared agent contract synchronization
 
 Synchronized only the managed blocks in AGENTS.md and .github/copilot-instructions.md to Michel-Software-Standards child-agent-core 2026-10-12.1. Local product instructions remain byte-for-byte unchanged outside those blocks. Carries current installer EULA/shortcut, standalone HTML (where applicable), and independent work during CI policies; does not modify app code, workflows, versions or releases. Validation: one managed block per target, exact canonical body and preserved local prefix/suffix. Product/runtime acceptance is not inferred from this documentation change.
+
+
+## 2026-10-12 — Shared Backup Timeline credential/device isolation (candidate)
+
+- A previously overlooked timeline-specific `applyBackupJson` restore cleared device storage and reintroduced arbitrary legacy backup keys. This was inconsistent with the central shareable-key allowlist used by Supabase/Google Drive restores.
+- Scoped source fix reuses the existing authoritative `MLVCloudSharedStorageV30216` contract, preserving local sign-in, device identity and other private provider/device state while restoring only allowed user data.
+- New synthetic executable regression check runs in Android build and desktop UI smoke. No Theme/Chapter/assets, signing, installer or public version changes. Require exact-head green CI and actual two-device provider/restore tests before closing P0 issue #55.
