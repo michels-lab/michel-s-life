@@ -31,6 +31,16 @@ required = {
 missing = [needle for needle, text in required.items() if needle not in text]
 if missing:
     raise SystemExit("Android cloud contract missing: " + ", ".join(missing))
+# Restore point requests originate in WebView. A canonical path string-prefix
+# check is insufficient: /files/restore-points-backup starts with
+# /files/restore-points but is outside the intended directory.
+if "file.path.startsWith(base.path)" in bridge:
+    raise SystemExit("Unsafe Android restore point path-prefix containment detected")
+if "file.parentFile != base || !file.isFile" not in bridge:
+    raise SystemExit("Android restore must require a regular file directly under its canonical restore directory")
+if 'name.matches(Regex("[A-Za-z0-9._-]+"))' not in bridge:
+    raise SystemExit("Android restore point file name must reject separators and invalid input")
+
 scan_suffixes = {".kt", ".kts", ".js", ".py", ".xml", ".properties"}
 security_sources = [repo / "src/MichelsLife/frontend/index.html"]
 security_sources.extend(
