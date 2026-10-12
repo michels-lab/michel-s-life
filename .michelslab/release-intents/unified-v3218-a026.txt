@@ -7,3 +7,5 @@ Require Source validation, Android UI smoke, UI smoke at this exact release-inte
 Create draft with 13 required assets, validate downloaded setup/APK digests and release provenance, publish the unified v3.0.218 GitHub release in michels-lab/michel-s-life-releases.
 Keep real Galaxy hardware / Windows↔Android provider sync / locked-screen alarms limitations disclosed in release notes; they are follow-up issues, not hidden CI pass claims.
 Never overwrite existing v3.0.217 public assets or swap to debug-signed APK.
+
+2026-10-12 AUTHORIZED RELEASE RETRY #2: workflow publisher Android aapt versionCode guard corrected in merged PR #107. Original run 38294857015 built+signed both, passed exact-source, Android16 installed, Windows installed, failed closed at obsolete versionCode=7 assertion before any public v3.0.218 tag existed. The current Android Direct 0.2.6 versionCode 8 remains unchanged. Owner instruction to publish the first public stable release remains explicit and active. Rebuild and verify all same-run assets, then publish v3.0.218 via the fail-closed unified workflow.
