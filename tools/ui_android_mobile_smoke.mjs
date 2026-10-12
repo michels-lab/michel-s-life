@@ -858,7 +858,7 @@ try{
     }),date);
     console.log('ANDROID_CALENDAR_DAY_TAP '+JSON.stringify({width,...dayProbe}));
     await page.waitForFunction(date=>{
-      return window.state?.settings?.v30135CalendarSelected===date &&
+      return JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')?.settings?.v30135CalendarSelected===date &&
         !!document.querySelector('#tab-calendar .v30135-day.selected[data-date="'+date+'"]');
     },date,{timeout:7000});
     await page.locator('#tab-calendar [data-v30135-cal="view"][data-view="agenda"]').click();
