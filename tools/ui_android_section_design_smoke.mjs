@@ -406,20 +406,20 @@ try{
   page.once('dialog',dialog=>dialog.accept(phrase));
   await page.locator('#tab-affirmations [data-action="add-affirmation"]').click();
   await page.waitForFunction(value=>
-    window.state?.affirmations?.some(a=>a.text===value),phrase,{timeout:6000});
+    JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')\n      ?.affirmations?.some(a=>a.text===value),phrase,{timeout:6000});
   const synthetic=await page.evaluate(value=>
-    window.state.affirmations.find(a=>a.text===value)?.id,phrase);
+    JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')\n      ?.affirmations?.find(a=>a.text===value)?.id,phrase);
   assert(!!synthetic,'Add affirmation did not create a canonical record');
   await page.locator('#tab-affirmations [data-action="fav-aff"][data-id="'+synthetic+'"]').click();
   await page.waitForFunction(id=>
-    window.state?.affirmations?.find(a=>a.id===id)?.favorite===true,
+    JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')\n      ?.affirmations?.find(a=>a.id===id)?.favorite===true,
     synthetic,{timeout:6000});
   await page.locator('#tab-affirmations [data-action="hide-aff"][data-id="'+synthetic+'"]').click();
   await page.waitForFunction(id=>
-    window.state?.affirmations?.find(a=>a.id===id)?.hidden===true,
+    JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')\n      ?.affirmations?.find(a=>a.id===id)?.hidden===true,
     synthetic,{timeout:6000});
   const savedAff=await page.evaluate(id=>{
-    const item=window.state.affirmations.find(a=>a.id===id);
+    const item=typeof state==='object'?state.affirmations.find(a=>a.id===id):null;
     const stored=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}');
     return {item,saved:stored.affirmations?.find(a=>a.id===id)};
   },synthetic);
