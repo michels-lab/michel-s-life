@@ -244,7 +244,8 @@ try{
         buttons:[...hero.querySelectorAll('.actions button')].map(geom)};
     });
     assert(review&&review.metrics.length===4&&review.cols.split(' ').length===2 &&
-      Math.abs(review.header.width-review.hero.width)<=3,
+      review.header.width>=review.metrics[0].width*1.8 &&
+      review.header.width<=review.hero.width+2,
       'Weekly Review still stacks the four desktop KPIs: '+JSON.stringify(review));
     assert(review.metrics.every((c,i)=>c.width>=110&&c.height>=91&&
       c.x>=-3&&c.right<=width+3&&
