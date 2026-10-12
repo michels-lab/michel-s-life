@@ -147,6 +147,220 @@
     html[data-mlv-platform="android"] #main .mlv184-journal-status{
       display:flex!important;flex-wrap:wrap!important;gap:5px!important
     }
+
+    /*
+     * One Android-owned design language across all canonical tab renderers.
+     * Layout and interaction ONLY: preserve user-selected colors, fonts,
+     * themes, backgrounds, chapter artwork and business state untouched.
+     */
+    html[data-mlv-platform="android"] #main > .tab{
+      min-width:0!important;max-width:100%!important;box-sizing:border-box!important
+    }
+    html[data-mlv-platform="android"] #main > .tab.active{
+      display:block;overflow:visible!important;min-height:0!important
+    }
+    html[data-mlv-platform="android"] #main > .tab .card,
+    html[data-mlv-platform="android"] #main > .tab .v194-stack,
+    html[data-mlv-platform="android"] #main > .tab .section-title{
+      box-sizing:border-box!important;min-width:0!important;max-width:100%!important
+    }
+    html[data-mlv-platform="android"] #main > .tab .section-title{
+      display:flex!important;align-items:flex-start!important;
+      justify-content:space-between!important;flex-wrap:wrap!important;gap:10px!important
+    }
+    html[data-mlv-platform="android"] #main > .tab .section-title > div{
+      min-width:0!important;flex:1 1 180px!important
+    }
+    html[data-mlv-platform="android"] #main > .tab .section-title h2{
+      font-size:clamp(20px,5vw,26px)!important;line-height:1.2!important;
+      overflow-wrap:anywhere!important;margin:0!important
+    }
+    html[data-mlv-platform="android"] #main > .tab .section-title p,
+    html[data-mlv-platform="android"] #main > .tab .card p{
+      max-width:100%!important;overflow-wrap:anywhere!important
+    }
+    html[data-mlv-platform="android"] #main > .tab .section-title button,
+    html[data-mlv-platform="android"] #main > .tab button,
+    html[data-mlv-platform="android"] #main > .tab select,
+    html[data-mlv-platform="android"] #main > .tab summary,
+    html[data-mlv-platform="android"] #main > .tab [role="button"]{
+      touch-action:manipulation;box-sizing:border-box
+    }
+    html[data-mlv-platform="android"] #main > .tab input:not([type="checkbox"]):not([type="radio"]),
+    html[data-mlv-platform="android"] #main > .tab textarea,
+    html[data-mlv-platform="android"] #main > .tab select{
+      box-sizing:border-box!important;max-width:100%!important;min-width:0!important;
+      font-size:16px!important
+    }
+    html[data-mlv-platform="android"] #main > .tab textarea{
+      touch-action:pan-y;resize:vertical
+    }
+    /* Premium Contracts retains the canonical search/filter/progress engine. */
+    html[data-mlv-platform="android"] #tab-contracts .v194-stack,
+    html[data-mlv-platform="android"] #tab-contracts .v216-search-panel,
+    html[data-mlv-platform="android"] #tab-contracts .v216-contract-card{
+      min-width:0!important;max-width:100%!important;box-sizing:border-box!important
+    }
+    html[data-mlv-platform="android"] #tab-contracts .v216-contract-card{
+      border-radius:19px!important;padding:14px!important;gap:11px!important;
+      overflow-wrap:anywhere!important
+    }
+    html[data-mlv-platform="android"] #tab-contracts .v216-contract-card h3{
+      font-size:17px!important;line-height:1.3!important;overflow-wrap:anywhere!important
+    }
+    html[data-mlv-platform="android"] #tab-contracts .v216-search-panel input,
+    html[data-mlv-platform="android"] #tab-contracts .v216-top-actions button,
+    html[data-mlv-platform="android"] #tab-contracts .v216-filter-chip{
+      min-height:44px!important
+    }
+    html[data-mlv-platform="android"] #tab-contracts .v216-top-actions{
+      align-items:stretch!important;gap:8px!important
+    }
+    html[data-mlv-platform="android"] #tab-contracts .v216-top-actions .btn{
+      min-width:0!important;white-space:normal!important
+    }
+    /* Projects/Planning and Goals — original data, phone-native stacked cards. */
+    html[data-mlv-platform="android"] #main .goal-card,
+    html[data-mlv-platform="android"] #main .v169-weekly-template,
+    html[data-mlv-platform="android"] #main .v131-mission,
+    html[data-mlv-platform="android"] #main .v132-contract,
+    html[data-mlv-platform="android"] #main .v194-contract-card,
+    html[data-mlv-platform="android"] #main .v211-contract-card{
+      box-sizing:border-box!important;max-width:100%!important;min-width:0!important;
+      overflow-wrap:anywhere!important
+    }
+    html[data-mlv-platform="android"] #tab-goals .goal-control-bar,
+    html[data-mlv-platform="android"] #tab-goals .v133-goal-shortcuts{
+      display:flex!important;align-items:stretch!important;gap:8px!important;flex-wrap:wrap!important
+    }
+    html[data-mlv-platform="android"] #tab-goals .v133-goal-shortcut,
+    html[data-mlv-platform="android"] #tab-goals .goal-control-bar button{
+      min-height:44px!important
+    }
+    /* Statistics, Compare, Reviews: charts can shrink; no wide desktop columns. */
+    html[data-mlv-platform="android"] #tab-stats .chart-card,
+    html[data-mlv-platform="android"] #tab-stats .stat-hero,
+    html[data-mlv-platform="android"] #tab-compare .card,
+    html[data-mlv-platform="android"] #tab-weekly-review .card{
+      max-width:100%!important;min-width:0!important;box-sizing:border-box!important
+    }
+    html[data-mlv-platform="android"] #main .chart-card svg,
+    html[data-mlv-platform="android"] #main .chart-card canvas{
+      max-width:100%!important;display:block
+    }
+    html[data-mlv-platform="android"] #main .v132-stat,
+    html[data-mlv-platform="android"] #main .v131-kpi{
+      min-width:0!important;overflow-wrap:anywhere!important;box-sizing:border-box!important
+    }
+    /* Achievements and affirmations: preserve badges, glow, favoriting. */
+    html[data-mlv-platform="android"] #tab-achievements .v156-ach-card,
+    html[data-mlv-platform="android"] #tab-achievements .v133-ach,
+    html[data-mlv-platform="android"] #tab-achievements .achievement-card{
+      min-width:0!important;max-width:100%!important;box-sizing:border-box!important;
+      overflow-wrap:anywhere!important
+    }
+    html[data-mlv-platform="android"] #tab-achievements .v156-ach-card{
+      min-height:0!important;padding:14px!important;border-radius:20px!important
+    }
+    html[data-mlv-platform="android"] #tab-achievements h3{
+      line-height:1.3!important;overflow-wrap:anywhere!important
+    }
+    html[data-mlv-platform="android"] #tab-affirmations .affirmation{
+      max-width:100%!important;box-sizing:border-box!important;
+      font-size:clamp(22px,6vw,32px)!important;line-height:1.32!important;
+      overflow-wrap:anywhere!important;padding:20px 15px!important
+    }
+    html[data-mlv-platform="android"] #tab-affirmations .table-wrap{
+      max-width:100%!important;overflow-x:auto!important;overflow-y:visible!important;
+      overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;
+      touch-action:pan-x pan-y
+    }
+    html[data-mlv-platform="android"] #tab-affirmations .table td{
+      white-space:normal!important;vertical-align:top!important
+    }
+    /* Story/Chapters scenes keep original assets and scene transforms. */
+    html[data-mlv-platform="android"] #tab-story{
+      min-width:0!important;max-width:100%!important;overflow-x:clip!important
+    }
+    html[data-mlv-platform="android"] #tab-story img{
+      max-width:100%!important;height:auto
+    }
+    html[data-mlv-platform="android"] #tab-story .card,
+    html[data-mlv-platform="android"] #tab-story .section-title{
+      min-width:0!important;max-width:100%!important;box-sizing:border-box!important
+    }
+    /* Settings remains the original canonical pane system, not a second UI. */
+    html[data-mlv-platform="android"] #tab-settings .v30171-settings-shell,
+    html[data-mlv-platform="android"] #tab-settings .v30171-settings-content{
+      min-width:0!important;max-width:100%!important;width:100%!important;
+      box-sizing:border-box!important
+    }
+    html[data-mlv-platform="android"] #tab-settings .v30171-settings-nav{
+      box-sizing:border-box!important;max-width:100%!important;
+      -webkit-overflow-scrolling:touch;overscroll-behavior-x:contain
+    }
+    html[data-mlv-platform="android"] #tab-settings .v30171-settings-nav [data-v30171-setting]{
+      min-height:44px!important;border-radius:12px!important
+    }
+    html[data-mlv-platform="android"] #tab-settings [data-v30171-pane]{
+      max-width:100%!important;min-width:0!important;
+      overflow-wrap:anywhere!important;box-sizing:border-box!important
+    }
+    html[data-mlv-platform="android"] #tab-settings [data-v30171-pane] input,
+    html[data-mlv-platform="android"] #tab-settings [data-v30171-pane] select{
+      min-height:44px!important
+    }
+    @media(max-width:720px){
+      html[data-mlv-platform="android"] #main > .tab .card{
+        border-radius:19px!important;padding:14px!important
+      }
+      html[data-mlv-platform="android"] #main > .tab .grid,
+      html[data-mlv-platform="android"] #main > .tab .grid.cols-2,
+      html[data-mlv-platform="android"] #main > .tab .grid.cols-3,
+      html[data-mlv-platform="android"] #main > .tab .compare-grid,
+      html[data-mlv-platform="android"] #main > .tab .v132-stats-grid,
+      html[data-mlv-platform="android"] #main > .tab .chart-grid{
+        grid-template-columns:minmax(0,1fr)!important;gap:11px!important
+      }
+      html[data-mlv-platform="android"] #tab-contracts .v216-contract-grid{
+        grid-template-columns:minmax(0,1fr)!important;gap:11px!important
+      }
+      html[data-mlv-platform="android"] #tab-contracts .v216-top-actions{
+        grid-template-columns:repeat(2,minmax(0,1fr))!important
+      }
+      html[data-mlv-platform="android"] #tab-achievements .v156-ach-grid,
+      html[data-mlv-platform="android"] #tab-achievements .v133-ach-grid{
+        grid-template-columns:minmax(0,1fr)!important;gap:12px!important
+      }
+      html[data-mlv-platform="android"] #tab-goals .goal-card,
+      html[data-mlv-platform="android"] #tab-goals .v169-weekly-template{
+        grid-template-columns:minmax(0,1fr)!important;gap:10px!important
+      }
+      html[data-mlv-platform="android"] #tab-goals .v169-weekly-form,
+      html[data-mlv-platform="android"] #tab-goals .form-grid,
+      html[data-mlv-platform="android"] #tab-settings .form-grid{
+        grid-template-columns:minmax(0,1fr)!important;gap:10px!important
+      }
+      html[data-mlv-platform="android"] #main > .tab button,
+      html[data-mlv-platform="android"] #main > .tab select,
+      html[data-mlv-platform="android"] #main > .tab summary,
+      html[data-mlv-platform="android"] #main > .tab [role="button"]{
+        min-height:44px
+      }
+    }
+    /* A measured, nonblocking entrance for sections, never Chapter art. */
+    @keyframes mlvAndroidSectionEnter{
+      from{opacity:.88;translate:0 7px}
+      to{opacity:1;translate:0 0}
+    }
+    html[data-mlv-platform="android"] #main > .tab.active > .card{
+      animation:mlvAndroidSectionEnter .22s cubic-bezier(.2,.7,.2,1) both
+    }
+    @media(prefers-reduced-motion:reduce){
+      html[data-mlv-platform="android"] #main > .tab.active > .card{
+        animation:none!important;translate:none!important
+      }
+    }
   `;
   function ensure(){
     if(!owned()||!document.head)return;
