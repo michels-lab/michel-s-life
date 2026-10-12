@@ -645,6 +645,52 @@
       }
     }
 
+    /* Goals has a canonical multi-field desktop editor. On phones keep the
+       same form and save handler but present one scrollable, keyboard-safe
+       sheet with touch-sized controls. Desktop remains untouched. */
+    @media(max-width:720px){
+      html[data-mlv-platform="android"] #modalRoot:has(#goalEditForm) .modal-backdrop{
+        box-sizing:border-box!important;align-items:end!important;
+        padding:calc(8px + env(safe-area-inset-top,0px)) 0 0!important;
+        overflow:hidden!important
+      }
+      html[data-mlv-platform="android"] #modalRoot:has(#goalEditForm) .modal.wide{
+        box-sizing:border-box!important;width:100%!important;
+        max-width:100%!important;max-height:calc(100dvh - 8px - env(safe-area-inset-top,0px))!important;
+        margin:0!important;border-radius:22px 22px 0 0!important;
+        padding:16px 14px calc(16px + env(safe-area-inset-bottom,0px))!important;
+        overflow-x:hidden!important;overflow-y:auto!important;
+        overscroll-behavior:contain;-webkit-overflow-scrolling:touch
+      }
+      html[data-mlv-platform="android"] #goalEditForm .goal-edit-grid{
+        display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+        gap:10px!important
+      }
+      html[data-mlv-platform="android"] #goalEditForm :is(input:not([type="checkbox"]),select,textarea){
+        box-sizing:border-box!important;width:100%!important;min-width:0!important;
+        min-height:48px!important;font-size:16px!important
+      }
+      html[data-mlv-platform="android"] #goalEditForm .days{
+        display:flex!important;flex-wrap:wrap!important;gap:8px!important
+      }
+      html[data-mlv-platform="android"] #goalEditForm .day-chip{
+        box-sizing:border-box!important;min-width:44px!important;min-height:44px!important;
+        display:inline-flex!important;align-items:center!important
+      }
+      html[data-mlv-platform="android"] #modalRoot:has(#goalEditForm) .modal-head .icon-btn{
+        min-width:44px!important;min-height:44px!important
+      }
+      html[data-mlv-platform="android"] #goalEditForm > .actions{
+        position:sticky!important;bottom:0!important;z-index:2!important;
+        display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+        gap:8px!important;padding:10px 0 0!important;
+        background:var(--ui-panel,rgba(9,13,25,.98))!important
+      }
+      html[data-mlv-platform="android"] #goalEditForm > .actions button{
+        min-height:48px!important;min-width:0!important
+      }
+    }
+
     /* The existing Projects/Decision-Log editor uses a desktop modal.
        Android owns only modal geometry and tap priority. Saving/mission links
        still go through the canonical v30106ProjectForm submit handler. */
