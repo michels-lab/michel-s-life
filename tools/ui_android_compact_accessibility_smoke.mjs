@@ -79,6 +79,35 @@ try{
     await route('missions',width);
     await route('story',width);
   }
+  // At small phone widths, real Settings category taps must select the
+  // canonical pane and bring its content into view, not just show a strip.
+  for(const width of [360,320]){
+    await route('settings',width);
+    for(const key of ['sync','google','about']){
+      const button=page.locator('#tab-settings .v30171-settings-nav [data-v30171-setting="'+key+'"]');
+      requireOk(await button.count()===1,'Missing Settings category '+key+' at '+width);
+      await button.click();
+      await page.waitForFunction(key=>{
+        const pane=document.querySelector('#tab-settings [data-v30171-pane="'+key+'"]');
+        return pane?.classList.contains('active')&&pane.getBoundingClientRect().height>20;
+      },key,{timeout:10000});
+      const probe=await page.evaluate(key=>{
+        const button=document.querySelector('#tab-settings [data-v30171-setting="'+key+'"]');
+        const pane=document.querySelector('#tab-settings [data-v30171-pane="'+key+'"]');
+        const rect=el=>{const r=el.getBoundingClientRect();return {
+          left:r.left,right:r.right,top:r.top,width:r.width,height:r.height};};
+        return {button:rect(button),pane:rect(pane),documentWidth:document.documentElement.scrollWidth,
+          viewport:innerWidth,activePane:pane.classList.contains('active'),
+          navScroll:document.querySelector('#tab-settings .v30171-settings-nav')?.scrollLeft};
+      },key);
+      requireOk(probe.activePane && probe.button.height>=43.5 &&
+        probe.button.width>=43.5 && probe.button.left>=-3 &&
+        probe.button.right<=width+3 && probe.pane.left>=-3 &&
+        probe.pane.right<=width+3 && probe.documentWidth<=width+3,
+        'Settings category tap/width fails at '+width+'/'+key+': '+JSON.stringify(probe));
+      await page.screenshot({path:output+'/settings-'+key+'-'+width+'-tapped.png'});
+    }
+  }
   await route('settings',360);
   await page.locator('#tab-settings .v30171-settings-nav [data-v30171-setting="about"]').click();
   await page.waitForFunction(()=>document.querySelector(
