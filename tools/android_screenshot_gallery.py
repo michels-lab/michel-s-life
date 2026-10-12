@@ -49,7 +49,7 @@ def gallery_html(files: list[Path]) -> str:
 
     body: list[str] = []
     for category, screenshots in sorted(groups.items(), key=lambda p: p[0].lower()):
-        body.append(f"<section><h2>{escape(category.replace('-', ' ').replace('_', ' '))} "
+        body.append(f"<section><h2>{escape(category.replace('-', ' ').replace('_', ' ').title())} "
                     f"<small>({len(screenshots)})</small></h2><div class='gallery'>")
         for path in screenshots:
             encoded = "/".join(quote(part, safe="") for part in path.parts)
