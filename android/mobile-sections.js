@@ -303,7 +303,7 @@
       }
       html[data-mlv-platform="android"] #tab-stats .stat-hero{
         box-sizing:border-box!important;min-width:0!important;
-        width:auto!important;min-height:92px!important;
+        width:auto!important;min-height:82px!important;
         padding:12px!important;border-radius:16px!important;
         overflow:hidden!important
       }
