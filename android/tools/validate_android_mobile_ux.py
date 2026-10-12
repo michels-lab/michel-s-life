@@ -85,6 +85,24 @@ if "mobile-sections.js" not in bundler or "MOBILE_SECTIONS" not in bundler:
 if not all(term in mobile_sections for term in ("v132-mission", "v30135-grid", "mlv184-journal-layout", "mlv184JournalBody", "MichelsLifeAndroidSections")):
     raise SystemExit("Android mission, calendar or journal mobile layout contract missing")
 
+# Android polish must be an Android-scoped layout owner, not changes to the
+# user-approved desktop Themes/Chapters. Real viewport probes run separately.
+for section_id in ("tab-contracts", "tab-stats", "tab-achievements", "tab-affirmations", "tab-settings", "tab-story"):
+    if section_id not in mobile_sections:
+        raise SystemExit("Android section visual owner missing: " + section_id)
+for contract in (
+    "v216-contract-grid", "v156-ach-grid", "v133-ach-grid",
+    "v30171-settings-nav", "mlvAndroidSectionEnter",
+    "prefers-reduced-motion:reduce", "max-width:720px",
+):
+    if contract not in mobile_sections:
+        raise SystemExit("Android section design contract missing: " + contract)
+if 'html[data-mlv-platform="android"]' not in mobile_sections:
+    raise SystemExit("Android visual layout changes must be platform isolated")
+if not (ROOT.parent / "tools/ui_android_section_design_smoke.mjs").exists():
+    raise SystemExit("Android rendered mobile section design test is missing")
+
+
 native_required = [
     "setLayerType(View.LAYER_TYPE_HARDWARE",
     "setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_BOUND",
