@@ -85,6 +85,20 @@ if "mobile-sections.js" not in bundler or "MOBILE_SECTIONS" not in bundler:
 if not all(term in mobile_sections for term in ("v132-mission", "v30135-grid", "mlv184-journal-layout", "mlv184JournalBody", "MichelsLifeAndroidSections")):
     raise SystemExit("Android mission, calendar or journal mobile layout contract missing")
 
+# Android visual parity is a platform-only layer; it must not modify the
+# approved desktop frontend or create independent mission/Journal state.
+design_required = (
+    '#tab-contracts', '#tab-goals', '#tab-projects', '#tab-stats',
+    '#tab-achievements', '#tab-story', '.v30135-toolbar',
+    '.mlv184-journal-sheet', '#mlv184JournalBody',
+    '#mlv-android-capture-button', '#mlv-android-menu-button',
+    '#mlv-android-bottom-nav', 'min-height:46px!important',
+    'min-height:48px!important', ':focus-visible'
+)
+missing_design = [term for term in design_required if term not in mobile_sections]
+if missing_design:
+    raise SystemExit('Android mobile design contract missing: ' + ', '.join(missing_design))
+
 native_required = [
     "setLayerType(View.LAYER_TYPE_HARDWARE",
     "setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_BOUND",
