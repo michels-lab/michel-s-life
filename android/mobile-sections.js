@@ -334,6 +334,13 @@
     html[data-mlv-platform="android"] #tab-affirmations .table td{
       white-space:normal!important;vertical-align:top!important
     }
+    html[data-mlv-platform="android"] #tab-affirmations .mlv-android-affirmations-empty{
+      display:block!important;padding:19px 15px!important;margin:10px 0 0!important;
+      border-radius:15px!important;line-height:1.45!important;
+      border:1px dashed rgba(var(--ui-accent-rgb,117,228,255),.25)!important;
+      background:rgba(var(--ui-card-rgb,10,19,32),.38)!important;
+      color:var(--muted,#c2d0df)!important;font-size:14px!important
+    }
     /* Real mobile Affirmations: a readable list, not four cramped table
        columns. The original table remains semantic and keyboard-accessible;
        JS labels each cell from its actual localized <th> text. */
@@ -554,16 +561,45 @@
           el.style.setProperty(key,value,'important');
       }
     });
-    // Reuse each existing table header as the mobile field label, preserving
-    // translations and actions without rewriting user affirmation records.
+    // Existing semantic table headers become the visible phone card labels.
+    // Blank databases should show a meaningful empty state, not a cropped
+    // strip of four desktop column headings with no content.
     main.querySelectorAll('#tab-affirmations table.table').forEach(table=>{
       const labels=Array.from(table.querySelectorAll('thead th')).map(th=>(th.textContent||'').trim());
-      table.querySelectorAll('tbody tr').forEach(tr=>{
+      const rows=Array.from(table.querySelectorAll('tbody tr'));
+      const isNarrow=window.innerWidth<=720;
+      const wrapper=table.closest('.table-wrap')||table.parentElement;
+      const existing=wrapper?.querySelector('.mlv-android-affirmations-empty');
+      if(!rows.length && isNarrow){
+        force(table,'display','none');
+        if(!existing&&wrapper){
+          const empty=document.createElement('p');
+          empty.className='mlv-android-affirmations-empty';
+          empty.textContent=window.MichelsLifeI18n?.language==='es'?
+            'Tus afirmaciones aparecerán aquí. Crea la primera para comenzar.':
+            'Your affirmations will appear here. Add one to get started.';
+          wrapper.appendChild(empty);
+        }
+      }else{
+        if(table.style.getPropertyValue('display')==='none')table.style.removeProperty('display');
+        existing?.remove();
+      }
+      const head=table.querySelector('thead');
+      if(head&&isNarrow)force(head,'display','none');
+      else if(head&&head.style.getPropertyValue('display')==='none')head.style.removeProperty('display');
+      rows.forEach(tr=>{
         Array.from(tr.cells).forEach((cell,i)=>{
           const label=labels[i]||'';
           if(cell.dataset.mlvAndroidLabel!==label)cell.dataset.mlvAndroidLabel=label;
         });
       });
+    });
+    main.querySelectorAll('#tab-contracts .v194-hero').forEach(hero=>{
+      const p=hero.querySelector('.section-title p');
+      if(p&&p.textContent==='Filter by category. Search now reorders cards without re-rendering each key.')
+        p.textContent='Search, filter and track your weekly commitments.';
+      const hint=hero.querySelector('#v216ContractSearchCount');
+      if(hint?.textContent==='Cards stay rendered')hint.textContent='Matches appear first';
     });
     const body=main.querySelector('#mlv184JournalBody');
     if(body&&body.style.getPropertyValue('font-size')!=='16px')
