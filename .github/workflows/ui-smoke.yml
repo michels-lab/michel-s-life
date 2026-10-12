@@ -37,6 +37,9 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Audit shared backup restore and device isolation
+        run: node tools/test_cloud_restore_storage.mjs
+
       - name: Build browser-test bundle from canonical frontend
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
