@@ -61,6 +61,36 @@
       outline-offset:2px!important
     }
 
+    /* Header and navigation controls remain thumb-sized on 320–412px phones.
+       The source bridge still owns routing and selected-state semantics. */
+    html[data-mlv-platform="android"] body #mlv-android-menu-button,
+    html[data-mlv-platform="android"] body #mlv-android-capture-button,
+    html[data-mlv-platform="android"] body #mlv-android-topbar .mlv-android-section-controls button{
+      box-sizing:border-box!important;flex-shrink:0!important;
+      width:44px!important;height:44px!important;
+      min-width:44px!important;min-height:44px!important
+    }
+    html[data-mlv-platform="android"] body #v30171PrimaryNav .v30171-nav-btn{
+      min-height:48px!important
+    }
+    html[data-mlv-platform="android"] body #tab-settings .v30171-settings-nav button{
+      min-height:46px!important
+    }
+    html[data-mlv-platform="android"] body #tab-dashboard .v30176-panel-toggle{
+      min-height:44px!important
+    }
+    html[data-mlv-platform="android"] body #mlv-android-bottom-nav button{
+      font-size:11px!important
+    }
+    @media(max-width:360px){
+      html[data-mlv-platform="android"] body #mlv-android-topbar{
+        gap:6px!important;padding-inline:8px!important
+      }
+      html[data-mlv-platform="android"] body #mlv-android-topbar .mlv-android-topbar-copy{
+        min-width:0!important;overflow:hidden!important
+      }
+    }
+
     /* Daily mission list: accessible one-tap completion, readable text,
        secondary actions under content. No hover-only interaction. */
     html[data-mlv-platform="android"] #main .v132-all-list{
