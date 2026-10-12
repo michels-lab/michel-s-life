@@ -455,6 +455,15 @@
       ])if(el.style.getPropertyValue(key)!==val)
         el.style.setProperty(key,val,'important');
     });
+    // Canonical renderers still inline desktop-size 32px/36px buttons.
+    // Explicitly own touch dimensions for these real Android actions rather
+    // than re-rendering or cloning any of the underlying domain controls.
+    main.querySelectorAll('#tab-contracts .v216-filter-chip, #tab-projects .v30106-project-actions button, #tab-projects .v30106-row-actions button, #tab-settings .v30171-settings-nav [data-v30171-setting]').forEach(el=>{
+      for(const [key,value] of [['min-height','44px'],['height','44px']]){
+        if(el.style.getPropertyValue(key)!==value||el.style.getPropertyPriority(key)!=='important')
+          el.style.setProperty(key,value,'important');
+      }
+    });
     const body=main.querySelector('#mlv184JournalBody');
     if(body&&body.style.getPropertyValue('font-size')!=='16px')
       body.style.setProperty('font-size','16px','important');
