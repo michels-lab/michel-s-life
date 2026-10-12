@@ -192,6 +192,46 @@ try{
     audit.push({id:'contracts-disclosure',width,targets:targets.length,openClose:true});
   }
 
+  // The filter disclosure is meaningful only if a real chip changes the
+  // canonical Premium Contract board and survives a redraw at both widths.
+  for(const width of [412,360]){
+    await route('contracts',width);
+    const details=page.locator('#tab-contracts details.mlv-android-contract-filter-details').first();
+    const summary=details.locator('summary');
+    if(!(await details.evaluate(el=>el.open)))await summary.click();
+    const category=details.locator('[data-v216-contract-cat]:not([data-v216-contract-cat="all"])').first();
+    assert(await category.count()===1,'Premium filter has no populated categories at '+width);
+    const key=await category.getAttribute('data-v216-contract-cat');
+    await category.click();
+    await page.waitForFunction(key=>{
+      const selected=document.querySelector(
+        '#tab-contracts [data-v216-contract-cat="'+key+'"].active');
+      const kpi=document.querySelector('#tab-contracts .v194-kpi:last-child b');
+      return !!selected && !!kpi && kpi.textContent.trim()!=='All';
+    },key,{timeout:10000});
+    const filtered=await page.evaluate(key=>{
+      const cards=[...document.querySelectorAll('#tab-contracts .v216-contract-card')];
+      const chip=document.querySelector('#tab-contracts [data-v216-contract-cat="'+key+'"]');
+      const count=Number(chip?.querySelector('.v216-count-pill')?.textContent.trim());
+      const setting=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')
+        .settings?.v216ContractFilter;
+      return {count,cards:cards.length,setting,selected:!!chip?.classList.contains('active'),
+        overflow:document.documentElement.scrollWidth-innerWidth};
+    },key);
+    assert(filtered.selected&&filtered.setting===key&&
+      filtered.count>0&&filtered.cards===filtered.count&&filtered.overflow<=3,
+      'Premium category changed display but not shared filter state: '+
+      JSON.stringify({width,key,filtered}));
+    await page.screenshot({path:output+'/contracts-category-selected-'+width+'.png'});
+    const resetDetails=page.locator('#tab-contracts details.mlv-android-contract-filter-details').first();
+    if(!(await resetDetails.evaluate(el=>el.open)))await resetDetails.locator('summary').click();
+    await resetDetails.locator('[data-v216-contract-cat="all"]').click();
+    await page.waitForFunction(()=>
+      !!document.querySelector('#tab-contracts [data-v216-contract-cat="all"].active'),
+      null,{timeout:10000});
+    audit.push({id:'contracts-category-selection',width,key,count:filtered.count,persisted:true});
+  }
+
   // The calendar month grid must not be pushed below four stacked desktop
   // summary cards. Measure rendered month metrics on both narrow phone widths.
   for(const width of [412,360]){
