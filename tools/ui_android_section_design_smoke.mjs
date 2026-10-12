@@ -176,9 +176,10 @@ try{
   });
   assert(miniAndToast.mini?.width>=360 && miniAndToast.miniCopyDisplay==='flex',
     'Android mini Focus is cropped or missing: '+JSON.stringify(miniAndToast));
-  assert(miniAndToast.toast?.bottom<=miniAndToast.mini.top+2 &&
-    miniAndToast.mini.bottom<=miniAndToast.nav.top+2,
-    'Android toast/mini Focus obstructs permanent bottom navigation: '+JSON.stringify(miniAndToast));
+  assert(miniAndToast.toast?.bottom<=miniAndToast.mini.top-6 &&
+    miniAndToast.mini.bottom<=miniAndToast.nav.top+2 &&
+    miniAndToast.miniToggle?.height>=43.5,
+    'Android toast/mini Focus obstructs navigation or Pause control is too small: '+JSON.stringify(miniAndToast));
   await page.evaluate(()=>{
     const f=window.FocusStoryV30162?.focusState?.();
     if(f?.status==='running')window.FocusStoryV30162?.toggleFocus?.();
