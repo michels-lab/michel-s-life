@@ -645,6 +645,57 @@
       }
     }
 
+    /* Live Premium Contracts editor (v217), not the superseded Goals tab.
+       One shared contract model; Android owns only the phone presentation. */
+    @media(max-width:720px){
+      html[data-mlv-platform="android"] #modalRoot:has(#v217ContractEditForm) .modal-backdrop{
+        box-sizing:border-box!important;align-items:end!important;
+        padding:calc(8px + env(safe-area-inset-top,0px)) 0 0!important;
+        overflow:hidden!important
+      }
+      html[data-mlv-platform="android"] #modalRoot:has(#v217ContractEditForm) .modal{
+        box-sizing:border-box!important;width:100%!important;max-width:100%!important;
+        max-height:calc(100dvh - 8px - env(safe-area-inset-top,0px))!important;
+        margin:0!important;border-radius:22px 22px 0 0!important;
+        padding:16px 14px calc(16px + env(safe-area-inset-bottom,0px))!important;
+        overflow-x:hidden!important;overflow-y:auto!important;
+        overscroll-behavior:contain;-webkit-overflow-scrolling:touch
+      }
+      html[data-mlv-platform="android"] #v217ContractEditForm .v217-form-grid{
+        display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+        gap:10px!important
+      }
+      html[data-mlv-platform="android"] #v217ContractEditForm .v217-stat-grid{
+        display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+        gap:7px!important
+      }
+      html[data-mlv-platform="android"] #v217ContractEditForm .v217-stat{
+        min-width:0!important;padding:9px 6px!important;overflow-wrap:anywhere!important
+      }
+      html[data-mlv-platform="android"] #v217ContractEditForm :is(input:not([type="checkbox"]),select,textarea){
+        box-sizing:border-box!important;max-width:100%!important;width:100%!important;
+        min-width:0!important;min-height:48px!important;font-size:16px!important
+      }
+      html[data-mlv-platform="android"] #v217ContractEditForm .v217-picker{
+        max-height:min(38dvh,300px)!important;overscroll-behavior:contain!important
+      }
+      html[data-mlv-platform="android"] #v217ContractEditForm .v217-option{
+        min-height:44px!important;box-sizing:border-box!important
+      }
+      html[data-mlv-platform="android"] #modalRoot:has(#v217ContractEditForm) .modal-head .icon-btn{
+        min-width:44px!important;min-height:44px!important
+      }
+      html[data-mlv-platform="android"] #v217ContractEditForm > .actions{
+        position:sticky!important;bottom:0!important;z-index:3!important;
+        display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+        gap:8px!important;padding:10px 0 0!important;
+        background:rgba(var(--ui-panel-rgb,9,13,25),.99)!important
+      }
+      html[data-mlv-platform="android"] #v217ContractEditForm > .actions button{
+        box-sizing:border-box!important;min-height:48px!important;min-width:0!important
+      }
+    }
+
     /* The existing Projects/Decision-Log editor uses a desktop modal.
        Android owns only modal geometry and tap priority. Saving/mission links
        still go through the canonical v30106ProjectForm submit handler. */
@@ -1104,6 +1155,62 @@
     for(const b of actions?.querySelectorAll('button')||[])
       force(b,'min-height','49px');
   }
+  // The shared v217 modal applies desktop inline sizing after creation.
+  // Keep the canonical editor and save engine; Android owns final computed
+  // geometry using the same modal-observer approach as Projects.
+  function enforcePremiumEditor(){
+    if(!owned()||window.innerWidth>720)return;
+    const form=document.getElementById('v217ContractEditForm');
+    if(!form)return;
+    const force=(el,key,value)=>{
+      if(el&&(el.style.getPropertyValue(key)!==value||
+          el.style.getPropertyPriority(key)!=='important'))
+        el.style.setProperty(key,value,'important');
+    };
+    const backdrop=form.closest('.modal-backdrop');
+    const modal=form.closest('.modal');
+    // The native Android bar has a very high z-index. Keep the editing
+    // surface foremost; enforceProjectEditor restores bars on dismissal.
+    for(const el of [
+      document.getElementById('mlv-android-bottom-nav'),
+      document.getElementById('mlv-android-topbar'),
+      document.getElementById('mlv-android-mini-focus')]){
+      force(el,'visibility','hidden');
+      force(el,'pointer-events','none');
+    }
+    force(backdrop,'z-index','2147483200');
+    for(const [key,value] of [
+      ['position','fixed'],['inset','0'],['display','flex'],
+      ['align-items','flex-end'],['justify-content','center'],
+      ['padding','0'],['overflow','hidden']])force(backdrop,key,value);
+    for(const [key,value] of [
+      ['width','100%'],['max-width','100vw'],['min-width','0'],
+      ['max-height','calc(100dvh - 8px)'],['box-sizing','border-box'],
+      ['margin','0'],['transform','none'],['overflow-y','auto'],
+      ['overflow-x','hidden'],['border-radius','22px 22px 0 0']])
+      force(modal,key,value);
+    const details=form.querySelector('.v217-form-grid');
+    force(details,'display','grid');
+    force(details,'grid-template-columns','minmax(0,1fr)');
+    const stats=form.querySelector('.v217-stat-grid');
+    force(stats,'display','grid');
+    force(stats,'grid-template-columns','repeat(3,minmax(0,1fr))');
+    for(const el of form.querySelectorAll('input:not([type="checkbox"]),select,textarea')){
+      for(const [key,value] of [['width','100%'],['min-width','0'],
+        ['min-height','48px'],['font-size','16px']])force(el,key,value);
+    }
+    for(const row of form.querySelectorAll('.v217-option'))
+      force(row,'min-height','44px');
+    const actions=form.querySelector(':scope > .actions');
+    force(actions,'position','sticky');
+    force(actions,'bottom','0');
+    force(actions,'display','grid');
+    force(actions,'grid-template-columns','repeat(2,minmax(0,1fr))');
+    for(const button of actions?.querySelectorAll('button')||[])
+      force(button,'min-height','48px');
+    force(modal?.querySelector('.modal-head .icon-btn'),'min-width','44px');
+    force(modal?.querySelector('.modal-head .icon-btn'),'min-height','44px');
+  }
   function startOwnership(){
     ensure();enforceRendered();
     const main=document.getElementById('main');
@@ -1113,9 +1220,13 @@
     document.addEventListener('click',()=>requestAnimationFrame(enforceRendered),true);
     const modal=document.getElementById('modalRoot');
     if(modal){
-      const modalObserver=new MutationObserver(enforceProjectEditor);
+      const modalObserver=new MutationObserver(()=>{
+        enforceProjectEditor();
+        enforcePremiumEditor();
+      });
       modalObserver.observe(modal,{childList:true,subtree:true});
       enforceProjectEditor();
+      enforcePremiumEditor();
     }
   }
   function audit(){
