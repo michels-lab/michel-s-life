@@ -928,3 +928,7 @@ Public state:
 - Inno Setup welcomes users and displays the complete existing `LICENSE.txt` personal-use license with interactive accept/decline before file installation.
 - Existing optional desktop shortcut retained. Added optional unchecked post-install bilingual user-directed Windows taskbar pinning guide via Notepad; explicitly no forced silent taskbar pin. Installer language selection remains English/Spanish; version, app identity, and Android behavior untouched.
 - Full Windows installer CI and interactive wizard rendered evidence pending; no new app version or release. Standard: `michels-lab/Michel-Software-Standards/standards/WINDOWS_INSTALLER_EXPERIENCE_STANDARD.md`.
+
+## 2026-10-12 — Shared agent contract synchronization
+
+Synchronized only the managed blocks in AGENTS.md and .github/copilot-instructions.md to Michel-Software-Standards child-agent-core 2026-10-12.1. Local product instructions remain byte-for-byte unchanged outside those blocks. Carries current installer EULA/shortcut, standalone HTML (where applicable), and independent work during CI policies; does not modify app code, workflows, versions or releases. Validation: one managed block per target, exact canonical body and preserved local prefix/suffix. Product/runtime acceptance is not inferred from this documentation change.
