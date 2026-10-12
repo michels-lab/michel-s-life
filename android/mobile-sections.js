@@ -401,6 +401,33 @@
         min-height:44px!important;min-width:44px!important;
         touch-action:manipulation!important
       }
+      /* Individual review rows still used desktop-sized text/buttons.
+         Keep each contract/health row fully readable and tappable on phone. */
+      html[data-mlv-platform="android"] #tab-weekly-review .v30105-review-list,
+      html[data-mlv-platform="android"] #tab-weekly-review .v30105-review-grid{
+        min-width:0!important;max-width:100%!important
+      }
+      html[data-mlv-platform="android"] #tab-weekly-review .v30105-review-item{
+        display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+        gap:10px!important;min-width:0!important;max-width:100%!important;
+        box-sizing:border-box!important;overflow-wrap:anywhere!important;
+        align-items:stretch!important;padding:12px!important
+      }
+      html[data-mlv-platform="android"] #tab-weekly-review .v30105-review-item h4{
+        font-size:14px!important;line-height:1.35!important;
+        overflow-wrap:anywhere!important
+      }
+      html[data-mlv-platform="android"] #tab-weekly-review .v30105-review-item p{
+        font-size:12px!important;line-height:1.5!important
+      }
+      html[data-mlv-platform="android"] #tab-weekly-review .v30105-review-actions{
+        display:flex!important;justify-content:flex-start!important;
+        flex-wrap:wrap!important;gap:8px!important;width:100%!important
+      }
+      html[data-mlv-platform="android"] #tab-weekly-review .v30105-review-actions button{
+        box-sizing:border-box!important;min-height:44px!important;
+        padding:9px 12px!important;font-size:12px!important
+      }
       html[data-mlv-platform="android"] #tab-weekly-review .v30105-outlook-grid{
         display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
         gap:8px!important
@@ -1091,6 +1118,31 @@
       const hint=hero.querySelector('#v216ContractSearchCount');
       if(hint?.textContent==='Cards stay rendered')hint.textContent='Matches appear first';
     });
+    // Enforce true phone typography/touch after shared Weekly Review redraws.
+    // This remains view-only: the canonical review engine owns the data.
+    if(window.innerWidth<=720){
+      main.querySelectorAll('#tab-weekly-review .v30105-review-item').forEach(row=>{
+        force(row,'display','grid');
+        force(row,'grid-template-columns','minmax(0,1fr)');
+        force(row,'min-width','0');
+        force(row,'max-width','100%');
+        force(row,'box-sizing','border-box');
+        for(const el of row.querySelectorAll('h4')){
+          force(el,'font-size','14px');
+          force(el,'line-height','1.35');
+        }
+        for(const el of row.querySelectorAll('p')){
+          force(el,'font-size','12px');
+          force(el,'line-height','1.5');
+        }
+        for(const button of row.querySelectorAll('.v30105-review-actions button')){
+          force(button,'min-width','44px');
+          force(button,'min-height','44px');
+          force(button,'font-size','12px');
+          force(button,'padding','9px 12px');
+        }
+      });
+    }
     const body=main.querySelector('#mlv184JournalBody');
     if(body&&body.style.getPropertyValue('font-size')!=='16px')
       body.style.setProperty('font-size','16px','important');
