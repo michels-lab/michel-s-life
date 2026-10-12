@@ -40,9 +40,15 @@ try{
       null,{timeout:60000});
     ok(await page.evaluate(()=>window.__mlvAndroidFastRoute('contracts'))!==false,
       'Cannot open active Premium Contracts');
-    const edit=page.locator(
-      '#tab-contracts .v216-contract-card[data-contract-key="mission:android-premium-weekly"] [data-action="v217-edit-contract"]');
-    await edit.waitFor({state:'visible',timeout:12000});
+    // Use the actual card rendered by the current frontend, not a presumed
+    // migration ID or an async-normalized button action from a legacy version.
+    const card=page.locator('#tab-contracts .v216-contract-card').first();
+    await card.waitFor({state:'visible',timeout:12000});
+    const key=await card.getAttribute('data-contract-key');
+    const edit=card.locator('button').filter({hasText:/^Edit$/i}).first();
+    ok(!!key&&await edit.count()===1,
+      'Live Premium card has no editable canonical contract: '+JSON.stringify({
+        key,markup:(await card.innerHTML()).slice(0,800)}));
     await edit.click();
     const form=page.locator('#modalRoot #v217ContractEditForm');
     await form.waitFor({state:'visible',timeout:12000});
@@ -72,15 +78,16 @@ try{
       'Live Premium editor is clipped or traps form at '+width+': '+JSON.stringify(geo));
     await page.screenshot({path:output+'/premium-editor-'+width+'-focused.png'});
     await form.locator('button[type="submit"]').click();
-    await page.waitForFunction(label=>{
+    await page.waitForFunction(({label,key})=>{
       const s=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}');
-      const m=s.missions?.find(x=>x.id==='android-premium-weekly');
-      return m?.name===label&&m?.weeklyTarget===4&&
-        m?.description==='Android shared Premium save smoke';
-    },label,{timeout:8000});
+      const isGoal=key.startsWith('goal:');
+      const item=(isGoal?s.goals:s.missions)?.find(x=>String(x.id)===key.split(':').slice(1).join(':'));
+      return item?.name===label &&
+        (isGoal?item.target:item.weeklyTarget)===4 &&
+        (item.description||item.desc)==='Android shared Premium save smoke';
+    },{label,key},{timeout:8000});
     ok(await form.count()===0,'Premium editor still open after Save at '+width);
-    const updated=page.locator(
-      '#tab-contracts .v216-contract-card[data-contract-key="mission:android-premium-weekly"]');
+    const updated=page.locator('#tab-contracts .v216-contract-card[data-contract-key="'+key+'"]');
     ok((await updated.textContent()||'').includes(label),
       'Updated contract not rendered after canonical save at '+width);
     await page.screenshot({path:output+'/premium-editor-'+width+'-saved.png'});
