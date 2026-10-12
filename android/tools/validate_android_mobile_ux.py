@@ -106,12 +106,11 @@ if 'android:windowSoftInputMode="adjustResize"' not in manifest:
 # canonical deadline is re-armed without fabricating a new Focus session.
 if 'android.permission.RECEIVE_BOOT_COMPLETED' not in manifest:
     raise SystemExit("Focus alarm recovery needs RECEIVE_BOOT_COMPLETED permission")
-if not re.search(r'<receiver\\s+android:name="\\.FocusAlarmBootReceiver"\\s+android:exported="false"', manifest):
-        'android.intent.action.BOOT_COMPLETED' not in manifest or \
-        'android.intent.action.MY_PACKAGE_REPLACED' not in manifest:
-    raise SystemExit("Native Focus recovery receiver/broadcasts are not registered")
-if 'android:name=".FocusAlarmBootReceiver"\\n            android:exported="false"' not in manifest:
-    raise SystemExit("Focus recovery receiver must not be exported to other apps")
+if 'android.intent.action.BOOT_COMPLETED' not in manifest or 'android.intent.action.MY_PACKAGE_REPLACED' not in manifest:
+    raise SystemExit("Native Focus recovery boot/upgrade broadcasts are not registered")
+if not re.search(r'<receiver\s+android:name="\.FocusAlarmBootReceiver"\s+android:exported="false"', manifest):
+    raise SystemExit("Focus recovery receiver must be registered and non-exported")
+
 for token in (
         "fun recoverAfterBoot(context: Context)",
         "token != \"$mode:$deadline\"",
