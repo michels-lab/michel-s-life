@@ -724,6 +724,51 @@
     `;
     document.head.appendChild(style);
   }
+  // Canonical shared renderers can reinsert late !important desktop geometry.
+  // Apply mobile presentation to the rendered Weekly Planner only when it
+  // appears, without copying or mutating its templates or scheduling state.
+  function adaptWeeklyPlanner(){
+    if(document.documentElement.dataset.mlvPlatform!=='android'||innerWidth>720)return;
+    const root=q('#tab-missions .v169-weekly-planner');
+    if(!root)return;
+    const force=(el,prop,value)=>{
+      if(el&&(el.style.getPropertyValue(prop)!==value||
+          el.style.getPropertyPriority(prop)!=='important'))
+        el.style.setProperty(prop,value,'important');
+    };
+    const form=q('#v169WeeklyForm',root);
+    force(form,'display','grid');
+    force(form,'grid-template-columns','minmax(0,1fr)');
+    for(const el of form?.querySelectorAll('input,select,button')||[]){
+      force(el,'min-width','0');
+      force(el,'width','100%');
+      force(el,'min-height','48px');
+      if(el.matches('input,select'))force(el,'font-size','16px');
+    }
+    for(const card of root.querySelectorAll('.v169-weekly-template')){
+      force(card,'display','grid');
+      force(card,'grid-template-columns','minmax(0,1fr)');
+      const days=q('.v169-day-row',card);
+      force(days,'display','grid');
+      force(days,'grid-template-columns','repeat(4,minmax(0,1fr))');
+      force(days,'gap','8px');
+      force(days,'width','100%');
+      for(const button of card.querySelectorAll('.v169-day-btn')){
+        force(button,'width','100%');
+        force(button,'min-width','0');
+        force(button,'height','48px');
+        force(button,'min-height','48px');
+      }
+      const actions=q('.v169-template-actions',card);
+      force(actions,'display','grid');
+      force(actions,'grid-template-columns','repeat(2,minmax(0,1fr))');
+      force(actions,'gap','8px');
+      for(const button of card.querySelectorAll('.v169-small-btn')){
+        force(button,'min-height','48px');
+        force(button,'min-width','0');
+      }
+    }
+  }
   // Shared mission editor is recreated by desktop renderers. Android owns
   // its final form geometry after DOM insertion, so desktop !important and
   // late-injected styles cannot re-introduce narrow weekday hit areas.
@@ -1131,6 +1176,15 @@
     };
     const observer=new MutationObserver(updateActive);
     observer.observe(document.body,{attributes:true,attributeFilter:['data-mlv-android-tab']});
+    // The shared Missions subtree is replaced on route/template changes.
+    // Observe insertion only, not style attributes, to avoid reflow loops.
+    const missionRoot=q('#main');
+    if(missionRoot){
+      const weeklyObserver=new MutationObserver(adaptWeeklyPlanner);
+      weeklyObserver.observe(missionRoot,{childList:true,subtree:true});
+      adaptWeeklyPlanner();
+      window.addEventListener('resize',adaptWeeklyPlanner,{passive:true});
+    }
     const modalHost=q('#modalRoot');
     if(modalHost){
       const missionObserver=new MutationObserver(adaptMissionEditor);
