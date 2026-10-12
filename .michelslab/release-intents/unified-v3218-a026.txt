@@ -1,0 +1,9 @@
+Michel's Life owner-authorized FIRST PUBLIC release — 2026-10-12.
+Windows Desktop v3.0.218; Android Direct v0.2.6 (versionCode 8).
+No external users currently depend on the app. Launch this first public build now.
+Source release gate PR #105 merged into main as e5390dbc2d6aecc7bf6ad3dc10b8b316d83d3c04; releases use this explicit isolated commit.
+Build same-run Windows Setup + Portable and permanently signed Android Direct APK with the established pinned certificate.
+Require Source validation, Android UI smoke, UI smoke at this exact release-intent commit, Windows installation/launch, Android16 candidate installation, Android signing identity/package/version and SHA-256 asset integrity checks.
+Create draft with 13 required assets, validate downloaded setup/APK digests and release provenance, publish the unified v3.0.218 GitHub release in michels-lab/michel-s-life-releases.
+Keep real Galaxy hardware / Windows↔Android provider sync / locked-screen alarms limitations disclosed in release notes; they are follow-up issues, not hidden CI pass claims.
+Never overwrite existing v3.0.217 public assets or swap to debug-signed APK.
