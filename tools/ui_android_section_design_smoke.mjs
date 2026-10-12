@@ -357,6 +357,16 @@ try{
       .filter({hasText:/^All$/});
     assert(await all.count()===1,'Canonical Achievements All control absent at '+width);
     await all.click();
+    const filterDiagnosis=await page.evaluate(()=>({
+      active:document.body.dataset.mlvAndroidTab,
+      globalTab:window.state?.activeTab,
+      filter:window.v134AchFilter,
+      v156:document.querySelectorAll('#tab-achievements .v156-ach-card').length,
+      v133:document.querySelectorAll('#tab-achievements .v133-ach').length,
+      title:document.querySelector('#tab-achievements')?.textContent?.slice(0,200),
+      mainTab:document.querySelector('#main > .tab.active')?.id
+    }));
+    console.log('ACHIEVEMENTS_ALL_FILTER_DIAG '+JSON.stringify({width,...filterDiagnosis}));
     await page.waitForFunction(()=>document.querySelectorAll(
       '#tab-achievements .v156-ach-card').length>=20,null,{timeout:7000});
     const allCount=await page.locator('#tab-achievements .v156-ach-card').count();
