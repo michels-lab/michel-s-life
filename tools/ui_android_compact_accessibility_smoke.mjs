@@ -108,6 +108,42 @@ try{
       await page.screenshot({path:output+'/settings-'+key+'-'+width+'-tapped.png'});
     }
   }
+  // Sweep every CURRENT canonical Settings category, not only Sync/Google/About.
+  // Resolve keys from rendered UI to avoid inventing or silently skipping panes.
+  for(const width of [360,320]){
+    await route('settings',width);
+    const categories=await page.evaluate(()=>[
+      ...document.querySelectorAll('#tab-settings .v30171-settings-nav [data-v30171-setting]')
+    ].map(e=>e.dataset.v30171Setting).filter(Boolean));
+    requireOk(categories.length>=10&&new Set(categories).size===categories.length,
+      'Android Settings lost canonical categories at '+width+': '+JSON.stringify(categories));
+    for(const key of categories){
+      const button=page.locator('#tab-settings .v30171-settings-nav [data-v30171-setting="'+key+'"]');
+      await button.click();
+      await page.waitForFunction(key=>{
+        const pane=document.querySelector('#tab-settings [data-v30171-pane="'+key+'"]');
+        return !!pane?.classList.contains('active') && pane.getBoundingClientRect().height>20;
+      },key,{timeout:9000});
+      const geometry=await page.evaluate(key=>{
+        const pane=document.querySelector('#tab-settings [data-v30171-pane="'+key+'"]');
+        const button=document.querySelector('#tab-settings [data-v30171-setting="'+key+'"]');
+        const rect=e=>{const r=e.getBoundingClientRect();return {
+          left:r.left,right:r.right,width:r.width,height:r.height};};
+        return {pane:rect(pane),button:rect(button),
+          viewport:innerWidth,documentWidth:document.documentElement.scrollWidth,
+          active:pane.classList.contains('active')};
+      },key);
+      requireOk(geometry.active && geometry.pane.left>=-3 &&
+        geometry.pane.right<=width+3 && geometry.button.left>=-3 &&
+        geometry.button.right<=width+3 && geometry.button.height>=43.5 &&
+        geometry.documentWidth<=width+3,
+        'Canonical Settings pane is untappable or clipped at '+width+'/'+key+': '+
+        JSON.stringify(geometry));
+      if(['general','themes','typography','notifications','data','about'].includes(key))
+        await page.screenshot({path:output+'/settings-all-'+key+'-'+width+'.png'});
+    }
+    audit.push({id:'settings-all-panes',viewport:width,categories});
+  }
   await route('settings',360);
   await page.locator('#tab-settings .v30171-settings-nav [data-v30171-setting="about"]').click();
   await page.waitForFunction(()=>document.querySelector(
