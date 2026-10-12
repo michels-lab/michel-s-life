@@ -1169,6 +1169,16 @@
     };
     const backdrop=form.closest('.modal-backdrop');
     const modal=form.closest('.modal');
+    // The native Android bar has a very high z-index. Keep the editing
+    // surface foremost; enforceProjectEditor restores bars on dismissal.
+    for(const el of [
+      document.getElementById('mlv-android-bottom-nav'),
+      document.getElementById('mlv-android-topbar'),
+      document.getElementById('mlv-android-mini-focus')]){
+      force(el,'visibility','hidden');
+      force(el,'pointer-events','none');
+    }
+    force(backdrop,'z-index','2147483200');
     for(const [key,value] of [
       ['position','fixed'],['inset','0'],['display','flex'],
       ['align-items','flex-end'],['justify-content','center'],
