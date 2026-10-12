@@ -192,6 +192,54 @@ try{
     audit.push({id:'contracts-disclosure',width,targets:targets.length,openClose:true});
   }
 
+  // Goals must keep the original create/save engine, not a read-only
+  // gallery of stacked desktop cards or a modal with unreachable Save.
+  for(const width of [412,360]){
+    await route('goals',width);
+    const newGoal=page.locator('#tab-goals [data-action="goal-new"]');
+    assert(await newGoal.count()===1,'Canonical Goals create entry missing at '+width);
+    await newGoal.click();
+    const form=page.locator('#modalRoot #goalEditForm');
+    await form.waitFor({state:'visible',timeout:9000});
+    const name='Android Goals mobile editor QA '+width;
+    await form.locator('input[name="name"]').fill(name);
+    await form.locator('input[name="target"]').fill('3');
+    await form.locator('textarea[name="desc"]').fill('Mobile shared Goals save contract');
+    const shortHeight=width===360?620:915;
+    await page.setViewportSize({width,height:shortHeight});
+    const editor=await page.evaluate(()=>{
+      const form=document.getElementById('goalEditForm');
+      const modal=form.closest('.modal');
+      const bounds=el=>{const r=el.getBoundingClientRect();return {
+        left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};};
+      const grid=form.querySelector('.goal-edit-grid');
+      const name=form.querySelector('input[name="name"]');
+      const submit=form.querySelector('button[type="submit"]');
+      return {modal:bounds(modal),gridColumns:getComputedStyle(grid).gridTemplateColumns,
+        name:bounds(name),font:parseFloat(getComputedStyle(name).fontSize),
+        submit:bounds(submit),overflow:document.documentElement.scrollWidth-innerWidth,
+        modalScrollable:modal.scrollHeight>modal.clientHeight,
+        viewportWidth:innerWidth,viewportHeight:innerHeight};
+    });
+    assert(editor.modal.left>=-3&&editor.modal.right<=width+3&&
+      editor.modal.top>=-3&&editor.modal.bottom<=shortHeight+3&&
+      editor.gridColumns.split(' ').length===1&&
+      editor.font>=16&&editor.name.height>=47.5&&editor.overflow<=3,
+      'Goals editor still has clipped desktop geometry: '+JSON.stringify({width,editor}));
+    await page.screenshot({path:output+'/goals-editor-'+width+'.png'});
+    screenshots.push(output+'/goals-editor-'+width+'.png');
+    await form.locator('button[type="submit"]').click();
+    await page.waitForFunction(value=>
+      JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')
+        .goals?.some(g=>g.name===value&&g.target===3),
+      name,{timeout:8000});
+    assert(await form.count()===0,'Goals editor did not close after real Save at '+width);
+    assert(await page.locator('#tab-goals .goal-card').filter({hasText:name}).count()>0,
+      'Saved Goal did not render its canonical card at '+width);
+    await page.setViewportSize({width,height:915});
+    audit.push({id:'goals-editor-save',width,shortHeight,saved:true});
+  }
+
   // The calendar month grid must not be pushed below four stacked desktop
   // summary cards. Measure rendered month metrics on both narrow phone widths.
   for(const width of [412,360]){
