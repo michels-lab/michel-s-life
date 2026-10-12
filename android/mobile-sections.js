@@ -317,6 +317,31 @@
         font-size:clamp(23px,6vw,29px)!important;line-height:1.12!important
       }
     }
+    /* Month overview is primary content on a phone. Four full-width
+       desktop KPIs previously pushed the actual calendar below the fold. */
+    @media(max-width:720px){
+      html[data-mlv-platform="android"] #tab-calendar
+      :is(.v30134-kpis,.v30135-kpis){
+        display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+        gap:9px!important;min-width:0!important
+      }
+      html[data-mlv-platform="android"] #tab-calendar
+      :is(.v30134-kpi,.v30135-kpi){
+        box-sizing:border-box!important;width:auto!important;min-width:0!important;
+        min-height:86px!important;padding:12px!important;
+        border-radius:15px!important;overflow-wrap:anywhere!important
+      }
+      html[data-mlv-platform="android"] #tab-calendar
+      :is(.v30134-kpi,.v30135-kpi) small{
+        display:block!important;line-height:1.4!important;
+        font-size:11px!important;overflow-wrap:anywhere!important
+      }
+      html[data-mlv-platform="android"] #tab-calendar
+      :is(.v30134-kpi,.v30135-kpi) b{
+        display:block!important;font-size:clamp(20px,5.5vw,27px)!important;
+        margin-top:5px!important;line-height:1.16!important
+      }
+    }
     /* Statistics, Compare, Reviews: charts can shrink; no wide desktop columns. */
     html[data-mlv-platform="android"] #tab-stats .chart-card,
     html[data-mlv-platform="android"] #tab-stats .stat-hero,
@@ -745,6 +770,18 @@
       main.querySelectorAll('#tab-stats .stat-hero').forEach(card=>{
         force(card,'min-height','96px');
         force(card,'min-width','0');
+      });
+    }
+    if(window.innerWidth<=720){
+      // Reassert against late desktop renderer inline !important geometry.
+      main.querySelectorAll('#tab-calendar .v30134-kpis, #tab-calendar .v30135-kpis').forEach(grid=>{
+        force(grid,'display','grid');
+        force(grid,'grid-template-columns','repeat(2,minmax(0,1fr))');
+        force(grid,'gap','9px');
+      });
+      main.querySelectorAll('#tab-calendar .v30134-kpi, #tab-calendar .v30135-kpi').forEach(card=>{
+        force(card,'min-width','0');
+        force(card,'min-height','86px');
       });
     }
     main.querySelectorAll('#tab-contracts .v194-hero').forEach(hero=>{
