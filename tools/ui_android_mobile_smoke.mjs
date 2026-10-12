@@ -848,7 +848,7 @@ try{
       'Calendar phone day is not a usable tap target: '+JSON.stringify({width,date,before}));
     await cell.click();
     const dayProbe=await page.evaluate(date=>({
-      clickedDate:date,selectedSetting:window.state?.settings?.v30135CalendarSelected,
+      clickedDate:date,selectedSetting:JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')?.settings?.v30135CalendarSelected,
       activeTab:window.state?.activeTab,
       bodyTab:document.body.dataset.mlvAndroidTab,
       selectedCells:[...document.querySelectorAll('#tab-calendar .v30135-day.selected')]
@@ -862,13 +862,13 @@ try{
         !!document.querySelector('#tab-calendar .v30135-day.selected[data-date="'+date+'"]');
     },date,{timeout:7000});
     await page.locator('#tab-calendar [data-v30135-cal="view"][data-view="agenda"]').click();
-    await page.waitForFunction(()=>window.state?.settings?.v30135CalendarView==='agenda'&&
+    await page.waitForFunction(()=>JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')?.settings?.v30135CalendarView==='agenda'&&
       !!document.querySelector('#tab-calendar .v30135-agenda'),null,{timeout:7000});
     await page.locator('#tab-calendar [data-v30135-cal="view"][data-view="month"]').click();
-    await page.waitForFunction(()=>window.state?.settings?.v30135CalendarView==='month'&&
+    await page.waitForFunction(()=>JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')?.settings?.v30135CalendarView==='month'&&
       !!document.querySelector('#tab-calendar .v30135-grid'),null,{timeout:7000});
     const selected=await page.evaluate(date=>({
-      expected:date,selected:window.state.settings.v30135CalendarSelected,
+      expected:date,selected:JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}').settings?.v30135CalendarSelected,
       marked:!!document.querySelector('#tab-calendar .v30135-day.selected[data-date="'+date+'"]'),
       documentWidth:document.documentElement.scrollWidth,viewport:innerWidth
     }),date);
