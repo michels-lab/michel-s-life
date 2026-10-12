@@ -220,6 +220,11 @@
     html[data-mlv-platform="android"] #tab-contracts .v216-top-actions .btn{
       min-width:0!important;white-space:normal!important
     }
+    /* Every visible category chip must be a thumb-size target, including
+       when shared Contracts markup injects desktop inline dimensions. */
+    html[data-mlv-platform="android"] #tab-contracts .v216-filter-chip{
+      min-width:44px!important
+    }
     html[data-mlv-platform="android"] #tab-contracts .v194-kpis{
       display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
       gap:9px!important;min-width:0!important;margin-top:10px!important
@@ -267,6 +272,7 @@
       transform:rotate(180deg)
     }
     html[data-mlv-platform="android"] #tab-contracts .mlv-android-contract-filter-details .v216-chip-row{
+      display:flex!important;flex-wrap:wrap!important;gap:8px!important;
       margin-top:9px!important;padding:6px 0 3px!important
     }
     @media(prefers-reduced-motion:reduce){
@@ -987,7 +993,9 @@
     // Explicitly own touch dimensions for these real Android actions rather
     // than re-rendering or cloning any of the underlying domain controls.
     main.querySelectorAll('#tab-contracts .v216-filter-chip, #tab-projects .v30106-project-actions button, #tab-projects .v30106-row-actions button, #tab-settings .v30171-settings-nav [data-v30171-setting]').forEach(el=>{
-      for(const [key,value] of [['min-height','44px'],['height','44px']]){
+      const rules=[['min-height','44px'],['height','44px']];
+      if(el.matches('#tab-contracts .v216-filter-chip'))rules.push(['min-width','44px']);
+      for(const [key,value] of rules){
         if(el.style.getPropertyValue(key)!==value||el.style.getPropertyPriority(key)!=='important')
           el.style.setProperty(key,value,'important');
       }
