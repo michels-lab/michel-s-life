@@ -61,4 +61,4 @@ layout or behavior fails these gates remains open under issue #54.
 5. Real-device Windows↔Galaxy Supabase test for features claiming provider integration. CI mocks must not be relabeled as provider/device verification.
 6. Publish Windows and Android on **one** GitHub release only when explicitly authorized; owner performs visual review after release; documented regressions still require repair.
 
-**Current public baseline:** Windows v3.0.217 + Android Direct v0.2.5. Android code on `main` can be ahead of that release; never infer a v0.2.4 public APK solely from merged source or passing CI.
+**Current public baseline:** Windows v3.0.217 + Android Direct v0.2.5. Android code on `main` can be ahead of that release; never infer a new public APK solely from merged source or passing CI.
