@@ -16,6 +16,51 @@
       box-sizing:border-box!important;overflow-x:clip!important
     }
 
+    /* Secondary screens share a single mobile visual grammar. These rules
+       change presentation only: desktop components and state stay canonical. */
+    html[data-mlv-platform="android"] #main :is(
+      #tab-contracts,#tab-goals,#tab-projects,#tab-planning,
+      #tab-stats,#tab-achievements,#tab-story
+    ){
+      width:100%!important;max-width:100%!important;min-width:0!important;
+      box-sizing:border-box!important;overflow-x:clip!important;
+      padding-inline:2px!important
+    }
+    html[data-mlv-platform="android"] #main :is(
+      #tab-contracts,#tab-goals,#tab-projects,#tab-planning,
+      #tab-stats,#tab-achievements,#tab-story
+    ) :is(.card,.panel,.v132-panel){
+      box-sizing:border-box!important;min-width:0!important;
+      max-width:100%!important;overflow-wrap:anywhere!important;
+      border-radius:17px!important
+    }
+    html[data-mlv-platform="android"] #main :is(
+      #tab-contracts,#tab-goals,#tab-projects,#tab-planning,
+      #tab-stats,#tab-achievements,#tab-story
+    ) :is(.section-title,.card-head,.panel-head){
+      min-width:0!important;flex-wrap:wrap!important;gap:8px!important
+    }
+    html[data-mlv-platform="android"] #main :is(
+      #tab-contracts,#tab-goals,#tab-projects,#tab-planning,
+      #tab-stats,#tab-achievements,#tab-story
+    ) :is(button,[role="button"],summary){
+      min-height:44px!important;touch-action:manipulation!important
+    }
+    html[data-mlv-platform="android"] #main :is(
+      #tab-contracts,#tab-goals,#tab-projects,#tab-planning,
+      #tab-stats,#tab-achievements,#tab-story
+    ) :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea){
+      box-sizing:border-box!important;max-width:100%!important;
+      min-height:44px!important;font-size:16px!important
+    }
+    html[data-mlv-platform="android"] #main :is(
+      #tab-contracts,#tab-goals,#tab-projects,#tab-planning,
+      #tab-stats,#tab-achievements,#tab-story
+    ) :is(button,[role="button"],summary,input,select,textarea):focus-visible{
+      outline:2px solid var(--ui-accent,#75e4ff)!important;
+      outline-offset:2px!important
+    }
+
     /* Daily mission list: accessible one-tap completion, readable text,
        secondary actions under content. No hover-only interaction. */
     html[data-mlv-platform="android"] #main .v132-all-list{
@@ -59,7 +104,10 @@
     }
     html[data-mlv-platform="android"] #main .v30135-toolbar{
       display:flex!important;flex-direction:column!important;
-      align-items:stretch!important;gap:9px!important
+      align-items:stretch!important;gap:9px!important;
+      padding:12px!important;border-radius:18px!important;
+      border:1px solid rgba(var(--ui-accent-rgb,117,228,255),.16)!important;
+      background:linear-gradient(140deg,rgba(var(--ui-panel-rgb,8,16,28),.42),rgba(var(--ui-panel-rgb,8,16,28),.12))!important
     }
     html[data-mlv-platform="android"] #main .v30135-nav,
     html[data-mlv-platform="android"] #main .v30135-view,
@@ -68,7 +116,7 @@
       flex-wrap:wrap!important;gap:5px!important
     }
     html[data-mlv-platform="android"] #main .v30135-toolbar button{
-      min-height:42px!important
+      min-height:46px!important
     }
     html[data-mlv-platform="android"] #main .v30135-grid{
       display:grid!important;
@@ -78,17 +126,17 @@
     }
     html[data-mlv-platform="android"] #main .v30135-weekday{
       min-width:0!important;padding:3px 0!important;
-      font-size:9px!important;letter-spacing:0!important
+      font-size:10px!important;letter-spacing:.01em!important
     }
     html[data-mlv-platform="android"] #main .v30135-day{
       box-sizing:border-box!important;min-width:0!important;
       min-height:62px!important;height:auto!important;
-      padding:6px 2px!important;border-radius:10px!important;
+      padding:6px 2px!important;border-radius:12px!important;
       overflow:hidden!important;touch-action:manipulation!important
     }
     html[data-mlv-platform="android"] #main .v30135-daynum{
-      font-size:12px!important;gap:2px!important;
-      line-height:1.18!important;justify-content:center!important
+      font-size:13px!important;gap:2px!important;
+      line-height:1.2!important;justify-content:center!important
     }
     html[data-mlv-platform="android"] #main .v30135-daymeta,
     html[data-mlv-platform="android"] #main .v30135-dayline{
@@ -108,6 +156,11 @@
       display:flex!important;flex-wrap:wrap!important;width:100%!important;gap:6px!important
     }
     html[data-mlv-platform="android"] #main .v30135-row-actions button{min-height:44px!important}
+    html[data-mlv-platform="android"] #main .v30135-day:focus-visible,
+    html[data-mlv-platform="android"] #main .v30135-toolbar button:focus-visible{
+      outline:2px solid var(--ui-accent,#75e4ff)!important;
+      outline-offset:2px!important
+    }
 
     /* Journal becomes one continuous, keyboard-safe writing screen.
        Existing editor/autosave/entry history remain the exact same DOM
@@ -121,7 +174,12 @@
     html[data-mlv-platform="android"] #main .mlv184-journal-history{
       position:relative!important;top:auto!important;
       min-width:0!important;max-width:100%!important;
-      width:100%!important;box-sizing:border-box!important
+      width:100%!important;box-sizing:border-box!important;
+      border-radius:18px!important
+    }
+    html[data-mlv-platform="android"] #main .mlv184-journal-sheet{
+      padding:clamp(12px,3.5vw,18px)!important;
+      box-shadow:0 12px 32px rgba(0,0,0,.13)!important
     }
     html[data-mlv-platform="android"] #main .mlv184-journal-toolbar{
       display:flex!important;align-items:center!important;
@@ -141,11 +199,19 @@
       display:block!important;min-width:0!important;width:100%!important;
       min-height:36dvh!important;height:auto!important;
       font-size:16px!important;line-height:1.65!important;
-      padding-bottom:20px!important;box-sizing:border-box!important;
+      padding:14px 14px 20px!important;box-sizing:border-box!important;
+      border-radius:15px!important;
       resize:vertical!important;touch-action:pan-y!important
     }
     html[data-mlv-platform="android"] #main .mlv184-journal-status{
       display:flex!important;flex-wrap:wrap!important;gap:5px!important
+    }
+    html[data-mlv-platform="android"] #main :is(#mlv184JournalBody,#mlv184JournalTitle):focus-visible{
+      outline:2px solid var(--ui-accent,#75e4ff)!important;
+      outline-offset:2px!important
+    }
+    html[data-mlv-platform="android"] #main .mlv184-journal-history{
+      overflow-wrap:anywhere!important
     }
   `;
   function ensure(){
