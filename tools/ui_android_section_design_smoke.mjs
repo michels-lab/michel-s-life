@@ -158,6 +158,40 @@ try{
   for(const id of ['contracts','projects','stats','settings']){
     audit.push(await route(id,360));
   }
+  // Statistics and Compare must work on compact 320px displays, not just
+  // the earlier 360/412 snapshots. Measure real chart and comparison cards.
+  for(const width of [320,360]){
+    for(const id of ['stats','compare']){
+      await route(id,width);
+      const visuals=await page.evaluate(id=>{
+        const tab=document.getElementById('tab-'+id);
+        const rect=el=>{const r=el.getBoundingClientRect();return {
+          left:r.left,right:r.right,width:r.width,height:r.height};};
+        const cards=[...tab.querySelectorAll('.chart-card, .compare-grid > .card')]
+          .filter(el=>el.getClientRects().length).map(el=>({
+            card:rect(el),
+            visuals:[...el.querySelectorAll('svg,canvas')]
+              .filter(e=>e.getClientRects().length).map(rect)
+          }));
+        const compare=tab.querySelector('.compare-grid');
+        return {width:innerWidth,documentWidth:document.documentElement.scrollWidth,
+          cards,columns:compare?getComputedStyle(compare).gridTemplateColumns:null};
+      },id);
+      assert(visuals.cards.length>=3 &&
+        visuals.cards.every(x=>x.card.width>120&&x.card.left>=-3&&
+          x.card.right<=width+3&&x.visuals.every(v=>
+            v.width>0&&v.right<=x.card.right+4)) &&
+        visuals.documentWidth<=width+3 &&
+        (id!=='compare'||visuals.columns.split(' ').length===1),
+        'Android compact analytics charts/cards overflow at '+id+'/'+width+': '+
+        JSON.stringify(visuals));
+      const screenshot=output+'/'+id+'-charts-'+width+'.png';
+      await page.screenshot({path:screenshot});
+      screenshots.push(screenshot);
+      audit.push({id:id+'-compact-charts',width,chartCards:visuals.cards.length});
+    }
+  }
+
   // Premium Contracts must have a real compact disclosure: do not leave
   // tiny always-visible desktop chips or an expandable label that cannot open.
   for(const width of [412,360]){
