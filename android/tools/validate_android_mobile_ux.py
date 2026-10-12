@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
+import re
 
 ROOT = Path(__file__).resolve().parents[1]
 bridge = (ROOT / "android-bridge.js").read_text(encoding="utf-8")
@@ -105,7 +106,7 @@ if 'android:windowSoftInputMode="adjustResize"' not in manifest:
 # canonical deadline is re-armed without fabricating a new Focus session.
 if 'android.permission.RECEIVE_BOOT_COMPLETED' not in manifest:
     raise SystemExit("Focus alarm recovery needs RECEIVE_BOOT_COMPLETED permission")
-if 'android:name=".FocusAlarmBootReceiver"' not in manifest or \
+if not re.search(r'<receiver\\s+android:name="\\.FocusAlarmBootReceiver"\\s+android:exported="false"', manifest):
         'android.intent.action.BOOT_COMPLETED' not in manifest or \
         'android.intent.action.MY_PACKAGE_REPLACED' not in manifest:
     raise SystemExit("Native Focus recovery receiver/broadcasts are not registered")
