@@ -320,6 +320,14 @@
     /* Month overview is primary content on a phone. Four full-width
        desktop KPIs previously pushed the actual calendar below the fold. */
     @media(max-width:720px){
+      /* Phone month cells should show their date and state dots. Detailed
+         Completed/Missed/XP copy belongs in the selected-day pane, not
+         clipped below every 1/7-width cell. */
+      html[data-mlv-platform="android"] #tab-calendar
+      :is(.v30134-daymeta,.v30135-daymeta,
+          .v30134-daynum .v30134-count,.v30135-daynum .v30135-count){
+        display:none!important
+      }
       html[data-mlv-platform="android"] #tab-calendar
       :is(.v30134-kpis,.v30135-kpis){
         display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
