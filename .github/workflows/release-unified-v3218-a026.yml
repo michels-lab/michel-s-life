@@ -103,7 +103,7 @@ jobs:
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs android-signed/MichelsLife-Android-Direct-v0.2.6.apk > android-signing.txt
           actual_cert="$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' android-signing.txt | tr -d ':' | tr '[:upper:]' '[:lower:]')"
           test "$actual_cert" = "$ANDROID_CERT_PIN"
-          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging android-signed/MichelsLife-Android-Direct-v0.2.6.apk | grep -Eq "name='com.michelslab.michelslife' versionCode='7' versionName='0.2.6'"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging android-signed/MichelsLife-Android-Direct-v0.2.6.apk | grep -Eq "name='com.michelslab.michelslife' versionCode='8' versionName='0.2.6'"
           for file in MichelsLife-Setup-v3.0.218.exe MichelsLife-Portable-v3.0.218.exe MichelsLife-v3.0.218.exe; do
             test -s "windows/$file"
             test -s "windows/$file.sha256"
