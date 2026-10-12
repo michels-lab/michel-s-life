@@ -80,6 +80,8 @@ try{
     await route('story',width);
   }
   await route('settings',360);
+  await route('settings',320);
+  await page.setViewportSize({width:360,height:915});
   await page.locator('#tab-settings .v30171-settings-nav [data-v30171-setting="about"]').click();
   await page.waitForFunction(()=>document.querySelector(
     '#tab-settings [data-v30171-pane="about"].active [data-mlv-about-core]')
@@ -94,22 +96,49 @@ try{
   });
   requireOk(about.links===5&&about.visibility&&about.overflow<=3,
     'Compact About network links not accessible: '+JSON.stringify(about));
-  // This is programmatic scroll-chain evidence, not a claim to have touched
-  // physical hardware or opened the Android IME.
-  await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
-  const scroll=await page.evaluate(()=>{
-    const e=document.scrollingElement;
-    return {height:e.scrollHeight,viewport:e.clientHeight};
-  });
-  requireOk(scroll.height>scroll.viewport+80,
-    'Android Settings cannot reach its content by document scrolling: '+JSON.stringify(scroll));
+  // Send an actual Chromium touchscreen input sequence (one contact, not
+  // JS scrollTo or a synthetic DOM TouchEvent). This catches touchmove
+  // preventDefault/scroll-chain regressions in the Android WebView layout.
+  // It is browser input evidence, NOT a physical Galaxy/Android IME test.
+  const touch=await context.newCDPSession(page);
+  const touchResults=[];
+  for(const width of [360,320]){
+    await page.setViewportSize({width,height:915});
+    await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
+    await page.waitForTimeout(100);
+    const initial=await page.evaluate(()=>{
+      const e=document.scrollingElement;
+      return {height:e.scrollHeight,viewport:e.clientHeight,top:e.scrollTop};
+    });
+    requireOk(initial.height>initial.viewport+80,
+      'Android Settings has no reachable document scroll at '+width+': '+JSON.stringify(initial));
+    const x=Math.round(width*0.55);
+    await touch.send('Input.dispatchTouchEvent',{
+      type:'touchStart',touchPoints:[{x,y:690}]
+    });
+    for(let y=665;y>=270;y-=25){
+      await touch.send('Input.dispatchTouchEvent',{
+        type:'touchMove',touchPoints:[{x,y}]
+      });
+      await page.waitForTimeout(12);
+    }
+    await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+    await page.waitForTimeout(220);
+    const after=await page.evaluate(()=>document.scrollingElement.scrollTop);
+    requireOk(after>initial.top+45,
+      'One-finger Settings swipe was blocked at '+width+'px: '+JSON.stringify({initial,after}));
+    const screenshot=output+'/settings-'+width+'-after-real-touch-swipe.png';
+    await page.screenshot({path:screenshot});
+    touchResults.push({width,initial,after,screenshot});
+  }
+  await touch.detach();
   await page.evaluate(()=>window.scrollTo({top:document.scrollingElement.scrollHeight,behavior:'instant'}));
   await page.waitForTimeout(90);
   const scrollEnd=await page.evaluate(()=>document.scrollingElement.scrollTop);
   requireOk(scrollEnd>80,
     'Android Settings traps content in a non-scrollable document: '+scrollEnd);
   console.log('ANDROID_COMPACT_ACCESSIBILITY_PASS '+JSON.stringify({
-    reducedMotion:true,audits:audit,about,scrollEnd}));
+    reducedMotion:true,audits:audit,about,touchResults,scrollEnd}));
 }finally{
   await browser.close();
 }
