@@ -826,6 +826,7 @@
         animation:none!important;translate:none!important
       }
     }
+    html[data-mlv-platform="android"] #tab-achievements .v134-ach-filter button{min-width:44px!important;min-height:44px!important}
   `;
   function ensure(){
     if(!owned()||!document.head)return;
