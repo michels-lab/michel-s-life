@@ -15,6 +15,7 @@ on:
       - 'tools/ui_android_compact_accessibility_smoke.mjs'
       - 'tools/ui_android_journal_save_smoke.mjs'
       - 'tools/ui_android_ime_navigation_smoke.mjs'
+      - 'tools/ui_android_quick_capture_keyboard_smoke.mjs'
       - 'tools/ui_supabase_android_sync_smoke.mjs'
       - 'src/MichelsLife/frontend/**'
       - 'branding/**'
@@ -105,6 +106,11 @@ jobs:
 
       - name: Check Android IME layout
         run: node tools/ui_android_ime_navigation_smoke.mjs
+
+      - name: Audit Quick Capture keyboard-safe save at 360/412px
+        run: |
+          export MLV_ANDROID_UI_URL=http://127.0.0.1:4174
+          node tools/ui_android_quick_capture_keyboard_smoke.mjs
 
       - name: Audit Android Supabase sync contract
         run: |
