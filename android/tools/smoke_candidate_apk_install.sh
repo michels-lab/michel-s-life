@@ -11,17 +11,39 @@ test -s "$APK"
 # reconnects on hosted Android 16 emulators. Retry the exact native screenshot
 # command and validate the PNG; never replace missing pixels with browser mocks.
 capture_png(){
-  local dest="$1" attempt tmp="${1}.partial"
+  local dest="$1" attempt tmp="1.partial" remote="/sdcard/mlv-ci-native-capture.png"
   for attempt in 1 2 3 4 5; do
+    # First use Android's raw PNG stdout. If an API 36 ADB transport drops
+    # during exec-out, use a separate on-device screenshot + pull route.
     if timeout 25s adb exec-out screencap -p > "$tmp" 2>"$OUT/adb-screencap-last-error.txt" &&
        python3 -c 'import pathlib,sys;d=pathlib.Path(sys.argv[1]).read_bytes();sys.exit(0 if d.startswith(bytes.fromhex("89504e470d0a1a0a")) and len(d)>30000 else 1)' "$tmp"; then
       mv "$tmp" "$dest"
       return 0
     fi
-    echo "::warning::Native adb screenshot failed ($attempt/5): $dest"
-    cat "$OUT/adb-screencap-last-error.txt" || true
     rm -f "$tmp"
-    timeout 12s adb wait-for-device || true
+    echo "::warning::Native exec-out screencap failed ($attempt/5): $dest"
+    cat "$OUT/adb-screencap-last-error.txt" || true
+    # No browser fixture or synthetic fallback: both commands below capture
+    # the actual emulator framebuffer, just through a different ADB transport.
+    if timeout 25s adb shell screencap -p "$remote" >"$OUT/adb-shell-screencap-last.txt" 2>&1 &&
+       timeout 25s adb pull "$remote" "$tmp" >"$OUT/adb-pull-screencap-last.txt" 2>&1 &&
+       python3 -c 'import pathlib,sys;d=pathlib.Path(sys.argv[1]).read_bytes();sys.exit(0 if d.startswith(bytes.fromhex("89504e470d0a1a0a")) and len(d)>30000 else 1)' "$tmp"; then
+      mv "$tmp" "$dest"
+      timeout 8s adb shell rm -f "$remote" || true
+      echo "Native screenshot recovered via on-device capture and ADB pull (attempt $attempt)"
+      return 0
+    fi
+    rm -f "$tmp"
+    echo "::warning::Native on-device screencap also unavailable ($attempt/5)"
+    cat "$OUT/adb-shell-screencap-last.txt" "$OUT/adb-pull-screencap-last.txt" 2>/dev/null || true
+    # Repair only the CI runner's isolated adb transport, not the app. Keep
+    # camera/screenframe assertions fail-closed if Android really died.
+    timeout 10s adb devices -l >"$OUT/adb-device-retry-state.txt" 2>&1 || true
+    if ! grep -q $'\tdevice' "$OUT/adb-device-retry-state.txt"; then
+      timeout 8s adb kill-server || true
+      timeout 12s adb start-server || true
+      timeout 20s adb wait-for-device || true
+    fi
     sleep 3
   done
   echo "::error::Missing real native Android pixels after five screenshot attempts: $dest"

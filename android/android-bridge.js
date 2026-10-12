@@ -113,12 +113,38 @@
     else setTimeout(work,80);
   }
 
+  // A restored activeTab can say "journal" while the async shared boot
+  // still leaves Today's markup inside the active tab-journal wrapper.
+  // Preserve the canonical Journal renderer/data API; rebuild only that
+  // stale mobile surface, never a second journal state or desktop template.
+  function ensureCanonicalJournalSurface(){
+    const api=window.JournalV30189,main=q('#main');
+    if(!api||!main)return false;
+    let tab=q('#tab-journal',main);
+    if(!tab||!q('#mlv184JournalBody',tab)){
+      const markup=typeof api.render==='function'?api.render():null;
+      if(typeof markup!=='string'||!markup.includes('mlv184JournalBody'))
+        return false;
+      if(tab)tab.innerHTML=markup;
+      else main.innerHTML='<section class="tab active" id="tab-journal">'+markup+'</section>';
+      tab=q('#tab-journal',main);
+    }
+    if(!tab)return false;
+    tab.classList.add('active');
+    return !!q('#mlv184JournalBody',tab);
+  }
+
   function fastRoute(id){
     id=String(id||'');
     if(!id)return false;
     if(id==='today')id='dashboard';
     if(id==='goals')id='contracts';
-    if(activeTabId()===id){setDrawer(false);updateTopbarTitle();return true;}
+    // A matching route ID is not an idempotent hit if its actual editor
+    // failed to mount after Android WebView process restoration.
+    if(activeTabId()===id &&
+       (id!=='journal'||!!q('#tab-journal #mlv184JournalBody'))){
+      setDrawer(false);updateTopbarTitle();return true;
+    }
 
     const started=performance.now();
     document.documentElement.setAttribute('data-mlv-android-switching','1');
@@ -128,6 +154,8 @@
     if(id==='journal'&&window.JournalV30189?.open){
       try{
         window.JournalV30189.open();
+        if(!ensureCanonicalJournalSurface())
+          throw new Error('Journal activeTab restored before its editor DOM');
         finishSectionSwitch(started,id,'JournalV30189.open');
         return true;
       }catch(error){
