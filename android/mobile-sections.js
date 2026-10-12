@@ -516,6 +516,35 @@
       ])if(el.style.getPropertyValue(key)!==val)
         el.style.setProperty(key,val,'important');
     });
+    // The legacy Contracts renderer reapplies !important desktop KPI rules
+    // after Android CSS injection. Use the same scoped ownership strategy as
+    // mission buttons; never change the shared user data or desktop renderer.
+    const force=(el,key,value)=>{
+      if(el&&(el.style.getPropertyValue(key)!==value||
+          el.style.getPropertyPriority(key)!=='important'))
+        el.style.setProperty(key,value,'important');
+    };
+    main.querySelectorAll('#tab-contracts .v194-kpis').forEach(grid=>{
+      force(grid,'display','grid');
+      force(grid,'grid-template-columns','repeat(2,minmax(0,1fr))');
+      force(grid,'gap','9px');
+      Array.from(grid.querySelectorAll('.v194-kpi')).forEach(card=>{
+        force(card,'display','flex');
+        force(card,'flex-direction','column');
+        force(card,'align-items','flex-start');
+        force(card,'width','auto');
+        force(card,'min-width','0');
+        force(card,'gap','5px');
+        for(const el of card.querySelectorAll('small,b')){
+          force(el,'display','block');
+          force(el,'position','relative');
+          force(el,'width','100%');
+          force(el,'height','auto');
+          force(el,'inset','auto');
+          force(el,'line-height','1.3');
+        }
+      });
+    });
     // Canonical renderers still inline desktop-size 32px/36px buttons.
     // Explicitly own touch dimensions for these real Android actions rather
     // than re-rendering or cloning any of the underlying domain controls.
