@@ -847,6 +847,16 @@ try{
     ok(!!date&&before&&before.width>=30&&before.height>=44,
       'Calendar phone day is not a usable tap target: '+JSON.stringify({width,date,before}));
     await cell.click();
+    const dayProbe=await page.evaluate(date=>({
+      clickedDate:date,selectedSetting:window.state?.settings?.v30135CalendarSelected,
+      activeTab:window.state?.activeTab,
+      bodyTab:document.body.dataset.mlvAndroidTab,
+      selectedCells:[...document.querySelectorAll('#tab-calendar .v30135-day.selected')]
+        .map(el=>el.dataset.date),
+      monthVisible:!!document.querySelector('#tab-calendar .v30135-grid'),
+      activeContainer:document.querySelector('#main > .tab.active')?.id
+    }),date);
+    console.log('ANDROID_CALENDAR_DAY_TAP '+JSON.stringify({width,...dayProbe}));
     await page.waitForFunction(date=>{
       return window.state?.settings?.v30135CalendarSelected===date &&
         !!document.querySelector('#tab-calendar .v30135-day.selected[data-date="'+date+'"]');
