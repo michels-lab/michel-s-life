@@ -346,6 +346,95 @@ try{
     audit.push({id:'project-editor',width,editor,saveConfirmed:true});
   }
 
+  // Tappable Achievements filters must actually change the canonical
+  // gallery, not merely render nice category chips on mobile.
+  for(const width of [412,360]){
+    await route('achievements',width);
+    // Prior tests/locale or persisted category state can leave the live
+    // Achievements view filtered. Reset using the REAL All control before
+    // measuring the complete canonical gallery, not a private flag.
+    const all=page.locator('#tab-achievements .v134-ach-filter button')
+      .filter({hasText:/^All$/});
+    assert(await all.count()===1,'Canonical Achievements All control absent at '+width);
+    await all.click();
+    const filterDiagnosis=await page.evaluate(()=>({
+      active:document.body.dataset.mlvAndroidTab,
+      globalTab:window.state?.activeTab,
+      filter:window.v157Filter,
+      v157:document.querySelectorAll('#tab-achievements .v157-ach-card').length,
+      v156:document.querySelectorAll('#tab-achievements .v156-ach-card').length,
+      title:document.querySelector('#tab-achievements')?.textContent?.slice(0,200),
+      mainTab:document.querySelector('#main > .tab.active')?.id
+    }));
+    console.log('ACHIEVEMENTS_ALL_FILTER_DIAG '+JSON.stringify({width,...filterDiagnosis}));
+    await page.waitForFunction(()=>document.querySelectorAll(
+      '#tab-achievements .v157-ach-card').length>=20,null,{timeout:7000});
+    const allCount=await page.locator('#tab-achievements .v157-ach-card').count();
+    assert(allCount>=20,'Canonical Achievements gallery failed at '+width+
+      ': '+JSON.stringify(await page.evaluate(()=>({
+        filter:window.v157Filter,activeTab:document.body.dataset.mlvAndroidTab,
+        content:document.getElementById('tab-achievements')?.textContent?.slice(0,200)
+      }))));
+    const unlocked=page.locator('#tab-achievements .v134-ach-filter button').filter({hasText:'Unlocked'});
+    assert(await unlocked.count()===1,'Unlocked Achievements filter is inaccessible');
+    await unlocked.click();
+    await page.waitForFunction(initial=>
+      document.querySelector('#tab-achievements .v134-ach-filter button.active')
+        ?.textContent?.trim()==='Unlocked' &&
+      document.querySelectorAll('#tab-achievements .v157-ach-card').length<initial,
+      allCount,{timeout:6000});
+    await page.locator('#tab-achievements .v134-ach-filter button').filter({hasText:'All'}).click();
+    await page.waitForFunction(initial=>document.querySelectorAll(
+      '#tab-achievements .v157-ach-card').length===initial,
+      allCount,{timeout:6000});
+    const filterTarget=await page.evaluate(()=>{
+      return [...document.querySelectorAll('#tab-achievements .v134-ach-filter button')]
+        .filter(el=>el.getClientRects().length)
+        .map(el=>{const r=el.getBoundingClientRect();return {width:r.width,height:r.height,
+          left:r.left,right:r.right,copy:el.textContent.trim()};});
+    });
+    assert(filterTarget.length>=6&&filterTarget.every(x=>x.height>=43.5&&
+      x.width>=44&&x.left>=-3&&x.right<=width+3),
+      'Achievement filters are not thumb-size/within phone: '+JSON.stringify(filterTarget));
+    audit.push({id:'achievements-actions',width,allCount,filterCount:filterTarget.length});
+  }
+
+  // A genuine affirmation must survive Add → Favorite → Hide on the mobile
+  // view, with no shadow Android store or desktop source modification.
+  await route('affirmations',360);
+  const phrase='Android mobile Affirmations action QA';
+  page.once('dialog',dialog=>dialog.accept(phrase));
+  await page.locator('#tab-affirmations [data-action="add-affirmation"]').click();
+  await page.waitForFunction(value=>
+    JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')
+      ?.affirmations?.some(a=>a.text===value),phrase,{timeout:6000});
+  const synthetic=await page.evaluate(value=>
+    JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')
+      ?.affirmations?.find(a=>a.text===value)?.id,phrase);
+  assert(!!synthetic,'Add affirmation did not create a canonical record');
+  await page.locator('#tab-affirmations [data-action="fav-aff"][data-id="'+synthetic+'"]').click();
+  await page.waitForFunction(id=>
+    JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')
+      ?.affirmations?.find(a=>a.id===id)?.favorite===true,
+    synthetic,{timeout:6000});
+  await page.locator('#tab-affirmations [data-action="hide-aff"][data-id="'+synthetic+'"]').click();
+  await page.waitForFunction(id=>
+    JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')
+      ?.affirmations?.find(a=>a.id===id)?.hidden===true,
+    synthetic,{timeout:6000});
+  const savedAff=await page.evaluate(id=>{
+    const item=typeof state==='object'?state.affirmations.find(a=>a.id===id):null;
+    const stored=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}');
+    return {item,saved:stored.affirmations?.find(a=>a.id===id)};
+  },synthetic);
+  assert(savedAff.item?.favorite&&savedAff.item?.hidden&&
+    savedAff.saved?.favorite&&savedAff.saved?.hidden,
+    'Android favorites/hide not persisted to canonical state: '+JSON.stringify(savedAff));
+  const affScreenshot=output+'/affirmations-actions-360.png';
+  await page.screenshot({path:affScreenshot});
+  screenshots.push(affScreenshot);
+  audit.push({id:'affirmations-actions',width:360,add:true,favorite:true,hidden:true});
+
   // Real screenshots previously showed Focus label/value text collapsed into
   // a single line and a toast overlapping the persistent bottom nav.
   await route('dashboard');
