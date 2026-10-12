@@ -332,6 +332,41 @@
     html[data-mlv-platform="android"] #main .v131-kpi{
       min-width:0!important;overflow-wrap:anywhere!important;box-sizing:border-box!important
     }
+    /* Weekly Review's four canonical KPIs became four tall full-width
+       strips on narrow screens. Keep title/action tools prominent, then
+       summarize all four numbers in two equally readable rows. */
+    @media(max-width:720px){
+      html[data-mlv-platform="android"] #tab-weekly-review .v30105-review-hero{
+        display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+        gap:9px!important;box-sizing:border-box!important
+      }
+      html[data-mlv-platform="android"] #tab-weekly-review
+      .v30105-review-hero > div:first-child{
+        grid-column:1/-1!important;min-width:0!important
+      }
+      html[data-mlv-platform="android"] #tab-weekly-review .v30105-review-kpi{
+        box-sizing:border-box!important;min-width:0!important;width:auto!important;
+        min-height:93px!important;border-radius:15px!important;
+        padding:12px!important;overflow-wrap:anywhere!important
+      }
+      html[data-mlv-platform="android"] #tab-weekly-review .v30105-review-kpi small{
+        display:block!important;max-width:100%!important;
+        line-height:1.35!important;font-size:11px!important
+      }
+      html[data-mlv-platform="android"] #tab-weekly-review .v30105-review-kpi b{
+        display:block!important;line-height:1.14!important;
+        font-size:clamp(20px,6vw,27px)!important;margin-top:6px!important
+      }
+      html[data-mlv-platform="android"] #tab-weekly-review
+      :is(.v30105-review-hero .actions button,.v30105-review-actions button){
+        min-height:44px!important;min-width:44px!important;
+        touch-action:manipulation!important
+      }
+      html[data-mlv-platform="android"] #tab-weekly-review .v30105-outlook-grid{
+        display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+        gap:8px!important
+      }
+    }
     /* Projects and Planning use the real v30106 project editor and actions,
        never a mobile-only clone of projects or mission linking. */
     html[data-mlv-platform="android"] #tab-projects .v30106-projects,
@@ -745,6 +780,19 @@
       main.querySelectorAll('#tab-stats .stat-hero').forEach(card=>{
         force(card,'min-height','96px');
         force(card,'min-width','0');
+      });
+    }
+    if(window.innerWidth<=720){
+      main.querySelectorAll('#tab-weekly-review .v30105-review-hero').forEach(grid=>{
+        force(grid,'display','grid');
+        force(grid,'grid-template-columns','repeat(2,minmax(0,1fr))');
+      });
+      main.querySelectorAll('#tab-weekly-review .v30105-review-hero > div:first-child').forEach(header=>{
+        force(header,'grid-column','1 / -1');
+      });
+      main.querySelectorAll('#tab-weekly-review .v30105-review-kpi').forEach(card=>{
+        force(card,'min-width','0');
+        force(card,'min-height','93px');
       });
     }
     main.querySelectorAll('#tab-contracts .v194-hero').forEach(hero=>{
