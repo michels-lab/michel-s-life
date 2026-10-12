@@ -101,6 +101,7 @@ jobs:
           node --check android/mobile-experience.js
           node --check android/mobile-sections.js
           python android/tools/validate_android_mobile_ux.py
+          bash -n android/tools/smoke_candidate_apk_install.sh
           # Validate the release-version generated frontend, not the older raw template.
           python tools/bump_frontend_version.py --index src/MichelsLife/frontend/index.html
           python tools/validate_brand_identity.py
