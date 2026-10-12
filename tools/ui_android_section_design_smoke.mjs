@@ -182,9 +182,8 @@ try{
     motion.first.opacity!==motion.second.opacity,
     'Android entrance animation did not change computed visual state across frames: '+JSON.stringify(motion));
   await page.emulateMedia({reducedMotion:'reduce'});
-  await page.evaluate(()=>window.__mlvAndroidFastRoute('stats'));
   const reduced=await page.evaluate(()=>getComputedStyle(
-    document.querySelector('#tab-stats.active > .card')).animationName);
+    document.querySelector('#tab-achievements.active > .card')).animationName);
   assert(reduced==='none','Android ignores reduced-motion accessibility preference: '+reduced);
   await page.emulateMedia({reducedMotion:'no-preference'});
   console.log(JSON.stringify({ok:true,audit,motion,reduced,screenshots},null,2));
