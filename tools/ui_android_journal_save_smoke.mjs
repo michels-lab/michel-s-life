@@ -82,10 +82,30 @@ try{
   // Do not reinitialize localStorage during reload; only the current app store
   // may reconstruct persistent data for the next process.
   await page.reload({waitUntil:'domcontentloaded',timeout:60000});
-  await page.waitForFunction(()=>!!window.JournalV30189&&!!window.__mlvAndroidFastRoute,
+  // The v30171 sidebar and native Android navigation initialize after the
+  // shared Journal API. Reopening before navigation mounts can be overwritten
+  // by the rest of app boot. Wait for full mobile shell, not only an API name.
+  await page.waitForFunction(()=>!!window.JournalV30189 &&
+    !!window.__mlvAndroidFastRoute &&
+    document.documentElement.dataset.mlvPlatform==='android' &&
+    !!document.getElementById('mlv-android-topbar') &&
+    !!document.getElementById('mlv-android-bottom-nav'),
     null,{timeout:60000});
+  await page.waitForTimeout(650);
   await page.evaluate(()=>window.__mlvAndroidFastRoute('journal'));
-  await page.locator('#mlv184JournalBody').waitFor({state:'visible',timeout:12000});
+  try{
+    await page.locator('#mlv184JournalBody').waitFor({state:'visible',timeout:12000});
+  }catch(error){
+    const state=await page.evaluate(date=>({
+      activeTab:document.querySelector('#main .tab.active')?.id,
+      nav:document.body.dataset.mlvAndroidTab,
+      saved:window.JournalV30189?.entry?.(date),
+      dataKey:!!localStorage.getItem('vida_rpg_personal_progress_v2'),
+      mainText:document.getElementById('main')?.textContent?.slice(0,180)
+    }),date);
+    throw Error('Canonical Journal failed to restore visible editor after reload: '+
+      JSON.stringify(state)+'; cause='+String(error));
+  }
   const persisted=await page.evaluate(date=>{
     const api=window.JournalV30189;
     const e=api?.entry?.(date);
