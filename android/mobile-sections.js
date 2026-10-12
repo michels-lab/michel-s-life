@@ -303,7 +303,7 @@
       }
       html[data-mlv-platform="android"] #tab-stats .stat-hero{
         box-sizing:border-box!important;min-width:0!important;
-        width:auto!important;min-height:82px!important;
+        width:auto!important;min-height:96px!important;
         padding:12px!important;border-radius:16px!important;
         overflow:hidden!important
       }
@@ -731,6 +731,20 @@
         force(el,'height','auto');
         force(el,'aspect-ratio','3 / 4');
         force(el,'object-fit','cover');
+      });
+    }
+    // The shared Statistics renderer can reapply a desktop auto-fit grid
+    // with !important after Android injects its responsive stylesheet.
+    // Keep this ownership in the same canonical post-render geometry pass.
+    if(window.innerWidth<=720){
+      main.querySelectorAll('#tab-stats .stat-hero-grid').forEach(grid=>{
+        force(grid,'display','grid');
+        force(grid,'grid-template-columns','repeat(2,minmax(0,1fr))');
+        force(grid,'gap','9px');
+      });
+      main.querySelectorAll('#tab-stats .stat-hero').forEach(card=>{
+        force(card,'min-height','96px');
+        force(card,'min-width','0');
       });
     }
     main.querySelectorAll('#tab-contracts .v194-hero').forEach(hero=>{
