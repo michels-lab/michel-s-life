@@ -11,6 +11,7 @@ try{
   const page=await context.newPage();
   await page.addInitScript(()=>{
     try{
+      if(!localStorage.getItem('vida_rpg_personal_progress_v2'))
       localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify({
         version:2,activeTab:'dashboard',xp:0,coins:0,totalCoinsEarned:0,
         settings:{characterName:'Michel',onboardingRequired:false,
