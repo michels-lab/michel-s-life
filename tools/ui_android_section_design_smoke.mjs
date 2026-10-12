@@ -235,6 +235,14 @@ try{
   // Real screenshots previously showed Focus label/value text collapsed into
   // a single line and a toast overlapping the persistent bottom nav.
   await route('dashboard');
+  // The canonical Dashboard can replace its hero after a fast section
+  // transition. Wait for that real hero before asking the mobile Focus view
+  // to attach; a fixed 280ms screenshot delay is not a readiness contract.
+  await page.waitForFunction(()=>!!document.querySelector(
+    '#tab-dashboard.active .v131-hero'),null,{timeout:12000});
+  await page.evaluate(()=>window.MichelsLifeMobileExperience?.updateFocus?.());
+  await page.waitForFunction(()=>!!document.querySelector(
+    '#mlv-android-today-focus .mlv-focus-today-copy span'),null,{timeout:7000});
   const todayLayout=await page.evaluate(()=>{
     const root=document.getElementById('mlv-android-today-focus');
     const copy=root?.querySelector('.mlv-focus-today-copy');
