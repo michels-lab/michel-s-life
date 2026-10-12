@@ -8,6 +8,7 @@
   const root=document.documentElement;
   const owned=()=>root.dataset.mlvPlatform==='android';
   const styleId='mlv-android-section-layout';
+  let contractCategoriesExpanded=false;
   const css=`
     html[data-mlv-platform="android"] #main #tab-missions,
     html[data-mlv-platform="android"] #main #tab-calendar,
@@ -147,6 +148,380 @@
     html[data-mlv-platform="android"] #main .mlv184-journal-status{
       display:flex!important;flex-wrap:wrap!important;gap:5px!important
     }
+
+    /*
+     * One Android-owned design language across all canonical tab renderers.
+     * Layout and interaction ONLY: preserve user-selected colors, fonts,
+     * themes, backgrounds, chapter artwork and business state untouched.
+     */
+    html[data-mlv-platform="android"] #main > .tab{
+      min-width:0!important;max-width:100%!important;box-sizing:border-box!important
+    }
+    html[data-mlv-platform="android"] #main > .tab.active{
+      display:block;overflow:visible!important;min-height:0!important
+    }
+    html[data-mlv-platform="android"] #main > .tab .card,
+    html[data-mlv-platform="android"] #main > .tab .v194-stack,
+    html[data-mlv-platform="android"] #main > .tab .section-title{
+      box-sizing:border-box!important;min-width:0!important;max-width:100%!important
+    }
+    html[data-mlv-platform="android"] #main > .tab .section-title{
+      display:flex!important;align-items:flex-start!important;
+      justify-content:space-between!important;flex-wrap:wrap!important;gap:10px!important
+    }
+    html[data-mlv-platform="android"] #main > .tab .section-title > div{
+      min-width:0!important;flex:1 1 180px!important
+    }
+    html[data-mlv-platform="android"] #main > .tab .section-title h2{
+      font-size:clamp(20px,5vw,26px)!important;line-height:1.2!important;
+      overflow-wrap:anywhere!important;margin:0!important
+    }
+    html[data-mlv-platform="android"] #main > .tab .section-title p,
+    html[data-mlv-platform="android"] #main > .tab .card p{
+      max-width:100%!important;overflow-wrap:anywhere!important
+    }
+    html[data-mlv-platform="android"] #main > .tab .section-title button,
+    html[data-mlv-platform="android"] #main > .tab button,
+    html[data-mlv-platform="android"] #main > .tab select,
+    html[data-mlv-platform="android"] #main > .tab summary,
+    html[data-mlv-platform="android"] #main > .tab [role="button"]{
+      touch-action:manipulation;box-sizing:border-box
+    }
+    html[data-mlv-platform="android"] #main > .tab input:not([type="checkbox"]):not([type="radio"]),
+    html[data-mlv-platform="android"] #main > .tab textarea,
+    html[data-mlv-platform="android"] #main > .tab select{
+      box-sizing:border-box!important;max-width:100%!important;min-width:0!important;
+      font-size:16px!important
+    }
+    html[data-mlv-platform="android"] #main > .tab textarea{
+      touch-action:pan-y;resize:vertical
+    }
+    /* Premium Contracts retains the canonical search/filter/progress engine. */
+    html[data-mlv-platform="android"] #tab-contracts .v194-stack,
+    html[data-mlv-platform="android"] #tab-contracts .v216-search-panel,
+    html[data-mlv-platform="android"] #tab-contracts .v216-contract-card{
+      min-width:0!important;max-width:100%!important;box-sizing:border-box!important
+    }
+    html[data-mlv-platform="android"] #tab-contracts .v216-contract-card{
+      border-radius:19px!important;padding:14px!important;gap:11px!important;
+      overflow-wrap:anywhere!important
+    }
+    html[data-mlv-platform="android"] #tab-contracts .v216-contract-card h3{
+      font-size:17px!important;line-height:1.3!important;overflow-wrap:anywhere!important
+    }
+    html[data-mlv-platform="android"] #tab-contracts .v216-search-panel input,
+    html[data-mlv-platform="android"] #tab-contracts .v216-top-actions button,
+    html[data-mlv-platform="android"] #tab-contracts .v216-filter-chip{
+      min-height:44px!important
+    }
+    html[data-mlv-platform="android"] #tab-contracts .v216-top-actions{
+      align-items:stretch!important;gap:8px!important
+    }
+    html[data-mlv-platform="android"] #tab-contracts .v216-top-actions .btn{
+      min-width:0!important;white-space:normal!important
+    }
+    html[data-mlv-platform="android"] #tab-contracts .v194-kpis{
+      display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+      gap:9px!important;min-width:0!important;margin-top:10px!important
+    }
+    html[data-mlv-platform="android"] #tab-contracts .v194-kpi{
+      display:flex!important;flex-direction:column!important;gap:5px!important;
+      box-sizing:border-box!important;min-width:0!important;
+      border-radius:13px!important;padding:12px!important;
+      border:1px solid rgba(255,255,255,.10)!important;
+      background:rgba(var(--ui-card-rgb,12,20,34),.42)!important
+    }
+    html[data-mlv-platform="android"] #tab-contracts .v194-kpi small,
+    html[data-mlv-platform="android"] #tab-contracts .v194-kpi b{
+      display:block!important;position:static!important;max-width:100%!important;
+      overflow-wrap:anywhere!important;line-height:1.25!important
+    }
+    html[data-mlv-platform="android"] #tab-contracts .v194-kpi small{
+      font-size:11px!important;color:var(--muted)!important
+    }
+    html[data-mlv-platform="android"] #tab-contracts .v194-kpi b{
+      font-size:20px!important;color:var(--text)!important
+    }
+    /* On a phone the board is the product, not eleven permanently expanded
+       filter chips. Put progress first and categories in a real, accessible
+       expandable control. Existing canonical chip handlers remain in place. */
+    html[data-mlv-platform="android"] #tab-contracts .mlv-android-contract-filter-details{
+      display:block!important;margin:10px 0 2px!important;
+      padding:0!important;border:0!important;background:transparent!important
+    }
+    html[data-mlv-platform="android"] #tab-contracts .mlv-android-contract-filter-details summary{
+      display:flex!important;align-items:center!important;justify-content:space-between!important;
+      box-sizing:border-box!important;width:100%!important;min-height:44px!important;
+      padding:10px 13px!important;border:1px solid rgba(var(--ui-accent-rgb,117,228,255),.28)!important;
+      border-radius:13px!important;background:rgba(var(--ui-card-rgb,10,18,30),.48)!important;
+      color:var(--text,#eaf4ff)!important;font-weight:700!important;
+      cursor:pointer!important;list-style:none!important
+    }
+    html[data-mlv-platform="android"] #tab-contracts .mlv-android-contract-filter-details summary::-webkit-details-marker{
+      display:none!important
+    }
+    html[data-mlv-platform="android"] #tab-contracts .mlv-android-contract-filter-details summary::after{
+      content:"⌄";display:inline-block;transition:transform .18s ease
+    }
+    html[data-mlv-platform="android"] #tab-contracts .mlv-android-contract-filter-details[open] summary::after{
+      transform:rotate(180deg)
+    }
+    html[data-mlv-platform="android"] #tab-contracts .mlv-android-contract-filter-details .v216-chip-row{
+      margin-top:9px!important;padding:6px 0 3px!important
+    }
+    @media(prefers-reduced-motion:reduce){
+      html[data-mlv-platform="android"] #tab-contracts .mlv-android-contract-filter-details summary::after{
+        transition:none!important
+      }
+    }
+    /* Projects/Planning and Goals — original data, phone-native stacked cards. */
+    html[data-mlv-platform="android"] #main .goal-card,
+    html[data-mlv-platform="android"] #main .v169-weekly-template,
+    html[data-mlv-platform="android"] #main .v131-mission,
+    html[data-mlv-platform="android"] #main .v132-contract,
+    html[data-mlv-platform="android"] #main .v194-contract-card,
+    html[data-mlv-platform="android"] #main .v211-contract-card{
+      box-sizing:border-box!important;max-width:100%!important;min-width:0!important;
+      overflow-wrap:anywhere!important
+    }
+    html[data-mlv-platform="android"] #tab-goals .goal-control-bar,
+    html[data-mlv-platform="android"] #tab-goals .v133-goal-shortcuts{
+      display:flex!important;align-items:stretch!important;gap:8px!important;flex-wrap:wrap!important
+    }
+    html[data-mlv-platform="android"] #tab-goals .v133-goal-shortcut,
+    html[data-mlv-platform="android"] #tab-goals .goal-control-bar button{
+      min-height:44px!important
+    }
+    /* Statistics, Compare, Reviews: charts can shrink; no wide desktop columns. */
+    html[data-mlv-platform="android"] #tab-stats .chart-card,
+    html[data-mlv-platform="android"] #tab-stats .stat-hero,
+    html[data-mlv-platform="android"] #tab-compare .card,
+    html[data-mlv-platform="android"] #tab-weekly-review .card{
+      max-width:100%!important;min-width:0!important;box-sizing:border-box!important
+    }
+    html[data-mlv-platform="android"] #main .chart-card svg,
+    html[data-mlv-platform="android"] #main .chart-card canvas{
+      max-width:100%!important;display:block
+    }
+    html[data-mlv-platform="android"] #main .v132-stat,
+    html[data-mlv-platform="android"] #main .v131-kpi{
+      min-width:0!important;overflow-wrap:anywhere!important;box-sizing:border-box!important
+    }
+    /* Projects and Planning use the real v30106 project editor and actions,
+       never a mobile-only clone of projects or mission linking. */
+    html[data-mlv-platform="android"] #tab-projects .v30106-projects,
+    html[data-mlv-platform="android"] #tab-projects .v30106-grid,
+    html[data-mlv-platform="android"] #tab-projects .v30106-project-card{
+      min-width:0!important;max-width:100%!important;box-sizing:border-box!important
+    }
+    html[data-mlv-platform="android"] #tab-projects .v30106-project-head,
+    html[data-mlv-platform="android"] #tab-projects .v30106-project-actions,
+    html[data-mlv-platform="android"] #tab-projects .v30106-row-actions{
+      display:flex!important;flex-wrap:wrap!important;gap:8px!important
+    }
+    html[data-mlv-platform="android"] #tab-projects .v30106-project-head > div{
+      min-width:0!important;flex:1 1 175px!important
+    }
+    html[data-mlv-platform="android"] #tab-projects .v30106-project-actions button,
+    html[data-mlv-platform="android"] #tab-projects .v30106-row-actions button,
+    html[data-mlv-platform="android"] #tab-projects [data-v30106-action]{
+      min-height:44px!important;font-size:12px!important
+    }
+    html[data-mlv-platform="android"] #tab-projects .v30106-next-action,
+    html[data-mlv-platform="android"] #tab-projects .v30106-row{
+      min-width:0!important;max-width:100%!important;box-sizing:border-box!important;
+      overflow-wrap:anywhere!important
+    }
+    /* Weekly Review and decision rows: no desktop-width action columns. */
+    html[data-mlv-platform="android"] #tab-weekly-review .v30105-snapshot-row,
+    html[data-mlv-platform="android"] #tab-weekly-review .v30105-snapshot-list,
+    html[data-mlv-platform="android"] #tab-weekly-review .v30105-snapshot-actions{
+      max-width:100%!important;min-width:0!important;box-sizing:border-box!important
+    }
+    html[data-mlv-platform="android"] #tab-weekly-review button{
+      min-height:44px!important
+    }
+    /* Achievements and affirmations: preserve badges, glow, favoriting. */
+    html[data-mlv-platform="android"] #tab-achievements .v156-ach-card,
+    html[data-mlv-platform="android"] #tab-achievements .v133-ach,
+    html[data-mlv-platform="android"] #tab-achievements .achievement-card{
+      min-width:0!important;max-width:100%!important;box-sizing:border-box!important;
+      overflow-wrap:anywhere!important
+    }
+    html[data-mlv-platform="android"] #tab-achievements .v156-ach-card{
+      min-height:0!important;padding:14px!important;border-radius:20px!important
+    }
+    html[data-mlv-platform="android"] #tab-achievements h3{
+      line-height:1.3!important;overflow-wrap:anywhere!important
+    }
+    html[data-mlv-platform="android"] #tab-affirmations .affirmation{
+      max-width:100%!important;box-sizing:border-box!important;
+      font-size:clamp(22px,6vw,32px)!important;line-height:1.32!important;
+      overflow-wrap:anywhere!important;padding:20px 15px!important
+    }
+    html[data-mlv-platform="android"] #tab-affirmations .table-wrap{
+      max-width:100%!important;overflow-x:auto!important;overflow-y:visible!important;
+      overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;
+      touch-action:pan-x pan-y
+    }
+    html[data-mlv-platform="android"] #tab-affirmations .table td{
+      white-space:normal!important;vertical-align:top!important
+    }
+    html[data-mlv-platform="android"] #tab-affirmations .mlv-android-affirmations-empty{
+      display:block!important;padding:19px 15px!important;margin:10px 0 0!important;
+      border-radius:15px!important;line-height:1.45!important;
+      border:1px dashed rgba(var(--ui-accent-rgb,117,228,255),.25)!important;
+      background:rgba(var(--ui-card-rgb,10,19,32),.38)!important;
+      color:var(--muted,#c2d0df)!important;font-size:14px!important
+    }
+    /* Real mobile Affirmations: a readable list, not four cramped table
+       columns. The original table remains semantic and keyboard-accessible;
+       JS labels each cell from its actual localized <th> text. */
+    @media(max-width:720px){
+      html[data-mlv-platform="android"] #tab-affirmations .table-wrap{
+        overflow-x:hidden!important;touch-action:pan-y!important
+      }
+      html[data-mlv-platform="android"] #tab-affirmations .table,
+      html[data-mlv-platform="android"] #tab-affirmations .table tbody{
+        display:block!important;width:100%!important;max-width:100%!important;
+        min-width:0!important;box-sizing:border-box!important
+      }
+      html[data-mlv-platform="android"] #tab-affirmations .table thead{
+        position:absolute!important;width:1px!important;height:1px!important;
+        overflow:hidden!important;clip-path:inset(50%)!important
+      }
+      html[data-mlv-platform="android"] #tab-affirmations .table tbody tr{
+        display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+        gap:8px!important;min-width:0!important;max-width:100%!important;
+        border:1px solid rgba(255,255,255,.11)!important;
+        border-radius:15px!important;padding:12px!important;
+        margin-bottom:10px!important;background:rgba(var(--ui-card-rgb,12,20,34),.40)!important
+      }
+      html[data-mlv-platform="android"] #tab-affirmations .table tbody td{
+        display:flex!important;flex-direction:column!important;align-items:flex-start!important;
+        gap:4px!important;box-sizing:border-box!important;border:0!important;
+        padding:3px 0!important;min-width:0!important;max-width:100%!important;
+        white-space:normal!important;overflow-wrap:anywhere!important;
+        font-size:14px!important;line-height:1.4!important
+      }
+      html[data-mlv-platform="android"] #tab-affirmations .table tbody td::before{
+        content:attr(data-mlv-android-label);display:block!important;
+        font-size:10px!important;font-weight:800!important;letter-spacing:.06em!important;
+        text-transform:uppercase!important;color:var(--muted)!important
+      }
+      html[data-mlv-platform="android"] #tab-affirmations .table tbody td:last-child button{
+        min-height:44px!important;min-width:44px!important
+      }
+    }
+    /* Story/Chapters scenes keep original assets and scene transforms. */
+    html[data-mlv-platform="android"] #tab-story{
+      min-width:0!important;max-width:100%!important;overflow-x:clip!important
+    }
+    html[data-mlv-platform="android"] #tab-story img{
+      max-width:100%!important;height:auto
+    }
+    html[data-mlv-platform="android"] #tab-story .card,
+    html[data-mlv-platform="android"] #tab-story .section-title{
+      min-width:0!important;max-width:100%!important;box-sizing:border-box!important
+    }
+    /* Settings remains the original canonical pane system, not a second UI. */
+    html[data-mlv-platform="android"] #tab-settings .v30171-settings-shell,
+    html[data-mlv-platform="android"] #tab-settings .v30171-settings-content{
+      min-width:0!important;max-width:100%!important;width:100%!important;
+      box-sizing:border-box!important
+    }
+    html[data-mlv-platform="android"] #tab-settings .v30171-settings-nav{
+      box-sizing:border-box!important;max-width:100%!important;
+      -webkit-overflow-scrolling:touch;overscroll-behavior-x:contain
+    }
+    html[data-mlv-platform="android"] #tab-settings .v30171-settings-nav [data-v30171-setting]{
+      min-height:44px!important;border-radius:12px!important
+    }
+    html[data-mlv-platform="android"] #tab-settings [data-v30171-pane]{
+      max-width:100%!important;min-width:0!important;
+      overflow-wrap:anywhere!important;box-sizing:border-box!important
+    }
+    html[data-mlv-platform="android"] #tab-settings [data-v30171-pane] input,
+    html[data-mlv-platform="android"] #tab-settings [data-v30171-pane] select{
+      min-height:44px!important
+    }
+    @media(max-width:720px){
+      html[data-mlv-platform="android"] #main > .tab .card{
+        border-radius:19px!important;padding:14px!important
+      }
+      html[data-mlv-platform="android"] #main > .tab:not(#tab-dashboard):not(#tab-missions):not(#tab-calendar) .grid,
+      html[data-mlv-platform="android"] #main > .tab .grid.cols-2,
+      html[data-mlv-platform="android"] #main > .tab .grid.cols-3,
+      html[data-mlv-platform="android"] #main > .tab .compare-grid,
+      html[data-mlv-platform="android"] #main > .tab .v132-stats-grid,
+      html[data-mlv-platform="android"] #main > .tab .chart-grid{
+        grid-template-columns:minmax(0,1fr)!important;gap:11px!important
+      }
+      html[data-mlv-platform="android"] #tab-contracts .v216-contract-grid{
+        grid-template-columns:minmax(0,1fr)!important;gap:11px!important
+      }
+      html[data-mlv-platform="android"] #tab-contracts .v216-top-actions{
+        grid-template-columns:repeat(2,minmax(0,1fr))!important
+      }
+      html[data-mlv-platform="android"] #tab-achievements .v156-ach-grid,
+      html[data-mlv-platform="android"] #tab-achievements .v133-ach-grid{
+        grid-template-columns:minmax(0,1fr)!important;gap:12px!important
+      }
+      html[data-mlv-platform="android"] #tab-projects .v30106-grid,
+      html[data-mlv-platform="android"] #tab-projects .v30106-editor-grid,
+      html[data-mlv-platform="android"] #tab-projects .v30106-row,
+      html[data-mlv-platform="android"] #tab-projects .v30106-plan-row,
+      html[data-mlv-platform="android"] #tab-weekly-review .v30105-snapshot-row,
+      html[data-mlv-platform="android"] #tab-story .v30162-story-grid{
+        display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important
+      }
+      html[data-mlv-platform="android"] #tab-story .v30162-story-kpis{
+        display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+        gap:9px!important
+      }
+      html[data-mlv-platform="android"] #tab-story .v30162-story-kpi,
+      html[data-mlv-platform="android"] #tab-story .v30162-story-card{
+        min-width:0!important;max-width:100%!important;box-sizing:border-box!important
+      }
+      html[data-mlv-platform="android"] #tab-story .v30162-story-title{
+        font-size:clamp(24px,8vw,38px)!important;line-height:1.15!important;
+        overflow-wrap:anywhere!important
+      }
+      html[data-mlv-platform="android"] #tab-story .v30162-story-actions{
+        display:flex!important;flex-wrap:wrap!important;gap:8px!important
+      }
+      html[data-mlv-platform="android"] #tab-story .v30162-story-actions button{
+        min-height:44px!important
+      }
+      html[data-mlv-platform="android"] #tab-goals .goal-card,
+      html[data-mlv-platform="android"] #tab-goals .v169-weekly-template{
+        grid-template-columns:minmax(0,1fr)!important;gap:10px!important
+      }
+      html[data-mlv-platform="android"] #tab-goals .v169-weekly-form,
+      html[data-mlv-platform="android"] #tab-goals .form-grid,
+      html[data-mlv-platform="android"] #tab-settings .form-grid{
+        grid-template-columns:minmax(0,1fr)!important;gap:10px!important
+      }
+      html[data-mlv-platform="android"] #main > .tab button,
+      html[data-mlv-platform="android"] #main > .tab select,
+      html[data-mlv-platform="android"] #main > .tab summary,
+      html[data-mlv-platform="android"] #main > .tab [role="button"]{
+        min-height:44px
+      }
+    }
+    /* A measured, nonblocking entrance for sections, never Chapter art. */
+    @keyframes mlvAndroidSectionEnter{
+      from{opacity:.88;translate:0 7px}
+      to{opacity:1;translate:0 0}
+    }
+    html[data-mlv-platform="android"] #main > .tab.active > .card{
+      animation:mlvAndroidSectionEnter .22s cubic-bezier(.2,.7,.2,1) both
+    }
+    @media(prefers-reduced-motion:reduce){
+      html[data-mlv-platform="android"] #main > .tab.active > .card{
+        animation:none!important;translate:none!important
+      }
+    }
   `;
   function ensure(){
     if(!owned()||!document.head)return;
@@ -180,6 +555,102 @@
         ['overflow','hidden'],['padding','6px 2px']
       ])if(el.style.getPropertyValue(key)!==val)
         el.style.setProperty(key,val,'important');
+    });
+    // The legacy Contracts renderer reapplies !important desktop KPI rules
+    // after Android CSS injection. Use the same scoped ownership strategy as
+    // mission buttons; never change the shared user data or desktop renderer.
+    const force=(el,key,value)=>{
+      if(el&&(el.style.getPropertyValue(key)!==value||
+          el.style.getPropertyPriority(key)!=='important'))
+        el.style.setProperty(key,value,'important');
+    };
+    main.querySelectorAll('#tab-contracts .v194-hero').forEach(hero=>{
+      const searchPanel=hero.querySelector('.v216-search-panel');
+      const progress=hero.querySelector('.v194-kpis');
+      if(progress&&searchPanel&&progress.nextElementSibling!==searchPanel)
+        hero.insertBefore(progress,searchPanel);
+      const chips=searchPanel?.querySelector('.v216-chip-row');
+      if(!chips||searchPanel.querySelector('.mlv-android-contract-filter-details'))return;
+      const details=document.createElement('details');
+      details.className='mlv-android-contract-filter-details';
+      details.open=contractCategoriesExpanded;
+      const summary=document.createElement('summary');
+      summary.textContent=window.MichelsLifeI18n?.language==='es'?
+        'Filtrar categorías':'Filter categories';
+      details.appendChild(summary);
+      details.appendChild(chips);
+      searchPanel.appendChild(details);
+      details.addEventListener('toggle',()=>{contractCategoriesExpanded=details.open;});
+    });
+    main.querySelectorAll('#tab-contracts .v194-kpis').forEach(grid=>{
+      force(grid,'display','grid');
+      force(grid,'grid-template-columns','repeat(2,minmax(0,1fr))');
+      force(grid,'gap','9px');
+      Array.from(grid.querySelectorAll('.v194-kpi')).forEach(card=>{
+        force(card,'display','flex');
+        force(card,'flex-direction','column');
+        force(card,'align-items','flex-start');
+        force(card,'width','auto');
+        force(card,'min-width','0');
+        force(card,'gap','5px');
+        for(const el of card.querySelectorAll('small,b')){
+          force(el,'display','block');
+          force(el,'position','relative');
+          force(el,'width','100%');
+          force(el,'height','auto');
+          force(el,'inset','auto');
+          force(el,'line-height','1.3');
+        }
+      });
+    });
+    // Canonical renderers still inline desktop-size 32px/36px buttons.
+    // Explicitly own touch dimensions for these real Android actions rather
+    // than re-rendering or cloning any of the underlying domain controls.
+    main.querySelectorAll('#tab-contracts .v216-filter-chip, #tab-projects .v30106-project-actions button, #tab-projects .v30106-row-actions button, #tab-settings .v30171-settings-nav [data-v30171-setting]').forEach(el=>{
+      for(const [key,value] of [['min-height','44px'],['height','44px']]){
+        if(el.style.getPropertyValue(key)!==value||el.style.getPropertyPriority(key)!=='important')
+          el.style.setProperty(key,value,'important');
+      }
+    });
+    // Existing semantic table headers become the visible phone card labels.
+    // Blank databases should show a meaningful empty state, not a cropped
+    // strip of four desktop column headings with no content.
+    main.querySelectorAll('#tab-affirmations table.table').forEach(table=>{
+      const labels=Array.from(table.querySelectorAll('thead th')).map(th=>(th.textContent||'').trim());
+      const rows=Array.from(table.querySelectorAll('tbody tr'));
+      const isNarrow=window.innerWidth<=720;
+      const wrapper=table.closest('.table-wrap')||table.parentElement;
+      const existing=wrapper?.querySelector('.mlv-android-affirmations-empty');
+      if(!rows.length && isNarrow){
+        force(table,'display','none');
+        if(!existing&&wrapper){
+          const empty=document.createElement('p');
+          empty.className='mlv-android-affirmations-empty';
+          empty.textContent=window.MichelsLifeI18n?.language==='es'?
+            'Tus afirmaciones aparecerán aquí. Crea la primera para comenzar.':
+            'Your affirmations will appear here. Add one to get started.';
+          wrapper.appendChild(empty);
+        }
+      }else{
+        if(table.style.getPropertyValue('display')==='none')table.style.removeProperty('display');
+        existing?.remove();
+      }
+      const head=table.querySelector('thead');
+      if(head&&isNarrow)force(head,'display','none');
+      else if(head&&head.style.getPropertyValue('display')==='none')head.style.removeProperty('display');
+      rows.forEach(tr=>{
+        Array.from(tr.cells).forEach((cell,i)=>{
+          const label=labels[i]||'';
+          if(cell.dataset.mlvAndroidLabel!==label)cell.dataset.mlvAndroidLabel=label;
+        });
+      });
+    });
+    main.querySelectorAll('#tab-contracts .v194-hero').forEach(hero=>{
+      const p=hero.querySelector('.section-title p');
+      if(p&&p.textContent==='Filter by category. Search now reorders cards without re-rendering each key.')
+        p.textContent='Search, filter and track your weekly commitments.';
+      const hint=hero.querySelector('#v216ContractSearchCount');
+      if(hint?.textContent==='Cards stay rendered')hint.textContent='Matches appear first';
     });
     const body=main.querySelector('#mlv184JournalBody');
     if(body&&body.style.getPropertyValue('font-size')!=='16px')
