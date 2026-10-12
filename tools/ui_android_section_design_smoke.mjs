@@ -360,19 +360,19 @@ try{
     const filterDiagnosis=await page.evaluate(()=>({
       active:document.body.dataset.mlvAndroidTab,
       globalTab:window.state?.activeTab,
-      filter:window.v134AchFilter,
+      filter:window.v157Filter,
+      v157:document.querySelectorAll('#tab-achievements .v157-ach-card').length,
       v156:document.querySelectorAll('#tab-achievements .v156-ach-card').length,
-      v133:document.querySelectorAll('#tab-achievements .v133-ach').length,
       title:document.querySelector('#tab-achievements')?.textContent?.slice(0,200),
       mainTab:document.querySelector('#main > .tab.active')?.id
     }));
     console.log('ACHIEVEMENTS_ALL_FILTER_DIAG '+JSON.stringify({width,...filterDiagnosis}));
     await page.waitForFunction(()=>document.querySelectorAll(
-      '#tab-achievements .v156-ach-card').length>=20,null,{timeout:7000});
-    const allCount=await page.locator('#tab-achievements .v156-ach-card').count();
+      '#tab-achievements .v157-ach-card').length>=20,null,{timeout:7000});
+    const allCount=await page.locator('#tab-achievements .v157-ach-card').count();
     assert(allCount>=20,'Canonical Achievements gallery failed at '+width+
       ': '+JSON.stringify(await page.evaluate(()=>({
-        filter:window.v134AchFilter,activeTab:document.body.dataset.mlvAndroidTab,
+        filter:window.v157Filter,activeTab:document.body.dataset.mlvAndroidTab,
         content:document.getElementById('tab-achievements')?.textContent?.slice(0,200)
       }))));
     const unlocked=page.locator('#tab-achievements .v134-ach-filter button').filter({hasText:'Unlocked'});
@@ -381,11 +381,11 @@ try{
     await page.waitForFunction(initial=>
       document.querySelector('#tab-achievements .v134-ach-filter button.active')
         ?.textContent?.trim()==='Unlocked' &&
-      document.querySelectorAll('#tab-achievements .v156-ach-card').length<initial,
+      document.querySelectorAll('#tab-achievements .v157-ach-card').length<initial,
       allCount,{timeout:6000});
     await page.locator('#tab-achievements .v134-ach-filter button').filter({hasText:'All'}).click();
     await page.waitForFunction(initial=>document.querySelectorAll(
-      '#tab-achievements .v156-ach-card').length===initial,
+      '#tab-achievements .v157-ach-card').length===initial,
       allCount,{timeout:6000});
     const filterTarget=await page.evaluate(()=>{
       return [...document.querySelectorAll('#tab-achievements .v134-ach-filter button')]
