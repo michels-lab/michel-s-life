@@ -158,6 +158,42 @@ try{
   for(const id of ['contracts','projects','stats','settings']){
     audit.push(await route(id,360));
   }
+  // The calendar month grid must not be pushed below four stacked desktop
+  // summary cards. Measure rendered month metrics on both narrow phone widths.
+  for(const width of [412,360]){
+    await route('calendar',width);
+    const calendar=await page.evaluate(()=>{
+      const root=[...document.querySelectorAll(
+        '#tab-calendar .v30134-kpis,#tab-calendar .v30135-kpis')]
+        .find(el=>el.getClientRects().length);
+      if(!root)return null;
+      const rect=el=>{const r=el.getBoundingClientRect();return {
+        x:r.x,y:r.y,right:r.right,width:r.width,height:r.height};};
+      return {columns:getComputedStyle(root).gridTemplateColumns,
+        windowWidth:innerWidth,cards:[...root.children].map(rect),
+        monthCells:[...document.querySelectorAll(
+          '#tab-calendar .v30135-day,#tab-calendar .v30134-day')]
+          .filter(el=>el.getClientRects().length).map(cell=>({
+            date:cell.getAttribute('data-date'),
+            number:cell.querySelector('.v30135-daynum > span,.v30134-daynum > span')?.textContent.trim(),
+            metadata:getComputedStyle(cell.querySelector(
+              '.v30135-daymeta,.v30134-daymeta')).display,
+            dots:!!cell.querySelector('.v30135-stage-dots,.v30134-stage-dots')
+          }))};
+    });
+    assert(calendar&&calendar.cards.length===4&&calendar.columns.split(' ').length===2,
+      'Phone Calendar still stacks four desktop KPI cards: '+JSON.stringify(calendar));
+    assert(calendar.cards.every((tile,i)=>tile.width>=110&&tile.height>=85&&
+      tile.x>=-3&&tile.right<=width+3&&
+      (i%2===0||Math.abs(tile.y-calendar.cards[i-1].y)<=2)),
+      'Phone Calendar KPI layout clips or breaks row alignment: '+JSON.stringify(calendar));
+    assert(calendar.monthCells.length>=28 && calendar.monthCells.every(c=>
+      !!c.number && Number.isInteger(Number(c.number)) && c.metadata==='none' && c.dots),
+      'Calendar month cells still show clipped desktop Completed/Missed/XP copy: '+
+      JSON.stringify(calendar.monthCells.slice(0,5)));
+    audit.push({id:'calendar',width,calendar});
+  }
+
   // Story has a legacy-compatible route, but mobile render is still mandatory.
   audit.push(await route('story'));
 
@@ -258,6 +294,14 @@ try{
   // Real screenshots previously showed Focus label/value text collapsed into
   // a single line and a toast overlapping the persistent bottom nav.
   await route('dashboard');
+  // The canonical Dashboard can replace its hero after a fast section
+  // transition. Wait for that real hero before asking the mobile Focus view
+  // to attach; a fixed 280ms screenshot delay is not a readiness contract.
+  await page.waitForFunction(()=>!!document.querySelector(
+    '#tab-dashboard.active .v131-hero'),null,{timeout:12000});
+  await page.evaluate(()=>window.MichelsLifeMobileExperience?.updateFocus?.());
+  await page.waitForFunction(()=>!!document.querySelector(
+    '#mlv-android-today-focus .mlv-focus-today-copy span'),null,{timeout:7000});
   const todayLayout=await page.evaluate(()=>{
     const root=document.getElementById('mlv-android-today-focus');
     const copy=root?.querySelector('.mlv-focus-today-copy');
