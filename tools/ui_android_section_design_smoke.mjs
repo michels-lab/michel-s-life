@@ -106,6 +106,61 @@ try{
   // Story has a legacy-compatible route, but mobile render is still mandatory.
   audit.push(await route('story'));
 
+  // Real screenshots previously showed Focus label/value text collapsed into
+  // a single line and a toast overlapping the persistent bottom nav.
+  await route('dashboard');
+  const todayLayout=await page.evaluate(()=>{
+    const root=document.getElementById('mlv-android-today-focus');
+    const copy=root?.querySelector('.mlv-focus-today-copy');
+    const title=copy?.querySelector('strong');
+    const status=copy?.querySelector('span');
+    const a=title?.getBoundingClientRect(),b=status?.getBoundingClientRect();
+    return {display:copy?getComputedStyle(copy).display:'',
+      title:a?{bottom:a.bottom,top:a.top}:null,
+      status:b?{bottom:b.bottom,top:b.top}:null};
+  });
+  assert(todayLayout.title&&todayLayout.status &&
+    todayLayout.status.top>=todayLayout.title.bottom-1,
+    'Today Focus title/status overlap: '+JSON.stringify(todayLayout));
+  const opened=await page.evaluate(()=>window.MichelsLifeMobileExperience?.openFocus?.());
+  assert(opened===true,'Android Focus must open from canonical mobile action');
+  const focusStats=await page.evaluate(()=>[...document.querySelectorAll(
+    '#mlv-android-focus-sheet .mlv-android-focus-stats>div')].map(panel=>{
+      const a=panel.querySelector('span')?.getBoundingClientRect();
+      const b=panel.querySelector('strong')?.getBoundingClientRect();
+      return {titleBottom:a?.bottom,valueTop:b?.top,panelWidth:panel.getBoundingClientRect().width};
+    }));
+  assert(focusStats.length===2 && focusStats.every(x=>x.panelWidth>0 &&
+    x.valueTop>=x.titleBottom-1),
+    'Focus session labels overlap values: '+JSON.stringify(focusStats));
+  await page.evaluate(()=>window.MichelsLifeMobileExperience.closeFocus());
+  const miniAndToast=await page.evaluate(()=>{
+    window.FocusStoryV30162?.toggleFocus?.();
+    window.MichelsLifeMobileExperience?.updateFocus?.();
+    window.toast?.('Layout smoke','Toast must not block navigation');
+    const min=document.getElementById('mlv-android-mini-focus');
+    const nav=document.getElementById('mlv-android-bottom-nav');
+    const toast=document.getElementById('toastWrap');
+    const rect=e=>{const r=e?.getBoundingClientRect();return r?{left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height}:null};
+    const copy=min?.querySelector('.mlv-mini-text');
+    return {
+      mini:rect(min),toast:rect(toast),nav:rect(nav),
+      miniCopyDisplay:copy?getComputedStyle(copy).display:'',
+      miniToggle:rect(min?.querySelector('.mlv-mini-toggle'))
+    };
+  });
+  assert(miniAndToast.mini?.width>=360 && miniAndToast.miniCopyDisplay==='flex',
+    'Android mini Focus is cropped or missing: '+JSON.stringify(miniAndToast));
+  assert(miniAndToast.toast?.bottom<=miniAndToast.mini.top+2 &&
+    miniAndToast.mini.bottom<=miniAndToast.nav.top+2,
+    'Android toast/mini Focus obstructs permanent bottom navigation: '+JSON.stringify(miniAndToast));
+  await page.evaluate(()=>{
+    const f=window.FocusStoryV30162?.focusState?.();
+    if(f?.status==='running')window.FocusStoryV30162?.toggleFocus?.();
+    window.MichelsLifeMobileExperience?.updateFocus?.();
+    document.getElementById('toastWrap')?.replaceChildren();
+  });
+
   // A real visual animation needs different computed positions at two
   // moments; CSS declaring an animation is not sufficient.
   await page.setViewportSize({width:412,height:915});
