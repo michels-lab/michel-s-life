@@ -256,6 +256,60 @@
         min-height:49px!important;font-size:13px!important;
         margin:0!important;padding:10px!important
       }
+      /* The canonical Weekly Planner lives inside Missions. At 360px its
+         desktop 4-column form and 34px weekday buttons are not tap-safe.
+         Android owns presentation only; scheduling, XP and persistence stay
+         in the existing v251 shared planner implementation. */
+      @media(max-width:720px){
+        html[data-mlv-platform="android"] #tab-missions .v169-weekly-planner{
+          box-sizing:border-box!important;min-width:0!important;
+          width:100%!important;max-width:100%!important;overflow-wrap:anywhere!important
+        }
+        html[data-mlv-platform="android"] #tab-missions .v169-weekly-head{
+          display:flex!important;flex-wrap:wrap!important;
+          align-items:center!important;gap:9px!important
+        }
+        html[data-mlv-platform="android"] #tab-missions .v169-weekly-form{
+          display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+          align-items:stretch!important;gap:9px!important;min-width:0!important
+        }
+        html[data-mlv-platform="android"] #tab-missions
+        .v169-weekly-form :is(input,select,button){
+          box-sizing:border-box!important;width:100%!important;
+          min-width:0!important;min-height:48px!important;
+          font-size:16px!important;touch-action:manipulation!important
+        }
+        html[data-mlv-platform="android"] #tab-missions .v169-weekly-template{
+          display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+          gap:12px!important;max-width:100%!important;min-width:0!important;
+          box-sizing:border-box!important;padding:14px!important
+        }
+        html[data-mlv-platform="android"] #tab-missions .v169-day-row{
+          display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;
+          gap:8px!important;justify-content:stretch!important;
+          min-width:0!important;width:100%!important
+        }
+        html[data-mlv-platform="android"] #tab-missions .v169-day-btn{
+          box-sizing:border-box!important;min-width:0!important;
+          width:100%!important;min-height:48px!important;
+          height:48px!important;padding:8px 0!important;
+          border-radius:13px!important;font-size:14px!important;
+          touch-action:manipulation!important
+        }
+        html[data-mlv-platform="android"] #tab-missions .v169-template-actions{
+          display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+          gap:8px!important;min-width:0!important;justify-content:stretch!important
+        }
+        html[data-mlv-platform="android"] #tab-missions .v169-small-btn{
+          min-width:0!important;min-height:48px!important;
+          font-size:12px!important;touch-action:manipulation!important
+        }
+        html[data-mlv-platform="android"] #tab-missions
+        :is(.v169-weekly-form input,.v169-weekly-form select,.v169-day-btn,.v169-small-btn):focus-visible{
+          outline:2px solid var(--ui-accent,#75e4ff)!important;
+          outline-offset:2px!important
+        }
+      }
       @media(min-width:700px){
         html[data-mlv-platform="android"] [data-mlv216-qc] .mlv216-qc-card{
           margin-bottom:12px!important;border-radius:24px
