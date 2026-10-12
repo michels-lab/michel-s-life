@@ -90,10 +90,14 @@ try{
           width:cell.getBoundingClientRect().width
         }))
       }));
+      const affirmationEmpty=tab.querySelector('.mlv-android-affirmations-empty');
+      const affirmationHeader=tab.querySelector('#tab-affirmations .table thead');
       return {
         id,viewport:vw,documentWidth:document.documentElement.scrollWidth,
         main:bb(active),tab:bb(tab),cardCount:card.length,escaped,
         display:section.display,settingsButtons,contractBtns,projectBtns,contractKpis,affirmationRows,
+        affirmationEmpty:!!(affirmationEmpty&&affirmationEmpty.getClientRects().length),
+        affirmationHeaderDisplay:affirmationHeader?getComputedStyle(affirmationHeader).display:null,
         contractGrid:getComputedStyle(tab.querySelector('.v216-contract-grid')||tab).gridTemplateColumns,
         achievementGrid:getComputedStyle(tab.querySelector('.v156-ach-grid, .v133-ach-grid')||tab).gridTemplateColumns,
       };
@@ -109,10 +113,17 @@ try{
         x.width>=90&&x.display==='flex'&&x.valueTop>=x.labelBottom-1),
         'Contracts metric labels/values overlap in mobile columns: '+JSON.stringify(state));
     }
-    if(id==='affirmations'&&state.affirmationRows.length){
-      assert(state.affirmationRows.every(row=>row.width<=width-6&&row.columns.every(cell=>
-        cell.display==='flex'&&cell.label.length>0&&cell.width<=row.width)),
-        'Android affirmation editor still uses squeezed desktop columns: '+JSON.stringify(state));
+    if(id==='affirmations'){
+      assert(state.affirmationHeaderDisplay==='none',
+        'Affirmations still display cramped desktop table headers: '+JSON.stringify(state));
+      if(!state.affirmationRows.length){
+        assert(state.affirmationEmpty,
+          'No affirmations must show a readable mobile empty state: '+JSON.stringify(state));
+      }else{
+        assert(state.affirmationRows.every(row=>row.width<=width-6&&row.columns.every(cell=>
+          cell.display==='flex'&&cell.label.length>0&&cell.width<=row.width)),
+          'Android affirmation editor still uses squeezed desktop columns: '+JSON.stringify(state));
+      }
     }
     const filename=output+'/'+id+'-'+width+'.png';
     await page.screenshot({path:filename});
