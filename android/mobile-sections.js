@@ -1155,6 +1155,52 @@
     for(const b of actions?.querySelectorAll('button')||[])
       force(b,'min-height','49px');
   }
+  // The shared v217 modal applies desktop inline sizing after creation.
+  // Keep the canonical editor and save engine; Android owns final computed
+  // geometry using the same modal-observer approach as Projects.
+  function enforcePremiumEditor(){
+    if(!owned()||window.innerWidth>720)return;
+    const form=document.getElementById('v217ContractEditForm');
+    if(!form)return;
+    const force=(el,key,value)=>{
+      if(el&&(el.style.getPropertyValue(key)!==value||
+          el.style.getPropertyPriority(key)!=='important'))
+        el.style.setProperty(key,value,'important');
+    };
+    const backdrop=form.closest('.modal-backdrop');
+    const modal=form.closest('.modal');
+    for(const [key,value] of [
+      ['position','fixed'],['inset','0'],['display','flex'],
+      ['align-items','flex-end'],['justify-content','center'],
+      ['padding','0'],['overflow','hidden']])force(backdrop,key,value);
+    for(const [key,value] of [
+      ['width','100%'],['max-width','100vw'],['min-width','0'],
+      ['max-height','calc(100dvh - 8px)'],['box-sizing','border-box'],
+      ['margin','0'],['transform','none'],['overflow-y','auto'],
+      ['overflow-x','hidden'],['border-radius','22px 22px 0 0']])
+      force(modal,key,value);
+    const details=form.querySelector('.v217-form-grid');
+    force(details,'display','grid');
+    force(details,'grid-template-columns','minmax(0,1fr)');
+    const stats=form.querySelector('.v217-stat-grid');
+    force(stats,'display','grid');
+    force(stats,'grid-template-columns','repeat(3,minmax(0,1fr))');
+    for(const el of form.querySelectorAll('input:not([type="checkbox"]),select,textarea')){
+      for(const [key,value] of [['width','100%'],['min-width','0'],
+        ['min-height','48px'],['font-size','16px']])force(el,key,value);
+    }
+    for(const row of form.querySelectorAll('.v217-option'))
+      force(row,'min-height','44px');
+    const actions=form.querySelector(':scope > .actions');
+    force(actions,'position','sticky');
+    force(actions,'bottom','0');
+    force(actions,'display','grid');
+    force(actions,'grid-template-columns','repeat(2,minmax(0,1fr))');
+    for(const button of actions?.querySelectorAll('button')||[])
+      force(button,'min-height','48px');
+    force(modal?.querySelector('.modal-head .icon-btn'),'min-width','44px');
+    force(modal?.querySelector('.modal-head .icon-btn'),'min-height','44px');
+  }
   function startOwnership(){
     ensure();enforceRendered();
     const main=document.getElementById('main');
@@ -1164,9 +1210,13 @@
     document.addEventListener('click',()=>requestAnimationFrame(enforceRendered),true);
     const modal=document.getElementById('modalRoot');
     if(modal){
-      const modalObserver=new MutationObserver(enforceProjectEditor);
+      const modalObserver=new MutationObserver(()=>{
+        enforceProjectEditor();
+        enforcePremiumEditor();
+      });
       modalObserver.observe(modal,{childList:true,subtree:true});
       enforceProjectEditor();
+      enforcePremiumEditor();
     }
   }
   function audit(){
