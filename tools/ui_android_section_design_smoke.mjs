@@ -73,10 +73,12 @@ try{
         .filter(e=>e.getClientRects().length).slice(0,6).map(e=>bb(e).height);
       const contractBtns=[...tab.querySelectorAll('.v216-filter-chip')]
         .filter(e=>e.getClientRects().length).slice(0,6).map(e=>bb(e).height);
+      const projectBtns=[...tab.querySelectorAll('#tab-projects [data-v30106-action]')]
+        .filter(e=>e.getClientRects().length).slice(0,10).map(e=>bb(e).height);
       return {
         id,viewport:vw,documentWidth:document.documentElement.scrollWidth,
         main:bb(active),tab:bb(tab),cardCount:card.length,escaped,
-        display:section.display,settingsButtons,contractBtns,
+        display:section.display,settingsButtons,contractBtns,projectBtns,
         contractGrid:getComputedStyle(tab.querySelector('.v216-contract-grid')||tab).gridTemplateColumns,
         achievementGrid:getComputedStyle(tab.querySelector('.v156-ach-grid, .v133-ach-grid')||tab).gridTemplateColumns,
       };
@@ -86,6 +88,7 @@ try{
     assert(!state.escaped.length,'Android '+id+' clips cards: '+JSON.stringify(state));
     assert(state.settingsButtons.every(x=>x>=43.5),'Android Settings touch targets too small: '+JSON.stringify(state));
     assert(state.contractBtns.every(x=>x>=43.5),'Android Contracts category targets too small: '+JSON.stringify(state));
+    assert(state.projectBtns.every(x=>x>=43.5),'Android Projects action touch targets too small: '+JSON.stringify(state));
     const filename=output+'/'+id+'-'+width+'.png';
     await page.screenshot({path:filename});
     screenshots.push(filename);
@@ -94,19 +97,14 @@ try{
 
   // Verify actual computed layout across sections, not just stylesheet text.
   const audit=[];
-  for(const id of ['dashboard','contracts','stats','achievements','affirmations','settings']){
+  for(const id of ['dashboard','contracts','projects','stats','compare','weekly-review','achievements','affirmations','settings']){
     audit.push(await route(id));
   }
-  for(const id of ['contracts','stats','settings']){
+  for(const id of ['contracts','projects','stats','settings']){
     audit.push(await route(id,360));
   }
-  // Story has a separate legacy-compatible router. When present, confirm it
-  // can be reached without invoking desktop-only transitions or clipping.
-  const storyAvailable=await page.evaluate(()=>
-    !!document.querySelector('#v30171PrimaryNav [data-tab="story"]'));
-  if(storyAvailable){
-    audit.push(await route('story'));
-  }
+  // Story has a legacy-compatible route, but mobile render is still mandatory.
+  audit.push(await route('story'));
 
   // A real visual animation needs different computed positions at two
   // moments; CSS declaring an animation is not sufficient.
