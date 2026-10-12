@@ -898,8 +898,8 @@
     tile=document.createElement('div');
     tile.id='mlv-android-today-focus';
     tile.innerHTML='<span class="mlv-focus-today-icon" aria-hidden="true">◎</span>'+
-      '<span class="mlv-focus-today-copy"><strong>Focus session</strong>'+
-      '<span id="mlv-android-today-focus-status">Ready when you are</span></span>'+
+      '<div class="mlv-focus-today-copy"><strong>Focus session</strong>'+
+      '<span id="mlv-android-today-focus-status">Ready when you are</span></div>'+
       '<button type="button" id="mlv-android-today-focus-action">Start</button>';
     tile.querySelector('button').addEventListener('click',()=>{
       const api=focusApi(),state=api?.focusState?.();
@@ -915,6 +915,31 @@
     if(metrics)hero.insertBefore(tile,metrics);
     else hero.appendChild(tile);
     return tile;
+  }
+  function enforceFocusTextLayout(tile){
+    const force=(el,entries)=>{
+      if(!el)return;
+      for(const [name,value] of entries){
+        if(el.style.getPropertyValue(name)!==value||
+           el.style.getPropertyPriority(name)!=='important')
+          el.style.setProperty(name,value,'important');
+      }
+    };
+    const column=[['display','flex'],['flex-direction','column'],['align-items','flex-start'],
+      ['justify-content','center'],['position','relative'],['gap','5px'],['min-width','0']];
+    const label=[['display','block'],['position','relative'],['width','100%'],
+      ['height','auto'],['inset','auto'],['line-height','1.35']];
+    force(tile?.querySelector('.mlv-focus-today-copy'),column);
+    force(tile?.querySelector('.mlv-focus-today-copy strong'),label);
+    force(tile?.querySelector('.mlv-focus-today-copy #mlv-android-today-focus-status'),label);
+    force(mini?.querySelector('.mlv-mini-text'),column);
+    force(mini?.querySelector('.mlv-mini-text strong'),label);
+    force(mini?.querySelector('.mlv-mini-text span'),label);
+    root?.querySelectorAll('.mlv-android-focus-stats>div').forEach(box=>{
+      force(box,column);
+      force(box.querySelector('span'),label);
+      force(box.querySelector('strong'),label);
+    });
   }
   // Canonical desktop renderer and dynamic visual style layers may reapply
   // 46px button geometry after Android's theme stylesheet. Focus is an
@@ -947,6 +972,7 @@
     if(!root||!nav)return;
     const api=focusApi(),f=api?.focusState?.();
     const tile=ensureTodayFocus();
+    enforceFocusTextLayout(tile);
     if(!f){
       if(!root.hidden)q('#mlv-android-focus-status',root).textContent='Focus is loading';
       if(mini)mini.hidden=true;
