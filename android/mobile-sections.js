@@ -727,6 +727,16 @@
       if(el.style.getPropertyValue('grid-template-columns')!==val)
         el.style.setProperty('grid-template-columns',val,'important');
     });
+    // The canonical month view re-applies display:grid !important to compact
+    // day metadata after style injection. Hide only those redundant strings
+    // on phone month cells; the day number/dots and day-detail state remain.
+    if(window.innerWidth<=720){
+      main.querySelectorAll('#tab-calendar .v30135-daymeta, #tab-calendar .v30135-dayline, #tab-calendar .v30134-daymeta').forEach(el=>{
+        if(el.style.getPropertyValue('display')!=='none'||
+           el.style.getPropertyPriority('display')!=='important')
+          el.style.setProperty('display','none','important');
+      });
+    }
     main.querySelectorAll('.v30135-day').forEach(el=>{
       // Desktop month cells inherit a 112px minimum. A phone shows the day
       // number/dots only; scheduled tasks remain accessible in day details.
