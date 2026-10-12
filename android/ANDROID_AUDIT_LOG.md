@@ -1,3 +1,10 @@
+## 2026-10-12 — PRIVATE signed Galaxy candidate gate for Android Direct 0.2.6
+
+- **Implementation:** after release-preparation PR #102 cleared all six exact-head checks and merged to `main`, introduce a narrow, marker-triggered workflow `android-direct-private-candidate-v026.yml`: reuse the existing Android build with `build_direct: true`, permanently pinned Direct signing identity and artifact verification, then install the **actually signed APK** on Android 16 with the shared native onboarding/relaunch screenshot smoke (APK path is an explicit environment override; existing debug default unchanged).
+- **Distribution:** signed APK and native screenshots remain GitHub Actions artifacts only (30-day retention). **Not a public release**, no v3.0.218 tag and no approved Galaxy physical-device claim. Public v3.0.217 / 0.2.5 remains unchanged. The separate unified release-intent file is intentionally absent.
+- **Validation:** candidate workflow must reach `success` on the exact merged commit before reporting an installable private APK; check versionName 0.2.6, versionCode 8, package ID, pinned signing certificate and manifest/download SHA-256. Screenshots do not by themselves establish correct visual composition or same-account sync.
+- **Remaining:** owner-installed Samsung Galaxy review, Windows↔Android real Supabase sync (issue #28), lock-screen/Doze Focus alarm delivery (issue #53), installed Windows Home/About screenshot gate (draft PR #62), Android physical acceptance (issue #54).
+
 ## 2026-10-12 — Unified release *candidate preparation* (Windows 3.0.218 / Android Direct 0.2.6)
 
 - **Decision:** prepare version metadata, Android Direct versionCode **8**, source checks, Windows installer fallback and a new separately gated unified workflow for the accumulated design changes. This is **not** publication; public Windows v3.0.217 / Android v0.2.5 remains the installed version until validated signed artifacts ship.
