@@ -473,6 +473,55 @@ try{
     'Android bottom navigation was not restored after mission editor closed');
 
 
+  // The Weekly Planner is a canonical Missions feature, not a second Android
+  // task model. Create a real synthetic template, tap a weekday, then measure
+  // the actual seven action targets at both common phone widths.
+  await page.waitForSelector('#tab-missions #v169WeeklyForm',{state:'visible',timeout:10000});
+  await page.locator('#v169WeeklyForm input[name="name"]').fill('Android weekly phone QA');
+  await page.locator('#v169WeeklyForm button[type="submit"]').click();
+  await page.waitForFunction(()=>[...document.querySelectorAll(
+    '#tab-missions .v169-weekly-template h3')].some(x=>
+      (x.textContent||'').includes('Android weekly phone QA')),null,{timeout:10000});
+  for(const width of [412,360]){
+    await page.setViewportSize({width,height:915});
+    const weeklyGeometry=await page.evaluate(()=>{
+      const planner=document.querySelector('#tab-missions .v169-weekly-planner');
+      const form=planner?.querySelector('#v169WeeklyForm');
+      const template=[...(planner?.querySelectorAll('.v169-weekly-template')||[])]
+        .find(el=>el.textContent?.includes('Android weekly phone QA'));
+      const boxes=els=>[...els].map(el=>{
+        const r=el.getBoundingClientRect();
+        return {left:r.left,right:r.right,top:r.top,width:r.width,height:r.height};
+      });
+      return {
+        viewport:innerWidth,documentWidth:document.documentElement.scrollWidth,
+        formCols:form?getComputedStyle(form).gridTemplateColumns:'',
+        formInputs:boxes(form?.querySelectorAll('input,select,button')||[]),
+        weekday:boxes(template?.querySelectorAll('.v169-day-btn')||[]),
+        actions:boxes(template?.querySelectorAll('.v169-small-btn')||[])
+      };
+    });
+    ok(weeklyGeometry.documentWidth<=width+3&&
+      weeklyGeometry.formCols.split(' ').length===1&&
+      weeklyGeometry.formInputs.length===4&&
+      weeklyGeometry.formInputs.every(x=>x.height>=47.5&&x.left>=-3&&x.right<=width+3),
+      'Android weekly form uses clipped desktop columns or tiny inputs: '+JSON.stringify(weeklyGeometry));
+    ok(weeklyGeometry.weekday.length===7&&
+      weeklyGeometry.weekday.every(x=>x.height>=47.5&&x.width>=44&&x.right<=width+3)&&
+      Math.abs(weeklyGeometry.weekday[0].top-weeklyGeometry.weekday[3].top)<=3&&
+      weeklyGeometry.weekday[4].top>=weeklyGeometry.weekday[0].top+43&&
+      weeklyGeometry.actions.length>=3&&weeklyGeometry.actions.every(x=>x.height>=47.5),
+      'Android weekly 7-day planner cannot be tapped reliably: '+JSON.stringify(weeklyGeometry));
+  }
+  await page.locator('#tab-missions .v169-weekly-template')
+    .filter({hasText:'Android weekly phone QA'})
+    .locator('.v169-day-btn[data-day="3"]').click();
+  await page.waitForFunction(()=>[...document.querySelectorAll(
+    '#tab-missions .v169-weekly-template')].some(template=>
+      template.textContent?.includes('Android weekly phone QA')&&
+      !!template.querySelector('.v169-day-btn[data-day="3"].active')),null,{timeout:10000});
+  await page.setViewportSize({width:412,height:915});
+
   // Settings was the slowest Android transition because legacy code rebuilt it repeatedly.
   await page.evaluate(()=>window.__mlvAndroidFastRoute?.('settings'));
   await page.waitForFunction(
