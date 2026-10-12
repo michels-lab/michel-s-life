@@ -350,8 +350,21 @@ try{
   // gallery, not merely render nice category chips on mobile.
   for(const width of [412,360]){
     await route('achievements',width);
+    // Prior tests/locale or persisted category state can leave the live
+    // Achievements view filtered. Reset using the REAL All control before
+    // measuring the complete canonical gallery, not a private flag.
+    const all=page.locator('#tab-achievements .v134-ach-filter button')
+      .filter({hasText:/^All$/});
+    assert(await all.count()===1,'Canonical Achievements All control absent at '+width);
+    await all.click();
+    await page.waitForFunction(()=>document.querySelectorAll(
+      '#tab-achievements .v156-ach-card').length>=20,null,{timeout:7000});
     const allCount=await page.locator('#tab-achievements .v156-ach-card').count();
-    assert(allCount>=20,'Canonical Achievements gallery failed to render');
+    assert(allCount>=20,'Canonical Achievements gallery failed at '+width+
+      ': '+JSON.stringify(await page.evaluate(()=>({
+        filter:window.v134AchFilter,activeTab:document.body.dataset.mlvAndroidTab,
+        content:document.getElementById('tab-achievements')?.textContent?.slice(0,200)
+      }))));
     const unlocked=page.locator('#tab-achievements .v134-ach-filter button').filter({hasText:'Unlocked'});
     assert(await unlocked.count()===1,'Unlocked Achievements filter is inaccessible');
     await unlocked.click();
