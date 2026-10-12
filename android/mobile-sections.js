@@ -401,6 +401,33 @@
         min-height:44px!important;min-width:44px!important;
         touch-action:manipulation!important
       }
+      /* Individual review rows still used desktop-sized text/buttons.
+         Keep each contract/health row fully readable and tappable on phone. */
+      html[data-mlv-platform="android"] #tab-weekly-review .v30105-review-list,
+      html[data-mlv-platform="android"] #tab-weekly-review .v30105-review-grid{
+        min-width:0!important;max-width:100%!important
+      }
+      html[data-mlv-platform="android"] #tab-weekly-review .v30105-review-item{
+        display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+        gap:10px!important;min-width:0!important;max-width:100%!important;
+        box-sizing:border-box!important;overflow-wrap:anywhere!important;
+        align-items:stretch!important;padding:12px!important
+      }
+      html[data-mlv-platform="android"] #tab-weekly-review .v30105-review-item h4{
+        font-size:14px!important;line-height:1.35!important;
+        overflow-wrap:anywhere!important
+      }
+      html[data-mlv-platform="android"] #tab-weekly-review .v30105-review-item p{
+        font-size:12px!important;line-height:1.5!important
+      }
+      html[data-mlv-platform="android"] #tab-weekly-review .v30105-review-actions{
+        display:flex!important;justify-content:flex-start!important;
+        flex-wrap:wrap!important;gap:8px!important;width:100%!important
+      }
+      html[data-mlv-platform="android"] #tab-weekly-review .v30105-review-actions button{
+        box-sizing:border-box!important;min-height:44px!important;
+        padding:9px 12px!important;font-size:12px!important
+      }
       html[data-mlv-platform="android"] #tab-weekly-review .v30105-outlook-grid{
         display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
         gap:8px!important
