@@ -36,6 +36,22 @@
 - **Conflict and safety:** every restore/import must create a local safety backup; compare revision + account before overwrite. No raw secrets or user content in CI logs. Validate deliberate simultaneous same-revision edits, Use Cloud/Use This Device and offline-reconnect flows on real devices.
 - **Platform UX:** desktop About remains in fixed header; Android bottom navigation must never obscure the app, keyboard, system navigation bar or modal controls. Hide redundant desktop dock entry points only if an equivalent working mobile entry point exists.
 
+## Android visual finish — 2026-10-12 candidate
+
+The Android-only `mobile-sections.js` layer now gives Contracts, Projects,
+Statistics, Achievements and Story a common narrow-screen card/form geometry
+without replacing their canonical data/rendering. Calendar gains a compact
+surface, 46px toolbar controls, more readable day labels and keyboard focus
+outlines. Journal gains a comfortable editor and responsive writing sheet.
+Header actions, drawer navigation, Settings category controls and Dashboard
+panel toggles have minimum 44–48px targets. This is a **source candidate**,
+not a claim that every section is visually finished on a Galaxy.
+
+Acceptance still required: same-head Android UI/browser screenshots, installed
+Android 16 APK screenshot/launch, 360px narrow-screen check, all sections'
+touch/keyboard interactions, and physical Galaxy review. Any section whose
+layout or behavior fails these gates remains open under issue #54.
+
 ## Release-level gates
 
 1. Static source validation and unit/domain tests for affected shared state.
@@ -45,4 +61,4 @@
 5. Real-device Windows↔Galaxy Supabase test for features claiming provider integration. CI mocks must not be relabeled as provider/device verification.
 6. Publish Windows and Android on **one** GitHub release only when explicitly authorized; owner performs visual review after release; documented regressions still require repair.
 
-**Current public baseline:** Windows v3.0.216 + Android v0.2.3. Android code on `main` can be ahead of that release; never infer a v0.2.4 public APK solely from merged source or passing CI.
+**Current public baseline:** Windows v3.0.217 + Android Direct v0.2.5. Android code on `main` can be ahead of that release; never infer a v0.2.4 public APK solely from merged source or passing CI.
