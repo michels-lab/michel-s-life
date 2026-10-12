@@ -188,7 +188,7 @@ try{
       (i%2===0||Math.abs(tile.y-calendar.cards[i-1].y)<=2)),
       'Phone Calendar KPI layout clips or breaks row alignment: '+JSON.stringify(calendar));
     assert(calendar.monthCells.length>=28 && calendar.monthCells.every(c=>
-      /^\\d+$/.test(c.number||'') && c.metadata==='none' && c.dots),
+      !!c.number && Number.isInteger(Number(c.number)) && c.metadata==='none' && c.dots),
       'Calendar month cells still show clipped desktop Completed/Missed/XP copy: '+
       JSON.stringify(calendar.monthCells.slice(0,5)));
     audit.push({id:'calendar',width,calendar});
