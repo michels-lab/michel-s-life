@@ -647,7 +647,7 @@
         z-index:2147483000!important
       }
       html[data-mlv-platform="android"] body.mlv-android-timer-active #toastWrap{
-        bottom:calc(160px + env(safe-area-inset-bottom,0px))!important
+        bottom:calc(185px + env(safe-area-inset-bottom,0px))!important
       }
       html[data-mlv-platform="android"] #toastWrap .toast{
         box-sizing:border-box!important;max-width:100%!important;width:100%!important;
@@ -935,6 +935,11 @@
     force(mini?.querySelector('.mlv-mini-text'),column);
     force(mini?.querySelector('.mlv-mini-text strong'),label);
     force(mini?.querySelector('.mlv-mini-text span'),label);
+    force(mini?.querySelector('.mlv-mini-toggle'),[
+      ['min-height','44px'],['height','44px'],
+      ['min-width','74px'],['width','auto'],
+      ['position','relative'],['line-height','1.2']
+    ]);
     root?.querySelectorAll('.mlv-android-focus-stats>div').forEach(box=>{
       force(box,column);
       force(box.querySelector('span'),label);
