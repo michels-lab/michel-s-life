@@ -365,6 +365,45 @@ try{
     audit.push({id:'weekly-review',width,review});
   }
 
+  // The real Weekly Review list (not only its four summary tiles) must
+  // fit a thumb-sized screen, and Open must navigate to a canonical Contract.
+  for(const width of [412,360]){
+    await route('weekly-review',width);
+    const reviewRows=await page.evaluate(()=>{
+      const bounds=e=>{const r=e.getBoundingClientRect();return {
+        left:r.left,right:r.right,top:r.top,width:r.width,height:r.height};};
+      return [...document.querySelectorAll('#tab-weekly-review .v30105-review-item')]
+        .filter(e=>e.getClientRects().length).map(e=>({
+          item:bounds(e),
+          title:e.querySelector('h4')?.textContent.trim()||'',
+          font:e.querySelector('h4')?parseFloat(getComputedStyle(e.querySelector('h4')).fontSize):0,
+          buttons:[...e.querySelectorAll('.v30105-review-actions button')]
+            .filter(b=>b.getClientRects().length).map(b=>({
+              label:b.textContent.trim(),...bounds(b)
+            }))
+        }));
+    });
+    assert(reviewRows.length>=1,
+      'Android Weekly Review did not show seeded contract rows at '+width);
+    assert(reviewRows.every(row=>row.item.left>=-3&&row.item.right<=width+3&&
+      row.title&&row.font>=13.5&&row.buttons.every(b=>
+        b.left>=-3&&b.right<=width+3&&b.height>=43.5&&b.width>=43.5)),
+      'Android Weekly Review still has cramped/cropped desktop rows: '+
+      JSON.stringify({width,reviewRows}));
+    const screenshot=output+'/weekly-review-rows-'+width+'.png';
+    await page.screenshot({path:screenshot});
+    screenshots.push(screenshot);
+    const open=page.locator('#tab-weekly-review [data-v30105-action="open-contract"]').first();
+    assert(await open.count()===1,
+      'Android Weekly Review has no real Open Contract action at '+width);
+    await open.click();
+    await page.waitForFunction(()=>
+      document.getElementById('tab-contracts')?.classList.contains('active') &&
+      !!document.querySelector('#tab-contracts .v216-contract-card'),
+      null,{timeout:9000});
+    audit.push({id:'weekly-review-real-contract',width,rows:reviewRows.length,opensCanonical:true});
+  }
+
   // Projects uses its ONE canonical shared create/edit/mission-link form.
   // Check actual touch/hit-test geometry, save through that form and verify
   // the resulting card exists, rather than mocking the project state.
