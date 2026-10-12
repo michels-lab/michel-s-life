@@ -38,8 +38,15 @@ python android/tools/prepare_bundle.py --bundle /path/to/AppBundle.zip --assets 
 
 Then build with Android Studio or Gradle 9.6+ / JDK 17.
 
-The GitHub workflow produces a debug test APK automatically.
+The GitHub workflow produces a debug test APK automatically. The official sideload channel publishes only permanently signed Android Direct APKs, which are separate from debug builds and Play upload signing. Current verified public Direct APK: `MichelsLife-Android-Direct-v0.2.5.apk` under the unified Windows v3.0.217 + Android v0.2.5 release (`michels-lab/michel-s-life-releases`). Older v0.2.2 debug-signed TEST APKs cannot update in place to the permanently signed Direct build; back up user data before migration. Same-certificate v0.2.4 → v0.2.5 upgrades are expected to work, but Galaxy data-preservation testing is still outstanding.
 
+
+## Current verification boundary
+
+- Android 16 emulator install/launch and automated browser gesture tests do **not** establish a successful physical Galaxy install or guaranteed touch interaction.
+- Native Focus notification scheduling is implemented but battery optimization, reboot, notification permission and background delivery on a physical Samsung device remain outstanding.
+- Same-account Windows ↔ Android Supabase conflict/restore and Google OAuth/Drive flows still require real-device validation.
+- The desktop visual system, accepted themes, backgrounds and Chapter assets must not be redesigned as part of Android fixes.
 
 ## Google Play distribution
 
@@ -47,8 +54,8 @@ The Play Store track uses an Android App Bundle (AAB).
 
 Current Play identity:
 - package: `com.michelslab.michelslife`
-- versionCode: `5`
-- versionName: `0.2.3`
+- versionCode: `7`
+- versionName: `0.2.5`
 - targetSdk: `36`
 
 The Gradle release build supports an upload keystore through environment variables:
@@ -63,7 +70,7 @@ For GitHub Actions, store the keystore itself as Base64 plus the three credentia
 - `ANDROID_UPLOAD_KEY_ALIAS`
 - `ANDROID_UPLOAD_KEY_PASSWORD`
 
-The workflow decodes the keystore only into the temporary runner filesystem and sets `ANDROID_UPLOAD_KEYSTORE_PATH` there. Never commit the upload keystore or its passwords to this repository.
+The workflow decodes the keystore only into the temporary runner filesystem and sets `ANDROID_UPLOAD_KEYSTORE_PATH` there. Direct APK signing is a **different** permanent signing identity (configured with `ANDROID_DIRECT_*` environment/secrets and pinned certificate validation). Never substitute a CI-generated debug key for public Direct distribution. Never commit the upload keystore or its passwords to this repository.
 
 Without the keystore secret, CI deliberately emits an explicitly named unsigned Play preparation AAB. With all signing secrets present, CI emits a signed AAB and verifies its JAR signature before uploading the artifact.
 
