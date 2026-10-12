@@ -69,12 +69,15 @@ try{
         nameFont:parseFloat(getComputedStyle(name).fontSize),
         modalScrollable:modal.scrollHeight>modal.clientHeight,
         width:innerWidth,height:innerHeight,
-        overflow:document.documentElement.scrollWidth-innerWidth};
+        overflow:document.documentElement.scrollWidth-innerWidth,
+        navVisibility:getComputedStyle(document.getElementById('mlv-android-bottom-nav')).visibility,
+        backdropZ:Number(getComputedStyle(modal.closest('.modal-backdrop')).zIndex)};
     });
     ok(geo.modal.left>=-3&&geo.modal.right<=width+3&&
       geo.modal.top>=-3&&geo.modal.bottom<=623&&
       geo.cols.split(' ').length===1&&geo.nameFont>=16&&
-      geo.name.height>=47.5&&geo.overflow<=3&&geo.modalScrollable,
+      geo.name.height>=47.5&&geo.overflow<=3&&geo.modalScrollable&&
+      geo.navVisibility==='hidden'&&geo.backdropZ>2147482980,
       'Live Premium editor is clipped or traps form at '+width+': '+JSON.stringify(geo));
     await page.screenshot({path:output+'/premium-editor-'+width+'-focused.png'});
     await form.locator('button[type="submit"]').click();
@@ -87,6 +90,9 @@ try{
         (item.description||item.desc)==='Android shared Premium save smoke';
     },{label,key},{timeout:8000});
     ok(await form.count()===0,'Premium editor still open after Save at '+width);
+    await page.waitForFunction(()=>
+      getComputedStyle(document.getElementById('mlv-android-bottom-nav')).visibility!=='hidden',
+      null,{timeout:3000});
     const updated=page.locator('#tab-contracts .v216-contract-card[data-contract-key="'+key+'"]');
     ok((await updated.textContent()||'').includes(label),
       'Updated contract not rendered after canonical save at '+width);
