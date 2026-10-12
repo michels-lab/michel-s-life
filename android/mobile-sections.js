@@ -686,6 +686,17 @@
           el.style.getPropertyPriority(key)!=='important'))
         el.style.setProperty(key,value,'important');
     };
+    // The canonical Chapter renderer keeps 34px/37px desktop control sizes
+    // with !important and can re-render after our stylesheet is injected.
+    // As with Contracts, own the actual rendered inputs on narrow Android
+    // screens; leave desktop and larger tablet form behavior unchanged.
+    if(window.innerWidth<=720){
+      main.querySelectorAll('#tab-story .v30162-story-form input, #tab-story .v30162-story-form textarea, #tab-story .v30162-story-form select, #tab-story .v30162-story-form button').forEach(el=>{
+        force(el,'min-height','48px');
+        force(el,'box-sizing','border-box');
+        if(el.matches('input,textarea,select'))force(el,'font-size','16px');
+      });
+    }
     main.querySelectorAll('#tab-contracts .v194-hero').forEach(hero=>{
       const searchPanel=hero.querySelector('.v216-search-panel');
       const progress=hero.querySelector('.v194-kpis');
