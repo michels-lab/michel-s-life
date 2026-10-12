@@ -291,6 +291,61 @@ try{
     audit.push({id:'weekly-review',width,review});
   }
 
+  // Projects uses its ONE canonical shared create/edit/mission-link form.
+  // Check actual touch/hit-test geometry, save through that form and verify
+  // the resulting card exists, rather than mocking the project state.
+  for(const width of [412,360]){
+    await route('projects',width);
+    const projectName='Android project editor QA '+width;
+    await page.locator('#tab-projects [data-v30106-action="new-project"]').click();
+    await page.waitForSelector('#modalRoot #v30106ProjectForm',{state:'visible',timeout:9000});
+    await page.locator('#v30106ProjectForm input[name="name"]').fill(projectName);
+    await page.locator('#v30106ProjectForm input[name="description"]').fill('Mobile actual form persistence');
+    const link=page.locator('#v30106ProjectForm .v30106-link-option input[type="checkbox"]').first();
+    if(await link.count())await link.check();
+    await page.locator('#v30106ProjectForm button[type="submit"]').scrollIntoViewIfNeeded();
+    const editor=await page.evaluate(()=>{
+      const form=document.getElementById('v30106ProjectForm');
+      const modal=document.querySelector('#modalRoot .modal');
+      const nav=document.getElementById('mlv-android-bottom-nav');
+      const topbar=document.getElementById('mlv-android-topbar');
+      const save=form?.querySelector('button[type="submit"]');
+      const bound=el=>{const r=el?.getBoundingClientRect();return r?
+        {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height}:null};
+      const b=bound(save);
+      const hit=b&&document.elementFromPoint((b.left+b.right)/2,(b.top+b.bottom)/2);
+      return {viewport:innerWidth,docWidth:document.documentElement.scrollWidth,
+        modal:bound(modal),save:b,
+        saveReceivesTap:!!hit&&(hit===save||save.contains(hit)),
+        cols:getComputedStyle(form.querySelector('.v30106-editor-grid')).gridTemplateColumns,
+        fields:[...form.querySelectorAll('.v30106-editor-grid input,.v30106-editor-grid select')].map(bound),
+        modalScroll:modal?.scrollTop,
+        navHidden:nav&&getComputedStyle(nav).visibility==='hidden',
+        topbarHidden:topbar&&getComputedStyle(topbar).visibility==='hidden'};
+    });
+    assert(editor.modal && editor.modal.top>=-3&&editor.modal.bottom<=918&&
+      editor.modal.width<=width+3&&editor.docWidth<=width+3&&
+      editor.cols.split(' ').length===1,
+      'Android Projects editor escapes phone or keeps desktop columns: '+JSON.stringify(editor));
+    assert(editor.fields.length===4&&editor.fields.every(x=>x.height>=47.5) &&
+      editor.save.height>=48&&editor.save.top>=-3&&editor.save.bottom<=915&&
+      editor.saveReceivesTap&&editor.navHidden&&editor.topbarHidden,
+      'Android Projects editor Save is blocked or fields too small: '+JSON.stringify(editor));
+    const filename=output+'/projects-editor-'+width+'.png';
+    await page.screenshot({path:filename});
+    screenshots.push(filename);
+    await page.locator('#v30106ProjectForm button[type="submit"]').click();
+    await page.waitForFunction(name=>[...document.querySelectorAll(
+      '#tab-projects .v30106-project-card h3')].some(el=>el.textContent?.trim()===name),
+      projectName,{timeout:10000});
+    assert(await page.locator('#modalRoot #v30106ProjectForm').count()===0,
+      'Project editor remains open after saving canonical project');
+    const navVisible=await page.evaluate(()=>getComputedStyle(
+      document.getElementById('mlv-android-bottom-nav')).visibility!=='hidden');
+    assert(navVisible,'Android navigation was not restored after closing Projects editor');
+    audit.push({id:'project-editor',width,editor,saveConfirmed:true});
+  }
+
   // Real screenshots previously showed Focus label/value text collapsed into
   // a single line and a toast overlapping the persistent bottom nav.
   await route('dashboard');
