@@ -158,6 +158,40 @@ try{
   for(const id of ['contracts','projects','stats','settings']){
     audit.push(await route(id,360));
   }
+  // Premium Contracts must have a real compact disclosure: do not leave
+  // tiny always-visible desktop chips or an expandable label that cannot open.
+  for(const width of [412,360]){
+    await route('contracts',width);
+    const details=page.locator('#tab-contracts details.mlv-android-contract-filter-details').first();
+    assert(await details.count()===1,'Android Contracts filter disclosure is missing at '+width);
+    const summary=details.locator('summary');
+    const chips=details.locator('.v216-filter-chip');
+    assert(await chips.count()>=2,'Canonical Contracts category chips are missing');
+    if(await details.evaluate(el=>el.open))await summary.click();
+    assert(!(await details.evaluate(el=>el.open)) && !(await chips.first().isVisible()),
+      'Contracts filters do not collapse on a phone at '+width);
+    await summary.click();
+    assert(await details.evaluate(el=>el.open) && await chips.first().isVisible(),
+      'Contracts category disclosure did not open by a real touch click at '+width);
+    const targets=await details.evaluate(el=>
+      [...el.querySelectorAll('.v216-filter-chip')].filter(chip=>chip.getClientRects().length)
+        .map(chip=>{const r=chip.getBoundingClientRect();return {
+          label:chip.textContent.trim(),left:r.left,right:r.right,width:r.width,height:r.height
+        };})
+    );
+    assert(targets.length>=2 && targets.every(t=>
+      t.width>=43.5&&t.height>=43.5&&t.left>=-3&&t.right<=width+3) &&
+      await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+3),
+      'Contracts category chips are too small or overflow: '+JSON.stringify({width,targets}));
+    const filename=output+'/contracts-categories-open-'+width+'.png';
+    await page.screenshot({path:filename});
+    screenshots.push(filename);
+    await summary.click();
+    assert(!(await details.evaluate(el=>el.open)),
+      'Contracts category disclosure failed to close at '+width);
+    audit.push({id:'contracts-disclosure',width,targets:targets.length,openClose:true});
+  }
+
   // The calendar month grid must not be pushed below four stacked desktop
   // summary cards. Measure rendered month metrics on both narrow phone widths.
   for(const width of [412,360]){
