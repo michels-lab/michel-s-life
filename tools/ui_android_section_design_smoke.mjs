@@ -170,7 +170,16 @@ try{
       const rect=el=>{const r=el.getBoundingClientRect();return {
         x:r.x,y:r.y,right:r.right,width:r.width,height:r.height};};
       return {columns:getComputedStyle(root).gridTemplateColumns,
-        windowWidth:innerWidth,cards:[...root.children].map(rect)};
+        windowWidth:innerWidth,cards:[...root.children].map(rect),
+        monthCells:[...document.querySelectorAll(
+          '#tab-calendar .v30135-day,#tab-calendar .v30134-day')]
+          .filter(el=>el.getClientRects().length).map(cell=>({
+            date:cell.getAttribute('data-date'),
+            number:cell.querySelector('.v30135-daynum > span,.v30134-daynum > span')?.textContent.trim(),
+            metadata:getComputedStyle(cell.querySelector(
+              '.v30135-daymeta,.v30134-daymeta')).display,
+            dots:!!cell.querySelector('.v30135-stage-dots,.v30134-stage-dots')
+          }))};
     });
     assert(calendar&&calendar.cards.length===4&&calendar.columns.split(' ').length===2,
       'Phone Calendar still stacks four desktop KPI cards: '+JSON.stringify(calendar));
@@ -178,6 +187,10 @@ try{
       tile.x>=-3&&tile.right<=width+3&&
       (i%2===0||Math.abs(tile.y-calendar.cards[i-1].y)<=2)),
       'Phone Calendar KPI layout clips or breaks row alignment: '+JSON.stringify(calendar));
+    assert(calendar.monthCells.length>=28 && calendar.monthCells.every(c=>
+      /^\\d+$/.test(c.number||'') && c.metadata==='none' && c.dots),
+      'Calendar month cells still show clipped desktop Completed/Missed/XP copy: '+
+      JSON.stringify(calendar.monthCells.slice(0,5)));
     audit.push({id:'calendar',width,calendar});
   }
 
