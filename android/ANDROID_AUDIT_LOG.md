@@ -1,3 +1,10 @@
+## 2026-10-12 — Unified release *candidate preparation* (Windows 3.0.218 / Android Direct 0.2.6)
+
+- **Decision:** prepare version metadata, Android Direct versionCode **8**, source checks, Windows installer fallback and a new separately gated unified workflow for the accumulated design changes. This is **not** publication; public Windows v3.0.217 / Android v0.2.5 remains the installed version until validated signed artifacts ship.
+- **Release safeguards:** the new `release-unified-v3218-a026.yml` listens only for an exact **future** isolated `.michelslab/release-intents/unified-v3218-a026.txt` commit on `main`; that intent file has intentionally **not** been created. It will require same-source Source validation / Android UI smoke / UI smoke, a real built+installed Windows Setup and Portable checks, Android Direct certificate/version/package/digest checks plus Android16 test APK install, then check a complete 13-file draft before public promotion. Never reuse old v3.0.217 binaries or overwrite its tag.
+- **Intent:** avoid claiming release readiness solely from merged browser tests. The current draft PR #62 Windows installed Home/About visual CDP capture is unresolved. Issues #28 (real-account sync) and #53 (locked-screen/alarm delivery) remain open. Issue #54 has been reopened because physical Galaxy visual/gesture and provider acceptance have not actually been recorded.
+- **Next acceptance:** test *the exact candidate branch* with CI; merge only if required Windows, Android, source and UI checks succeed. Then decide if the channel is a public test build or a stable customer release after reviewing blockers. No auto-release or new signed customer APK authorized in this preparation PR.
+
 ## 2026-10-12 — Android design-first parity integration ledger (confirmed source; not a new public APK)
 
 - **Workstream:** issue #54, mobile-first design without changing approved Windows Themes, typography, Chapter scenes, brand assets, or shared state ownership.

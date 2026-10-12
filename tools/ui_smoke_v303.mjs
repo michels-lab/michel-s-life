@@ -159,7 +159,7 @@ try{
     const author=document.querySelector('[data-mlv-author-brand="canonical"]');
     const lab=document.querySelector('.mlvdev-studio-lockup img');
     const socials=[...document.querySelectorAll('.mlvdev-social')];
-    const version=[...document.querySelectorAll('.mlvdev-meta b')].map(x=>(x.textContent||'').trim()).find(x=>/^v3\.0\.217$/.test(x))||'';
+    const version=[...document.querySelectorAll('.mlvdev-meta b')].map(x=>(x.textContent||'').trim()).find(x=>/^v3\.0\.218$/.test(x))||'';
     return {
       avatar:{w:avatar?.naturalWidth||0,h:avatar?.naturalHeight||0,cw:avatar?.getBoundingClientRect().width||0,ch:avatar?.getBoundingClientRect().height||0,src:avatar?.getAttribute('src')||''},
       productSrc:product?.getAttribute('src')||'',productWidth:product?.naturalWidth||0,
@@ -175,7 +175,7 @@ try{
   ok(aboutBrand.labSrc==='assets/michels_lab_lockup.png'&&aboutBrand.labWidth>100,'About parent brand is not using the canonical Michel’s Lab lockup: '+JSON.stringify(aboutBrand));
   ok(aboutBrand.socialCount===5&&aboutBrand.socialIcons===5,'About socials must expose five visible icon+name links: '+JSON.stringify(aboutBrand));
   ok(JSON.stringify(aboutBrand.socialNames)===JSON.stringify(['Instagram','Facebook','LinkedIn','GitHub','Email']),'About social order/names drifted: '+JSON.stringify(aboutBrand.socialNames));
-  ok(aboutBrand.version==='v3.0.217','About does not show the current build version: '+JSON.stringify(aboutBrand));
+  ok(aboutBrand.version==='v3.0.218','About does not show the current build version: '+JSON.stringify(aboutBrand));
   await page.screenshot({path:`${out}/03-about.png`,fullPage:true});
 
   await page.evaluate(()=>{
