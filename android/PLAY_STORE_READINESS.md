@@ -1,6 +1,6 @@
 # Michel's Life — Google Play readiness
 
-Last reviewed: 2026-10-03
+Last reviewed: 2026-10-12
 
 This file is the release checklist for the Android/Google Play build. It complements `ANDROID_AUDIT_LOG.md`; the audit log records what happened, while this file records what Play Console still requires.
 
@@ -8,12 +8,12 @@ This file is the release checklist for the Android/Google Play build. It complem
 
 - App name: **Michel's Life**
 - Package: `com.michelslab.michelslife`
-- Android version: `0.2.1`
-- `versionCode`: `3`
+- Android version: `0.2.5`
+- `versionCode`: `7`
 - `compileSdk`: `36`
 - `targetSdk`: `36`
 - `minSdk`: `26`
-- Distribution format: Android App Bundle (`.aab`) for Google Play; debug APK only for direct device testing.
+- Distribution format: Android App Bundle (`.aab`) for Google Play; permanently signed Direct APK for sideload distribution; `.aab` for Google Play. CI debug APKs are test-only.
 - Production updates: Google Play-managed for Play-installed builds.
 
 Google Play requires new mobile apps and app updates submitted from 2026-08-31 onward to target Android 16 / API 36 or later. Michel's Life already targets API 36.
@@ -21,9 +21,13 @@ Google Play requires new mobile apps and app updates submitted from 2026-08-31 o
 Official reference:
 - https://support.google.com/googleplay/android-developer/answer/11926878
 
+## Current distribution status
+
+The official combined customer release is Windows v3.0.217 + Android Direct v0.2.5 at https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.217. The Direct APK's stable certificate and the Google Play upload/app-signing identities are distinct. No Play Store publication is established by the GitHub release. Physical Galaxy one-finger scrolling, timer notification delivery after backgrounding/reboot, backup/restore and Windows ↔ Galaxy sync are pending independent acceptance tests.
+
 ## Signing / Play App Signing
 
-Status: **UPLOAD KEY CREATED; CI SIGNING STILL BLOCKED until the four permanent GitHub Actions secrets are configured.**
+Status: **Play upload key is documented; Play Console upload and Play-delivered build remain unverified.** Confirm the four upload-key secrets and successful signed-AAB CI evidence before labeling Play submission ready. The permanent Android Direct signing key is separate; a verified Direct APK does not imply Play-signing readiness.
 
 Google Play App Signing uses two different keys:
 1. **Upload key** — held by the developer and used to sign the AAB uploaded to Play Console.
@@ -69,7 +73,7 @@ This is critical: a test APK can authorize correctly while the Play-delivered bu
 ## Testing tracks
 
 Recommended release order:
-1. Direct v0.2.1 test APK on a physical phone.
+1. Current permanently signed Direct v0.2.5 APK on a physical phone, with upgrade/data-retention and Focus notification tests.
 2. Play Console **Internal testing** with the signed AAB.
 3. Closed testing if required for the developer account.
 4. Production only after the Android validation checklist is green.
