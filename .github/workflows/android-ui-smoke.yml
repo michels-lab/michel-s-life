@@ -17,6 +17,7 @@ on:
       - 'tools/ui_android_ime_navigation_smoke.mjs'
       - 'tools/ui_android_quick_capture_keyboard_smoke.mjs'
       - 'tools/ui_android_premium_editor_smoke.mjs'
+      - 'tools/android_screenshot_gallery.py'
       - 'tools/ui_supabase_android_sync_smoke.mjs'
       - 'src/MichelsLife/frontend/**'
       - 'branding/**'
@@ -122,6 +123,12 @@ jobs:
         run: |
           export MLV_UI_URL=http://127.0.0.1:4174
           node tools/ui_supabase_android_sync_smoke.mjs
+
+      - name: Build offline Android screenshot gallery (even after earlier failures)
+        if: always()
+        run: |
+          python tools/android_screenshot_gallery.py --self-test
+          python tools/android_screenshot_gallery.py --directory artifacts/android-ui-smoke
 
       - uses: actions/upload-artifact@v4
         if: always()
