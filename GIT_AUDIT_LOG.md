@@ -939,3 +939,9 @@ Synchronized only the managed blocks in AGENTS.md and .github/copilot-instructio
 - A previously overlooked timeline-specific `applyBackupJson` restore cleared device storage and reintroduced arbitrary legacy backup keys. This was inconsistent with the central shareable-key allowlist used by Supabase/Google Drive restores.
 - Scoped source fix reuses the existing authoritative `MLVCloudSharedStorageV30216` contract, preserving local sign-in, device identity and other private provider/device state while restoring only allowed user data.
 - New synthetic executable regression check runs in Android build and desktop UI smoke. No Theme/Chapter/assets, signing, installer or public version changes. Require exact-head green CI and actual two-device provider/restore tests before closing P0 issue #55.
+
+## 2026-10-12 — Android-only IME navigation QA candidate
+
+- Scope: clear the fixed Android bottom tabs while the canonical Journal editor has text focus, using the already-existing Android keyboard-editing class; restore navigation on blur.
+- Evidence: new Playwright 360/412px compact-viewport typing and screenshot gate, wired to Android UI smoke; `android/ANDROID_AUDIT_LOG.md` carries the section acceptance criteria.
+- State: PR candidate, exact-SHA CI pending. Physical Galaxy IME/safe-area acceptance, Android 16 installed screenshot review, issue #54 and public releases remain open. Windows approved visuals and Chapters untouched.

@@ -1181,3 +1181,10 @@ Still required before Play submission:
 - **Mobile-only design change:** At <=720px, retain the original shared Statistics renderer and data but replace the fixed desktop minimum with `repeat(2,minmax(0,1fr))`; use readable 11px labels, 23–29px metric values, 82px minimum card height, 9px gutters and proper overflow wrapping. No desktop Styles, assets, Themes, approved Chapters, state or release changes.
 - **Executable proof:** Android Chromium section screenshot smoke now inspects **all six actual KPI nodes** at 412x915 and 360x915: exactly two computed grid tracks, tile widths >=112px, heights >=90px, label-value separation and no viewport escaping. Full CI, candidate APK compilation/install and image review required on final PR SHA before integration.
 - **Status:** source candidate only. On-device Galaxy screenshot/performance and same-account data sync remain independent.
+
+## 2026-10-12 — Android keyboard/IME navigation clearance (candidate)
+
+- **Finding:** The Android five-tab bottom navigation stays fixed during text editing; the existing `mlv-android-keyboard-editing` class only hides the floating Focus timer. With `adjustResize`, a reduced keyboard viewport can leave less space for Journal input and obstruct controls.
+- **Scoped change:** Android-only stylesheet hides the five-tab bar while an editable input owns focus. The existing focusin/focusout ownership remains authoritative, and the navigation returns after blur. No Windows, Themes, Chapter art, domain state or version change.
+- **New executable regression:** `tools/ui_android_ime_navigation_smoke.mjs` exercises canonical Journal at 360px and 412px, resizes the browser viewport to 620px, focuses and types into the real editor, checks 16px text and horizontal bounds, captures focused/restored screenshots, and requires the bottom tabs to return after blur. The new gate runs in Android UI smoke.
+- **Evidence gate:** Source branch candidate; exact-head CI and screenshots are pending. This is NOT a native Galaxy soft-keyboard, one-finger, cutout or IME-insets acceptance test. Issue #54 remains open. No APK or release published.

@@ -58,6 +58,7 @@
         padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))!important
       }
       #mlv-android-bottom-nav,#mlv-android-focus-overlay{display:none}
+      html[data-mlv-platform="android"] body.mlv-android-keyboard-editing #mlv-android-bottom-nav{display:none!important}
       html[data-mlv-platform="android"] #mlv-android-bottom-nav{
         position:fixed;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
         left:0;right:0;bottom:0;z-index:2147482980;box-sizing:border-box;
