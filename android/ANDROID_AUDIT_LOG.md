@@ -1173,3 +1173,11 @@ Still required before Play submission:
 - **Observed failed candidate (412×915):** Actual Settings/About portrait still rendered at **300×400px**, overriding the intended 180px photo sizing. Fixed through the same narrow-device rendered ownership pass, without replacing the canonical image or changing desktop styles.
 - **Observed failed candidate (360×915):** Settings horizontal category-nav buttons remained **40px high** because the *original Android bridge* set `min-height:40px!important` after section styles were applied. Root-cause correction updates the bridge’s mobile Settings inline and stylesheet min-height to 48px, instead of adding yet another competing Android override.
 - Each defect was caught in a real Chromium layout test against the candidate frontend; all new changes require exact-head CI including Android APK installation. These source corrections do **not** establish physical Galaxy approval. No release built/published from failing candidates.
+
+
+## 2026-10-12 — Compact Statistics overview on narrow Android phones (candidate)
+
+- **Rendered finding:** Reviewing PR #74's actual GitHub Actions screenshot artifact, `sections/stats-360.png` showed the canonical six Stats summary cards vertically stacked because desktop `.stat-hero-grid` insists on `minmax(170px,1fr)`. At 360px this wastes the first several scroll screens despite numbers and titles fitting in two ~150px cards.
+- **Mobile-only design change:** At <=720px, retain the original shared Statistics renderer and data but replace the fixed desktop minimum with `repeat(2,minmax(0,1fr))`; use readable 11px labels, 23–29px metric values, 82px minimum card height, 9px gutters and proper overflow wrapping. No desktop Styles, assets, Themes, approved Chapters, state or release changes.
+- **Executable proof:** Android Chromium section screenshot smoke now inspects **all six actual KPI nodes** at 412x915 and 360x915: exactly two computed grid tracks, tile widths >=112px, heights >=90px, label-value separation and no viewport escaping. Full CI, candidate APK compilation/install and image review required on final PR SHA before integration.
+- **Status:** source candidate only. On-device Galaxy screenshot/performance and same-account data sync remain independent.

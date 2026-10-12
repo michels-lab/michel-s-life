@@ -292,6 +292,31 @@
     html[data-mlv-platform="android"] #tab-goals .goal-control-bar button{
       min-height:44px!important
     }
+    /* A 360px phone previously displayed six 170px-min desktop stat tiles
+       as one long column. Two compact, readable columns preserve the
+       canonical numbers while bringing the full activity overview into view. */
+    @media(max-width:720px){
+      html[data-mlv-platform="android"] #tab-stats .stat-hero-grid{
+        display:grid!important;
+        grid-template-columns:repeat(2,minmax(0,1fr))!important;
+        gap:9px!important;min-width:0!important
+      }
+      html[data-mlv-platform="android"] #tab-stats .stat-hero{
+        box-sizing:border-box!important;min-width:0!important;
+        width:auto!important;min-height:96px!important;
+        padding:12px!important;border-radius:16px!important;
+        overflow:hidden!important
+      }
+      html[data-mlv-platform="android"] #tab-stats .stat-hero small{
+        display:block!important;max-width:100%!important;
+        line-height:1.35!important;font-size:11px!important;
+        overflow-wrap:anywhere!important
+      }
+      html[data-mlv-platform="android"] #tab-stats .stat-hero b{
+        display:block!important;margin-top:6px!important;
+        font-size:clamp(23px,6vw,29px)!important;line-height:1.12!important
+      }
+    }
     /* Statistics, Compare, Reviews: charts can shrink; no wide desktop columns. */
     html[data-mlv-platform="android"] #tab-stats .chart-card,
     html[data-mlv-platform="android"] #tab-stats .stat-hero,
@@ -706,6 +731,20 @@
         force(el,'height','auto');
         force(el,'aspect-ratio','3 / 4');
         force(el,'object-fit','cover');
+      });
+    }
+    // The shared Statistics renderer can reapply a desktop auto-fit grid
+    // with !important after Android injects its responsive stylesheet.
+    // Keep this ownership in the same canonical post-render geometry pass.
+    if(window.innerWidth<=720){
+      main.querySelectorAll('#tab-stats .stat-hero-grid').forEach(grid=>{
+        force(grid,'display','grid');
+        force(grid,'grid-template-columns','repeat(2,minmax(0,1fr))');
+        force(grid,'gap','9px');
+      });
+      main.querySelectorAll('#tab-stats .stat-hero').forEach(card=>{
+        force(card,'min-height','96px');
+        force(card,'min-width','0');
       });
     }
     main.querySelectorAll('#tab-contracts .v194-hero').forEach(hero=>{
