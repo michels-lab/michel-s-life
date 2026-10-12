@@ -1032,6 +1032,65 @@
       body.style.setProperty('font-size','16px','important');
   }
   let observer=null;
+  // The shared v30106 modal and Android bridge can apply late !important
+  // desktop geometry after the stylesheet. Own the rendered phone form and
+  // restore underlying chrome immediately after the canonical save/close.
+  function enforceProjectEditor(){
+    if(!owned())return;
+    const form=document.getElementById('v30106ProjectForm');
+    const nav=document.getElementById('mlv-android-bottom-nav');
+    const top=document.getElementById('mlv-android-topbar');
+    const mini=document.getElementById('mlv-android-mini-focus');
+    const visible=!!form && window.innerWidth<=720;
+    const force=(el,key,val)=>{
+      if(el&&(el.style.getPropertyValue(key)!==val||
+          el.style.getPropertyPriority(key)!=='important'))
+        el.style.setProperty(key,val,'important');
+    };
+    for(const el of [nav,top,mini]){
+      if(!el)continue;
+      if(visible){
+        force(el,'visibility','hidden');
+        force(el,'pointer-events','none');
+      }else{
+        if(el.style.getPropertyValue('visibility')==='hidden'&&
+           el.style.getPropertyPriority('visibility')==='important')
+          el.style.removeProperty('visibility');
+        if(el.style.getPropertyValue('pointer-events')==='none'&&
+           el.style.getPropertyPriority('pointer-events')==='important')
+          el.style.removeProperty('pointer-events');
+      }
+    }
+    if(!visible)return;
+    const backdrop=form.closest('.modal-backdrop');
+    const modal=form.closest('.modal');
+    for(const [key,val] of [
+      ['position','fixed'],['inset','0'],['display','flex'],
+      ['align-items','flex-end'],['justify-content','center'],
+      ['padding','0'],['overflow','hidden']])force(backdrop,key,val);
+    for(const [key,val] of [
+      ['width','100%'],['max-width','100vw'],['min-width','0'],
+      ['max-height','calc(100dvh - 8px)'],
+      ['box-sizing','border-box'],['margin','0'],
+      ['transform','none'],['overflow-y','auto'],['overflow-x','hidden'],
+      ['border-radius','20px 20px 0 0']])force(modal,key,val);
+    const details=form.querySelector('.v30106-editor-grid');
+    force(details,'display','grid');
+    force(details,'grid-template-columns','minmax(0,1fr)');
+    for(const el of form.querySelectorAll('input:not([type="checkbox"]),select,textarea')){
+      force(el,'width','100%');
+      force(el,'min-width','0');
+      force(el,'min-height','48px');
+      force(el,'font-size','16px');
+    }
+    const actions=form.querySelector(':scope > .actions');
+    force(actions,'position','sticky');
+    force(actions,'bottom','0');
+    force(actions,'display','grid');
+    force(actions,'grid-template-columns','repeat(2,minmax(0,1fr))');
+    for(const b of actions?.querySelectorAll('button')||[])
+      force(b,'min-height','49px');
+  }
   function startOwnership(){
     ensure();enforceRendered();
     const main=document.getElementById('main');
@@ -1039,6 +1098,12 @@
     observer=new MutationObserver(()=>enforceRendered());
     observer.observe(main,{childList:true,subtree:true});
     document.addEventListener('click',()=>requestAnimationFrame(enforceRendered),true);
+    const modal=document.getElementById('modalRoot');
+    if(modal){
+      const modalObserver=new MutationObserver(enforceProjectEditor);
+      modalObserver.observe(modal,{childList:true,subtree:true});
+      enforceProjectEditor();
+    }
   }
   function audit(){
     const mission=document.querySelector('#main .v132-mission');
