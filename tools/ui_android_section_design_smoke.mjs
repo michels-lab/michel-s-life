@@ -103,7 +103,8 @@ try{
       return {
         id,viewport:vw,documentWidth:document.documentElement.scrollWidth,
         main:bb(active),tab:bb(tab),cardCount:card.length,escaped,
-        display:section.display,settingsButtons,contractBtns,projectBtns,contractKpis,affirmationRows,\n        statsKpis,statsGridColumns:statGrid?getComputedStyle(statGrid).gridTemplateColumns:null,
+        display:section.display,settingsButtons,contractBtns,projectBtns,contractKpis,affirmationRows,
+        statsKpis,statsGridColumns:statGrid?getComputedStyle(statGrid).gridTemplateColumns:null,
         affirmationEmpty:!!(affirmationEmpty&&affirmationEmpty.getClientRects().length),
         affirmationHeaderDisplay:affirmationHeader?getComputedStyle(affirmationHeader).display:null,
         contractGrid:getComputedStyle(tab.querySelector('.v216-contract-grid')||tab).gridTemplateColumns,
