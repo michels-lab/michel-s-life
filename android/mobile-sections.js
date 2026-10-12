@@ -697,6 +697,17 @@
         if(el.matches('input,textarea,select'))force(el,'font-size','16px');
       });
     }
+    if(window.innerWidth<=720){
+      // Desktop About CSS may restyle the canonical 210/300px portrait after
+      // mobile rules load. Keep the genuine photo capped to a phone-safe card.
+      main.querySelectorAll('#tab-settings [data-v30171-pane="about"] .mlvdev-avatar').forEach(el=>{
+        force(el,'width','180px');
+        force(el,'max-width','100%');
+        force(el,'height','auto');
+        force(el,'aspect-ratio','3 / 4');
+        force(el,'object-fit','cover');
+      });
+    }
     main.querySelectorAll('#tab-contracts .v194-hero').forEach(hero=>{
       const searchPanel=hero.querySelector('.v216-search-panel');
       const progress=hero.querySelector('.v194-kpis');
