@@ -82,6 +82,14 @@ try{
           width:card.getBoundingClientRect().width,
           display:getComputedStyle(card).display};
       });
+      const statGrid=tab.querySelector('.stat-hero-grid');
+      const statsKpis=[...tab.querySelectorAll('.stat-hero')].map(card=>{
+        const rect=card.getBoundingClientRect();
+        const label=card.querySelector('small')?.getBoundingClientRect();
+        const value=card.querySelector('b')?.getBoundingClientRect();
+        return {left:rect.left,right:rect.right,top:rect.top,width:rect.width,
+          height:rect.height,labelBottom:label?.bottom,valueTop:value?.top};
+      });
       const affirmationRows=[...tab.querySelectorAll('#tab-affirmations .table tbody tr')].slice(0,3).map(row=>({
         width:row.getBoundingClientRect().width,
         columns:[...row.cells].map(cell=>({
@@ -95,7 +103,7 @@ try{
       return {
         id,viewport:vw,documentWidth:document.documentElement.scrollWidth,
         main:bb(active),tab:bb(tab),cardCount:card.length,escaped,
-        display:section.display,settingsButtons,contractBtns,projectBtns,contractKpis,affirmationRows,
+        display:section.display,settingsButtons,contractBtns,projectBtns,contractKpis,affirmationRows,\n        statsKpis,statsGridColumns:statGrid?getComputedStyle(statGrid).gridTemplateColumns:null,
         affirmationEmpty:!!(affirmationEmpty&&affirmationEmpty.getClientRects().length),
         affirmationHeaderDisplay:affirmationHeader?getComputedStyle(affirmationHeader).display:null,
         contractGrid:getComputedStyle(tab.querySelector('.v216-contract-grid')||tab).gridTemplateColumns,
@@ -112,6 +120,16 @@ try{
       assert(state.contractKpis.length===4&&state.contractKpis.every(x=>
         x.width>=90&&x.display==='flex'&&x.valueTop>=x.labelBottom-1),
         'Contracts metric labels/values overlap in mobile columns: '+JSON.stringify(state));
+    }
+    if(id==='stats'){
+      const k=state.statsKpis;
+      assert(k.length===6 && state.statsGridColumns?.split(' ').length===2,
+        'Statistics activity overview must be 2 columns on phone: '+JSON.stringify(state));
+      assert(k.every((tile,index)=>tile.width>=112&&tile.height>=90&&
+        tile.left>=-3&&tile.right<=width+3&&
+        tile.valueTop>=tile.labelBottom-1 &&
+        (index%2===0 || Math.abs(tile.top-k[index-1].top)<2)),
+        'Statistics cards are cramped, overlapping or outside viewport: '+JSON.stringify(state));
     }
     if(id==='affirmations'){
       assert(state.affirmationHeaderDisplay==='none',
