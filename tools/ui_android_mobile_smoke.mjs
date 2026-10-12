@@ -834,6 +834,40 @@ try{
     &&mobileCalendar.overflow<=2,
     'Android Calendar still uses a sideways desktop grid: '+JSON.stringify(mobileCalendar));
   await page.screenshot({path:screenshot.endsWith('.png')?screenshot.slice(0,-4)+'-mobile-calendar.png':screenshot+'-mobile-calendar.png'});
+  // Phone Calendar MUST navigate a real selected date and view, not merely
+  // fit seven static desktop columns. Exercise the canonical month/agenda
+  // settings and actual day click at two touch-screen widths.
+  for(const width of [412,360]){
+    await page.setViewportSize({width,height:915});
+    await page.evaluate(()=>window.__mlvAndroidFastRoute?.('calendar'));
+    await page.waitForSelector('#tab-calendar .v30135-day[data-date]',{state:'visible'});
+    const cell=page.locator('#tab-calendar .v30135-day[data-date]').nth(5);
+    const date=await cell.getAttribute('data-date');
+    const before=await cell.boundingBox();
+    ok(!!date&&before&&before.width>=30&&before.height>=44,
+      'Calendar phone day is not a usable tap target: '+JSON.stringify({width,date,before}));
+    await cell.click();
+    await page.waitForFunction(date=>{
+      return window.state?.settings?.v30135CalendarSelected===date &&
+        !!document.querySelector('#tab-calendar .v30135-day.selected[data-date="'+date+'"]');
+    },date,{timeout:7000});
+    await page.locator('#tab-calendar [data-v30135-cal="view"][data-view="agenda"]').click();
+    await page.waitForFunction(()=>window.state?.settings?.v30135CalendarView==='agenda'&&
+      !!document.querySelector('#tab-calendar .v30135-agenda'),null,{timeout:7000});
+    await page.locator('#tab-calendar [data-v30135-cal="view"][data-view="month"]').click();
+    await page.waitForFunction(()=>window.state?.settings?.v30135CalendarView==='month'&&
+      !!document.querySelector('#tab-calendar .v30135-grid'),null,{timeout:7000});
+    const selected=await page.evaluate(date=>({
+      expected:date,selected:window.state.settings.v30135CalendarSelected,
+      marked:!!document.querySelector('#tab-calendar .v30135-day.selected[data-date="'+date+'"]'),
+      documentWidth:document.documentElement.scrollWidth,viewport:innerWidth
+    }),date);
+    ok(selected.marked&&selected.selected===date&&
+      selected.documentWidth<=width+3,
+      'Calendar lost selected day when switching Month/Agenda: '+JSON.stringify(selected));
+  }
+  await page.setViewportSize({width:412,height:915});
+
   await page.evaluate(()=>window.__mlvAndroidFastRoute?.('journal'));
   await page.waitForSelector('#main #mlv184JournalBody',{state:'visible',timeout:9000});
   const mobileJournal=await page.evaluate(()=>{
