@@ -1124,3 +1124,11 @@ Still required before Play submission:
 - Physical acceptance still required: direct v0.2.4→0.2.5 upgrade retaining user state; touch scrolling, onboarding and modal footer/keyboard on Galaxy; locked/background/reboot Focus notification behavior and battery optimization; permission rejection; Supabase two-device upload/download, concurrent edits/conflict/restore; Google OAuth/Calendar/Drive; safety export and recovery.
 - Google Play submission, Google-held app-signing certificate OAuth setup, and actual store install remain provider-bound/unverified. Do not mark complete based only on AAB existence.
 - No product frontend, approved visual assets, Windows runtime, signing configuration or public release was changed in this documentation reconciliation.
+
+
+## 2026-10-12 — Android Focus pending alarm recovery after reboot/package replacement (candidate)
+
+- **Finding:** Issue #53 had a working one-shot `AlarmManager` Focus mirror while the process is backgrounded, but Android discards pending system alarms at reboot. Previously, no manifest receiver restored the pending delivery. Package upgrades also needed an idempotent re-arm path.
+- **Implementation:** A non-exported `FocusAlarmBootReceiver` handles Android `BOOT_COMPLETED` and `MY_PACKAGE_REPLACED`, using only existing device-local `NativeFocusAlarm` token/mode/deadline metadata to re-arm `RTC_WAKEUP` with `setAndAllowWhileIdle`. Receiver is granted `RECEIVE_BOOT_COMPLETED`. Recovery rejects corrupt token/mode, already elapsed, and implausibly future deadlines; cancellation clears stale metadata. No duplicate timer/session/XP engine, no new cloud keys, no platform/visual/version/release changes.
+- **Automated safeguards:** Android UX source validator checks receiver permission/non-export and token/staleness guards; Gradle/Android APK CI still required on this exact candidate head. Actual phone reboot, Doze/battery optimization, notification denial and delivery timestamps remain **NOT VERIFIED**.
+- **State:** source candidate in PR, not yet merged or published. Even after compile smoke, issue #53 must stay open until real device and wider reminder/Windows tests pass.

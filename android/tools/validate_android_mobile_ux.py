@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
+import re
 
 ROOT = Path(__file__).resolve().parents[1]
 bridge = (ROOT / "android-bridge.js").read_text(encoding="utf-8")
@@ -11,6 +12,7 @@ manifest = (ROOT / "app/src/main/AndroidManifest.xml").read_text(encoding="utf-8
 adaptive_icon = ROOT / "app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml"
 adaptive_round_icon = ROOT / "app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml"
 launcher_foreground = ROOT / "app/src/main/res/drawable/ic_launcher_foreground.xml"
+focus_alarm = (ROOT / "app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt").read_text(encoding="utf-8")
 
 required_bridge = [
     "window.__MICHELSLIFE_ANDROID_BRIDGE__='0.2.5'",
@@ -99,6 +101,27 @@ if 'android:icon="@mipmap/ic_launcher"' not in manifest or 'android:roundIcon="@
     raise SystemExit("Android manifest is not using the canonical Michel's Life launcher resources")
 if 'android:windowSoftInputMode="adjustResize"' not in manifest:
     raise SystemExit("Android mission/Journal sheets must resize above the soft keyboard")
+
+# Reboot/package upgrade clears Android AlarmManager state; ensure an existing
+# canonical deadline is re-armed without fabricating a new Focus session.
+if 'android.permission.RECEIVE_BOOT_COMPLETED' not in manifest:
+    raise SystemExit("Focus alarm recovery needs RECEIVE_BOOT_COMPLETED permission")
+if 'android.intent.action.BOOT_COMPLETED' not in manifest or 'android.intent.action.MY_PACKAGE_REPLACED' not in manifest:
+    raise SystemExit("Native Focus recovery boot/upgrade broadcasts are not registered")
+if not re.search(r'<receiver\s+android:name="\.FocusAlarmBootReceiver"\s+android:exported="false"', manifest):
+    raise SystemExit("Focus recovery receiver must be registered and non-exported")
+
+for token in (
+        "fun recoverAfterBoot(context: Context)",
+        "token != \"$mode:$deadline\"",
+        "deadline <= now || deadline > now + MAX_FUTURE_MS",
+        "alarm.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, deadline, intent(context, token))",
+        "class FocusAlarmBootReceiver : BroadcastReceiver()",
+        "Intent.ACTION_BOOT_COMPLETED",
+        "Intent.ACTION_MY_PACKAGE_REPLACED",
+):
+    if token not in focus_alarm:
+        raise SystemExit("Focus reboot recovery contract missing: " + token)
 
 for path in (adaptive_icon, adaptive_round_icon, launcher_foreground):
     if not path.exists() or path.stat().st_size == 0:
