@@ -292,6 +292,31 @@
     html[data-mlv-platform="android"] #tab-goals .goal-control-bar button{
       min-height:44px!important
     }
+    /* A 360px phone previously displayed six 170px-min desktop stat tiles
+       as one long column. Two compact, readable columns preserve the
+       canonical numbers while bringing the full activity overview into view. */
+    @media(max-width:720px){
+      html[data-mlv-platform="android"] #tab-stats .stat-hero-grid{
+        display:grid!important;
+        grid-template-columns:repeat(2,minmax(0,1fr))!important;
+        gap:9px!important;min-width:0!important
+      }
+      html[data-mlv-platform="android"] #tab-stats .stat-hero{
+        box-sizing:border-box!important;min-width:0!important;
+        width:auto!important;min-height:92px!important;
+        padding:12px!important;border-radius:16px!important;
+        overflow:hidden!important
+      }
+      html[data-mlv-platform="android"] #tab-stats .stat-hero small{
+        display:block!important;max-width:100%!important;
+        line-height:1.35!important;font-size:11px!important;
+        overflow-wrap:anywhere!important
+      }
+      html[data-mlv-platform="android"] #tab-stats .stat-hero b{
+        display:block!important;margin-top:6px!important;
+        font-size:clamp(23px,6vw,29px)!important;line-height:1.12!important
+      }
+    }
     /* Statistics, Compare, Reviews: charts can shrink; no wide desktop columns. */
     html[data-mlv-platform="android"] #tab-stats .chart-card,
     html[data-mlv-platform="android"] #tab-stats .stat-hero,
