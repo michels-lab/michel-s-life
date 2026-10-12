@@ -11,3 +11,7 @@ The existing Android-only `mobile-sections.js` layout scopes the canonical `v301
 
 ## Verification
 The existing rendered Android section smoke suite now routes to real Calendar at 360×915 and 412×915, takes screenshots, and asserts exactly four computed cards, two equal rows, >110px card widths, >=85px card heights, no clipping, and row alignment. **Required:** exact-head UI source/browser validations, Android 16 candidate compile/install/launch, screenshots inspection, no desktop regressions, then merge. **Not verified:** actual Galaxy month swipe/soft-keyboard/provider consent or cross-device events. No release until full required gates.
+
+## Additional screenshot finding (same design block)
+
+The 360px real rendered screenshot of PR #79 also exposed clipped legacy *Completed / Missed / XP* text in each of the seven narrow month grid columns. Android-only month-cell styling now hides that **duplicate cell microcopy** while keeping each real day number and state dots, and preserving complete numeric details in the selected-day panel and agenda. Regression test asserts >=28 days with a visible date and dot container and hidden per-cell metadata at 360/412px. This change does not erase source data, alter date selection, or affect Windows.
