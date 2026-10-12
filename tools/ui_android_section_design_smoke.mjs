@@ -139,6 +139,29 @@ try{
   for(const id of ['contracts','projects','stats','settings']){
     audit.push(await route(id,360));
   }
+  // The calendar month grid must not be pushed below four stacked desktop
+  // summary cards. Measure rendered month metrics on both narrow phone widths.
+  for(const width of [412,360]){
+    await route('calendar',width);
+    const calendar=await page.evaluate(()=>{
+      const root=[...document.querySelectorAll(
+        '#tab-calendar .v30134-kpis,#tab-calendar .v30135-kpis')]
+        .find(el=>el.getClientRects().length);
+      if(!root)return null;
+      const rect=el=>{const r=el.getBoundingClientRect();return {
+        x:r.x,y:r.y,right:r.right,width:r.width,height:r.height};};
+      return {columns:getComputedStyle(root).gridTemplateColumns,
+        windowWidth:innerWidth,cards:[...root.children].map(rect)};
+    });
+    assert(calendar&&calendar.cards.length===4&&calendar.columns.split(' ').length===2,
+      'Phone Calendar still stacks four desktop KPI cards: '+JSON.stringify(calendar));
+    assert(calendar.cards.every((tile,i)=>tile.width>=110&&tile.height>=85&&
+      tile.x>=-3&&tile.right<=width+3&&
+      (i%2===0||Math.abs(tile.y-calendar.cards[i-1].y)<=2)),
+      'Phone Calendar KPI layout clips or breaks row alignment: '+JSON.stringify(calendar));
+    audit.push({id:'calendar',width,calendar});
+  }
+
   // Story has a legacy-compatible route, but mobile render is still mandatory.
   audit.push(await route('story'));
 
