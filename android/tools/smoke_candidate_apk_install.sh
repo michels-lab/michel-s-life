@@ -3,7 +3,8 @@
 # launch its true WebView Activity, and drive first-run touch actions.
 set -euo pipefail
 PKG="com.michelslab.michelslife"
-APK="artifacts/candidate/MichelsLife-Android-TEST-v${ANDROID_VERSION}.apk"
+# Default remains the CI debug APK; signed candidate workflow selects its verified Direct APK by explicit APK environment variable.
+APK="${APK:-artifacts/candidate/MichelsLife-Android-TEST-v${ANDROID_VERSION}.apk}"
 OUT="artifacts/candidate-install"
 mkdir -p "$OUT"
 test -s "$APK"

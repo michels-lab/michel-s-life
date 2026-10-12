@@ -1,0 +1,7 @@
+Michel's Life Android Direct 0.2.6 (versionCode 8): owner-authorized PRIVATE Galaxy test candidate.
+
+This marker triggers .github/workflows/android-direct-private-candidate-v026.yml on integration to main.
+Produce a same-run permanently signed APK artifact using the established pinned Direct certificate, with sha256/version/package/SHA manifest evidence.
+Install the actual signed APK on an Android 16 emulator, run onboarding + relaunch captures, and retain screenshots as temporary private GitHub Actions artifacts.
+DO NOT call any publication workflow, create a GitHub Release, edit the stable channel or generate .michelslab/release-intents/unified-v3218-a026.txt.
+The public latest remains Windows 3.0.217 + Android 0.2.5 until the separate versioned release gate and real-device review are complete.

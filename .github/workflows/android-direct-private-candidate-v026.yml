@@ -1,0 +1,89 @@
+name: Build signed Android v0.2.6 Galaxy candidate (private artifact)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.michelslab/candidate-intents/android-direct-v026.txt'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: michels-life-android-v026-private-candidate
+  cancel-in-progress: false
+
+jobs:
+  build-signed-direct:
+    name: Build pinned-signature Android Direct v0.2.6 + Android 16 debug smoke
+    uses: ./.github/workflows/android-build.yml
+    with:
+      build_direct: true
+    secrets: inherit
+
+  install-signed-direct:
+    name: Install VERIFIED production-signed candidate on Android 16
+    needs: build-signed-direct
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      ANDROID_VERSION: 0.2.6
+      APK: artifacts/candidate/MichelsLife-Android-Direct-v0.2.6.apk
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download production-signed APK from this exact workflow run
+        uses: actions/download-artifact@v4
+        with:
+          name: MichelsLife-Android-Direct-v0.2.6
+          path: artifacts/candidate
+
+      - name: Enforce exact source SHA, permanent signer, installed version, and archive checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "$APK"
+          (cd artifacts/candidate && sha256sum -c MichelsLife-Android-Direct-v0.2.6.apk.sha256)
+          python3 - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          manifest=json.loads(Path('artifacts/candidate/direct-release-manifest.json').read_text())
+          apk=Path(os.environ['APK'])
+          assert manifest['sourceSha']==os.environ['GITHUB_SHA'], 'Signed APK source mismatch'
+          assert manifest['platform']=='android' and manifest['channel']=='direct'
+          assert manifest['distribution']=='production-signed'
+          assert manifest['package']=='com.michelslab.michelslife'
+          assert manifest['versionName']=='0.2.6' and manifest['versionCode']==8
+          assert manifest['apkFilename']==apk.name
+          assert manifest['sha256']==hashlib.sha256(apk.read_bytes()).hexdigest()
+          cert=manifest.get('signerCertSha256','')
+          assert len(cert)==64 and all(c in '0123456789abcdef' for c in cert.lower())
+          print('PASS: exact SHA and same-run permanently signed Android 0.2.6/code 8 candidate; no public release')
+          PY
+
+      - name: Enable emulator KVM
+        shell: bash
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
+
+      - name: Fresh install, touch onboarding and relaunch SIGNED candidate on Android 16
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          avd-name: michels-life-direct-v026-native
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash android/tools/smoke_candidate_apk_install.sh
+
+      - name: Retain evidence from the actually installed signed APK
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MichelsLife-Android-Direct-v0.2.6-Installed-Evidence
+          path: artifacts/candidate-install/
+          if-no-files-found: warn
+          retention-days: 30
