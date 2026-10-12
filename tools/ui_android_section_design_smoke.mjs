@@ -142,6 +142,73 @@ try{
   // Story has a legacy-compatible route, but mobile render is still mandatory.
   audit.push(await route('story'));
 
+  // Story/Chapters preserves the canonical renderer. The initial form must
+  // stop behaving like a four-column desktop editor on either phone size.
+  for(const width of [412,360]){
+    await route('story',width);
+    const story=await page.evaluate(()=>{
+      const form=document.querySelector('#tab-story .v30162-story-form');
+      if(!form)return null;
+      const bounds=el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width,height:r.height}};
+      const controls=[...form.querySelectorAll('input,textarea,select,button')];
+      return {columns:getComputedStyle(form).gridTemplateColumns,
+        form:bounds(form),
+        controls:controls.map(el=>({tag:el.tagName.toLowerCase(),...bounds(el),font:getComputedStyle(el).fontSize})),
+        viewport:innerWidth};
+    });
+    assert(story&&story.controls.length>=4,
+      'Story canonical edit form was not rendered: '+JSON.stringify(story));
+    assert(story.columns.split(' ').length===1 &&
+      story.form.right<=width+3 && story.form.left>=-3,
+      'Story still uses desktop multi-column edit geometry: '+JSON.stringify(story));
+    assert(story.controls.every(el=>el.height>=47.5&&el.left>=-3&&el.right<=width+3 &&
+      (el.tag==='button'||parseFloat(el.font)>=15.5)),
+      'Story editor is clipped or uses tiny phone controls: '+JSON.stringify(story));
+  }
+
+  // About is the real Michel's Lab product, author and socials pane, not a
+  // replica or synthetic card. Check links, portrait and lockup at two widths.
+  for(const width of [412,360]){
+    await route('settings',width);
+    const aboutButton=page.locator(
+      '#tab-settings .v30171-settings-nav [data-v30171-setting="about"]');
+    assert(await aboutButton.count()===1,'Settings/About route is inaccessible');
+    await aboutButton.click();
+    await page.waitForFunction(()=>{
+      const core=document.querySelector(
+        '#tab-settings [data-v30171-pane="about"] [data-mlv-about-core]');
+      return core&&core.getClientRects().length>0;
+    },null,{timeout:10000});
+    const about=await page.evaluate(()=>{
+      const core=document.querySelector(
+        '#tab-settings [data-v30171-pane="about"] [data-mlv-about-core]');
+      const bounds=el=>{const r=el.getBoundingClientRect();return {
+        left:r.left,right:r.right,width:r.width,height:r.height}};
+      const links=[...core.querySelectorAll('.mlvdev-social')];
+      const product=core.querySelector('.mlvdev-product');
+      const main=core.querySelector('.mlvdev-main');
+      const portrait=core.querySelector('.mlvdev-avatar');
+      return {documentWidth:document.documentElement.scrollWidth,viewport:innerWidth,
+        core:bounds(core),productColumns:getComputedStyle(product).gridTemplateColumns,
+        mainColumns:getComputedStyle(main).gridTemplateColumns,
+        portrait:bounds(portrait),
+        links:links.map(el=>({...bounds(el),url:el.getAttribute('href'),
+          label:el.textContent.trim()}))};
+    });
+    assert(about.documentWidth<=width+3&&about.core.left>=-3&&about.core.right<=width+3,
+      'Settings/About horizontal overflow: '+JSON.stringify(about));
+    assert(about.productColumns.split(' ').length===1 &&
+      about.mainColumns.split(' ').length===1&&about.portrait.width<=181,
+      'About is still the wide desktop biography: '+JSON.stringify(about));
+    assert(about.links.length===5&&about.links.every(x=>
+      x.height>=47.5&&x.left>=-3&&x.right<=width+3&&
+      x.label&&/^(https:\/\/|mailto:)/.test(x.url||'')),
+      'About social cards are clipped, unlabeled or untappable: '+JSON.stringify(about));
+    const file=output+'/about-'+width+'.png';
+    await page.screenshot({path:file});
+    screenshots.push(file);
+  }
+
   // Real screenshots previously showed Focus label/value text collapsed into
   // a single line and a toast overlapping the persistent bottom nav.
   await route('dashboard');
