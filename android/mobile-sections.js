@@ -639,6 +639,95 @@
       }
     }
 
+    /* The existing Projects/Decision-Log editor uses a desktop modal.
+       Android owns only modal geometry and tap priority. Saving/mission links
+       still go through the canonical v30106ProjectForm submit handler. */
+    @media(max-width:720px){
+      html[data-mlv-platform="android"] body:has(#v30106ProjectForm)
+      :is(#mlv-android-bottom-nav,#mlv-android-topbar,#mlv-android-mini-focus){
+        visibility:hidden!important;pointer-events:none!important
+      }
+      html[data-mlv-platform="android"] #modalRoot:has(#v30106ProjectForm){
+        position:fixed!important;inset:0!important;z-index:2147483300!important;
+        box-sizing:border-box!important
+      }
+      html[data-mlv-platform="android"] #modalRoot:has(#v30106ProjectForm) .modal-backdrop{
+        position:fixed!important;inset:0!important;display:flex!important;
+        justify-content:center!important;align-items:flex-end!important;
+        box-sizing:border-box!important;padding:0!important;
+        overflow:hidden!important;z-index:2147483300!important
+      }
+      html[data-mlv-platform="android"] #modalRoot:has(#v30106ProjectForm) .modal{
+        width:100%!important;max-width:700px!important;min-width:0!important;
+        margin:0!important;max-height:calc(100dvh - 8px)!important;
+        box-sizing:border-box!important;display:block!important;
+        overflow-x:hidden!important;overflow-y:auto!important;
+        overscroll-behavior:contain!important;
+        padding:14px 14px calc(18px + env(safe-area-inset-bottom,0px))!important;
+        border-radius:20px 20px 0 0!important;
+        -webkit-overflow-scrolling:touch!important
+      }
+      html[data-mlv-platform="android"] #modalRoot:has(#v30106ProjectForm) .modal-head{
+        display:flex!important;align-items:flex-start!important;gap:10px!important;
+        position:sticky!important;top:-14px!important;z-index:2!important;
+        padding:8px 0 12px!important;margin-bottom:8px!important;
+        background:rgba(var(--ui-panel-rgb,8,16,28),.98)!important
+      }
+      html[data-mlv-platform="android"] #modalRoot:has(#v30106ProjectForm) .modal-head h2{
+        font-size:20px!important;line-height:1.2!important
+      }
+      html[data-mlv-platform="android"] #modalRoot:has(#v30106ProjectForm) .modal-head button{
+        min-width:44px!important;min-height:44px!important;flex:0 0 44px!important
+      }
+      html[data-mlv-platform="android"] #v30106ProjectForm,
+      html[data-mlv-platform="android"] #v30106ProjectForm .v30106-editor-grid{
+        width:100%!important;min-width:0!important;max-width:100%!important;
+        box-sizing:border-box!important
+      }
+      html[data-mlv-platform="android"] #v30106ProjectForm .v30106-editor-grid{
+        display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+        gap:11px!important;align-items:stretch!important
+      }
+      html[data-mlv-platform="android"] #v30106ProjectForm label{
+        min-width:0!important;overflow-wrap:anywhere!important
+      }
+      html[data-mlv-platform="android"] #v30106ProjectForm
+      :is(input:not([type="checkbox"]),select,textarea){
+        display:block!important;box-sizing:border-box!important;
+        width:100%!important;min-width:0!important;
+        min-height:48px!important;font-size:16px!important;
+        padding:10px!important
+      }
+      html[data-mlv-platform="android"] #v30106ProjectForm textarea{
+        min-height:88px!important;resize:vertical!important
+      }
+      html[data-mlv-platform="android"] #v30106ProjectForm .v30106-link-option{
+        box-sizing:border-box!important;min-height:48px!important;
+        display:flex!important;align-items:center!important;
+        gap:10px!important;max-width:100%!important
+      }
+      html[data-mlv-platform="android"] #v30106ProjectForm .v30106-link-option input[type="checkbox"]{
+        flex:0 0 22px!important;width:22px!important;height:22px!important
+      }
+      html[data-mlv-platform="android"] #v30106ProjectForm > .actions{
+        display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+        position:sticky!important;bottom:calc(-18px - env(safe-area-inset-bottom,0px))!important;
+        gap:9px!important;z-index:3!important;
+        width:100%!important;min-width:0!important;
+        padding:11px 0 calc(12px + env(safe-area-inset-bottom,0px))!important;
+        margin-top:12px!important;border-top:1px solid rgba(255,255,255,.12)!important;
+        background:rgba(var(--ui-panel-rgb,8,16,28),.98)!important
+      }
+      html[data-mlv-platform="android"] #v30106ProjectForm > .actions button{
+        box-sizing:border-box!important;min-width:0!important;
+        width:100%!important;min-height:49px!important;
+        margin:0!important;touch-action:manipulation!important
+      }
+      html[data-mlv-platform="android"] #v30106ProjectForm :is(input,select,textarea,button):focus-visible{
+        outline:2px solid var(--ui-accent,#75e4ff)!important;
+        outline-offset:2px!important
+      }
+    }
     /* Settings remains the original canonical pane system, not a second UI. */
     html[data-mlv-platform="android"] #tab-settings .v30171-settings-shell,
     html[data-mlv-platform="android"] #tab-settings .v30171-settings-content{
