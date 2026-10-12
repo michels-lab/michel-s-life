@@ -284,9 +284,19 @@ class AndroidBridge(
     }
 
     private fun safeRestoreFile(name: String): File {
+        // A textual path prefix can accidentally accept sibling directories
+        // such as restore-points-old. Require an actual file whose canonical
+        // parent is exactly our device-local restore directory.
+        if (name.isBlank() || name.length > 160 ||
+            !name.matches(Regex("[A-Za-z0-9._-]+")) ||
+            name == "." || name == "..") {
+            throw IllegalArgumentException("Invalid restore point file name.")
+        }
         val base = restoreDir().canonicalFile
         val file = File(base, name).canonicalFile
-        if (!file.path.startsWith(base.path) || !file.exists()) throw IllegalArgumentException("Restore point not found.")
+        if (file.parentFile != base || !file.isFile) {
+            throw IllegalArgumentException("Restore point not found.")
+        }
         return file
     }
 
