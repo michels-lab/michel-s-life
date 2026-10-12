@@ -826,7 +826,6 @@
         animation:none!important;translate:none!important
       }
     }
-    html[data-mlv-platform="android"] #tab-achievements .v134-ach-filter button{min-width:44px!important;min-height:44px!important}
   `;
   function ensure(){
     if(!owned()||!document.head)return;
@@ -846,6 +845,11 @@
       for(const key of ['width','height','min-width','min-height'])
         if(el.style.getPropertyValue(key)!=='44px'||el.style.getPropertyPriority(key)!=='important')
           el.style.setProperty(key,'44px','important');
+    });
+    main.querySelectorAll('#tab-achievements .v134-ach-filter button').forEach(el=>{
+      if(el.style.getPropertyValue('min-width')!=='44px'||
+         el.style.getPropertyPriority('min-width')!=='important')
+        el.style.setProperty('min-width','44px','important');
     });
     main.querySelectorAll('.v30135-grid').forEach(el=>{
       const val='repeat(7,minmax(0,1fr))';
