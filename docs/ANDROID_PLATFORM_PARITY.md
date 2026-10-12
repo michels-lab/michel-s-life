@@ -45,4 +45,4 @@
 5. Real-device Windows↔Galaxy Supabase test for features claiming provider integration. CI mocks must not be relabeled as provider/device verification.
 6. Publish Windows and Android on **one** GitHub release only when explicitly authorized; owner performs visual review after release; documented regressions still require repair.
 
-**Current public baseline:** Windows v3.0.216 + Android v0.2.3. Android code on `main` can be ahead of that release; never infer a v0.2.4 public APK solely from merged source or passing CI.
+**Current public baseline (2026-10-12):** Windows v3.0.217 + Android Direct v0.2.5 (versionCode 7), published together on https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.217. Source `main` contains later Android design/QA integrations; those are **not** in the signed public APK until a new unified release is explicitly authorized, validated and published. A green emulator/browser test does not establish physical Galaxy, lock-screen notification, or real two-device sync acceptance.
