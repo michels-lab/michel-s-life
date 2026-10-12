@@ -103,6 +103,31 @@ internal object NativeFocusAlarm {
         return status(context).put("scheduled", true)
     }
 
+    /**
+     * Android discards pending AlarmManager entries after device reboot.
+     * Re-create ONLY a valid, not-yet-expired canonical Focus deadline.
+     * The persisted token/deadline are delivery metadata, not a second timer;
+     * no JS state or session history is rewritten and no stale notification
+     * is emitted for a phase that elapsed while the phone was off.
+     */
+    fun recoverAfterBoot(context: Context) {
+        val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val token = prefs.getString(KEY_TOKEN, "") ?: ""
+        val deadline = prefs.getLong(KEY_DEADLINE, 0L)
+        val mode = prefs.getString(KEY_MODE, "") ?: ""
+        val now = System.currentTimeMillis()
+        if ((mode != "work" && mode != "break") ||
+            token != "$mode:$deadline" ||
+            deadline <= now || deadline > now + MAX_FUTURE_MS) {
+            cancel(context)
+            return
+        }
+        // Re-arming the same PendingIntent is idempotent if the package
+        // replacement broadcast arrives while an alarm still exists.
+        val alarm = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        alarm.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, deadline, intent(context, token))
+    }
+
     fun cancel(context: Context) {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val token = prefs.getString(KEY_TOKEN, "") ?: ""
@@ -148,5 +173,18 @@ class FocusAlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != "com.michelslab.michelslife.FOCUS_COMPLETED") return
         NativeFocusAlarm.deliverIfCurrent(context, intent.getStringExtra("token") ?: "")
+    }
+}
+
+/**
+ * A boot/package-upgrade broadcast is the only authority for restoring the
+ * system-side Focus alarm after Android clears its alarm queue. The shared
+ * WebView timer remains the sole session owner.
+ */
+class FocusAlarmBootReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action != Intent.ACTION_BOOT_COMPLETED &&
+            intent.action != Intent.ACTION_MY_PACKAGE_REPLACED) return
+        NativeFocusAlarm.recoverAfterBoot(context)
     }
 }
