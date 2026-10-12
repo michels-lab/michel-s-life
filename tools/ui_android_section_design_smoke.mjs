@@ -228,6 +228,33 @@ try{
     screenshots.push(file);
   }
 
+  // Weekly Review needs the real canonical four metrics within two rows,
+  // not four desktop KPI strips pushing the rest of the review below the fold.
+  for(const width of [412,360]){
+    await route('weekly-review',width);
+    const review=await page.evaluate(()=>{
+      const hero=document.querySelector('#tab-weekly-review .v30105-review-hero');
+      if(!hero)return null;
+      const geom=el=>{const r=el.getBoundingClientRect();return {
+        x:r.x,right:r.right,y:r.y,width:r.width,height:r.height};};
+      const metrics=[...hero.querySelectorAll('.v30105-review-kpi')];
+      return {cols:getComputedStyle(hero).gridTemplateColumns,
+        hero:geom(hero),header:geom(hero.firstElementChild),
+        metrics:metrics.map(geom),
+        buttons:[...hero.querySelectorAll('.actions button')].map(geom)};
+    });
+    assert(review&&review.metrics.length===4&&review.cols.split(' ').length===2 &&
+      review.header.width>=review.metrics[0].width*1.8 &&
+      review.header.width<=review.hero.width+2,
+      'Weekly Review still stacks the four desktop KPIs: '+JSON.stringify(review));
+    assert(review.metrics.every((c,i)=>c.width>=110&&c.height>=91&&
+      c.x>=-3&&c.right<=width+3&&
+      (i%2===0||Math.abs(c.y-review.metrics[i-1].y)<=2)) &&
+      review.buttons.length>=2&&review.buttons.every(b=>b.height>=43.5),
+      'Weekly Review mobile KPI/actions overflow or touch targets: '+JSON.stringify(review));
+    audit.push({id:'weekly-review',width,review});
+  }
+
   // Real screenshots previously showed Focus label/value text collapsed into
   // a single line and a toast overlapping the persistent bottom nav.
   await route('dashboard');
