@@ -1124,3 +1124,11 @@ Still required before Play submission:
 - Physical acceptance still required: direct v0.2.4→0.2.5 upgrade retaining user state; touch scrolling, onboarding and modal footer/keyboard on Galaxy; locked/background/reboot Focus notification behavior and battery optimization; permission rejection; Supabase two-device upload/download, concurrent edits/conflict/restore; Google OAuth/Calendar/Drive; safety export and recovery.
 - Google Play submission, Google-held app-signing certificate OAuth setup, and actual store install remain provider-bound/unverified. Do not mark complete based only on AAB existence.
 - No product frontend, approved visual assets, Windows runtime, signing configuration or public release was changed in this documentation reconciliation.
+
+
+## 2026-10-12 — Android local restore-point path containment (security candidate)
+
+- **Finding:** `AndroidBridge.safeRestoreFile()` used `file.path.startsWith(base.path)` after canonicalization, which could accept sibling directories sharing the `restore-points` string prefix when given a crafted relative filename. The WebView bridge must not be allowed to load adjacent device-private files as restore JSON.
+- **Fix:** Require a bounded filename with a restricted character set, and a canonical regular file whose `parentFile` equals the exact canonical `restore-points` directory. This rejects `../`, absolute paths, sibling-prefix names and symlink escapes while retaining the existing restore filename format.
+- **Regression guard:** `validate_sync_contract.py` rejects the old text-prefix check and checks for canonical parent and filename containment. Android Gradle build/CI and actual restore-operation verification must pass before merging. No user data, secrets, versions, themes or release artifacts changed.
+- **State:** candidate source change; source/Android build evidence and physical restore tests pending. P0 auth/device-local cloud snapshot issue #55 remains independent and open.
