@@ -314,7 +314,7 @@
       html[data-mlv-platform="android"] #main > .tab .card{
         border-radius:19px!important;padding:14px!important
       }
-      html[data-mlv-platform="android"] #main > .tab .grid,
+      html[data-mlv-platform="android"] #main > .tab:not(#tab-dashboard):not(#tab-missions):not(#tab-calendar) .grid,
       html[data-mlv-platform="android"] #main > .tab .grid.cols-2,
       html[data-mlv-platform="android"] #main > .tab .grid.cols-3,
       html[data-mlv-platform="android"] #main > .tab .compare-grid,
