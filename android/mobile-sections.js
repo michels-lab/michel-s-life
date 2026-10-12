@@ -8,6 +8,7 @@
   const root=document.documentElement;
   const owned=()=>root.dataset.mlvPlatform==='android';
   const styleId='mlv-android-section-layout';
+  let contractCategoriesExpanded=false;
   const css=`
     html[data-mlv-platform="android"] #main #tab-missions,
     html[data-mlv-platform="android"] #main #tab-calendar,
@@ -240,6 +241,38 @@
     }
     html[data-mlv-platform="android"] #tab-contracts .v194-kpi b{
       font-size:20px!important;color:var(--text)!important
+    }
+    /* On a phone the board is the product, not eleven permanently expanded
+       filter chips. Put progress first and categories in a real, accessible
+       expandable control. Existing canonical chip handlers remain in place. */
+    html[data-mlv-platform="android"] #tab-contracts .mlv-android-contract-filter-details{
+      display:block!important;margin:10px 0 2px!important;
+      padding:0!important;border:0!important;background:transparent!important
+    }
+    html[data-mlv-platform="android"] #tab-contracts .mlv-android-contract-filter-details summary{
+      display:flex!important;align-items:center!important;justify-content:space-between!important;
+      box-sizing:border-box!important;width:100%!important;min-height:44px!important;
+      padding:10px 13px!important;border:1px solid rgba(var(--ui-accent-rgb,117,228,255),.28)!important;
+      border-radius:13px!important;background:rgba(var(--ui-card-rgb,10,18,30),.48)!important;
+      color:var(--text,#eaf4ff)!important;font-weight:700!important;
+      cursor:pointer!important;list-style:none!important
+    }
+    html[data-mlv-platform="android"] #tab-contracts .mlv-android-contract-filter-details summary::-webkit-details-marker{
+      display:none!important
+    }
+    html[data-mlv-platform="android"] #tab-contracts .mlv-android-contract-filter-details summary::after{
+      content:"⌄";display:inline-block;transition:transform .18s ease
+    }
+    html[data-mlv-platform="android"] #tab-contracts .mlv-android-contract-filter-details[open] summary::after{
+      transform:rotate(180deg)
+    }
+    html[data-mlv-platform="android"] #tab-contracts .mlv-android-contract-filter-details .v216-chip-row{
+      margin-top:9px!important;padding:6px 0 3px!important
+    }
+    @media(prefers-reduced-motion:reduce){
+      html[data-mlv-platform="android"] #tab-contracts .mlv-android-contract-filter-details summary::after{
+        transition:none!important
+      }
     }
     /* Projects/Planning and Goals — original data, phone-native stacked cards. */
     html[data-mlv-platform="android"] #main .goal-card,
@@ -531,6 +564,24 @@
           el.style.getPropertyPriority(key)!=='important'))
         el.style.setProperty(key,value,'important');
     };
+    main.querySelectorAll('#tab-contracts .v194-hero').forEach(hero=>{
+      const searchPanel=hero.querySelector('.v216-search-panel');
+      const progress=hero.querySelector('.v194-kpis');
+      if(progress&&searchPanel&&progress.nextElementSibling!==searchPanel)
+        hero.insertBefore(progress,searchPanel);
+      const chips=searchPanel?.querySelector('.v216-chip-row');
+      if(!chips||searchPanel.querySelector('.mlv-android-contract-filter-details'))return;
+      const details=document.createElement('details');
+      details.className='mlv-android-contract-filter-details';
+      details.open=contractCategoriesExpanded;
+      const summary=document.createElement('summary');
+      summary.textContent=window.MichelsLifeI18n?.language==='es'?
+        'Filtrar categorías':'Filter categories';
+      details.appendChild(summary);
+      details.appendChild(chips);
+      searchPanel.appendChild(details);
+      details.addEventListener('toggle',()=>{contractCategoriesExpanded=details.open;});
+    });
     main.querySelectorAll('#tab-contracts .v194-kpis').forEach(grid=>{
       force(grid,'display','grid');
       force(grid,'grid-template-columns','repeat(2,minmax(0,1fr))');
