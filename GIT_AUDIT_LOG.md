@@ -1,3 +1,10 @@
+## 2026-10-14 — Reconcile live release, Android design gates and continuation point
+
+- **Verified live publication:** `michels-lab/michel-s-life-releases` has public `v3.0.218` dated 2026-10-12 with Windows v3.0.218, Android Direct v0.2.6/code 8 and 13 assets. The source `main` SHA `58ae3aa43ae08037794cf88783e933fabd3e2066` Source/UI/Android UI checks passed; separate unified publisher run `38296739118` failed in its publisher stage despite successful installed Windows/signed Android build and emulator smoke. Neither result establishes native content persistence or real Galaxy/Windows Supabase handoff.
+- **Stale metadata fixed (documentation candidate):** align `README.md` and `docs/ANDROID_PLATFORM_PARITY.md` with the published 3.0.218/0.2.6 customer baseline. Replace Oct 5 `docs/CURRENT_HANDOFF.md` (incorrect obsolete repository/branch) and archive its full historical content under `docs/audit/HANDOFF_LEGACY_2026-10-05.md`. Do not rewrite approved Themes, frontend, packaging, signed assets or release.
+- **Open severity gates:** native onboarding/persistence counts issue #104 (0/3 → 0/18 missions; 0 → 71 active Contracts without user action), Android mobile first-class design #54, real Windows↔Galaxy sync #28, native lock-screen Focus alarm #53, and installed Windows screenshot PR #62. PR #111 added a candidate browser-based reload regression; exact-head CI was pending as of this documentation write.
+- **Validation:** verified canonical public release/tag/assets and current SHA Actions via GitHub read API; documentation string/path comparison. This docs-only branch has not run a native app test or shipped a new release.
+
 ## 2026-10-11 — Public unified Windows v3.0.217 + Android Direct v0.2.5 delivered
 
 - **Code:** release-candidate PR #63 merged as `99ec532623a3c73ead0110bf477bd44ba5512637`. Exact publication intent commit `05ccaa52c2899ba969d2d0ad396669d2552b0f2f`.
