@@ -11,6 +11,7 @@ on:
       - 'android/mobile-sections.js'
       - 'android/tools/prepare_bundle.py'
       - 'tools/ui_android_mobile_smoke.mjs'
+      - 'tools/ui_android_onboarding_persistence_smoke.mjs'
       - 'tools/ui_android_section_design_smoke.mjs'
       - 'tools/ui_android_compact_accessibility_smoke.mjs'
       - 'tools/ui_android_journal_save_smoke.mjs'
@@ -91,6 +92,11 @@ jobs:
           export MLV_ANDROID_UI_URL=http://127.0.0.1:4174
           export MLV_ANDROID_UI_SCREENSHOT=artifacts/android-ui-smoke/android-mobile.png
           node tools/ui_android_mobile_smoke.mjs
+
+      - name: Prevent onboarding mission and contract drift on WebView relaunch
+        run: |
+          export MLV_ANDROID_UI_URL=http://127.0.0.1:4174
+          node tools/ui_android_onboarding_persistence_smoke.mjs
 
       - name: Audit mobile layouts, touch targets and real section animation at 412 and 360px
         run: |
