@@ -1,157 +1,40 @@
-# CURRENT HANDOFF — LIMON
+# Michel's Life — Current handoff
 
-Updated: 2026-10-05
-Project: Michel's Life
-Repository: `realmichelduarte/michel-s-life`
-Branch: `desktop-v3.0.216`
-Draft PR: #10 — `v3.0.216: Supabase sync, desktop shell and Android integration`
-Current branch HEAD: `0bf88b6bb9c2ed588dc78d6af40256a475be073d`
-PR state: open, draft, mergeable
-Public release state: **v3.0.216 is NOT published**
+Updated: 2026-10-14 (America/Monterrey)
+Owner: Michel's Lab
+Canonical repository: `michels-lab/michel-s-life`
+Default branch: `main`
+Main HEAD verified before this documentation branch: `58ae3aa43ae08037794cf88783e933fabd3e2066`
+Source of truth: `GIT_AUDIT_LOG.md`, `android/ANDROID_AUDIT_LOG.md`, `docs/INFRASTRUCTURE_AUDIT.md`.
+Older handoff preserved: `docs/audit/HANDOFF_LEGACY_2026-10-05.md` (do not follow the legacy repository/branch/versions).
 
-## LIMON rule
+## Real published customer build
 
-`limon` means this file plus the permanent audit log are the exact continuation point.
-On resume:
-- continue from this branch/PR state;
-- do not change the approved visual baseline unless explicitly requested;
-- do not regress or recreate already-implemented systems;
-- do not publish or merge until the remaining live/native gates pass;
-- do not send APK/ZIP/build artifacts through chat; prepare/validate them in GitHub and publish through GitHub Release when release is approved.
+- Official unified release: https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.218
+- Published 2026-10-12: Windows **v3.0.218**, Android Direct **v0.2.6 / versionCode 8**; independent version numbers, same release, installer, portable, permanent Android signing manifest and checksums.
+- Source release workflow `38296739118`: exact-source, Windows installed binary, signed Android APK and Android16 install jobs passed, **publisher job failed**. The separate public release page and its 13 assets exist; do not report the failed workflow as green or publish another release to "repair" history.
+- Source HEAD `58ae3aa` CI: Source validation `38296738741`, UI smoke `38296738897`, Android UI smoke `38296738776` succeeded. These do not prove physical Galaxy or live account integration.
 
-## Current product architecture
+## Active priority and blockers
 
-### Supabase — primary sync authority
-Project: `michels-life`
-Project ref: `lqnkcqredlxrykynacwr`
-Region: `us-east-2`
-Status at checkpoint: `ACTIVE_HEALTHY`
-Security Advisor: **0 findings**
+1. **Mobile-first design and usability (#54):** preserve approved Windows visual system/Themes/backgrounds/Chapter/typography; Android uses one canonical shared data model with touch-first UX. Browser 320/360/412-pixel layout/touch tests exist. Physical Galaxy gestures, keyboard, scrolling and rendered acceptance remain required before closure.
+2. **Android onboard state drift (#104, P0):** native signed v0.2.6 emulator screenshots show Today missions `0/3`, Contracts `0 active` after Finish, then `0/18`, `71 active` after same-app relaunch. Root cause is unverified. See https://github.com/michels-lab/michel-s-life/issues/104.
+3. **Same-account sync (#28):** verify Windows ↔ Galaxy Supabase first-device authority, two-way writes, offline/reconnect, conflict recovery, no duplicate XP/IDs and secret isolation with real account/devices. Browser mocks are not proof.
+4. **Focus background alarms (#53):** native single-session notification bridge exists; real Galaxy lock-screen/Doze permission, alarm precision and general repeat reminders remain unverified.
+5. **Windows installed visual gate (#62 PR):** native installed Home/About screenshots and actual visible/clickable header/About remain blocked/require exact installed runtime evidence.
+6. **Additional post-release P0/P1:** cross-account board isolation, Google Calendar Android silent no-op, Android Direct official updater and safe cloud restore must not be reported solved without implementation and provider/device validation.
 
-Production tables:
-- `public.ml_state`
-- `public.ml_state_history`
-- `public.ml_devices`
+## Current candidate work (not merged, no release authorization)
 
-All three tables have RLS enabled and ownership policies based on `auth.uid()`.
-Desktop/Android use only the publishable client key; privileged `sb_secret_` / `service_role` credentials are forbidden by source and package audits.
+- PR #111: https://github.com/michels-lab/michel-s-life/pull/111
+- Branch: `test/android-onboarding-relaunch-state-20261014`; HEAD `62f326f415b9c2d9c1751ee0a8de4576a6044a14`.
+- Scope: Android UI browser-model first-run wizard, saved mission/contract identities and dashboard KPI comparisons across true reload; writes dated Android QA log and screenshot evidence. Exact-PR workflows were in progress when this handoff was written. **Do not merge on an unverified or red head**; isolate app-side hydration/migration cause if it fails. Signed APK/native restart remains independent gate.
+- This documentation reconciliation is a separate branch `docs/accurate-oct14-release-and-handoff`, not a runtime change.
 
-Current sync model:
-- Supabase is the source of truth for Michel's Life state/account/device sync.
-- Windows and Android share the canonical Supabase client.
-- Dirty-state + monotonic revision logic prevents poll-driven revision spam.
-- A newer remote revision is never overwritten automatically.
-- First-device / divergent-state authority requires an explicit user choice.
-- Previous remote state is preserved in history before overwrite.
-- Device records expose platform, app version, last action and last seen.
-- Google Drive remains **temporary manual migration/recovery fallback only**.
-- Google Calendar remains independent and optional.
+## Engineering/release rules
 
-### Desktop v3.0.216
-Implemented:
-- Automatic release detection without automatic installation.
-- Native System Tray.
-- Close/minimize to tray.
-- Start with Windows.
-- Global Quick Capture hotkey `Ctrl + Shift + Space`.
-- Quick Capture for Mission and Journal.
-- Tray actions: Current Mission, Sync Now, Quick Capture.
-- Tray localization and hotkey-conflict fallback.
-- Current Mission integration with Windows taskbar.
-- Global `Ctrl + K` Command Palette.
-- Compact Sync Center.
-- Progressive startup.
-- Supabase-first Sync Now routing.
-- Desktop release metadata aligned end-to-end at **3.0.216**.
-
-### Android
-Current Android target:
-- app version: **0.2.2**
-- versionCode: **4**
-
-Implemented:
-- same canonical Supabase sync client as Desktop;
-- Android platform/device attribution;
-- current branch canonical frontend overlaid during APK/AAB packaging;
-- Android-specific Supabase smoke and contract validation;
-- APK + AAB native build workflows on relevant PR changes.
-
-Play packaging:
-- APK/AAB compile successfully.
-- Play AAB remains unsigned until Android upload-signing repository secrets are configured.
-
-## Validation at this exact checkpoint
-
-Current HEAD `0bf88b6bb9c2ed588dc78d6af40256a475be073d`:
-- Source validation **#775 — SUCCESS**
-- UI smoke **#661 — SUCCESS**
-- Android UI smoke **#83 — SUCCESS**
-- Build Android test APK **#106 — SUCCESS**
-- Build Windows release **#52 — SUCCESS**
-- Supabase project: **ACTIVE_HEALTHY**
-- Supabase Security Advisor: **0 findings**
-
-Latest current-HEAD native artifacts:
-- Windows: `MichelsLife-v3.0.216`, artifact id `11383451755`, GitHub digest `sha256:8d7c89aab311166d0e9b24ab96c5fa35aa7ddf9b4e45daafafdd89e8f9dc6712`.
-- Android: `MichelsLife-Android-TEST-v0.2.2`, artifact id `11382903182`, GitHub digest `sha256:45dbf60c0392249490a30daf8fadd3b8d7279a83a1cb93eeda160e22334bc5ab`.
-- Android Play bundle is still `UNSIGNED`; repository upload-signing secrets are not configured.
-- Supabase production tables currently contain 0 rows, confirming no real user account has completed first live sync yet.
-
-Earlier artifact audits already confirmed:
-- Windows v3.0.216 package includes the Supabase client/project URL and no privileged Supabase credentials.
-- Android package includes the canonical Supabase module + Android platform marker and no privileged Supabase credentials.
-
-## Remaining release gates
-
-1. **Real same-account Windows ↔ Android Supabase test**
-   - first-device authority choice;
-   - upload from one device;
-   - download/restore on the other;
-   - simulate a newer remote revision;
-   - verify automatic sync refuses overwrite;
-   - verify explicit local/cloud authority choice resolves correctly;
-   - verify device list/last-seen/action updates correctly.
-
-2. **Interactive Windows native test**
-   - tray open/restore;
-   - close/minimize resident behavior;
-   - global Quick Capture hotkey;
-   - Current Mission taskbar state/title;
-   - Sync Center;
-   - Start with Windows;
-   - tray language switching.
-
-3. **Android release signing**
-   - configure the four upload-signing GitHub repository secrets;
-   - rerun Android build;
-   - obtain a `Play-SIGNED` AAB;
-   - validate on physical device / Play testing delivery.
-
-4. **Release only after live/native gates pass**
-   - merge PR #10;
-   - publish v3.0.216;
-   - verify final GitHub Release assets;
-   - then remove/disable Google Drive fallback only after Supabase cross-device behavior is proven live.
-
-## Do not redo
-
-Do not recreate:
-- Supabase schema/RLS;
-- Sync Center;
-- Command Palette;
-- progressive startup;
-- tray/Quick Capture/taskbar integration;
-- Android Supabase bridge;
-- version alignment to 3.0.216;
-- existing CI gates.
-
-The next work starts from **live cross-device validation and signing/native release gates**, not from implementation.
-
-
-## 2026-10-06 continuation note
-- Current branch HEAD verified at `0bf88b6bb9c2ed588dc78d6af40256a475be073d`; this HEAD only closes the Supabase hardening audit after the final functional code.
-- Current-HEAD gates: Source #775 green, UI #661 green, Android UI #83 green, Android native #106 green and Windows release #52 green.
-- Supabase Security Advisor still reports 0 findings; `ml_state`, `ml_state_history`, and `ml_devices` remain RLS-enabled.
-- Supabase row counts remain 0/0/0, so the same-account Windows↔Android production behavior still has not been exercised by a real account.
-- GitHub connector limitation: repository secret APIs are intentionally unavailable, so Android upload-signing secrets cannot be configured from this chat. This is the only blocker to producing a Play-SIGNED AAB from CI.
-- Public Michel's Life release remains v3.0.215; v3.0.216 is still intentionally unpublished.
+- Never claim app completion from source compile or browser mocks alone. Inspect actual installed/native behavior and candidate screenshots when possible.
+- Never change approved desktop Themes, Chapter scenes, typography, backgrounds or assets as collateral mobile work.
+- Keep task-specific dated Android/general/infra audit logs updated with real evidence, state and follow-up.
+- While CI/reviews run, do independent work only on non-conflicting scopes. Before a tracked task, respect master `.michelslab/task-claims.json` active claims.
+- Michel is the only assumed tester until he explicitly confirms this particular application has been shared. No PR/Actions artifacts as user-facing downloads. **Each new release needs explicit owner authorization** and must be delivered via the official public GitHub Releases page, after required validations.
