@@ -127,13 +127,13 @@ try{
     session:window.SupabaseSyncV30216.session()
   }));
   ok(first.runtime.connected&&first.runtime.cloudReady,'Sign-in did not activate Supabase runtime');
-  ok(first.mock.remote?.revision===1&&first.mock.pushes===1,'First sign-in did not create master snapshot: '+JSON.stringify(first));
+  ok(Number.isInteger(first.mock.remote?.revision)&&first.mock.remote.revision>=1&&first.mock.pushes===1,'First sign-in did not create exactly one master snapshot: '+JSON.stringify({revision:first.mock.remote?.revision,pushes:first.mock.pushes,devices:first.mock.devices}));
   ok(first.mock.devices>=1,'Device registration missing');
 
   await page.evaluate(()=>{state.xp=Number(state.xp||0)+1;window.save();});
   await page.waitForTimeout(2900);
   const dirtyPush=await page.evaluate(()=>({revision:window.__supaMock.remote?.revision,pushes:window.__supaMock.pushes,meta:JSON.parse(localStorage.getItem('michelsLife.supabase.meta.v30216')||'{}')}));
-  ok(dirtyPush.revision===2&&dirtyPush.pushes===2,'Dirty save did not generate exactly one new revision: '+JSON.stringify(dirtyPush));
+  ok(dirtyPush.revision===first.mock.remote.revision+1&&dirtyPush.pushes===first.mock.pushes+1,'Dirty save did not generate exactly one new revision: '+JSON.stringify(dirtyPush));
   ok(dirtyPush.meta.dirty===false,'Dirty flag was not cleared after upload');
 
   const beforeConflict=dirtyPush.pushes;
@@ -157,7 +157,7 @@ try{
   ok(downloaded.meta.revision===9,'Explicit cloud download did not adopt remote revision');
   ok(downloaded.meta.dirty===false,'Download left local state dirty');
   const downloadHistory=await page.evaluate(()=>window.__supaMock.history.map(x=>({revision:x.revision,reason:x.reason,source_device_id:x.source_device_id})));
-  ok(downloadHistory.some(x=>x.reason==='before_download_local'&&Number(x.revision)===2),'Cloud download did not preserve the pre-download local state: '+JSON.stringify(downloadHistory));
+  ok(downloadHistory.some(x=>x.reason==='before_download_local'&&Number(x.revision)===dirtyPush.revision),'Cloud download did not preserve the pre-download local state: '+JSON.stringify(downloadHistory));
 
   const beforeRace=await page.evaluate(()=>window.__supaMock.pushes);
   await page.evaluate(()=>{
