@@ -1,6 +1,13 @@
 name: Build signed Android v0.2.6 Galaxy candidate (private artifact)
 
 on:
+  workflow_dispatch:
+    inputs:
+      private_candidate_only:
+        description: 'Confirm PRIVATE signed APK test only; no publication'
+        type: boolean
+        required: true
+        default: false
   push:
     branches: [main]
     paths:
@@ -16,6 +23,7 @@ concurrency:
 jobs:
   build-signed-direct:
     name: Build pinned-signature Android Direct v0.2.6 + Android 16 debug smoke
+    if: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'push' || inputs.private_candidate_only == true) }}
     uses: ./.github/workflows/android-build.yml
     with:
       build_direct: true
