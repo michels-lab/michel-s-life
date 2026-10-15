@@ -222,7 +222,7 @@ jobs:
             "source_repo": os.environ["GITHUB_REPOSITORY"],
             "source_sha": os.environ["GITHUB_SHA"],
             "windows_version":"3.0.219","android_version":"0.2.7",
-            "android_version_code":8, "android_certificate_sha256":os.environ["ANDROID_CERT_PIN"],
+            "android_version_code":9, "android_certificate_sha256":os.environ["ANDROID_CERT_PIN"],
             "assets_sha256":assets}
           (p/"release-provenance.json").write_text(json.dumps(payload,indent=2)+"\n")
           PY
