@@ -12,3 +12,5 @@ The currently published version is unchanged by this private candidate test.
 - Use the updated Android 16 emulator GLES software renderer; retain signed installed screenshots, native process and relaunch evidence.
 - This remains PRIVATE candidate artifact only. No GitHub Release, stable-channel update or package-version change.
 - Canonical state readout stays unverified for nondebuggable signed APK; do not conflate with the debuggable TEST APK CDP acceptance.
+
+2026-10-15 explicit main-branch private workflow trigger: signed Direct Android 0.2.6 candidate, exact current main SHA, no release, no data access. This marker-only commit is intended to fire the private push-path Actions workflow after PR #122 merge generated no matching workflow runs.
