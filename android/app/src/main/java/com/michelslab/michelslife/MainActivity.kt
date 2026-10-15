@@ -30,6 +30,12 @@ class MainActivity : Activity() {
         auth = GoogleAuthorizationCoordinator(this)
         cloud = DriveCloudEngine(this, meta)
 
+        // CI can inspect canonical WebView localStorage only in debuggable TEST
+        // APKs. This must NEVER expose CDP on production-signed Direct/Play.
+        if ((applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
+            WebView.setWebContentsDebuggingEnabled(true)
+        }
+
         val assetLoader = WebViewAssetLoader.Builder()
             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
             .build()

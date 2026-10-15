@@ -102,6 +102,7 @@ jobs:
           node --check android/mobile-sections.js
           python android/tools/validate_android_mobile_ux.py
           bash -n android/tools/smoke_candidate_apk_install.sh
+          python android/tools/native_webview_state_probe.py self-test
           # Validate the release-version generated frontend, not the older raw template.
           python tools/bump_frontend_version.py --index src/MichelsLife/frontend/index.html
           python tools/validate_brand_identity.py
@@ -279,6 +280,7 @@ jobs:
     timeout-minutes: 30
     env:
       ANDROID_VERSION: 0.2.6
+      MLV_REQUIRE_NATIVE_STATE_PROBE: "1"
     steps:
       - uses: actions/checkout@v4
 
@@ -287,6 +289,13 @@ jobs:
         with:
           name: MichelsLife-Android-TEST-v${{ env.ANDROID_VERSION }}
           path: artifacts/candidate
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install pinned CI-only DevTools probe dependency
+        run: python3 -m pip install --disable-pip-version-check websocket-client==1.8.0
 
       - name: Enable GitHub hosted emulator KVM
         shell: bash

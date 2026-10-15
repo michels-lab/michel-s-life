@@ -6,6 +6,14 @@ repo = root.parent
 cloud = (root / "app/src/main/java/com/michelslab/michelslife/CloudSync.kt").read_text(encoding="utf-8")
 bridge = (root / "app/src/main/java/com/michelslab/michelslife/AndroidBridge.kt").read_text(encoding="utf-8")
 frontend = (repo / "src/MichelsLife/frontend/index.html").read_text(encoding="utf-8")
+main_activity = (root / "app/src/main/java/com/michelslab/michelslife/MainActivity.kt").read_text(encoding="utf-8")
+gradle = (root / "app/build.gradle.kts").read_text(encoding="utf-8")
+# Production APK must never expose a remote debugging socket for account data.
+guard = "if ((applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0)"
+if guard not in main_activity or "WebView.setWebContentsDebuggingEnabled(true)" not in main_activity:
+    raise SystemExit("Native state inspection must be gated by Android's debuggable-app flag")
+if "isDebuggable = false" not in gradle:
+    raise SystemExit("Direct distribution builds must explicitly disable debugging")
 
 required = {
     'https://www.googleapis.com/auth/drive.appdata': cloud,

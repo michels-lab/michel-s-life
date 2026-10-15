@@ -1,3 +1,9 @@
+## 2026-10-15 — Native canonical WebView persistence gate (debug TEST APK; #104)
+
+- Existing installed native APK smoke previously compared screenshots/accessibility only. Added `android/tools/native_webview_state_probe.py`: inspect actual appassets Android WebView on loopback via debug-only Chrome DevTools, read the canonical persisted board after Finish and after native force-stop/relaunch. Store only mission/goal/contract counts, SHA-256 digests of sorted IDs and Dashboard KPI digest (no raw account, mission text, tokens or full state). Fail closed on missing/uncompleted onboarding, unexpected Premium starter entries, duplicate IDs, or drift.
+- `MainActivity.kt` enables WebView debugging strictly when Android flags mark the installed APK debuggable. Direct/Play builds retain the protected nondebuggable path and are never exposed to CDP. The installed debug candidate CI job pins websocket-client 1.8.0 and requires the native state probe; signed candidate remains screenshot-level evidence only.
+- This improves native emulator persistence coverage **after successful exact-head CI**, not a claim of release/Galaxy acceptance. Remaining #104: test the same permanently signed Direct APK's protected storage by an appropriate test-only instrumentation strategy and exercise physical Galaxy. #28 real cross-device Supabase acceptance remains open. No user data, visual system, app version or release-intent changed.
+
 ## 2026-10-15 — Native signed Android onboarding evidence extension (#104)
 
 - Candidate adds pre-force-stop native UIAutomator hierarchy capture to `android/tools/smoke_candidate_apk_install.sh`, paired with the already retained post-relaunch hierarchy. Parse accessible labels into a compact redacted comparison JSON, with guarded handling for WebView containers that expose no useful tree.
