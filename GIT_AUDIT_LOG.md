@@ -1,3 +1,11 @@
+## 2026-10-15 — Owner-authorized next unified release candidate Windows 3.0.219 / Android Direct 0.2.7
+
+- The owner clarified that Michel's Life has **not been shared with anyone** and authorized releasing without treating hypothetical external users as a manual acceptance gate. Do not invent a user-distribution safety freeze. The normal release policy remains one page for both platforms, versioned assets, exact-source CI, Windows installer/portable smoke, pinned Android Direct signing, digest and provenance verification before publication.
+- Prepared release candidate version metadata: Windows `3.0.219` (CSProj, materialized host, canonical frontend version bump, static validators) and Android `0.2.7`/`versionCode=9` (Gradle, Kotlin, WebView bridge, workflow and static validator). Preserve approved visual layouts/themes/Current Chapter.
+- Added `.github/workflows/release-unified-v3219-a027.yml` based on the proven unified release gate, with source-SHA isolation, dual-platform build and 13-asset draft→verified public publisher; optional owner-approved manual workflow dispatch. The new release-intent file is reserved for a **separate, isolated main commit after this PR's exact-head CI**. Never overwrite the existing v3.0.218 stable assets.
+- Notes: `docs/releases/v3.0.219.md`. Recent Android16 double native restart and cross-account browser checks are real test evidence but not physical Galaxy or live Windows↔Android Supabase provider acceptance; those limitations are disclosed.
+- **Status: source release candidate only, no build/publish success claimed until verified from actual workflow/release assets.** Existing official v3.0.218 remains the published binary in the meantime.
+
 ## 2026-10-15 — Supabase browser smoke regression after account isolation (#108)
 
 - PR #116 exact-head Source and Android UI passed, but generic UI smoke failed at `tools/ui_supabase_sync_smoke.mjs` because it required initial remote revision exactly `1`. The mocked first password login made **one** master POST yet received revision `2` following account owner isolation; the test incorrectly equated first upload with literal revision one.
