@@ -1,7 +1,7 @@
 ## 2026-10-15 — Native persistence must see real Dashboard KPI nodes (#104)
 
 - Audit of the newly merged PR #119 found a false-pass possibility: identical **empty** Dashboard KPI arrays could pass comparison even when the target native Dashboard had not rendered its mission/contract counters. The debug-only installed APK state probe now requires visible mission and contract KPI values and verifies that the persisted mission collection, mission count and IDs agree before hashing and comparing two force-stop snapshots.
-- Added negative self-tests for missing KPI categories and mismatched canonical IDs. The installed APK smoke now reports an actual native canonical persistence pass when a successful redacted comparison artifact exists, and correctly reports screenshot-only UNVERIFIED for protected signed APKs.
+- Added negative self-tests for missing KPI categories and mismatched canonical IDs. The installed APK smoke now reports an actual native canonical persistence pass when a successful redacted comparison artifact exists, and correctly reports screenshot-only UNVERIFIED for protected signed APKs. The existing browser WebView-model first-run test also now requires visible mission and contract KPIs after Finish and both reloads; empty matching arrays no longer pass either channel.
 - This is test hardening only: no change to UI, theme, user storage format, signing, version or release intent. Exact-head CI needed; public signed Direct APK, physical Galaxy and live account provider still require independent testing.
 
 ## 2026-10-15 — Native canonical WebView persistence gate (debug TEST APK; #104)
