@@ -1,3 +1,10 @@
+## 2026-10-14 — Android Google Calendar: reject synthetic success (#110, candidate)
+
+- **Confirmed source defect:** Android native bridge `"sync"` replied with a success, a fresh timestamp, `events=[]` and all-zero counters without requesting Google Calendar API. The Android OAuth coordinator currently requests Drive app data, `openid` and email only, not Calendar read/write scopes. Consequently the frontend could display "Synced" despite doing no provider work.
+- **Candidate behavior:** bridge responds with an explicit Calendar-not-available error, never a fictional `syncedAt`. Android Settings shows Calendar sync unavailable, with disabled read/write, auto-sync and Sync Now controls and an explicit explanation. Other Supabase/Drive cloud sync and Windows Calendar providers are not changed.
+- **Regression:** Android native source contract test `android/tools/validate_sync_contract.py` requires rejection rather than synthetic success; Android rendered 360/412px UI smoke asserts the Calendar Sync button is disabled and the status explains the limitation. Exact-head CI is pending.
+- **Still open:** #110 full parity requires consented OAuth Calendar scopes, real event reading, deduplicated mission publishing, conflicts and physical-device/provider testing. This remediation removes a misleading success, it does **not** implement actual Android Calendar synchronization, grant permissions, change Themes/Chapter or authorize a release.
+
 ## 2026-10-14 — Fix legacy restart seeds behind generic onboarding (candidate, #104)
 
 - **Reproduced on exact PR #111 head `62f326f4`:** Android UI run `38656370214` failed the new first-run/reload regression as intended. Browser-mapped persisted state: starter missions checked/Premium creation unchecked; initial 3 missions, 0 goals, Dashboard `0/3` and `0` active Contracts. Same localStorage after page reload: 25 missions, 71 goals, Dashboard `0/19` and `71` active Contracts. The 3 initial IDs survived, but 22 legacy mission IDs and 71 old goal IDs were added without user action. CI screenshot evidence is isolated artificial fixture data, no personal account.
