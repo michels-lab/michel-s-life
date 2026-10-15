@@ -52,6 +52,23 @@ capture_png(){
   timeout 12s adb devices -l >"$OUT/adb-capture-failure-devices.txt" || true
   return 1
 }
+# Canonical-state inspection is limited to debuggable TEST builds.
+# Never expose Chrome DevTools on signed Direct/Play APKs.
+capture_native_state(){
+  local stage="$1" pid
+  pid="$(timeout 15s adb shell pidof "$PKG" | tr -d '\r\n ')"
+  if [[ ! "$pid" =~ ^[0-9]+$ ]]; then
+    echo "::error::Cannot identify native WebView process for $stage"
+    return 1
+  fi
+  timeout 15s adb forward tcp:9222 "localabstract:webview_devtools_remote_$pid"
+  if ! python3 android/tools/native_webview_state_probe.py capture \
+      --port 9222 --output "$OUT/native-state-$stage.json"; then
+    timeout 8s adb forward --remove tcp:9222 || true
+    return 1
+  fi
+  timeout 8s adb forward --remove tcp:9222
+}
 adb wait-for-device
 adb shell settings put global window_animation_scale 0
 adb shell settings put global transition_animation_scale 0
@@ -59,6 +76,17 @@ adb shell settings put global animator_duration_scale 0
 test -z "$(adb shell pm list packages "$PKG" | tr -d '\r')"
 if ! adb install -r "$APK" >"$OUT/install-result.txt" 2>&1; then
   cat "$OUT/install-result.txt"
+NATIVE_STATE_TEST=0
+if timeout 10s adb shell run-as "$PKG" id >/dev/null 2>&1; then
+  NATIVE_STATE_TEST=1
+fi
+if [[ "${MLV_REQUIRE_NATIVE_STATE_PROBE:-0}" == "1" && "$NATIVE_STATE_TEST" -ne 1 ]]; then
+  echo "::error::Native state probe requires a debuggable APK; refusing screenshot-only success"
+  exit 1
+fi
+if [[ "$NATIVE_STATE_TEST" -ne 1 ]]; then
+  echo "::notice::Signed/release APK: CDP state capture disabled; canonical persistence UNVERIFIED"
+fi
   adb logcat -d -t 3000 >"$OUT/install-failure-logcat.txt" || true
   echo "::error::Actual current-candidate APK refused fresh Android installation"
   exit 1
@@ -136,6 +164,9 @@ if [[ "$DEVICE_SIZE" =~ ^([0-9]+)x([0-9]+)$ ]]; then
   capture_png "$OUT/step4-after-native-finish-30s.png"
   adb shell uiautomator dump --compressed /sdcard/mlv-pre-relaunch.xml >"$OUT/pre-relaunch-accessibility-output.txt" 2>&1 || true
   adb shell cat /sdcard/mlv-pre-relaunch.xml >"$OUT/step4-hierarchy.xml" 2>/dev/null || true
+  if [[ "$NATIVE_STATE_TEST" -eq 1 ]]; then
+    capture_native_state before
+  fi
   # A mere disappearing card may not mean the onboarding completion was
   # persisted. Restart the exact installed app without clearing data and
   # record whether it wrongly reappears.
@@ -165,6 +196,13 @@ if [[ "$DEVICE_SIZE" =~ ^([0-9]+)x([0-9]+)$ ]]; then
   capture_png "$OUT/step5-after-relaunch-30s.png"
   sleep 30
   capture_png "$OUT/step5-after-relaunch-60s.png"
+  if [[ "$NATIVE_STATE_TEST" -eq 1 ]]; then
+    capture_native_state after
+    python3 android/tools/native_webview_state_probe.py compare \
+      --before "$OUT/native-state-before.json" \
+      --after "$OUT/native-state-after.json" \
+      --output "$OUT/native-canonical-persistence-comparison.json"
+  fi
 else
   echo "::warning::Could not resolve native device dimensions: $DEVICE_SIZE; touch step not verified"
 fi
