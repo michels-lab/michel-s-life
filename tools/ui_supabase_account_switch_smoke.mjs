@@ -58,9 +58,10 @@ try{
     await page.evaluate(async email=>window.SupabaseSyncV30216.signIn(email,'synthetic-password'),email);
   };
   const logout=async()=>{
+    // Native logout must reload; do not race the following account sign-in.
+    const reloaded=page.waitForEvent('load',{timeout:30000});
     await page.evaluate(async()=>window.SupabaseSyncV30216.signOut());
-    // Native logout deliberately reloads to discard cached per-account modules.
-    await page.waitForTimeout(180);await ready();
+    await reloaded;await ready();
   };
   const local=()=>page.evaluate(()=>({
     xp:Number(state.xp||0),
