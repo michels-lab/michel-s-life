@@ -21,6 +21,7 @@ ROIS = {
 }
 MAX_MEAN_DELTA = 2.0
 MAX_HIGH_CONTRAST_PIXELS = 0.015
+MAX_VERTICAL_LAYOUT_SHIFT = 24  # 16 px observed across native time-card relayout
 
 
 def crops(path):
@@ -37,15 +38,32 @@ def crops(path):
 
 
 def compare(a, b, label):
-    left, right = crops(a), crops(b)
+    # A real Android 16 Oct-15 test proved exact canonical data persistence
+    # while the time-of-day card moved the ENTIRE KPI row 16 physical pixels.
+    # Align both KPI crops together with ONE bounded vertical offset; never
+    # warp individual glyphs or permit arbitrary per-KPI matches.
+    left, right = crops(a), crops(b)  # validates geometry and nonempty glyphs
+    with Image.open(b) as source:
+        target = source.convert("RGB")
+    candidates = []
+    for dy in range(-MAX_VERTICAL_LAYOUT_SHIFT, MAX_VERTICAL_LAYOUT_SHIFT + 1):
+        scores = []
+        for name, rect in ROIS.items():
+            shifted = (rect[0], rect[1] + dy, rect[2], rect[3] + dy)
+            difference = ImageChops.difference(left[name], target.crop(shifted))
+            scores.append(sum(ImageStat.Stat(difference).mean) / 3)
+        candidates.append((sum(scores) / len(scores), abs(dy), dy))
+    _, _, best_shift = min(candidates)
     result = {}
-    for name in ROIS:
-        difference = ImageChops.difference(left[name], right[name])
+    for name, rect in ROIS.items():
+        shifted = (rect[0], rect[1] + best_shift, rect[2], rect[3] + best_shift)
+        difference = ImageChops.difference(left[name], target.crop(shifted))
         mean = sum(ImageStat.Stat(difference).mean) / 3
         gray = difference.convert("L")
         histogram = gray.histogram()
         changed = sum(histogram[26:]) / sum(histogram)
         result[name] = {
+            "verticalAlignmentPixels": best_shift,
             "meanPixelDifference": round(mean, 4),
             "fractionHighContrastDifference": round(changed, 6),
             "pass": mean <= MAX_MEAN_DELTA and changed <= MAX_HIGH_CONTRAST_PIXELS,
@@ -91,11 +109,29 @@ def self_test():
         a = root/"a.png"
         first.save(a)
         assert compare(a, a, "identity")["pass"]
+        # Relayout of KPI row by 16 pixels must be accepted; this was the
+        # observed harmless geometry change in source-debug and signed APKs.
+        translated = Image.new("RGB", EXPECTED_SIZE, (25, 32, 42))
+        translated.paste(first, (0, -16))
+        shifted = root/"shifted.png"
+        translated.save(shifted)
+        repositioned = compare(a, shifted, "same-kpis-shifted-16px")
+        assert repositioned["pass"] and all(
+            v["verticalAlignmentPixels"] == -16
+            for v in repositioned["regions"].values()
+        ), "Genuine common vertical layout shift was not aligned"
         second = first.copy()
         ImageDraw.Draw(second).rectangle((81, 1053, 133, 1117), fill=(5, 5, 5))
         b = root/"b.png"
         second.save(b)
         assert not compare(a, b, "changed-mission-count")["pass"]
+        changed_and_shifted = Image.new("RGB", EXPECTED_SIZE, (25, 32, 42))
+        changed_and_shifted.paste(second, (0, -16))
+        changed_path = root/"changed-shifted.png"
+        changed_and_shifted.save(changed_path)
+        assert not compare(a, changed_path, "changed-number-even-with-shift")["pass"], (
+            "Vertical registration cannot hide a genuinely changed KPI number"
+        )
         try:
             crops(root/"absent.png")
         except FileNotFoundError:
