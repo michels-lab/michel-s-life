@@ -134,6 +134,8 @@ if [[ "$DEVICE_SIZE" =~ ^([0-9]+)x([0-9]+)$ ]]; then
   capture_png "$OUT/step4-after-native-finish.png"
   sleep 20
   capture_png "$OUT/step4-after-native-finish-30s.png"
+  adb shell uiautomator dump --compressed /sdcard/mlv-pre-relaunch.xml >"$OUT/pre-relaunch-accessibility-output.txt" 2>&1 || true
+  adb shell cat /sdcard/mlv-pre-relaunch.xml >"$OUT/step4-hierarchy.xml" 2>/dev/null || true
   # A mere disappearing card may not mean the onboarding completion was
   # persisted. Restart the exact installed app without clearing data and
   # record whether it wrongly reappears.
@@ -184,7 +186,29 @@ for name in ("step2-after-native-continue.png", "step3-after-native-continue.png
     data = frame.read_bytes()
     if not data.startswith(bytes.fromhex("89504e470d0a1a0a")) or len(data) < 30000:
         raise SystemExit(f"Native onboarding screenshot is not a valid nontrivial PNG: {name}")
-print("INSTALL + LAUNCH + RELAUNCH PASS; captured two Continue taps, Finish tap and post-relaunch screenshots. Actual onboarding completion/persistence requires pixel review.")
+print("INSTALL + LAUNCH + RELAUNCH PASS; native screenshots captured. State persistence remains UNVERIFIED without canonical app-state comparison.")
+from xml.etree import ElementTree
+def snapshot(name):
+    path=p/name
+    if not path.exists(): return None
+    try:
+        root=ElementTree.fromstring(path.read_text(errors="replace"))
+        values=sorted((n.attrib.get("text","").strip(),n.attrib.get("content-desc","").strip())
+                      for n in root.iter("node") if n.attrib.get("text") or n.attrib.get("content-desc"))
+        return values
+    except ElementTree.ParseError: return None
+before=snapshot("step4-hierarchy.xml")
+after=snapshot("step5-hierarchy.xml")
+if before is not None and after is not None:
+    import json
+    (p/"native-accessibility-comparison.json").write_text(json.dumps({
+        "before_node_count":len(before),"after_node_count":len(after),
+        "same_accessibility_labels":before==after,
+        "NOTE":"Accessibility labels are NOT canonical persisted mission/contract state; layout/time can change labels."
+    },indent=2))
+    print("Native accessibility snapshots compared; canonical data persistence still UNVERIFIED")
+else:
+    print("Native accessibility comparisons unavailable; canonical data persistence UNVERIFIED")
 if (p/"step5-hierarchy.xml").exists():
     xml=(p/"step5-hierarchy.xml").read_text(errors="replace")
     print("Accessibility tree after native relaunch available:",len(xml),"bytes; WebView exposes label:", "Continue" in xml or "Finish" in xml)

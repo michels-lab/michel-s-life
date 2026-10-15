@@ -1,3 +1,9 @@
+## 2026-10-15 — Native signed Android onboarding evidence extension (#104)
+
+- Candidate adds pre-force-stop native UIAutomator hierarchy capture to `android/tools/smoke_candidate_apk_install.sh`, paired with the already retained post-relaunch hierarchy. Parse accessible labels into a compact redacted comparison JSON, with guarded handling for WebView containers that expose no useful tree.
+- Crucially, same accessibility labels or screenshot pixels do **not** prove canonical mission/contract persistence, so the native smoke log explicitly reports state persistence as UNVERIFIED; existing screenshot checks remain. No user data, UI runtime, brand, themes, release intents or package versions changed.
+- Exact-head validation and actual signed APK native execution remain pending; #104 stays open until persistent IDs/counts are obtained from the actual installed APK after force-stop.
+
 ## 2026-10-15 — Android-mode distinct-account isolation regression (#108)
 
 - Reuse existing synthetic A/B/C account-switch Chromium test in **Android WebView mode** (`MLV_ACCOUNT_SWITCH_PLATFORM=android`) with Android platform identification and 412px viewport. Require A's private board and device vault remain isolated from new B and established C, and prevent cross-account cloud writes; retain default Windows-mode coverage.
