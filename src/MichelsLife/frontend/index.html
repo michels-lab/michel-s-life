@@ -30796,11 +30796,16 @@ function clearLocalBoard(){
 function prepareAccountBoard(id){
  const target=String(id||'');if(!target)throw new Error('Missing Supabase user ID.');
  const previous=boardOwner();if(previous===target)return;
+ // A user's initial guest appearance choices should follow their first login,
+ // but never transfer missions, journal or another account's preferences.
+ const guestVisuals=!previous?Object.entries(sharePolicy().capture()).filter(([k])=>
+   /(?:theme|background|typography|palette|glass|panel|premiumColor|textColor|dayText|dayChipText)/i.test(k)):[];
  if(previous)stashLocalBoard(accountVaultKey(previous));
  else if(localStorage.getItem('vida_rpg_personal_progress_v2'))stashLocalBoard(GUEST_VAULT);
  clearLocalBoard();
  const saved=safeJson(localStorage.getItem(accountVaultKey(target))||'',null);
  if(saved?.snapshot?.state){applySnapshot(saved.snapshot);if(saved.meta&&typeof saved.meta==='object')localStorage.setItem(META_KEY,JSON.stringify(saved.meta))}
+ else if(!previous)for(const [key,value] of guestVisuals)localStorage.setItem(key,value);
  localStorage.setItem(BOARD_OWNER_KEY,target);
  try{renderAll?.()}catch(_){}
 }
