@@ -62,6 +62,26 @@ if '"sync" -> respondOk(' in bridge:
 if 'androidCalendarUnavailable' not in frontend or 'Calendar sync unavailable' not in frontend:
     raise SystemExit("Android Google Calendar Settings must expose the unavailable status")
 
+private_candidate = (repo / ".github/workflows/android-direct-private-candidate-v026.yml").read_text(encoding="utf-8")
+# Owner-invoked signed-candidate tests must never run on feature refs or imply
+# release publication; a workflow_dispatch event needs explicit approval.
+# Compile the visual KPI gate in every Android source-validation job without
+# requiring Pillow on non-signed CI paths or creating intermediate pycache files.
+visual_gate = root / "tools/compare_signed_native_kpis.py"
+compile(visual_gate.read_text(encoding="utf-8"), str(visual_gate), "exec")
+if "MichelsLife-Android-InstallSmoke-v0.2.6" not in private_candidate:
+    raise SystemExit("Signed test requires same-workflow canonical-verified debug evidence")
+if "compare_signed_native_kpis.py" not in private_candidate:
+    raise SystemExit("Signed private candidate must enforce Dashboard mission/contract visual parity")
+if "workflow_dispatch:" not in private_candidate or "private_candidate_only:" not in private_candidate:
+    raise SystemExit("Private signed Android candidate needs explicit manual Actions entrypoint")
+if "github.ref == 'refs/heads/main'" not in private_candidate:
+    raise SystemExit("Private signed Android candidate must reject non-main refs")
+if "inputs.private_candidate_only == true" not in private_candidate:
+    raise SystemExit("Manual signed Android candidate requires explicit private-only approval")
+if 'MLV_REQUIRE_PROTECTED_SIGNED: "1"' not in private_candidate:
+    raise SystemExit("Private signed APK smoke must enforce protected non-debuggable installation")
+
 scan_suffixes = {".kt", ".kts", ".js", ".py", ".xml", ".properties"}
 security_sources = [repo / "src/MichelsLife/frontend/index.html"]
 security_sources.extend(

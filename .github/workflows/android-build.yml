@@ -107,6 +107,16 @@ jobs:
           python tools/bump_frontend_version.py --index src/MichelsLife/frontend/index.html
           python tools/validate_brand_identity.py
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Test the fail-closed signed APK KPI parity comparator
+        shell: bash
+        run: |
+          python3 -m pip install --disable-pip-version-check Pillow==11.3.0
+          python3 android/tools/compare_signed_native_kpis.py --self-test
+
       - name: Download current Michel's Life AppBundle
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
