@@ -14,6 +14,8 @@ function between(start, end) {
 }
 const sharedSource = between('const MLV_SHARED_STORAGE_KEYS=new Set(', 'function captureCloudBackup()');
 const timelineSource = between('function applyBackupJson(', 'async function doRestore()');
+const portableSource = between('function applyBackupJson(raw){', 'function diagCard()')
+  .replace('function applyBackupJson(raw){', 'function applyPortableBackupJson(raw){');
 assert.ok(!timelineSource.includes('localStorage.clear('), 'Timeline restore must not clear device-local storage');
 assert.ok(!timelineSource.includes('Object.entries(ls))localStorage.setItem'), 'Timeline must not restore arbitrary cloud keys');
 
@@ -36,7 +38,8 @@ function fixture(entries) {
     bridge: async (action, payload) => {bridgeCalls.push({action, payload}); return {};},
   };
   vm.createContext(ctx);
-  vm.runInContext(sharedSource + '\n' + timelineSource + '\nthis.restoreTimeline=applyBackupJson;', ctx, {timeout: 1500});
+  vm.runInContext(sharedSource + '\n' + timelineSource + '\n' + portableSource +
+    '\nthis.restoreTimeline=applyBackupJson;this.restorePortable=applyPortableBackupJson;', ctx, {timeout: 1500});
   return {ctx, values, transient, bridgeCalls, get reloads(){return reloads;}};
 }
 
@@ -106,4 +109,42 @@ unavailable.ctx.window.MLVCloudSharedStorageV30216 = undefined;
 assert.throws(() => unavailable.ctx.restoreTimeline(JSON.stringify(oldCloudBackup)), /safety policy/);
 assert.equal(unavailable.values.get('michelsLife.journal.v30184'), 'OLD_JOURNAL');
 
-console.log('OK: legacy/local/Drive timeline restores preserve device credentials and reject foreign storage keys');
+// Portable .michelslife imports use the SAME approved localStorage boundary as
+// Supabase, Drive, and Backup Timeline, even for archives containing old tokens.
+const portable = fixture(original);
+portable.ctx.restorePortable(JSON.stringify(oldCloudBackup));
+for (const key of [
+  'michelsLife.supabase.session.v30216','michelsLife.supabase.meta.v30216',
+  'michelsLife.supabase.device.v30216','michelsLife.google.auth',
+  'michelsLife.local.notification.id'
+]) assert.equal(portable.values.get(key), original[key],
+  'Portable import transferred another device credential: ' + key);
+assert.equal(portable.values.get('michelsLife.journal.v30184'), 'RESTORED_JOURNAL');
+assert.equal(portable.values.get('michelsLife.theme.v342'), 'RESTORED_THEME');
+assert.equal(JSON.parse(portable.values.get('vida_rpg_personal_progress_v2')).missions[0].id, 'restored-mission');
+assert.equal(portable.values.has('unknown-storage-key'), false);
+assert.equal(portable.transient.get('mlv202Imported'), '1');
+assert.equal(portable.reloads, 1);
+
+const portableOnlyUnsafe = fixture(original);
+assert.throws(() => portableOnlyUnsafe.ctx.restorePortable(JSON.stringify({
+  localStorage: {'michelsLife.supabase.session.v30216':'OTHER_ACCOUNT'}
+})), /no.*restorable/i);
+assert.equal(portableOnlyUnsafe.values.get('michelsLife.supabase.session.v30216'), 'THIS_DEVICE_ACCESS_TOKEN');
+assert.equal(portableOnlyUnsafe.values.get('michelsLife.journal.v30184'), 'OLD_JOURNAL');
+assert.equal(portableOnlyUnsafe.reloads, 0);
+
+const portableStateOnly = fixture(original);
+portableStateOnly.ctx.restorePortable(JSON.stringify({runtimeState:{missions:[{id:'legacy-portable'}]}}));
+assert.equal(portableStateOnly.values.get('michelsLife.journal.v30184'), 'OLD_JOURNAL');
+assert.equal(portableStateOnly.values.get('michelsLife.supabase.device.v30216'), 'THIS_DEVICE_ID');
+assert.equal(JSON.parse(portableStateOnly.values.get('vida_rpg_personal_progress_v2')).missions[0].id, 'legacy-portable');
+assert.equal(portableStateOnly.reloads, 1);
+
+const portableNoPolicy = fixture(original);
+portableNoPolicy.ctx.window.MLVCloudSharedStorageV30216 = undefined;
+assert.throws(() => portableNoPolicy.ctx.restorePortable(JSON.stringify(oldCloudBackup)), /safety policy/);
+assert.equal(portableNoPolicy.values.get('michelsLife.supabase.session.v30216'), 'THIS_DEVICE_ACCESS_TOKEN');
+assert.equal(portableNoPolicy.reloads, 0);
+
+console.log('OK: legacy/local/Drive timeline and portable restores preserve device credentials and reject foreign storage keys');
