@@ -301,7 +301,11 @@ jobs:
           arch: x86_64
           profile: pixel_6
           avd-name: michels-life-candidate-android16
-          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
+          # API 36 + gfxstream Vulkan/legacy swiftshader_indirect crashed after the
+          # installed WebView rendered on two clean hosted Linux runners. Use
+          # current supported SwiftShader GLES and disable Vulkan explicitly;
+          # never weaken native screenshot assertions to mask black frames.
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu swiftshader -feature -Vulkan
           disable-animations: true
           emulator-boot-timeout: 600
           script: bash android/tools/smoke_candidate_apk_install.sh
