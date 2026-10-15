@@ -7,3 +7,5 @@ Requirements: source/UI/Android UI exact-commit checks; Windows Setup and Portab
 Destination: michels-lab/michel-s-life-releases/releases/tag/v3.0.219.
 Do not overwrite v3.0.218 assets, publish debug-signed APK, expose secrets or enable WebView debugging in production.
 Known unresolved tests (physical Galaxy, live two-device Supabase, Android Calendar) remain disclosed in docs/releases/v3.0.219.md rather than blocking owner testing.
+
+RELEASE RETRY 2026-10-15 (owner-authorized): Corrected signed Dashboard KPI pixel registration merged in PR #125, source commit 7fb7f4dd72052d0516bee8de5744b2139f8c8647. Prior publishing attempt 38813414945 failed in protected signed Android KPI pixel comparison due to harmless 16px vertical relayout; no v3.0.219 release was published. This isolated INTENT-ONLY main commit re-runs the full exact-SHA Windows + Android Direct v0.2.7 build, native installed debug and signed APK tests, visible KPI parity, signer/hash/provenance checks and atomic 13-asset unified publication. No other source changes in this commit. User authorizes release despite having no external app users.
