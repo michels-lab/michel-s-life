@@ -224,7 +224,14 @@ for name in ("step2-after-native-continue.png", "step3-after-native-continue.png
     data = frame.read_bytes()
     if not data.startswith(bytes.fromhex("89504e470d0a1a0a")) or len(data) < 30000:
         raise SystemExit(f"Native onboarding screenshot is not a valid nontrivial PNG: {name}")
-print("INSTALL + LAUNCH + RELAUNCH PASS; native screenshots captured. State persistence remains UNVERIFIED without canonical app-state comparison.")
+if (p/"native-canonical-persistence-comparison.json").exists():
+    import json
+    native = json.loads((p/"native-canonical-persistence-comparison.json").read_text())
+    if not native.get("pass"):
+        raise SystemExit("Native canonical persistence report is present but FAIL")
+    print("INSTALL + LAUNCH + RELAUNCH PASS; native canonical state retention VERIFIED for debuggable TEST APK")
+else:
+    print("INSTALL + LAUNCH + RELAUNCH PASS; screenshot-only evidence. Canonical state persistence UNVERIFIED on protected signed APK")
 from xml.etree import ElementTree
 def snapshot(name):
     path=p/name
