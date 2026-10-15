@@ -127,6 +127,7 @@ jobs:
         run: |
           export MLV_UI_URL=http://127.0.0.1:4173
           node tools/ui_supabase_account_switch_smoke.mjs
+          MLV_ACCOUNT_SWITCH_PLATFORM=android node tools/ui_supabase_account_switch_smoke.mjs
 
       - name: Audit Spanish first run
         run: |
