@@ -58,6 +58,17 @@ def sanitize(raw):
         raise RuntimeError("Canonical persisted goals collection is unavailable")
     if len(collections["goals"]) != 0:
         raise RuntimeError("Premium contracts unexpectedly populated although native Finish fixture leaves them unchecked")
+    if collections.get("missions") != ids:
+        raise RuntimeError("Canonical mission collection and mission IDs do not agree")
+    if raw.get("missions") != len(ids):
+        raise RuntimeError("Canonical mission count does not agree with stored mission IDs")
+    kpis = raw.get("kpis")
+    if not isinstance(kpis, list) or not all(isinstance(kpi, str) for kpi in kpis):
+        raise RuntimeError("Native Dashboard mission/contract KPI text is unavailable")
+    if not any("mission" in kpi.lower() for kpi in kpis):
+        raise RuntimeError("Native Dashboard mission KPI not rendered")
+    if not any("contract" in kpi.lower() for kpi in kpis):
+        raise RuntimeError("Native Dashboard Premium Contracts KPI not rendered")
     return {
         "onboardingComplete": True,
         "genericProfile": True,
@@ -143,6 +154,19 @@ def self_test():
         pass
     else:
         raise AssertionError("Nonempty unsolicited Premium contracts must be rejected")
+    for wrong in ([], ["Missions 0/2"], ["Contracts 0 active"]):
+        try:
+            sanitize({**fixture, "kpis": wrong})
+        except RuntimeError:
+            pass
+        else:
+            raise AssertionError("Missing real native Dashboard KPI must fail")
+    try:
+        sanitize({**fixture, "collections": {"missions": ["wrong-id"], "goals": []}})
+    except RuntimeError:
+        pass
+    else:
+        raise AssertionError("Canonical mission ID mismatch must fail")
     assert digest(["a","b"]) != digest(["a","c"])
     print("PASS: synthetic canonical snapshot sanitization and unexpected-seed gate")
 
