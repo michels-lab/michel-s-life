@@ -74,6 +74,12 @@ try {
     });
   }
   const before=await readSnapshot();
+  const requireVisibleKpis=(snapshot,stage)=>{
+    const values=snapshot.kpis||[];
+    check(values.some(v=>/mission/i.test(v))&&values.some(v=>/contract/i.test(v)),
+      'Dashboard mission and contract KPIs must both be rendered '+stage+': '+JSON.stringify(values));
+  };
+  requireVisibleKpis(before,'after Finish');
   check(before.onboardingComplete,'Onboarding completion flag lost after Finish');
   check(before.missionCount>0,
     'Starter missions were not saved after selecting the default starter setup: '+JSON.stringify({choices,before}));
@@ -90,6 +96,7 @@ try {
     !!document.querySelector('#tab-dashboard'),null,{timeout:60000});
   await page.waitForTimeout(20000);
   const after=await readSnapshot();
+  requireVisibleKpis(after,'after first reload');
   await page.screenshot({path:output+'/after-relaunch.png'});
   const stableIds=JSON.stringify(before.missionIds)===JSON.stringify(after.missionIds);
   const stableCollections=JSON.stringify(before.arrays)===JSON.stringify(after.arrays);
@@ -112,6 +119,7 @@ try {
     !!document.querySelector('#tab-dashboard'),null,{timeout:60000});
   await page.waitForTimeout(20000);
   const second=await readSnapshot();
+  requireVisibleKpis(second,'after second reload');
   await page.screenshot({path:output+'/after-second-relaunch.png'});
   console.log('ANDROID_ONBOARDING_SECOND_RELAUNCH_STATE',JSON.stringify(second,null,2));
   check(second.onboardingComplete,'Onboarding reappeared after second reload');
