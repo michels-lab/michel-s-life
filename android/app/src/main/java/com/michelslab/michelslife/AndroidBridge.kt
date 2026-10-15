@@ -152,12 +152,13 @@ class AndroidBridge(
                     respondError(requestId, e.message ?: "Could not open Calendar.")
                 }
             }
-            "sync" -> respondOk(requestId, JSONObject()
-                .put("events", JSONArray())
-                .put("syncedAt", Instant.now().toString())
-                .put("googleEventCount", 0)
-                .put("managedEventCount", 0)
-                .put("pushedMissionCount", 0))
+            // Android OAuth currently has Drive app-folder/email grants, not
+            // the Calendar read/write grants or Calendar provider implementation.
+            // Never report an empty successful sync or a fictional timestamp.
+            "sync" -> respondError(
+                requestId,
+                "Google Calendar sync is not available on Android yet. No calendar events were read or written."
+            )
             "diagnostics" -> respondOk(requestId, JSONObject()
                 .put("platform", "Android")
                 .put("version", DriveCloudEngine.ANDROID_VERSION)
