@@ -131,12 +131,12 @@ def compare(before, after, outfile):
 
 def self_test():
     fixture = {"ready": True, "done": True, "generic": True, "missions": 2,
-               "ids": ["a","b"], "duplicateMissionIds": False,
-               "collections": {"missions":["a","b"],"goals":[]},
+               "ids": ["raw-id-alpha","raw-id-beta"], "duplicateMissionIds": False,
+               "collections": {"missions":["raw-id-alpha","raw-id-beta"],"goals":[]},
                "kpis":["Today's missions 0/2","Contracts 0 active"]}
     cleaned = sanitize(fixture)
     assert cleaned["missionCount"] == 2 and cleaned["collections"]["goals"]["count"] == 0
-    assert "a" not in json.dumps(cleaned) and "Today's" not in json.dumps(cleaned)
+    assert "raw-id-alpha" not in json.dumps(cleaned) and "Today's" not in json.dumps(cleaned)
     try:
         sanitize({**fixture, "collections": {"missions":["a","b"],"goals":["contract1"]}})
     except RuntimeError:
