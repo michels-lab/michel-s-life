@@ -4,4 +4,11 @@ This marker triggers .github/workflows/android-direct-private-candidate-v026.yml
 Produce a same-run permanently signed APK artifact using the established pinned Direct certificate, with sha256/version/package/SHA manifest evidence.
 Install the actual signed APK on an Android 16 emulator, run onboarding + relaunch captures, and retain screenshots as temporary private GitHub Actions artifacts.
 DO NOT call any publication workflow, create a GitHub Release, edit the stable channel or generate .michelslab/release-intents/unified-v3218-a026.txt.
-The public latest remains Windows 3.0.217 + Android 0.2.5 until the separate versioned release gate and real-device review are complete.
+The currently published version is unchanged by this private candidate test.
+
+2026-10-15 private candidate revalidation (no public release):
+- Run after merged PR #121 source c46c8443436febe8b8957849c3cdef3a54784be6.
+- Use the permanent pinned Android Direct signature, verify candidate identity and protected/nondebuggable application state with MLV_REQUIRE_PROTECTED_SIGNED=1.
+- Use the updated Android 16 emulator GLES software renderer; retain signed installed screenshots, native process and relaunch evidence.
+- This remains PRIVATE candidate artifact only. No GitHub Release, stable-channel update or package-version change.
+- Canonical state readout stays unverified for nondebuggable signed APK; do not conflate with the debuggable TEST APK CDP acceptance.
