@@ -30777,6 +30777,18 @@ function platform(){return String(window.__MICHELSLIFE_PLATFORM__||'windows').to
 function deviceId(){let id=localStorage.getItem(DEVICE_KEY);if(!id){id=(platform()==='android'?'and_':'win_')+crypto.randomUUID();localStorage.setItem(DEVICE_KEY,id)}return id}
 function deviceName(){if(platform()==='android'){try{return navigator.userAgentData?.platform||navigator.platform||'Android'}catch(_){return'Android'}}try{return navigator.userAgentData?.platform||navigator.platform||'Windows PC'}catch(_){return'Windows PC'}}
 function boardOwner(){return localStorage.getItem(BOARD_OWNER_KEY)||''}
+function hasPersonalBoard(){
+ const b=safeJson(localStorage.getItem('vida_rpg_personal_progress_v2')||'',null);
+ if(!b)return false;
+ return Number(b.xp||0)>0||Number(b.coins||0)>0||
+   ['missions','goals','history','owned'].some(k=>Array.isArray(b[k])&&b[k].length>0)||
+   (typeof b.settings?.characterName==='string'&&
+    !['','Player'].includes(b.settings.characterName))||
+   (()=>{
+     const j=localStorage.getItem('michelsLife.journal.v30184')||'';
+     return j.length>2&&j!=='{}';
+   })();
+}
 function accountVaultKey(id){return ACCOUNT_VAULT+encodeURIComponent(String(id))}
 function sharePolicy(){const p=window.MLVCloudSharedStorageV30216;if(!p||typeof p.capture!=='function'||typeof p.restore!=='function')throw new Error('Account isolation safety policy is unavailable.');return p}
 function stashLocalBoard(key){
@@ -30801,7 +30813,7 @@ function prepareAccountBoard(id){
  const guestVisuals=!previous?Object.entries(sharePolicy().capture()).filter(([k])=>
    /(?:theme|background|typography|palette|glass|panel|premiumColor|textColor|dayText|dayChipText)/i.test(k)):[];
  if(previous)stashLocalBoard(accountVaultKey(previous));
- else if(localStorage.getItem('vida_rpg_personal_progress_v2'))stashLocalBoard(GUEST_VAULT);
+ else if(hasPersonalBoard())stashLocalBoard(GUEST_VAULT);
  clearLocalBoard();
  const saved=safeJson(localStorage.getItem(accountVaultKey(target))||'',null);
  if(saved?.snapshot?.state){applySnapshot(saved.snapshot);if(saved.meta&&typeof saved.meta==='object')localStorage.setItem(META_KEY,JSON.stringify(saved.meta))}
@@ -30866,7 +30878,7 @@ async function verifyOtp(email,token){
 function signOutLocal(){
  const owned=boardOwner(),identity=String(session()?.user?.id||'');
  if(owned&&owned===identity)stashLocalBoard(accountVaultKey(owned));
- else if(localStorage.getItem('vida_rpg_personal_progress_v2'))stashLocalBoard(GUEST_VAULT);
+ else if(hasPersonalBoard())stashLocalBoard(GUEST_VAULT);
  clearLocalBoard();localStorage.removeItem(SESSION_KEY);localStorage.removeItem(BOARD_OWNER_KEY);
  runtime.connected=false;runtime.cloudReady=false;runtime.account='';runtime.cloudLastSync='';runtime.revision=0;
  overview={devices:[],backups:[],currentDeviceId:deviceId(),currentDeviceName:deviceName()};
