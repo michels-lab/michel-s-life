@@ -1,3 +1,9 @@
+## 2026-10-15 — Android-mode distinct-account isolation regression (#108)
+
+- Reuse existing synthetic A/B/C account-switch Chromium test in **Android WebView mode** (`MLV_ACCOUNT_SWITCH_PLATFORM=android`) with Android platform identification and 412px viewport. Require A's private board and device vault remain isolated from new B and established C, and prevent cross-account cloud writes; retain default Windows-mode coverage.
+- UI smoke CI now runs both platform variants. This is mocked provider/browser evidence, not a real Galaxy or live Supabase account-switch acceptance. No product UI, runtime, Theme, version or release trigger modified.
+- Status: PR candidate requiring exact-head CI before merge; #108 and #28 remain open.
+
 ## 2026-10-15 — Android onboarding: two consecutive WebView reloads (#104)
 
 - Extended `tools/ui_android_onboarding_persistence_smoke.mjs` to reload the same origin/state twice after first-run Finish, checking exact persisted mission IDs, mission/goal/contract arrays, Dashboard KPIs, onboarding completion and duplicate IDs against the initial snapshot after **each** reload. A separate screenshot and redacted state report document the second restart.
