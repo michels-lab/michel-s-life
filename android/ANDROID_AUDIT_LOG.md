@@ -1,3 +1,10 @@
+## 2026-10-15 — Owner-authorized Android Direct 0.2.7/code 9 release candidate
+
+- Prepared Android Direct `0.2.7`/`versionCode=9` as the next installable update over permanent-signed 0.2.6. Metadata aligned in Gradle, Kotlin `DriveCloudEngine`, Android WebView bridge, Android CI workflow and mobile UX validator; do not rotate the certificate or fall back to a debug-signed public binary.
+- Source-wide paired release: Windows `3.0.219` and Android Direct `0.2.7` from exactly one commit. New unified publisher workflow requires tested signed APK **actually installed and relaunched in Android 16**, comparison of visible Mission/Contract KPI screenshot regions to same-source debuggable APK with canonical storage proof, stable signature and SHA-256 checks before publishing either platform.
+- Owner confirmed app is not shared with any outside user and authorized direct new releases without pre-distribution subjective review; installation on a physical Galaxy, real Supabase sync and signed APK internal persistence remain explicitly unverified. User-facing release notes disclose these limits and advise backup before upgrading.
+- This is a source candidate until exact-head CI, isolated release-intent commit and actual GitHub Release creation are confirmed. No visual assets, themes, backgrounds, Current Chapter, or state schema changed.
+
 ## 2026-10-15 — Private Direct signer test: manual owner dispatch + cross-APK visual KPI gate (#104)
 
 - Repository actions produced **no workflow run associated with main push commits** from the prior private-candidate marker (#122 squash `e56ebc37` and the direct main marker-only update `544f5856`). This is a verified observation, not proof of which GitHub automation credential suppressed the event. Added an owner-invokable `workflow_dispatch` to the existing private candidate, requiring `private_candidate_only=true` and `refs/heads/main`; existing main-only marker push trigger remains. It does not publish any release. Static security check requires those guards and release APK debug isolation.

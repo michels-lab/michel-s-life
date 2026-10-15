@@ -1,0 +1,257 @@
+name: Publish unified Michel's Life Windows 3.0.219 + Android Direct 0.2.7
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_authorized:
+        description: 'Owner authorized publication of Windows 3.0.219 and Android Direct 0.2.7'
+        type: boolean
+        required: true
+        default: false
+  push:
+    branches: [main]
+    paths:
+      - '.michelslab/release-intents/unified-v3219-a027.txt'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: michelslife-unified-v3219-a027
+  cancel-in-progress: false
+
+jobs:
+  exact-source-gate:
+    if: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'push' || inputs.release_authorized == true) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Require isolated explicit release intent and exact-source CI
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected='.michelslab/release-intents/unified-v3219-a027.txt'
+          actual="$(git diff --name-only HEAD^ HEAD)"
+          test "$actual" = "$expected" || { echo "::error::Release intent must be the only changed file"; exit 1; }
+          for attempt in $(seq 1 45); do
+            gh api -X GET "repos/$GITHUB_REPOSITORY/actions/runs" -f head_sha="$GITHUB_SHA" -f per_page=100 > runs.json
+            all_green=true
+            for name in 'Source validation' 'Android UI smoke' 'UI smoke'; do
+              if ! jq -e --arg name "$name" 'any(.workflow_runs[]; .name==$name and .head_sha==env.GITHUB_SHA and .conclusion=="success")' runs.json >/dev/null; then
+                all_green=false
+              fi
+            done
+            if [[ "$all_green" == true ]]; then
+              echo "Exact-source-sha CI succeeded: $GITHUB_SHA"
+              exit 0
+            fi
+            sleep 20
+          done
+          echo "::error::Exact-commit Source/Android UI/Desktop UI validation did not all succeed"; exit 1
+
+  build-windows:
+    if: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'push' || inputs.release_authorized == true) }}
+    uses: ./.github/workflows/release-windows.yml
+    with:
+      publish: false
+    secrets: inherit
+
+  build-android:
+    if: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'push' || inputs.release_authorized == true) }}
+    uses: ./.github/workflows/android-build.yml
+    with:
+      build_direct: true
+    secrets: inherit
+
+  signed-native-smoke:
+    name: Verify installed production-signed Android Direct 0.2.7 on Android 16
+    needs: [build-android]
+    if: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'push' || inputs.release_authorized == true) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      ANDROID_VERSION: 0.2.7
+      APK: artifacts/candidate/MichelsLife-Android-Direct-v0.2.7.apk
+      MLV_REQUIRE_PROTECTED_SIGNED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download permanently signed Direct APK from same source run
+        uses: actions/download-artifact@v4
+        with:
+          name: MichelsLife-Android-Direct-v0.2.7
+          path: artifacts/candidate
+      - name: Download canonical-verified debug Android native evidence from same source run
+        uses: actions/download-artifact@v4
+        with:
+          name: MichelsLife-Android-InstallSmoke-v0.2.7
+          path: artifacts/native-debug-reference
+      - name: Verify signed binary identity and same-run provenance
+        shell: bash
+        env:
+          CERT_PIN: ${{ vars.ANDROID_DIRECT_CERT_SHA256 }}
+        run: |
+          set -euo pipefail
+          (cd artifacts/candidate && sha256sum -c MichelsLife-Android-Direct-v0.2.7.apk.sha256)
+          jq -e --arg sha "$GITHUB_SHA" --arg pin "$CERT_PIN" '
+            .sourceSha==$sha and .package=="com.michelslab.michelslife" and
+            .versionName=="0.2.7" and .versionCode==9 and
+            .distribution=="production-signed" and .signerCertSha256==$pin
+          ' artifacts/candidate/direct-release-manifest.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install signed KPI comparator
+        run: |
+          python3 -m pip install --disable-pip-version-check Pillow==11.3.0
+          python3 android/tools/compare_signed_native_kpis.py --self-test
+      - name: Enable Android emulator KVM
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
+      - name: Install and restart actual protected signed APK
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          avd-name: michels-life-unified-v3219-signed
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu swiftshader -feature -Vulkan
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash android/tools/smoke_candidate_apk_install.sh
+      - name: Fail if signed Dashboard mission or contract counts drift
+        shell: bash
+        run: |
+          python3 android/tools/compare_signed_native_kpis.py \
+            --debug-before artifacts/native-debug-reference/step4-after-native-finish-30s.png \
+            --debug-after artifacts/native-debug-reference/step5-after-relaunch-60s.png \
+            --signed-before artifacts/candidate-install/step4-after-native-finish-30s.png \
+            --signed-after artifacts/candidate-install/step5-after-relaunch-60s.png \
+            --output artifacts/candidate-install/signed-native-kpi-visual-parity.json
+      - name: Preserve signed native screenshots and visual comparison evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MichelsLife-Android-Direct-v0.2.7-Installed-Evidence
+          path: artifacts/candidate-install/
+          if-no-files-found: warn
+          retention-days: 30
+  publish:
+    if: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'push' || inputs.release_authorized == true) }}
+    needs: [exact-source-gate, build-windows, build-android, signed-native-smoke]
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    permissions:
+      contents: read
+    env:
+      GH_TOKEN: ${{ secrets.RELEASES_REPO_TOKEN }}
+      DESTINATION: michels-lab/michel-s-life-releases
+      TAG: v3.0.219
+      ANDROID_CERT_PIN: ${{ vars.ANDROID_DIRECT_CERT_SHA256 }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download actual SAME-RUN validated Windows package
+        uses: actions/download-artifact@v4
+        with:
+          name: MichelsLife-Windows-v3.0.219
+          path: windows
+      - name: Download actual SAME-RUN permanently signed Android Direct package
+        uses: actions/download-artifact@v4
+        with:
+          name: MichelsLife-Android-Direct-v0.2.7
+          path: android-signed
+
+      - name: Check exact source, package, versions, signature and binaries before publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$GH_TOKEN"
+          test -n "$ANDROID_CERT_PIN"
+          grep -q '<Version>3.0.219</Version>' src/MichelsLife/MichelsLife.csproj
+          grep -q 'versionCode = 9' android/app/build.gradle.kts
+          grep -q 'versionName = "0.2.7"' android/app/build.gradle.kts
+          test "$(jq -r .versionName android-signed/direct-release-manifest.json)" = "0.2.7"
+          jq -e --arg sha "$GITHUB_SHA" --arg cert "$ANDROID_CERT_PIN" '
+            .sourceSha==$sha and .platform=="android"
+            and .distribution=="production-signed"
+            and .package=="com.michelslab.michelslife"
+            and .versionName=="0.2.7" and .versionCode==9
+            and .signerCertSha256==$cert' android-signed/direct-release-manifest.json
+          ( cd android-signed && sha256sum -c MichelsLife-Android-Direct-v0.2.7.apk.sha256 )
+          test "$(sha256sum android-signed/MichelsLife-Android-Direct-v0.2.7.apk | awk '{print $1}')" = "$(jq -r .sha256 android-signed/direct-release-manifest.json)"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs android-signed/MichelsLife-Android-Direct-v0.2.7.apk > android-signing.txt
+          actual_cert="$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' android-signing.txt | tr -d ':' | tr '[:upper:]' '[:lower:]')"
+          test "$actual_cert" = "$ANDROID_CERT_PIN"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging android-signed/MichelsLife-Android-Direct-v0.2.7.apk | grep -Eq "name='com.michelslab.michelslife' versionCode='9' versionName='0.2.7'"
+          for file in MichelsLife-Setup-v3.0.219.exe MichelsLife-Portable-v3.0.219.exe MichelsLife-v3.0.219.exe; do
+            test -s "windows/$file"
+            test -s "windows/$file.sha256"
+            (cd windows && sha256sum -c "$file.sha256")
+          done
+          test "$(sha256sum windows/MichelsLife-Portable-v3.0.219.exe | awk '{print $1}')" = "$(sha256sum windows/MichelsLife-v3.0.219.exe | awk '{print $1}')"
+          test -s windows/AppBundle.zip
+          test -s windows/michels_life_icon.ico
+          grep -q 'LAUNCH PASS' windows/MichelsLife-Installed-launch.txt
+          grep -q 'LAUNCH PASS' windows/MichelsLife-Portable-launch.txt
+          if gh release view "$TAG" --repo "$DESTINATION" >/dev/null 2>&1; then
+            echo "::error::Public v3.0.219 tag already exists; do not overwrite reviewed binaries"; exit 1
+          fi
+
+      - name: Assemble exact candidate with independent checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          cp windows/MichelsLife-{Setup,Portable}-v3.0.219.exe* dist/
+          cp windows/MichelsLife-v3.0.219.exe* dist/
+          cp windows/AppBundle.zip windows/michels_life_icon.ico dist/
+          cp android-signed/MichelsLife-Android-Direct-v0.2.7.apk* dist/
+          cp android-signed/direct-release-manifest.json dist/android-v0.2.7-manifest.json
+          cp android-signing.txt dist/android-signing-certificate-v0.2.7.txt
+          python3 - <<'PY'
+          import json, os, hashlib
+          from pathlib import Path
+          p = Path("dist")
+          assets = {f.name: hashlib.sha256(f.read_bytes()).hexdigest() for f in p.iterdir() if f.is_file()}
+          payload = {"schema": 1, "product":"Michel's Life",
+            "source_repo": os.environ["GITHUB_REPOSITORY"],
+            "source_sha": os.environ["GITHUB_SHA"],
+            "windows_version":"3.0.219","android_version":"0.2.7",
+            "android_version_code":9, "android_certificate_sha256":os.environ["ANDROID_CERT_PIN"],
+            "assets_sha256":assets}
+          (p/"release-provenance.json").write_text(json.dumps(payload,indent=2)+"\n")
+          PY
+
+      - name: Create complete DRAFT only; verify and then publish both platforms atomically
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release create "$TAG" dist/* --repo "$DESTINATION" --target main --draft \
+            --title "Michel's Life — Windows v3.0.219 + Android v0.2.7" \
+            --notes-file docs/releases/v3.0.219.md
+          gh release view "$TAG" --repo "$DESTINATION" --json isDraft,assets,name > public.json
+          jq -e '.isDraft==true and (.assets|length)==13' public.json
+          for name in \
+            MichelsLife-Setup-v3.0.219.exe MichelsLife-Setup-v3.0.219.exe.sha256 \
+            MichelsLife-Portable-v3.0.219.exe MichelsLife-Portable-v3.0.219.exe.sha256 \
+            MichelsLife-v3.0.219.exe MichelsLife-v3.0.219.exe.sha256 \
+            MichelsLife-Android-Direct-v0.2.7.apk MichelsLife-Android-Direct-v0.2.7.apk.sha256 \
+            android-v0.2.7-manifest.json android-signing-certificate-v0.2.7.txt \
+            AppBundle.zip michels_life_icon.ico release-provenance.json; do
+              jq -e --arg n "$name" 'any(.assets[]; .name==$n)' public.json >/dev/null
+          done
+          mkdir -p downloaded
+          gh release download "$TAG" --repo "$DESTINATION" --dir downloaded \
+            --pattern 'MichelsLife-Android-Direct-v0.2.7.apk*' \
+            --pattern 'MichelsLife-Setup-v3.0.219.exe*' \
+            --pattern 'release-provenance.json'
+          (cd downloaded && sha256sum -c MichelsLife-Android-Direct-v0.2.7.apk.sha256 && sha256sum -c MichelsLife-Setup-v3.0.219.exe.sha256)
+          cmp -s downloaded/release-provenance.json dist/release-provenance.json
+          gh release edit "$TAG" --repo "$DESTINATION" --draft=false --latest
+          test "$(gh api "repos/$DESTINATION/releases/latest" --jq '.tag_name')" = "$TAG"
+          echo "UNIFIED_RELEASE_VERIFIED: $TAG $GITHUB_SHA"
