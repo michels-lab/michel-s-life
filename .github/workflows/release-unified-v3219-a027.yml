@@ -68,9 +68,82 @@ jobs:
       build_direct: true
     secrets: inherit
 
+  signed-native-smoke:
+    name: Verify installed production-signed Android Direct 0.2.7 on Android 16
+    needs: [build-android]
+    if: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'push' || inputs.release_authorized == true) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      ANDROID_VERSION: 0.2.7
+      APK: artifacts/candidate/MichelsLife-Android-Direct-v0.2.7.apk
+      MLV_REQUIRE_PROTECTED_SIGNED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download permanently signed Direct APK from same source run
+        uses: actions/download-artifact@v4
+        with:
+          name: MichelsLife-Android-Direct-v0.2.7
+          path: artifacts/candidate
+      - name: Download canonical-verified debug Android native evidence from same source run
+        uses: actions/download-artifact@v4
+        with:
+          name: MichelsLife-Android-InstallSmoke-v0.2.7
+          path: artifacts/native-debug-reference
+      - name: Verify signed binary identity and same-run provenance
+        shell: bash
+        env:
+          CERT_PIN: ${{ vars.ANDROID_DIRECT_CERT_SHA256 }}
+        run: |
+          set -euo pipefail
+          (cd artifacts/candidate && sha256sum -c MichelsLife-Android-Direct-v0.2.7.apk.sha256)
+          jq -e --arg sha "$GITHUB_SHA" --arg pin "$CERT_PIN" '
+            .sourceSha==$sha and .package=="com.michelslab.michelslife" and
+            .versionName=="0.2.7" and .versionCode==9 and
+            .distribution=="production-signed" and .signerCertSha256==$pin
+          ' artifacts/candidate/direct-release-manifest.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install signed KPI comparator
+        run: |
+          python3 -m pip install --disable-pip-version-check Pillow==11.3.0
+          python3 android/tools/compare_signed_native_kpis.py --self-test
+      - name: Enable Android emulator KVM
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
+      - name: Install and restart actual protected signed APK
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          avd-name: michels-life-unified-v3219-signed
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu swiftshader -feature -Vulkan
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash android/tools/smoke_candidate_apk_install.sh
+      - name: Fail if signed Dashboard mission or contract counts drift
+        shell: bash
+        run: |
+          python3 android/tools/compare_signed_native_kpis.py \
+            --debug-before artifacts/native-debug-reference/step4-after-native-finish-30s.png \
+            --debug-after artifacts/native-debug-reference/step5-after-relaunch-60s.png \
+            --signed-before artifacts/candidate-install/step4-after-native-finish-30s.png \
+            --signed-after artifacts/candidate-install/step5-after-relaunch-60s.png \
+            --output artifacts/candidate-install/signed-native-kpi-visual-parity.json
+      - name: Preserve signed native screenshots and visual comparison evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MichelsLife-Android-Direct-v0.2.7-Installed-Evidence
+          path: artifacts/candidate-install/
+          if-no-files-found: warn
+          retention-days: 30
   publish:
     if: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'push' || inputs.release_authorized == true) }}
-    needs: [exact-source-gate, build-windows, build-android]
+    needs: [exact-source-gate, build-windows, build-android, signed-native-smoke]
     runs-on: ubuntu-latest
     timeout-minutes: 35
     permissions:
