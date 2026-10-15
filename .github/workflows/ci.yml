@@ -33,6 +33,9 @@ jobs:
           python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
           node --check src/MichelsLife/frontend/i18n.js
 
+      - name: Test fail-closed cloud and portable restore storage boundaries
+        run: node tools/test_cloud_restore_storage.mjs
+
       - name: Validate Android Supabase sync contract
         run: python android/tools/validate_sync_contract.py
 
