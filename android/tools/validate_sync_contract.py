@@ -65,6 +65,14 @@ if 'androidCalendarUnavailable' not in frontend or 'Calendar sync unavailable' n
 private_candidate = (repo / ".github/workflows/android-direct-private-candidate-v026.yml").read_text(encoding="utf-8")
 # Owner-invoked signed-candidate tests must never run on feature refs or imply
 # release publication; a workflow_dispatch event needs explicit approval.
+# Compile the visual KPI gate in every Android source-validation job without
+# requiring Pillow on non-signed CI paths or creating intermediate pycache files.
+visual_gate = root / "tools/compare_signed_native_kpis.py"
+compile(visual_gate.read_text(encoding="utf-8"), str(visual_gate), "exec")
+if "MichelsLife-Android-InstallSmoke-v0.2.6" not in private_candidate:
+    raise SystemExit("Signed test requires same-workflow canonical-verified debug evidence")
+if "compare_signed_native_kpis.py" not in private_candidate:
+    raise SystemExit("Signed private candidate must enforce Dashboard mission/contract visual parity")
 if "workflow_dispatch:" not in private_candidate or "private_candidate_only:" not in private_candidate:
     raise SystemExit("Private signed Android candidate needs explicit manual Actions entrypoint")
 if "github.ref == 'refs/heads/main'" not in private_candidate:
