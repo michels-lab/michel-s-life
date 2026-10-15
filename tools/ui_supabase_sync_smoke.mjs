@@ -112,9 +112,13 @@ try{
   const otpVerified=await page.evaluate(()=>({verify:window.__supaMock.lastOtpVerify,connected:window.SupabaseSyncV30216.runtime.connected}));
   ok(otpVerified.verify?.email==='sync-test@example.com'&&otpVerified.verify?.token==='123456'&&otpVerified.verify?.type==='email','OTP verification payload is wrong: '+JSON.stringify(otpVerified));
   ok(otpVerified.connected,'OTP verification did not establish a Supabase session');
+  // Sign-out now intentionally reloads the shared WebView to clear cached
+  // Journal/Goal/Calendar modules from the previous Supabase account.
+  const loggedOutReload=page.waitForEvent('load',{timeout:30000});
   await page.evaluate(async()=>window.SupabaseSyncV30216.signOut());
+  await loggedOutReload;
+  await page.waitForFunction(()=>window.SupabaseSyncV30216,null,{timeout:30000});
   await page.evaluate(()=>window.SupabaseSyncV30216.setAuthMode('password'));
-  await page.waitForTimeout(80);
 
   await page.evaluate(async()=>window.SupabaseSyncV30216.signIn('sync-test@example.com','testpass123'));
   const first=await page.evaluate(()=>({
