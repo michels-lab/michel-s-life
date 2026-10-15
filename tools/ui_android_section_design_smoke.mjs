@@ -372,6 +372,34 @@ try{
     screenshots.push(file);
   }
 
+  // Android OAuth has Drive/email scopes but not Calendar provider grants.
+  // Its Google Settings must never present the synthetic zero-event success as
+  // a live synchronization or expose an enabled misleading Sync button.
+  for(const width of [412,360]){
+    await route('settings',width);
+    await page.locator('#tab-settings .v30171-settings-nav [data-v30171-setting="google"]').click();
+    await page.waitForFunction(()=>
+      !!document.querySelector('#tab-settings [data-v30171-pane="google"] [data-mlv190-google="sync"]'),
+      null,{timeout:10000});
+    const calendar=await page.evaluate(()=>{
+      const pane=document.querySelector('#tab-settings [data-v30171-pane="google"]');
+      const sync=pane?.querySelector('[data-mlv190-google="sync"]');
+      const help=pane?.querySelector('[role="status"].mlv190-google-error');
+      return {
+        buttonExists:!!sync,disabled:!!sync?.disabled,
+        label:sync?.textContent?.trim()||'',help:help?.textContent?.trim()||'',
+        right:sync?.getBoundingClientRect()?.right||0,viewport:innerWidth
+      };
+    });
+    assert(calendar.buttonExists&&calendar.disabled&&
+      /sync unavailable/i.test(calendar.label)&&
+      /not available on Android/i.test(calendar.help)&&
+      calendar.right<=width+3,
+      'Android Google Calendar shows a misleading successful/available sync: '+
+      JSON.stringify({width,calendar}));
+    audit.push({id:'android-google-calendar-truthful-state',width,calendar});
+  }
+
   // Weekly Review needs the real canonical four metrics within two rows,
   // not four desktop KPI strips pushing the rest of the review below the fold.
   for(const width of [412,360]){

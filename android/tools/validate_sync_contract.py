@@ -41,6 +41,19 @@ if "file.parentFile != base || !file.isFile" not in bridge:
 if 'name.matches(Regex("[A-Za-z0-9._-]+"))' not in bridge:
     raise SystemExit("Android restore point file name must reject separators and invalid input")
 
+# An Android Calendar implementation must never report success with a
+# synthetic empty event array or a made-up syncedAt timestamp.
+calendar_action = bridge.split('"sync" ->', 1)
+if len(calendar_action) != 2:
+    raise SystemExit("Android Google Calendar bridge action is missing")
+calendar_branch = calendar_action[1].split('else ->', 1)[0]
+if 'respondError(' not in calendar_branch or 'Google Calendar sync is not available' not in calendar_branch:
+    raise SystemExit("Android must explicitly reject Calendar sync until real provider integration is implemented")
+if '"sync" -> respondOk(' in bridge:
+    raise SystemExit("Android Calendar may not return a synthetic successful sync")
+if 'androidCalendarUnavailable' not in frontend or 'Calendar sync unavailable' not in frontend:
+    raise SystemExit("Android Google Calendar Settings must expose the unavailable status")
+
 scan_suffixes = {".kt", ".kts", ".js", ".py", ".xml", ".properties"}
 security_sources = [repo / "src/MichelsLife/frontend/index.html"]
 security_sources.extend(
