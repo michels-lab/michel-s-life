@@ -1,3 +1,9 @@
+## 2026-10-15 — Android onboarding: two consecutive WebView reloads (#104)
+
+- Extended `tools/ui_android_onboarding_persistence_smoke.mjs` to reload the same origin/state twice after first-run Finish, checking exact persisted mission IDs, mission/goal/contract arrays, Dashboard KPIs, onboarding completion and duplicate IDs against the initial snapshot after **each** reload. A separate screenshot and redacted state report document the second restart.
+- This is a **browser WebView-model regression**, not proof of signed APK/native Android force-stop, live Supabase, or physical Galaxy retention. Existing single-reload assertions remain unchanged. No runtime, Themes, Current Chapter, visual assets, version, signing, or release intent changed.
+- Status: candidate pending exact-head CI. #104 and #28 remain open for native signed APK and real-provider cross-device acceptance.
+
 ## 2026-10-14 — Android Google Calendar: reject synthetic success (#110, candidate)
 
 - **Confirmed source defect:** Android native bridge `"sync"` replied with a success, a fresh timestamp, `events=[]` and all-zero counters without requesting Google Calendar API. The Android OAuth coordinator currently requests Drive app data, `openid` and email only, not Calendar read/write scopes. Consequently the frontend could display "Synced" despite doing no provider work.

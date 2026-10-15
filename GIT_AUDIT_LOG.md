@@ -1,3 +1,9 @@
+## 2026-10-15 — Supabase browser smoke regression after account isolation (#108)
+
+- PR #116 exact-head Source and Android UI passed, but generic UI smoke failed at `tools/ui_supabase_sync_smoke.mjs` because it required initial remote revision exactly `1`. The mocked first password login made **one** master POST yet received revision `2` following account owner isolation; the test incorrectly equated first upload with literal revision one.
+- Updated the test to assert one POST, integer positive revision, then one monotonic increment from the captured first revision after a dirty save, and to compare pre-download history against the captured revision instead of hard-coded `2`. This preserves conflict/CAS checks and does not weaken cross-account isolation or change runtime sync behavior.
+- Candidate requires fresh exact-head source/UI/Android UI validation before merge. No product code or release authorization.
+
 ## 2026-10-14 — Supabase local account boundary (#108, candidate)
 
 - **Confirmed source defect:** Supabase logout only removed session, and signing into a new empty user always uploaded the previous globally cached `vida_rpg_personal_progress_v2` board. Shared localStorage content was not tied to a Supabase user ID; separate existing accounts on one PC/phone could see or copy unrelated journal/missions into the wrong Supabase cloud account, independent of RLS.

@@ -103,6 +103,26 @@ try {
   check(stableKpis,'Dashboard mission/contract totals drift across Android reload');
   check(new Set(after.missionIds).size===after.missionIds.length,
     'Duplicate mission IDs created on Android reload');
+
+  // A second independent bootstrap catches delayed legacy seeding/migration
+  // that only starts after the first persistence round-trip.
+  await page.reload({waitUntil:'domcontentloaded',timeout:60000});
+  await page.waitForFunction(()=>
+    document.documentElement.dataset.mlvPlatform==='android' &&
+    !!document.querySelector('#tab-dashboard'),null,{timeout:60000});
+  await page.waitForTimeout(20000);
+  const second=await readSnapshot();
+  await page.screenshot({path:output+'/after-second-relaunch.png'});
+  console.log('ANDROID_ONBOARDING_SECOND_RELAUNCH_STATE',JSON.stringify(second,null,2));
+  check(second.onboardingComplete,'Onboarding reappeared after second reload');
+  check(JSON.stringify(before.missionIds)===JSON.stringify(second.missionIds),
+    'Mission IDs drifted on second Android reload');
+  check(JSON.stringify(before.arrays)===JSON.stringify(second.arrays),
+    'Mission/contract collections drifted on second Android reload');
+  check(JSON.stringify(before.kpis)===JSON.stringify(second.kpis),
+    'Dashboard mission/contract KPIs drifted on second Android reload');
+  check(new Set(second.missionIds).size===second.missionIds.length,
+    'Duplicate mission IDs created on second Android reload');
   await context.close();
 }finally{
   await browser.close();
