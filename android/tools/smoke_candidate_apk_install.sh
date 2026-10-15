@@ -76,6 +76,11 @@ adb shell settings put global animator_duration_scale 0
 test -z "$(adb shell pm list packages "$PKG" | tr -d '\r')"
 if ! adb install -r "$APK" >"$OUT/install-result.txt" 2>&1; then
   cat "$OUT/install-result.txt"
+  adb logcat -d -t 3000 >"$OUT/install-failure-logcat.txt" || true
+  echo "::error::Actual current-candidate APK refused fresh Android installation"
+  exit 1
+fi
+cat "$OUT/install-result.txt"
 NATIVE_STATE_TEST=0
 if timeout 10s adb shell run-as "$PKG" id >/dev/null 2>&1; then
   NATIVE_STATE_TEST=1
@@ -87,11 +92,6 @@ fi
 if [[ "$NATIVE_STATE_TEST" -ne 1 ]]; then
   echo "::notice::Signed/release APK: CDP state capture disabled; canonical persistence UNVERIFIED"
 fi
-  adb logcat -d -t 3000 >"$OUT/install-failure-logcat.txt" || true
-  echo "::error::Actual current-candidate APK refused fresh Android installation"
-  exit 1
-fi
-cat "$OUT/install-result.txt"
 adb shell dumpsys package "$PKG" >"$OUT/package-info.txt"
 grep -F "versionName=${ANDROID_VERSION}" "$OUT/package-info.txt"
 adb shell am start -W -n "$PKG/.MainActivity" | tee "$OUT/launch-result.txt"
