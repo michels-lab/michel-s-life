@@ -9,13 +9,15 @@ const ids={a:'00000000-0000-0000-0000-000000000108',b:'00000000-0000-0000-0000-0
 const byMail={'a@example.test':ids.a,'b@example.test':ids.b,'c@example.test':ids.c};
 const remote=new Map(),writes=new Map(),history=[];
 const ok=(v,msg)=>assert.ok(v,msg);
+const android=process.env.MLV_ACCOUNT_SWITCH_PLATFORM==='android';
 const browser=await chromium.launch({headless:true});
-const context=await browser.newContext({viewport:{width:1260,height:780}});
+const context=await browser.newContext({viewport:android?{width:412,height:915}:{width:1260,height:780}});
 try{
-  await context.addInitScript(()=>{
+  await context.addInitScript((isAndroid)=>{
+    if(isAndroid)window.__MICHELSLIFE_PLATFORM__='android';
     localStorage.setItem('michelsLife.onboarding.v30200','done');
     localStorage.setItem('michelsLife.onboardingCompleted.v1','1');
-  });
+  },android);
   await context.route(host+'/**',async route=>{
     const req=route.request(),u=new URL(req.url()),p=u.pathname+u.search;
     const method=req.method().toUpperCase();
@@ -72,6 +74,7 @@ try{
       encodeURIComponent('00000000-0000-0000-0000-000000000108'))||'null')
   }));
   await login('a@example.test');
+  ok((await page.evaluate(()=>window.SupabaseSyncV30216.platform()))===(android?'android':'windows'),'Platform detection changed');
   ok(remote.has(ids.a),'A account must create its own initial master');
   await page.evaluate(async()=>{
     state.xp=777;state.history.push({id:'a-secret-history',type:'private',description:'A_ONLY'});
@@ -117,5 +120,5 @@ try{
   await page.evaluate(async()=>window.SupabaseSyncV30216.pull({reload:false}));
   ok((await local()).xp===88,'Explicit cloud adoption for C did not work');
 
-  console.log('OK: different Supabase A/B/C accounts isolate progress, local vault, remote writes and cloud adoption');
+  console.log('OK: '+(android?'Android':'Windows')+' mode: different Supabase A/B/C accounts isolate progress, local vault, remote writes and cloud adoption');
 }finally{await context.close();await browser.close();}
