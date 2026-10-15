@@ -85,6 +85,14 @@ NATIVE_STATE_TEST=0
 if timeout 10s adb shell run-as "$PKG" id >/dev/null 2>&1; then
   NATIVE_STATE_TEST=1
 fi
+if [[ "${MLV_REQUIRE_PROTECTED_SIGNED:-0}" == "1" && "$NATIVE_STATE_TEST" -eq 1 ]]; then
+  echo "::error::Production-signed Direct APK unexpectedly permits run-as/debug data access"
+  exit 1
+fi
+if [[ "${MLV_REQUIRE_PROTECTED_SIGNED:-0}" == "1" && "${MLV_REQUIRE_NATIVE_STATE_PROBE:-0}" == "1" ]]; then
+  echo "::error::Cannot require debug and production-protected inspection in the same run"
+  exit 1
+fi
 if [[ "${MLV_REQUIRE_NATIVE_STATE_PROBE:-0}" == "1" && "$NATIVE_STATE_TEST" -ne 1 ]]; then
   echo "::error::Native state probe requires a debuggable APK; refusing screenshot-only success"
   exit 1
@@ -202,6 +210,20 @@ if [[ "$DEVICE_SIZE" =~ ^([0-9]+)x([0-9]+)$ ]]; then
       --before "$OUT/native-state-before.json" \
       --after "$OUT/native-state-after.json" \
       --output "$OUT/native-canonical-persistence-comparison.json"
+    # Android 16 real process restart #2: rule out transient first-reload state.
+    # No clearing data and no state mutation between captures.
+    adb shell am force-stop "$PKG"
+    adb shell am start -W -n "$PKG/.MainActivity" | tee "$OUT/second-relaunch-result.txt"
+    sleep 20
+    capture_native_state after-second-relaunch
+    python3 android/tools/native_webview_state_probe.py compare \
+      --before "$OUT/native-state-before.json" \
+      --after "$OUT/native-state-after-second-relaunch.json" \
+      --output "$OUT/native-canonical-second-relaunch-comparison.json"
+    python3 android/tools/native_webview_state_probe.py compare \
+      --before "$OUT/native-state-after.json" \
+      --after "$OUT/native-state-after-second-relaunch.json" \
+      --output "$OUT/native-canonical-consecutive-relaunch-comparison.json"
   fi
 else
   echo "::warning::Could not resolve native device dimensions: $DEVICE_SIZE; touch step not verified"
@@ -224,12 +246,18 @@ for name in ("step2-after-native-continue.png", "step3-after-native-continue.png
     data = frame.read_bytes()
     if not data.startswith(bytes.fromhex("89504e470d0a1a0a")) or len(data) < 30000:
         raise SystemExit(f"Native onboarding screenshot is not a valid nontrivial PNG: {name}")
-if (p/"native-canonical-persistence-comparison.json").exists():
+reports = [
+    "native-canonical-persistence-comparison.json",
+    "native-canonical-second-relaunch-comparison.json",
+    "native-canonical-consecutive-relaunch-comparison.json",
+]
+if any((p/name).exists() for name in reports):
     import json
-    native = json.loads((p/"native-canonical-persistence-comparison.json").read_text())
-    if not native.get("pass"):
-        raise SystemExit("Native canonical persistence report is present but FAIL")
-    print("INSTALL + LAUNCH + RELAUNCH PASS; native canonical state retention VERIFIED for debuggable TEST APK")
+    if not all((p/name).exists() for name in reports):
+        raise SystemExit("Native persistence evidence incomplete: require both consecutive relaunch comparisons")
+    if not all(json.loads((p/name).read_text()).get("pass") is True for name in reports):
+        raise SystemExit("One or more native canonical persistence comparisons FAILED")
+    print("INSTALL + TWO FORCE-STOP RELAUNCHES PASS; same persisted mission/contract IDs and Dashboard KPIs in real debuggable TEST APK")
 else:
     print("INSTALL + LAUNCH + RELAUNCH PASS; screenshot-only evidence. Canonical state persistence UNVERIFIED on protected signed APK")
 from xml.etree import ElementTree

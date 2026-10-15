@@ -1,3 +1,10 @@
+## 2026-10-15 — Two consecutive native relaunches and signed Direct protection (#104)
+
+- Extended actual installed Android 16 debuggable TEST APK smoke to force-stop/relaunch a **second** time after successful first state capture. Compare canonical onboarded mission/goal/contract ID counts+SHA-256 digests and Dashboard KPI digests across (initial vs first), (initial vs second), and (first vs second), retaining only redacted comparison files; require all three reports for native success. No app state or user data is cleared.
+- The private production-signed Direct candidate workflow now sets `MLV_REQUIRE_PROTECTED_SIGNED=1`, refusing installation smoke if Android `run-as` indicates the candidate is debuggable. Aligned private signed Android 16 emulator graphics to working GLES SwiftShader `-gpu swiftshader -feature -Vulkan`, retiring the known-problematic legacy `swiftshader_indirect` setting. This does **not** expose production DevTools or allow debug access to any signed APK.
+- CI coverage: normal PR Android TEST APK path runs the double-relaunch probe, **pending exact-head GitHub checks**. Private signed candidate build+install runs only when the owner triggers its existing main-branch candidate-intent workflow; a successful source/TEST CI check does not mean the private signed workflow ran. Public release, user data and visual design unchanged.
+- Issue #104 remains open until signed Direct APK storage acceptance / Galaxy manual acceptance. Supabase real provider cross-device #28 remains open.
+
 ## 2026-10-15 — Native persistence must see real Dashboard KPI nodes (#104)
 
 - Audit of the newly merged PR #119 found a false-pass possibility: identical **empty** Dashboard KPI arrays could pass comparison even when the target native Dashboard had not rendered its mission/contract counters. The debug-only installed APK state probe now requires visible mission and contract KPI values and verifies that the persisted mission collection, mission count and IDs agree before hashing and comparing two force-stop snapshots.
