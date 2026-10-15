@@ -47,6 +47,21 @@ jobs:
           name: MichelsLife-Android-Direct-v0.2.6
           path: artifacts/candidate
 
+      - name: Download canonical-verified TEST APK native UI screenshots from the SAME build
+        uses: actions/download-artifact@v4
+        with:
+          name: MichelsLife-Android-InstallSmoke-v0.2.6
+          path: artifacts/native-debug-reference
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install isolated native KPI pixel comparison dependency
+        run: |
+          python3 -m pip install --disable-pip-version-check Pillow==11.3.0
+          python3 android/tools/compare_signed_native_kpis.py --self-test
+
       - name: Enforce exact source SHA, permanent signer, installed version, and archive checksum
         shell: bash
         run: |
@@ -90,6 +105,16 @@ jobs:
           disable-animations: true
           emulator-boot-timeout: 600
           script: bash android/tools/smoke_candidate_apk_install.sh
+
+      - name: Require same-source signed APK mission and Premium KPIs across force-stop
+        shell: bash
+        run: |
+          python3 android/tools/compare_signed_native_kpis.py \
+            --debug-before artifacts/native-debug-reference/step4-after-native-finish-30s.png \
+            --debug-after artifacts/native-debug-reference/step5-after-relaunch-60s.png \
+            --signed-before artifacts/candidate-install/step4-after-native-finish-30s.png \
+            --signed-after artifacts/candidate-install/step5-after-relaunch-60s.png \
+            --output artifacts/candidate-install/signed-native-kpi-visual-parity.json
 
       - name: Retain evidence from the actually installed signed APK
         if: always()
