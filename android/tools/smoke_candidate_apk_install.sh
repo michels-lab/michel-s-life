@@ -85,6 +85,14 @@ NATIVE_STATE_TEST=0
 if timeout 10s adb shell run-as "$PKG" id >/dev/null 2>&1; then
   NATIVE_STATE_TEST=1
 fi
+if [[ "${MLV_REQUIRE_PROTECTED_SIGNED:-0}" == "1" && "$NATIVE_STATE_TEST" -eq 1 ]]; then
+  echo "::error::Production-signed Direct APK unexpectedly permits run-as/debug data access"
+  exit 1
+fi
+if [[ "${MLV_REQUIRE_PROTECTED_SIGNED:-0}" == "1" && "${MLV_REQUIRE_NATIVE_STATE_PROBE:-0}" == "1" ]]; then
+  echo "::error::Cannot require debug and production-protected inspection in the same run"
+  exit 1
+fi
 if [[ "${MLV_REQUIRE_NATIVE_STATE_PROBE:-0}" == "1" && "$NATIVE_STATE_TEST" -ne 1 ]]; then
   echo "::error::Native state probe requires a debuggable APK; refusing screenshot-only success"
   exit 1
@@ -202,6 +210,20 @@ if [[ "$DEVICE_SIZE" =~ ^([0-9]+)x([0-9]+)$ ]]; then
       --before "$OUT/native-state-before.json" \
       --after "$OUT/native-state-after.json" \
       --output "$OUT/native-canonical-persistence-comparison.json"
+    # Android 16 real process restart #2: rule out transient first-reload state.
+    # No clearing data and no state mutation between captures.
+    adb shell am force-stop "$PKG"
+    adb shell am start -W -n "$PKG/.MainActivity" | tee "$OUT/second-relaunch-result.txt"
+    sleep 20
+    capture_native_state after-second-relaunch
+    python3 android/tools/native_webview_state_probe.py compare \
+      --before "$OUT/native-state-before.json" \
+      --after "$OUT/native-state-after-second-relaunch.json" \
+      --output "$OUT/native-canonical-second-relaunch-comparison.json"
+    python3 android/tools/native_webview_state_probe.py compare \
+      --before "$OUT/native-state-after.json" \
+      --after "$OUT/native-state-after-second-relaunch.json" \
+      --output "$OUT/native-canonical-consecutive-relaunch-comparison.json"
   fi
 else
   echo "::warning::Could not resolve native device dimensions: $DEVICE_SIZE; touch step not verified"
