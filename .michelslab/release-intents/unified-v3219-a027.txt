@@ -1,0 +1,9 @@
+Michel's Life — OWNER-AUTHORIZED UNIFIED RELEASE, October 15 2026.
+Windows Setup/Portable v3.0.219 + Android Direct v0.2.7 versionCode 9.
+The owner confirms the application is not yet shared with any outside user and authorizes release directly, without subjective pre-publication review.
+
+This isolated main commit intentionally triggers .github/workflows/release-unified-v3219-a027.yml.
+Requirements: source/UI/Android UI exact-commit checks; Windows Setup and Portable native installer/launch validation; pinned permanent Direct signing certificate and Android code 9 package; actual installed signed APK Android 16 relaunch; visible Mission and Premium Contracts KPI comparison against same-source canonical-verified debug APK; independent SHA-256, manifest and source provenance; complete 13-asset atomic DRAFT then latest published tag.
+Destination: michels-lab/michel-s-life-releases/releases/tag/v3.0.219.
+Do not overwrite v3.0.218 assets, publish debug-signed APK, expose secrets or enable WebView debugging in production.
+Known unresolved tests (physical Galaxy, live two-device Supabase, Android Calendar) remain disclosed in docs/releases/v3.0.219.md rather than blocking owner testing.
