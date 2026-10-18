@@ -58,7 +58,7 @@ permissions:
 
 env:
   RELEASES_REPO: michels-lab/michel-s-life-releases
-  ANDROID_VERSION: 0.2.7
+  ANDROID_VERSION: 0.2.8
   ANDROID_UPLOAD_KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
   ANDROID_UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
   ANDROID_UPLOAD_KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
@@ -289,7 +289,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      ANDROID_VERSION: 0.2.7
+      ANDROID_VERSION: 0.2.8
       MLV_REQUIRE_NATIVE_STATE_PROBE: "1"
     steps:
       - uses: actions/checkout@v4

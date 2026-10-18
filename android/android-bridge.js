@@ -1,7 +1,7 @@
 (function(){
   'use strict';
   if(window.__MICHELSLIFE_ANDROID_BRIDGE__) return;
-  window.__MICHELSLIFE_ANDROID_BRIDGE__='0.2.7';
+  window.__MICHELSLIFE_ANDROID_BRIDGE__='0.2.8';
   window.__MICHELSLIFE_PLATFORM__='android';
 
   const listeners=new Set();
