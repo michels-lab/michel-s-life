@@ -128,6 +128,13 @@ try{
   const start=page.locator('#tab-story .v30162-story-form button')
     .filter({hasText:/start chapter/i}).first();
   assert(await start.count()===1,'Real Start chapter button was not rendered');
+  // Dismiss keyboard to reproduce tapping the CTA with the persistent
+  // native bottom navigation actually visible. During IME editing the nav
+  // intentionally has display:none and its bounding rect is 0,0,0,0.
+  await nameField.evaluate(input=>input.blur());
+  await page.waitForFunction(()=>getComputedStyle(
+    document.getElementById('mlv-android-bottom-nav')).display!=='none',
+    null,{timeout:5000});
   await start.scrollIntoViewIfNeeded();
   const touchTarget=await start.evaluate(button=>{
     const bar=document.getElementById('mlv-android-bottom-nav');
