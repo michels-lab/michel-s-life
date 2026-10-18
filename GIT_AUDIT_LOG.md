@@ -1,3 +1,10 @@
+## 2026-10-17 — Unified next release candidate: Windows 3.0.220 + Android Direct 0.2.8
+
+- Physical Galaxy owner reported the 0.2.7 signed release stuck on Story/Start a new chapter, unable to navigate to Settings or continue; additionally requested direct Pomodoro access without searching a sidebar. Prior green API/emulator tests had not exercised Android Story as the restored starting view with real touchscreen taps. Separate PR #126 fixes Android Story navigation and the visible Pomodoro tab, and adds a regression that hits Settings, Pomodoro and the chapter action as actual phone touch events, with persisted mission/goal ID integrity checks.
+- Prepared unified v3.0.220/Android v0.2.8 (`versionCode=10`) source release package: Windows .csproj and host/frontend source version markers, Android Kotlin/bridge/Gradle identity, QA workflows and version validators. New separate `release-unified-v3220-a028.yml` derived from the successful v3.0.219 atomic 13-asset publishing pipeline, retaining same certificate, signed Android 16 installation and native screenshot KPI parity.
+- This change does not modify Windows visuals, themes, fonts, backgrounds, approved Current Chapter rendering or the user's stored mission/contract schema. This release candidate is **NOT published** until PR source CI, a new isolated release-intent push on main, both platform build/install tests, signed candidate and full destination-asset verification complete.
+- Release notes: `docs/releases/v3.0.220.md`; user should install the APK over 0.2.7, not uninstall or clear local data.
+
 ## 2026-10-15 — Owner-authorized next unified release candidate Windows 3.0.219 / Android Direct 0.2.7
 
 - The owner clarified that Michel's Life has **not been shared with anyone** and authorized releasing without treating hypothetical external users as a manual acceptance gate. Do not invent a user-distribution safety freeze. The normal release policy remains one page for both platforms, versioned assets, exact-source CI, Windows installer/portable smoke, pinned Android Direct signing, digest and provenance verification before publication.

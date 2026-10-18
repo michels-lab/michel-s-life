@@ -30,9 +30,9 @@ for p in (PROGRAM,GOOGLE,SECRETS,DESKTOP_SHELL,FRONTEND,APP_ICON,MARK,LOCKUP,LAB
     assert p.exists(),f'missing {p}'
 
 program=read(PROGRAM)
-assert 'CurrentAppVersion = new("3.0.219")' in program
+assert 'CurrentAppVersion = new("3.0.220")' in program
 assert 'PublicReleaseRepository = "michels-lab/michel-s-life-releases";' in program, 'Windows updater must use product-only Michel\'s Life release repository'
-for stale in ('3.0.218','3.0.217','3.0.216','3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207','3.0.208','3.0.209','3.0.210','3.0.211','3.0.212','3.0.213','3.0.214','3.0.215'):
+for stale in ('3.0.219','3.0.218','3.0.217','3.0.216','3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207','3.0.208','3.0.209','3.0.210','3.0.211','3.0.212','3.0.213','3.0.214','3.0.215'):
     assert stale not in program, f'stale host version remains: {stale}'
 for marker in ('ComputeEmbeddedBundleFingerprint','SHA256.Create()','string.Equals(marker, bundleFingerprint','File.WriteAllText(markerPath, bundleFingerprint)'):
     assert marker in program, f'missing runtime cache protection: {marker}'
@@ -66,7 +66,7 @@ subprocess.run([sys.executable,str(ROOT/'tools/bump_frontend_version.py'),'--ind
 subprocess.run([sys.executable,str(ROOT/'tools/enable_i18n.py'),'--index',str(FRONTEND)],check=True)
 frontend=read(FRONTEND)
 for marker in (
-    "const VERSION='3.0.219'",
+    "const VERSION='3.0.220'",
     "assets/michels_life_mark.svg",
     "assets/michels_life_lockup.svg",
     "assets/michels_lab_lockup.png",
@@ -145,4 +145,4 @@ for forbidden in ('GOCSPX-','github_pat_','ghp_','client_secret_794181','sb_secr
 
 subprocess.run([sys.executable,str(ROOT/'tools/validate_brand_identity.py')],check=True)
 
-print('OK: v3.0.219 host + desktop shell + Quick Capture + automatic updates + bilingual canonical frontend + canonical identity + clean build pipeline')
+print('OK: v3.0.220 host + desktop shell + Quick Capture + automatic updates + bilingual canonical frontend + canonical identity + clean build pipeline')

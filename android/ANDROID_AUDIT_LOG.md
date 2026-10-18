@@ -1,3 +1,10 @@
+## 2026-10-17 — Android 0.2.8 release candidate for Story/Settings trap + permanent Pomodoro entry
+
+- Following 0.2.7 physical Galaxy failure, version bumped to `0.2.8` / `versionCode=10`. Retains existing Android Direct signing certificate, production WebView debugging disabled, native Alarm/Focus state storage, canonical missions/goals/chapters and account-scoped synchronization.
+- Android-specific fixes from #126: prevent stale restored activeTab from blocking real Settings navigation, allow arrow navigation out of Story, keep Start chapter submit tappable above persistent bottom navigation, visibly label permanent bottom timer **Pomodoro** and open the canonical existing FocusStoryV30162 timer. No duplicate timer state, desktop visual redesign or database migration.
+- Android UI touch regression: start with synthetic installed Story-first state; real Playwright touchscreen taps must open Settings then Pomodoro, leave Story via header arrows, preserve exact IDs and create a chapter. This catches failures missed by earlier screenshot-only and preseeded-Today CI.
+- New unified next-version pipeline must pass exact-commit Android 16 debug APK state proof, production-signed APK install and visible mission/contract comparison before publishing 0.2.8 alongside Windows 3.0.220. Physical Galaxy still requires owner acceptance after installation. **No published fix claimed pending verified release.**
+
 ## 2026-10-17 — Android Direct 0.2.7 real-user Story navigation trap + permanent Pomodoro
 
 - User-provided physical Galaxy screenshot (~412px mobile viewport): `Story` tab displayed `Story Chapters / Start a new chapter`, bottom primary bar `Today · Missions · Focus · Calendar · Settings`; user reported inability to leave Story, open Settings or continue/submit, and clarified the **Pomodoro** must be directly accessible rather than hidden in the side drawer. This was **not detected by previous green 0.2.7 release checks**.
