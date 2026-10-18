@@ -21,7 +21,7 @@ try{
     localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify({
       version:2,activeTab:'story',xp:0,coins:0,totalCoinsEarned:0,
       settings:{characterName:'Michel',onboardingRequired:false,
-        onboardingCompletedAt:'2026-10-01T12:00:00.000Z'},
+        onboardingCompletedAt:'2026-10-01T12:00:00.000Z',v30200GenericProfile:true},
       missions:[{id:'story-tap-qa',name:'Story navigation QA',canonical:'story navigation qa',
         description:'',category:'academic',type:'daily',difficulty:'medium',
         xp:25,coins:0,days:[1,2,3,4,5],archived:false,hidden:false,
@@ -60,10 +60,17 @@ try{
   assert(await pom.getAttribute('aria-label')==='Pomodoro',
     'Pomodoro must be explicitly labeled in the permanent bottom nav');
   assert(await pom.isVisible(),'Pomodoro is hidden in the Android sidebar');
-  const oldMissionIds=await page.evaluate(()=>{
+  // Snapshot AFTER first native-webview-model boot; distinguish any seed
+  // inserted at startup from mutations caused by real navigation taps.
+  const baseline=await page.evaluate(()=>{
     const data=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}');
-    return (data.missions||[]).map(x=>x.id).sort();
+    return {
+      missions:(data.missions||[]).map(x=>String(x.id)).sort(),
+      goals:(data.goals||[]).map(x=>String(x.id)).sort()
+    };
   });
+  assert(baseline.goals.length===0,
+    'Generic saved Android profile unexpectedly seeds Premium goals BEFORE navigation: '+JSON.stringify(baseline));
   // Real touchscreen press, not a synthetic JS router call.
   await nav.locator('[data-mobile-tab="settings"]').tap({timeout:12000});
   await page.waitForSelector('#tab-settings.active .v30171-settings-shell',
@@ -101,11 +108,13 @@ try{
   await page.waitForSelector('#tab-dashboard.active',{state:'visible',timeout:12000});
   const preserved=await page.evaluate(()=>{
     const data=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}');
-    return {missions:(data.missions||[]).map(x=>x.id).sort(),contracts:(data.goals||[]).length};
+    return {missions:(data.missions||[]).map(x=>String(x.id)).sort(),
+      goals:(data.goals||[]).map(x=>String(x.id)).sort()};
   });
-  assert(JSON.stringify(preserved.missions)===JSON.stringify(oldMissionIds),
+  assert(JSON.stringify(preserved.missions)===JSON.stringify(baseline.missions),
     'Android tab switching mutated canonical mission identities');
-  assert(preserved.contracts===0,'Android switching created unsolicited Premium contracts');
+  assert(JSON.stringify(preserved.goals)===JSON.stringify(baseline.goals),
+    'Android tab switching unexpectedly inserted/removed Premium contracts');
 
   // Independently verify the real Start chapter submit is clickable, not
   // buried under the fixed Android bottom bar or a dead overlay.
