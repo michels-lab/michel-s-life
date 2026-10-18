@@ -579,7 +579,16 @@
         margin:0!important;padding:12px!important;font-size:16px!important
       }
       html[data-mlv-platform="android"] #tab-story .v30162-story-form button{
-        width:100%!important;min-height:48px!important;font-size:14px!important
+        width:100%!important;min-height:48px!important;font-size:14px!important;
+        /* Physical Galaxy: Start chapter was underneath the persistent bar.
+           Keep the genuine canonical form action thumb-reachable. */
+        position:sticky!important;
+        bottom:calc(88px + env(safe-area-inset-bottom,0px))!important;
+        z-index:12!important
+      }
+      html[data-mlv-platform="android"] body.mlv-android-keyboard-editing
+      #tab-story .v30162-story-form button{
+        bottom:10px!important
       }
       html[data-mlv-platform="android"] #tab-story
       :is(.v30162-story-form input,.v30162-story-actions button):focus-visible{
