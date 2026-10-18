@@ -141,10 +141,15 @@
     if(!id)return false;
     if(id==='today')id='dashboard';
     if(id==='goals')id='contracts';
-    // A matching route ID is not an idempotent hit if its actual editor
-    // failed to mount after Android WebView process restoration.
-    if(activeTabId()===id &&
-       (id!=='journal'||!!q('#tab-journal #mlv184JournalBody'))){
+    // A saved activeTab is NOT proof that the visible surface mounted.
+    // Android can restore Story's DOM with a stale state.activeTab=Settings;
+    // returning early here used to trap users behind a nonresponsive nav.
+    const actualTab=q('#tab-'+escSelector(id));
+    const surfaceMounted=!!(actualTab&&actualTab.classList.contains('active')&&
+      visible(actualTab)&&
+      (id!=='journal'||!!q('#mlv184JournalBody',actualTab))&&
+      (id!=='settings'||!!q('.v30171-settings-shell',actualTab)));
+    if(activeTabId()===id&&surfaceMounted){
       setDrawer(false);updateTopbarTitle();return true;
     }
 
