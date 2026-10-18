@@ -36,7 +36,7 @@
   const MOBILE_BREAKPOINT=4096;
   const STORAGE_KEY='vida_rpg_personal_progress_v2';
   const ONBOARD_KEY='michelsLife.onboarding.v30200';
-  const MAJOR_TABS=['dashboard','missions','contracts','journal','stats','achievements','calendar','settings'];
+  const MAJOR_TABS=['dashboard','missions','contracts','journal','stats','achievements','calendar','story','settings'];
   const isMobile=()=>window.matchMedia('(max-width:'+MOBILE_BREAKPOINT+'px)').matches;
   const q=(selector,root=document)=>root.querySelector(selector);
   const qa=(selector,root=document)=>Array.from(root.querySelectorAll(selector));
@@ -78,8 +78,10 @@
     const index=tabs.indexOf(current);
     const prev=q('#mlv-android-prev-section');
     const next=q('#mlv-android-next-section');
-    if(prev)prev.disabled=index<=0;
-    if(next)next.disabled=index<0||index>=tabs.length-1;
+    // Legacy Story is a real Android section. If an older saved Story tab is
+    // absent from the sidebar list, keep the arrow escape route usable.
+    if(prev)prev.disabled=index===0;
+    if(next)next.disabled=index>=tabs.length-1;
   }
 
   function availableMajorTabs(){
@@ -139,10 +141,15 @@
     if(!id)return false;
     if(id==='today')id='dashboard';
     if(id==='goals')id='contracts';
-    // A matching route ID is not an idempotent hit if its actual editor
-    // failed to mount after Android WebView process restoration.
-    if(activeTabId()===id &&
-       (id!=='journal'||!!q('#tab-journal #mlv184JournalBody'))){
+    // A saved activeTab is NOT proof that the visible surface mounted.
+    // Android can restore Story's DOM with a stale state.activeTab=Settings;
+    // returning early here used to trap users behind a nonresponsive nav.
+    const actualTab=q('#tab-'+escSelector(id));
+    const surfaceMounted=!!(actualTab&&actualTab.classList.contains('active')&&
+      visible(actualTab)&&
+      (id!=='journal'||!!q('#mlv184JournalBody',actualTab))&&
+      (id!=='settings'||!!q('.v30171-settings-shell',actualTab)));
+    if(activeTabId()===id&&surfaceMounted){
       setDrawer(false);updateTopbarTitle();return true;
     }
 
@@ -198,6 +205,18 @@
       try{window.LeftNavV30171?.renderNav?.()}catch(_){}
     }catch(error){
       console.warn('Michel\'s Life Android active-surface render',error);
+      // The shared renderer may not yet exist on a first-launch Story
+      // restoration. Try the canonical sidebar router before giving up;
+      // never leave the user stranded in Story because Settings fails once.
+      try{
+        if(typeof window.LeftNavV30171?.route==='function'){
+          window.LeftNavV30171.route(id);
+          if(q('#tab-'+escSelector(id))?.classList.contains('active')){
+            finishSectionSwitch(started,id,'LeftNavV30171.route:fallback');
+            return true;
+          }
+        }
+      }catch(fallbackError){console.warn('Android canonical route fallback',fallbackError);}
       document.documentElement.removeAttribute('data-mlv-android-switching');
       return false;
     }
@@ -286,7 +305,9 @@
     if(tabs.length<2)return false;
     const current=activeTabId();
     let index=tabs.indexOf(current);
-    if(index<0)index=0;
+    // Restored Story/legacy tab may not appear in the available sidebar.
+    // Any arrow press must still escape to the canonical Today dashboard.
+    if(index<0)return clickTab('dashboard');
     const next=index+(direction==='next'?1:-1);
     if(next<0||next>=tabs.length)return false;
     return clickTab(tabs[next]);
