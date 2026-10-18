@@ -10,7 +10,7 @@
   const actions=[
     {id:'dashboard',label:'Today',glyph:'⌂'},
     {id:'missions',label:'Missions',glyph:'✓'},
-    {id:'focus',label:'Focus',glyph:'◷'},
+    {id:'focus',label:'Pomodoro',glyph:'◷'},
     {id:'calendar',label:'Calendar',glyph:'▦'},
     {id:'settings',label:'Settings',glyph:'⚙'}
   ];
@@ -400,7 +400,7 @@
       }
       html[data-mlv-platform="android"] #mlv-android-bottom-nav button{
         border-radius:15px;min-height:56px;padding:7px 2px;
-        font-size:10px;letter-spacing:.015em
+        font-size:10px;letter-spacing:.005em
       }
       html[data-mlv-platform="android"] #mlv-android-bottom-nav button[data-mobile-tab="focus"]{
         color:var(--text,#eff7ff);
@@ -849,9 +849,22 @@
         const target=event.target.closest('button[data-mobile-tab]');
         if(!target)return;
         const tab=target.dataset.mobileTab;
-        if(tab==='focus'){open();return;}
+        if(tab==='focus'){
+          // Pomodoro lives in the permanent bottom bar, never only in a
+          // drawer. Keep using the canonical FocusStoryV30162 timer state.
+          open();return;
+        }
         close();
-        window.__mlvAndroidFastRoute?.(tab);
+        let routed=false;
+        try{routed=window.__mlvAndroidFastRoute?.(tab)===true;}catch(error){
+          console.warn('Android bottom navigation',error);
+        }
+        if(!routed){
+          // Recover from a stale first-launch Story or Settings renderer.
+          try{window.LeftNavV30171?.route?.(tab);}catch(error){
+            console.warn('Android bottom canonical fallback',error);
+          }
+        }
         updateActive();
       });
       document.body.appendChild(nav);
@@ -863,7 +876,7 @@
         <button type="button" id="mlv-android-focus-dim" aria-label="Close Focus"></button>
         <section id="mlv-android-focus-sheet" role="dialog" aria-modal="true" aria-labelledby="mlv-android-focus-heading">
           <div class="mlv-android-focus-head">
-            <div><span class="mlv-android-focus-eyebrow">YOUR FOCUS SPACE</span><h2 id="mlv-android-focus-heading">Stay in focus.</h2><p>Your session, your rhythm.</p></div>
+            <div><span class="mlv-android-focus-eyebrow">POMODORO</span><h2 id="mlv-android-focus-heading">Your Pomodoro timer.</h2><p>Your session, your rhythm.</p></div>
             <button type="button" class="mlv-android-focus-close" data-mobile-focus="close" aria-label="Close Focus">×</button>
           </div>
           <div class="mlv-android-focus-clock">
