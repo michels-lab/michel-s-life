@@ -1,0 +1,8 @@
+Michel's Life OWNER-AUTHORIZED Unified Release — 2026-10-18
+
+Requested by owner: publish Android Story navigation and permanent Pomodoro hotfix for currently broken Android Direct 0.2.7, together with Windows companion build.
+Versions: Windows Setup and Portable v3.0.220, Android Direct v0.2.8, versionCode 10.
+Validated source: PR #126 merged fix 7174ef3429ff7861a111de05251fbe9a6473c920 and PR #127 merged release preparation c850522486ff6d00f88893c123785e10d5182855.
+This single new intent file on main is the intended GitHub Actions release-unified-v3220-a028.yml push trigger. Run exact-commit validation, Windows installer/native launch smoke, Android debugging-disabled pinned permanent signing, installed Android 16 debug native persistence, installed signed Android 16 real screenshots and Pomodoro/Missions KPI visual parity before publishing exactly the expected 13 deliverables.
+Publish to michels-lab/michel-s-life-releases/releases/tag/v3.0.220, draft-upload-verify hashes and full provenance before making latest release. Preserve prior v3.0.219 and all earlier releases. Never publish debug-signed APK. Never clear user mission, contract, calendar, chapter or Focus data.
+Physical Galaxy user's Story navigation issue is tested in touch UI regression, but actual physical Galaxy post-update acceptance remains pending; disclose that rather than blocking owner's authorized test release.
