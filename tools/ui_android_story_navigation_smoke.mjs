@@ -129,6 +129,17 @@ try{
     .filter({hasText:/start chapter/i}).first();
   assert(await start.count()===1,'Real Start chapter button was not rendered');
   await start.scrollIntoViewIfNeeded();
+  const touchTarget=await start.evaluate(button=>{
+    const bar=document.getElementById('mlv-android-bottom-nav');
+    const rect=button.getBoundingClientRect(),barRect=bar.getBoundingClientRect();
+    const cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
+    const hit=document.elementFromPoint(cx,cy);
+    return {buttonBottom:rect.bottom,barTop:barRect.top,
+      centerIsButton:hit===button||button.contains(hit),inViewport:cy>0&&cy<innerHeight};
+  });
+  assert(touchTarget.buttonBottom<=touchTarget.barTop-5&&
+    touchTarget.centerIsButton&&touchTarget.inViewport,
+    'Story Start chapter submit is covered by mobile bar/overlay: '+JSON.stringify(touchTarget));
   await start.tap({timeout:12000});
   await page.waitForFunction(name=>document.querySelector('#tab-story')
     ?.textContent?.includes(name),chapterName,{timeout:12000});
