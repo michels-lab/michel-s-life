@@ -57,6 +57,21 @@
 
 ## 2026-10-06 — Canonical Michel's Life identity adoption (implementation)
 
+## 2026-10-11 — Native Windows screenshot gate: three evidence-backed CI failures, not merged
+
+- **PR #62 remains blocked/draft, no release.** Exact Windows PR runs `38133874928`, `38134212278`, and `38134524681` consistently passed Setup build and native installed EXE LAUNCH but failed the new visual evidence gate: the installed WebView2 browser never exposed the CI-only CDP port; **zero installed Home/About screenshots** were recorded.
+- Attempt 1 used a process-local `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS`; attempt 2 added an isolated `WEBVIEW2_USER_DATA_FOLDER`. Attempt 3 used a disposable per-executable WebView2 policy under runner-only HKCU with cleanup in `finally`. All failed to expose CDP, and the diagnostic checks saw **six** WebView2 processes, **zero** command lines bearing `--remote-debugging-port=9397`. This is *not* proof of an application runtime crash; startup and window handle are separately verified.
+- Correct follow-up: test UI Automation/accessibility tree of the **real installed** WebView2 window and a Windows native capture API; verify Home/About navigation and viewport geometry with the same Setup/source/screenshots SHA contract. Investigate why WebView2's effective argument policy ignores both supported CI overrides before any further CDP retry. Do **not** add source-HTML/browser screenshots as a substitute or weaken the fail-closed gate.
+- PR #61 Chromium/bundle evidence is already merged, but it remains **BROWSER PASS only**. Windows packaged `RENDER PASS`, Android actual APK compact/wide Home/About, owner post-release visual review and physical-device acceptance are separately pending. No version, theme or public release changed.
+
+## 2026-10-11 — Native Windows WebView2 installed screenshot gate (candidate)
+
+- Follow-up to merged browser-evidence PR #61 (main `ca5efb5d81f2c3fc4e3907c824668e6765f829dc`). Browser-only rendered proof is insufficient for the actual Windows installer.
+- This branch adds a **native installed EXE** visual test: in a temporary Windows CI installation, launch `MichelsLife.exe` with process-local WebView2 CDP instrumentation, resize its real top-level window twice (wide 1600x1000 and compact 1280x800), interact with the actual embedded UI to capture Home and About, verify the developer portrait/studio logo/five socials, bind each capture to exact Git source SHA + shipped Setup SHA-256 and installed EXE SHA-256, and run canonical `tools/visual_release_gate.py` before uninstall. Screenshots remain GitHub CI artifacts for later owner review.
+- WebView2 debugging is injected only into the short-lived CI test process and not turned on by default in shipped apps. The test fails closed if the installed app, CDP, window resize, screenshot, navigation or image integrity is unavailable. There is **no browser HTML fallback**.
+- **Validation pending**: exact branch Windows build / installed evidence; no claim of native Windows RENDER PASS until workflow succeeds. Android physical installed UI Home/About two-size acceptance remains independent P0 work. No version bump or release authorized.
+
+
 ## 2026-10-11 — Michel's Lab master UI evidence: browser integration candidate
 
 - Central QA reported a P0 missing common screenshot validator and release-channel invocations. Branch `fix/master-visual-evidence-gate-20261011` vendors the immutable master `tools/visual_release_gate.py`; the existing Chromium UI smoke now records both Home/About at wide and compact sizes and validates manifest coverage, screenshot integrity, source SHA and the exact candidate UI bundle SHA-256.

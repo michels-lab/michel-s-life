@@ -37,6 +37,8 @@ on:
       - 'tools/replace_bundle_index.py'
       - 'tools/inject_bundle_asset.py'
       - 'tools/windows_launch_smoke.ps1'
+      - 'tools/windows_packaged_visual_smoke.mjs'
+      - 'tools/visual_release_gate.py'
       - '.github/workflows/release-windows.yml'
   push:
     tags:
@@ -240,6 +242,12 @@ jobs:
           & $signtool.FullName sign /fd SHA256 /f artifacts/signing.pfx /p $env:WINDOWS_CERT_PASSWORD /tr http://timestamp.digicert.com /td SHA256 "artifacts/MichelsLife-Setup-v${{ steps.ver.outputs.version }}.exe"
           Remove-Item artifacts/signing.pfx -Force
 
+      - name: Install WebView2 CDP runtime and image validator for exact native UI smoke
+        shell: pwsh
+        run: |
+          npm install --no-save playwright-core@1.57.0
+          python -m pip install Pillow==11.3.0
+
       - name: Install and launch-smoke Michel's Life installer
         shell: pwsh
         run: |
@@ -281,6 +289,19 @@ jobs:
             -WindowTimeoutSeconds 20 `
             -EvidencePath artifacts/MichelsLife-Installed-launch.txt
 
+          # Start the *installed* candidate, not an HTML mock; capture its
+          # WebView2 Home and About at two real window sizes before uninstall.
+          node tools/windows_packaged_visual_smoke.mjs `
+            "--exe=$installedExe" `
+            "--setup=$installer" `
+            "--out=artifacts/windows-native-visual"
+          if ($LASTEXITCODE -ne 0) { throw 'Installed Windows native visual capture failed.' }
+          python tools/visual_release_gate.py `
+            --manifest artifacts/windows-native-visual/manifest.json `
+            --source-sha "$env:GITHUB_SHA" `
+            --platforms windows-installed --surfaces home,about
+          if ($LASTEXITCODE -ne 0) { throw 'Studio rendered UI release gate rejected installed Windows evidence.' }
+
           $uninstaller=Join-Path $installDir 'unins000.exe'
           if (-not (Test-Path $uninstaller)) {
             throw "Michel's Life uninstaller was not created."
@@ -312,6 +333,15 @@ jobs:
         run: |
           Copy-Item src/MichelsLife/AppBundle.zip artifacts/AppBundle.zip
           Copy-Item src/MichelsLife/Assets/michels_life_icon.ico artifacts/michels_life_icon.ico
+
+      - name: Retain exact Windows installed runtime screenshots for post-release owner review
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: MichelsLife-Windows-Installed-Visual-${{ github.sha }}
+          path: artifacts/windows-native-visual/
+          if-no-files-found: warn
+          retention-days: 30
 
       - name: Upload temporary build artifact
         if: ${{ !((startsWith(github.ref, 'refs/tags/') || inputs.publish == true) && env.HAS_RELEASE_TOKEN == 'true') }}
