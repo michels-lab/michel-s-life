@@ -1,3 +1,12 @@
+## 2026-10-19 — Android Developer observability and OS backup privacy (candidate)
+
+- Isolated Android build types and packages: public `com.michelslab.michelslife`, Developer `com.michelslab.michelslife.developer`; Developer own launcher label/vector icon and private app/WebView session. The public APK's icon remains the original canonical artwork.
+- No Android OS full-backup or transfer of user credentials/device-local storage in either package (`allowBackup=false` plus explicit Android 12+ data extraction exclusions). Restore/in-app sync use a separately validated whitelist. Existing installed data is not deleted on same-package updates.
+- Developer audit captures DOM hit boxes, selector/route-linked comments, redacted error codes retained locally and non-personal native heap/uptime/permission metrics. It does **not** read Logcat, files, keystore, text input values, connected accounts or tokens. User-triggered export required.
+- New Developer guided sweep navigates up to 11 app routes, restores original view, records skipped routes, does not invoke button actions or provider APIs; unsaved form drafts should be saved before triggering because navigation is real. Browser test covers return-to-origin and five-or-more routes.
+- Official Android Direct updater is version discovery only, not an installer/cryptographic package verifier. Any future upgrade must verify permanent signing certificate and preserve Android app data before enabling a one-tap APK installation.
+- Native Developer installation/CDP/Save As tests still mandatory for APK sign-off; no desktop builds or app release approved by user.
+
 ## 2026-10-19 — Android Developer privacy and release discovery controls
 
 - New Developer Android package disables Android OS Auto Backup of its local audit notes and session; the public package retains its existing backup behavior. Shared cloud snapshot allowlist rejects developer note key and arbitrary unknown provider keys, covered by synthetic restore tests.
