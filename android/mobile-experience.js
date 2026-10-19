@@ -979,9 +979,10 @@
         <button type="button" id="mlv-android-focus-dim" aria-label="Close Focus"></button>
         <section id="mlv-android-focus-sheet" role="dialog" aria-modal="true" aria-labelledby="mlv-android-focus-heading">
           <div class="mlv-android-focus-head">
-            <div><span class="mlv-android-focus-eyebrow">POMODORO</span><h2 id="mlv-android-focus-heading">Your Pomodoro timer.</h2><p>Your session, your rhythm.</p></div>
+            <div><span class="mlv-android-focus-eyebrow"><i class="mlv-focus-brand-dot" aria-hidden="true"></i> MICHEL'S LIFE / FOCUS</span><h2 id="mlv-android-focus-heading">Pomodoro</h2><p>One session at a time.</p></div>
             <button type="button" class="mlv-android-focus-close" data-mobile-focus="close" aria-label="Close Focus">×</button>
           </div>
+          <div class="mlv-focus-session-strip"><span id="mlv-focus-session-meta">WORK SESSION · 25 MIN</span><span id="mlv-focus-session-state">READY</span></div>
           <div class="mlv-android-focus-clock">
             <div id="mlv-android-focus-progress-ring">
               <div class="mlv-android-focus-dial">
@@ -990,7 +991,9 @@
               </div>
             </div>
             <span id="mlv-android-focus-status">Ready · Work</span>
+            <span class="mlv-focus-clock-caption" id="mlv-focus-end-time">Ready when you are</span>
           </div>
+          <div class="mlv-focus-controls-title">Session length</div>
           <div class="mlv-android-focus-presets" aria-label="Focus presets">
             <button type="button" data-mobile-preset="25/5">25 / 5</button>
             <button type="button" data-mobile-preset="50/10">50 / 10</button>
@@ -1012,7 +1015,14 @@
             <div><span>Linked mission</span><strong id="mlv-android-focus-linked">No mission linked</strong></div>
             <div><span>Finished today</span><strong id="mlv-android-focus-count">0 sessions</strong></div>
           </div>
-          <p class="mlv-android-focus-system-note">The timer uses your existing Michel’s Life progress. Android notifications require permission and may be delayed by battery-saving settings.</p>
+          <div class="mlv-focus-notification">
+            <span class="mlv-focus-notification-icon" aria-hidden="true">◷</span>
+            <div class="mlv-focus-notification-copy">
+              <strong>Lock-screen countdown</strong>
+              <p class="mlv-android-focus-system-note">Allow notifications to follow your session when the screen is off.</p>
+            </div>
+            <button type="button" id="mlv-focus-enable-notifications" data-mobile-focus="enable-notifications" hidden>Enable</button>
+          </div>
         </section>`;
       root.addEventListener('click',event=>{
         const source=event.target.closest('[data-mobile-focus],[data-mobile-preset],#mlv-android-focus-dim');
@@ -1029,6 +1039,7 @@
         }
         const action=source.dataset.mobileFocus;
         if(action==='close'){close();return;}
+        if(action==='enable-notifications'){requestNativeFocusPermission();updateFocus();return;}
         if(!api){return;}
         if(action==='toggle'){
           if(api.focusState?.().status!=='running')requestNativeFocusPermission();
@@ -1262,6 +1273,10 @@
       }catch(_){}
     }
   }
+  function resyncNativeNotification(){
+    lastNativeAlarmKey=null;
+    updateFocus();
+  }
   function open(){
     if(!ensure())return false;
     const api=focusApi();
@@ -1387,7 +1402,7 @@
     updateFocus();
     ticker=window.setInterval(()=>{if(!document.body.isConnected){window.clearInterval(ticker);return;}updateFocus();},1000);
   }
-  window.MichelsLifeMobileExperience={openFocus:open,closeFocus:close,updateFocus,isFocusOpen};
+  window.MichelsLifeMobileExperience={openFocus:open,closeFocus:close,updateFocus,isFocusOpen,resyncNativeNotification};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
   else boot();
 })();
