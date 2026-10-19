@@ -1,3 +1,9 @@
+## 2026-10-19 — Android-only update Settings card and audit-safe release handoff
+
+- Android's separate script `mobile-direct-updates.js` is included in Android app assets, mounted into Settings after the actual route switch, uses the native read-only official Direct release checker, and provides user-initiated GitHub release-page link only on trusted checked metadata.
+- Regression fixture rejects a foreign release URL, stale offline link, developer channel confusion and Android exposure of desktop EXE installers; Android workflows automatically supersede older PR runs while preserving owner-triggered releases. No Windows executable build.
+- Still pending exact-head Android UI/Gradle/native CI and physical device acceptance. Public 0.2.9 remains unchanged. Issue #109 partially addressed; no automatic signed installer or validated live in-place upgrade yet.
+
 ## 2026-10-19 — Major Android backlog consolidation: Developer Twin + update truthfulness
 
 - Continued Android-only PR #134: improved native developer-only overlay touch cancellation and report/data boundaries; separate debuggable `.developer` APK and native Save As; real Settings/Sync login route (OAuth still requires provider validation).
