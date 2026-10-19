@@ -233,17 +233,23 @@ try{
     if(typeof window.completeMission!=='function')
       throw new Error('Canonical completeMission entrypoint missing');
     const before=Number(state.xp||0);
+    // The canonical migration/domain layer owns the XP reward. A fixture
+    // seeded at 23 may be normalized to 50 after reload; do not hard-code
+    // a reward that no longer matches the actual canonical mission.
+    const missionXp=Number(state.missions.find(m=>m.id===id)?.xp||0);
     window.completeMission(id);
     const afterFirst=Number(state.xp||0);
     window.completeMission(id);
     const afterSecond=Number(state.xp||0);
     const entries=state.missions.find(m=>m.id===id)?.completions||[];
-    return {before,afterFirst,afterSecond,count:entries.length,
+    return {before,missionXp,afterFirst,afterSecond,count:entries.length,
+      completionXp:Number(entries[0]?.xp||0),
       uniqueIds:new Set(entries.map(c=>c.id)).size};
   },MISSION_ID);
   ok(completedOnce.before===desktopXp&&
-    completedOnce.afterFirst===desktopXp+MISSION_XP&&
-    completedOnce.afterSecond===desktopXp+MISSION_XP&&
+    completedOnce.missionXp>0&&completedOnce.completionXp===completedOnce.missionXp&&
+    completedOnce.afterFirst===desktopXp+completedOnce.missionXp&&
+    completedOnce.afterSecond===completedOnce.afterFirst&&
     completedOnce.count===1&&completedOnce.uniqueIds===1,
     'Double completion created duplicate XP/records in canonical Android state: '+
       JSON.stringify(completedOnce));
@@ -251,7 +257,8 @@ try{
   const androidRevision=Number(backend.remote.revision);
   const androidXp=Number(backend.remote.snapshot?.state?.xp);
   ok(backend.remote.source_platform==='android','Android update did not carry Android source attribution');
-  ok(androidXp===desktopXp+MISSION_XP,'Android master snapshot does not contain exactly one mission completion');
+  ok(androidXp===completedOnce.afterFirst,
+    'Android master snapshot does not contain exactly one canonical mission completion reward');
   const cloudMission=backend.remote.snapshot?.state?.missions||[];
   const completedCloud=cloudMission.filter(m=>m.id===MISSION_ID);
   ok(completedCloud.length===1&&completedCloud[0].completions?.length===1&&
