@@ -906,19 +906,10 @@
         min-height:44px
       }
     }
-    /* A measured, nonblocking entrance for sections, never Chapter art. */
-    @keyframes mlvAndroidSectionEnter{
-      from{opacity:.88;translate:0 7px}
-      to{opacity:1;translate:0 0}
-    }
-    html[data-mlv-platform="android"] #main > .tab.active > .card{
-      animation:mlvAndroidSectionEnter .22s cubic-bezier(.2,.7,.2,1) both
-    }
-    @media(prefers-reduced-motion:reduce){
-      html[data-mlv-platform="android"] #main > .tab.active > .card{
-        animation:none!important;translate:none!important
-      }
-    }
+    /* No synthetic entrance animation on every .card. Canonical renderers
+       replace cards after selection, checkbox toggles and filter changes:
+       animating every replacement causes repeated opacity flickers. Chapter
+       preserves its separate camera, fog and light-sweep animations. */
   `;
   function ensure(){
     if(!owned()||!document.head)return;
@@ -1276,9 +1267,21 @@
     ensure();enforceRendered();
     const main=document.getElementById('main');
     if(!main||observer)return;
-    observer=new MutationObserver(()=>enforceRendered());
+    // Text updates (including a running Pomodoro) need no layout ownership
+    // pass. Only real element insertions/removals require Android geometry.
+    // Coalesce multiple canonical renderer mutations into one frame.
+    let pendingGeometry=false;
+    observer=new MutationObserver(records=>{
+      const changedStructure=records.some(record=>
+        [...record.addedNodes,...record.removedNodes].some(node=>node.nodeType===Node.ELEMENT_NODE));
+      if(!changedStructure||pendingGeometry)return;
+      pendingGeometry=true;
+      requestAnimationFrame(()=>{
+        pendingGeometry=false;
+        enforceRendered();
+      });
+    });
     observer.observe(main,{childList:true,subtree:true});
-    document.addEventListener('click',()=>requestAnimationFrame(enforceRendered),true);
     const modal=document.getElementById('modalRoot');
     if(modal){
       const modalObserver=new MutationObserver(()=>{
