@@ -67,7 +67,7 @@ probe_once() {
   local name="$phase-$sample"
   record_host
   if ! timeout 15s adb devices -l > "$OUT/devices-$name.txt" 2>&1; then fail "adb devices timed out"; fi
-  if ! grep -q $'\tdevice' "$OUT/devices-$name.txt"; then fail "emulator not in adb device state"; fi
+  if ! grep -Eq '^emulator-[0-9]+[[:space:]]+device([[:space:]]|$)' "$OUT/devices-$name.txt"; then fail "emulator not in adb device state"; fi
   if ! timeout 15s adb shell getprop sys.boot_completed > "$OUT/boot-$name.txt" 2>&1; then fail "boot property unavailable"; fi
   if ! grep -qx '1' <(tr -d '\r' < "$OUT/boot-$name.txt"); then fail "emulator no longer booted"; fi
   if ! timeout 20s adb exec-out screencap -p > "$OUT/frame-$name.png" 2>"$OUT/screencap-$name.err"; then
