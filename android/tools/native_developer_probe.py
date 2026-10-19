@@ -7,7 +7,7 @@ import time
 from pathlib import Path
 from urllib.request import urlopen
 
-from websocket import create_connection
+from websocket import create_connection, WebSocketTimeoutException, WebSocketConnectionClosedException
 
 PAGE = r"""(()=>{
   const twin=window.MichelsLabDeveloperTwin;
@@ -32,13 +32,16 @@ def evaluate(port: int, expression: str):
            p.get('url','').startswith('https://appassets.androidplatform.net/assets/app/index.html')]
     if len(pages)!=1:
         raise RuntimeError('Expected one real installed Developer WebView, found '+str(len(pages)))
-    ws=create_connection(pages[0]['webSocketDebuggerUrl'],timeout=15,suppress_origin=True)
+    ws=create_connection(pages[0]['webSocketDebuggerUrl'],timeout=5,suppress_origin=True)
     try:
         ws.send(json.dumps({'id':1,'method':'Runtime.evaluate','params':{
             'expression':expression,'returnByValue':True}}))
-        until=time.monotonic()+15
+        until=time.monotonic()+7
         while time.monotonic()<until:
-            response=json.loads(ws.recv())
+            try:
+                response=json.loads(ws.recv())
+            except (WebSocketTimeoutException,WebSocketConnectionClosedException,TimeoutError) as exc:
+                raise RuntimeError('Installed WebView unresponsive to CDP; retry after readiness delay') from exc
             if response.get('id')!=1:continue
             if response.get('error') or response.get('result',{}).get('exceptionDetails'):
                 raise RuntimeError('Developer CDP expression failed in installed WebView')
@@ -54,7 +57,7 @@ def main():
     parser.add_argument('--invoke-native-export',action='store_true')
     args=parser.parse_args()
     last=None
-    for _ in range(18):
+    for attempt in range(20):
         try:
             result=evaluate(args.port,PAGE)
             if not isinstance(result,dict) or not all(result.get(k) for k in
@@ -69,8 +72,11 @@ def main():
                 evaluate(args.port,EXPORT)
             print('PASS: isolated Developer WebView, real app engine, audit/annotation UI and native export bridge installed')
             return
-        except (RuntimeError,OSError,ValueError) as e:
-            last=str(e);time.sleep(2)
+        except (RuntimeError,OSError,ValueError,WebSocketTimeoutException) as e:
+            last=str(e)
+            if attempt % 4 == 3:
+                print('Waiting for actual Developer WebView readiness: '+last,flush=True)
+            time.sleep(3)
     raise SystemExit('FAIL: installed Developer Twin not functional: '+str(last))
 
 if __name__=='__main__':main()
