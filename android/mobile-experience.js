@@ -522,13 +522,26 @@
           margin-bottom:0!important
         }
         html[data-mlv-platform="android"] #tab-story .v30162-story-form{
-          grid-template-columns:minmax(0,1fr)!important;gap:11px!important
+          grid-template-columns:minmax(0,1fr)!important;gap:11px!important;
+          /* The fixed 73px bottom nav covers form submit when the keyboard
+             closes after navigating away and returning to Story. Give the
+             sticky CTA a real scrollable safe region, not an invisible overlay. */
+          padding-bottom:calc(114px + env(safe-area-inset-bottom,0px))!important
         }
         html[data-mlv-platform="android"] #tab-story .v30162-story-form input{
           min-height:48px!important;font-size:16px!important
         }
         html[data-mlv-platform="android"] #tab-story .v30162-story-form button[type="submit"]{
-          min-height:52px!important;scroll-margin-bottom:110px
+          min-height:52px!important;
+          position:sticky!important;
+          bottom:calc(93px + env(safe-area-inset-bottom,0px))!important;
+          z-index:5!important;
+          scroll-margin-bottom:130px!important;
+          touch-action:manipulation
+        }
+        html[data-mlv-platform="android"] body.mlv-android-keyboard-editing
+        #tab-story .v30162-story-form button[type="submit"]{
+          bottom:12px!important
         }
       }
       /* Focus is a full mobile workspace, not a desktop popover or a
