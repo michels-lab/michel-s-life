@@ -8,6 +8,13 @@ OUT="artifacts/developer-installed"
 mkdir -p "$OUT"
 test -s "$DEV"
 adb wait-for-device
+# In its own emulator the publicly-shaped candidate has not been
+# installed yet. Install both to prove they coexist with separate app data.
+if ! adb shell pm list packages "$PUBLIC" | tr -d '\r' | grep -qx "package:$PUBLIC"; then
+  PUBLIC_APK="artifacts/candidate/MichelsLife-Android-TEST-v${ANDROID_VERSION}.apk"
+  test -s "$PUBLIC_APK"
+  adb install -r "$PUBLIC_APK" > "$OUT/public-install.txt"
+fi
 adb shell pm list packages "$PUBLIC" | tr -d '\r' > "$OUT/before-packages.txt"
 grep -qx "package:$PUBLIC" "$OUT/before-packages.txt"
 adb install -r "$DEV" | tee "$OUT/install.txt"
