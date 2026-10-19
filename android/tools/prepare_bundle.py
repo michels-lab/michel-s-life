@@ -8,6 +8,8 @@ ROOT = Path(__file__).resolve().parents[1]
 BRIDGE = ROOT / "android-bridge.js"
 MOBILE_EXPERIENCE = ROOT / "mobile-experience.js"
 MOBILE_SECTIONS = ROOT / "mobile-sections.js"
+MOBILE_UPDATES = ROOT / "mobile-direct-updates.js"
+DEVELOPER_JS = ROOT.parent / "src" / "MichelsLife" / "DeveloperDiagnostics.js"
 
 def main():
     ap = argparse.ArgumentParser()
@@ -32,6 +34,12 @@ def main():
     shutil.copy2(BRIDGE, assets / bridge_name)
     shutil.copy2(MOBILE_EXPERIENCE, assets / "mobile-experience.js")
     shutil.copy2(MOBILE_SECTIONS, assets / "mobile-sections.js")
+    shutil.copy2(MOBILE_UPDATES, assets / "mobile-direct-updates.js")
+    # Separate build-type asset overlay: stable APK never embeds or starts
+    # developer diagnostics, even though the Developer edition shares index.
+    dev_asset = ROOT / "app" / "src" / "developerDebug" / "assets" / "app"
+    dev_asset.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(DEVELOPER_JS, dev_asset / "developer-diagnostics.js")
     text = index.read_text(encoding="utf-8")
     marker = '<script src="android-bridge.js" data-mlv-android-bridge="v1"></script>'
     mobile_marker = '<script src="mobile-experience.js" data-mlv-android-mobile-experience="v1"></script>'
@@ -46,6 +54,9 @@ def main():
         text = text.replace(marker, marker + "\n" + mobile_marker, 1)
     if sections_marker not in text:
         text = text.replace(mobile_marker, mobile_marker + "\n" + sections_marker, 1)
+    update_marker = '<script src="mobile-direct-updates.js" data-mlv-android-updates="v1"></script>'
+    if update_marker not in text:
+        text = text.replace(sections_marker, sections_marker + "\n" + update_marker, 1)
     index.write_text(text, encoding="utf-8", newline="\n")
 
     print("Prepared Michel's Life Android web bundle:", assets)

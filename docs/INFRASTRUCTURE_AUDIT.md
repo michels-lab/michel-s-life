@@ -1,3 +1,25 @@
+## 2026-10-19 — Android Developer observability and OS backup privacy (candidate)
+
+- Isolated Android build types and packages: public `com.michelslab.michelslife`, Developer `com.michelslab.michelslife.developer`; Developer own launcher label/vector icon and private app/WebView session. The public APK's icon remains the original canonical artwork.
+- No Android OS full-backup or transfer of user credentials/device-local storage in either package (`allowBackup=false` plus explicit Android 12+ data extraction exclusions). Restore/in-app sync use a separately validated whitelist. Existing installed data is not deleted on same-package updates.
+- Developer audit captures DOM hit boxes, selector/route-linked comments, redacted error codes retained locally and non-personal native heap/uptime/permission metrics. It does **not** read Logcat, files, keystore, text input values, connected accounts or tokens. User-triggered export required.
+- New Developer guided sweep navigates up to 11 app routes, restores original view, records skipped routes, does not invoke button actions or provider APIs; unsaved form drafts should be saved before triggering because navigation is real. Browser test covers return-to-origin and five-or-more routes.
+- Official Android Direct updater is version discovery only, not an installer/cryptographic package verifier. Any future upgrade must verify permanent signing certificate and preserve Android app data before enabling a one-tap APK installation.
+- Native Developer installation/CDP/Save As tests still mandatory for APK sign-off; no desktop builds or app release approved by user.
+
+## 2026-10-19 — Android Developer privacy and release discovery controls
+
+- New Developer Android package disables Android OS Auto Backup of its local audit notes and session; the public package retains its existing backup behavior. Shared cloud snapshot allowlist rejects developer note key and arbitrary unknown provider keys, covered by synthetic restore tests.
+- Privileged JS bridge is only injected into packaged appassets index. External WebView navigations fail closed even if no external Android Activity is available.
+- Android Direct updates are discovered via official latest GitHub Releases metadata (HTTPS, bounded payload), with stable-tag/asset checksum-pair/origin checks; discovery neither downloads nor installs an APK and explicitly does **not** verify package signatures. Only Android's native package installer can enforce in-place signing equality later. Offline/no response is UNKNOWN, never fabricated "no update."
+- Installed native Developer Android 16 and OEM/real-account validation still pending. Android Developer Edition debug candidate is not a public signed release; no Play/Galaxy certification is asserted. Windows builds remain explicitly paused.
+
+## 2026-10-19 — Android Developer build isolation and test instrumentation boundary
+
+- A distinct internal `developerDebug` Android variant uses `applicationIdSuffix=.developer`; standard public Direct/Play APKs keep `com.michelslab.michelslife`. Developer diagnostic JS is variant-scoped in `android/app/src/developerDebug/assets/app` and loaded at runtime only for the developer package. App data/localStorage and account sessions are Android-package-isolated, not copied between variants.
+- Real Android save/export bridge calls Storage Access Framework `ACTION_CREATE_DOCUMENT` for user-initiated JSON/prompt files. No automatic telemetry or upload. Early CI validates APK IDs and that public APK does not embed developer-diagnostics.js. Installed Android 16 native test job for developer app added separately from existing public-shaped native smoke.
+- Status: **source candidate / tests pending**; internal Developer APK presently debug-signed, **not** a stable distribution or updater. For authentic Google authorization from separate Developer package/signature, register/verify Android OAuth provider credentials as necessary; never bundle signing credentials. Supabase account safety #108 remains independent. Windows Developer shell and packaging are deferred per owner instruction.
+
 # Michel's Life — Infrastructure & Cloud Audit
 
 Last reviewed: **2026-10-05**

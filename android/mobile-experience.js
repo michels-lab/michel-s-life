@@ -522,13 +522,33 @@
           margin-bottom:0!important
         }
         html[data-mlv-platform="android"] #tab-story .v30162-story-form{
-          grid-template-columns:minmax(0,1fr)!important;gap:11px!important
+          grid-template-columns:minmax(0,1fr)!important;gap:11px!important;
+          /* The fixed 73px bottom nav covers form submit when the keyboard
+             closes after navigating away and returning to Story. Give the
+             sticky CTA a real scrollable safe region, not an invisible overlay. */
+          padding-bottom:calc(114px + env(safe-area-inset-bottom,0px))!important
         }
         html[data-mlv-platform="android"] #tab-story .v30162-story-form input{
           min-height:48px!important;font-size:16px!important
         }
-        html[data-mlv-platform="android"] #tab-story .v30162-story-form button[type="submit"]{
-          min-height:52px!important;scroll-margin-bottom:110px
+        html[data-mlv-platform="android"] #tab-story.active .v30162-story-form button[type="submit"]{
+          /* A sticky CTA remains below the native nav after real drawer/IME
+             navigation because its containing grid limits sticky movement.
+             Anchor the ONE canonical submit control to the viewport instead
+             of cloning an action or relying on scrollIntoView heuristics. */
+          min-height:52px!important;
+          position:fixed!important;
+          bottom:calc(90px + env(safe-area-inset-bottom,0px))!important;
+          left:16px!important;right:16px!important;
+          width:calc(100vw - 32px)!important;max-width:calc(100vw - 32px)!important;
+          box-sizing:border-box!important;
+          z-index:2147482970!important;
+          scroll-margin-bottom:130px!important;
+          touch-action:manipulation!important
+        }
+        html[data-mlv-platform="android"] body.mlv-android-keyboard-editing
+        #tab-story.active .v30162-story-form button[type="submit"]{
+          bottom:12px!important
         }
       }
       /* Focus is a full mobile workspace, not a desktop popover or a

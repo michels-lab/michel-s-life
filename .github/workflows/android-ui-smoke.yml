@@ -1,5 +1,11 @@
 name: Android UI smoke
 
+# Cancel outdated PR snapshots only. Never cancel owner-requested manual
+# or production release tasks; source commit is the validation identity.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 on:
   workflow_dispatch:
   pull_request:
@@ -15,6 +21,10 @@ on:
       - 'tools/ui_android_onboarding_persistence_smoke.mjs'
       - 'tools/ui_android_section_design_smoke.mjs'
       - 'tools/ui_android_chapter_motion_smoke.mjs'
+      - 'tools/ui_android_developer_twin_smoke.mjs'
+      - 'tools/ui_android_direct_update_smoke.mjs'
+      - 'android/mobile-direct-updates.js'
+      - 'src/MichelsLife/DeveloperDiagnostics.js'
       - 'tools/ui_android_compact_accessibility_smoke.mjs'
       - 'tools/ui_android_journal_save_smoke.mjs'
       - 'tools/ui_android_ime_navigation_smoke.mjs'
@@ -102,6 +112,16 @@ jobs:
         run: |
           export MLV_ANDROID_UI_URL=http://127.0.0.1:4174
           node tools/ui_android_chapter_motion_smoke.mjs
+
+      - name: Audit isolated Developer Edition touch annotations, cross-route findings, persistence and AI exports
+        run: |
+          export MLV_ANDROID_UI_URL=http://127.0.0.1:4174
+          node tools/ui_android_developer_twin_smoke.mjs
+
+      - name: Check real Android Direct update UX (official link, offline, no Windows EXE)
+        run: |
+          export MLV_ANDROID_UI_URL=http://127.0.0.1:4174
+          node tools/ui_android_direct_update_smoke.mjs
 
       - name: Reproduce Story launch trap with REAL Android touch navigation and visible Pomodoro
         run: |

@@ -36,7 +36,11 @@ try{
   });
   const page=await context.newPage();
   const errors=[];
-  page.on('pageerror',e=>errors.push(e.message));
+  page.on('pageerror',e=>{
+    // The error message alone hides which lazily rendered script is malformed.
+    // Synthetic CI fixture only: include a bounded non-secret stack for triage.
+    errors.push(String(e.stack||e.message).slice(0,900));
+  });
   await mkdir(out,{recursive:true});
   await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
   await page.waitForFunction(()=>!!window.__mlvAndroidFastRoute &&

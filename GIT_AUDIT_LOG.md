@@ -1,3 +1,32 @@
+## 2026-10-19 — PR #134 additional Android Developer audit and P0 privacy work, no Windows build
+
+- Extended the separately installed Android Developer Twin with guided up-to-11-screen audit (actual canonical router, restoring screen), native-only memory/uptime/notification status, redacted error history surviving restart, exact anchored owner annotation reports, and an obviously different Developer launcher icon. No shared user sessions, bypass auth or automated exports.
+- Customer and Developer Android disable unsafe OS-level full-app backup/transfer of WebView data; approved allowlisted in-app cloud sync remains available. Native Android Direct update discovery is read-only and explicit, with offline/invalid metadata guards.
+- Fixed Android CI task targeting nonexistent Developer test variant; updated two legacy public-brand validators for launcher placeholders. Android CI/source/UI smoke is gating PR #134; installed native and actual Galaxy/OAuth release acceptance are still independent. Keep PR draft while any required test is red/pending.
+- Shared browser tests already cover account-switch board isolation and cloud snapshot allowlists; live provider issue #108/#55 not closed without real credentials/device acceptance. Owner's pause of all Windows/MSIX/installer jobs remains effective.
+- Release unchanged: unified v3.0.221 / Android Direct 0.2.9; no new signed public or Developer APK published by this feature PR.
+
+## 2026-10-19 — Android-only update Settings card and audit-safe release handoff
+
+- Android's separate script `mobile-direct-updates.js` is included in Android app assets, mounted into Settings after the actual route switch, uses the native read-only official Direct release checker, and provides user-initiated GitHub release-page link only on trusted checked metadata.
+- Regression fixture rejects a foreign release URL, stale offline link, developer channel confusion and Android exposure of desktop EXE installers; Android workflows automatically supersede older PR runs while preserving owner-triggered releases. No Windows executable build.
+- Still pending exact-head Android UI/Gradle/native CI and physical device acceptance. Public 0.2.9 remains unchanged. Issue #109 partially addressed; no automatic signed installer or validated live in-place upgrade yet.
+
+## 2026-10-19 — Major Android backlog consolidation: Developer Twin + update truthfulness
+
+- Continued Android-only PR #134: improved native developer-only overlay touch cancellation and report/data boundaries; separate debuggable `.developer` APK and native Save As; real Settings/Sync login route (OAuth still requires provider validation).
+- Fixed the earlier false Android Direct "no update" status by adding official release metadata discovery, fail-closed checksum/name/origin/stable-tag validation and Kotlin unit tests. Real installation remains manual and unsigned/debug distributions are not offered as stable.
+- Hardened Android WebView external navigation so untrusted pages cannot become privileged WebView destinations. Added CI source contract for Calendar truthful unsupported behavior and native updater safety.
+- Reviewed P0 #55 and #108: source already enforces cloud storage allowlist and account ownership; expanded cloud backup/restore regression to protect Developer annotation storage; live account/provider proof still pending.
+- Optimized Android PR workflow concurrency to drop stale PR builds. Microsoft Store/MSIX/Windows installers and Windows native smoke remain paused, with unchanged public Windows v3.0.221. No new release published.
+
+## 2026-10-19 — Michel's Life Android Developer Twin + QA big block (no Windows builds)
+
+- Main Michel's Lab Developer Twin standard and issue #131: per-screen user annotations and true user-account flow apply eventually on both platforms. Owner paused Windows Developer work; Android feature PR #134 is Android-only.
+- Source implements separate Android Developer build type/application ID, dev UI runtime with read-only section audit, persistent exact screen+locator comments, JSON/AI export, real Settings/Sync login navigation, native Android document Save As and production/developer APK asset separation. No public Android APK changed or published.
+- The Developer UI smoke test passed but existing Android Story browser regression exposed a start-chapter CTA under the fixed bottom nav; corrected mobile spacing/sticky CTA on the same development branch. CI now checks native user-shaped and Developer APK installs separately, reducing coupling to occasional emulator ADB loss.
+- Source-wide security constraints: no captured passwords, account identifiers, raw stack traces, files or tokens; audits local-only and non-destructive; owner-authored comments manually exported intact. Actual provider login and installed APK success require further evidence. Windows native/MSIX builds stay paused; no Windows packaging authorized.
+
 ## 2026-10-19 — Follow-up: native Windows executable/installer smoke also paused
 
 - Inspected `ci.yml`: general source validation still included a `windows-icon-smoke` job that compiled `MichelsLife.exe`, published a portable Windows runtime and built/installed a Windows installer candidate on every PR and main push, including Android-only work.

@@ -49,11 +49,15 @@ const original = {
   'michelsLife.supabase.device.v30216': 'THIS_DEVICE_ID',
   'michelsLife.google.auth': 'THIS_DEVICE_GOOGLE_TOKEN',
   'michelsLife.local.notification.id': 'THIS_DEVICE_ALARM',
+  'michelslab.developer.notes.v1': '[{\"comment\":\"OWNER PRIVATE NOTE\"}]',
   'michelsLife.journal.v30184': 'OLD_JOURNAL',
   'michelsLife.theme.v342': 'OLD_THEME',
   'vida_rpg_personal_progress_v2': '{"missions":[{"id":"old"}]}',
 };
 const f = fixture(original);
+assert.equal(Object.hasOwn(f.ctx.window.MLVCloudSharedStorageV30216.capture(),
+  'michelslab.developer.notes.v1'),false,
+  'Developer owner annotations must never be included in shareable cloud data');
 const oldCloudBackup = {
   state: {missions:[{id:'restored-mission'}]},
   localStorage: {
@@ -62,6 +66,7 @@ const oldCloudBackup = {
     'michelsLife.supabase.device.v30216':'OTHER_DEVICE_ID',
     'michelsLife.google.auth':'OTHER_DEVICE_GOOGLE_TOKEN',
     'michelsLife.local.notification.id':'OTHER_DEVICE_ALARM',
+    'michelslab.developer.notes.v1':'FOREIGN_DEVELOPER_NOTE',
     'michelsLife.journal.v30184':'RESTORED_JOURNAL',
     'michelsLife.theme.v342':'RESTORED_THEME',
     'unknown-storage-key':'SHOULD_NOT_EXIST'
@@ -71,7 +76,8 @@ f.ctx.restoreTimeline(JSON.stringify(oldCloudBackup));
 for (const key of [
   'michelsLife.supabase.session.v30216','michelsLife.supabase.meta.v30216',
   'michelsLife.supabase.device.v30216','michelsLife.google.auth',
-  'michelsLife.local.notification.id'
+  'michelsLife.local.notification.id',
+  'michelslab.developer.notes.v1'
 ]) assert.equal(f.values.get(key), original[key], 'Device identity changed: ' + key);
 assert.equal(f.values.get('michelsLife.journal.v30184'), 'RESTORED_JOURNAL');
 assert.equal(f.values.get('michelsLife.theme.v342'), 'RESTORED_THEME');
@@ -116,7 +122,8 @@ portable.ctx.restorePortable(JSON.stringify(oldCloudBackup));
 for (const key of [
   'michelsLife.supabase.session.v30216','michelsLife.supabase.meta.v30216',
   'michelsLife.supabase.device.v30216','michelsLife.google.auth',
-  'michelsLife.local.notification.id'
+  'michelsLife.local.notification.id',
+  'michelslab.developer.notes.v1'
 ]) assert.equal(portable.values.get(key), original[key],
   'Portable import transferred another device credential: ' + key);
 assert.equal(portable.values.get('michelsLife.journal.v30184'), 'RESTORED_JOURNAL');

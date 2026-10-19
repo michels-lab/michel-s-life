@@ -1,5 +1,11 @@
 name: Build Android test APK
 
+# Cancel outdated PR snapshots only. Never cancel owner-requested manual
+# or production release tasks; source commit is the validation identity.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 on:
   workflow_call:
     inputs:
@@ -22,6 +28,7 @@ on:
       - 'android/mobile-experience.js'
       - 'android/mobile-sections.js'
       - 'android/tools/**'
+      - 'src/MichelsLife/DeveloperDiagnostics.js'
       - 'android/build.gradle.kts'
       - 'android/settings.gradle.kts'
       - 'android/gradle.properties'
@@ -41,6 +48,7 @@ on:
       - 'android/mobile-experience.js'
       - 'android/mobile-sections.js'
       - 'android/tools/**'
+      - 'src/MichelsLife/DeveloperDiagnostics.js'
       - 'android/build.gradle.kts'
       - 'android/settings.gradle.kts'
       - 'android/gradle.properties'
@@ -101,6 +109,9 @@ jobs:
           node --check android/mobile-experience.js
           node --check android/mobile-sections.js
           python android/tools/validate_android_mobile_ux.py
+          python android/tools/validate_developer_twin.py
+          python android/tools/validate_provider_integrity.py
+          node --check src/MichelsLife/DeveloperDiagnostics.js
           bash -n android/tools/smoke_candidate_apk_install.sh
           python android/tools/native_webview_state_probe.py self-test
           # Validate the release-version generated frontend, not the older raw template.
@@ -146,9 +157,42 @@ jobs:
         with:
           gradle-version: '9.6.0'
 
-      - name: Build debug APK
+      - name: Verify official Android Direct updates with unsafe/missing asset fixtures
         working-directory: android
-        run: gradle --no-daemon :app:assembleDebug
+        run: gradle --no-daemon :app:testDebugUnitTest
+
+      - name: Build debug APK and fully separate Android Developer Twin APK
+        working-directory: android
+        run: gradle --no-daemon :app:assembleDebug :app:assembleDeveloperDebug
+
+      - name: Inspect two isolated app IDs and keep Developer-only audit assets out of public APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEV=android/app/build/outputs/apk/developerDebug/app-developerDebug.apk
+          PUB=android/app/build/outputs/apk/debug/app-debug.apk
+          test -s "$DEV" && test -s "$PUB"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$DEV" > /tmp/mlv-developer-badging.txt
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$PUB" > /tmp/mlv-public-badging.txt
+          grep -q "package: name='com.michelslab.michelslife.developer'" /tmp/mlv-developer-badging.txt
+          grep -q "package: name='com.michelslab.michelslife'" /tmp/mlv-public-badging.txt
+          unzip -Z1 "$DEV" | grep -qx 'assets/app/developer-diagnostics.js'
+          if unzip -Z1 "$PUB" | grep -q 'developer-diagnostics.js'; then
+            echo "::error::Production/debug customer APK must not embed Developer audit JS"; exit 1
+          fi
+          mkdir -p artifacts/android-developer
+          cp "$DEV" artifacts/android-developer/MichelsLife-Android-Developer-CANDIDATE.apk
+          cp /tmp/mlv-developer-badging.txt artifacts/android-developer/package-identity.txt
+          sha256sum artifacts/android-developer/MichelsLife-Android-Developer-CANDIDATE.apk > artifacts/android-developer/developer-candidate.sha256
+          echo "PASS: distinct Developer package; public package free of instrumentation"
+
+      - name: Retain Android Developer candidate separately (internal QA, NOT public release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: MichelsLife-Android-Developer-CANDIDATE
+          path: artifacts/android-developer/
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Prepare optional Play upload keystore
         shell: bash
@@ -300,6 +344,8 @@ jobs:
           name: MichelsLife-Android-TEST-v${{ env.ANDROID_VERSION }}
           path: artifacts/candidate
 
+
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -335,5 +381,64 @@ jobs:
         with:
           name: MichelsLife-Android-InstallSmoke-v${{ env.ANDROID_VERSION }}
           path: artifacts/candidate-install/
+          if-no-files-found: warn
+          retention-days: 30
+
+  installed-developer-smoke:
+    name: Install independent Developer Twin APK and native export on Android 16
+    needs: android
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      ANDROID_VERSION: 0.2.9
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download developer and customer APK artifacts from exact candidate
+        uses: actions/download-artifact@v4
+        with:
+          pattern: MichelsLife-Android-*
+          path: artifacts/qa-download
+          merge-multiple: false
+
+      - name: Place exact candidate artifacts in Android native probe paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/candidate artifacts/developer-candidate
+          cp "artifacts/qa-download/MichelsLife-Android-TEST-v${ANDROID_VERSION}/MichelsLife-Android-TEST-v${ANDROID_VERSION}.apk" artifacts/candidate/
+          cp "artifacts/qa-download/MichelsLife-Android-Developer-CANDIDATE/MichelsLife-Android-Developer-CANDIDATE.apk" artifacts/developer-candidate/
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install pinned CI-only WebView bridge probe
+        run: python3 -m pip install --disable-pip-version-check websocket-client==1.8.0
+
+      - name: Enable Android emulator hardware acceleration
+        shell: bash
+        run: |
+          if [[ -e /dev/kvm ]]; then sudo chmod 666 /dev/kvm; fi
+
+      - name: Install separate user and Developer APKs, verify DEV UI and native Save As
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          avd-name: michels-life-developer-android16
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu swiftshader -feature -Vulkan
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash android/tools/smoke_developer_apk_install.sh
+
+      - name: Preserve actual installed Developer Twin evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MichelsLife-Android-Developer-InstallSmoke-v${{ env.ANDROID_VERSION }}
+          path: artifacts/developer-installed/
           if-no-files-found: warn
           retention-days: 30

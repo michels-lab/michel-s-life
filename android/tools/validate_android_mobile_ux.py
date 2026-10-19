@@ -143,8 +143,14 @@ if missing_native:
 if "__mlvAndroidHandleBack" not in main:
     raise SystemExit("MainActivity does not delegate Android back handling to the web UI")
 
-if 'android:icon="@mipmap/ic_launcher"' not in manifest or 'android:roundIcon="@mipmap/ic_launcher_round"' not in manifest:
-    raise SystemExit("Android manifest is not using the canonical Michel's Life launcher resources")
+# The public package must keep its iconic artwork, while the independent
+# Developer package uses an unmistakable developer-only launcher resource.
+gradle=(ROOT / "app/build.gradle.kts").read_text(encoding="utf-8")
+if ('android:icon="${appIcon}"' not in manifest or
+        'android:roundIcon="${appRoundIcon}"' not in manifest or
+        'manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher"' not in gradle or
+        'manifestPlaceholders["appIcon"] = "@drawable/ic_developer_launcher"' not in gradle):
+    raise SystemExit("Customer/Developer launchers lost their canonical separate identities")
 if 'android:windowSoftInputMode="adjustResize"' not in manifest:
     raise SystemExit("Android mission/Journal sheets must resize above the soft keyboard")
 
@@ -205,3 +211,11 @@ for path in (adaptive_icon, adaptive_round_icon):
         raise SystemExit(f"Adaptive launcher icon is not wired to the canonical foreground/background: {path}")
 
 print("OK: Android UX contract covers phone + wide-emulator app mode, active-surface navigation, stable onboarding/checklists, in-drawer quick actions, hardware rendering, canonical adaptive launcher identity, fixed drawer layering, swipe navigation, mission alignment and back handling")
+
+
+if "mobile-direct-updates.js" not in bundler:
+    raise SystemExit("Android Direct update UI is not bundled into the Android app")
+if "MichelsLifeAndroidUpdates?.mount?.()" not in bridge:
+    raise SystemExit("Android Settings does not mount the official Direct update UI")
+if not (ROOT.parent / "tools/ui_android_direct_update_smoke.mjs").exists():
+    raise SystemExit("Android Direct update touchscreen regression test missing")

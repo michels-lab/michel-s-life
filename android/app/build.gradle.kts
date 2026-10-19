@@ -24,6 +24,13 @@ android {
         targetSdk = 36
         versionCode = 11
         versionName = "0.2.9"
+        manifestPlaceholders["appLabel"] = "Michel's Life"
+        manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher"
+        manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_launcher_round"
+        // Native Android OS backup must not copy WebView auth/session, device IDs or
+        // separate Developer annotations. Michel’s Life owns an explicit
+        // allowlisted, opt-in cloud backup path instead.
+        manifestPlaceholders["appAllowBackup"] = "false"
     }
 
     signingConfigs {
@@ -52,6 +59,19 @@ android {
     }
 
     buildTypes {
+        // Installed independently of the customer app. WebView's data belongs
+        // to com.michelslab.michelslife.developer, never the public package.
+        create("developerDebug") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".developer"
+            versionNameSuffix = "-developer"
+            manifestPlaceholders["appLabel"] = "Michel's Life Developer"
+            manifestPlaceholders["appIcon"] = "@drawable/ic_developer_launcher"
+            manifestPlaceholders["appRoundIcon"] = "@drawable/ic_developer_launcher"
+            // No Google Auto Backup of owner audit notes or Developer credentials.
+            manifestPlaceholders["appAllowBackup"] = "false"
+            isDebuggable = true
+        }
         release {
             isMinifyEnabled = false
             signingConfigs.findByName("playUpload")?.let { signingConfig = it }
@@ -77,4 +97,6 @@ dependencies {
     implementation("androidx.webkit:webkit:1.16.0")
     implementation("com.google.android.gms:play-services-auth:22.0.0")
     implementation("com.squareup.okhttp3:okhttp:5.4.0")
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20240303")
 }

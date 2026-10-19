@@ -100,6 +100,7 @@
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
       document.documentElement.removeAttribute('data-mlv-android-switching');
       updateTopbarTitle();
+      if(id==='settings')window.MichelsLifeAndroidUpdates?.mount?.();
       window.__mlvAndroidLastSwitch={
         tab:id,
         router:routerName,
@@ -682,6 +683,7 @@
     style.id='mlv-android-platform-style';
     style.textContent=`
       [data-mlv202-action="install-online"],[data-mlv202-action="install-local"],[data-mlv202-action="choose-local"]{display:none!important}
+      [data-mlv200-update-action="install-detected"],[data-mlv200-update-action="choose"]{display:none!important}
       html[data-mlv-platform="android"],html[data-mlv-platform="android"] body{min-width:0!important;max-width:100%!important;overflow-x:hidden!important}
       #mlv-android-topbar,#mlv-android-drawer-backdrop{display:none}
       @media(max-width:${MOBILE_BREAKPOINT}px){
