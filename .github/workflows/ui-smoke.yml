@@ -121,6 +121,11 @@ jobs:
           export MLV_UI_URL=http://127.0.0.1:4173
           node tools/ui_supabase_android_sync_smoke.mjs
 
+      - name: Require honest Android Google Calendar provider-unavailable status
+        run: |
+          export MLV_UI_URL=http://127.0.0.1:4173
+          node tools/ui_android_google_calendar_truth_smoke.mjs
+
       - name: Audit Supabase cross-device Windows Android sync
         run: |
           export MLV_UI_URL=http://127.0.0.1:4173
