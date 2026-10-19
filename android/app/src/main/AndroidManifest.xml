@@ -6,6 +6,7 @@
 
     <application
         android:allowBackup="${appAllowBackup}"
+        android:dataExtractionRules="@xml/private_data_extraction_rules"
         android:label="${appLabel}"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
