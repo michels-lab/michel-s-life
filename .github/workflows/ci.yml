@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Windows native packaging smoke is manual until the product is final.
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -56,6 +58,9 @@ jobs:
 
 
   windows-icon-smoke:
+    # Owner 2026-10-19: do not construct native Windows executables,
+    # portable packages or installers during Android-first development.
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
