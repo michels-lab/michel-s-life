@@ -56,7 +56,7 @@ def has_active_notification():
     dump = adb("shell", "dumpsys", "notification", "--noredact")
     # Check the LIVE NotificationRecord, not only the registered channel list.
     return any("NotificationRecord(" in line and "pkg=" + PKG in line
-               and re.search(r"\\bid=" + str(NOTIFICATION_ID) + r"\\b", line)
+               and re.search(r"\bid=" + str(NOTIFICATION_ID) + r"\b", line)
                for line in dump.splitlines())
 
 
