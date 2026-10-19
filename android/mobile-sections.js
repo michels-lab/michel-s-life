@@ -953,9 +953,18 @@
         if(event.key!=='Enter'&&event.key!==' '&&event.key!=='Spacebar')return;
         event.preventDefault();
         if(event.repeat)return;
-        // Click bubbles to the canonical v30135 listener; no cloned data
-        // store, replacement route or separate selection state.
+        // Click uses the ONE canonical v30135 handler; the handler redraws
+        // the month cells, replacing the focused div in the same task.
+        const selectedDate=day.dataset.date;
         day.click();
+        requestAnimationFrame(()=>{
+          enhanceCalendarA11y(main);
+          const selected=[...main.querySelectorAll('#tab-calendar .v30135-day.selected')]
+            .find(el=>el.dataset.date===selectedDate);
+          // Keep the keyboard cursor on the newly-rendered selected day.
+          if(selected&&document.activeElement!==selected)
+            selected.focus({preventScroll:true});
+        });
       });
     });
     const save=main.querySelector('#tab-journal #mlv184JournalSaveState');
