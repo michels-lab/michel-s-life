@@ -53,7 +53,8 @@ required_bridge = [
     "#v30106QuickFab",
     "#v30162FocusDock",
     "#v176StatusPanel{position:relative",
-    "#v176StatusPanel .v176-card:first-child",
+    "v176-card.v30165-rpg-chapter-hero",
+    "setImportantOnce(status,'max-height','none')",
     "setInterval(maintenance,1000)",
     "mlv-android-drawer-hint",
     "data-mlv-platform",
@@ -92,7 +93,7 @@ for section_id in ("tab-contracts", "tab-stats", "tab-achievements", "tab-affirm
         raise SystemExit("Android section visual owner missing: " + section_id)
 for contract in (
     "v216-contract-grid", "v156-ach-grid", "v133-ach-grid",
-    "v30171-settings-nav", "mlvAndroidSectionEnter",
+    "v30171-settings-nav", "No synthetic entrance animation",
     "prefers-reduced-motion:reduce", "max-width:720px",
 ):
     if contract not in mobile_sections:
@@ -101,6 +102,15 @@ if 'html[data-mlv-platform="android"]' not in mobile_sections:
     raise SystemExit("Android visual layout changes must be platform isolated")
 if not (ROOT.parent / "tools/ui_android_section_design_smoke.mjs").exists():
     raise SystemExit("Android rendered mobile section design test is missing")
+if 'html[data-mlv-platform="android"] #main > .tab.active > .card{' in mobile_sections:
+    raise SystemExit("Android reintroduced per-render card animation flicker")
+if not all(needle in mobile_experience for needle in ("function writeText(el,text)", "pendingWeekly")):
+    raise SystemExit("Android timer/layout text mutation protection missing")
+if "pendingGeometry" not in mobile_sections:
+    raise SystemExit("Android structural layout mutation batching missing")
+if 'data-mlv-android-switching="1"] *' in bridge:
+    raise SystemExit("Android navigation may not blanket-disable Chapter scene transitions")
+
 
 
 # Story/Chapters and About must be phone-owned presentations of their
