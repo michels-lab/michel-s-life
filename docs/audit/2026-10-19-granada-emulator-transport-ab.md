@@ -23,3 +23,8 @@ Owner scope: tools/android_emulator_transport_probe.sh, .github/workflows/androi
 Only new diagnostic workflow/script/log; no changes to AndroidBridge, Developer Twin #134 files, Calendar #135 files, source versions, Android signatures, native smoke script, Windows or release process.
 Workflow runs for this diagnostic's paths on PR and can be manually dispatched. Native screenshots and exact-head results remain pending at source-authoring time.
 Read exact head job and uploaded real evidence before deciding a fix. Rerun candidate installed native persistence separately for #138; keep #104 and #139 open until accepted. Physical Galaxy/Google Play/live provider acceptance is not implied.
+
+## First exact-head diagnostic and repaired parser — 2026-10-19
+The first valid CI execution (run 39337246429, head 1514fc26baf3ac13f6a760d9406c48a82477d7e2) successfully syntax-checked the probe, downloaded the **public signed APK** with its matching published SHA-256, enabled KVM and booted the API36 emulator. It exited immediately at baseline sample 1 because the probe assumed a TAB-delimited adb devices -l row. SDK tool output may use one or more spaces. This is a **probe parsing defect**, not proof of emulator failure or app failure.
+Follow-up fix 055ba728... uses an explicit emulator serial/device status regexp with flexible whitespace. Follow-up 944135ab... adds a synthetic self-test for tab-delimited, space-delimited, offline, unauthorized and header-only rows. Follow-up 42de5465... runs that self-test before booting an emulator.
+The exact-head A/B result after the parser repair is still pending. Do NOT count earlier runner success up to boot as an actual baseline/installed framebuffer pass.
