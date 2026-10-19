@@ -4,7 +4,7 @@ Updated: 2026-10-19 (America/Monterrey)
 Owner: Michel's Lab  
 Canonical repository: `michels-lab/michel-s-life`  
 Default branch: `main`  
-**Verified `main` HEAD when this snapshot was captured:** `7fb51d1aa2f7da6da4812f50c18df1f60b200082`. Re-read before modifying or merging; this snapshot is not a branch lock.
+**Verified `main` HEAD when this snapshot was captured:** `b49e0dd431d6c7f99fbfd2dfb5b5366fb0ecb1e2` (PR #136 documentation and PR #137 mocked sync regression already merged). Re-read before modifying or merging; this snapshot is not a branch lock.
 
 Project evidence: `GIT_AUDIT_LOG.md`, `android/ANDROID_AUDIT_LOG.md`, `docs/INFRASTRUCTURE_AUDIT.md`, GitHub PR/issue state and authoritative public Releases. Legacy snapshots are historical, not instructions.
 
@@ -25,9 +25,11 @@ Rule: `.michelslab/GRANADA.md` and master `michels-lab/Michel-Software-Standards
 | --- | --- | --- | --- |
 | [#134](https://github.com/michels-lab/michel-s-life/pull/134) | Android Developer Twin + guided audits, persistent section comments, native-safe export; Android updater, auth/privacy guards | **Draft, not merged.** Touches `android/mobile-experience.js`, `android/android-bridge.js`, native Kotlin/manifest/Gradle, Android build/UI workflows, `android/ANDROID_AUDIT_LOG.md`, `GIT_AUDIT_LOG.md`, `docs/INFRASTRUCTURE_AUDIT.md`, diagnostics and related CI probes. | Exact-head Android UI/Gradle/native install tests and Galaxy/real-account tests; **do not** treat source candidate as released |
 | [#135](https://github.com/michels-lab/michel-s-life/pull/135) | `granada/android-calendar-accessibility-20261019` — accessible Android Calendar date controls and Journal save status | **Draft, not merged.** Files: `android/mobile-sections.js`, `tools/ui_android_section_design_smoke.mjs`, `android/audit/2026-10-19-granada-calendar-a11y.md`. No overlap with #134. | Exact-head Android UI/browser tests, installed Android16 rendering, physical Galaxy TalkBack and keyboard review |
+| [#138](https://github.com/michels-lab/michel-s-life/pull/138) | `granada/native-persistence-progress-digests-20261019` — native debug Android completion history and XP relaunch integrity | **Draft, not merged.** Files: `android/tools/native_webview_state_probe.py`, independent `android/audit/2026-10-19-granada-native-progress-integrity.md`. Source, browser UI, Android UI and Gradle CI passed on its exact head, **installed debug APK native test failed when emulator/ADB died before completion**. | Native candidate installed real screenshots/2 relaunch CDP checks, signed Direct/Galaxy acceptance. Never call native persistent data proved from source pass. |
+| [#140](https://github.com/michels-lab/michel-s-life/pull/140) | `granada/android-emulator-transport-health-20261019` — isolated API36 no-app vs verified public APK A/B | **Draft, not merged.** New independent workflow, standalone bash probe, dated audit. First runner execution failed from probe's strict ADB parser, now fixed + regression self-test; **latest exact-head CI is pending**. | Run actual 8+8 real native screenshots, classify failure phase from saved A/B evidence; do not mask emulator failure. |
 | [#62](https://github.com/michels-lab/michel-s-life/pull/62) | Native Windows Home/About screenshot gate | **Open; deferred** under owner's Windows build pause. | Resume only after explicit owner direction; no installer/MSIX job now |
 
-This documentation refresh lives on `granada/docs-current-release-truth-20261019`, using README/Android README/Play readiness/parity/handoff text only; it must not modify either application work branch or shared logs occupied by #134.
+**Already integrated into main:** documentation PR [#136](https://github.com/michels-lab/michel-s-life/pull/136) at `30461e6`; synthetic cross-device mission/reward/conflict/offline recovery regression PR [#137](https://github.com/michels-lab/michel-s-life/pull/137) at `b49e0dd`. Its exact-head Source, Android UI and browser UI checks all passed. These are **mock-cloud automated tests**, not production Galaxy account proof. Issue [#139](https://github.com/michels-lab/michel-s-life/issues/139) records repeated native CI/emulator/ADB transport loss. This later handoff refresh is docs-only and does not claim either blocked PR was validated.
 
 ## Active user-facing risks / backlog
 
@@ -50,4 +52,4 @@ This documentation refresh lives on `granada/docs-current-release-truth-20261019
 
 ## Re-entry
 
-On the next **GRANADA** turn: first check PR #134 and #135 exact-head CI, whether either was merged, current release and master task claims. If one is still awaiting CI/device/provider acceptance, preserve its scope and select the next independent, documented issue/files. Keep Windows paused until the owner changes that instruction.
+On the next **GRANADA** turn: check exact-head CI and merge status of PRs **#134, #135, #138 and #140**, the published release and master claims. Pay special attention to #140 A/B diagnostic evidence: a parser self-test and boot are not native app pixels; a failed Android16 ADB screenshot is not a success. Keep #134 native/developer-owned sources and #135 Calendar source isolated. Keep #28 live-provider, #104 signed-device integrity and #139 emulator reliability open until real acceptance. Continue on disjoint files if blocked; Windows remains paused.
