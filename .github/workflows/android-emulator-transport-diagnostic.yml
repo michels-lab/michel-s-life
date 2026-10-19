@@ -31,6 +31,7 @@ jobs:
         run: |
           bash -n tools/android_emulator_transport_probe.sh
           test "$(grep -c '^probe_once()' tools/android_emulator_transport_probe.sh)" -eq 1
+          bash tools/android_emulator_transport_probe.sh --self-test
 
       - name: Retrieve official published APK and its independent SHA256 manifest
         shell: bash
