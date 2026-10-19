@@ -1,3 +1,11 @@
+## 2026-10-19 — PR #134 additional Android Developer audit and P0 privacy work, no Windows build
+
+- Extended the separately installed Android Developer Twin with guided up-to-11-screen audit (actual canonical router, restoring screen), native-only memory/uptime/notification status, redacted error history surviving restart, exact anchored owner annotation reports, and an obviously different Developer launcher icon. No shared user sessions, bypass auth or automated exports.
+- Customer and Developer Android disable unsafe OS-level full-app backup/transfer of WebView data; approved allowlisted in-app cloud sync remains available. Native Android Direct update discovery is read-only and explicit, with offline/invalid metadata guards.
+- Fixed Android CI task targeting nonexistent Developer test variant; updated two legacy public-brand validators for launcher placeholders. Android CI/source/UI smoke is gating PR #134; installed native and actual Galaxy/OAuth release acceptance are still independent. Keep PR draft while any required test is red/pending.
+- Shared browser tests already cover account-switch board isolation and cloud snapshot allowlists; live provider issue #108/#55 not closed without real credentials/device acceptance. Owner's pause of all Windows/MSIX/installer jobs remains effective.
+- Release unchanged: unified v3.0.221 / Android Direct 0.2.9; no new signed public or Developer APK published by this feature PR.
+
 ## 2026-10-19 — Android-only update Settings card and audit-safe release handoff
 
 - Android's separate script `mobile-direct-updates.js` is included in Android app assets, mounted into Settings after the actual route switch, uses the native read-only official Direct release checker, and provides user-initiated GitHub release-page link only on trusted checked metadata.
