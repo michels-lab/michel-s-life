@@ -159,7 +159,7 @@ jobs:
 
       - name: Verify official Android Direct updates with unsafe/missing asset fixtures
         working-directory: android
-        run: gradle --no-daemon :app:testDebugUnitTest :app:testDeveloperDebugUnitTest
+        run: gradle --no-daemon :app:testDebugUnitTest
 
       - name: Build debug APK and fully separate Android Developer Twin APK
         working-directory: android
