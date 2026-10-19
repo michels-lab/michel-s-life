@@ -79,7 +79,7 @@ internal object NativeFocusAlarm {
         createChannel(context)
         val isBreak = mode == "break"
         val running = Notification.Builder(context, ACTIVE_CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+            .setSmallIcon(R.drawable.ic_stat_michels_focus)
             .setContentTitle(if (isBreak) "Pomodoro · Break" else "Pomodoro · Focus")
             .setContentText(if (isBreak) "Recovery in progress · tap to open" else "Focus session in progress · tap to open")
             .setSubText("Michel's Life")
@@ -213,7 +213,7 @@ internal object NativeFocusAlarm {
         val open = openPomodoro(context)
         val isBreak = mode == "break"
         val notification = Notification.Builder(context, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
+            .setSmallIcon(R.drawable.ic_stat_michels_focus)
             .setContentTitle(if (isBreak) "Break complete" else "Focus session complete")
             .setContentText(if (isBreak) "Ready for another focus session?" else "Time to take a break.")
             .setContentIntent(open)
