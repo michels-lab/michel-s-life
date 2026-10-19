@@ -143,8 +143,14 @@ if missing_native:
 if "__mlvAndroidHandleBack" not in main:
     raise SystemExit("MainActivity does not delegate Android back handling to the web UI")
 
-if 'android:icon="@mipmap/ic_launcher"' not in manifest or 'android:roundIcon="@mipmap/ic_launcher_round"' not in manifest:
-    raise SystemExit("Android manifest is not using the canonical Michel's Life launcher resources")
+# The public package must keep its iconic artwork, while the independent
+# Developer package uses an unmistakable developer-only launcher resource.
+gradle=(ROOT / "app/build.gradle.kts").read_text(encoding="utf-8")
+if ('android:icon="${appIcon}"' not in manifest or
+        'android:roundIcon="${appRoundIcon}"' not in manifest or
+        'manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher"' not in gradle or
+        'manifestPlaceholders["appIcon"] = "@drawable/ic_developer_launcher"' not in gradle):
+    raise SystemExit("Customer/Developer launchers lost their canonical separate identities")
 if 'android:windowSoftInputMode="adjustResize"' not in manifest:
     raise SystemExit("Android mission/Journal sheets must resize above the soft keyboard")
 
