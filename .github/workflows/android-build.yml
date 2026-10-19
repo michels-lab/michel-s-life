@@ -333,11 +333,7 @@ jobs:
           name: MichelsLife-Android-TEST-v${{ env.ANDROID_VERSION }}
           path: artifacts/candidate
 
-      - name: Download separate Developer APK from SAME workflow run
-        uses: actions/download-artifact@v4
-        with:
-          name: MichelsLife-Android-Developer-CANDIDATE
-          path: artifacts/developer-candidate
+
 
       - uses: actions/setup-python@v5
         with:
@@ -366,17 +362,72 @@ jobs:
           emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu swiftshader -feature -Vulkan
           disable-animations: true
           emulator-boot-timeout: 600
-          script: |
-            bash android/tools/smoke_candidate_apk_install.sh
-            bash android/tools/smoke_developer_apk_install.sh
+          script: bash android/tools/smoke_candidate_apk_install.sh
 
       - name: Retain exact installed APK evidence and Android screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: MichelsLife-Android-InstallSmoke-v${{ env.ANDROID_VERSION }}
-          path: |
-            artifacts/candidate-install/
-            artifacts/developer-installed/
+          path: artifacts/candidate-install/
+          if-no-files-found: warn
+          retention-days: 30
+
+  installed-developer-smoke:
+    name: Install independent Developer Twin APK and native export on Android 16
+    needs: android
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      ANDROID_VERSION: 0.2.9
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download developer and customer APK artifacts from exact candidate
+        uses: actions/download-artifact@v4
+        with:
+          pattern: MichelsLife-Android-*
+          path: artifacts/qa-download
+          merge-multiple: false
+
+      - name: Place exact candidate artifacts in Android native probe paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/candidate artifacts/developer-candidate
+          cp "artifacts/qa-download/MichelsLife-Android-TEST-v${ANDROID_VERSION}/MichelsLife-Android-TEST-v${ANDROID_VERSION}.apk" artifacts/candidate/
+          cp "artifacts/qa-download/MichelsLife-Android-Developer-CANDIDATE/MichelsLife-Android-Developer-CANDIDATE.apk" artifacts/developer-candidate/
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install pinned CI-only WebView bridge probe
+        run: python3 -m pip install --disable-pip-version-check websocket-client==1.8.0
+
+      - name: Enable Android emulator hardware acceleration
+        shell: bash
+        run: |
+          if [[ -e /dev/kvm ]]; then sudo chmod 666 /dev/kvm; fi
+
+      - name: Install separate user and Developer APKs, verify DEV UI and native Save As
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          avd-name: michels-life-developer-android16
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu swiftshader -feature -Vulkan
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash android/tools/smoke_developer_apk_install.sh
+
+      - name: Preserve actual installed Developer Twin evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MichelsLife-Android-Developer-InstallSmoke-v${{ env.ANDROID_VERSION }}
+          path: artifacts/developer-installed/
           if-no-files-found: warn
           retention-days: 30
