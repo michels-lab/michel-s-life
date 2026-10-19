@@ -19,6 +19,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Enforce owner's Windows packaging pause
+        run: python tools/validate_windows_build_pause.py
+
       - name: Materialize host source
         run: python tools/materialize_host_source.py
 
