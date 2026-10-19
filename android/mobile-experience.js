@@ -508,6 +508,29 @@
       html[data-mlv-platform="android"] body.mlv-android-keyboard-editing #mlv-android-mini-focus{
         display:none!important;pointer-events:none!important
       }
+      /* Story's first-launch explanation must not push the actual form
+         beneath the phone viewport. Desktop Story remains unchanged. */
+      @media(max-width:680px){
+        html[data-mlv-platform="android"] #tab-story .v30162-story-empty{
+          min-height:0!important;padding:16px 15px!important
+        }
+        html[data-mlv-platform="android"] #tab-story .v30162-story-empty h2{
+          font-size:clamp(19px,5vw,24px)!important;line-height:1.18!important
+        }
+        html[data-mlv-platform="android"] #tab-story .v30162-story-empty p{
+          font-size:12px!important;line-height:1.35!important;
+          margin-bottom:0!important
+        }
+        html[data-mlv-platform="android"] #tab-story .v30162-story-form{
+          grid-template-columns:minmax(0,1fr)!important;gap:11px!important
+        }
+        html[data-mlv-platform="android"] #tab-story .v30162-story-form input{
+          min-height:48px!important;font-size:16px!important
+        }
+        html[data-mlv-platform="android"] #tab-story .v30162-story-form button[type="submit"]{
+          min-height:52px!important;scroll-margin-bottom:110px
+        }
+      }
       /* Focus is a full mobile workspace, not a desktop popover or a
          Settings subsection. Its content scrolls safely on compact phones. */
       html[data-mlv-platform="android"] #mlv-android-focus-overlay:not([hidden]){
@@ -1175,6 +1198,50 @@
     updateActive();q('#mlv-android-bottom-nav [data-mobile-tab="focus"]')?.focus();
     return true;
   }
+  // Story is rebuilt by the canonical renderer when Android changes tabs.
+  // Keep only the unsaved input draft here; chapters themselves remain owned
+  // by FocusStoryV30162 and the user's canonical data store.
+  const chapterDraftKey='michelsLife.android.chapterDraft.v1';
+  let chapterDraftLoaded=false,chapterDraft=null;
+  function loadChapterDraft(){
+    if(chapterDraftLoaded)return chapterDraft;
+    chapterDraftLoaded=true;
+    try{
+      const saved=JSON.parse(sessionStorage.getItem(chapterDraftKey)||'null');
+      if(saved&&typeof saved==='object')chapterDraft=saved;
+    }catch(_){}
+    return chapterDraft;
+  }
+  function discardChapterDraft(){
+    chapterDraft=null;chapterDraftLoaded=true;
+    try{sessionStorage.removeItem(chapterDraftKey);}catch(_){}
+  }
+  function rememberChapterDraft(form){
+    if(!form||form.id!=='v30162ChapterForm')return;
+    chapterDraft={
+      name:String(form.elements.namedItem('name')?.value||''),
+      motto:String(form.elements.namedItem('motto')?.value||''),
+      start:String(form.elements.namedItem('start')?.value||'')
+    };
+    chapterDraftLoaded=true;
+    try{sessionStorage.setItem(chapterDraftKey,JSON.stringify(chapterDraft));}catch(_){}
+  }
+  function restoreChapterDraft(){
+    const story=q('#tab-story.active');
+    if(!story)return;
+    // Once the canonical renderer shows a real chapter, a draft must never
+    // resurrect as a second chapter or overwrite actual saved information.
+    if(q('.v30162-story-hero',story)){discardChapterDraft();return;}
+    const form=q('#v30162ChapterForm',story);
+    if(!form||form.dataset.mlvAndroidDraftRestored==='1')return;
+    form.dataset.mlvAndroidDraftRestored='1';
+    const draft=loadChapterDraft();
+    if(!draft)return;
+    for(const field of ['name','motto','start']){
+      const input=form.elements.namedItem(field);
+      if(input&&typeof draft[field]==='string')input.value=draft[field];
+    }
+  }
   function boot(){
     if(!ensure())return;
     const oldBack=window.__mlvAndroidHandleBack;
@@ -1194,9 +1261,10 @@
     // Observe insertion only, not style attributes, to avoid reflow loops.
     const missionRoot=q('#main');
     if(missionRoot){
-      const weeklyObserver=new MutationObserver(adaptWeeklyPlanner);
+      const weeklyObserver=new MutationObserver(()=>{adaptWeeklyPlanner();restoreChapterDraft();});
       weeklyObserver.observe(missionRoot,{childList:true,subtree:true});
       adaptWeeklyPlanner();
+      restoreChapterDraft();
       window.addEventListener('resize',adaptWeeklyPlanner,{passive:true});
     }
     const modalHost=q('#modalRoot');
@@ -1211,6 +1279,21 @@
       'input[type="text"],input[type="search"],input[type="email"],'+
       'input[type="password"],input[type="url"],input[type="tel"],input[type="number"]'
     );
+    // Keep unfinished Story form text across Today/Focus/Story rerenders.
+    // A successful chapter creation clears the transient draft only after
+    // the canonical Story screen confirms that an active chapter exists.
+    document.addEventListener('input',event=>{
+      const form=event.target?.closest?.('#v30162ChapterForm');
+      if(form)rememberChapterDraft(form);
+    },true);
+    document.addEventListener('change',event=>{
+      const form=event.target?.closest?.('#v30162ChapterForm');
+      if(form)rememberChapterDraft(form);
+    },true);
+    document.addEventListener('submit',event=>{
+      if(event.target?.id==='v30162ChapterForm')
+        queueMicrotask(()=>{if(window.FocusStoryV30162?.activeChapter?.())discardChapterDraft();});
+    },false);
     document.addEventListener('focusin',event=>{
       if(typingField(event.target))
         document.body.classList.add('mlv-android-keyboard-editing');
