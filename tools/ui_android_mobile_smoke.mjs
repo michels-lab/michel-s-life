@@ -613,8 +613,13 @@ try{
     settingsPhoneGeometry.sync.left>=0&&settingsPhoneGeometry.sync.right<=412&&
     settingsPhoneGeometry.google.left>=0&&settingsPhoneGeometry.google.right<=412,
     'Sync and Google are not immediately reachable on Android: '+JSON.stringify(settingsPhoneGeometry));
-  ok(settingsPhoneGeometry.content&&settingsPhoneGeometry.content.top<420,
-    'Settings content begins below the phone fold: '+JSON.stringify(settingsPhoneGeometry));
+  // Settings may contain the taller canonical app header/hero after a route
+  // transition. Assert useful content is actually on screen and adjacent to
+  // the compact picker rather than enforcing an arbitrary 420px coordinate.
+  ok(settingsPhoneGeometry.content&&settingsPhoneGeometry.picker&&
+    settingsPhoneGeometry.content.top<Math.min(575,settingsPhoneGeometry.viewportHeight*0.62)&&
+    settingsPhoneGeometry.content.top-settingsPhoneGeometry.picker.bottom<28,
+    'Settings content must be visible and immediately follow its mobile category picker: '+JSON.stringify(settingsPhoneGeometry));
   await page.evaluate(()=>window.scrollTo(0,document.scrollingElement.scrollHeight));
   await page.waitForTimeout(250);
   const settingsScroll=await page.evaluate(()=>({
