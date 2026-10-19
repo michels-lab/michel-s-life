@@ -1195,7 +1195,8 @@ try{
     return {
       topbar:rect(top),topbarDisplay:getComputedStyle(top).display,
       sidebar:rect(side),sidebarPosition:getComputedStyle(side).position,
-      main:rect(main),mainMaxWidth:getComputedStyle(main).maxWidth,
+      main:rect(main),chapterStatus:rect(document.getElementById('v176StatusPanel')),
+      mainMaxWidth:getComputedStyle(main).maxWidth,
       desktopTop:oldTop?getComputedStyle(oldTop).display:'',
       onboardingVisible:(()=>{const el=document.getElementById('mlv200Onboarding');return !!(el&&el.getClientRects().length&&getComputedStyle(el).display!=='none')})(),
       overflow:document.documentElement.scrollWidth-window.innerWidth
@@ -1204,7 +1205,11 @@ try{
   ok(wideState.topbarDisplay!=='none','Wide Android emulator fell back to desktop UI: '+JSON.stringify(wideState));
   ok(wideState.desktopTop==='none','Desktop topbar is visible in wide Android emulator: '+JSON.stringify(wideState));
   ok(wideState.sidebarPosition==='fixed'&&wideState.sidebar&&wideState.sidebar.right<=8,'Wide Android drawer is not fixed/off-canvas: '+JSON.stringify(wideState));
-  ok(wideState.main&&wideState.main.top<200,'Wide Android main content starts too low: '+JSON.stringify(wideState));
+  ok(wideState.main&&wideState.chapterStatus &&
+    wideState.chapterStatus.top<100 &&
+    wideState.main.top>=wideState.chapterStatus.bottom-3 &&
+    wideState.main.top<=wideState.chapterStatus.bottom+26,
+    'Wide Android main must follow the real cinematic Chapter without blank space: '+JSON.stringify(wideState));
   ok(wideState.main&&wideState.main.width<=1182,'Wide Android content is not bounded for emulator/landscape: '+JSON.stringify(wideState));
   ok(!wideState.onboardingVisible,'Existing profile onboarding appeared in wide Android emulator: '+JSON.stringify(wideState));
   ok(wideState.overflow<=2,'Wide Android emulator has horizontal overflow: '+JSON.stringify(wideState));
