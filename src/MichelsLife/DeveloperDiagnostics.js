@@ -36,6 +36,18 @@ const locator=e=>{
  return parts.join(' > ')||'body';
 };
 const present=e=>{if(!e)return false;const c=getComputedStyle(e),r=e.getBoundingClientRect();return c.display!=='none'&&c.visibility!=='hidden'&&r.width>0&&r.height>0;};
+const targetSignature=e=>{
+ if(!e)return '';
+ const owner=e.closest('[id], [data-v30171-pane], [data-tab]');
+ const role=(e.getAttribute('role')||'').slice(0,30);
+ const kind=(e.getAttribute('type')||'').slice(0,28);
+ const action=(e.getAttribute('data-action')||e.getAttribute('data-v30171-setting')||
+   e.getAttribute('data-mobile-focus')||e.getAttribute('data-tab')||'').slice(0,60);
+ return [e.tagName.toLowerCase(),role,kind,action,owner?.id||''].join('|');
+};
+const reliableLocator=e=>!!(e?.id||['data-action','data-v30171-setting','data-mobile-focus','data-tab','data-v30171-pane']
+ .some(key=>e?.hasAttribute(key)));
+
 function record(code,event){
  errors.push({code,time:iso(),screen:screen(),type:String(event?.error?.name||event?.reason?.name||'unknown').replace(/[^A-Za-z]/g,'').slice(0,35)});
  if(errors.length>maxErrors)errors.shift();
@@ -119,7 +131,8 @@ function mark(event){
  if(!inspect)return;
  const e=candidate(event.target);if(!e)return;
  event.preventDefault();event.stopImmediatePropagation();
- selected={screen:screen(),selector:locator(e),element:e.tagName.toLowerCase()};
+ selected={screen:screen(),selector:locator(e),element:e.tagName.toLowerCase(),
+  signature:targetSignature(e),locatorConfidence:reliableLocator(e)?'stable':'positional-needs-recheck'};
  consumePointerClick=true;
  stopInspect();panel.hidden=false;
  shadow.getElementById('mlselected').textContent=selected.screen+' → '+selected.selector;
@@ -169,6 +182,13 @@ function audit(){
  for(const n of notes.filter(x=>x.screen===screen())){
   let count=0;try{count=document.querySelectorAll(n.selector).length;}catch(_){}
   if(count!==1)add('ANNOTATION_TARGET_AMBIGUOUS','P2',count===0?'Marked element disappeared':'Marked selector no longer uniquely identifies the element',n.selector);
+  if(count===1){
+   const matched=document.querySelector(n.selector);
+   if(n.locatorConfidence!=='stable')
+     add('ANNOTATION_POSITIONAL_LOCATOR','P2','Owner annotation uses a positional selector; verify it still describes the same element.',n.selector);
+   if(n.signature && targetSignature(matched)!==n.signature)
+     add('ANNOTATION_TARGET_STALE','P1','Marked control changed identity: reselect the intended element before trusting its original location.',n.selector);
+  }
  }
  for(const e of errors)add(e.code,'P1','Captured '+e.type+' event at '+e.time,e.screen);
  for(const e of Array.from(document.querySelectorAll('button,input,select,[role="button"]')).filter(present).slice(0,450)){
