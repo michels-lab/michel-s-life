@@ -22,6 +22,8 @@ on:
       - 'tools/ui_android_section_design_smoke.mjs'
       - 'tools/ui_android_chapter_motion_smoke.mjs'
       - 'tools/ui_android_developer_twin_smoke.mjs'
+      - 'tools/ui_android_direct_update_smoke.mjs'
+      - 'android/mobile-direct-updates.js'
       - 'src/MichelsLife/DeveloperDiagnostics.js'
       - 'tools/ui_android_compact_accessibility_smoke.mjs'
       - 'tools/ui_android_journal_save_smoke.mjs'
@@ -115,6 +117,11 @@ jobs:
         run: |
           export MLV_ANDROID_UI_URL=http://127.0.0.1:4174
           node tools/ui_android_developer_twin_smoke.mjs
+
+      - name: Check real Android Direct update UX (official link, offline, no Windows EXE)
+        run: |
+          export MLV_ANDROID_UI_URL=http://127.0.0.1:4174
+          node tools/ui_android_direct_update_smoke.mjs
 
       - name: Reproduce Story launch trap with REAL Android touch navigation and visible Pomodoro
         run: |
