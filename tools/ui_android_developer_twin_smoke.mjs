@@ -15,7 +15,7 @@ try {
    }));
    window.MichelsLifeAndroid={postMessage(){}};
    window.__developerSavedReports=[];
-   window.MichelsLabDeveloperNative={saveReport:(name,body)=>window.__developerSavedReports.push({name,body})};
+   window.MichelsLabDeveloperNative={saveReport:(name,body)=>window.__developerSavedReports.push({name,body}),runtimeSnapshot:()=>JSON.stringify({developerEdition:true,platform:'android',appVersion:'0.2.9-developer',javaHeapUsedKb:4500,javaHeapMaxKb:128000,notificationPermission:true,uptimeMs:9000})};
  });
  await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
  await page.waitForFunction(()=>!!document.querySelector('#main>.tab.active')&&document.documentElement.dataset.mlvPlatform==='android',null,{timeout:60000});
@@ -74,6 +74,19 @@ try {
  const combined=await page.evaluate(()=>window.MichelsLabDeveloperTwin.report());
  assert(combined.auditCoverage.length>=2,'Moving to Settings discarded the preceding audited route');
  assert(combined.findings.some(f=>f.code==='BROKEN_IMAGE'),'Developer missed injected broken image fixture');
+
+ // Explicit owner-initiated main-screen sweep must check multiple routes,
+ // report any skipped screens and return to the original Settings context.
+ const sweep=await page.evaluate(()=>window.MichelsLabDeveloperTwin.auditAll());
+ assert(sweep.guidedSweep.attempted.length>=5,
+   'Guided audit did not inspect multiple canonical app screens: '+JSON.stringify(sweep.guidedSweep));
+ assert(sweep.guidedSweep.restoredScreen==='tab-settings'&&
+   !!(await page.locator('#tab-settings.active').count()),
+   'Guided audit failed to restore original Settings route');
+ assert(sweep.nativeRuntime.developerEdition===true&&sweep.nativeRuntime.javaHeapUsedKb===4500,
+   'Redacted native memory/permission diagnostics missing');
+ const afterAudit=await page.evaluate(()=>window.MichelsLabDeveloperTwin.notes());
+ assert(afterAudit[0].comment===comment,'Guided audit lost or modified owner annotation text');
 
  await panel.getByRole('button',{name:'Export JSON'}).click();
  await panel.getByRole('button',{name:'Export AI prompt'}).click();
