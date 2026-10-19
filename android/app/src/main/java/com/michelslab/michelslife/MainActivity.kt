@@ -100,6 +100,12 @@ class MainActivity : Activity() {
         webView.webViewClient = object : WebViewClientCompat() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
+                // Never inject owner diagnostics, or invoke native app actions,
+                // into anything but our exact shipped Android asset origin.
+                val loaded = Uri.parse(url ?: "")
+                if (loaded.scheme != "https" ||
+                    loaded.host != WebViewAssetLoader.DEFAULT_DOMAIN ||
+                    loaded.path != "/assets/app/index.html") return
                 openPomodoroFromNotification()
                 // Source-set-only asset: the public APK cannot load this UI.
                 if (isDeveloperEdition) {
@@ -118,13 +124,21 @@ class MainActivity : Activity() {
 
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 val uri = request.url
-                if (uri.host == WebViewAssetLoader.DEFAULT_DOMAIN) return false
-                return try {
-                    startActivity(Intent(Intent.ACTION_VIEW, uri))
-                    true
+                // Only local packaged HTML/assets may stay inside WebView.
+                // All external URLs are handed to Android (or blocked), never
+                // navigated inside a privileged JS-interface WebView.
+                if (uri.scheme == "https" &&
+                    uri.host == WebViewAssetLoader.DEFAULT_DOMAIN &&
+                    uri.path?.startsWith("/assets/app/") == true) return false
+                try {
+                    if (uri.scheme == "https" || uri.scheme == "http" ||
+                        uri.scheme == "mailto" || uri.scheme == "tel") {
+                        startActivity(Intent(Intent.ACTION_VIEW, uri))
+                    }
                 } catch (_: Exception) {
-                    false
+                    android.util.Log.w("MichelLifeNavigation", "External link could not be opened")
                 }
+                return true
             }
         }
 
