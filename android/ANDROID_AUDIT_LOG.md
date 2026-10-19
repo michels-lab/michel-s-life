@@ -1,3 +1,11 @@
+## 2026-10-19 — Big-block CI follow-up: exposed Story submit occlusion; split native Developer validation
+
+- Exact-head Android browser QA initially passed the Developer Twin's real screen/selector annotation, pointer/touch non-activation, note persistence, multi-route audit, real Settings navigation, native-export bridge payload and verbatim JSON/AI prompt. A separate *existing* Story regression then failed: the Start chapter submit button sat at approximately y=915 under the fixed bottom bar beginning at y=842 after filling fields and returning to Story.
+- **Structural Android-only fix:** add form-bottom space and a keyboard-sensitive sticky submit clearance. Keep canonical Chapter art/motion, all Windows layout and persistent chapter state unchanged. Same regression subsequently advanced past Story form submission to onboarding/other sections (not a physical Galaxy proof).
+- First attempt of installed Android 16 candidate lost the host emulator/ADB before initial screenshot; distinguish CI infrastructure dropout from product UI logic. Subsequent isolated native jobs remain pending, not counted as success.
+- Two **independent** Android 16 installed jobs now run after building same-source candidates: normal public-shaped debug APK native onboarding/persistence, and distinct `com.michelslab.michelslife.developer` installed beside the user-shaped APK with developer WebView UI/Save As document picker checks. This avoids masking the Developer audit whenever the long normal native smoke job is interrupted.
+- Developer candidate is debug-only internal test. **No signed developer distribution, no real Google OAuth provider validation, no Galaxy acceptance, no official release**. Windows jobs remain skipped per owner.
+
 ## 2026-10-19 — Android-first BIG BLOCK: Developer Twin implementation + high-priority regression backlog
 
 **Owner scope:** Execute a large block of outstanding Android work; desktop Windows/MSIX remain paused. No new official release authorized. Do not equate an Actions artifact, source branch or passing DOM test with a signed installed/public APK.
