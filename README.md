@@ -4,26 +4,28 @@ Michel's Life is an RPG-inspired productivity and life-management application fo
 
 ## Current development and release lines
 
-- **Latest public unified release: Windows v3.0.218 + Android Direct v0.2.6 (versionCode 8).** Published 2026-10-12 on the official unified release page: https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.218. Includes installed-smoke Windows Setup/Portable, checksums, and permanently signed `MichelsLife-Android-Direct-v0.2.6.apk`. This is a published binary, not proof of real Galaxy persistence or live two-device sync.
-- **Previous unified release:** Windows v3.0.217 + Android Direct v0.2.5 (versionCode 7), https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.217. Earlier v3.0.216 and v3.0.215 remain historical releases.
-- **Android distribution:** Direct v0.2.6 has a permanent certificate, verified package/version and SHA-256. It is **not** a Google Play publication. The old v0.2.2 TEST APK used a different debug signing certificate: back up data before switching certificate channels or uninstalling. Do not assume a real-device in-place upgrade or synchronized recovery passed solely from CI.
+- **Latest public unified release: Windows v3.0.221 + Android Direct v0.2.9 (versionCode 11).** Published 2026-10-19 on the official unified release page: https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.221. GitHub verified 13 public assets including Windows Setup/Portable, SHA-256 sidecars, source provenance, and the permanently signed `MichelsLife-Android-Direct-v0.2.9.apk`. A published binary is **not** physical-Galaxy or live-account acceptance.
+- **Previous unified releases:** Windows v3.0.220 + Android Direct v0.2.8, https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.220; Windows v3.0.219 + Android Direct v0.2.7, https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.219. Older releases remain historical, not the current installer.
+- **Android distribution:** Direct v0.2.9 is the publicly released, separately signed sideload APK; it is **not** a Google Play publication. The old v0.2.2 TEST APK used a different debug signing certificate: back up data before changing signing channels or uninstalling. Never infer data retention or same-account sync solely from CI.
+- **Development priority (2026-10-19):** Android remains active. Owner paused Windows/Desktop implementation and all automatic Windows installer, Store/MSIX, and Desktop Developer Edition builds until a final Windows version. The existing Windows v3.0.221 binary stays publicly available; source/browser-only parity checks are permitted.
+- **GRANADA:** while any PR/issue is incomplete or in parallel, work on a separate non-overlapping block with its own validation and handoff. See `.michelslab/GRANADA.md`, `docs/CURRENT_HANDOFF.md` and the current open PRs rather than treating a queued change as published.
 - Google Play and Microsoft Store distribution have separate provider, signing and validation states; a generated APK/AAB/MSIX does not mean provider publication.
 
 ## Product
 
 Michel's Life manages missions, recurring tasks, Premium Contracts, Current Chapter, goals, Journal, achievements, statistics, focus and productivity, themes, English/Spanish interface, and local import/export backups.
 
-The Windows v3.0.216-and-later line includes a native Windows tray, Quick Capture, Start with Windows, a global Command Palette, Sync Center, update detection and a shared Supabase sync client for Windows and Android. Google Calendar remains independent; Google Drive serves as a temporary migration/recovery fallback. Real same-account two-device sync/conflict/restore testing is still pending; Android v0.2.6 has a separate open onboarding/persistence drift investigation (#104).
+The Windows v3.0.216-and-later line includes a native Windows tray, Quick Capture, Start with Windows, a global Command Palette, Sync Center, update detection and a shared Supabase sync client for Windows and Android. Google Calendar remains independent; Google Drive serves as a temporary migration/recovery fallback. Real same-account two-device sync/conflict/restore testing is still pending; Android issue #104 remains open for signed persistence/device evidence, even when browser/emulator regression suites pass.
 
 ## Code, releases and validation
 
 - Source: `michels-lab/michel-s-life`.
-- **One customer-facing release for both platforms:** https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.218. Windows v3.0.218 and Android v0.2.6 have independent version numbers and live on the **same page**. All future Michel's Lab multi-platform product releases must preserve this structure.
+- **One customer-facing release for both platforms:** https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.221. Windows v3.0.221 and Android Direct v0.2.9 have independent version numbers and live on the **same page**. Further Windows releases remain paused; new release publication requires explicit authorization.
 - Canonical public binaries and AppBundle bootstrap: `michels-lab/michel-s-life-releases`.
 - Recommended Windows installer: `MichelsLife-Setup-vX.Y.Z.exe`. Optional portable binary: `MichelsLife-Portable-vX.Y.Z.exe`; transitional older updater aliases are documented in `docs/RELEASE_CHANNEL.md`.
 - Canonical frontend: `src/MichelsLife/frontend/`. CI reconstructs the visual bundle using previously published bootstrap assets and overlays the source-controlled frontend and official branding.
 
-Local smoke/validation entry points: `python tools/release_smoke_test.py`, `python tools/store_smoke_test.py` and platform-specific Android validators. GitHub Actions performs source, browser-render/UI, Android APK/AAB and Windows build/installer checks on the relevant branch.
+Local smoke/validation entry points: `python tools/release_smoke_test.py`, `python tools/store_smoke_test.py` and platform-specific Android validators. GitHub Actions performs source, browser-render/UI and Android APK/AAB checks on the relevant branch. Automatic Windows installer/Store/MSIX packaging is paused by owner instruction.
 
 ## Identity / About
 
