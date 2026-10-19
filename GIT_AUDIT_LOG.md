@@ -1,3 +1,11 @@
+## 2026-10-19 — Major Android backlog consolidation: Developer Twin + update truthfulness
+
+- Continued Android-only PR #134: improved native developer-only overlay touch cancellation and report/data boundaries; separate debuggable `.developer` APK and native Save As; real Settings/Sync login route (OAuth still requires provider validation).
+- Fixed the earlier false Android Direct "no update" status by adding official release metadata discovery, fail-closed checksum/name/origin/stable-tag validation and Kotlin unit tests. Real installation remains manual and unsigned/debug distributions are not offered as stable.
+- Hardened Android WebView external navigation so untrusted pages cannot become privileged WebView destinations. Added CI source contract for Calendar truthful unsupported behavior and native updater safety.
+- Reviewed P0 #55 and #108: source already enforces cloud storage allowlist and account ownership; expanded cloud backup/restore regression to protect Developer annotation storage; live account/provider proof still pending.
+- Optimized Android PR workflow concurrency to drop stale PR builds. Microsoft Store/MSIX/Windows installers and Windows native smoke remain paused, with unchanged public Windows v3.0.221. No new release published.
+
 ## 2026-10-19 — Michel's Life Android Developer Twin + QA big block (no Windows builds)
 
 - Main Michel's Lab Developer Twin standard and issue #131: per-screen user annotations and true user-account flow apply eventually on both platforms. Owner paused Windows Developer work; Android feature PR #134 is Android-only.
