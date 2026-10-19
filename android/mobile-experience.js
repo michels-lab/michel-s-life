@@ -1238,8 +1238,15 @@
     q('#mlv-android-focus-time',root).textContent=left;
     q('#mlv-android-focus-phase',root).textContent=mode.toUpperCase();
     q('#mlv-android-focus-status',root).textContent=
-      (f.status==='running'?'Session in progress':f.status==='paused'?'Session paused':'Ready to begin')+
-      ' · '+(f.mode==='break'?'Recovery break':'Work session');
+      f.status==='running'?'Session in progress':f.status==='paused'?'Session paused':'Ready to begin';
+    q('#mlv-focus-session-meta',root).textContent=
+      (f.mode==='break'?'BREAK':'WORK SESSION')+' · '+(f.mode==='break'?f.breakMin:f.workMin)+' MIN';
+    q('#mlv-focus-session-state',root).textContent=
+      f.status==='running'?'IN PROGRESS':f.status==='paused'?'PAUSED':'READY';
+    q('#mlv-focus-end-time',root).textContent=f.status==='running'?
+      'Ends at '+new Date(Number(f.deadlineAt)).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):
+      f.status==='paused'?'Time saved. Resume when you are ready.':
+      'Choose a duration, then begin.';
     q('[data-mobile-focus="toggle"]',root).textContent=
       f.status==='running'?'Pause session':f.status==='paused'?'Resume session':'Start focusing';
     root.querySelectorAll('[data-mobile-preset]').forEach(b=>
@@ -1268,8 +1275,10 @@
       try{
         const state=JSON.parse(native.focusNotificationStatus());
         q('.mlv-android-focus-system-note',root).textContent=state.notificationsGranted?
-          'Android reminders are on. Battery saving may delay a completion alert.':
-          'Allow Michel’s Life notifications for reminders with the screen locked. Android may delay delivery.';
+          'Countdown available in notifications and on the lock screen. Battery saving may delay completion alerts.':
+          'Allow Michel’s Life notifications to show the countdown with the screen locked.';
+        const enable=q('#mlv-focus-enable-notifications',root);
+        if(enable)enable.hidden=!!state.notificationsGranted;
       }catch(_){}
     }
   }
