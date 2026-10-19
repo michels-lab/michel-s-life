@@ -25,6 +25,7 @@ android {
         versionCode = 11
         versionName = "0.2.9"
         manifestPlaceholders["appLabel"] = "Michel's Life"
+        manifestPlaceholders["appAllowBackup"] = "true"
     }
 
     signingConfigs {
@@ -60,6 +61,8 @@ android {
             applicationIdSuffix = ".developer"
             versionNameSuffix = "-developer"
             manifestPlaceholders["appLabel"] = "Michel's Life Developer"
+            // No Google Auto Backup of owner audit notes or Developer credentials.
+            manifestPlaceholders["appAllowBackup"] = "false"
             isDebuggable = true
         }
         release {
