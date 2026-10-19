@@ -15,4 +15,9 @@ for name in ("build-store-msix.yml", "release-windows.yml"):
         raise SystemExit(f"Windows workflow {name} must remain manually reactivatable")
 if "  workflow_call:" not in (ROOT / ".github/workflows/release-windows.yml").read_text(encoding="utf-8"):
     raise SystemExit("Existing opt-in unified release workflow integration missing")
+ci = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+header = ci.split("  windows-icon-smoke:", 1)[1].split("    runs-on:", 1)[0]
+if "if: ${{ github.event_name == 'workflow_dispatch' }}" not in header:
+    raise SystemExit("Windows native installer smoke must only run by explicit manual dispatch")
+
 print("PASS: paused Windows/MSIX workflows cannot run on source pushes or PRs")
