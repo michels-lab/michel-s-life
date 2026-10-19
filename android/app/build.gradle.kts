@@ -25,7 +25,10 @@ android {
         versionCode = 11
         versionName = "0.2.9"
         manifestPlaceholders["appLabel"] = "Michel's Life"
-        manifestPlaceholders["appAllowBackup"] = "true"
+        // Native Android OS backup must not copy WebView auth/session, device IDs or
+        // separate Developer annotations. Michel’s Life owns an explicit
+        // allowlisted, opt-in cloud backup path instead.
+        manifestPlaceholders["appAllowBackup"] = "false"
     }
 
     signingConfigs {
