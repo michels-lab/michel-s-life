@@ -175,7 +175,7 @@ try{
   ok(aboutBrand.labSrc==='assets/michels_lab_lockup.png'&&aboutBrand.labWidth>100,'About parent brand is not using the canonical Michel’s Lab lockup: '+JSON.stringify(aboutBrand));
   ok(aboutBrand.socialCount===5&&aboutBrand.socialIcons===5,'About socials must expose five visible icon+name links: '+JSON.stringify(aboutBrand));
   ok(JSON.stringify(aboutBrand.socialNames)===JSON.stringify(['Instagram','Facebook','LinkedIn','GitHub','Email']),'About social order/names drifted: '+JSON.stringify(aboutBrand.socialNames));
-  ok(aboutBrand.version==='v3.0.220','About does not show the current build version: '+JSON.stringify(aboutBrand));
+  ok(aboutBrand.version==='v3.0.221','About does not show the current build version: '+JSON.stringify(aboutBrand));
   await page.screenshot({path:`${out}/03-about.png`,fullPage:true});
 
   await page.evaluate(()=>{
