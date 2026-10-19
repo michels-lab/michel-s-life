@@ -145,15 +145,26 @@ try{
   const clockStatus=await page.evaluate(()=>{
     const r=el=>{const x=el?.getBoundingClientRect();return x?{top:x.top,bottom:x.bottom,height:x.height,width:x.width}:null;};
     const panel=document.getElementById('v176StatusPanel');
+    const summary=panel?.querySelector('#mlv-android-time-summary');
+    const chapter=panel?.querySelector(':scope>.v30165-rpg-chapter-hero');
     const date=document.getElementById('mlv-android-clock-date');
     const clock=panel?.querySelector('#mlv-android-clock-time');
-    return {panel:r(panel),date:r(date),time:r(clock),dateText:date?.textContent?.trim()||'',
+    return {panel:r(panel),summary:r(summary),chapter:r(chapter),date:r(date),time:r(clock),
+      chapterDisplay:chapter?getComputedStyle(chapter).display:'',
+      chapterVisibility:chapter?getComputedStyle(chapter).visibility:'',
+      dateText:date?.textContent?.trim()||'',
       clockFont:clock?getComputedStyle(clock).fontSize:null};
   });
-  ok(clockStatus.panel&&clockStatus.panel.height<=90&&clockStatus.date&&clockStatus.dateText.length>=6 &&
-    clockStatus.date.top>=clockStatus.panel.top-2 &&
-    clockStatus.date.bottom<=clockStatus.panel.bottom+3,
-    'Android clock panel clips or omits its local date: '+JSON.stringify(clockStatus));
+  ok(clockStatus.panel&&clockStatus.summary&&clockStatus.summary.height<=90 &&
+    clockStatus.date&&clockStatus.dateText.length>=6 &&
+    clockStatus.date.top>=clockStatus.summary.top-2 &&
+    clockStatus.date.bottom<=clockStatus.summary.bottom+3,
+    'Android local clock must stay compact above Chapter, without clipping date: '+JSON.stringify(clockStatus));
+  ok(clockStatus.chapter&&clockStatus.chapter.height>=220 &&
+    clockStatus.chapterDisplay!=='none'&&clockStatus.chapterVisibility==='visible' &&
+    clockStatus.chapter.top>=clockStatus.summary.bottom-2 &&
+    clockStatus.chapter.bottom<=clockStatus.panel.bottom+3,
+    'Current Chapter hero was hidden or cropped by Android status geometry: '+JSON.stringify(clockStatus));
   const verticalStart=await page.evaluate(()=>{
     window.__mlvTouchPreventTrace=[];
     if(!window.__mlvPreventDefaultTracing){
