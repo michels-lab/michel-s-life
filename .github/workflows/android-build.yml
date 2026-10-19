@@ -104,6 +104,7 @@ jobs:
           node --check android/mobile-sections.js
           python android/tools/validate_android_mobile_ux.py
           python android/tools/validate_developer_twin.py
+          python android/tools/validate_provider_integrity.py
           node --check src/MichelsLife/DeveloperDiagnostics.js
           bash -n android/tools/smoke_candidate_apk_install.sh
           python android/tools/native_webview_state_probe.py self-test
