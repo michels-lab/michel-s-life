@@ -4,10 +4,8 @@
 # official public release APK. Never read or reset an owner's app data.
 set -Eeuo pipefail
 
-# The hosted Android SDK has printed both tab- and space-delimited
-# adb devices -l rows. Reject offline/unauthorized rows, not valid devices.
-if [[ "${1:-}" == "--self-test" ]]; then
-  for row in "${MLV_HEALTH_OUT:-artifacts/emulator-health}"
+# Device-state parser accepts tabs or spaces, rejecting offline records.
+OUT="${MLV_HEALTH_OUT:-artifacts/emulator-health}"
 APK="${MLV_HEALTH_APK:-artifacts/emulator-health-release/MichelsLife-Android-Direct-v0.2.9.apk}"
 PACKAGE="com.michelslab.michelslife"
 mkdir -p "$OUT"
