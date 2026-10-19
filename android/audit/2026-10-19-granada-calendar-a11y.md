@@ -37,3 +37,14 @@ The canonical Calendar's `calendarGrid()` in `src/MichelsLife/frontend/index.htm
 If exact-head UI CI fails: inspect the new Calendar keyboard assertions and their saved date at 360/412 without touching PR #134; reproduce on the browser fixture from `android/tools/prepare_bundle.py`, repair only the current scope, rerun CI. If it passes, this block may be integrated without declaring physical TalkBack acceptance. Track hardware test separately and continue GRANADA on another non-overlapping block.
 
 Handoff identity: `granada-michels-life-android-calendar-a11y-20261019`. Evidence status: `implemented_unverified`. Owner: isolated Android QA; role: application-maintainer. 
+
+## 2026-10-19 — CI first-pass failure and targeted correction
+
+The **first** exact-PR-head GitHub Actions run at `65ca2931fa90149b86512ee11c7b45402d854801` is **not green**. Source validation and general UI smoke passed, Windows-native icon job correctly skipped. Two failures must be kept separate:
+
+1. Android UI smoke `39331900240`, `tools/ui_android_section_design_smoke.mjs:329`: timed out waiting for the new Enter-driven Calendar date-selection and `aria-pressed` contract. **This is a functional/accessibility CI gate failure**, not a passed test. No Android UX completion claim is allowed.
+2. Native Android16 installed APK smoke `39331900267`: TEST APK built, installed and launched successfully, then hosted emulator repeatedly failed screenshot capture and lost ADB `emulator-5554`, ending `Missing real native Android pixels after five screenshot attempts`. This is a **CI device/infrastructure interruption**; it does not prove an app layout defect or successful native acceptance.
+
+In isolated scope we updated the Calendar enhancement to reapply semantics and restore keyboard focus to the newly-rendered selected cell after the canonical source redraw. Source commit `7b7aab69889604e057cfff4a1ff139e1b2741b73`. New same-SHA Android UI, build, install and general smoke checks were running on the subsequent query. **Do not merge until the actual updated run is green or a specific failing assertion is diagnosed and repaired.** Do not modify PR #134 Android native scripts to hide flaky ADB; keep native acceptance pending if the emulator fails again.
+
+Re-entry: obtain the new `android-ui-smoke` log, inspect whether selection, persisted `v30135CalendarSelected` or `aria-pressed` is missing, isolate the exact unmet contract, fix only this PR's accessible Calendar adapter/test. Report native Android16 evidence separately from browser tests, and then physical Galaxy/TalkBack separately.
