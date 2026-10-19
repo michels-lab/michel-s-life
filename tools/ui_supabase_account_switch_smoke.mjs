@@ -237,6 +237,63 @@ try{
     remote.get(ids.a).snapshot.localStorage?.['michelsLife.journal.v30184']===JOURNAL.a,
     'Cross-account round trip unexpectedly touched A cloud');
 
+  // Explicit Accept is a separate, intentional destructive authority change:
+  // A's old master must be recoverable from both the local per-account vault
+  // and the versioned cloud history before guest data replaces that master.
+  const bCloudBeforeImport=JSON.stringify(remote.get(ids.b));
+  await logout();
+  await login('a@example.test');
+  const aBeforeImport=await local();
+  ok(aBeforeImport.missionIds.includes(A_MISSION)&&
+    aBeforeImport.guestVault?.snapshot?.state?.xp===314,
+    'A and guest recovery snapshots are not ready for consented import');
+  const aRemoteBeforeImport=structuredClone(remote.get(ids.a));
+  const aHistoryCount=history.filter(h=>h.user_id===ids.a).length;
+  await page.evaluate(()=>{
+    state.activeTab='settings';renderAll();
+    window.LeftNavV30171.buildSettings();
+    window.LeftNavV30171.activateSetting('sync');
+  });
+  const approved=page.locator('[data-mlv216-supa="import-guest"]');
+  await approved.waitFor({state:'visible',timeout:10000});
+  const importedReload=page.waitForEvent('load',{timeout:30000});
+  let approvedDestination='';
+  page.once('dialog',async dialog=>{
+    approvedDestination=dialog.message();
+    await dialog.accept();
+  });
+  await approved.click();
+  await importedReload;
+  await ready();
+  const aAfterImport=await local();
+  const cloudAfterImport=remote.get(ids.a);
+  const aNewHistory=history.filter(h=>h.user_id===ids.a).slice(aHistoryCount);
+  ok(approvedDestination.includes('a@example.test')&&
+    approvedDestination.toLowerCase().includes('import'),
+    'Consented import did not disclose the destination account');
+  ok(aAfterImport.xp===314&&aAfterImport.stored===314&&
+    aAfterImport.missionIds.includes(GUEST_MISSION)&&
+    !aAfterImport.missionIds.includes(A_MISSION)&&
+    aAfterImport.journal===JOURNAL.guest,
+    'Explicit guest import did not actually apply the guest mission/Journal');
+  ok(cloudAfterImport.revision>aRemoteBeforeImport.revision&&
+    cloudAfterImport.snapshot.state.xp===314&&
+    cloudAfterImport.snapshot.state.missions.some(m=>m.id===GUEST_MISSION)&&
+    cloudAfterImport.snapshot.localStorage?.['michelsLife.journal.v30184']===JOURNAL.guest,
+    'Explicit guest import did not publish only after owner consent');
+  ok(aNewHistory.some(h=>
+    h.reason==='before_explicit_guest_import'&&
+    h.snapshot?.state?.xp===777&&
+    h.snapshot?.state?.missions?.some(m=>m.id===A_MISSION)&&
+    h.snapshot?.localStorage?.['michelsLife.journal.v30184']===JOURNAL.a),
+    'Consented import replaced A cloud without preserving A previous private master');
+  ok(!aAfterImport.guestVault&&
+    aAfterImport.vaultA?.snapshot?.state?.missions?.some(m=>m.id===A_MISSION)&&
+    aAfterImport.vaultA?.snapshot?.localStorage?.['michelsLife.journal.v30184']===JOURNAL.a,
+    'Consented guest import discarded the prior A account local backup');
+  ok(JSON.stringify(remote.get(ids.b))===bCloudBeforeImport,
+    'Importing local guest content into A changed B remote account');
+
   console.log('OK: '+(android?'Android':'Windows')+
-    ' mode: A/B/C account isolation preserves missions, journals, reversible vaults, no guest import after Cancel, and remote revisions');
+    ' mode: A/B/C account isolation preserves missions, journals, reversible vaults, guest import Cancel/Accept with history, and remote revisions');
 }finally{await context.close();await browser.close();}
