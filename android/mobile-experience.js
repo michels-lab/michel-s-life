@@ -531,16 +531,23 @@
         html[data-mlv-platform="android"] #tab-story .v30162-story-form input{
           min-height:48px!important;font-size:16px!important
         }
-        html[data-mlv-platform="android"] #tab-story .v30162-story-form button[type="submit"]{
+        html[data-mlv-platform="android"] #tab-story.active .v30162-story-form button[type="submit"]{
+          /* A sticky CTA remains below the native nav after real drawer/IME
+             navigation because its containing grid limits sticky movement.
+             Anchor the ONE canonical submit control to the viewport instead
+             of cloning an action or relying on scrollIntoView heuristics. */
           min-height:52px!important;
-          position:sticky!important;
-          bottom:calc(93px + env(safe-area-inset-bottom,0px))!important;
-          z-index:5!important;
+          position:fixed!important;
+          bottom:calc(90px + env(safe-area-inset-bottom,0px))!important;
+          left:16px!important;right:16px!important;
+          width:calc(100vw - 32px)!important;max-width:calc(100vw - 32px)!important;
+          box-sizing:border-box!important;
+          z-index:2147482970!important;
           scroll-margin-bottom:130px!important;
-          touch-action:manipulation
+          touch-action:manipulation!important
         }
         html[data-mlv-platform="android"] body.mlv-android-keyboard-editing
-        #tab-story .v30162-story-form button[type="submit"]{
+        #tab-story.active .v30162-story-form button[type="submit"]{
           bottom:12px!important
         }
       }
