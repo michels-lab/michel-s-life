@@ -79,8 +79,14 @@ function beginInspect(){
 }
 function blockInspectionTouch(event){if(inspect&&!host.contains(event.target)){event.preventDefault();event.stopImmediatePropagation();}}
 function blockInspectionClick(event){
+ // The floating DEV/TAP control must remain tappable so inspection can be
+ // canceled on a phone without a hardware Escape key.
+ if(host?.contains(event.target))return;
  if(inspect||consumePointerClick){
-  event.preventDefault();event.stopImmediatePropagation();consumePointerClick=false;
+  const completed=consumePointerClick;
+  event.preventDefault();event.stopImmediatePropagation();
+  consumePointerClick=false;
+  if(completed)document.removeEventListener('click',blockInspectionClick,true);
  }
 }
 function inspectKeyboard(event){if(inspect&&event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();stopInspect();panel.hidden=false;}}
