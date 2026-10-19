@@ -21,6 +21,7 @@
   const action=document.createElement('button');action.type='button';action.textContent='Check Android updates';action.style.cssText='min-height:48px;min-width:0;border-radius:12px;padding:10px 14px;background:rgba(var(--ui-accent-rgb,117,228,255),.18);color:inherit;border:1px solid currentColor;touch-action:manipulation';
   const status=document.createElement('p');status.setAttribute('role','status');status.setAttribute('aria-live','polite');status.textContent='Not checked on this device yet.';status.style.cssText='margin:0;font-size:12px;line-height:1.5;white-space:pre-wrap';
   const link=document.createElement('a');link.textContent='Open official release page';link.target='_blank';link.rel='noopener noreferrer';link.hidden=true;link.style.cssText='display:inline-flex;align-items:center;min-height:48px;padding:9px 12px;border:1px solid rgba(var(--ui-accent-rgb,117,228,255),.5);border-radius:12px;color:inherit;text-decoration:underline';
+  link.style.display='none';
   el.append(action,status,link);parent.appendChild(el);
   action.addEventListener('click',()=>check(action,status,link));
  }
@@ -31,7 +32,7 @@
      status.textContent='Android update service is unavailable on this build.';return;
    }
    busy=true;button.disabled=true;button.textContent='Checking official release…';
-   link.hidden=true;link.removeAttribute('href');
+   link.hidden=true;link.style.display='none';link.removeAttribute('href');
    const id='android-direct-update-'+(++count)+'-'+Date.now();
    const reset=()=>{
      busy=false;button.disabled=false;button.textContent='Check Android updates';
@@ -47,7 +48,7 @@
      status.textContent=String(result.status||'No verified update result was returned.').slice(0,350);
      if(result.checkedOfficialRelease===true&&validUrl(result.releasePage)){
        link.href=result.releasePage;
-       link.hidden=false;
+       link.hidden=false;link.style.display='inline-flex';
        link.textContent=result.updateAvailable===true?'Review newer official Android release':'View current official Android release';
      }
    };
