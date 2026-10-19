@@ -1,6 +1,6 @@
 # Michel's Life — Google Play readiness
 
-Last reviewed: 2026-10-12
+Last reviewed: 2026-10-19 (Granada documentation-only source/release reconciliation)
 
 This file is the release checklist for the Android/Google Play build. It complements `ANDROID_AUDIT_LOG.md`; the audit log records what happened, while this file records what Play Console still requires.
 
@@ -8,8 +8,8 @@ This file is the release checklist for the Android/Google Play build. It complem
 
 - App name: **Michel's Life**
 - Package: `com.michelslab.michelslife`
-- Android version: `0.2.5`
-- `versionCode`: `7`
+- Android **source** version: `0.2.9` (not evidence of Play publication)
+- `versionCode`: `11`
 - `compileSdk`: `36`
 - `targetSdk`: `36`
 - `minSdk`: `26`
@@ -23,7 +23,7 @@ Official reference:
 
 ## Current distribution status
 
-The official combined customer release is Windows v3.0.217 + Android Direct v0.2.5 at https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.217. The Direct APK's stable certificate and the Google Play upload/app-signing identities are distinct. No Play Store publication is established by the GitHub release. Physical Galaxy one-finger scrolling, timer notification delivery after backgrounding/reboot, backup/restore and Windows ↔ Galaxy sync are pending independent acceptance tests.
+The official combined customer GitHub release is Windows v3.0.221 + Android Direct v0.2.9 at https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.221 (published 2026-10-19; 13 public assets). Android Direct's certificate and Google Play upload/app-signing identities are distinct. No Play Store publication is established by the GitHub release. Physical Galaxy one-finger scrolling, timer notification delivery after backgrounding/reboot, backup/restore and Windows ↔ Galaxy sync are pending independent acceptance tests.
 
 ## Signing / Play App Signing
 
@@ -73,7 +73,7 @@ This is critical: a test APK can authorize correctly while the Play-delivered bu
 ## Testing tracks
 
 Recommended release order:
-1. Current permanently signed Direct v0.2.5 APK on a physical phone, with upgrade/data-retention and Focus notification tests.
+1. Current permanently signed Direct v0.2.9 APK on a physical phone, with upgrade/data-retention and Focus notification tests.
 2. Play Console **Internal testing** with the signed AAB.
 3. Closed testing if required for the developer account.
 4. Production only after the Android validation checklist is green.
@@ -109,7 +109,7 @@ Michel's Life is a personal productivity and progress system built around missio
 
 Use the app to organize daily missions, track long-term progress, review patterns, manage Premium Contracts, and keep your personal system moving from day to day.
 
-Android is designed to work as the mobile companion to the Michel's Life desktop experience. Optional Google Drive sync can keep the same Michel's Life state available across supported devices using your own Google account.
+Android is designed to work as the mobile companion to the Michel's Life desktop experience. The app has optional account-based backup/sync features; real cross-device Supabase/Drive support must be validated before making availability guarantees in the published store description.
 
 Key features include:
 - Daily missions and recurring routines
@@ -139,7 +139,7 @@ Michel's Life es un sistema personal de productividad y progreso basado en misio
 
 La app permite organizar misiones diarias, seguir objetivos a largo plazo, revisar patrones de progreso, gestionar Premium Contracts y mantener un sistema personal de ejecución día a día.
 
-La versión Android funciona como compañera móvil de Michel's Life en escritorio. La sincronización opcional con Google Drive permite mantener el mismo estado de Michel's Life entre dispositivos compatibles usando tu propia cuenta de Google.
+La versión Android funciona como compañera móvil de Michel's Life en escritorio. La app incluye funciones opcionales de respaldo y sincronización; su funcionamiento con cuentas reales y entre dispositivos debe verificarse antes de prometerlo en la ficha publicada.
 
 Funciones principales:
 - Misiones diarias y rutinas recurrentes
@@ -251,7 +251,7 @@ Pending final device validation:
 - [x] Android-specific mobile UX first pass.
 - [x] Android mobile UX static validation.
 - [x] Automated 412×915 browser UX smoke is green.
-- [ ] Physical-device v0.2.1 post-fix UX validation.
+- [ ] Physical-device current v0.2.9 UI/IME, persistence, accessibility and signed in-place upgrade validation (earlier v0.2.1 checks are historical).
 - [ ] Physical-device Google authorization and Drive sync validation.
 - [x] Permanent upload key created; private material kept outside the repository.
 - [ ] GitHub signing secrets configured.
@@ -274,10 +274,16 @@ Pending final device validation:
 - [ ] Production access/release only after all applicable gates above are complete.
 
 
-### 2026-10-05 — v0.2.1 current Play gate
+### 2026-10-05 — historical v0.2.1 Play gate (not current release readiness)
 
 - Android UI smoke **#38**: **SUCCESS**.
 - Android build **#69**: **SUCCESS**.
 - Current CI artifact contains a validated test APK and an **UNSIGNED** Play AAB.
-- Next signing gate: configure the four GitHub Actions upload-key secrets, rerun the Android workflow, and require a `MichelsLife-Android-Play-SIGNED-v0.2.1.aab` artifact before Play upload.
+- Original 2026-10-05 signing requirement referenced `MichelsLife-Android-Play-SIGNED-v0.2.1.aab`. For current Play upload, first verify the real signed versionCode 11 (or later) AAB in exact-source CI; do not reuse that historical artifact.
 - Next Play Console gate can proceed in parallel now: create/configure the app, complete App content + Data safety + listing, and prepare the applicable test track/tester group.
+
+## 2026-10-19 — GRANADA Play source/status boundary
+
+This is a **documentation-only update** to correct drift from the October 5/12 release baseline. Current source Gradle version is **0.2.9 / code 11**, and public **Direct** download lives on unified GitHub release **v3.0.221**. No Play Console app upload, review, internal/closed testing, store publication or Play-delivered installation was performed by this update. Historical 0.2.0/0.2.1 signed artifacts and old CI evidence above remain historical.
+
+For release validation require current-version signed **AAB** identity, official Play upload signing, Store provider evidence, real-phone permission/keyboard UX, OAuth SHA fingerprints, truthful Data safety policies and physical same-account backup/restore. While owner pauses Windows builds, continue Android tests without triggering native Windows installer/MSIX jobs. PR #134 Developer Twin/updater work is separate and not part of this documentation branch.
