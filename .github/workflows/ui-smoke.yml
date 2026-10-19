@@ -17,6 +17,7 @@ on:
       - '.michelslab/release-intents/unified-v3218-a026.txt'
       - '.michelslab/release-intents/unified-v3219-a027.txt'
       - '.michelslab/release-intents/unified-v3220-a028.txt'
+      - '.michelslab/release-intents/unified-v3221-a029.txt'
       - '.github/workflows/ui-smoke.yml'
   workflow_dispatch:
 
