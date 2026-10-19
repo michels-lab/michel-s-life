@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   diagnose-api36:
-    name: Idle vs public signed APK: Android 16 emulator transport
+    name: "Idle vs public signed APK: Android 16 emulator transport"
     runs-on: ubuntu-latest
     timeout-minutes: 28
     env:
