@@ -16,7 +16,7 @@ for name,src,required in [
  ('Gradle',gradle,['create("developerDebug")','applicationIdSuffix = ".developer"','versionNameSuffix = "-developer"','manifestPlaceholders["appAllowBackup"] = "false"']),
  ('Android native',main,['isDeveloperEdition','DeveloperReportBridge(this)','app/developer-diagnostics.js','Intent.ACTION_CREATE_DOCUMENT']),
  ('bundle',prepare,['developerDebug','developer-diagnostics.js']),
- ('manifest',manifest,['android:label="${appLabel}"','android:allowBackup="${appAllowBackup}"','android:dataExtractionRules="@xml/private_data_extraction_rules"']),
+ ('manifest',manifest,['android:label="${appLabel}"','android:icon="${appIcon}"','android:roundIcon="${appRoundIcon}"','android:allowBackup="${appAllowBackup}"','android:dataExtractionRules="@xml/private_data_extraction_rules"']),
  ('build CI',workflow,[':app:assembleDeveloperDebug','MichelsLife-Android-Developer-CANDIDATE']),
  ('Android UI CI',ui,['ui_android_developer_twin_smoke.mjs']),
 ]:
@@ -29,6 +29,9 @@ if 'window.MichelsLabDeveloperTwin=' not in js or 'window.__mlvAndroidFastRoute'
  raise SystemExit("Developer UI or real user account route missing")
 if 'function auditAll()' not in js or 'nativeRuntime:nativeSnapshot()' not in js:
  raise SystemExit("Developer Edition requires guided multi-section scan and native metrics")
+if 'manifestPlaceholders["appIcon"] = "@drawable/ic_developer_launcher"' not in gradle or \
+   not (root/'android/app/src/main/res/drawable/ic_developer_launcher.xml').is_file():
+ raise SystemExit("Installed Developer APK must be visually distinguishable from public launcher")
 if 'manifestPlaceholders["appAllowBackup"] = "true"' in gradle:
  raise SystemExit("Android packages must not use OS full-app backup of auth/WebView data")
 privacy=(root/'android/app/src/main/res/xml/private_data_extraction_rules.xml').read_text(encoding='utf-8')
