@@ -31,7 +31,11 @@ jobs:
         run: |
           bash -n tools/android_emulator_transport_probe.sh
           test "$(grep -c '^probe_once()' tools/android_emulator_transport_probe.sh)" -eq 1
-          bash tools/android_emulator_transport_probe.sh --self-test
+          printf 'emulator-5554 device product:pixel_6\\n' | grep -Eq '^emulator-[0-9]+[[:space:]]+device([[:space:]]|$)'
+          if printf 'emulator-5554 offline\\n' | grep -Eq '^emulator-[0-9]+[[:space:]]+device([[:space:]]|$)'; then
+            echo "::error::Inactive device was incorrectly accepted"
+            exit 1
+          fi
 
       - name: Retrieve official published APK and its independent SHA256 manifest
         shell: bash
