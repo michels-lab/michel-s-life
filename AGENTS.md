@@ -1,3 +1,8 @@
+## Temporary owner-directed Windows build pause — 2026-10-19
+
+Michel explicitly paused **Michel's Life Windows/Desktop development, installer builds and Store MSIX packaging** until the app is ready for a final Windows version. Android development and Android-focused QA continue. Do not automatically trigger Windows Store/MSIX builds from Android/frontend/tooling pushes or branches, or Windows release builds from PRs/tags. `.github/workflows/build-store-msix.yml` and `.github/workflows/release-windows.yml` now have only explicit manual/reusable entry points. They are intentionally dormant, not deleted. The existing public Windows 3.0.221 stays available. Do not run Windows packaging merely to validate Android source unless Michel explicitly resumes Windows.
+The Michel's Lab Developer Twin standard still applies to **both desktop and Android** eventually, but the Windows twin implementation and installed-runtime acceptance are **deferred**. Do not claim Windows Developer Edition shipped. Browser/source lint and platform-neutral functional regression tests can continue if they do not build Windows installers.
+
 # Michel's Life — Agent Contract
 
 
