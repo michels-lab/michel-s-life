@@ -68,6 +68,11 @@ class MainActivity : Activity() {
         )
 
         webView.webViewClient = object : WebViewClientCompat() {
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                openPomodoroFromNotification()
+            }
+
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
                 return assetLoader.shouldInterceptRequest(request.url)
             }
@@ -87,11 +92,39 @@ class MainActivity : Activity() {
         webView.loadUrl("https://appassets.androidplatform.net/assets/app/index.html")
     }
 
+    private fun openPomodoroFromNotification() {
+        if (!::webView.isInitialized ||
+            !intent.getBooleanExtra(NativeFocusAlarm.EXTRA_OPEN_FOCUS, false)) return
+        intent.removeExtra(NativeFocusAlarm.EXTRA_OPEN_FOCUS)
+        webView.evaluateJavascript(
+            "window.MichelsLifeMobileExperience?.openFocus?.();", null
+        )
+    }
+
+    override fun onNewIntent(newIntent: Intent) {
+        super.onNewIntent(newIntent)
+        setIntent(newIntent)
+        openPomodoroFromNotification()
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 4706 && ::webView.isInitialized)
+            webView.evaluateJavascript(
+                "window.MichelsLifeMobileExperience?.resyncNativeNotification?.();", null
+            )
+    }
+
     override fun onResume() {
         super.onResume()
         if (::webView.isInitialized) {
             webView.onResume()
-            webView.evaluateJavascript("window.dispatchEvent(new Event('focus'));", null)
+            webView.evaluateJavascript(
+                "window.MichelsLifeMobileExperience?.resyncNativeNotification?.();" +
+                "window.dispatchEvent(new Event('focus'));", null
+            )
         }
     }
 
