@@ -1,0 +1,7 @@
+Michel's Life OWNER-AUTHORIZED Unified Release — 2026-10-19
+
+Requested by owner ("hazlo"): merge verified PR #128 Focus Studio, persistent Android lock-screen Pomodoro countdown and Story draft recovery; release Android Direct 0.2.9 with Windows companion 3.0.221 in the single public channel.
+Versions: Windows Setup/Portable v3.0.221, Android Direct v0.2.9, Android versionCode 11. Permanent pinned Direct signer unchanged; do not use a debug APK or alternate signing certificate.
+Code: feature merged #128 at a398ea048feb6a906bb939c67d31eee1e8f16603; version/release preparation merged #129 at b49953965a358d650834109da57a28caa2b5c2d7.
+This single isolated release intent triggers .github/workflows/release-unified-v3221-a029.yml on main. Gate exact-intent SHA against Source validation, Android UI smoke and UI smoke; assemble same-commit Windows Setup/Portable and signed Android APK; require installed native Android 16 debug and production-signed APK evidence, canonical mission/contract state and signed visual KPI parity.
+Publish 13 verified assets and full checksums/provenance to michels-lab/michel-s-life-releases/releases/tag/v3.0.221 only after all jobs succeed. Retain every earlier release. Preserve all user data and approved Windows Themes/backgrounds. Physical Galaxy acceptance and OEM notification settings remain a separate post-install check.
