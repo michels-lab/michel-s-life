@@ -288,3 +288,12 @@ if (p/"step5-hierarchy.xml").exists():
 else:
     print("Accessibility tree unavailable; verify native Finish/relaunch screenshots before claiming successful completion")
 PY
+
+# Verify a REAL installed debug WebView posts an Android countdown notification
+# that remains present with the display asleep, and removes it on pause.
+# Never inspect synthetic JS only and call that a lock-screen success.
+if [[ "$NATIVE_STATE_TEST" -eq 1 ]]; then
+  python3 android/tools/native_focus_lock_probe.py
+else
+  echo "::notice::Protected signed APK: lock-screen notification CDP probe skipped (no debuggability)"
+fi

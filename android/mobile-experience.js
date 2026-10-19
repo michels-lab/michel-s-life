@@ -508,6 +508,29 @@
       html[data-mlv-platform="android"] body.mlv-android-keyboard-editing #mlv-android-mini-focus{
         display:none!important;pointer-events:none!important
       }
+      /* Story's first-launch explanation must not push the actual form
+         beneath the phone viewport. Desktop Story remains unchanged. */
+      @media(max-width:680px){
+        html[data-mlv-platform="android"] #tab-story .v30162-story-empty{
+          min-height:0!important;padding:16px 15px!important
+        }
+        html[data-mlv-platform="android"] #tab-story .v30162-story-empty h2{
+          font-size:clamp(19px,5vw,24px)!important;line-height:1.18!important
+        }
+        html[data-mlv-platform="android"] #tab-story .v30162-story-empty p{
+          font-size:12px!important;line-height:1.35!important;
+          margin-bottom:0!important
+        }
+        html[data-mlv-platform="android"] #tab-story .v30162-story-form{
+          grid-template-columns:minmax(0,1fr)!important;gap:11px!important
+        }
+        html[data-mlv-platform="android"] #tab-story .v30162-story-form input{
+          min-height:48px!important;font-size:16px!important
+        }
+        html[data-mlv-platform="android"] #tab-story .v30162-story-form button[type="submit"]{
+          min-height:52px!important;scroll-margin-bottom:110px
+        }
+      }
       /* Focus is a full mobile workspace, not a desktop popover or a
          Settings subsection. Its content scrolls safely on compact phones. */
       html[data-mlv-platform="android"] #mlv-android-focus-overlay:not([hidden]){
@@ -714,6 +737,86 @@
         }
       }
 
+
+      /* Focus Studio: quiet, editorial Android treatment, not a desktop modal. */
+      html[data-mlv-platform="android"] #mlv-android-focus-sheet{
+        gap:14px!important;
+        padding:calc(24px + env(safe-area-inset-top,0px)) 21px calc(30px + env(safe-area-inset-bottom,0px))!important;
+        background:radial-gradient(ellipse 100% 53% at 50% 23%,rgba(var(--ui-accent-rgb,117,228,255),.10),transparent 77%),linear-gradient(155deg,#111c2b,#090f18 78%)!important;
+        scrollbar-width:none
+      }
+      #mlv-android-focus-sheet::-webkit-scrollbar{display:none}
+      #mlv-android-focus-sheet .mlv-android-focus-head{align-items:flex-start!important}
+      #mlv-android-focus-sheet .mlv-android-focus-eyebrow{
+        display:flex;align-items:center;gap:8px;color:rgba(222,236,245,.7)!important;letter-spacing:.14em;font-size:10px!important
+      }
+      #mlv-android-focus-sheet .mlv-focus-brand-dot{
+        display:inline-block;width:7px;height:7px;flex:0 0 7px;border-radius:50%;
+        background:var(--ui-accent,#75e4ff);box-shadow:0 0 0 4px rgba(var(--ui-accent-rgb,117,228,255),.12)
+      }
+      #mlv-android-focus-sheet h2{margin:9px 0 4px!important;font-size:clamp(29px,7.5vw,36px)!important;letter-spacing:-.045em!important}
+      #mlv-android-focus-sheet .mlv-android-focus-head p{font-size:12px!important;color:rgba(222,236,245,.64)!important}
+      #mlv-android-focus-sheet .mlv-android-focus-close{background:rgba(255,255,255,.045)!important;border-color:rgba(255,255,255,.11)!important}
+      #mlv-android-focus-sheet .mlv-focus-session-strip{
+        display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 12px;
+        border-radius:13px;background:rgba(255,255,255,.027);border:1px solid rgba(255,255,255,.085)
+      }
+      #mlv-android-focus-sheet .mlv-focus-session-strip span{
+        color:rgba(225,237,246,.75);font:750 10px/1.25 system-ui,sans-serif;letter-spacing:.08em
+      }
+      #mlv-android-focus-sheet #mlv-focus-session-state{color:var(--ui-accent,#75e4ff)}
+      #mlv-android-focus-sheet .mlv-android-focus-clock{min-height:0!important;gap:10px!important;padding:5px 0 8px!important}
+      #mlv-android-focus-sheet #mlv-android-focus-progress-ring{
+        width:min(61vw,245px)!important;height:min(61vw,245px)!important;padding:5px!important;
+        box-shadow:0 0 0 1px rgba(255,255,255,.065),0 22px 52px rgba(0,0,0,.21)!important
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-dial{
+        gap:5px!important;border:6px solid #0b1521!important;box-sizing:border-box;
+        background:radial-gradient(circle at 50% 36%,#192a3c,#0c1725 74%)!important
+      }
+      #mlv-android-focus-sheet #mlv-android-focus-time{
+        font:800 clamp(43px,12vw,62px)/1 system-ui,sans-serif!important;
+        letter-spacing:-.065em!important;font-variant-numeric:tabular-nums!important
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-phase{letter-spacing:.18em!important}
+      #mlv-android-focus-sheet #mlv-android-focus-status{margin:0!important;font-size:12px!important;color:rgba(225,237,246,.75)!important}
+      #mlv-android-focus-sheet .mlv-focus-clock-caption{color:rgba(225,237,246,.64);font:600 11px/1.4 system-ui,sans-serif;text-align:center;min-height:15px}
+      #mlv-android-focus-sheet .mlv-focus-controls-title{color:rgba(222,236,245,.68);font:750 10px/1.2 system-ui,sans-serif;letter-spacing:.13em;text-transform:uppercase;margin-bottom:-5px}
+      #mlv-android-focus-sheet .mlv-android-focus-presets button{
+        min-height:50px!important;border-radius:14px!important;background:rgba(255,255,255,.035)!important;
+        border:1px solid rgba(255,255,255,.12)!important;font-size:13px!important
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-presets button[aria-pressed="true"]{
+        background:rgba(var(--ui-accent-rgb,117,228,255),.13)!important;
+        border-color:rgba(var(--ui-accent-rgb,117,228,255),.62)!important
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-main-actions button{border-radius:14px!important;min-height:52px!important;background:rgba(255,255,255,.035)!important;border-color:rgba(255,255,255,.11)!important}
+      #mlv-android-focus-sheet .mlv-android-focus-main-actions button.primary{
+        min-height:60px!important;background:var(--ui-accent,#75e4ff)!important;color:#07131b!important;
+        border-color:transparent!important;box-shadow:none!important
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-stats{border-top:0!important;padding:0!important;gap:8px!important}
+      #mlv-android-focus-sheet .mlv-android-focus-stats>div{border-radius:14px!important;padding:12px!important;background:rgba(255,255,255,.025)!important;border-color:rgba(255,255,255,.085)!important}
+      #mlv-android-focus-sheet .mlv-focus-notification{
+        display:flex;align-items:center;gap:10px;border-top:1px solid rgba(255,255,255,.09);padding:13px 0 0
+      }
+      #mlv-android-focus-sheet .mlv-focus-notification-icon{
+        display:grid;place-items:center;width:37px;height:37px;flex:0 0 37px;border-radius:12px;
+        color:var(--ui-accent,#75e4ff);background:rgba(var(--ui-accent-rgb,117,228,255),.09);
+        border:1px solid rgba(var(--ui-accent-rgb,117,228,255),.18);font-size:18px
+      }
+      #mlv-android-focus-sheet .mlv-focus-notification-copy{flex:1 1 auto;min-width:0}
+      #mlv-android-focus-sheet .mlv-focus-notification-copy strong{display:block;font:750 12px/1.3 system-ui,sans-serif}
+      #mlv-android-focus-sheet .mlv-android-focus-system-note{margin-top:4px!important;font-size:11px!important;line-height:1.35!important}
+      #mlv-android-focus-sheet #mlv-focus-enable-notifications{min-height:44px!important;min-width:72px!important;padding:9px!important;color:#eaf4fb!important;background:rgba(var(--ui-accent-rgb,117,228,255),.11)!important}
+      #mlv-android-focus-sheet #mlv-focus-enable-notifications[hidden]{display:none!important}
+      @media(max-height:790px){
+        #mlv-android-focus-sheet{gap:11px!important}
+        #mlv-android-focus-sheet #mlv-android-focus-progress-ring{
+          width:min(51vw,195px)!important;height:min(51vw,195px)!important
+        }
+      }
+
       @media(max-height:750px){
         #mlv-android-focus-sheet{gap:11px!important}
         #mlv-android-focus-sheet .mlv-android-focus-clock{min-height:209px}
@@ -876,9 +979,10 @@
         <button type="button" id="mlv-android-focus-dim" aria-label="Close Focus"></button>
         <section id="mlv-android-focus-sheet" role="dialog" aria-modal="true" aria-labelledby="mlv-android-focus-heading">
           <div class="mlv-android-focus-head">
-            <div><span class="mlv-android-focus-eyebrow">POMODORO</span><h2 id="mlv-android-focus-heading">Your Pomodoro timer.</h2><p>Your session, your rhythm.</p></div>
+            <div><span class="mlv-android-focus-eyebrow"><i class="mlv-focus-brand-dot" aria-hidden="true"></i> MICHEL'S LIFE / FOCUS</span><h2 id="mlv-android-focus-heading">Pomodoro</h2><p>One session at a time.</p></div>
             <button type="button" class="mlv-android-focus-close" data-mobile-focus="close" aria-label="Close Focus">×</button>
           </div>
+          <div class="mlv-focus-session-strip"><span id="mlv-focus-session-meta">WORK SESSION · 25 MIN</span><span id="mlv-focus-session-state">READY</span></div>
           <div class="mlv-android-focus-clock">
             <div id="mlv-android-focus-progress-ring">
               <div class="mlv-android-focus-dial">
@@ -887,7 +991,9 @@
               </div>
             </div>
             <span id="mlv-android-focus-status">Ready · Work</span>
+            <span class="mlv-focus-clock-caption" id="mlv-focus-end-time">Ready when you are</span>
           </div>
+          <div class="mlv-focus-controls-title">Session length</div>
           <div class="mlv-android-focus-presets" aria-label="Focus presets">
             <button type="button" data-mobile-preset="25/5">25 / 5</button>
             <button type="button" data-mobile-preset="50/10">50 / 10</button>
@@ -909,7 +1015,14 @@
             <div><span>Linked mission</span><strong id="mlv-android-focus-linked">No mission linked</strong></div>
             <div><span>Finished today</span><strong id="mlv-android-focus-count">0 sessions</strong></div>
           </div>
-          <p class="mlv-android-focus-system-note">The timer uses your existing Michel’s Life progress. Android notifications require permission and may be delayed by battery-saving settings.</p>
+          <div class="mlv-focus-notification">
+            <span class="mlv-focus-notification-icon" aria-hidden="true">◷</span>
+            <div class="mlv-focus-notification-copy">
+              <strong>Lock-screen countdown</strong>
+              <p class="mlv-android-focus-system-note">Allow notifications to follow your session when the screen is off.</p>
+            </div>
+            <button type="button" id="mlv-focus-enable-notifications" data-mobile-focus="enable-notifications" hidden>Enable</button>
+          </div>
         </section>`;
       root.addEventListener('click',event=>{
         const source=event.target.closest('[data-mobile-focus],[data-mobile-preset],#mlv-android-focus-dim');
@@ -926,6 +1039,7 @@
         }
         const action=source.dataset.mobileFocus;
         if(action==='close'){close();return;}
+        if(action==='enable-notifications'){requestNativeFocusPermission();updateFocus();return;}
         if(!api){return;}
         if(action==='toggle'){
           if(api.focusState?.().status!=='running')requestNativeFocusPermission();
@@ -1124,8 +1238,15 @@
     q('#mlv-android-focus-time',root).textContent=left;
     q('#mlv-android-focus-phase',root).textContent=mode.toUpperCase();
     q('#mlv-android-focus-status',root).textContent=
-      (f.status==='running'?'Session in progress':f.status==='paused'?'Session paused':'Ready to begin')+
-      ' · '+(f.mode==='break'?'Recovery break':'Work session');
+      f.status==='running'?'Session in progress':f.status==='paused'?'Session paused':'Ready to begin';
+    q('#mlv-focus-session-meta',root).textContent=
+      (f.mode==='break'?'BREAK':'WORK SESSION')+' · '+(f.mode==='break'?f.breakMin:f.workMin)+' MIN';
+    q('#mlv-focus-session-state',root).textContent=
+      f.status==='running'?'IN PROGRESS':f.status==='paused'?'PAUSED':'READY';
+    q('#mlv-focus-end-time',root).textContent=f.status==='running'?
+      'Ends at '+new Date(Number(f.deadlineAt)).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):
+      f.status==='paused'?'Time saved. Resume when you are ready.':
+      'Choose a duration, then begin.';
     q('[data-mobile-focus="toggle"]',root).textContent=
       f.status==='running'?'Pause session':f.status==='paused'?'Resume session':'Start focusing';
     root.querySelectorAll('[data-mobile-preset]').forEach(b=>
@@ -1154,10 +1275,16 @@
       try{
         const state=JSON.parse(native.focusNotificationStatus());
         q('.mlv-android-focus-system-note',root).textContent=state.notificationsGranted?
-          'Android reminders are on. Battery saving may delay a completion alert.':
-          'Allow Michel’s Life notifications for reminders with the screen locked. Android may delay delivery.';
+          'Countdown available in notifications and on the lock screen. Battery saving may delay completion alerts.':
+          'Allow Michel’s Life notifications to show the countdown with the screen locked.';
+        const enable=q('#mlv-focus-enable-notifications',root);
+        if(enable)enable.hidden=!!state.notificationsGranted;
       }catch(_){}
     }
+  }
+  function resyncNativeNotification(){
+    lastNativeAlarmKey=null;
+    updateFocus();
   }
   function open(){
     if(!ensure())return false;
@@ -1174,6 +1301,50 @@
     root.hidden=true;document.body.classList.remove('mlv-android-focus-open');
     updateActive();q('#mlv-android-bottom-nav [data-mobile-tab="focus"]')?.focus();
     return true;
+  }
+  // Story is rebuilt by the canonical renderer when Android changes tabs.
+  // Keep only the unsaved input draft here; chapters themselves remain owned
+  // by FocusStoryV30162 and the user's canonical data store.
+  const chapterDraftKey='michelsLife.android.chapterDraft.v1';
+  let chapterDraftLoaded=false,chapterDraft=null;
+  function loadChapterDraft(){
+    if(chapterDraftLoaded)return chapterDraft;
+    chapterDraftLoaded=true;
+    try{
+      const saved=JSON.parse(sessionStorage.getItem(chapterDraftKey)||'null');
+      if(saved&&typeof saved==='object')chapterDraft=saved;
+    }catch(_){}
+    return chapterDraft;
+  }
+  function discardChapterDraft(){
+    chapterDraft=null;chapterDraftLoaded=true;
+    try{sessionStorage.removeItem(chapterDraftKey);}catch(_){}
+  }
+  function rememberChapterDraft(form){
+    if(!form||form.id!=='v30162ChapterForm')return;
+    chapterDraft={
+      name:String(form.elements.namedItem('name')?.value||''),
+      motto:String(form.elements.namedItem('motto')?.value||''),
+      start:String(form.elements.namedItem('start')?.value||'')
+    };
+    chapterDraftLoaded=true;
+    try{sessionStorage.setItem(chapterDraftKey,JSON.stringify(chapterDraft));}catch(_){}
+  }
+  function restoreChapterDraft(){
+    const story=q('#tab-story.active');
+    if(!story)return;
+    // Once the canonical renderer shows a real chapter, a draft must never
+    // resurrect as a second chapter or overwrite actual saved information.
+    if(q('.v30162-story-hero',story)){discardChapterDraft();return;}
+    const form=q('#v30162ChapterForm',story);
+    if(!form||form.dataset.mlvAndroidDraftRestored==='1')return;
+    form.dataset.mlvAndroidDraftRestored='1';
+    const draft=loadChapterDraft();
+    if(!draft)return;
+    for(const field of ['name','motto','start']){
+      const input=form.elements.namedItem(field);
+      if(input&&typeof draft[field]==='string')input.value=draft[field];
+    }
   }
   function boot(){
     if(!ensure())return;
@@ -1194,9 +1365,10 @@
     // Observe insertion only, not style attributes, to avoid reflow loops.
     const missionRoot=q('#main');
     if(missionRoot){
-      const weeklyObserver=new MutationObserver(adaptWeeklyPlanner);
+      const weeklyObserver=new MutationObserver(()=>{adaptWeeklyPlanner();restoreChapterDraft();});
       weeklyObserver.observe(missionRoot,{childList:true,subtree:true});
       adaptWeeklyPlanner();
+      restoreChapterDraft();
       window.addEventListener('resize',adaptWeeklyPlanner,{passive:true});
     }
     const modalHost=q('#modalRoot');
@@ -1211,6 +1383,21 @@
       'input[type="text"],input[type="search"],input[type="email"],'+
       'input[type="password"],input[type="url"],input[type="tel"],input[type="number"]'
     );
+    // Keep unfinished Story form text across Today/Focus/Story rerenders.
+    // A successful chapter creation clears the transient draft only after
+    // the canonical Story screen confirms that an active chapter exists.
+    document.addEventListener('input',event=>{
+      const form=event.target?.closest?.('#v30162ChapterForm');
+      if(form)rememberChapterDraft(form);
+    },true);
+    document.addEventListener('change',event=>{
+      const form=event.target?.closest?.('#v30162ChapterForm');
+      if(form)rememberChapterDraft(form);
+    },true);
+    document.addEventListener('submit',event=>{
+      if(event.target?.id==='v30162ChapterForm')
+        queueMicrotask(()=>{if(window.FocusStoryV30162?.activeChapter?.())discardChapterDraft();});
+    },false);
     document.addEventListener('focusin',event=>{
       if(typingField(event.target))
         document.body.classList.add('mlv-android-keyboard-editing');
@@ -1224,7 +1411,7 @@
     updateFocus();
     ticker=window.setInterval(()=>{if(!document.body.isConnected){window.clearInterval(ticker);return;}updateFocus();},1000);
   }
-  window.MichelsLifeMobileExperience={openFocus:open,closeFocus:close,updateFocus,isFocusOpen};
+  window.MichelsLifeMobileExperience={openFocus:open,closeFocus:close,updateFocus,isFocusOpen,resyncNativeNotification};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
   else boot();
 })();

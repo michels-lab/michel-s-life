@@ -669,6 +669,27 @@ try{
       focusPresentation.ring?.width>=175&&focusPresentation.close?.width>=44&&
       focusPresentation.presets.length===2&&focusPresentation.presets.every(x=>x.height>=48),
     'Focus is not a full-viewport, touch-first Android workspace: '+JSON.stringify(focusPresentation));
+  const polishedFocus=await page.evaluate(()=>{
+    const sheet=document.getElementById('mlv-android-focus-sheet');
+    return {
+      title:document.getElementById('mlv-android-focus-heading')?.textContent?.trim(),
+      phase:document.getElementById('mlv-focus-session-meta')?.textContent,
+      sessionStatus:document.getElementById('mlv-focus-session-state')?.textContent,
+      lockLabel:sheet?.querySelector('.mlv-focus-notification-copy strong')?.textContent,
+      clock:document.getElementById('mlv-android-focus-time')?.textContent,
+      endTime:document.getElementById('mlv-focus-end-time')?.textContent,
+      width:sheet?.scrollWidth,
+      viewport:window.innerWidth
+    };
+  });
+  ok(polishedFocus.title==='Pomodoro'&&
+    /WORK SESSION/.test(polishedFocus.phase||'')&&
+    polishedFocus.sessionStatus==='READY'&&
+    polishedFocus.lockLabel==='Lock-screen countdown'&&
+    /^\d{2}:\d{2}$/.test(polishedFocus.clock||'')&&
+    polishedFocus.width<=polishedFocus.viewport+1,
+    'Professional Pomodoro viewport/status/lock-screen controls regressed: '+
+    JSON.stringify(polishedFocus));
   await page.screenshot({path:screenshot.endsWith('.png')?screenshot.slice(0,-4)+'-focus-mobile.png':screenshot+'-focus-mobile.png'});
   const focusStart=await page.evaluate(()=>({
     sharedReady:!!window.FocusStoryV30162?.focusState,
@@ -680,6 +701,9 @@ try{
     'Mobile Focus must use existing shared Pomodoro state: '+JSON.stringify(focusStart));
   await page.locator('#mlv-android-focus-overlay [data-mobile-focus="toggle"]').click();
   await page.waitForFunction(()=>window.FocusStoryV30162?.focusState?.().status==='running');
+  ok(await page.evaluate(()=>document.getElementById('mlv-focus-session-state')?.textContent==='IN PROGRESS'&&
+     /^Ends at /.test(document.getElementById('mlv-focus-end-time')?.textContent||'')),
+     'Running Pomodoro no longer shows current phase and estimated finish time');
   const startedFocus=await page.evaluate(()=>({
     deadline:window.FocusStoryV30162.focusState().deadlineAt,
     status:window.FocusStoryV30162.focusState().status,

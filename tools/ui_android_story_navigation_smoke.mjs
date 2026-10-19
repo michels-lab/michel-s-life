@@ -86,9 +86,33 @@ try{
     .textContent().then(s=>/pomodoro/i.test(s)),
     'Permanent Pomodoro button did not open the canonical timer');
   await page.screenshot({path:out+'/03-pomodoro-from-settings.png'});
+  // Opening and leaving the Pomodoro may never restart an active session.
+  await page.locator('#mlv-android-focus-sheet [data-mobile-focus="toggle"]').tap();
+  const initialTimer=await page.evaluate(()=>({
+    status:window.FocusStoryV30162?.focusState?.().status,
+    deadline:window.FocusStoryV30162?.focusState?.().deadlineAt,
+    remaining:window.FocusStoryV30162?.remaining?.()
+  }));
+  assert(initialTimer.status==='running'&&Number.isFinite(Number(initialTimer.deadline)),
+    'Pomodoro did not start a real persistent canonical session');
   await page.locator('#mlv-android-focus-sheet [data-mobile-focus="close"]').tap();
   await page.waitForSelector('#mlv-android-focus-overlay:not([hidden])',
     {state:'hidden',timeout:8000});
+  await page.waitForTimeout(1200);
+  await pom.tap();
+  await page.waitForSelector('#mlv-android-focus-overlay:not([hidden])',
+    {state:'visible',timeout:8000});
+  const resumedTimer=await page.evaluate(()=>({
+    status:window.FocusStoryV30162?.focusState?.().status,
+    deadline:window.FocusStoryV30162?.focusState?.().deadlineAt,
+    remaining:window.FocusStoryV30162?.remaining?.()
+  }));
+  assert(resumedTimer.status==='running'&&
+    resumedTimer.deadline===initialTimer.deadline&&
+    resumedTimer.remaining<initialTimer.remaining,
+    'Pomodoro restarted or stopped while navigating: '+
+      JSON.stringify({initialTimer,resumedTimer}));
+  await page.locator('#mlv-android-focus-sheet [data-mobile-focus="close"]').tap();
 
   // Return via drawer Story, then escape again using the actual header arrow.
   await page.locator('#mlv-android-menu-button').tap();
@@ -125,6 +149,22 @@ try{
   const chapterName='Android Story Touch Regression';
   const nameField=page.locator('#tab-story .v30162-story-form input').first();
   await nameField.fill(chapterName);
+  const mottoField=page.locator('#tab-story .v30162-story-form input[name="motto"]');
+  const chapterMotto='Unfinished drafts must survive Android navigation';
+  await mottoField.fill(chapterMotto);
+  // Trigger the same real navigation as the owner's Galaxy recording:
+  // leave an unfinished Chapter form, then return through the drawer.
+  await mottoField.evaluate(field=>field.blur());
+  await nav.locator('[data-mobile-tab="dashboard"]').tap();
+  await page.waitForSelector('#tab-dashboard.active',{state:'visible',timeout:12000});
+  await page.locator('#mlv-android-menu-button').tap();
+  await page.locator('#v30171PrimaryNav [data-tab="story"]').tap();
+  await page.waitForSelector('#tab-story.active #v30162ChapterForm',
+    {state:'visible',timeout:12000});
+  assert(await nameField.inputValue()===chapterName,
+    'Unsubmitted Story chapter name was lost after mobile navigation');
+  assert(await mottoField.inputValue()===chapterMotto,
+    'Unsubmitted Story chapter motto was lost after mobile navigation');
   const start=page.locator('#tab-story .v30162-story-form button')
     .filter({hasText:/start chapter/i}).first();
   assert(await start.count()===1,'Real Start chapter button was not rendered');
@@ -152,5 +192,5 @@ try{
     ?.textContent?.includes(name),chapterName,{timeout:12000});
   assert(errors.length===0,'Android Story/Pomodoro navigation page errors: '+errors.join(' | '));
   await page.screenshot({path:out+'/04-chapter-started.png'});
-  console.log('PASS: real Story form -> Settings -> visible Pomodoro -> Story arrows -> Today; Start chapter tap persisted');
+  console.log('PASS: Story form -> Settings -> Pomodoro continuous countdown -> Story arrows -> Today; draft survived real tab switches and chapter submit persisted');
 }finally{await browser.close();}

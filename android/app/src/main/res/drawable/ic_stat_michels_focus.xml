@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Notification-sized monochrome outline adapted from the approved Ascent launcher geometry. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="1024"
+    android:viewportHeight="1024">
+    <path android:fillColor="@android:color/transparent"
+        android:strokeColor="#FFFFFFFF" android:strokeWidth="56"
+        android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M95,785 L315,420 L505,745"/>
+    <path android:fillColor="@android:color/transparent"
+        android:strokeColor="#FFFFFFFF" android:strokeWidth="56"
+        android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:pathData="M370,745 L615,385 L930,785"/>
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M512,98 L545,174 L622,210 L545,244 L512,323 L479,244 L402,210 L479,174 Z"/>
+    <path android:fillColor="@android:color/transparent"
+        android:strokeColor="#FFFFFFFF" android:strokeWidth="56"
+        android:strokeLineCap="round"
+        android:pathData="M505,925 C470,855 390,820 395,744 C402,654 520,692 515,585 C512,542 523,514 548,490"/>
+</vector>
