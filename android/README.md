@@ -4,7 +4,9 @@ Android client for the same Michel's Life state used by Windows.
 
 ## Development audit log
 
-The permanent Android development record is [`ANDROID_AUDIT_LOG.md`](ANDROID_AUDIT_LOG.md). It tracks completed work, pending work, validation evidence, Play Store preparation, device-test requirements, and follow-up items. Update it during every meaningful Android development cycle.\n\nGoogle Play preparation is tracked in [`PLAY_STORE_READINESS.md`](PLAY_STORE_READINESS.md), with the current privacy-policy source draft in [`PRIVACY_POLICY_DRAFT.md`](PRIVACY_POLICY_DRAFT.md) and a prepared Play Console answer sheet in [`PLAY_CONSOLE_SUBMISSION_DRAFT.md`](PLAY_CONSOLE_SUBMISSION_DRAFT.md).
+The permanent Android development record is [`ANDROID_AUDIT_LOG.md`](ANDROID_AUDIT_LOG.md). It tracks completed work, pending work, validation evidence, Play Store preparation, device-test requirements, and follow-up items. Update it during every meaningful Android development cycle.
+
+Google Play preparation is tracked in [`PLAY_STORE_READINESS.md`](PLAY_STORE_READINESS.md), with the current privacy-policy source draft in [`PRIVACY_POLICY_DRAFT.md`](PRIVACY_POLICY_DRAFT.md) and a prepared Play Console answer sheet in [`PLAY_CONSOLE_SUBMISSION_DRAFT.md`](PLAY_CONSOLE_SUBMISSION_DRAFT.md).
 
 ## Architecture
 
@@ -17,7 +19,7 @@ The permanent Android development record is [`ANDROID_AUDIT_LOG.md`](ANDROID_AUD
   - anonymous table access is explicitly revoked
 - The shared frontend detects `window.__MICHELSLIFE_PLATFORM__='android'` and registers Android device/source metadata without maintaining a second sync engine.
 - Native Google Drive code remains temporarily as a manual migration/recovery fallback; its automatic sync is suppressed whenever a Supabase session is active.
-- Google Calendar remains an optional Google integration and is independent from Supabase data sync.
+- Google Calendar remains an optional Google integration and is independent from Supabase data sync. Android live Google Calendar synchronization is **not implemented/validated** in the current public build (see issue #110); its UI must not claim real event imports or an empty-results success.
 
 ## Google authorization requirement
 
@@ -36,9 +38,9 @@ Prepare the web bundle first:
 python android/tools/prepare_bundle.py --bundle /path/to/AppBundle.zip --assets android/app/src/main/assets/app
 ```
 
-Then build with Android Studio or Gradle 9.6+ / JDK 17.
+Then build with Android Studio or Gradle 9.6+ / JDK 17. **Do not re-enable Windows/MSIX/installer workflows:** Windows development/builds are on explicit owner pause while Android continues under the GRANADA non-interference protocol.
 
-The GitHub workflow produces a debug test APK automatically. The official sideload channel publishes only permanently signed Android Direct APKs, which are separate from debug builds and Play upload signing. Current verified public Direct APK: `MichelsLife-Android-Direct-v0.2.5.apk` under the unified Windows v3.0.217 + Android v0.2.5 release (`michels-lab/michel-s-life-releases`). Older v0.2.2 debug-signed TEST APKs cannot update in place to the permanently signed Direct build; back up user data before migration. Same-certificate v0.2.4 → v0.2.5 upgrades are expected to work, but Galaxy data-preservation testing is still outstanding.
+The GitHub workflow produces a debug test APK automatically. The official sideload channel publishes only permanently signed Android Direct APKs, which are separate from debug builds and Play upload signing. Current verified public Direct distribution asset: `MichelsLife-Android-Direct-v0.2.9.apk` (versionCode 11) on the unified Windows v3.0.221 + Android Direct v0.2.9 public release: https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.221. Older v0.2.2 debug-signed TEST APKs cannot update in place to the permanently signed Direct build; back up recoverable data before changing signer channels or uninstalling. Physical Galaxy in-place data retention and account sync are not established by GitHub publication.
 
 
 ## Current verification boundary
@@ -52,11 +54,12 @@ The GitHub workflow produces a debug test APK automatically. The official sidelo
 
 The Play Store track uses an Android App Bundle (AAB).
 
-Current Play identity:
+Current **source/build identity** (not a Play Console delivery claim):
 - package: `com.michelslab.michelslife`
-- versionCode: `7`
-- versionName: `0.2.5`
+- versionCode: `11`
+- versionName: `0.2.9`
 - targetSdk: `36`
+- Google Play publication: **not verified**; Direct sideload and Play upload/app signing are separate channels
 
 The Gradle release build supports an upload keystore through environment variables:
 - `ANDROID_UPLOAD_KEYSTORE_PATH`
