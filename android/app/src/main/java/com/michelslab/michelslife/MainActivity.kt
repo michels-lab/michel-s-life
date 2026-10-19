@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
@@ -21,6 +22,31 @@ class MainActivity : Activity() {
     lateinit var cloud: DriveCloudEngine
         private set
     private val executor = Executors.newSingleThreadExecutor()
+    private val isDeveloperEdition: Boolean
+        get() = packageName.endsWith(".developer")
+    private var pendingDeveloperExport: Pair<String, ByteArray>? = null
+    private val developerExportRequest = 4719
+
+    fun saveDeveloperReport(name: String, text: String) {
+        if (!isDeveloperEdition || text.length > 1_000_000) return
+        val safeName = name.replace(Regex("[^A-Za-z0-9._-]"), "-").take(100)
+        if (!safeName.startsWith("michels-life-developer-")) return
+        val bytes = text.toByteArray(Charsets.UTF_8)
+        runOnUiThread {
+            pendingDeveloperExport = safeName to bytes
+            val chooser = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = if (safeName.endsWith(".json")) "application/json" else "text/plain"
+                putExtra(Intent.EXTRA_TITLE, safeName)
+            }
+            try {
+                startActivityForResult(chooser, developerExportRequest)
+            } catch (_: Exception) {
+                pendingDeveloperExport = null
+                Toast.makeText(this, "Document export is not available", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,11 +92,24 @@ class MainActivity : Activity() {
             AndroidBridge(this, webView, auth, cloud, meta, executor),
             "MichelsLifeAndroid"
         )
+        // This native export bridge is absent from every PUBLIC build.
+        if (isDeveloperEdition) {
+            webView.addJavascriptInterface(DeveloperReportBridge(this), "MichelsLabDeveloperNative")
+        }
 
         webView.webViewClient = object : WebViewClientCompat() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 openPomodoroFromNotification()
+                // Source-set-only asset: the public APK cannot load this UI.
+                if (isDeveloperEdition) {
+                    try {
+                        val script = assets.open("app/developer-diagnostics.js").bufferedReader().use { it.readText() }
+                        webView.evaluateJavascript(script, null)
+                    } catch (_: Exception) {
+                        android.util.Log.e("MichelLifeDeveloper", "Developer diagnostics bundle missing")
+                    }
+                }
             }
 
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
@@ -135,6 +174,20 @@ class MainActivity : Activity() {
 
     @Deprecated("Deprecated in Android; retained for Google authorization resolution compatibility.")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == developerExportRequest) {
+            val export = pendingDeveloperExport
+            pendingDeveloperExport = null
+            if (resultCode == RESULT_OK && data?.data != null && export != null) {
+                try {
+                    contentResolver.openOutputStream(data.data!!)?.use { it.write(export.second) }
+                        ?: error("No writable document stream")
+                    Toast.makeText(this, "Developer report saved", Toast.LENGTH_SHORT).show()
+                } catch (_: Exception) {
+                    Toast.makeText(this, "Could not save developer report", Toast.LENGTH_SHORT).show()
+                }
+            }
+            return
+        }
         if (::auth.isInitialized && auth.onActivityResult(requestCode, resultCode, data)) return
         super.onActivityResult(requestCode, resultCode, data)
     }

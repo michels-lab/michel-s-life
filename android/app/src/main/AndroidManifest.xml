@@ -6,7 +6,7 @@
 
     <application
         android:allowBackup="true"
-        android:label="Michel's Life"
+        android:label="${appLabel}"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:hardwareAccelerated="true"

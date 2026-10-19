@@ -24,6 +24,7 @@ android {
         targetSdk = 36
         versionCode = 11
         versionName = "0.2.9"
+        manifestPlaceholders["appLabel"] = "Michel's Life"
     }
 
     signingConfigs {
@@ -52,6 +53,15 @@ android {
     }
 
     buildTypes {
+        // Installed independently of the customer app. WebView's data belongs
+        // to com.michelslab.michelslife.developer, never the public package.
+        create("developerDebug") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".developer"
+            versionNameSuffix = "-developer"
+            manifestPlaceholders["appLabel"] = "Michel's Life Developer"
+            isDebuggable = true
+        }
         release {
             isMinifyEnabled = false
             signingConfigs.findByName("playUpload")?.let { signingConfig = it }
