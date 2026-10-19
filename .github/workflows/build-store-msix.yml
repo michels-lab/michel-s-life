@@ -21,16 +21,8 @@ on:
         default: "Michel's Life"
         type: string
 
-  push:
-    branches:
-      - main
-      - 'fix/**'
-    paths:
-      - 'src/MichelsLife/**'
-      - 'store/**'
-      - 'tools/**'
-      - 'branding/**'
-      - '.github/workflows/build-store-msix.yml'
+  # Owner decision 2026-10-19: no automatic Windows/MSIX builds
+  # during Android/product development. Manual final-stage only.
 
 permissions:
   contents: read
