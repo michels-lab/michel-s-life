@@ -30,7 +30,7 @@ window.addEventListener('error',e=>record('WINDOW_ERROR',e),true);
 window.addEventListener('unhandledrejection',e=>record('UNHANDLED_REJECTION',e),true);
 function node(tag,txt,parent){const n=document.createElement(tag);if(txt!==null)n.textContent=txt;if(parent)parent.appendChild(n);return n;}
 function button(label,fn,parent){const b=node('button',label,parent);b.type='button';b.onclick=fn;return b;}
-function identity(){return {product:"Michel's Life",platform:/Android/i.test(navigator.userAgent)?'android':'windows',build:String(window.__MICHELS_LIFE_BUILD__||'unknown').slice(0,80),screen:screen()};}
+function identity(){return {product:"Michel's Life",platform:(document.documentElement.dataset.mlvPlatform==='android'||/Android/i.test(navigator.userAgent))?'android':'windows',build:String(window.__MICHELS_LIFE_BUILD__||'unknown').slice(0,80),screen:screen()};}
 function create(){
  if(host)return;
  host=document.createElement('div');host.id='ml-dev-twin-host';host.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:2147483600';
