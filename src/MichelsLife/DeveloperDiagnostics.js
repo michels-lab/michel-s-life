@@ -4,7 +4,8 @@
 if(window.MichelsLabDeveloperTwin)return;
 const KEY='michelslab.developer.notes.v1',maxErrors=80;
 const errors=[],findings=[];let notes=[],inspect=false,selected=null,host,shadow,panel,notice,comments,items,hilite,trigger;
-const checkedScreens=new Map();let lastAuditAt=null;let consumePointerClick=false;
+const checkedScreens=new Map();let lastAuditAt=null;let consumePointerClick=false,fullAuditBusy=false;
+let lastSweep={attempted:[],skipped:[],restoredScreen:null,finishedAt:null};
 const iso=()=>new Date().toISOString();
 try{const s=JSON.parse(localStorage.getItem(KEY)||'[]');if(Array.isArray(s))notes=s.slice(0,400);}catch(_){}
 const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(notes));return true;}catch(_){return false;}};
@@ -43,6 +44,8 @@ function create(){
  node('small','Isolated edition · real app engine · local audit · same user account login',panel);
  const top=node('div',null,panel);top.className='row';
  button('Run audit',audit,top);button('Mark element',beginInspect,top);
+ button('Audit main sections',auditAll,panel).style.width='100%';
+ node('small','A guided, read-only layout sweep visits available app screens and restores the original screen. Save unfinished forms before running.',panel);
  const second=node('div',null,panel);second.className='row';
  button('User sign-in',openLogin,second);button('Close',()=>{panel.hidden=true;stopInspect();},second);
  notice=node('pre','Run an audit or tap Mark element and select a control.',panel);notice.id='mlstatus';
@@ -172,9 +175,63 @@ function audit(){
  notice.textContent='Read-only audit · '+iso()+'\n'+JSON.stringify(identity())+'\nScreens audited: '+checkedScreens.size+'\nFindings: '+findings.length+' ('+JSON.stringify(totals)+')\nOwner annotations: '+notes.length+'\n'+findings.slice(0,12).map(f=>'['+f.severity+'] '+f.code+' · '+f.selector).join('\n');
  return findings.slice();
 }
+async function auditAll(){
+ if(fullAuditBusy){notice.textContent='A navigation audit is already running.';return report();}
+ const route=window.__mlvAndroidFastRoute;
+ if(typeof route!=='function'){
+   notice.textContent='Multi-section scan needs the original Android route. Use Run audit for this screen.';
+   return report();
+ }
+ const original=screen().replace(/^tab-/,'');
+ const initialScroll=window.scrollY;
+ const safeRoutes=['dashboard','missions','contracts','calendar','journal','projects',
+   'stats','achievements','story','settings','affirmations'];
+ fullAuditBusy=true;
+ const attempted=[],skipped=[];
+ try{
+   for(const name of safeRoutes){
+     // Audit never activates a mission, submits a form, signs in or invokes
+     // provider buttons. It only navigates the app's built-in tabs.
+     let ok=false;
+     try{ok=route(name)===true;}catch(_){ok=false;}
+     await new Promise(resolve=>setTimeout(resolve,95));
+     const active=screen();
+     if(!ok||active!=='tab-'+name){
+       skipped.push({screen:name,reason:'route was not safely mounted'});
+       continue;
+     }
+     audit();attempted.push(name);
+     notice.textContent='Read-only screen scan: '+attempted.length+' sections checked; '+skipped.length+' unavailable.';
+   }
+ }finally{
+   try{route(original);}catch(_){}
+   await new Promise(resolve=>setTimeout(resolve,110));
+   window.scrollTo(0,initialScroll);
+   fullAuditBusy=false;
+   lastSweep={attempted,skipped,restoredScreen:screen(),finishedAt:iso()};
+   notice.textContent='App section audit finished. '+attempted.length+
+     ' routes checked, '+skipped.length+' unavailable; '+findings.length+
+     ' distinct findings. Original screen restored: '+lastSweep.restoredScreen+
+     '. Review exports for screen-level evidence.';
+ }
+ return report();
+}
+function nativeSnapshot(){
+ try{
+   const api=window.MichelsLabDeveloperNative;
+   if(typeof api?.runtimeSnapshot!=='function')return {available:false};
+   const result=JSON.parse(api.runtimeSnapshot());
+   if(!result || typeof result!=='object'|| result.developerEdition!==true)return {available:false};
+   const allow=['developerEdition','platform','appVersion','notificationPermission','javaHeapUsedKb','javaHeapMaxKb','nativeHeapAllocatedKb','uptimeMs'];
+   const safe={};
+   for(const key of allow)if(typeof result[key]==='string'||typeof result[key]==='number'||typeof result[key]==='boolean')
+     safe[key]=result[key];
+   return safe;
+ }catch(_){return {available:false,errorCode:'NATIVE_SNAPSHOT_UNAVAILABLE'};}
+}
 function report(){return {schema:'michelslab-developer-audit/v1',createdAt:iso(),identity:identity(),
  evidence:'DOM and redacted error codes; not a live-provider certification',
- findings:findings.slice(),runtimeErrors:errors.slice(),auditCoverage:Array.from(checkedScreens.entries()).map(([name,v])=>({screen:name,auditedAt:v.time,findings:v.findings.length})),lastAuditAt,
+ findings:findings.slice(),runtimeErrors:errors.slice(),nativeRuntime:nativeSnapshot(),guidedSweep:{...lastSweep},auditCoverage:Array.from(checkedScreens.entries()).map(([name,v])=>({screen:name,auditedAt:v.time,findings:v.findings.length})),lastAuditAt,
  ownerAnnotations:notes.map(n=>({...n,evidence:'owner observation, not automatically verified'})),
  limitations:['Read-only bounded audit','No automatic external data upload','Native OAuth may need separate developer package/signature registration','User-authored comment text deliberately included in manual export']};}
 function prompt(){const r=report();return [
@@ -182,6 +239,8 @@ function prompt(){const r=report();return [
  '## Automated findings',...r.findings.map(f=>'['+f.severity+'] '+f.code+' | '+f.screen+' | '+f.selector+' | '+f.description),
  '## Owner comments — EXACT text and screen anchors',...r.ownerAnnotations.map(n=>'['+n.severity+'] '+n.screen+' | '+n.selector+' | '+n.updatedAt+'\nOwner comment: '+n.comment),
  '## Redacted runtime error codes',...r.runtimeErrors.map(e=>e.code+' / '+e.type+' / '+e.screen),
+ '## Native runtime summary (non-personal)',JSON.stringify(r.nativeRuntime),
+ '## Guided scan coverage',JSON.stringify(r.guidedSweep),...r.auditCoverage.map(a=>a.screen+' | audited '+a.auditedAt+' | findings '+a.findings),
  '## Invariants','Preserve original artwork, user state, auth and other platforms. Reproduce, fix underlying cause, add regression tests, validate installed release. Do not infer findings without evidence.',
  '## Limitations',...r.limitations].join('\n');}
 function exportReport(type){
@@ -209,6 +268,6 @@ function openLogin(){
    },360);
  }catch(_){notice.textContent='Open real Settings → Sync / User account. No mock login is allowed.';panel.hidden=false;}
 }
-window.MichelsLabDeveloperTwin={version:'1.0.0',audit,report,prompt,notes:()=>notes.slice(),open:()=>{create();panel.hidden=false;}};
+window.MichelsLabDeveloperTwin={version:'1.0.0',audit,auditAll,report,prompt,notes:()=>notes.slice(),open:()=>{create();panel.hidden=false;}};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',create,{once:true});else create();
 })();
