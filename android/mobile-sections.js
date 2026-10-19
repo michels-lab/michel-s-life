@@ -936,7 +936,7 @@
     });
     main.querySelectorAll('#tab-calendar .v30135-day[data-date]').forEach(day=>{
       const date=day.getAttribute('data-date')||'';
-      if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(date))return;
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return;
       const parsed=new Date(date+'T12:00:00');
       if(Number.isNaN(parsed.getTime()))return;
       if(!day.hasAttribute('role'))day.setAttribute('role','button');
