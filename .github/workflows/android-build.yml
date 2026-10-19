@@ -1,5 +1,11 @@
 name: Build Android test APK
 
+# Cancel outdated PR snapshots only. Never cancel owner-requested manual
+# or production release tasks; source commit is the validation identity.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 on:
   workflow_call:
     inputs:
