@@ -1,3 +1,10 @@
+## 2026-10-19 — Android Developer privacy and release discovery controls
+
+- New Developer Android package disables Android OS Auto Backup of its local audit notes and session; the public package retains its existing backup behavior. Shared cloud snapshot allowlist rejects developer note key and arbitrary unknown provider keys, covered by synthetic restore tests.
+- Privileged JS bridge is only injected into packaged appassets index. External WebView navigations fail closed even if no external Android Activity is available.
+- Android Direct updates are discovered via official latest GitHub Releases metadata (HTTPS, bounded payload), with stable-tag/asset checksum-pair/origin checks; discovery neither downloads nor installs an APK and explicitly does **not** verify package signatures. Only Android's native package installer can enforce in-place signing equality later. Offline/no response is UNKNOWN, never fabricated "no update."
+- Installed native Developer Android 16 and OEM/real-account validation still pending. Android Developer Edition debug candidate is not a public signed release; no Play/Galaxy certification is asserted. Windows builds remain explicitly paused.
+
 ## 2026-10-19 — Android Developer build isolation and test instrumentation boundary
 
 - A distinct internal `developerDebug` Android variant uses `applicationIdSuffix=.developer`; standard public Direct/Play APKs keep `com.michelslab.michelslife`. Developer diagnostic JS is variant-scoped in `android/app/src/developerDebug/assets/app` and loaded at runtime only for the developer package. App data/localStorage and account sessions are Android-package-isolated, not copied between variants.
