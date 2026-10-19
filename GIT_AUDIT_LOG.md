@@ -1,3 +1,9 @@
+## 2026-10-19 — Follow-up: native Windows executable/installer smoke also paused
+
+- Inspected `ci.yml`: general source validation still included a `windows-icon-smoke` job that compiled `MichelsLife.exe`, published a portable Windows runtime and built/installed a Windows installer candidate on every PR and main push, including Android-only work.
+- Restricted the native Windows job to an explicit `workflow_dispatch` invocation. Source-level tests continue automatically; Windows packaging does not. A static test guards this pause against future regressions.
+- Existing Windows source, Store channel configuration, installer scripts, signed released binaries and future manual final-stage validation remain intact. No new release authorized.
+
 ## 2026-10-19 — Owner paused Windows / Microsoft Store builds until final product stage
 
 - **Instruction:** Stop building/developing Michel's Life for Windows while Android and the core app are not yet final. User clarified with GitHub Actions screenshot that automatic Windows/MSIX jobs are the unwanted work.
