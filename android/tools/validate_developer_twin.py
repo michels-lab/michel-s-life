@@ -13,10 +13,10 @@ workflow=(root/'.github/workflows/android-build.yml').read_text(encoding='utf-8'
 ui=(root/'.github/workflows/android-ui-smoke.yml').read_text(encoding='utf-8')
 for name,src,required in [
  ('developer JS',js,['MichelsLabDeveloperTwin','function mark(event)','function saveAnnotation()','function audit()','function report()','ownerAnnotations','auditCoverage','owner observation','function openLogin()']),
- ('Gradle',gradle,['create("developerDebug")','applicationIdSuffix = ".developer"','versionNameSuffix = "-developer"']),
+ ('Gradle',gradle,['create("developerDebug")','applicationIdSuffix = ".developer"','versionNameSuffix = "-developer"','manifestPlaceholders["appAllowBackup"] = "false"']),
  ('Android native',main,['isDeveloperEdition','DeveloperReportBridge(this)','app/developer-diagnostics.js','Intent.ACTION_CREATE_DOCUMENT']),
  ('bundle',prepare,['developerDebug','developer-diagnostics.js']),
- ('manifest',manifest,['android:label="${appLabel}"']),
+ ('manifest',manifest,['android:label="${appLabel}"','android:allowBackup="${appAllowBackup}"']),
  ('build CI',workflow,[':app:assembleDeveloperDebug','MichelsLife-Android-Developer-CANDIDATE']),
  ('Android UI CI',ui,['ui_android_developer_twin_smoke.mjs']),
 ]:
