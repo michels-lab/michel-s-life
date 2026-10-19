@@ -164,19 +164,34 @@ class AndroidBridge(
                 .put("version", DriveCloudEngine.ANDROID_VERSION)
                 .put("status", "ok"))
             "updateStatus" -> {
-                val channel = installChannel()
-                respondOk(requestId, JSONObject()
-                    .put("updateAvailable", false)
-                    .put("managedExternally", true)
-                    .put("channel", channel)
-                    .put("version", DriveCloudEngine.ANDROID_VERSION)
-                    .put(
-                        "status",
-                        if (channel == "google-play")
-                            "Updates are managed by Google Play."
-                        else
-                            "Test build. Production updates are delivered through Google Play."
-                    ))
+                when (val channel = installChannel()) {
+                    "android-direct" -> executor.execute {
+                        try {
+                            respondOk(requestId, AndroidDirectUpdateChecker.check(DriveCloudEngine.ANDROID_VERSION))
+                        } catch (_: Exception) {
+                            // Network failure is UNKNOWN, never claim 'no update'.
+                            respondOk(requestId, JSONObject()
+                                .put("channel", channel)
+                                .put("version", DriveCloudEngine.ANDROID_VERSION)
+                                .put("managedExternally", false)
+                                .put("updateAvailable", JSONObject.NULL)
+                                .put("checkedOfficialRelease", false)
+                                .put("installationAutomatic", false)
+                                .put("status", "Could not check official Android Direct releases. Check your internet connection and retry."))
+                        }
+                    }
+                    else -> respondOk(requestId, JSONObject()
+                        .put("channel", channel)
+                        .put("version", DriveCloudEngine.ANDROID_VERSION)
+                        .put("managedExternally", channel == "google-play")
+                        .put("updateAvailable", JSONObject.NULL)
+                        .put("checkedOfficialRelease", false)
+                        .put("status", when (channel) {
+                            "google-play" -> "Updates for this installation are managed by Google Play."
+                            "developer" -> "Developer Edition uses internal test builds, not customer updates."
+                            else -> "This debug/test build does not use the public Android Direct update channel."
+                        }))
+                }
             }
             else -> respondError(requestId, "This Michel's Life desktop action is not available on Android yet: " + action)
         }
@@ -195,7 +210,12 @@ class AndroidBridge(
         } catch (_: Exception) {
             null
         }
-        return if (installer == "com.android.vending") "google-play" else "test"
+        return when {
+            activity.packageName.endsWith(".developer") -> "developer"
+            installer == "com.android.vending" -> "google-play"
+            (activity.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0 -> "test"
+            else -> "android-direct"
+        }
     }
 
     private fun authorizeFor(
