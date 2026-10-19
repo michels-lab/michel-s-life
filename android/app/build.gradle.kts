@@ -25,6 +25,8 @@ android {
         versionCode = 11
         versionName = "0.2.9"
         manifestPlaceholders["appLabel"] = "Michel's Life"
+        manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher"
+        manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_launcher_round"
         // Native Android OS backup must not copy WebView auth/session, device IDs or
         // separate Developer annotations. Michel’s Life owns an explicit
         // allowlisted, opt-in cloud backup path instead.
@@ -64,6 +66,8 @@ android {
             applicationIdSuffix = ".developer"
             versionNameSuffix = "-developer"
             manifestPlaceholders["appLabel"] = "Michel's Life Developer"
+            manifestPlaceholders["appIcon"] = "@drawable/ic_developer_launcher"
+            manifestPlaceholders["appRoundIcon"] = "@drawable/ic_developer_launcher"
             // No Google Auto Backup of owner audit notes or Developer credentials.
             manifestPlaceholders["appAllowBackup"] = "false"
             isDebuggable = true
