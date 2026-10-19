@@ -1,3 +1,10 @@
+## 2026-10-19 — Android Direct updater UI: real official release handoff (follow-up)
+
+- Added `android/mobile-direct-updates.js`, bundled only into the Android WebView and idempotently mounted on the real Settings route. Touch-first **Check Android updates** calls the existing native Android bridge action `updateStatus`; shows real provider status, handles offline/unavailable as unknown, and exposes **only** a strict canonical Michel's Lab GitHub release URL after an actually checked official release. A stale/foreign URL is hidden. Opening a release page is a deliberate user gesture; no auto-download, EXE replacement, sideload/install or bypass of signature checks.
+- Removed Windows EXE installer affordances from Android-only CSS. Existing Windows source and installer workflow untouched.
+- Added `tools/ui_android_direct_update_smoke.mjs` to Android UI CI (actual phone viewport, synthetic native bridge responses, official/foreign/offline/developer cases, link behavior, and no EXE actions) and static bundle contract assertions.
+- The updater's official asset metadata/signature verification is a **discovery gate**, not the Android package signature validator; actual in-place Android 0.2.9→future update and its native PackageInstaller consent flow remain manual-release acceptance. All changes PR #134 draft; no release or user Galaxy validation yet.
+
 ## 2026-10-19 — Expanded Android block: Developer inspector, read-only Direct updater and security regression QA
 
 - **Developer inspector usability:** Corrected mobile inspection trap: tapping the floating TAP/DEV badge while inspecting now cancels the selection without needing an Escape key; a completed gesture removes its temporary click-capture listener. Added real touch cancellation regression to `tools/ui_android_developer_twin_smoke.mjs`.
