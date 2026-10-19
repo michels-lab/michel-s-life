@@ -41,6 +41,11 @@ try {
    target.addEventListener('click',()=>window.__unsafeSelectionAction=(window.__unsafeSelectionAction||0)+1);
    document.body.appendChild(target);
  });
+ // Mobile inspector must have a touch-accessible cancellation route.
+ await page.getByRole('button',{name:'Mark element'}).click();
+ await page.locator('#ml-dev-twin-host #mltrigger').tap();
+ assert(await page.locator('#ml-dev-twin-host #mlpanel').isVisible(),
+   'Inspector trap: TAP badge did not cancel element selection on a phone');
  await page.getByRole('button',{name:'Mark element'}).click();
  await page.locator(testLocator).tap();
  const selected=await page.evaluate(()=>window.__unsafeSelectionAction||0);
