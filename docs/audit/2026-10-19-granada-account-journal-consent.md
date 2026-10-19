@@ -22,3 +22,5 @@ Only tools/ui_supabase_account_switch_smoke.mjs plus this independent audit, out
 ## Next gate
 
 Read PR #142 exact-head UI CI (and Android UI/source) before merge. Fix only this test if timing or navigation assertions fail. If the test finds a real account-isolation bug, document reproducible findings and obtain source ownership before modifying the shared frontend.
+
+Additional 2026-10-19 candidate (commit 64a5fd9): after the Cancel path and A/B/C isolation, return to A, explicitly Accept the real import confirmation, and require the guest mission/Journal to become A's local and cloud master only after consent. Verify A's previous mission/Journal and XP survive in both a distinct local account vault and the Supabase `before_explicit_guest_import` history. B's remote snapshot must remain byte-for-byte unchanged. This is synthetic browser test evidence, not signed native/provider validation. Exact-head CI required.
