@@ -36,3 +36,9 @@ The test uses the existing mocked Supabase HTTP routing, real canonical frontend
 - No user data, app versions, Windows installer/MSIX workflow, release credentials or stable release artifact changed.
 
 Re-entry: if UI CI fails, read its exact cross-device step/log, distinguish a failing real synchronization contract from fixture timing, repair only this test branch. If it passes, merge only after exact-head review; continue GRANADA with the next distinct issue. Do not collide with PR #134/#135, do not publish a release from test-only changes.
+
+## 2026-10-19 — first exact-head UI result and migration-aware test repair
+
+Exact-head UI run `39335086097` on `16879a5119f64cc9b136986810529212e6788f3c` failed at `ui_supabase_cross_device_smoke.mjs:244`: the existing `window.completeMission()` increased XP from **17 to 67** on the first completion, did **not** increase again on the second, and persisted **one** unique completion record. The fixture initially set an explicit 23 XP, but the canonical state rehydrated on Android rewarded 50. **This failure did not demonstrate duplicate progress**: it demonstrated that the new test incorrectly assumed fixture XP survived all domain migration/normalization stages.
+
+The next isolated test change `6e31bee37d8d8817598ce62a5205ff15488749a7` records the actual rehydrated canonical mission reward **before** invoking the real completion action; it requires one completion with that exact reward and one XP increment, zero extra XP on the second action, and remote XP matching the actual canonical action. No production migration, mission rewards or state model changed. Re-run exact-head CI before claiming acceptance. The distinct offline/reconnect test stage remains pending until the earlier gate passes.
