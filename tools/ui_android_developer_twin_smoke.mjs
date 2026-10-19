@@ -58,6 +58,12 @@ try {
  let saved=await page.evaluate(()=>window.MichelsLabDeveloperTwin.notes());
  assert(saved.length===1&&saved[0].screen===activeScreen&&saved[0].selector===testLocator&&saved[0].comment===comment,
    'Annotation failed to persist exact comment, screen and DOM locator');
+ // A screen's element ID may be reused for a different action after a
+ // renderer replacement. Stale markers must be reported, not misattached.
+ await page.evaluate(()=>document.getElementById('developer-candidate-button')?.setAttribute('data-action','different-action-after-render'));
+ const stale=await page.evaluate(()=>{window.MichelsLabDeveloperTwin.audit();return window.MichelsLabDeveloperTwin.report()});
+ assert(stale.findings.some(x=>x.code==='ANNOTATION_TARGET_STALE'&&x.selector===testLocator),
+   'Developer silently attached an owner note to a different UI action');
  await page.evaluate(()=>document.getElementById('developer-candidate-button')?.remove());
 
  // Navigate through the real application router, and accumulate diagnostics.
