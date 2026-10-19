@@ -110,6 +110,13 @@
     }
     html[data-mlv-platform="android"] #main .v30135-row-actions button{min-height:44px!important}
 
+    /* The canonical phone month cells use <div> click targets. Keyboard
+       users must see an obvious focus indicator without altering themes. */
+    html[data-mlv-platform="android"] #tab-calendar .v30135-day:focus-visible{
+      outline:3px solid var(--ui-accent,#75e4ff)!important;
+      outline-offset:2px!important
+    }
+
     /* Journal becomes one continuous, keyboard-safe writing screen.
        Existing editor/autosave/entry history remain the exact same DOM
        and underlying JournalV30189 API as desktop. */
@@ -918,6 +925,46 @@
       style.textContent=css;document.head.appendChild(style);
     }
   }
+  // GRANADA: the canonical month cells are clickable <div>s without keyboard
+  // semantics. Give Android/TalkBack real names, focus and Enter/Space
+  // activation while preserving the ONE existing calendar selection handler.
+  function enhanceCalendarA11y(main){
+    const spanish=window.MichelsLifeI18n?.language==='es';
+    const locale=spanish?'es-MX':'en-US';
+    const formatter=new Intl.DateTimeFormat(locale,{
+      weekday:'long',year:'numeric',month:'long',day:'numeric'
+    });
+    main.querySelectorAll('#tab-calendar .v30135-day[data-date]').forEach(day=>{
+      const date=day.getAttribute('data-date')||'';
+      if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(date))return;
+      const parsed=new Date(date+'T12:00:00');
+      if(Number.isNaN(parsed.getTime()))return;
+      if(!day.hasAttribute('role'))day.setAttribute('role','button');
+      if(!day.hasAttribute('tabindex'))day.tabIndex=0;
+      // Never overwrite an authored accessible name from the source app.
+      if(!day.hasAttribute('aria-label')||day.dataset.mlvAndroidA11yLabel==='1'){
+        day.setAttribute('aria-label',(spanish?'Seleccionar ':'Select ')+formatter.format(parsed));
+        day.dataset.mlvAndroidA11yLabel='1';
+      }
+      day.setAttribute('aria-pressed',day.classList.contains('selected')?'true':'false');
+      if(day.dataset.mlvAndroidKeyboard==='1')return;
+      day.dataset.mlvAndroidKeyboard='1';
+      day.addEventListener('keydown',event=>{
+        if(event.key!=='Enter'&&event.key!==' '&&event.key!=='Spacebar')return;
+        event.preventDefault();
+        if(event.repeat)return;
+        // Click bubbles to the canonical v30135 listener; no cloned data
+        // store, replacement route or separate selection state.
+        day.click();
+      });
+    });
+    const save=main.querySelector('#tab-journal #mlv184JournalSaveState');
+    if(save){
+      if(!save.hasAttribute('role'))save.setAttribute('role','status');
+      if(!save.hasAttribute('aria-live'))save.setAttribute('aria-live','polite');
+      if(!save.hasAttribute('aria-atomic'))save.setAttribute('aria-atomic','true');
+    }
+  }
   // Shared frontend and the Android bridge both re-render mission cards,
   // sometimes adding late !important/inline geometry from older layouts.
   // Own the final touch targets for Android without touching the desktop DOM.
@@ -950,6 +997,7 @@
           el.style.setProperty('display','none','important');
       });
     }
+    enhanceCalendarA11y(main);
     main.querySelectorAll('.v30135-day').forEach(el=>{
       // Desktop month cells inherit a 112px minimum. A phone shows the day
       // number/dots only; scheduled tasks remain accessible in day details.
