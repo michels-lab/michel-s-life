@@ -1,3 +1,10 @@
+## 2026-10-19 — Michel's Life Android Developer Twin + QA big block (no Windows builds)
+
+- Main Michel's Lab Developer Twin standard and issue #131: per-screen user annotations and true user-account flow apply eventually on both platforms. Owner paused Windows Developer work; Android feature PR #134 is Android-only.
+- Source implements separate Android Developer build type/application ID, dev UI runtime with read-only section audit, persistent exact screen+locator comments, JSON/AI export, real Settings/Sync login navigation, native Android document Save As and production/developer APK asset separation. No public Android APK changed or published.
+- The Developer UI smoke test passed but existing Android Story browser regression exposed a start-chapter CTA under the fixed bottom nav; corrected mobile spacing/sticky CTA on the same development branch. CI now checks native user-shaped and Developer APK installs separately, reducing coupling to occasional emulator ADB loss.
+- Source-wide security constraints: no captured passwords, account identifiers, raw stack traces, files or tokens; audits local-only and non-destructive; owner-authored comments manually exported intact. Actual provider login and installed APK success require further evidence. Windows native/MSIX builds stay paused; no Windows packaging authorized.
+
 ## 2026-10-19 — Follow-up: native Windows executable/installer smoke also paused
 
 - Inspected `ci.yml`: general source validation still included a `windows-icon-smoke` job that compiled `MichelsLife.exe`, published a portable Windows runtime and built/installed a Windows installer candidate on every PR and main push, including Android-only work.
