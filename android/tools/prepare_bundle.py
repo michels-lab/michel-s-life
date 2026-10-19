@@ -56,7 +56,7 @@ def main():
         text = text.replace(mobile_marker, mobile_marker + "\n" + sections_marker, 1)
     update_marker = '<script src="mobile-direct-updates.js" data-mlv-android-updates="v1"></script>'
     if update_marker not in text:
-        text = text.replace(sections_marker, sections_marker + "\\n" + update_marker, 1)
+        text = text.replace(sections_marker, sections_marker + "\n" + update_marker, 1)
     index.write_text(text, encoding="utf-8", newline="\n")
 
     print("Prepared Michel's Life Android web bundle:", assets)
