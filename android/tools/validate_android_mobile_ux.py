@@ -205,3 +205,11 @@ for path in (adaptive_icon, adaptive_round_icon):
         raise SystemExit(f"Adaptive launcher icon is not wired to the canonical foreground/background: {path}")
 
 print("OK: Android UX contract covers phone + wide-emulator app mode, active-surface navigation, stable onboarding/checklists, in-drawer quick actions, hardware rendering, canonical adaptive launcher identity, fixed drawer layering, swipe navigation, mission alignment and back handling")
+
+
+if "mobile-direct-updates.js" not in bundler:
+    raise SystemExit("Android Direct update UI is not bundled into the Android app")
+if "MichelsLifeAndroidUpdates?.mount?.()" not in bridge:
+    raise SystemExit("Android Settings does not mount the official Direct update UI")
+if not (ROOT.parent / "tools/ui_android_direct_update_smoke.mjs").exists():
+    raise SystemExit("Android Direct update touchscreen regression test missing")
