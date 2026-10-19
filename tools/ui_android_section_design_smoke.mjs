@@ -302,6 +302,62 @@ try{
     audit.push({id:'calendar',width,calendar});
   }
 
+  // GRANADA: canonical Calendar keyboard + TalkBack behavior. The cells
+  // are divs in the shared renderer, so phone size alone does not give them
+  // native focus/activation semantics. Test the REAL selection handler,
+  // English accessible name, focus, Enter/Space, and Journal autosave status.
+  for(const width of [412,360]){
+    await route('calendar',width);
+    const month=page.locator('#tab-calendar [data-v30135-cal="view"][data-view="month"]');
+    if(await month.count())await month.click();
+    const cell=page.locator('#tab-calendar .v30135-day[data-date]').nth(4);
+    const date=await cell.getAttribute('data-date');
+    const semantics=await cell.evaluate(el=>({
+      tag:el.tagName.toLowerCase(),role:el.getAttribute('role'),
+      tabIndex:el.tabIndex,name:el.getAttribute('aria-label'),
+      pressed:el.getAttribute('aria-pressed'),
+      rect:el.getBoundingClientRect().toJSON()
+    }));
+    assert(/^\d{4}-\d{2}-\d{2}$/.test(date||'')&&
+      semantics.tag==='div'&&semantics.role==='button'&&semantics.tabIndex===0&&
+      semantics.name?.startsWith('Select ')&&semantics.name.includes(date.slice(0,4))&&
+      ['true','false'].includes(semantics.pressed)&&semantics.rect.height>=44,
+      'Android Calendar cell is visually clickable but missing TalkBack/keyboard semantics: '+
+        JSON.stringify({width,semantics}));
+    await cell.focus();
+    await cell.press('Enter');
+    await page.waitForFunction(date=>{
+      const selected=document.querySelector('#tab-calendar .v30135-day.selected[data-date="'+date+'"]');
+      const saved=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')
+        ?.settings?.v30135CalendarSelected;
+      return !!selected&&saved===date&&selected.getAttribute('aria-pressed')==='true';
+    },date,{timeout:10000});
+    const next=page.locator('#tab-calendar .v30135-day[data-date]').nth(9);
+    const nextDate=await next.getAttribute('data-date');
+    await next.focus();
+    await next.press('Space');
+    await page.waitForFunction(date=>{
+      const selected=document.querySelector('#tab-calendar .v30135-day.selected[data-date="'+date+'"]');
+      const saved=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')
+        ?.settings?.v30135CalendarSelected;
+      return !!selected&&saved===date&&selected.getAttribute('aria-pressed')==='true';
+    },nextDate,{timeout:10000});
+    assert(nextDate!==date,'Keyboard smoke did not select two distinct Calendar days');
+    await page.screenshot({path:output+'/calendar-keyboard-'+width+'.png'});
+    audit.push({id:'calendar-keyboard-talkback',width,enter:true,space:true,
+      selectedDatePreserved:true});
+  }
+  await route('journal',360);
+  const saveStatus=await page.locator('#tab-journal #mlv184JournalSaveState').evaluate(el=>({
+    role:el.getAttribute('role'),live:el.getAttribute('aria-live'),
+    atomic:el.getAttribute('aria-atomic')
+  }));
+  assert(saveStatus.role==='status'&&saveStatus.live==='polite'&&
+    saveStatus.atomic==='true',
+    'Journal canonical save indicator is not announced to assistive technology: '+
+      JSON.stringify(saveStatus));
+  audit.push({id:'journal-save-screenreader',liveRegion:true});
+
   // Story has a legacy-compatible route, but mobile render is still mandatory.
   audit.push(await route('story'));
 
