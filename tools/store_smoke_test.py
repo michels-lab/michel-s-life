@@ -58,8 +58,12 @@ assert "data-mlv202-update" in overlay
 assert "Microsoft Store updates" in overlay
 
 workflow = WORKFLOW.read_text(encoding="utf-8")
-assert re.search(r"(?ms)^  push:\s*\n(?:.*\n)*?    branches:\s*\n(?:.*\n)*?      - main(?:\s|$)", workflow), (
-    "Store workflow must validate the default branch automatically."
+# Owner specifically paused automatic Windows/MSIX builds on 2026-10-19.
+# Source and package manifest rules stay testable without running MSIX CI
+# on each Android or frontend change.
+assert "  workflow_dispatch:" in workflow, "Store packaging must remain available manually."
+assert not re.search(r"(?m)^  (push|pull_request|schedule):", workflow), (
+    "Store packaging must not run automatically while Windows is paused."
 )
 assert "name: Validate Microsoft Store channel" in workflow
 assert "needs: validate" in workflow
