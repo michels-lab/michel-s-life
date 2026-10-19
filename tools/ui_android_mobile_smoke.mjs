@@ -145,15 +145,26 @@ try{
   const clockStatus=await page.evaluate(()=>{
     const r=el=>{const x=el?.getBoundingClientRect();return x?{top:x.top,bottom:x.bottom,height:x.height,width:x.width}:null;};
     const panel=document.getElementById('v176StatusPanel');
+    const summary=panel?.querySelector('#mlv-android-time-summary');
+    const chapter=panel?.querySelector(':scope>.v30165-rpg-chapter-hero');
     const date=document.getElementById('mlv-android-clock-date');
     const clock=panel?.querySelector('#mlv-android-clock-time');
-    return {panel:r(panel),date:r(date),time:r(clock),dateText:date?.textContent?.trim()||'',
+    return {panel:r(panel),summary:r(summary),chapter:r(chapter),date:r(date),time:r(clock),
+      chapterDisplay:chapter?getComputedStyle(chapter).display:'',
+      chapterVisibility:chapter?getComputedStyle(chapter).visibility:'',
+      dateText:date?.textContent?.trim()||'',
       clockFont:clock?getComputedStyle(clock).fontSize:null};
   });
-  ok(clockStatus.panel&&clockStatus.panel.height<=90&&clockStatus.date&&clockStatus.dateText.length>=6 &&
-    clockStatus.date.top>=clockStatus.panel.top-2 &&
-    clockStatus.date.bottom<=clockStatus.panel.bottom+3,
-    'Android clock panel clips or omits its local date: '+JSON.stringify(clockStatus));
+  ok(clockStatus.panel&&clockStatus.summary&&clockStatus.summary.height<=90 &&
+    clockStatus.date&&clockStatus.dateText.length>=6 &&
+    clockStatus.date.top>=clockStatus.summary.top-2 &&
+    clockStatus.date.bottom<=clockStatus.summary.bottom+3,
+    'Android local clock must stay compact above Chapter, without clipping date: '+JSON.stringify(clockStatus));
+  ok(clockStatus.chapter&&clockStatus.chapter.height>=220 &&
+    clockStatus.chapterDisplay!=='none'&&clockStatus.chapterVisibility==='visible' &&
+    clockStatus.chapter.top>=clockStatus.summary.bottom-2 &&
+    clockStatus.chapter.bottom<=clockStatus.panel.bottom+3,
+    'Current Chapter hero was hidden or cropped by Android status geometry: '+JSON.stringify(clockStatus));
   const verticalStart=await page.evaluate(()=>{
     window.__mlvTouchPreventTrace=[];
     if(!window.__mlvPreventDefaultTracing){
@@ -229,7 +240,13 @@ try{
       .slice(0,8).map(x=>({tag:x.tagName,id:x.id,className:String(x.className||'').slice(0,120),top:x.getBoundingClientRect().top,height:x.getBoundingClientRect().height,text:(x.innerText||'').trim().slice(0,100)}));
     return {items:all,mainTop:main?.getBoundingClientRect().top,cardTop:card?.getBoundingClientRect().top};
   });
-  ok(initial.main&&initial.main.top<190,'Primary content starts too low and still requires an initial scroll: '+JSON.stringify(initial));
+  // The approved Current Chapter is now a real hero ABOVE Today, not a
+  // formerly hidden 64px status tile. Count that useful content as visible.
+  ok(initial.main&&initial.activeStatus &&
+    initial.main.top>=initial.activeStatus.bottom-3 &&
+    initial.main.top<=initial.activeStatus.bottom+26 &&
+    initial.activeStatus.top<100,
+    'Dashboard starts below the visible Chapter with an unexplained gap: '+JSON.stringify(initial));
   // A real first-run "pending mission from yesterday" carry-over prompt
   // appears ABOVE Today's card and adds ~147px. Treat the prompt as content,
   // never as an unexplained blank gap or a license to hide user reminders.
@@ -244,7 +261,10 @@ try{
     return {visible:!!(a&&b&&c&&a.width>30&&b.width>30&&a.bottom<=c.top&&b.bottom<=c.top),
       decline:a,accept:b,card:c,bodyContains:!!main?.textContent?.includes('pending mission from yesterday')};
   });
-  const firstCardMaxTop=carryoverPrompt.visible?410:240;
+  // The complete Chapter scene legitimately adds vertical height before
+  // the first mission card; it is not blank padding or a navigation trap.
+  const chapterHeight=Math.max(0,(clockStatus.chapter?.height||0)-65);
+  const firstCardMaxTop=(carryoverPrompt.visible?410:240)+chapterHeight;
   ok(initial.firstCard&&initial.firstCard.top<firstCardMaxTop,
     'First dashboard card starts too low, accounting for actionable carry-over prompt: '+JSON.stringify({initial,carryoverPrompt,preCardGeometry}));
   ok(initial.overflow<=2,'Android page has horizontal overflow: '+JSON.stringify(initial));
@@ -1175,7 +1195,8 @@ try{
     return {
       topbar:rect(top),topbarDisplay:getComputedStyle(top).display,
       sidebar:rect(side),sidebarPosition:getComputedStyle(side).position,
-      main:rect(main),mainMaxWidth:getComputedStyle(main).maxWidth,
+      main:rect(main),chapterStatus:rect(document.getElementById('v176StatusPanel')),
+      mainMaxWidth:getComputedStyle(main).maxWidth,
       desktopTop:oldTop?getComputedStyle(oldTop).display:'',
       onboardingVisible:(()=>{const el=document.getElementById('mlv200Onboarding');return !!(el&&el.getClientRects().length&&getComputedStyle(el).display!=='none')})(),
       overflow:document.documentElement.scrollWidth-window.innerWidth
@@ -1184,7 +1205,11 @@ try{
   ok(wideState.topbarDisplay!=='none','Wide Android emulator fell back to desktop UI: '+JSON.stringify(wideState));
   ok(wideState.desktopTop==='none','Desktop topbar is visible in wide Android emulator: '+JSON.stringify(wideState));
   ok(wideState.sidebarPosition==='fixed'&&wideState.sidebar&&wideState.sidebar.right<=8,'Wide Android drawer is not fixed/off-canvas: '+JSON.stringify(wideState));
-  ok(wideState.main&&wideState.main.top<200,'Wide Android main content starts too low: '+JSON.stringify(wideState));
+  ok(wideState.main&&wideState.chapterStatus &&
+    wideState.chapterStatus.top<100 &&
+    wideState.main.top>=wideState.chapterStatus.bottom-3 &&
+    wideState.main.top<=wideState.chapterStatus.bottom+26,
+    'Wide Android main must follow the real cinematic Chapter without blank space: '+JSON.stringify(wideState));
   ok(wideState.main&&wideState.main.width<=1182,'Wide Android content is not bounded for emulator/landscape: '+JSON.stringify(wideState));
   ok(!wideState.onboardingVisible,'Existing profile onboarding appeared in wide Android emulator: '+JSON.stringify(wideState));
   ok(wideState.overflow<=2,'Wide Android emulator has horizontal overflow: '+JSON.stringify(wideState));

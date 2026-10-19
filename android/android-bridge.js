@@ -547,17 +547,28 @@
     if(status){
       setImportantOnce(status,'position','relative');
       setImportantOnce(status,'top','auto');
-      setImportantOnce(status,'max-height','88px');
-      // Exact one-finger CI hit-testing exposed an invisible, absolutely
-      // positioned desktop status card above Dashboard metrics. A stylesheet
-      // display:none was not sufficient against late inline !important
-      // owners. Remove those old tiles from layout AND hit-testing at runtime.
+      // The SECOND legacy status tile becomes Current Chapter. Never cap
+      // the whole panel at 88px or hide that tile: doing so also clips the
+      // canonical v30189 cinematic image, fog and light-sweep layers.
+      setImportantOnce(status,'max-height','none');
+      setImportantOnce(status,'overflow','visible');
+      setImportantOnce(status,'contain','none');
       status.querySelectorAll('.v176-card').forEach(card=>{
-        setImportantOnce(card,'display','none');
-        setImportantOnce(card,'visibility','hidden');
-        setImportantOnce(card,'pointer-events','none');
+        const chapter=card.classList.contains('v30165-rpg-chapter-hero');
+        if(chapter){
+          // Only undo the old Android interception; the shared Chapter
+          // renderer owns the scene, art, timing and motion.
+          for(const property of ['display','visibility','pointer-events']){
+            if(card.style.getPropertyPriority(property)==='important' &&
+               ['none','hidden'].includes(card.style.getPropertyValue(property)))
+              card.style.removeProperty(property);
+          }
+        }else{
+          setImportantOnce(card,'display','none');
+          setImportantOnce(card,'visibility','hidden');
+          setImportantOnce(card,'pointer-events','none');
+        }
       });
-      setImportantOnce(status,'overflow','hidden');
       let summary=status.querySelector('#mlv-android-time-summary');
       if(!summary){
         summary=document.createElement('div');
@@ -695,7 +706,7 @@
         #mlv200Onboarding .mlv200-focus{display:grid!important;grid-template-columns:28px minmax(0,1fr)!important;align-items:center!important;gap:8px!important;min-height:46px!important;padding:7px 10px!important;border-radius:12px!important}
         #mlv200Onboarding .mlv200-focus input[type="checkbox"],#mlv200Onboarding .mlv200-option input[type="checkbox"]{-webkit-appearance:checkbox!important;appearance:auto!important;width:22px!important;height:22px!important;min-width:22px!important;min-height:22px!important;max-width:22px!important;max-height:22px!important;margin:0!important;padding:0!important;transform:none!important;accent-color:var(--ui-accent,var(--accent,#ff7ad9))!important}
         #mlv200Onboarding .mlv200-focus b{font-size:12px!important;line-height:1.25!important}
-        html[data-mlv-platform="android"][data-mlv-android-switching="1"] *{transition-duration:0s!important}
+        html[data-mlv-platform="android"][data-mlv-android-switching="1"] #main>.tab{transition-duration:0s!important}
         html[data-mlv-platform="android"][data-mlv-android-switching="1"] #mlv-android-topbar::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:currentColor;opacity:.38;animation:mlvAndroidSwitchPulse .55s ease-in-out infinite alternate}
         @keyframes mlvAndroidSwitchPulse{from{transform:scaleX(.22);opacity:.18}to{transform:scaleX(1);opacity:.52}}
         /* Do not intersect pan-y ancestors with Settings horizontal pan-x. */
@@ -723,19 +734,28 @@
         /* Status: one compact, complete time-and-date row, not a giant
            clipped clock left over from the desktop multi-card overlay. */
         html[data-mlv-platform="android"] #v176StatusPanel{
-          height:auto!important;min-height:0!important;max-height:88px!important;
+          height:auto!important;min-height:0!important;max-height:none!important;
           padding:7px 10px!important;overflow:visible!important;
-          display:flex!important;align-items:center!important;
-          contain:layout!important
+          display:flex!important;flex-direction:column!important;
+          align-items:stretch!important;gap:9px!important;
+          contain:none!important
         }
-        html[data-mlv-platform="android"] #v176StatusPanel .v176-card{
+        html[data-mlv-platform="android"] #v176StatusPanel
+        >.v176-card.v30165-rpg-chapter-hero{
+          display:block!important;position:relative!important;
+          visibility:visible!important;pointer-events:auto!important;
+          width:100%!important;min-width:0!important;min-height:238px!important;
+          flex:0 0 auto!important;overflow:hidden!important;
+          order:1!important
+        }
+        html[data-mlv-platform="android"] #v176StatusPanel .v176-card:not(.v30165-rpg-chapter-hero){
           /* Desktop status tiles are absolutely laid out, so reflowing the
              first one leaves descendants far outside the compact container. */
           display:none!important
         }
         html[data-mlv-platform="android"] #v176StatusPanel #mlv-android-time-summary{
           display:flex!important;position:relative!important;
-          flex:1 1 auto!important;flex-direction:column!important;
+          order:0!important;flex:0 0 auto!important;flex-direction:column!important;
           align-items:flex-start!important;justify-content:center!important;
           width:100%!important;min-width:0!important;min-height:0!important;
           height:auto!important;margin:0!important;padding:2px 5px!important;
@@ -775,9 +795,9 @@
         .app-shell,.layout,.content,#main{min-width:0!important;max-width:100%!important;width:100%!important;box-sizing:border-box!important}
         .app-shell,.layout{grid-template-columns:minmax(0,1fr)!important;display:block!important;margin-top:6px!important}
         #fixedStatusBar,.status-strip{display:none!important;height:0!important;min-height:0!important;max-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
-        #v176StatusPanel{position:relative!important;top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;display:block!important;width:calc(100% - 16px)!important;max-width:none!important;height:auto!important;min-height:0!important;max-height:64px!important;margin:6px 8px!important;padding:5px 7px!important;border-radius:14px!important;overflow:hidden!important;contain:layout paint!important;transform:none!important}
-        #v176StatusPanel .v176-card{display:none!important}
-        #v176StatusPanel .v176-card:first-child{display:flex!important;align-items:center!important;gap:8px!important;width:100%!important;min-width:0!important;min-height:0!important;height:auto!important;margin:0!important;padding:5px 7px!important;border:0!important;border-radius:10px!important;background:transparent!important;box-shadow:none!important;overflow:hidden!important}
+        #v176StatusPanel{position:relative!important;top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;width:calc(100% - 16px)!important;max-width:none!important;height:auto!important;min-height:0!important;max-height:none!important;margin:6px 8px!important;padding:7px!important;border-radius:14px!important;overflow:visible!important;contain:none!important;transform:none!important}
+        #v176StatusPanel .v176-card:not(.v30165-rpg-chapter-hero){display:none!important}
+        #v176StatusPanel>.v176-card.v30165-rpg-chapter-hero{display:block!important;position:relative!important;visibility:visible!important;pointer-events:auto!important;min-height:238px!important;width:100%!important;overflow:hidden!important}
         #v176StatusPanel .v176-time{flex:0 0 auto!important;font-size:18px!important;line-height:1!important;letter-spacing:-.03em!important}
         #v176StatusPanel .v176-small{min-width:0!important;margin:0!important;font-size:9px!important;line-height:1.2!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
         #v30171Sidebar{position:fixed!important;top:calc(var(--mlv-android-topbar-h) + env(safe-area-inset-top,0px))!important;left:0!important;bottom:0!important;width:min(86vw,320px)!important;max-width:320px!important;height:auto!important;max-height:none!important;overflow-y:auto!important;transform:translateX(-105%)!important;transition:transform .16s ease!important;z-index:2147482995!important;margin:0!important;padding:10px!important;border-radius:0 18px 18px 0!important;box-shadow:12px 0 35px rgba(0,0,0,.35)!important;overscroll-behavior:contain;background:rgba(var(--ui-panel-rgb,7,13,25),.985)!important}

@@ -1200,13 +1200,21 @@
       }
     });
   }
+  // Avoid replacing identical text nodes every second: textContent writes
+  // are observable childList changes, and used to retrigger expensive mobile
+  // layout ownership passes even when the user was only selecting a control.
+  function writeText(el,text){
+    if(!el)return;
+    const next=String(text);
+    if(el.textContent!==next)el.textContent=next;
+  }
   function updateFocus(){
     if(!root||!nav)return;
     const api=focusApi(),f=api?.focusState?.();
     const tile=ensureTodayFocus();
     enforceFocusTextLayout(tile);
     if(!f){
-      if(!root.hidden)q('#mlv-android-focus-status',root).textContent='Focus is loading';
+      if(!root.hidden)writeText(q('#mlv-android-focus-status',root),'Focus is loading');
       if(mini)mini.hidden=true;
       document.body.classList.remove('mlv-android-timer-active');
       return;
@@ -1218,10 +1226,10 @@
     if(mini){
       mini.hidden=!active;
       if(active){
-        q('#mlv-android-mini-time',mini).textContent=left;
-        q('#mlv-android-mini-state',mini).textContent=mode+' · '+(f.status==='running'?'In progress':'Paused');
+        writeText(q('#mlv-android-mini-time',mini),left);
+        writeText(q('#mlv-android-mini-state',mini),mode+' · '+(f.status==='running'?'In progress':'Paused'));
         const control=q('.mlv-mini-toggle',mini);
-        control.textContent=f.status==='running'?'Pause':'Resume';
+        writeText(control,f.status==='running'?'Pause':'Resume');
         control.setAttribute('aria-label',control.textContent+' '+mode+' timer');
       }
     }
@@ -1229,26 +1237,26 @@
     if(tile){
       const state=q('#mlv-android-today-focus-status',tile);
       const button=q('#mlv-android-today-focus-action',tile);
-      state.textContent=active?mode+' · '+left+(f.status==='paused'?' paused':' remaining'):
-        'Start a distraction-free session';
-      button.textContent=active?'Open':'Start';
+      writeText(state,active?mode+' · '+left+(f.status==='paused'?' paused':' remaining'):
+        'Start a distraction-free session');
+      writeText(button,active?'Open':'Start');
     }
     if(root.hidden)return;
     enforceFocusTouchTargets();
-    q('#mlv-android-focus-time',root).textContent=left;
-    q('#mlv-android-focus-phase',root).textContent=mode.toUpperCase();
-    q('#mlv-android-focus-status',root).textContent=
-      f.status==='running'?'Session in progress':f.status==='paused'?'Session paused':'Ready to begin';
-    q('#mlv-focus-session-meta',root).textContent=
-      (f.mode==='break'?'BREAK':'WORK SESSION')+' · '+(f.mode==='break'?f.breakMin:f.workMin)+' MIN';
-    q('#mlv-focus-session-state',root).textContent=
-      f.status==='running'?'IN PROGRESS':f.status==='paused'?'PAUSED':'READY';
-    q('#mlv-focus-end-time',root).textContent=f.status==='running'?
+    writeText(q('#mlv-android-focus-time',root),left);
+    writeText(q('#mlv-android-focus-phase',root),mode.toUpperCase());
+    writeText(q('#mlv-android-focus-status',root),
+      f.status==='running'?'Session in progress':f.status==='paused'?'Session paused':'Ready to begin');
+    writeText(q('#mlv-focus-session-meta',root),
+      (f.mode==='break'?'BREAK':'WORK SESSION')+' · '+(f.mode==='break'?f.breakMin:f.workMin)+' MIN');
+    writeText(q('#mlv-focus-session-state',root),
+      f.status==='running'?'IN PROGRESS':f.status==='paused'?'PAUSED':'READY');
+    writeText(q('#mlv-focus-end-time',root),f.status==='running'?
       'Ends at '+new Date(Number(f.deadlineAt)).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):
       f.status==='paused'?'Time saved. Resume when you are ready.':
-      'Choose a duration, then begin.';
-    q('[data-mobile-focus="toggle"]',root).textContent=
-      f.status==='running'?'Pause session':f.status==='paused'?'Resume session':'Start focusing';
+      'Choose a duration, then begin.');
+    writeText(q('[data-mobile-focus="toggle"]',root),
+      f.status==='running'?'Pause session':f.status==='paused'?'Resume session':'Start focusing');
     root.querySelectorAll('[data-mobile-preset]').forEach(b=>
       b.setAttribute('aria-pressed',String(b.dataset.mobilePreset===f.preset))
     );
@@ -1264,19 +1272,19 @@
     let saved={};
     try{saved=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')||{}}catch(_){}
     const linked=(saved.missions||[]).find(m=>String(m.id)===String(f.linkedMissionId||''));
-    q('#mlv-android-focus-linked',root).textContent=linked?linked.name:'None yet';
+    writeText(q('#mlv-android-focus-linked',root),linked?linked.name:'None yet');
     const now=new Date();
     const day=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+
       '-'+String(now.getDate()).padStart(2,'0');
     const done=(api.focusSessions?.()||[]).filter(x=>x.status==='completed'&&x.date===day).length;
-    q('#mlv-android-focus-count',root).textContent=done+' session'+(done===1?'':'s');
+    writeText(q('#mlv-android-focus-count',root),done+' session'+(done===1?'':'s'));
     const native=window.MichelsLifeAndroid;
     if(typeof native?.focusNotificationStatus==='function'){
       try{
         const state=JSON.parse(native.focusNotificationStatus());
-        q('.mlv-android-focus-system-note',root).textContent=state.notificationsGranted?
-          'Countdown available in notifications and on the lock screen. Battery saving may delay completion alerts.':
-          'Allow Michel’s Life notifications to show the countdown with the screen locked.';
+        writeText(q('.mlv-android-focus-system-note',root),state.notificationsGranted?
+           'Countdown available in notifications and on the lock screen. Battery saving may delay completion alerts.':
+           'Allow Michel’s Life notifications to show the countdown with the screen locked.');
         const enable=q('#mlv-focus-enable-notifications',root);
         if(enable)enable.hidden=!!state.notificationsGranted;
       }catch(_){}
@@ -1365,7 +1373,17 @@
     // Observe insertion only, not style attributes, to avoid reflow loops.
     const missionRoot=q('#main');
     if(missionRoot){
-      const weeklyObserver=new MutationObserver(()=>{adaptWeeklyPlanner();restoreChapterDraft();});
+      let pendingWeekly=false;
+      const weeklyObserver=new MutationObserver(records=>{
+        if(pendingWeekly||!records.some(record=>
+          [...record.addedNodes,...record.removedNodes].some(node=>node.nodeType===Node.ELEMENT_NODE)))return;
+        pendingWeekly=true;
+        requestAnimationFrame(()=>{
+          pendingWeekly=false;
+          adaptWeeklyPlanner();
+          restoreChapterDraft();
+        });
+      });
       weeklyObserver.observe(missionRoot,{childList:true,subtree:true});
       adaptWeeklyPlanner();
       restoreChapterDraft();

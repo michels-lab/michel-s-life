@@ -674,8 +674,9 @@ try{
     document.getElementById('toastWrap')?.replaceChildren();
   });
 
-  // A real visual animation needs different computed positions at two
-  // moments; CSS declaring an animation is not sufficient.
+  // Canonical selection can re-render any card. The former universal
+  // section-enter animation made the entire card flash each time a control
+  // was selected; Chapter has its own independent cinematic motion probe.
   await page.setViewportSize({width:412,height:915});
   await page.evaluate(()=>window.__mlvAndroidFastRoute('stats'));
   await page.waitForTimeout(280);
@@ -683,21 +684,21 @@ try{
   const motion=await page.evaluate(async()=>{
     const card=document.querySelector('#tab-achievements.active > .card');
     if(!card)return null;
-    await new Promise(resolve=>requestAnimationFrame(resolve));
     const first={translate:getComputedStyle(card).translate,opacity:getComputedStyle(card).opacity};
-    await new Promise(resolve=>setTimeout(resolve,95));
+    await new Promise(resolve=>setTimeout(resolve,125));
     const second={translate:getComputedStyle(card).translate,opacity:getComputedStyle(card).opacity};
     return {name:getComputedStyle(card).animationName,first,second};
   });
-  assert(motion && motion.name==='mlvAndroidSectionEnter',
-    'Android section transition is not applied to a real active card: '+JSON.stringify(motion));
-  assert(motion.first.translate!==motion.second.translate ||
-    motion.first.opacity!==motion.second.opacity,
-    'Android entrance animation did not change computed visual state across frames: '+JSON.stringify(motion));
+  assert(motion && motion.name!=='mlvAndroidSectionEnter',
+    'Card redraw still retriggers synthetic section entrance flicker: '+JSON.stringify(motion));
+  assert(motion.first.translate===motion.second.translate &&
+    motion.first.opacity===motion.second.opacity,
+    'Unrelated selection card visibly jumps/fades between stable frames: '+JSON.stringify(motion));
   await page.emulateMedia({reducedMotion:'reduce'});
   const reduced=await page.evaluate(()=>getComputedStyle(
     document.querySelector('#tab-achievements.active > .card')).animationName);
-  assert(reduced==='none','Android ignores reduced-motion accessibility preference: '+reduced);
+  assert(reduced!=='mlvAndroidSectionEnter',
+    'Android recreated the removed universal card animation in reduced-motion: '+reduced);
   await page.emulateMedia({reducedMotion:'no-preference'});
   console.log(JSON.stringify({ok:true,audit,motion,reduced,screenshots},null,2));
   await context.close();
