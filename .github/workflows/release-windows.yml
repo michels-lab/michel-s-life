@@ -24,23 +24,10 @@ on:
         required: false
         default: false
         type: boolean
-  pull_request:
-    paths:
-      - 'src/MichelsLife/**'
-      - 'branding/**'
-      - 'installer/**'
-      - 'tools/materialize_host_source.py'
-      - 'tools/release_smoke_test.py'
-      - 'tools/bump_frontend_version.py'
-      - 'tools/enable_i18n.py'
-      - 'tools/validate_generated_index.py'
-      - 'tools/replace_bundle_index.py'
-      - 'tools/inject_bundle_asset.py'
-      - 'tools/windows_launch_smoke.ps1'
-      - '.github/workflows/release-windows.yml'
-  push:
-    tags:
-      - 'v*'
+  # Owner pause (2026-10-19): no automatic Windows release
+  # on pull requests or version-tag pushes until final product stage.
+  # Keep workflow_call + workflow_dispatch available for a future
+  # explicitly requested final Windows packaging.
 
 permissions:
   contents: read
