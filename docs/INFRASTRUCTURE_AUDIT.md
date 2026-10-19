@@ -1,3 +1,9 @@
+## 2026-10-19 — Android Developer build isolation and test instrumentation boundary
+
+- A distinct internal `developerDebug` Android variant uses `applicationIdSuffix=.developer`; standard public Direct/Play APKs keep `com.michelslab.michelslife`. Developer diagnostic JS is variant-scoped in `android/app/src/developerDebug/assets/app` and loaded at runtime only for the developer package. App data/localStorage and account sessions are Android-package-isolated, not copied between variants.
+- Real Android save/export bridge calls Storage Access Framework `ACTION_CREATE_DOCUMENT` for user-initiated JSON/prompt files. No automatic telemetry or upload. Early CI validates APK IDs and that public APK does not embed developer-diagnostics.js. Installed Android 16 native test job for developer app added separately from existing public-shaped native smoke.
+- Status: **source candidate / tests pending**; internal Developer APK presently debug-signed, **not** a stable distribution or updater. For authentic Google authorization from separate Developer package/signature, register/verify Android OAuth provider credentials as necessary; never bundle signing credentials. Supabase account safety #108 remains independent. Windows Developer shell and packaging are deferred per owner instruction.
+
 # Michel's Life — Infrastructure & Cloud Audit
 
 Last reviewed: **2026-10-05**
