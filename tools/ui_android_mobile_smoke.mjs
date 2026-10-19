@@ -686,7 +686,7 @@ try{
     /WORK SESSION/.test(polishedFocus.phase||'')&&
     polishedFocus.sessionStatus==='READY'&&
     polishedFocus.lockLabel==='Lock-screen countdown'&&
-    /^\\d{2}:\\d{2}$/.test(polishedFocus.clock||'')&&
+    /^\d{2}:\d{2}$/.test(polishedFocus.clock||'')&&
     polishedFocus.width<=polishedFocus.viewport+1,
     'Professional Pomodoro viewport/status/lock-screen controls regressed: '+
     JSON.stringify(polishedFocus));
