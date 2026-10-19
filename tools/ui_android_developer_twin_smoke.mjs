@@ -100,6 +100,16 @@ try {
  assert(!reports[1].body.includes('password=')&&!reports[0].body.includes('access_token'),
    'Developer export leaked form/session data');
 
+ // A synthetic error must retain only its class/route across a WebView
+ // restart, not any original message, stack trace or owner data.
+ await page.evaluate(()=>{
+   window.dispatchEvent(new ErrorEvent('error',{error:new TypeError('password=VERY_PRIVATE_FIXTURE'),message:'password=VERY_PRIVATE_FIXTURE'}));
+ });
+ const errorsBefore=await page.evaluate(()=>window.MichelsLabDeveloperTwin.report().runtimeErrors);
+ assert(errorsBefore.some(x=>x.code==='WINDOW_ERROR'&&x.type==='TypeError'),'Developer did not capture bounded error class');
+ const redacted=JSON.stringify(errorsBefore);
+ assert(!redacted.includes('VERY_PRIVATE_FIXTURE'),'Developer captured a private exception message or stack');
+
  // Reload with a real storage-backed session; the annotation must survive.
  await page.reload({waitUntil:'domcontentloaded'});
  await page.waitForFunction(()=>!!document.querySelector('#main>.tab.active'),null,{timeout:60000});
@@ -107,6 +117,9 @@ try {
  const persisted=await page.evaluate(()=>window.MichelsLabDeveloperTwin.notes());
  assert(persisted.length===1&&persisted[0].comment===comment&&persisted[0].screen===activeScreen,
    'Annotation was lost after installed-like WebView page recreation');
+ const errorsAfter=await page.evaluate(()=>window.MichelsLabDeveloperTwin.report().runtimeErrors);
+ assert(errorsAfter.some(x=>x.code==='WINDOW_ERROR'&&x.type==='TypeError'),
+   'Redacted runtime issue disappeared during Developer WebView restart');
  await page.locator('#ml-dev-twin-host #mltrigger').click();
  await page.getByRole('button',{name:'User sign-in'}).click();
  await page.waitForFunction(()=>!!document.querySelector('#tab-settings.active'),null,{timeout:7000});
