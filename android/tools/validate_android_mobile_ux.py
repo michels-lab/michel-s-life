@@ -159,6 +159,33 @@ for token in (
     if token not in focus_alarm:
         raise SystemExit("Focus reboot recovery contract missing: " + token)
 
+# Lock-screen timer contract: notification countdown is driven by the
+# canonical deadline, never a duplicate Android session store or a cosmetic
+# JS-only timer. Do not falsely advertise exact alarm delivery in Doze.
+for token in (
+    'private const val ACTIVE_NOTIFICATION_ID = 4707',
+    'NotificationManager.IMPORTANCE_LOW',
+    'setUsesChronometer(true)',
+    'setChronometerCountDown(true)',
+    'setWhen(deadline)',
+    'setOngoing(true)',
+    'setVisibility(Notification.VISIBILITY_PUBLIC)',
+    'showRunning(context, mode, deadline)',
+    'hideRunning(context)',
+):
+    if token not in focus_alarm:
+        raise SystemExit("Lock-screen Pomodoro native notification contract missing: " + token)
+for token in ('openPomodoroFromNotification()', 'NativeFocusAlarm.EXTRA_OPEN_FOCUS',
+              'resyncNativeNotification'):
+    if token not in main and token not in mobile_experience:
+        raise SystemExit("Pomodoro notification navigation/permission bridge missing: " + token)
+if "mlv-focus-session-state" not in mobile_experience or "mlv-focus-enable-notifications" not in mobile_experience:
+    raise SystemExit("Professional Pomodoro view must expose live state and notification permission")
+if not (ROOT / "tools/native_focus_lock_probe.py").exists() or not (ROOT / "tools/smoke_candidate_apk_install.sh").exists():
+    raise SystemExit("Installed native lock-screen Pomodoro regression probe is missing")
+if "native_focus_lock_probe.py" not in (ROOT / "tools/smoke_candidate_apk_install.sh").read_text(encoding="utf-8"):
+    raise SystemExit("The real APK smoke must check the locked-screen countdown")
+
 for path in (adaptive_icon, adaptive_round_icon, launcher_foreground):
     if not path.exists() or path.stat().st_size == 0:
         raise SystemExit(f"Canonical Michel's Life Android launcher resource is missing: {path}")
