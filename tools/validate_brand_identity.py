@@ -55,8 +55,14 @@ for marker in (
 assert 'assets/michels_life_logo.webp' not in frontend, 'legacy product logo is still active in frontend'
 
 manifest=text(ROOT/'android/app/src/main/AndroidManifest.xml')
-assert 'android:icon="@mipmap/ic_launcher"' in manifest
-assert 'android:roundIcon="@mipmap/ic_launcher_round"' in manifest
+# Public launcher remains canonical; Developer gets its own distinguishable
+# icon via manifest placeholders without replacing the customer artwork.
+gradle=text(ROOT/'android/app/build.gradle.kts')
+assert 'android:icon="${appIcon}"' in manifest
+assert 'android:roundIcon="${appRoundIcon}"' in manifest
+assert 'manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher"' in gradle
+assert 'manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_launcher_round"' in gradle
+assert 'manifestPlaceholders["appIcon"] = "@drawable/ic_developer_launcher"' in gradle
 assert '@drawable/michels_life_logo' not in manifest
 v31=text(ROOT/'android/app/src/main/res/values-v31/styles.xml')
 assert 'android:windowSplashScreenAnimatedIcon' in v31
