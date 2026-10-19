@@ -1,3 +1,10 @@
+## 2026-10-19 — Owner-authorized 0.2.9 production release candidate
+
+- Owner authorized completing the fully validated Focus Studio/lock-screen Pomodoro, merging PR #128 and publishing an in-place Android update. PR #128 merged as `a398ea048feb6a906bb939c67d31eee1e8f16603`; five exact-head checks were green, including Android UI smoke, native Android 16 installed APK and countdown remaining while the screen is asleep.
+- Unified distribution follows permanent pinned Direct signing, Android 0.2.9 (versionCode 11) paired with Windows 3.0.221 (no desktop redesign) in the single canonical public release repository. Release workflow must verify exact-source code, native Android debuggable and signed installed behavior, canonical persistence, 13 file assets with hashes, Windows installation and launch, and published provenance.
+- The 0.2.8 APK remains publicly installed and unchanged until the successor passes release gates. Do not publish an unsigned/debug APK, clear app storage, or claim personal Galaxy acceptance based solely on emulator results. Notification visibility requires Android permission and lock-screen settings; Doze completion alerts can be inexact.
+- STATUS: release preparation on `release/unified-v3221-a029`, release intent and actual public release pending.
+
 ## 2026-10-19 — Focus Studio + persistent native Android lock-screen countdown (candidate)
 
 - Owner requested a professional-looking Pomodoro and the ability to lock the phone while the timer remains visible in notifications. Previous Android 0.2.8 native Focus implementation only scheduled one inexact completion alarm; no ongoing notification/lock-screen countdown existed. Full-screen Focus UI felt like a crowded dialog.

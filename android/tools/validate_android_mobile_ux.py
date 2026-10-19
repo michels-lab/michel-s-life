@@ -15,7 +15,7 @@ launcher_foreground = ROOT / "app/src/main/res/drawable/ic_launcher_foreground.x
 focus_alarm = (ROOT / "app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt").read_text(encoding="utf-8")
 
 required_bridge = [
-    "window.__MICHELSLIFE_ANDROID_BRIDGE__='0.2.8'",
+    "window.__MICHELSLIFE_ANDROID_BRIDGE__='0.2.9'",
     "const MOBILE_BREAKPOINT=4096;",
     "@media(min-width:900px) and (max-width:${MOBILE_BREAKPOINT}px)",
     "mlv-android-topbar",
