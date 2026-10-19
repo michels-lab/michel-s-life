@@ -2,12 +2,22 @@
 (function(){
 'use strict';
 if(window.MichelsLabDeveloperTwin)return;
-const KEY='michelslab.developer.notes.v1',maxErrors=80;
+const KEY='michelslab.developer.notes.v1',ERROR_KEY='michelslab.developer.errors.v1',maxErrors=80;
 const errors=[],findings=[];let notes=[],inspect=false,selected=null,host,shadow,panel,notice,comments,items,hilite,trigger;
 const checkedScreens=new Map();let lastAuditAt=null;let consumePointerClick=false,fullAuditBusy=false;
 let lastSweep={attempted:[],skipped:[],restoredScreen:null,finishedAt:null};
 const iso=()=>new Date().toISOString();
 try{const s=JSON.parse(localStorage.getItem(KEY)||'[]');if(Array.isArray(s))notes=s.slice(0,400);}catch(_){}
+try{
+ const persisted=JSON.parse(localStorage.getItem(ERROR_KEY)||'[]');
+ if(Array.isArray(persisted))for(const item of persisted.slice(-maxErrors)){
+  if(item&&['WINDOW_ERROR','UNHANDLED_REJECTION'].includes(item.code) &&
+     typeof item.time==='string'&&typeof item.screen==='string'&&
+     /^[A-Za-z]{1,35}$/.test(item.type||'')){
+    errors.push({code:item.code,time:item.time.slice(0,35),screen:item.screen.slice(0,95),type:item.type});
+  }
+ }
+}catch(_){}
 const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(notes));return true;}catch(_){return false;}};
 const screen=()=>document.querySelector('#main .tab.active')?.id||document.body?.dataset?.mlvAndroidTab||window.state?.activeTab||'unknown';
 const cssEscape=s=>window.CSS?.escape?.(s)||String(s).replace(/[^a-z0-9_-]/gi,x=>'\\'+x);
@@ -26,7 +36,14 @@ const locator=e=>{
  return parts.join(' > ')||'body';
 };
 const present=e=>{if(!e)return false;const c=getComputedStyle(e),r=e.getBoundingClientRect();return c.display!=='none'&&c.visibility!=='hidden'&&r.width>0&&r.height>0;};
-function record(code,event){errors.push({code,time:iso(),screen:screen(),type:String(event?.error?.name||event?.reason?.name||'unknown').replace(/[^A-Za-z]/g,'').slice(0,35)});if(errors.length>maxErrors)errors.shift();if(trigger)trigger.textContent='DEV '+errors.length;}
+function record(code,event){
+ errors.push({code,time:iso(),screen:screen(),type:String(event?.error?.name||event?.reason?.name||'unknown').replace(/[^A-Za-z]/g,'').slice(0,35)});
+ if(errors.length>maxErrors)errors.shift();
+ // The developer's failed run may disappear after a WebView process restart.
+ // Retain only bounded, redacted error CLASS codes, never stack/message/data.
+ try{localStorage.setItem(ERROR_KEY,JSON.stringify(errors));}catch(_){}
+ if(trigger)trigger.textContent='DEV '+errors.length;
+}
 window.addEventListener('error',e=>record('WINDOW_ERROR',e),true);
 window.addEventListener('unhandledrejection',e=>record('UNHANDLED_REJECTION',e),true);
 function node(tag,txt,parent){const n=document.createElement(tag);if(txt!==null)n.textContent=txt;if(parent)parent.appendChild(n);return n;}
@@ -48,6 +65,10 @@ function create(){
  node('small','A guided, read-only layout sweep visits available app screens and restores the original screen. Save unfinished forms before running.',panel);
  const second=node('div',null,panel);second.className='row';
  button('User sign-in',openLogin,second);button('Close',()=>{panel.hidden=true;stopInspect();},second);
+ button('Clear error history',()=>{
+   errors.length=0;try{localStorage.removeItem(ERROR_KEY);}catch(_){}
+   if(trigger)trigger.textContent='DEV';notice.textContent='Redacted Developer runtime error history cleared; your section notes were preserved.';
+ },panel);
  notice=node('pre','Run an audit or tap Mark element and select a control.',panel);notice.id='mlstatus';
  node('h3','Selected screen / section',panel);
  const target=node('p','No element selected.',panel);target.id='mlselected';
@@ -65,7 +86,7 @@ function create(){
  button('Export AI prompt',()=>exportReport('prompt'),exports);
  button('Copy AI prompt',copyPrompt,panel).style.width='100%';
  hilite=node('div',null,shadow);hilite.id='mlhighlight';hilite.hidden=true;
- document.documentElement.appendChild(host);showNotes();
+ document.documentElement.appendChild(host);showNotes();if(errors.length)trigger.textContent='DEV '+errors.length;
 }
 function stopInspect(){inspect=false;hilite.hidden=true;document.removeEventListener('pointerdown',mark,true);document.removeEventListener('touchstart',blockInspectionTouch,true);document.removeEventListener('pointermove',hover,true);document.removeEventListener('keydown',inspectKeyboard,true);if(!consumePointerClick)document.removeEventListener('click',blockInspectionClick,true);trigger.textContent='DEV'+(errors.length?' '+errors.length:'');}
 function candidate(e){if(!(e instanceof Element)||host.contains(e))return null;return e.closest('button,a,input,textarea,select,summary,[role="button"],[data-tab],.card,section,article,.v30165-rpg-chapter-hero')||e;}
