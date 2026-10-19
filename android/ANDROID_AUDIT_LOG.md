@@ -1,3 +1,10 @@
+## 2026-10-19 — Platform priority: Android now, Windows packaging paused
+
+- Owner explicitly postponed Michel's Life Windows/Desktop development, Store MSIX builds, and installer/release packaging until the app is final; screenshots refer to automatic GitHub Actions jobs.
+- Automatic Windows job triggers are being disabled without changing Android test/release flows or the existing Windows product. Android Chapter glitches, native candidate validation and Android Developer Edition remain the active technical priority. Windows Developer Twin standard is recorded, but its build/runtime validation is deferred.
+- Current Developer Edition status (Android): **implementation candidate only** on `feat/developer-twin-dual-platform-20261019`; section-linked annotation and export code created but NOT yet installed, validated or published. No false claim that APK sign-in/OAuth, persistence or native export was proven.
+- No new public APK and no Windows release authorized in this instruction.
+
 ## 2026-10-19 — Android 0.2.9 Chapter motion invisible + selection jitter audit (candidate)
 
 - **Physical Galaxy report:** selecting app controls often causes visible glitches and the previously approved Current Chapter cinematic animation has vanished. The 0.2.9 public APK remains unchanged while a focused unreleased correction is validated.
