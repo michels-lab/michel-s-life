@@ -27,7 +27,7 @@ jobs:
           python3 -m py_compile android/tools/granada_relaunch_transport_guard.py
           python3 -m py_compile tools/test_granada_relaunch_transport_guard.py
           bash -n android/tools/smoke_candidate_apk_install.sh
-      - name: Run 15 synthetic transport failure and recovery regressions
+      - name: Run 16 synthetic transport failure and recovery regressions
         run: |
           python3 -m unittest -v tools/test_granada_relaunch_transport_guard.py
       - name: Assert native persistence gate is still fail-closed
