@@ -24,7 +24,8 @@ try{
       isMobile:true,hasTouch:true,deviceScaleFactor:2.625
     });
     await context.addInitScript(payload=>{
-      localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(payload));
+      if(!localStorage.getItem('vida_rpg_personal_progress_v2'))
+        localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(payload));
       localStorage.setItem('michelsLife.onboarding.v30200','done');
       localStorage.setItem('michelsLife.language.v1','en');
       localStorage.setItem('michelsLife.language.userOverrideBase.v1','en');
