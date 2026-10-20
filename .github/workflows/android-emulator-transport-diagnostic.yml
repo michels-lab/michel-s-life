@@ -6,12 +6,14 @@ on:
     paths:
       - 'tools/android_emulator_transport_probe.sh'
       - 'tools/android_emulator_evidence_manifest.py'
+      - 'tools/android_native_png_pixels.py'
       - '.github/workflows/android-emulator-transport-diagnostic.yml'
   push:
     branches: [main]
     paths:
       - 'tools/android_emulator_transport_probe.sh'
       - 'tools/android_emulator_evidence_manifest.py'
+      - 'tools/android_native_png_pixels.py'
       - '.github/workflows/android-emulator-transport-diagnostic.yml'
 
 permissions:
@@ -31,6 +33,7 @@ jobs:
       - name: Syntax-check the fail-closed diagnostic without starting an emulator
         shell: bash
         run: |
+          python3 -m py_compile tools/android_native_png_pixels.py
           python3 -m py_compile tools/android_emulator_evidence_manifest.py
           python3 tools/android_emulator_evidence_manifest.py --self-test
           bash -n tools/android_emulator_transport_probe.sh
