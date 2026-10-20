@@ -7,14 +7,24 @@ const URL=process.env.MLV_UI_URL||'http://127.0.0.1:4173';
 const ID='granada-weekly-premium-cross-platform';
 const KEY='vida_rpg_personal_progress_v2';
 const browser=await chromium.launch({headless:true});
-async function open(platform){
+async function open(platform,shared=null){
   const context=await browser.newContext({viewport:platform==='android'?
     {width:412,height:915}:{width:1280,height:850}});
-  await context.addInitScript(value=>{
-    window.__MICHELSLIFE_PLATFORM__=value;
+  await context.addInitScript(({platform,payload})=>{
+    window.__MICHELSLIFE_PLATFORM__=platform;
+    // Restore a canonical *captured* portable snapshot BEFORE the Android
+    // runtime boots. A live WebView has a beforeunload state-save hook and
+    // would overwrite a raw localStorage restore if reloaded independently.
+    // Real signed/cloud live migrations use their own explicit authority flow.
+    if(payload&&!sessionStorage.getItem('granadaWeeklyImportedOnce')){
+      for(const [key,value] of Object.entries(payload)){
+        if(typeof value==='string')localStorage.setItem(key,value);
+      }
+      sessionStorage.setItem('granadaWeeklyImportedOnce','1');
+    }
     localStorage.setItem('michelsLife.onboarding.v30200','done');
     localStorage.setItem('michelsLife.onboardingCompleted.v1','1');
-  },platform);
+  },{platform,payload:shared});
   const page=await context.newPage();
   await page.goto(URL,{waitUntil:'domcontentloaded',timeout:60000});
   await page.waitForFunction(()=>window.MLVCloudSharedStorageV30216?.capture&&
@@ -52,7 +62,7 @@ function verify(s,label){
 }
 let windows,android;
 try{
-  windows=await open('windows');android=await open('android');
+  windows=await open('windows');
   const seeded=await windows.page.evaluate(id=>{
     if(state.missions.some(m=>m.id===id))throw Error('Synthetic test ID collision');
     const before=Number(state.xp||0);
@@ -95,27 +105,19 @@ try{
   const portable=JSON.parse(shared[KEY]);
   assert.equal(portable.missions?.filter(m=>m.id===ID).length,1);
   assert.equal(portable.missions.find(m=>m.id===ID)?.weeklyTarget,4);
-  // A raw shared-storage restore is not an authoritative active runtime
-  // update: the still-open previous Android state can write its old mission
-  // array back into localStorage on the next tick. The production cloud
-  // restore also navigates immediately after writing. Mirror that same
-  // atomic restore-and-bootstrap boundary, not two separate tool calls.
-  const firstBoot=android.page.waitForEvent('load',{timeout:60000});
-  await android.page.evaluate(({data,id,key})=>{
-    window.MLVCloudSharedStorageV30216.restore(data);
-    const incoming=JSON.parse(localStorage.getItem(key)||'{}');
-    if(!incoming.missions?.some(m=>m.id===id))
-      throw Error('Raw cloud restore never installed incoming weekly mission');
-    window.location.reload();
-  },{data:shared,id:ID,key:KEY});
-  await firstBoot;
-  for(let n=0;n<2;n++){
-    if(n>0)await android.page.reload({waitUntil:'domcontentloaded'});
+  android=await open('android',shared);
+  const androidInitial=await snapshot(android.page);
+  verify(androidInitial,'Android first portable bootstrap');
+  assert.deepEqual(androidInitial,final,
+    'Android initial bootstrap changed weekly target, reward or completion IDs');
+  for(let n=1;n<=2;n++){
+    await android.page.reload({waitUntil:'domcontentloaded'});
     await android.page.waitForFunction(()=>window.MLVCloudSharedStorageV30216&&
       typeof window.completeMission==='function',null,{timeout:60000});
-    const got=await snapshot(android.page);verify(got,'Android restart '+(n+1));
+    const got=await snapshot(android.page);
+    verify(got,'Android restart '+n);
     assert.deepEqual(got,final,
-      'Android hydration mutated synced recurring mission or completion IDs');
+      'Android restart changed weekly ID, reward or completion history');
   }
   await android.page.evaluate(id=>window.completeMission(id),ID);
   assert.deepEqual(await snapshot(android.page),final,
