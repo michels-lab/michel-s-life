@@ -56,3 +56,9 @@ Previous Android UI job 118336756324 timed out during the new Enter-to-select Ca
 ### Same-head CI diagnostic formatting correction
 
 The first diagnostic CI attempt (Android UI job `118374893053`, head `7b42ec4`) still timed out on the original Enter selection, but its new diagnostic exception accidentally referenced unquoted test-only labels `Enter` and `Space`. JavaScript raised `ReferenceError: Enter is not defined` instead of printing the captured selection state. This is a **diagnostic formatting error**, not app behavior evidence. Commit `0d4c6de` makes the labels literal; rerun exact-head Android UI before any runtime fix or passing claim.
+
+### Diagnosed canonical Calendar DOM loss — 2026-10-19
+
+Android UI job 118376325906 (branch head 6bfc5fe) produced a *real* bounded failure snapshot after Enter at 412px: expected `2026-10-05`; both `state.settings.v30135CalendarSelected` and stored settings were `2026-10-05` (correct). However the mobile root contained **zero** `.v30135-day` elements, no `#tab-calendar` surface or target, and focus fell to BODY. This is not a date persistence or click-event failure: canonical click correctly saved the date, but the shared renderer left Android's one-section DOM empty on redraw.
+
+Commit ddbff55 updates only the already-owned Android Calendar keyboard handler: immediately after the canonical click, if the Calendar day grid disappeared and the active tab is still Calendar, invoke the existing `__mlvAndroidFastRoute('calendar')` recovery router (which checks mounted surfaces and reconstructs through canonical `renderMain`). Then reapply ARIA semantics and restore focus to the newly-rendered selected day. No duplicate date model, alternate click handler, Windows change or speculative replacement UI. **Pending exact-head CI and native proof.** If the UI assertion remains red, capture the new diagnostic before any acceptance claim.
