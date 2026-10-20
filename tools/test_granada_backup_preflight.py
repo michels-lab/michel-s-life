@@ -35,6 +35,15 @@ class PreflightTests(unittest.TestCase):
         self.assertEqual(report['status'], 'blocked')
         self.assertNotIn('TOP_SECRET', str(report))
 
+    def test_stored_state_must_not_hide_credentials_behind_clean_primary_state(self):
+        content = {'state': self.state, 'localStorage': {
+            'vida_rpg_personal_progress_v2': json.dumps({
+                **self.state, 'meta': {'refresh_token': 'CREDENTIAL_NOT_FOR_REPORT'}})}}
+        report = inspect(content)
+        self.assertEqual(report['status'], 'blocked')
+        self.assertIn('credential_field_in_state', str(report))
+        self.assertNotIn('CREDENTIAL_NOT_FOR_REPORT', str(report))
+
     def test_missions_and_xp_integrity(self):
         data = {'state': {'missions': [{'id': 'm1'}, {'id': 'm1'}, {}], 'xp': -1}}
         report = inspect(data)
