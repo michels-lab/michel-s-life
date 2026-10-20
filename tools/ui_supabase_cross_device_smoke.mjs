@@ -364,8 +364,75 @@ try{
       JSON.stringify({recoveredXp:afterRecovery.xp,remoteXp:onlineWinnerXp,
         revision:afterRecovery.meta.revision,mission:recoveredMission}));
 
+  // GRANADA — concurrent Journal conflict. Unlike numeric XP, a private day
+  // entry could be silently overwritten across devices while mission counts
+  // and revision comparisons still pass. Use the REAL canonical Journal API
+  // and the already-authenticated same-account Supabase clients.
+  const journalDate='2026-10-20';
+  const journalCloudBody='SYNTHETIC_WINDOWS_JOURNAL_NEWER_AUTHORITY';
+  const journalOfflineBody='SYNTHETIC_ANDROID_JOURNAL_STALE_PRIVATE_EDIT';
+  const startJournalRevision=Number(backend.remote.revision);
+  const journalWin=await desktop.page.evaluate(async({date,body})=>{
+    const api=window.JournalV30189;
+    if(!api?.save||!api?.entry)throw new Error('Canonical Journal save/entry API missing');
+    api.save(date,'Windows diary authority',body);
+    await window.SupabaseSyncV30216.push('journal_windows_edit');
+    return {body:api.entry(date).body,
+      local:JSON.parse(localStorage.getItem('michelsLife.journal.v30184')||'{}')[date]?.body};
+  },{date:journalDate,body:journalCloudBody});
+  ok(journalWin.body===journalCloudBody&&journalWin.local===journalCloudBody,
+    'Canonical Windows Journal edit was not saved locally');
+  const journalWinnerRevision=Number(backend.remote.revision);
+  ok(journalWinnerRevision===startJournalRevision+1&&
+    backend.remote.snapshot?.localStorage?.['michelsLife.journal.v30184'] &&
+    JSON.parse(backend.remote.snapshot.localStorage['michelsLife.journal.v30184'])[journalDate]?.body===journalCloudBody,
+    'Windows Journal was not uploaded as one versioned master');
+  const writesBeforeJournalConflict=backend.writes;
+
+  const journalAnd=await android.page.evaluate(async({date,body})=>{
+    const api=window.JournalV30189;
+    api.save(date,'Android offline private journal',body);
+    window.save(); // record journal change through the canonical sync dirty gate
+    await window.SupabaseSyncV30216.sync('auto',{silent:true});
+    return {body:api.entry(date).body,
+      conflict:window.SupabaseSyncV30216.runtime.cloudConflict,
+      meta:JSON.parse(localStorage.getItem('michelsLife.supabase.meta.v30216')||'{}')};
+  },{date:journalDate,body:journalOfflineBody});
+  ok(journalAnd.body===journalOfflineBody&&journalAnd.meta.dirty===true&&
+    journalAnd.conflict?.remoteRevision===journalWinnerRevision&&
+    Number(backend.remote.revision)===journalWinnerRevision&&
+    backend.writes===writesBeforeJournalConflict,
+    'Stale Android Journal silently replaced newer Windows entry or lost its private edit: '+
+      JSON.stringify({local:journalAnd.body,dirty:journalAnd.meta.dirty,
+        conflictRev:journalAnd.conflict?.remoteRevision,masterRev:backend.remote.revision,
+        writes:backend.writes}));
+  const journalWinner=JSON.parse(backend.remote.snapshot.localStorage['michelsLife.journal.v30184']);
+  ok(journalWinner[journalDate]?.body===journalCloudBody,
+    'Journal conflict clobbered most recent cloud entry');
+
+  await android.page.evaluate(async()=>window.SupabaseSyncV30216.pull({reload:false}));
+  const journalSafety=backend.history.filter(h=>
+    h.reason==='before_download_local'&&h.source_platform==='android'&&
+    (()=>{try{return JSON.parse(h.snapshot?.localStorage?.['michelsLife.journal.v30184']||'{}')
+      [journalDate]?.body===journalOfflineBody}catch(_){return false}})());
+  ok(journalSafety.length>=1,
+    'Choosing newer cloud Journal discarded stale phone writing without a recovery snapshot');
+  await android.page.reload({waitUntil:'domcontentloaded'});
+  await android.page.waitForFunction(()=>window.SupabaseSyncV30216&&window.JournalV30189,
+    null,{timeout:60000});
+  const adoptedJournal=await android.page.evaluate(date=>({
+    body:window.JournalV30189.entry(date)?.body,
+    stored:JSON.parse(localStorage.getItem('michelsLife.journal.v30184')||'{}')[date]?.body,
+    revision:JSON.parse(localStorage.getItem('michelsLife.supabase.meta.v30216')||'{}').revision
+  }),journalDate);
+  ok(adoptedJournal.body===journalCloudBody&&adoptedJournal.stored===journalCloudBody&&
+    Number(adoptedJournal.revision)===journalWinnerRevision,
+    'Android explicit Journal recovery failed to adopt the cloud authority');
+  ok(backend.writes===writesBeforeJournalConflict,
+    'Journal recovery should not silently upload or overwrite the authoritative snapshot');
+
   console.log('OK: isolated Windows + Android contexts share one Supabase master safely',JSON.stringify({
-    firstRevision,desktopRevision,androidRevision,offlineRecoveryRevision:onlineWinnerRev,offlineSafetyBackups:offlineSafety.length,missionCount:recoveredMission.count,completionCount:recoveredMission.completions,devices:devices.map(x=>({platform:x.platform,id:x.device_id,last_action:x.last_action})),history:backend.history.length,writes:backend.writes
+    firstRevision,desktopRevision,androidRevision,offlineRecoveryRevision:onlineWinnerRev,offlineSafetyBackups:offlineSafety.length,journalWinnerRevision,journalRecoveredBackups:journalSafety.length,missionCount:recoveredMission.count,completionCount:recoveredMission.completions,devices:devices.map(x=>({platform:x.platform,id:x.device_id,last_action:x.last_action})),history:backend.history.length,writes:backend.writes
   }));
 } finally {
   await desktop?.context?.close().catch(()=>{});
