@@ -31212,7 +31212,7 @@ function inspect(raw,source='selected-file'){
     if(Array.isArray(node)){for(const item of node){walk(item,depth+1);if(visited>50000)break;}return;}
     for(const [key,val] of Object.entries(node)){
       if(SECRET_FIELD.test(key))add('credential_field_detected','error');
-      if(depth===1&&key==='localStorage'&&val&&typeof val==='object'){
+      if(depth===0&&key==='localStorage'&&val&&typeof val==='object'){
         for(const storageKey of Object.keys(val)){
           if(PRIVATE_STORAGE.test(storageKey))add('device_private_storage_detected','error');
         }
