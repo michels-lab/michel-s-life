@@ -6,6 +6,8 @@ on:
       - 'android/tools/granada_relaunch_transport_guard.py'
       - 'android/tools/smoke_candidate_apk_install.sh'
       - 'tools/test_granada_relaunch_transport_guard.py'
+      - 'android/tools/granada_emulator_host_watch.py'
+      - 'tools/test_granada_emulator_host_watch.py'
       - '.github/workflows/granada-native-transport-recovery.yml'
       - 'android/audit/2026-10-20-granada-native-transport-recovery.md'
   workflow_dispatch:
@@ -26,10 +28,12 @@ jobs:
         run: |
           python3 -m py_compile android/tools/granada_relaunch_transport_guard.py
           python3 -m py_compile tools/test_granada_relaunch_transport_guard.py
+          python3 -m py_compile android/tools/granada_emulator_host_watch.py
+          python3 -m py_compile tools/test_granada_emulator_host_watch.py
           bash -n android/tools/smoke_candidate_apk_install.sh
-      - name: Run 16 synthetic transport failure and recovery regressions
+      - name: Run 25 synthetic transport recovery and host VM diagnosis regressions
         run: |
-          python3 -m unittest -v tools/test_granada_relaunch_transport_guard.py
+          python3 -m unittest -v tools/test_granada_relaunch_transport_guard.py tools/test_granada_emulator_host_watch.py
       - name: Assert native persistence gate is still fail-closed
         run: |
           python3 - <<'PY'
