@@ -1,3 +1,28 @@
+# Michel's Life — GRANADA current integration checkpoint (2026-10-20)
+
+**This checkpoint overrides older branch/PR snapshots below; historical handoff is retained for traceability.** Verified main after three independent exact-head green PRs: `58e2fb7a2972d65a51be959d02ac432ecd87683a`.
+
+## Newly integrated into main (QA/tooling only; no APK/public release)
+- [#154](https://github.com/michels-lab/michel-s-life/pull/154) `1afba42` — read-only, offline backup integrity/privacy/ID/XP/old-vs-new tool; synthetic preflight regression + dedicated green CI.
+- [#155](https://github.com/michels-lab/michel-s-life/pull/155) `f6e556f` — Android-mode real-touch 9 routes × 320/360/412px = 27/27; two reloads/width, no progress drift; 11/11 unit cases, 0 browser route failures on verified head `4324258`; screenshot and redacted report. The initial 6 apparent nav hit-test failures were transient drawer animation; the final test waits for the menu to exit before measuring, without hiding persistent obstruction.
+- [#153](https://github.com/michels-lab/michel-s-life/pull/153) `58e2fb7` — real canonical Android Projects + Chapter forms, Journal/XP and authenticated same-account synthetic Supabase roundtrip, protected conflict/recovery flow. Mock service only, not live Supabase/Galaxy proof.
+- All four GitHub workflows for each of #153, #154, and #155 completed SUCCESS at their exact PR head prior to merge. New main push source validation completed successfully; main push UI may run longer, do not invent its result.
+
+## Current constraints and open owner issues
+- **Windows packaging/MSIX/installer development remains paused**. Source validation + browser UI checks may still run; do not turn on Windows build pipelines.
+- **Current PUBLIC unified release remains** `v3.0.221` (Windows 3.0.221 + Android Direct 0.2.9), reverified by GitHub Release API 2026-10-20. Code merged to main has **NOT** been published as a new APK, and no device acceptance has occurred.
+- **Draft PR #134 / issue #131:** Developer Twin owns native/auth/Gradle/android-bridge and app main logs. Do not overlap; awaits exact-head/native/Galaxy/OAuth tests.
+- **Draft PR #135:** Calendar/Journal accessibility owns `android/mobile-sections.js`; native emulator gate is still blocked by #139 instability.
+- **Draft PR #138:** persistence probe owns `android/tools/native_webview_state_probe.py`; real native candidate gate blocked, #104 unresolved.
+- **Draft PR #150:** Premium Contracts XP and weekly target roundtrip is NOT green: Android UI workflow failed on its branch head; must diagnose the exact job failure before merge. Do not mark completed.
+- **Draft PR #151/#152:** Focus notification permission correction + independent evidence QA. Native actual Galaxy notification permissions, lock screen, Doze remain unverified; #53 open.
+- **Draft PR #62:** Windows native screenshot review remains deferred.
+- #28 real Windows↔Galaxy Supabase, #55/#108 real account/privacy, #104 signed Android persistence, #109 updater, #110 Google Calendar native provider, #139 emulator transport remain open until target/provider validation.
+
+**Next GRANADA entry:** verify new main HEAD, current open PR ownership, main push CI, no accidental Windows builds, then choose a non-overlapping *substantial* Android user-flow or recovery block. Do not add a micro-PR simply to fill the log. Distinguish source → CI → merge → public release → Galaxy/owner acceptance; report each truthfully.
+
+---
+
 # Michel's Life — Current handoff
 
 Updated: 2026-10-19 (America/Monterrey)  
