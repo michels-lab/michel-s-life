@@ -958,8 +958,15 @@
         const selectedDate=day.dataset.date;
         day.click();
         requestAnimationFrame(()=>{
-          enhanceCalendarA11y(main);
-          const selected=[...main.querySelectorAll('#tab-calendar .v30135-day.selected')]
+          let root=document.getElementById('main')||main;
+          if(!root.querySelector('#tab-calendar .v30135-day[data-date]')&&
+             String(state?.activeTab||'')==='calendar'&&
+             typeof window.__mlvAndroidFastRoute==='function'){
+            window.__mlvAndroidFastRoute('calendar');
+            root=document.getElementById('main')||root;
+          }
+          enhanceCalendarA11y(root);
+          const selected=[...root.querySelectorAll('#tab-calendar .v30135-day.selected')]
             .find(el=>el.dataset.date===selectedDate);
           // Keep the keyboard cursor on the newly-rendered selected day.
           if(selected&&document.activeElement!==selected)
