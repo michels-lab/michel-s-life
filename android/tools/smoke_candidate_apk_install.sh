@@ -7,6 +7,21 @@ PKG="com.michelslab.michelslife"
 APK="${APK:-artifacts/candidate/MichelsLife-Android-TEST-v${ANDROID_VERSION}.apk}"
 OUT="artifacts/candidate-install"
 mkdir -p "$OUT"
+# GRANADA #139: host-only observer catches QEMU disappearance or runner OOM.
+# It never touches ADB, device storage, account information, or app state.
+# The EXIT trap preserves observer evidence on ALL script failures without
+# changing the original native test result or its exit code.
+python3 android/tools/granada_emulator_host_watch.py \
+    --out "$OUT" --interval 3 --samples 240 \
+    >"$OUT/granada-host-watch-summary.log" 2>&1 &
+GRANADA_WATCH_PID=$!
+cleanup_granada_host_watch() {
+  if kill -0 "$GRANADA_WATCH_PID" 2>/dev/null; then
+    kill -TERM "$GRANADA_WATCH_PID" 2>/dev/null || true
+    wait "$GRANADA_WATCH_PID" 2>/dev/null || true
+  fi
+}
+trap cleanup_granada_host_watch EXIT
 test -s "$APK"
 # Native WebView captures can fail with "error: closed" during adb transport
 # reconnects on hosted Android 16 emulators. Retry the exact native screenshot
