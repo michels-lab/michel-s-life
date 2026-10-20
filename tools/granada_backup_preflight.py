@@ -97,21 +97,23 @@ def inspect(snapshot: Any) -> dict[str, Any]:
             note('error', 'private_storage_key_in_backup', 'localStorage')
             # Avoid exposing the actual key, which might be user-generated.
 
-    def scan_secrets(node: Any, depth: int = 0) -> None:
+    def scan_secrets(node: Any, section: str = 'state', depth: int = 0) -> None:
         if depth > 35:
-            note('error', 'excessive_nesting', 'state')
+            note('error', 'excessive_nesting', section)
             return
         if isinstance(node, dict):
             for key, value in node.items():
                 if any(secret in str(key).lower() for secret in PRIVATE_JSON_WORDS):
-                    note('error', 'credential_field_in_state', 'state')
+                    note('error', 'credential_field_in_state', section)
                 if isinstance(value, (dict, list)):
-                    scan_secrets(value, depth + 1)
+                    scan_secrets(value, section, depth + 1)
         elif isinstance(node, list):
             for item in node:
                 if isinstance(item, (dict, list)):
-                    scan_secrets(item, depth + 1)
+                    scan_secrets(item, section, depth + 1)
     scan_secrets(state)
+    if isinstance(stored_state, dict) and stored_state is not state:
+        scan_secrets(stored_state, 'localStorage')
 
     counts: dict[str, int] = {}
     fingerprints: dict[str, str] = {}
