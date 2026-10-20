@@ -37,13 +37,14 @@ capture_png(){
     rm -f "$tmp"
     echo "::warning::Native on-device screencap also unavailable ($attempt/5)"
     cat "$OUT/adb-shell-screencap-last.txt" "$OUT/adb-pull-screencap-last.txt" 2>/dev/null || true
-    # Repair only the CI runner's isolated adb transport, not the app. Keep
-    # camera/screenframe assertions fail-closed if Android really died.
-    timeout 10s adb devices -l >"$OUT/adb-device-retry-state.txt" 2>&1 || true
-    if ! grep -q $'\tdevice' "$OUT/adb-device-retry-state.txt"; then
-      timeout 8s adb kill-server || true
-      timeout 12s adb start-server || true
-      timeout 20s adb wait-for-device || true
+    # GRANADA #139: the same guarded native transport recovery is also
+    # required on EARLY framebuffer failures (before onboarding/relaunch).
+    # No fake fallback, no retry beyond bounded proof of the running app PID.
+    if ! python3 android/tools/granada_relaunch_transport_guard.py \
+        --package "$PKG" --serial emulator-5554 --attempts 3 --delay 2 \
+        --output "$OUT/granada-capture-transport-$attempt.json"; then
+      echo "::error::Native screenshot transport or real Android app process lost"
+      return 1
     fi
     sleep 3
   done
