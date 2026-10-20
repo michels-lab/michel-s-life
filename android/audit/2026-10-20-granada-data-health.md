@@ -6,7 +6,7 @@ Date: 2026-10-20, America/Monterrey.
 2. **Local, offline file preflight** for selected JSON and .michelslife backups; 10 MiB cap before reading, non-restorable/corrupt JSON detection, missing state, invalid collection structures, IDs, XP and legacy device credential storage.
 3. **On-device backup comparison** counts, total XP and completion totals vs the current saved progress. Never falsely claim exact ID/content parity or verified restorable state. No automated restoration, deletion, sign-in or cloud uploads.
 4. **Safe developer-friendly evidence** using JSON-only coarse counts and finding codes. Clipboard and downloaded redacted JSON are user-triggered, and both avoid source file contents, tokens, individual identifiers and Journal text. No data is stored by this inspector or transmitted through an endpoint.
-5. **Independent regression and touch CI**: 17 Node tests extracted from exact canonical in-app source, and actual Android-mode Chromium touches / input file selection / comparison / two relaunches at 360px and 412px with synthetic mission names and legacy credential fixtures.
+5. **Independent regression and touch CI**: 18 Node tests extracted from exact canonical in-app source, and actual Android-mode Chromium touches / input file selection / comparison / two relaunches at 360px and 412px with synthetic mission names and legacy credential fixtures.
 
 ## Non-interference / safety boundaries
 - This patch changes only the end of canonical frontend index.html, adding one isolated styled module under Settings > Data. No changes to approved Themes, typography, backgrounds, Current Chapter layout, core state/sync engine, Developer Twin, native Kotlin or Windows packaging.
