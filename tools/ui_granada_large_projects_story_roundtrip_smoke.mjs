@@ -2,42 +2,91 @@ import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 
 /**
- * GRANADA GRANDE #28/#54/#55 — THREE joined product stories, two REAL
- * isolated Chromium runtimes, synthetic state, no production provider.
+ * GRANADA GRANDE: REAL canonical Android Project+Chapter form -> authenticated
+ * (MOCK Supabase) Android/Windows account -> cloud versioned CAS -> reload ->
+ * reverse Journal/XP and conflict-safe recovery.
  *
- * A) Create Project with actual Android form -> share to Windows -> restart
- * B) Start Chapter through actual Android form -> share/restart/return
- * C) Journal+XP forward/backward + backup recovery and strict device secrets
- *
- * Both clients use the canonical frontend and shared-storage policy; this is
- * NOT a Galaxy or live Supabase-provider test. Refuse absent state or payload.
+ * Browser runtime and UI are real; provider responses, accounts, and content
+ * are synthetic. This does not prove Galaxy/signed APK/live cloud acceptance.
  */
 const URL=process.env.MLV_UI_URL||'http://127.0.0.1:4174';
-const KEY='vida_rpg_personal_progress_v2';
-const JOURNAL_DATE='2026-10-20';
-const PROJECT='GRANADA LARGE project from Android';
-const CHAPTER='GRANADA LARGE chapter from Android';
-const MOTTO='Synthetic chapter with real saved provenance';
-const JOURNAL_A='SYNTHETIC_GRANADA_ANDROID_JOURNAL';
-const JOURNAL_B='SYNTHETIC_GRANADA_WINDOWS_JOURNAL';
-const MISSION='granada-large-linked-mission';
-const SECRET_KEYS=[
-  // Keys intentionally inert on reload: real Supabase sessions and device
-  // identifiers may legitimately refresh/rotate on bootstrap; those are
-  // separately guarded by the existing account/session privacy tests.
-  'michelsLife.google.refreshToken',
-  'michelsLife.local.notification.id',
-  'michelsLife.unknown.future.privateKey',
-  'michelsLife.internal.transient'
-];
+const SUPA='https://lqnkcqredlxrykynacwr.supabase.co';
+const USER='00000000-0000-0000-0000-000000000653';
+const DAY='2026-10-20';
+const PROJECT='GRANADA Project linked to canonical mission';
+const CHAPTER='GRANADA Chapter stored across devices';
+const MOTTO='Canonical multi-device chapter persistence';
+const MISSION_ID='granada-project-linked-mission';
+const WIN_JOURNAL='SYNTHETIC_WINDOWS_JOURNAL_AUTHORITY';
+const AND_JOURNAL='SYNTHETIC_ANDROID_JOURNAL_FIRST';
+const OFFLINE_JOURNAL='SYNTHETIC_ANDROID_OFFLINE_RECOVERY';
+const PRIVATE_PATTERN=/supabase\.session|supabase\.meta|supabase\.device|\.oauth|refreshToken|credential|\.internal\.|notification\.id/i;
 const browser=await chromium.launch({headless:true});
 let android,desktop;
+const backend={remote:null,history:[],devices:new Map(),writes:0};
+
+const ok=(v,msg)=>assert.ok(v,msg);
+const fulfilled=(route,data,status=200)=>
+  route.fulfill({status,contentType:'application/json',body:JSON.stringify(data)});
+
+async function installMock(context){
+  await context.route(SUPA+'/**',async route=>{
+    const request=route.request(),u=new URL(request.url());
+    const path=u.pathname+u.search,method=request.method().toUpperCase();
+    let body=null;
+    try{body=request.postData()?JSON.parse(request.postData()):null}catch(_){}
+    if(path.startsWith('/auth/v1/token?grant_type=password')||
+       path.startsWith('/auth/v1/token?grant_type=refresh_token')){
+      return fulfilled(route,{access_token:'synthetic_same_account',
+        refresh_token:'synthetic_refresh',expires_in:3600,
+        user:{id:USER,email:'granada@example.com'}});
+    }
+    if(path.startsWith('/auth/v1/logout'))return fulfilled(route,{});
+    if(path.startsWith('/rest/v1/ml_state?select='))
+      return fulfilled(route,backend.remote?[structuredClone(backend.remote)]:[]);
+    if(path==='/rest/v1/ml_state'&&method==='POST'){
+      if(backend.remote)return fulfilled(route,{message:'duplicate key'},409);
+      backend.remote=structuredClone(body);backend.writes++;
+      return fulfilled(route,[structuredClone(backend.remote)]);
+    }
+    if(path.startsWith('/rest/v1/ml_state?user_id=eq.')&&method==='PATCH'){
+      const expected=Number(String(u.searchParams.get('revision')||'').replace(/^eq\./,''));
+      if(!backend.remote||Number(backend.remote.revision)!==expected)
+        return fulfilled(route,[]);
+      backend.remote={...backend.remote,...structuredClone(body)};
+      backend.writes++;return fulfilled(route,[structuredClone(backend.remote)]);
+    }
+    if(path.startsWith('/rest/v1/ml_state?on_conflict=')&&method==='POST'){
+      backend.remote=structuredClone(body);backend.writes++;
+      return fulfilled(route,[structuredClone(backend.remote)]);
+    }
+    if(path==='/rest/v1/ml_state_history'&&method==='POST'){
+      backend.history.push({...structuredClone(body),id:'h_'+(backend.history.length+1),
+        created_at:new Date().toISOString()});
+      return fulfilled(route,{});
+    }
+    if(path.startsWith('/rest/v1/ml_state_history?select=')){
+      return fulfilled(route,backend.history.slice().reverse().slice(0,10).map(x=>({
+        id:x.id,revision:x.revision,source_device_id:x.source_device_id,
+        source_platform:x.source_platform,app_version:x.app_version,
+        reason:x.reason,created_at:x.created_at
+      })));
+    }
+    if(path.startsWith('/rest/v1/ml_devices?on_conflict=')&&method==='POST'){
+      backend.devices.set(body.device_id,structuredClone(body));return fulfilled(route,{});
+    }
+    if(path.startsWith('/rest/v1/ml_devices?select='))
+      return fulfilled(route,[...backend.devices.values()]);
+    return fulfilled(route,{message:'Unhandled mock request '+method+' '+path},500);
+  });
+}
 
 async function device(platform){
   const context=await browser.newContext({
     viewport:platform==='android'?{width:412,height:915}:{width:1280,height:850},
     isMobile:platform==='android',hasTouch:platform==='android'
   });
+  await installMock(context);
   await context.addInitScript(p=>{
     window.__MICHELSLIFE_PLATFORM__=p;
     window.__MICHELSLIFE_INSTALL_LANGUAGE__='en';
@@ -47,13 +96,13 @@ async function device(platform){
         version:2,activeTab:'dashboard',xp:0,coins:0,totalCoinsEarned:0,
         settings:{characterName:'Michel',onboardingRequired:false,
           onboardingCompletedAt:'2026-10-01T12:00:00.000Z',v30200GenericProfile:true},
-        missions:[{
-          id:'granada-large-linked-mission',name:'Granada linked mission',
-          canonical:'granada linked mission',description:'Synthetic only',
-          category:'academic',type:'oneoff',difficulty:'medium',xp:25,
-          coins:0,days:[],archived:false,hidden:false,
+        missions:p==='android'?[{
+          id:'granada-project-linked-mission',name:'GRANADA canonical link',
+          canonical:'granada canonical link',description:'Synthetic test only',
+          category:'academic',type:'oneoff',difficulty:'medium',
+          xp:25,coins:0,days:[],archived:false,hidden:false,
           createdAt:'2026-10-01T00:00:00.000Z',completions:[]
-        }],
+        }]:[],
         goals:[],history:[],achievements:[],affirmations:[],owned:[],equipped:{}
       }));
     }
@@ -61,233 +110,205 @@ async function device(platform){
     localStorage.setItem('michelsLife.language.v1','en');
     localStorage.setItem('michelsLife.language.userOverrideBase.v1','en');
   },platform);
-  const page=await context.newPage();
-  const errors=[];
+  const page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(URL,{waitUntil:'domcontentloaded',timeout:60000});
-  await page.waitForFunction(()=>
-    typeof state!=='undefined' && typeof window.save==='function' &&
-    typeof window.MLVCloudSharedStorageV30216?.capture==='function' &&
-    typeof window.MLVCloudSharedStorageV30216?.restore==='function' &&
-    typeof window.GoogleCloudV30192?.capture==='function' &&
-    typeof window.JournalV30189?.save==='function',null,{timeout:60000});
-  return {platform,context,page,errors};
+  await page.waitForFunction(()=>typeof state!=='undefined'&&
+    !!window.SupabaseSyncV30216?.signIn&&
+    !!window.MLVCloudSharedStorageV30216?.capture&&
+    !!window.JournalV30189?.save,null,{timeout:60000});
+  return {context,page,errors,platform};
 }
 
-async function mobileRoute(id){
-  const result=await android.page.evaluate(id=>window.__mlvAndroidFastRoute?.(id),id);
-  assert.notEqual(result,false,'Mobile fast route rejected '+id);
-  await android.page.waitForSelector('#tab-'+id+'.active',{state:'visible',timeout:12000});
-}
-
-async function payload(dev){
+async function snap(dev){
   return dev.page.evaluate(()=>{
-    const policy=window.MLVCloudSharedStorageV30216;
-    const shared=policy.capture();
-    const backup=JSON.parse(window.GoogleCloudV30192.capture());
-    const persisted=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'null');
-    return {shared,backup,
-      runtime:JSON.stringify(state),
-      persistedXp:persisted?.xp,
-      runtimeXp:state.xp,
-      journal:window.JournalV30189.entry('2026-10-20')?.body||''
+    const stored=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'null');
+    return {runtime:JSON.stringify(state),
+      master:JSON.stringify(window.MLVCloudSharedStorageV30216.capture()),
+      journal:window.JournalV30189.entry('2026-10-20')?.body||'',
+      xp:Number(state.xp),storedXp:Number(stored?.xp),
+      meta:JSON.parse(localStorage.getItem('michelsLife.supabase.meta.v30216')||'{}'),
+      token:!!localStorage.getItem('michelsLife.supabase.session.v30216')
     };
   });
 }
 
-function checkDomain(packet,label,{project,chapter,journal,xp}){
-  assert.ok(packet.shared && packet.backup?.localStorage && packet.backup.state,
-    label+': expected canonical shareable and backup payloads');
-  const shared=JSON.stringify(packet.shared);
-  const backup=JSON.stringify(packet.backup);
-  if(project){
-    assert.ok(shared.includes(PROJECT) && backup.includes(PROJECT),
-      label+': Project absent from shared+Drive backup');
-  }
-  if(chapter){
-    assert.ok(shared.includes(CHAPTER) && backup.includes(CHAPTER) &&
-      shared.includes(MOTTO),label+': Story chapter absent from backup');
-  }
-  assert.equal(packet.journal,journal,label+': canonical Journal payload drift');
-  assert.equal(packet.runtimeXp,xp,label+': loaded XP changed');
-  assert.equal(packet.persistedXp,xp,label+': persisted XP changed');
-  assert.equal(packet.backup.state.xp,xp,label+': cloud backup XP changed');
-  for(const source of [packet.shared,packet.backup.localStorage]){
-    for(const key of SECRET_KEYS){
-      assert.equal(Object.hasOwn(source,key),false,
-        label+': forbidden device/auth key leaked into shared backup: '+key);
-    }
-  }
+function assertProjectAndChapter(s,label,{journal,xp}){
+  ok(s.runtime.includes(PROJECT),label+': missing hydrated Project after same-account reload');
+  ok(s.runtime.includes(CHAPTER),label+': missing hydrated Chapter after same-account reload');
+  ok(s.master.includes(PROJECT)&&s.master.includes(CHAPTER)&&s.master.includes(MOTTO),
+    label+': Project/Chapter missing in shareable backup');
+  assert.equal(s.journal,journal,label+': canonical Journal body changed');
+  assert.equal(s.xp,xp,label+': runtime XP drift');
+  assert.equal(s.storedXp,xp,label+': persisted XP drift');
+  ok(s.token,label+': same-account session lost');
 }
 
-async function send(source,destination){
-  const from=await payload(source);
-  const result=await destination.page.evaluate(({shared,keys})=>{
-    const policy=window.MLVCloudSharedStorageV30216;
-    const before=Object.fromEntries(keys.map(key=>[key,localStorage.getItem(key)]));
-    const hostile={...shared};
-    keys.forEach((key,i)=>{hostile[key]='FOREIGN_DEVICE_SECRET_'+i;});
-    policy.restore(hostile);
-    const after=Object.fromEntries(keys.map(key=>[key,localStorage.getItem(key)]));
-    const restoredString=String(localStorage.getItem('vida_rpg_personal_progress_v2')||'');
-    const recapturedString=JSON.stringify(policy.capture());
-    return {before,after,immediate:{
-      projectInBoard:restoredString.includes('GRANADA LARGE project from Android'),
-      chapterInBoard:restoredString.includes('GRANADA LARGE chapter from Android'),
-      projectInRecapture:recapturedString.includes('GRANADA LARGE project from Android'),
-      chapterInRecapture:recapturedString.includes('GRANADA LARGE chapter from Android'),
-      boardLength:restoredString.length
-    }};
-  },{shared:from.shared,keys:SECRET_KEYS});
-  assert.deepEqual(result.after,result.before,
-    'Cross-device transfer overwrote the receiver auth, device or local secret');
-  console.log('GRANADA_RESTORE_DIAG '+JSON.stringify({from:source.platform,to:destination.platform,
-    immediate:result.immediate}));
-  await destination.page.reload({waitUntil:'domcontentloaded',timeout:60000});
-  await destination.page.waitForFunction(()=>
-    typeof state!=='undefined' && !!window.MLVCloudSharedStorageV30216?.capture &&
-    !!window.JournalV30189?.entry, null,{timeout:60000});
-  return from;
+function cloudSafety(label){
+  ok(!!backend.remote?.snapshot,label+': remote master is absent');
+  const map=backend.remote.snapshot.localStorage||{};
+  ok(Object.keys(map).every(k=>!PRIVATE_PATTERN.test(k)),
+    label+': remote snapshot contains device/auth key');
+  ok(JSON.stringify(backend.remote.snapshot).includes(PROJECT)&&
+     JSON.stringify(backend.remote.snapshot).includes(CHAPTER),
+     label+': authoritative cloud lost Project/Chapter');
 }
 
-async function seedSyntheticDeviceSecrets(dev,prefix){
-  return dev.page.evaluate(({keys,prefix})=>{
-    for(const [index,key] of keys.entries()){
-      localStorage.setItem(key,'SYNTHETIC_'+prefix+'_SECRET_'+index);
-    }
-    return Object.fromEntries(keys.map(key=>[key,localStorage.getItem(key)]));
-  },{keys:SECRET_KEYS,prefix});
+async function revisionExactly(before,label){
+  const expected=Number(before)+1,started=Date.now();
+  while(Date.now()-started<14000){
+    const got=Number(backend.remote?.revision||0);
+    if(got>expected)throw Error(label+': duplicate cloud revisions '+got+' / '+expected);
+    if(got===expected && Date.now()-started>=2800)return;
+    await new Promise(r=>setTimeout(r,150));
+  }
+  throw Error(label+': expected one revision '+expected+' got '+backend.remote?.revision);
+}
+
+async function routeAndroid(id){
+  const done=await android.page.evaluate(id=>window.__mlvAndroidFastRoute?.(id),id);
+  assert.notEqual(done,false,'Android route refused '+id);
+  await android.page.waitForSelector('#tab-'+id+'.active',{state:'visible',timeout:15000});
 }
 
 try{
   android=await device('android');
   desktop=await device('windows');
 
-  // Android real DOM/submit: Project + link using the canonical modal.
-  await mobileRoute('projects');
+  // Authenticate FIRST: guest-to-other-account raw import is an invalid path
+  // under account isolation. Both runtimes now use the SAME synthetic account.
+  await android.page.evaluate(async()=>window.SupabaseSyncV30216.signIn(
+    'granada@example.com','synthetic-password'));
+  const baseline=Number(backend.remote?.revision||0);
+  ok(baseline>=1,'Android authenticated first master missing');
+  ok((await snap(android)).token,'Android did not establish its synthetic session');
+
+  // Track A: actual Android Projects form and canonical mission link.
+  await routeAndroid('projects');
   await android.page.locator('#tab-projects [data-v30106-action="new-project"]').click();
   const form=android.page.locator('#modalRoot #v30106ProjectForm');
   await form.waitFor({state:'visible',timeout:12000});
-  await form.locator('[name="name"]').fill(PROJECT);
-  await form.locator('[name="description"]').fill('Synthetic regression for Android and Windows');
-  const option=form.locator('.v30106-link-option input[type="checkbox"]').first();
-  assert.equal(await option.count(),1,'Project editor did not expose canonical mission linkage');
-  await option.check();
+  await form.locator('input[name="name"]').fill(PROJECT);
+  await form.locator('input[name="description"]').fill('Created through actual Android UI');
+  const link=form.locator('.v30106-link-option input[type="checkbox"]').first();
+  assert.equal(await link.count(),1,'Project editor missing canonical mission link');
+  await link.check();
   await form.locator('button[type="submit"]').click();
-  await android.page.waitForFunction(name=>
+  await android.page.waitForFunction(value=>
     [...document.querySelectorAll('#tab-projects .v30106-project-card h3')]
-      .some(el=>el.textContent?.trim()===name),PROJECT,{timeout:12000});
-  assert.equal(await form.count(),0,'Project modal failed to close on real Save');
+      .some(e=>e.textContent?.trim()===value),PROJECT,{timeout:12000});
+  ok(!(await form.count()),'Project modal did not close after save');
 
-  // Story: the real existing chapter creation form, no direct internal insert.
-  await mobileRoute('story');
+  // Track B: actual Android Story chapter creation (not seeded directly).
+  await routeAndroid('story');
   const story=android.page.locator('#tab-story .v30162-story-form');
   await story.waitFor({state:'visible',timeout:12000});
   await story.locator('input').first().fill(CHAPTER);
   await story.locator('input[name="motto"]').fill(MOTTO);
   await story.locator('button').filter({hasText:/start chapter/i}).first().click();
-  await android.page.waitForFunction(name=>
-    document.querySelector('#tab-story')?.textContent?.includes(name),
+  await android.page.waitForFunction(value=>
+    document.querySelector('#tab-story')?.textContent?.includes(value),
     CHAPTER,{timeout:12000});
 
-  // Canonical Journal and XP are independent data domains, not test-only maps.
-  await android.page.evaluate(({date,body})=>{
-    window.JournalV30189.save(date,'GRANADA phone journal',body);
-    state.xp=117;
-    window.save();
-  },{date:JOURNAL_DATE,body:JOURNAL_A});
-  await android.page.waitForFunction(date=>
-    JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}').xp===117 &&
-    window.JournalV30189.entry(date)?.body==='SYNTHETIC_GRANADA_ANDROID_JOURNAL',
-    JOURNAL_DATE,{timeout:12000});
+  // Track C: canonical Journal and XP, not separate mobile-only state.
+  await android.page.evaluate(({day,body})=>{
+    window.JournalV30189.save(day,'GRANADA Android original',body);
+    state.xp=117;window.save();
+  },{day:DAY,body:AND_JOURNAL});
+  await android.page.evaluate(async()=>window.SupabaseSyncV30216.push('granada_android_project_story'));
+  await revisionExactly(baseline,'Android combined Project+Story upload');
+  cloudSafety('Android authoritative upload');
+  ok(JSON.stringify(backend.remote.snapshot).includes(AND_JOURNAL),
+    'Cloud missed actual Android Journal body');
+  const aOriginal=await snap(android);
+  assertProjectAndChapter(aOriginal,'Android original',{journal:AND_JOURNAL,xp:117});
 
-  const androidSecrets=await seedSyntheticDeviceSecrets(android,'ANDROID');
-  const desktopSecrets=await seedSyntheticDeviceSecrets(desktop,'WINDOWS');
-  const original=await payload(android);
-  checkDomain(original,'Android original',{project:true,chapter:true,journal:JOURNAL_A,xp:117});
-  const priorWindows=await payload(desktop); // explicit synthetic rollback point
-
-  // Device A -> B, actual new browser bootstrap (same storage, no reset).
-  await send(android,desktop);
-  const win=await payload(desktop);
-  console.log('GRANADA_RED_DIAG',JSON.stringify({
-    originalProjectKeys:Object.keys(original.shared).filter(k=>String(original.shared[k]).includes(PROJECT)),
-    receivedProjectKeys:Object.keys(win.shared).filter(k=>String(win.shared[k]).includes(PROJECT)),
-    originalChapterKeys:Object.keys(original.shared).filter(k=>String(original.shared[k]).includes(CHAPTER)),
-    receivedChapterKeys:Object.keys(win.shared).filter(k=>String(win.shared[k]).includes(CHAPTER)),
-    originalShareKeys:Object.keys(original.shared).sort(),
-    receivedShareKeys:Object.keys(win.shared).sort(),
-    originalStateProject:original.runtime.includes(PROJECT),
-    receivedStateProject:win.runtime.includes(PROJECT),
-    originalBackupProject:JSON.stringify(original.backup).includes(PROJECT),
-    receivedBackupProject:JSON.stringify(win.backup).includes(PROJECT)
-  }));
-  checkDomain(win,'Windows after Android import',{project:true,chapter:true,journal:JOURNAL_A,xp:117});
-  assert.ok(win.runtime.includes(PROJECT),
-    'Windows runtime did not hydrate Android canonical Project after restart');
-  assert.ok(JSON.stringify(win.shared).includes(CHAPTER),
-    'Windows did not retain canonical Chapter data on reload');
-  assert.equal((JSON.parse(win.shared[KEY]||'{}').missions||[])
-    .filter(m=>m.id===MISSION).length,1,
-    'Mission linkage transfer duplicated/dropped canonical mission ID');
-
-  // Device B edits two domains and returns them to Android without a shadow store.
-  await desktop.page.evaluate(({date,body})=>{
-    window.JournalV30189.save(date,'GRANADA Windows response',body);
-    state.xp=124;
-    window.save();
-  },{date:JOURNAL_DATE,body:JOURNAL_B});
-  const winEdited=await payload(desktop);
-  checkDomain(winEdited,'Windows edited',{project:true,chapter:true,journal:JOURNAL_B,xp:124});
-  await send(desktop,android);
-  const androidAgain=await payload(android);
-  checkDomain(androidAgain,'Android return',{project:true,chapter:true,journal:JOURNAL_B,xp:124});
-  assert.ok(androidAgain.runtime.includes(PROJECT),
-    'Android reload lost Project after roundtrip');
-  assert.ok(JSON.stringify(androidAgain.shared).includes(CHAPTER),
-    'Android reload lost Chapter after roundtrip');
-
-  // Synthetic rollback: the originally captured shared map restores the
-  // original Journal+XP without losing Project/Chapter or changing secrets.
-  await android.page.evaluate(shared=>
-    window.MLVCloudSharedStorageV30216.restore(shared),original.shared);
-  await android.page.reload({waitUntil:'domcontentloaded',timeout:60000});
-  await android.page.waitForFunction(()=>
-    !!window.MLVCloudSharedStorageV30216?.capture && !!window.JournalV30189?.entry,
-    null,{timeout:60000});
-  const recovered=await payload(android);
-  checkDomain(recovered,'Android explicit backup recovery',
-    {project:true,chapter:true,journal:JOURNAL_A,xp:117});
-
-  // If the synthetic Windows pre-import backup is applied, the imported
-  // Project/Chapter should not be left behind as partial/stale private data.
-  await desktop.page.evaluate(shared=>
-    window.MLVCloudSharedStorageV30216.restore(shared),priorWindows.shared);
+  // Two independently booted real browser contexts; same account, not a raw
+  // unauthenticated guest transfer or an unsigned native-device claim.
+  const androidRevision=Number(backend.remote.revision);
+  await desktop.page.evaluate(async()=>window.SupabaseSyncV30216.signIn(
+    'granada@example.com','synthetic-password'));
+  const initialConflict=await snap(desktop);
+  ok(initialConflict.meta.revision===0 || initialConflict.meta.revision===undefined,
+    'New Windows client silently adopted Android cloud authority');
+  ok(Number(backend.remote.revision)===androidRevision,
+    'Windows sign-in overwrote Android Project/Story without consent');
+  await desktop.page.evaluate(async()=>window.SupabaseSyncV30216.pull({reload:false}));
   await desktop.page.reload({waitUntil:'domcontentloaded',timeout:60000});
-  await desktop.page.waitForFunction(()=>!!window.MLVCloudSharedStorageV30216?.capture,
-    null,{timeout:60000});
-  const winRolledBack=await payload(desktop);
-  assert.ok(!JSON.stringify(winRolledBack.shared).includes(PROJECT) &&
-    !JSON.stringify(winRolledBack.shared).includes(CHAPTER),
-    'Windows explicit rollback left an imported project or chapter behind');
+  await desktop.page.waitForFunction(()=>!!window.JournalV30189?.entry&&
+    !!window.SupabaseSyncV30216?.runtime,null,{timeout:60000});
+  const win=await snap(desktop);
+  assertProjectAndChapter(win,'Windows authenticated import',{journal:AND_JOURNAL,xp:117});
+  assert.equal(Number(win.meta.revision),androidRevision,
+    'Windows explicit adoption failed to record cloud revision');
+  const winBoard=JSON.parse(await desktop.page.evaluate(()=>
+    localStorage.getItem('vida_rpg_personal_progress_v2')));
+  assert.equal((winBoard.missions||[]).filter(m=>m.id===MISSION_ID).length,1,
+    'Windows import duplicated/dropped mission linked to Android Project');
 
-  for(const [dev,expected] of [[android,androidSecrets],[desktop,desktopSecrets]]){
-    const local=await dev.page.evaluate(keys=>
-      Object.fromEntries(keys.map(key=>[key,localStorage.getItem(key)])),SECRET_KEYS);
-    assert.deepEqual(local,expected,dev.platform+' changed device-specific values');
-    const final=await payload(dev);
-    const captured=JSON.stringify(final.shared)+JSON.stringify(final.backup);
-    for(const value of Object.values(expected))
-      assert.ok(!captured.includes(value),dev.platform+' leaked private synthetic values');
-    assert.deepEqual(dev.errors,[],dev.platform+' raised runtime errors');
+  const beforeWinEdit=Number(backend.remote.revision);
+  await desktop.page.evaluate(({day,body})=>{
+    window.JournalV30189.save(day,'GRANADA Windows update',body);
+    state.xp=124;window.save();
+  },{day:DAY,body:WIN_JOURNAL});
+  await desktop.page.evaluate(async()=>window.SupabaseSyncV30216.push('granada_windows_journal_xp'));
+  await revisionExactly(beforeWinEdit,'Windows reverse edit');
+  const winner=Number(backend.remote.revision);
+  cloudSafety('Windows authoritative update');
+  ok(JSON.stringify(backend.remote.snapshot).includes(WIN_JOURNAL),
+    'Cloud did not publish Windows Journal update');
+
+  // A's stale local change must be preserved for recovery, never silently
+  // overwrite B's newer revision.
+  await android.page.evaluate(({day,body})=>{
+    window.JournalV30189.save(day,'GRANADA offline conflict',body);
+    state.xp=119;window.save();
+  },{day:DAY,body:OFFLINE_JOURNAL});
+  const beforeConflictWrites=backend.writes;
+  await android.page.evaluate(async()=>window.SupabaseSyncV30216.sync('auto',{silent:true}));
+  const conflict=await snap(android);
+  ok(conflict.meta.dirty===true&&
+    conflict.journal===OFFLINE_JOURNAL&&
+    Number(backend.remote.revision)===winner&&backend.writes===beforeConflictWrites,
+    'Stale Android edit lost or clobbered newer Windows master');
+  ok(!!(await android.page.evaluate(()=>
+    window.SupabaseSyncV30216.runtime.cloudConflict))?.remoteRevision,
+    'Account conflict not surfaced to user state');
+
+  await android.page.evaluate(async()=>window.SupabaseSyncV30216.pull({reload:false}));
+  const safety=backend.history.filter(h=>
+    h.reason==='before_download_local'&&h.source_platform==='android'&&
+    JSON.stringify(h.snapshot).includes(OFFLINE_JOURNAL)&&
+    Number(h.snapshot?.state?.xp)===119);
+  ok(safety.length>=1,
+    'Explicit Use Cloud did not preserve displaced Android Journal/XP in recoverable history');
+  await android.page.reload({waitUntil:'domcontentloaded',timeout:60000});
+  await android.page.waitForFunction(()=>!!window.JournalV30189?.entry&&
+    !!window.SupabaseSyncV30216?.runtime,null,{timeout:60000});
+  const recovered=await snap(android);
+  assertProjectAndChapter(recovered,'Android safe recovery',{journal:WIN_JOURNAL,xp:124});
+  assert.equal(Number(recovered.meta.revision),winner,
+    'Android conflict recovery did not adopt newer authoritative revision');
+
+  // Check no auth/device keys escaped into either remote master or history.
+  cloudSafety('After recovery');
+  for(const h of backend.history){
+    const keys=Object.keys(h.snapshot?.localStorage||{});
+    ok(keys.every(k=>!PRIVATE_PATTERN.test(k)),
+      'Historical recovery backup contained auth or device key');
   }
-  console.log('GRANADA_LARGE_PROJECT_STORY_CLOUD_PASS '+JSON.stringify({
-    tracks:['real-Android-Project-link','real-Android-Story-chapter',
-      'Journal-and-XP-two-way','two-platform-relaunch','explicit-backup-recovery',
-      'receiver-private-key-isolation'],
-    mockProvider:true,physicalDevice:false,releasePublished:false
+  for(const d of [android,desktop])
+    assert.deepEqual(d.errors,[],d.platform+' had browser runtime exceptions');
+
+  console.log('GRANADA_GRANDE_REAL_BROWSER_PASS '+JSON.stringify({
+    tracks:['actual-Android-Project-create-and-link',
+      'actual-Android-Chapter-create','same-account-Windows-cloud-adoption',
+      'canonical-Journal-XP-reverse','CAS-conflict-no-overwrite',
+      'recoverable-displaced-private-writing','no-auth-secrets-in-history'],
+    cloudRevision:winner,recoverableBackups:safety.length,
+    mockSupabase:true,physicalGalaxy:false,publicRelease:false
   }));
-} finally{
+}finally{
   await Promise.allSettled([android?.context?.close(),desktop?.context?.close()]);
   await browser.close();
 }
