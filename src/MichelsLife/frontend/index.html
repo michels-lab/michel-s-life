@@ -31294,7 +31294,7 @@ let fileReport=null,currentReport=null,lastExport=null,diagnostic='Run a check t
 const esc=(x)=>String(x||'');
 function render(){
   if(typeof document==='undefined')return;
-  const pane=document.querySelector('[data-v30171-pane="data"]');
+  const pane=document.querySelector('#tab-settings.active .v30171-settings-content > [data-v30171-pane="data"].active');
   if(!pane)return;
   let card=pane.querySelector('#mlvGranadaDataHealth');
   if(!card){
@@ -31404,7 +31404,7 @@ if(typeof document!=='undefined'){
   },true);
   setTimeout(render,650);
   setInterval(()=>{
-    const pane=document.querySelector('[data-v30171-pane="data"]');
+    const pane=document.querySelector('#tab-settings.active .v30171-settings-content > [data-v30171-pane="data"].active');
     if(pane?.classList.contains('active'))render();
   },1700);
 }
