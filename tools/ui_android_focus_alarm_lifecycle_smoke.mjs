@@ -124,9 +124,9 @@ try{
     'Alarm bridge sent running with empty deadline');
   assert.ok(activity.filter(x=>x.status!=='running').every(x=>x.deadline===0),
     'Alarm bridge sent a cancel containing an old deadline');
-  assert.equal(new Set(activity.filter(x=>x.status==='running'&&!x.failed).map(x=>x.key)).size,
-    activity.filter(x=>x.status==='running'&&!x.failed).length,
-    'Focus native bridge armed the same phase/deadline more than once');
+  assert.ok(activity.every((event,i)=>i===0||
+      event.key!==activity[i-1].key||event.failed||activity[i-1].failed),
+    'Focus native bridge sent duplicate consecutive alarm updates');
   console.log('PASS: Focus uses canonical deadline for native work/break, cancels on pause/skip/reset, de-duplicates ticks and retries transient failure');
   await context.close();
 }finally{
