@@ -181,18 +181,12 @@ if [[ "$DEVICE_SIZE" =~ ^([0-9]+)x([0-9]+)$ ]]; then
   adb shell am force-stop "$PKG"
   adb shell am start -W -n "$PKG/.MainActivity" | tee "$OUT/relaunch-result.txt"
   sleep 20
-  RELAUNCH_PID_OK=0
-  for attempt in 1 2 3 4 5; do
-    if timeout 15s adb shell pidof "$PKG" >"$OUT/relaunch-process-id.txt" 2>"$OUT/adb-relaunch-last-error.txt" &&
-       test -s "$OUT/relaunch-process-id.txt"; then
-      RELAUNCH_PID_OK=1
-      break
-    fi
-    echo "::warning::Waiting for relaunched Android process and adb ($attempt/5)"
-    timeout 12s adb wait-for-device || true
-    sleep 3
-  done
-  if [ "$RELAUNCH_PID_OK" -ne 1 ]; then
+  # GRANADA #139: repair ONLY runner ADB transport with bounded retries.
+  # A valid process PID on the exact booted emulator is still mandatory.
+  # Never relaunch the app again, clear storage, or turn transport failure green.
+  if ! python3 android/tools/granada_relaunch_transport_guard.py \
+      --package "$PKG" --serial emulator-5554 --attempts 6 --delay 3 \
+      --output "$OUT/granada-relaunch-transport.json"; then
     echo "::error::Cannot verify native Android process after relaunch"
     exit 1
   fi
