@@ -31,3 +31,7 @@ PRs #134 (Developer Twin, native Kotlin and mobile-experience.js), #135 (Calenda
 ## Required proof to merge
 
 Check source/syntax + full browser UI and Android UI green for this exact PR head. Browser bridge testing cannot close P0 #53: physically test installed signed Android Direct APK on Galaxy with notification permission, screen locked/Doze/reboot, alarm delivery and long/background session, plus native Android emulator where available. CI checks pending at documentation time.
+
+## First exact-head validation and fixture repair
+
+UI job 118388737727 on initial head 4b2836b timed out while waiting for `window.MichelsLifeMobileExperience`: the normal UI web server serves only the shared desktop frontend, not the Android overlay script. This means none of the new alarm assertions ran and **no Focus defect was demonstrated**. Subsequent isolated test commit c08c2db now explicitly sets the Android platform marker and loads the real repository `android/mobile-experience.js` into this same canonical Chromium session using Playwright `addScriptTag({path:...})`; the same exact-state interactions are then attempted. This is source-identical Android JS, with mock OS transport. Await new exact-head result; do not mark as native notification PASS from this fixture.
