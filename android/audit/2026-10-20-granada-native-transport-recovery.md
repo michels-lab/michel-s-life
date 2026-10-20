@@ -22,3 +22,9 @@ Issue #139 already documents repeated ADB/host emulator flakiness across unrelat
 - Native Galaxy physical acceptance, signed Direct security, real account login/sync and app background behavior remain unverified.
 - If a job fails under a restored live ADB connection but absent app process, investigate a real app crash and preserve that classification. Never add a blanket retry/continue-on-error that auto-masks failures.
 - Do not merge until dedicated CI and existing source/native tests are assessed at exact branch HEAD. If emulator instability persists, record the red check and move to the next disjoint Granada block; no release.
+
+## Concrete exact-head CI discovery and expanded scope
+
+The first real candidate native run [39407254143](https://github.com/michels-lab/michel-s-life/actions/runs/39407254143) **failed BEFORE reaching the new relaunch guard**: the emulator/ADB died during initial `step0.png` capture (repeated `error: closed`, missing device, and TCP 5554 refused). The Android APK compilation was SUCCESS and the dedicated 15 synthetic regressions were green. This explains why a strictly post-relaunch ADB repair could not affect the earlier failure. Separate official public Android release installation and launch [39407254250](https://github.com/michels-lab/michel-s-life/actions/runs/39407254250) succeeded but does not validate the current branch candidate.
+
+**Correction:** candidate screenshot fallback now ALSO invokes the bounded guarded ADB recovery during initial framebuffer capture attempts, requiring a live booted VM **and the app PID** before retrying the same real screencap. The error remains RED if Android is gone. Each failed attempt produces a separate scrubbed `granada-capture-transport-$attempt.json` result. Regression test #16 asserts both the early-screenshot and post-relaunch call sites and the unweakened required native pixel failure gate. Review the final exact-head CI before interpreting recovery as resolved.
