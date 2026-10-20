@@ -1,0 +1,103 @@
+name: GRANADA Android real-touch resilience
+
+on:
+  pull_request:
+    paths:
+      - 'tools/granada_android_usability_audit_core.mjs'
+      - 'tools/ui_granada_android_usability_audit.mjs'
+      - 'tools/test_granada_android_usability_audit.mjs'
+      - '.github/workflows/granada-android-usability.yml'
+      - 'android/audit/2026-10-20-granada-android-touch-resilience.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  RELEASES_REPO: michels-lab/michel-s-life-releases
+
+jobs:
+  no-private-data-touch-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Unit gate - redaction, geometry, real coverage, no false acceptance
+        run: |
+          node --check tools/granada_android_usability_audit_core.mjs
+          node --check tools/ui_granada_android_usability_audit.mjs
+          node --check tools/test_granada_android_usability_audit.mjs
+          node --test tools/test_granada_android_usability_audit.mjs
+      - name: Obtain existing public AppBundle (NO NEW RELEASE)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p artifacts
+          python tools/download_latest_michels_life_bundle.py \
+            --repo "$RELEASES_REPO" --output artifacts/AppBundle-granada.zip
+      - name: Prepare current source-controlled Android browser fixture
+        run: |
+          python tools/bump_frontend_version.py --index src/MichelsLife/frontend/index.html
+          python tools/enable_i18n.py --index src/MichelsLife/frontend/index.html
+          python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
+          python tools/replace_bundle_index.py \
+            --bundle artifacts/AppBundle-granada.zip \
+            --index src/MichelsLife/frontend/index.html
+          python tools/inject_bundle_asset.py \
+            --bundle artifacts/AppBundle-granada.zip \
+            --source src/MichelsLife/frontend/i18n.js --arcname i18n.js
+          python tools/inject_bundle_asset.py \
+            --bundle artifacts/AppBundle-granada.zip \
+            --source branding/michel_duarte_avatar.jpg \
+            --arcname assets/michel_duarte_avatar.jpg
+          python tools/inject_bundle_asset.py \
+            --bundle artifacts/AppBundle-granada.zip \
+            --source branding/michels_life_app_icon.svg \
+            --arcname assets/michels_life_app_icon.svg
+          python tools/inject_bundle_asset.py \
+            --bundle artifacts/AppBundle-granada.zip \
+            --source branding/michels_life_mark.svg \
+            --arcname assets/michels_life_mark.svg
+          python tools/inject_bundle_asset.py \
+            --bundle artifacts/AppBundle-granada.zip \
+            --source branding/michels_life_lockup.svg \
+            --arcname assets/michels_life_lockup.svg
+          python tools/inject_bundle_asset.py \
+            --bundle artifacts/AppBundle-granada.zip \
+            --source branding/michels_lab_mark.png \
+            --arcname assets/michels_lab_mark.png
+          python tools/inject_bundle_asset.py \
+            --bundle artifacts/AppBundle-granada.zip \
+            --source branding/michels_lab_lockup.png \
+            --arcname assets/michels_lab_lockup.png
+          python android/tools/prepare_bundle.py \
+            --bundle artifacts/AppBundle-granada.zip --assets artifacts/android-granada-fixture
+      - name: Install Chromium test runtime
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Start isolated synthetic fixture server
+        run: |
+          python -m http.server 4174 --directory artifacts/android-granada-fixture \
+            >/tmp/mlv-granada-http.log 2>&1 &
+      - name: Real-touch 27 section-width routes, targets and relaunch invariants
+        env:
+          MLV_ANDROID_UI_URL: http://127.0.0.1:4174
+        run: node tools/ui_granada_android_usability_audit.mjs
+      - name: Preserve redacted JSON report and synthetic screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: granada-android-ux-diagnostics
+          path: |
+            artifacts/granada-android-usability/report.json
+            artifacts/granada-android-usability/*.png
+            /tmp/mlv-granada-http.log
+          retention-days: 7
+          if-no-files-found: warn
