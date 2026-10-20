@@ -1,3 +1,10 @@
+## 2026-10-20 — Confirmación transversal GRANADA GRANDE: campañas ambiciosas (gobernanza, no release)
+
+- El propietario volvió a ordenar GRANADA y exigió expresamente bloques **más grandes y ambiciosos** para todos los repositorios. Este proyecto ya conserva la actualización local en `.michelslab/GRANADA.md` (y sus propios registros de gobernanza de Android), alineada con el contrato del main repo `michels-lab/Michel-Software-Standards/standards/OPERACION_GRANADA_STANDARD.md` y `standards/GRANADA_CONTINUOUS_BLOCK_PROTOCOL.md`.
+- Para próximos bloques, planear una **campaña de 3–6 entregables sustanciales** seguros cuando existan frentes independientes, con flujo funcional de extremo a extremo, fallos/reintentos/persistencia, tests ejecutados y validación real de UI. Un solo P0 indivisible con gran impacto puede justificar un bloque. No generar relleno ni medir ambición por cantidad de commits.
+- Antes de empezar: revisar `main`, tareas y PR abiertos, claims, CI y límites de propiedad; **saltar un frente ocupado sin cerrarlo** y avanzar otro realmente independiente. Mantener SHAs/evidencia y diferenciar código, CI, artefactos, release oficial y aceptación.
+- **No reactivar Windows**: la instrucción específica de pausar Windows y MSIX de Michel's Life sigue vigente; dar prioridad a Android y su núcleo. No se creó APK, no se integró feature ni se publicó release en esta actualización documental.
+
 ## 2026-10-19 — Follow-up: native Windows executable/installer smoke also paused
 
 - Inspected `ci.yml`: general source validation still included a `windows-icon-smoke` job that compiled `MichelsLife.exe`, published a portable Windows runtime and built/installed a Windows installer candidate on every PR and main push, including Android-only work.
