@@ -129,10 +129,20 @@ async function send(source,destination){
     keys.forEach((key,i)=>{hostile[key]='FOREIGN_DEVICE_SECRET_'+i;});
     policy.restore(hostile);
     const after=Object.fromEntries(keys.map(key=>[key,localStorage.getItem(key)]));
-    return {before,after};
+    const restoredString=String(localStorage.getItem('vida_rpg_personal_progress_v2')||'');
+    const recapturedString=JSON.stringify(policy.capture());
+    return {before,after,immediate:{
+      projectInBoard:restoredString.includes('GRANADA LARGE project from Android'),
+      chapterInBoard:restoredString.includes('GRANADA LARGE chapter from Android'),
+      projectInRecapture:recapturedString.includes('GRANADA LARGE project from Android'),
+      chapterInRecapture:recapturedString.includes('GRANADA LARGE chapter from Android'),
+      boardLength:restoredString.length
+    }};
   },{shared:from.shared,keys:SECRET_KEYS});
   assert.deepEqual(result.after,result.before,
     'Cross-device transfer overwrote the receiver auth, device or local secret');
+  console.log('GRANADA_RESTORE_DIAG '+JSON.stringify({from:source.platform,to:destination.platform,
+    immediate:result.immediate}));
   await destination.page.reload({waitUntil:'domcontentloaded',timeout:60000});
   await destination.page.waitForFunction(()=>
     typeof state!=='undefined' && !!window.MLVCloudSharedStorageV30216?.capture &&
