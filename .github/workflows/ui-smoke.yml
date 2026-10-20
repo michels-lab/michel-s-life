@@ -127,6 +127,12 @@ jobs:
           export MLV_UI_URL=http://127.0.0.1:4173
           node tools/ui_supabase_android_sync_smoke.mjs
 
+      - name: Protect weekly Premium targets and exact-once rewards through Android reloads
+        run: |
+          export MLV_UI_URL=http://127.0.0.1:4173
+          node --check tools/ui_weekly_premium_progress_roundtrip_smoke.mjs
+          node tools/ui_weekly_premium_progress_roundtrip_smoke.mjs
+
       - name: Audit canonical Android Focus alarm lifecycle, retry and de-duplication
         run: |
           export MLV_UI_URL=http://127.0.0.1:4173
