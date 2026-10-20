@@ -22,10 +22,13 @@ const JOURNAL_A='SYNTHETIC_GRANADA_ANDROID_JOURNAL';
 const JOURNAL_B='SYNTHETIC_GRANADA_WINDOWS_JOURNAL';
 const MISSION='granada-large-linked-mission';
 const SECRET_KEYS=[
-  'michelsLife.supabase.session.v30216',
-  'michelsLife.supabase.device.v30216',
+  // Keys intentionally inert on reload: real Supabase sessions and device
+  // identifiers may legitimately refresh/rotate on bootstrap; those are
+  // separately guarded by the existing account/session privacy tests.
+  'michelsLife.google.refreshToken',
   'michelsLife.local.notification.id',
-  'michelsLife.unknown.future.privateKey'
+  'michelsLife.unknown.future.privateKey',
+  'michelsLife.internal.transient'
 ];
 const browser=await chromium.launch({headless:true});
 let android,desktop;
