@@ -31152,5 +31152,35 @@ window.MLV216DesktopExperience={startup,openCommand,openSync};
 })();
 </script>
 
+
+<!-- GRANADA Android-only: Start chapter action must stay above the native bottom navigation. -->
+<style id="mlv-granada-story-mobile-safe-area">
+@media (max-width:720px) {
+  html[data-mlv-platform="android"] #tab-story.active #v30162ChapterForm {
+    padding-bottom:calc(126px + env(safe-area-inset-bottom,0px))!important;
+  }
+  html[data-mlv-platform="android"] body:not(.mlv-android-keyboard-editing)
+  #tab-story.active #v30162ChapterForm > button[type="submit"] {
+    position:fixed!important;
+    box-sizing:border-box!important;
+    inset-inline-start:calc(16px + env(safe-area-inset-left,0px))!important;
+    inset-inline-end:calc(16px + env(safe-area-inset-right,0px))!important;
+    width:calc(100% - 32px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px))!important;
+    bottom:calc(91px + env(safe-area-inset-bottom,0px))!important;
+    min-height:52px!important;
+    border-radius:14px!important;
+    z-index:2147482981!important;
+    touch-action:manipulation!important;
+    box-shadow:0 10px 32px rgba(0,0,0,.30),
+      0 0 0 1px rgba(var(--ui-accent-rgb,117,228,255),.22)!important;
+  }
+  html[data-mlv-platform="android"] body.mlv-android-keyboard-editing
+  #tab-story.active #v30162ChapterForm > button[type="submit"] {
+    position:static!important;
+    width:100%!important;
+    min-height:48px!important;
+  }
+}
+</style>
 </body>
 </html>
