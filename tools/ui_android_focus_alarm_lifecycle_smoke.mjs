@@ -15,9 +15,18 @@ try{
   });
   const page=await context.newPage();
   await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
-  await page.waitForFunction(()=>window.FocusStoryV30162?.startFocus&&
-    window.MichelsLifeMobileExperience?.resyncNativeNotification,
+  await page.waitForFunction(()=>window.FocusStoryV30162?.startFocus,
     null,{timeout:60000});
+  // The desktop browser fixture serves the canonical main index only. Load
+  // the REAL Android module from this exact PR checkout instead of assuming
+  // the Android APK overlay was included in the desktop test server.
+  await page.evaluate(()=>{
+    document.documentElement.dataset.mlvPlatform='android';
+    window.MichelsLifeAndroid={postMessage(){}};
+  });
+  await page.addScriptTag({path:'android/mobile-experience.js'});
+  await page.waitForFunction(()=>window.MichelsLifeMobileExperience?.resyncNativeNotification&&
+    !!document.getElementById('mlv-android-bottom-nav'),null,{timeout:12000});
   const result=await page.evaluate(()=>{
     const api=window.FocusStoryV30162;
     const mobile=window.MichelsLifeMobileExperience;
