@@ -52,3 +52,7 @@ Re-entry: obtain the new `android-ui-smoke` log, inspect whether selection, pers
 ## GRANADA re-entry: exact keyboard failure diagnostics (2026-10-19)
 
 Previous Android UI job 118336756324 timed out during the new Enter-to-select Calendar test at 412px. It did not reveal whether the failure was keyboard delivery, runtime state, saved state, selected DOM class, or aria-pressed after canonical redraw. On the **existing PR #135 branch**, commit 886d5c9 expands the exact Enter and Space fail-closed assertions with a bounded runtime/persisted/DOM/focus evidence snapshot on timeout. This is diagnostic coverage, not proof of correction. It does not replace the canonical click handler, touch unrelated app files or weaken assertions. Await the new Android UI result before repairing the owner files; treat repeated hosted Android16 ADB loss separately under #139. PR stays draft; no release or signed Galaxy acceptance.
+
+### Same-head CI diagnostic formatting correction
+
+The first diagnostic CI attempt (Android UI job `118374893053`, head `7b42ec4`) still timed out on the original Enter selection, but its new diagnostic exception accidentally referenced unquoted test-only labels `Enter` and `Space`. JavaScript raised `ReferenceError: Enter is not defined` instead of printing the captured selection state. This is a **diagnostic formatting error**, not app behavior evidence. Commit `0d4c6de` makes the labels literal; rerun exact-head Android UI before any runtime fix or passing claim.
