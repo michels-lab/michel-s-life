@@ -51,7 +51,14 @@ try{
       {state:'visible',timeout:12000});
     const card=page.locator('#mlvGranadaDataHealth');
     await card.waitFor({state:'visible',timeout:10000});
-    await card.locator('[data-granada-health="saved"]').tap();
+    // The canonical Settings organizer reruns at +0/90/260/760ms after
+    // selecting Data. If the card lacks the owner marker, it moves to General.
+    await page.waitForTimeout(900);
+    assert(await card.getAttribute('data-v30171-owner')==='data',
+      'Data Health was not assigned to the canonical Settings Data section');
+    assert(await card.isVisible(),
+      'Data Health disappeared after Settings canonical relayout');
+    await card.locator('[data-granada-health="saved"]').tap({timeout:12000});
     const status=card.locator('[data-granada-health-status]');
     await status.filter({hasText:'Data health: ok'}).waitFor({state:'visible',timeout:8000});
     const line=await card.locator('[data-granada-health-summary]').innerText();
