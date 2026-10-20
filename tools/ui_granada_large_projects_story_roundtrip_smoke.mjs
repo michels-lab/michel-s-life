@@ -200,6 +200,18 @@ try{
   // Device A -> B, actual new browser bootstrap (same storage, no reset).
   await send(android,desktop);
   const win=await payload(desktop);
+  console.log('GRANADA_RED_DIAG',JSON.stringify({
+    originalProjectKeys:Object.keys(original.shared).filter(k=>String(original.shared[k]).includes(PROJECT)),
+    receivedProjectKeys:Object.keys(win.shared).filter(k=>String(win.shared[k]).includes(PROJECT)),
+    originalChapterKeys:Object.keys(original.shared).filter(k=>String(original.shared[k]).includes(CHAPTER)),
+    receivedChapterKeys:Object.keys(win.shared).filter(k=>String(win.shared[k]).includes(CHAPTER)),
+    originalShareKeys:Object.keys(original.shared).sort(),
+    receivedShareKeys:Object.keys(win.shared).sort(),
+    originalStateProject:original.runtime.includes(PROJECT),
+    receivedStateProject:win.runtime.includes(PROJECT),
+    originalBackupProject:JSON.stringify(original.backup).includes(PROJECT),
+    receivedBackupProject:JSON.stringify(win.backup).includes(PROJECT)
+  }));
   checkDomain(win,'Windows after Android import',{project:true,chapter:true,journal:JOURNAL_A,xp:117});
   assert.ok(win.runtime.includes(PROJECT),
     'Windows runtime did not hydrate Android canonical Project after restart');
