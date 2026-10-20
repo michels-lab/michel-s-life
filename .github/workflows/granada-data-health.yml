@@ -28,7 +28,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: 'Test real in-app health inspector - 17 privacy JSON and comparison cases'
+      - name: 'Test real in-app health inspector - 18 privacy JSON and comparison cases'
         run: |
           node --check tools/test_granada_data_health.mjs
           node --check tools/ui_granada_data_health_smoke.mjs
