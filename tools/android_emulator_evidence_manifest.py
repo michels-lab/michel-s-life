@@ -177,6 +177,12 @@ def self_test():
         victim.write_bytes(victim.read_bytes()[:-15])
         bad = make_manifest(base, sha)
         assert bad["result"] == "FAIL" and len(bad["native_frames"]) == 15
+        corrupted = bytearray(create_test_png())
+        corrupted[200] ^= 0x01
+        victim.write_bytes(corrupted)
+        crc_bad = make_manifest(base, sha)
+        assert crc_bad["result"] == "FAIL" and any(
+            "CRC" in problem for problem in crc_bad["errors"])
         victim.write_bytes(create_test_png())
         apk.write_bytes(apk.read_bytes() + b"tampered")
         bad = make_manifest(base, sha)
