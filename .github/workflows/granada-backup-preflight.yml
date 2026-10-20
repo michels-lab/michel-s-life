@@ -1,0 +1,24 @@
+name: GRANADA backup preflight
+on:
+  pull_request:
+    paths:
+      - 'tools/granada_backup_preflight.py'
+      - 'tools/test_granada_backup_preflight.py'
+      - '.github/workflows/granada-backup-preflight.yml'
+      - 'docs/BACKUP_PREFLIGHT.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  backup-preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Read-only synthetic backup preflight regressions
+        run: python -m unittest discover -s tools -p 'test_granada_backup_preflight.py' -v
+      - name: Source syntax
+        run: python -m py_compile tools/granada_backup_preflight.py tools/test_granada_backup_preflight.py
