@@ -150,7 +150,10 @@ try{
   await writeFile(out+'/report.json',JSON.stringify(result,null,2)+'\n');
   console.log('GRANADA_ANDROID_USABILITY '+JSON.stringify({
     status:result.status,coverage:result.coverage,
-    errors:result.findings.length,pageErrors:countErrors()
+    errors:result.findings.length,pageErrors:countErrors(),
+    findings:result.findings.map(({severity,code,section,viewport})=>({
+      severity,code,section,viewport
+    }))
   }));
   if(result.status==='fail')process.exitCode=1;
 }finally{
