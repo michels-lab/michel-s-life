@@ -345,6 +345,12 @@ try{
         const data=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}');
         return {
           expected:date,selected:marked,
+          activeTab:state.activeTab,bodyTab:document.body.dataset.mlvAndroidTab,
+          mainChildren:[...(document.getElementById('main')?.children||[])].map(el=>({
+            id:el.id,active:el.classList.contains('active'),hasCalendar:!!el.querySelector('.v30135-day')
+          })).slice(0,15),
+          renderMainPresent:typeof window.renderMain==='function',
+          androidFastRoutePresent:typeof window.__mlvAndroidFastRoute==='function',
           storedDate:data.settings?.v30135CalendarSelected,
           runtimeDate:state.settings?.v30135CalendarSelected,
           calendarTabActive:document.getElementById('tab-calendar')?.classList.contains('active'),
@@ -382,6 +388,12 @@ try{
         const data=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}');
         return {
           expected:date,selected:marked,
+          activeTab:state.activeTab,bodyTab:document.body.dataset.mlvAndroidTab,
+          mainChildren:[...(document.getElementById('main')?.children||[])].map(el=>({
+            id:el.id,active:el.classList.contains('active'),hasCalendar:!!el.querySelector('.v30135-day')
+          })).slice(0,15),
+          renderMainPresent:typeof window.renderMain==='function',
+          androidFastRoutePresent:typeof window.__mlvAndroidFastRoute==='function',
           storedDate:data.settings?.v30135CalendarSelected,
           runtimeDate:state.settings?.v30135CalendarSelected,
           calendarTabActive:document.getElementById('tab-calendar')?.classList.contains('active'),
