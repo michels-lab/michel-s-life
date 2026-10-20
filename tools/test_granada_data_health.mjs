@@ -30,6 +30,10 @@ const fixture=()=>({
 const code=(r,c)=>r.findings.some(x=>x.code===c);
 const JSONdata=o=>JSON.stringify(o);
 
+test('Data Health card declares canonical Data owner to survive Settings reclassification',()=>{
+  assert(page.includes("card.dataset.v30171Owner='data'"));
+});
+
 test('valid local record has bounded summary with no private strings',()=>{
   const r=api.inspect(JSONdata(fixture()),'saved-progress');
   assert.equal(r.status,'ok');
