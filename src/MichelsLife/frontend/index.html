@@ -31299,7 +31299,7 @@ function render(){
   let card=pane.querySelector('#mlvGranadaDataHealth');
   if(!card){
     card=document.createElement('section');
-    card.id='mlvGranadaDataHealth';card.className='card mlv-granada-health';
+    card.id='mlvGranadaDataHealth';card.className='card mlv-granada-health';card.dataset.v30171Owner='data';
     card.innerHTML='<h2>Data health & backup preflight</h2>'+
       '<p>Inspect your saved progress or a JSON backup before importing. Checks are read-only and run entirely on this device. Nothing is uploaded or restored.</p>'+
       '<div class="mlv-granada-health-actions">'+
