@@ -1,0 +1,70 @@
+name: GRANADA GRANDE Project Story cloud roundtrip
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'tools/ui_granada_large_projects_story_roundtrip_smoke.mjs'
+      - '.github/workflows/granada-large-project-story-cloud.yml'
+      - 'src/MichelsLife/frontend/**'
+      - 'android/tools/prepare_bundle.py'
+      - 'android/android-bridge.js'
+      - 'android/mobile-sections.js'
+      - 'android/mobile-experience.js'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: granada-project-story-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  canonical-browser-cross-platform:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Download public canonical AppBundle (read-only)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p artifacts
+          python tools/download_latest_michels_life_bundle.py --repo michels-lab/michel-s-life-releases --output artifacts/AppBundle-android.zip
+      - name: Prepare exact checked-out frontend and Android assets
+        run: |
+          python tools/bump_frontend_version.py --index src/MichelsLife/frontend/index.html
+          python tools/enable_i18n.py --index src/MichelsLife/frontend/index.html
+          python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
+          python tools/replace_bundle_index.py --bundle artifacts/AppBundle-android.zip --index src/MichelsLife/frontend/index.html
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-android.zip --source src/MichelsLife/frontend/i18n.js --arcname i18n.js
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-android.zip --source branding/michel_duarte_avatar.jpg --arcname assets/michel_duarte_avatar.jpg
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-android.zip --source branding/michels_life_app_icon.svg --arcname assets/michels_life_app_icon.svg
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-android.zip --source branding/michels_life_mark.svg --arcname assets/michels_life_mark.svg
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-android.zip --source branding/michels_life_lockup.svg --arcname assets/michels_life_lockup.svg
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-android.zip --source branding/michels_lab_mark.png --arcname assets/michels_lab_mark.png
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-android.zip --source branding/michels_lab_lockup.png --arcname assets/michels_lab_lockup.png
+          python android/tools/prepare_bundle.py --bundle artifacts/AppBundle-android.zip --assets artifacts/android-ui-bundle
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Run actual browser platform roundtrip and fail closed
+        run: |
+          python -m http.server 4174 --directory artifacts/android-ui-bundle >/tmp/mlv-granada-http.log 2>&1 &
+          export MLV_UI_URL=http://127.0.0.1:4174
+          node tools/ui_granada_large_projects_story_roundtrip_smoke.mjs
+      - name: Retain log on failure (no private state)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: granada-large-project-story-browser-failure
+          path: /tmp/mlv-granada-http.log
+          if-no-files-found: warn
+          retention-days: 7
