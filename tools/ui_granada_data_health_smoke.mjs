@@ -42,7 +42,6 @@ try{
       !!document.getElementById('mlv-android-bottom-nav')&&
       document.documentElement.dataset.mlvPlatform==='android',
       null,{timeout:60000});
-    const baseline=await page.evaluate(k=>localStorage.getItem(k),key);
     await page.locator('#mlv-android-bottom-nav [data-mobile-tab="settings"]').tap();
     await page.waitForSelector('#tab-settings.active',{state:'visible',timeout:12000});
     const dataButton=page.locator('#tab-settings [data-v30171-setting="data"]');
@@ -58,6 +57,26 @@ try{
       'Data Health was not assigned to the canonical Settings Data section');
     assert(await card.isVisible(),
       'Data Health disappeared after Settings canonical relayout');
+    // Measure the canonical state AFTER ordinary Settings navigation settles.
+    // The main app itself persists route/scroll/settings metadata on navigation,
+    // so raw bytewise whole-state equality from the Dashboard would be wrong.
+    const baseline=await page.evaluate(k=>localStorage.getItem(k),key);
+    const progressProjection=raw=>{
+      const s=JSON.parse(raw||'{}');
+      const ids=k=>(Array.isArray(s[k])?s[k]:[]).map(v=>({
+        id:v?.id??null,completions:v?.completions??[],
+        xp:v?.xp??null,linkedMissionIds:v?.missionIds??null
+      }));
+      return JSON.stringify({
+        xp:s.xp??null,coins:s.coins??null,totalCoinsEarned:s.totalCoinsEarned??null,
+        missions:ids('missions'),contracts:ids('contracts'),
+        premiumContracts:ids('premiumContracts'),projects:ids('projects'),
+        goals:ids('goals'),chapters:ids('chapters'),
+        history:ids('history'),achievements:ids('achievements')
+      });
+    };
+    const baselineProgress=progressProjection(baseline);
+
     await card.locator('[data-granada-health="saved"]').tap({timeout:12000});
     const status=card.locator('[data-granada-health-status]');
     await status.filter({hasText:'Data health: ok'}).waitFor({state:'visible',timeout:8000});
@@ -118,16 +137,16 @@ try{
     assert(exported.comparison?.status==='different'&&
       exported.noPersonalFieldsExported&&exported.cannotGuaranteeRestore,
       'Export incorrectly reports readiness or lost comparison');
-    assert(await page.evaluate(k=>localStorage.getItem(k),key)===baseline,
-      'Health inspector changed persistent progress');
+    assert.equal(progressProjection(await page.evaluate(k=>localStorage.getItem(k),key)),
+      baselineProgress,'Health inspector changed XP or identity/completion progress');
     await page.screenshot({path:out+'/compared-'+width+'.png',animations:'disabled'});
 
     for(let i=0;i<2;i++){
       await page.reload({waitUntil:'domcontentloaded',timeout:60000});
       await page.waitForFunction(()=>!!window.MLVGranadaDataHealth &&
         !!document.getElementById('mlv-android-bottom-nav'),null,{timeout:60000});
-      assert(await page.evaluate(k=>localStorage.getItem(k),key)===baseline,
-        'Read-only tool modified progress across WebView reload');
+      assert.equal(progressProjection(await page.evaluate(k=>localStorage.getItem(k),key)),
+        baselineProgress,'Mission IDs, XP or completions changed on WebView reload');
     }
     assert.equal(errors.length,0,'App page errors: '+errors.join('; '));
     console.log('GRANADA_DATA_HEALTH_ANDROID_PASS '+JSON.stringify({
