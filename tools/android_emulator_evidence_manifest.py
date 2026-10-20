@@ -18,6 +18,8 @@ import sys
 from tempfile import TemporaryDirectory
 import zlib
 
+from android_native_png_pixels import visual_grid, changed_grid_fraction
+
 NATIVE = "artifacts/emulator-health"
 RELEASE = "artifacts/emulator-health-release"
 APK_NAME = "MichelsLife-Android-Direct-v0.2.9.apk"
@@ -75,6 +77,8 @@ def make_manifest(root, source_sha):
     release = root / RELEASE
     problems = []
     frames = []
+    decoded_grids = {}
+    installed_difference = None
     if not re.fullmatch(r"[0-9a-f]{40}", source_sha or ""):
         problems.append("checkout SHA is missing or invalid")
     report_file = evidence / "result.env"
@@ -114,18 +118,32 @@ def make_manifest(root, source_sha):
                 continue
             try:
                 width, height = png_shape(path)
-            except (ValueError, OSError) as exc:
+                pixels = visual_grid(path)
+            except (ValueError, OSError, zlib.error) as exc:
                 problems.append(f"invalid real native frame {filename}: {exc}")
                 continue
+            decoded_grids[(phase, sample)] = pixels["grid"]
             frames.append({"phase": phase, "sample": sample,
                            "path": str(path.relative_to(root)),
                            "sha256": sha256(path), "bytes": path.stat().st_size,
-                           "width": width, "height": height})
+                           "width": width, "height": height,
+                           "sampled_pixel_count": pixels["pixel_count"],
+                           "unique_sampled_colors": pixels["colors"],
+                           "luminance_range": pixels["luminance_range"],
+                           "center_grid_sha256": pixels["grid_sha256"]})
 
     if len(frames) != 16:
         problems.append(f"only {len(frames)}/16 native frames verified")
+    baseline = decoded_grids.get(("baseline", 8))
+    installed = decoded_grids.get(("installed", 1))
+    if baseline and installed:
+        installed_difference = changed_grid_fraction(baseline, installed)
+        if installed_difference < 0.08:
+            problems.append("native installed frame is visually indistinguishable from idle launcher")
+    else:
+        problems.append("real native before/after visual comparison not possible")
     return {
-        "schema": "michelslab.android16.native-frame-evidence.v1",
+        "schema": "michelslab.android16.native-frame-evidence.v2",
         "source_checkout_sha": source_sha,
         "public_release": "v3.0.221",
         "public_android_direct": "0.2.9",
@@ -135,18 +153,31 @@ def make_manifest(root, source_sha):
         "observed_phases": ["baseline", "installed"],
         "result": "PASS" if not problems else "FAIL",
         "native_frames": frames,
+        "installed_vs_idle_changed_pixel_fraction": installed_difference,
+        "visual_quality": "decoded sampled RGB, rejects blank/flat frames and unchanged installed screen",
         "errors": problems,
         "owner_post_release_visual_review": "PENDING",
         "physical_device_tested": False,
     }
 
 
-def create_test_png():
+def create_test_png(tint=0, flat=False):
     def chunk(label, data):
         return (struct.pack(">I", len(data)) + label + data +
                 struct.pack(">I", binascii.crc32(label + data) & 0xffffffff))
     width, height = 400, 500
-    image = (b"\x00" + b"\x00\x00\x00" * width) * height
+    rows = []
+    for y in range(height):
+        row = bytearray(b"\x00")
+        for x in range(width):
+            if flat:
+                row.extend((0, 0, 0))
+            else:
+                row.extend(((x // 19 * 17 + y // 21 * 13 + tint) % 256,
+                            (x // 13 * 9 + y // 23 * 19 + tint) % 256,
+                            (x // 17 * 11 + y // 11 * 7 + tint) % 256))
+        rows.append(bytes(row))
+    image = b"".join(rows)
     return (SIGNATURE +
             chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0)) +
             chunk(b"tEXt", b"synthetic=" + b"x" * 1750) +
@@ -169,12 +200,14 @@ def self_test():
             f"{sha256(apk)}  {APK_NAME}\n", encoding="utf-8")
         for phase in ("baseline", "installed"):
             for i in range(1, 9):
-                (native / f"frame-{phase}-{i}.png").write_bytes(create_test_png())
+                (native / f"frame-{phase}-{i}.png").write_bytes(
+                    create_test_png(tint=80 if phase == "installed" else 0))
         sha = "a" * 40
         good = make_manifest(base, sha)
         assert good["result"] == "PASS" and len(good["native_frames"]) == 16
         victim = native / "frame-installed-8.png"
-        victim.write_bytes(victim.read_bytes()[:-15])
+        original = victim.read_bytes()
+        victim.write_bytes(original[:-15])
         bad = make_manifest(base, sha)
         assert bad["result"] == "FAIL" and len(bad["native_frames"]) == 15
         corrupted = bytearray(create_test_png())
@@ -183,13 +216,24 @@ def self_test():
         crc_bad = make_manifest(base, sha)
         assert crc_bad["result"] == "FAIL" and any(
             "CRC" in problem for problem in crc_bad["errors"])
-        victim.write_bytes(create_test_png())
+        victim.write_bytes(create_test_png(tint=80, flat=True))
+        flat_bad = make_manifest(base, sha)
+        assert flat_bad["result"] == "FAIL" and any(
+            "flat" in problem or "screen" in problem for problem in flat_bad["errors"])
+        victim.write_bytes(original)
+        for i in range(1, 9):
+            (native / f"frame-installed-{i}.png").write_bytes(create_test_png())
+        replay = make_manifest(base, sha)
+        assert replay["result"] == "FAIL" and any(
+            "indistinguishable" in problem for problem in replay["errors"])
+        for i in range(1, 9):
+            (native / f"frame-installed-{i}.png").write_bytes(create_test_png(tint=80))
         apk.write_bytes(apk.read_bytes() + b"tampered")
         bad = make_manifest(base, sha)
         assert bad["result"] == "FAIL" and any("SHA256" in p for p in bad["errors"])
         (native / "result.env").write_text("result=FAILED\nexit_code=1\n", encoding="utf-8")
         assert make_manifest(base, sha)["result"] == "FAIL"
-    print("PASS: 16-frame SHA/PNG provenance + missing/CRC/truncated/tampered APK failure gates")
+    print("PASS: 16 decoded native frames + nonblank RGB/phase-difference + CRC/truncation/tampered APK failure gates")
 
 
 def main():
