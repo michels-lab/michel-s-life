@@ -31312,7 +31312,7 @@ function render(){
       '<div class="mlv-granada-health-output" role="status" aria-live="polite" aria-atomic="true">'+
       '<strong data-granada-health-status>Not checked</strong>'+
       '<small data-granada-health-summary>Read-only preflight. A healthy result does not guarantee a successful restore.</small></div>';
-    pane.appendChild(card);
+    pane.insertBefore(card,pane.querySelector(':scope > .card, :scope > section.card, :scope > div.card')||null);
   }
   const a=card.querySelector('[data-granada-health-status]');
   const b=card.querySelector('[data-granada-health-summary]');
