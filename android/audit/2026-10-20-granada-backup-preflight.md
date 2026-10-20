@@ -9,7 +9,7 @@ Independent development block; Windows packaging and releases remain paused. No 
 4. Synthetic regression tests for valid formats, malformed input, duplicate IDs, credential privacy, divergent copies, strict warnings and CLI compare; dedicated lightweight Python CI workflow; usage + limitations.
 
 ## Test evidence before GitHub commit
-- Local `python -m unittest discover -s tools -p test_granada_backup_preflight.py -v`: **9/9 PASS** on synthetic fixtures in a disposable working folder. Exact GitHub CI HEAD remains to be checked after opening the PR.
+- Local `python -m unittest discover -s tools -p test_granada_backup_preflight.py -v`: **10/10 PASS** on synthetic fixtures in a disposable working folder. Exact GitHub CI HEAD remains to be checked after opening the PR.
 - No Galaxy/device/provider tests performed. This does not fix native Android startup drift, cloud CAS or Developer Twin launch and does not close #104/#28/#55/#108/#131.
 
 ## Interference guard / next gate
