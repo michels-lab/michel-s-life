@@ -356,7 +356,7 @@ try{
           cells:rows.length
         };
       },date);
-      throw new Error('GRANADA canonical calendar '+Enter+' selection failed at '+width+
+      throw new Error('GRANADA canonical calendar Enter selection failed at '+width+
         'px: '+JSON.stringify(diagnosis)+'; cause: '+String(error.message||error));
     }
     const next=page.locator('#tab-calendar .v30135-day[data-date]').nth(9);
@@ -393,7 +393,7 @@ try{
           cells:rows.length
         };
       },nextDate);
-      throw new Error('GRANADA canonical calendar '+Space+' selection failed at '+width+
+      throw new Error('GRANADA canonical calendar Space selection failed at '+width+
         'px: '+JSON.stringify(diagnosis)+'; cause: '+String(error.message||error));
     }
     assert(nextDate!==date,'Keyboard smoke did not select two distinct Calendar days');
