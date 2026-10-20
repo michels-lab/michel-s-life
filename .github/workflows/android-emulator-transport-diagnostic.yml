@@ -5,11 +5,13 @@ on:
   pull_request:
     paths:
       - 'tools/android_emulator_transport_probe.sh'
+      - 'tools/android_emulator_evidence_manifest.py'
       - '.github/workflows/android-emulator-transport-diagnostic.yml'
   push:
     branches: [main]
     paths:
       - 'tools/android_emulator_transport_probe.sh'
+      - 'tools/android_emulator_evidence_manifest.py'
       - '.github/workflows/android-emulator-transport-diagnostic.yml'
 
 permissions:
@@ -29,6 +31,8 @@ jobs:
       - name: Syntax-check the fail-closed diagnostic without starting an emulator
         shell: bash
         run: |
+          python3 -m py_compile tools/android_emulator_evidence_manifest.py
+          python3 tools/android_emulator_evidence_manifest.py --self-test
           bash -n tools/android_emulator_transport_probe.sh
           test "$(grep -c '^probe_once()' tools/android_emulator_transport_probe.sh)" -eq 1
           printf 'emulator-5554 device product:pixel_6\\n' | grep -Eq '^emulator-[0-9]+[[:space:]]+device([[:space:]]|$)'
@@ -71,6 +75,14 @@ jobs:
           disable-animations: true
           emulator-boot-timeout: 600
           script: bash tools/android_emulator_transport_probe.sh
+
+      - name: Manifest real Android16 screenshot digests and public APK/source identity
+        if: always()
+        shell: bash
+        run: |
+          python3 tools/android_emulator_evidence_manifest.py \
+            --root . \
+            --source-sha "$(git rev-parse HEAD)"
 
       - name: Preserve real emulator, framebuffer and host-transport evidence even when red
         if: always()
