@@ -1,3 +1,11 @@
+## 2026-10-20 — GRANADA ambiciosa: macro-bloques multi-entregable (regla adoptada)
+
+**Orden del propietario:** evitar correcciones mínimas encadenadas; elegir campañas de desarrollo con aproximadamente **3–6 paquetes sustanciales relacionados y no interferentes**, cuando el backlog lo permita. Cada paquete debe entregar código/experiencia tangible, recuperar estados y bordes, añadir pruebas de regresión y documentar las verificaciones reales. El tamaño no justifica pisar ramas/claims, mezclar cuentas, omitir QA ni dar por concluida una aceptación física pendiente. Si algún paquete está bloqueado por login, hardware, CI o release, aparcarlo con issue/PR/SHA y continuar con otro trabajo seguro. El objetivo es hacer más, **no aparentarlo**. [Estándar maestro](https://github.com/michels-lab/Michel-Software-Standards/blob/main/standards/OPERACION_GRANADA_STANDARD.md).
+
+**Objetivo de producto para próximas Granadas:** Android RPG tasks, premium contracts, XP persistence, Focus/history, Developer Twin and installed-device acceptance. Keep Windows packaging parked until owner approves final app direction.
+
+**Estado de esta entrada:** adopción del protocolo únicamente; no afirma nueva funcionalidad, tests completados, integración de código ni publicación. Todo release/producción exige autorización expresa. Conservar los PRs y pendientes previamente registrados.
+
 ## 2026-10-20 — Confirmación transversal GRANADA GRANDE: campañas ambiciosas (gobernanza, no release)
 
 - El propietario volvió a ordenar GRANADA y exigió expresamente bloques **más grandes y ambiciosos** para todos los repositorios. Este proyecto ya conserva la actualización local en `.michelslab/GRANADA.md` (y sus propios registros de gobernanza de Android), alineada con el contrato del main repo `michels-lab/Michel-Software-Standards/standards/OPERACION_GRANADA_STANDARD.md` y `standards/GRANADA_CONTINUOUS_BLOCK_PROTOCOL.md`.
