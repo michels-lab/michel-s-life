@@ -159,6 +159,14 @@ class GuardTests(unittest.TestCase):
             finally:
                 guard.default_runner = actual
 
+    def test_early_screenshot_recovery_requires_real_app_pid(self):
+        script = (ROOT / "android/tools/smoke_candidate_apk_install.sh").read_text()
+        self.assertEqual(script.count("granada_relaunch_transport_guard.py"), 2)
+        self.assertIn('granada-capture-transport-$attempt.json', script)
+        self.assertIn("Native screenshot transport or real Android app process lost", script)
+        self.assertIn("::error::Missing real native Android pixels", script)
+        self.assertIn('return 1', script)
+
     def test_integration_script_uses_guard_without_disabling_native_gates(self):
         script = (ROOT / "android/tools/smoke_candidate_apk_install.sh").read_text()
         self.assertIn("granada_relaunch_transport_guard.py", script)
