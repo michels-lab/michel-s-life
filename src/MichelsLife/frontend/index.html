@@ -31152,5 +31152,266 @@ window.MLV216DesktopExperience={startup,openCommand,openSync};
 })();
 </script>
 
+
+<!-- GRANADA 2026-10-20: read-only Data Health & backup comparison (Android/Desktop shared). -->
+<style id="mlv-granada-data-health-style">
+.mlv-granada-health{min-width:0;overflow:hidden}
+.mlv-granada-health h2{margin:0;font-size:15px}
+.mlv-granada-health p{margin:7px 0 12px;color:var(--muted);font-size:11px;line-height:1.55}
+.mlv-granada-health-actions{display:flex;flex-wrap:wrap;gap:8px}
+.mlv-granada-health-actions button{min-height:44px;max-width:100%;white-space:normal}
+.mlv-granada-health-output{margin-top:12px;padding:11px;border-radius:12px;border:1px solid rgba(255,255,255,.09);background:rgba(0,0,0,.12);min-width:0}
+.mlv-granada-health-output strong,.mlv-granada-health-output small{display:block}
+.mlv-granada-health-output strong{font-size:12px}
+.mlv-granada-health-output small{font-size:10px;color:var(--muted);margin-top:5px;line-height:1.5;overflow-wrap:anywhere}
+.mlv-granada-health input[type=file]{display:none}
+@media(max-width:440px){.mlv-granada-health-actions{display:grid;grid-template-columns:1fr 1fr}.mlv-granada-health-actions button{font-size:11px;padding:8px;min-width:0}.mlv-granada-health-output{padding:10px}}
+@media(max-width:350px){.mlv-granada-health-actions{grid-template-columns:1fr}}
+</style>
+<script id="mlv-granada-data-health">
+(function(){
+'use strict';
+if(window.MLVGranadaDataHealth)return;
+const CORE_KEY='vida_rpg_personal_progress_v2';
+const MAX_BYTES=10*1024*1024;
+const COLLECTIONS=['missions','goals','projects','chapters','contracts','premiumContracts'];
+const SECRET_FIELD=/^(access[_-]?token|refresh[_-]?token|authorization|password|passwd|secret|client[_-]?secret|api[_-]?key|id[_-]?token|bearer|private[_-]?key)$/i;
+const PRIVATE_STORAGE=/(supabase\.(session|device|meta)|google\.(auth|token)|auth|credential|session|device|refresh[_-]?token|access[_-]?token|notification\.id)/i;
+const integer=x=>typeof x==='number'&&Number.isFinite(x)&&x>=0;
+const blankCounts=()=>Object.fromEntries(COLLECTIONS.map(k=>[k,0]));
+function inspect(raw,source='selected-file'){
+  const report={schema:'mlv.granada.data-health.v1',
+    source:source==='saved-progress'?'saved-progress':'selected-file',
+    status:'ok',counts:blankCounts(),xp:null,completionCount:0,
+    findings:[],safeToAutoRestore:false,readOnly:true};
+  const found=new Set();
+  const add=(code,level='warning')=>{
+    const key=level+':'+code;
+    if(found.has(key))return;
+    found.add(key);report.findings.push({code,level});
+  };
+  let payload;
+  try{
+    if(typeof raw==='string'){
+      if(!raw.length||raw.length>MAX_BYTES)throw Error('size');
+      payload=JSON.parse(raw);
+    }else payload=raw;
+  }catch(_){add('invalid_or_oversized_json','error');}
+  if(!payload||typeof payload!=='object'||Array.isArray(payload)){
+    if(!found.size)add('invalid_snapshot_root','error');
+    report.status='invalid';return report;
+  }
+  // Review only field names, never retain or emit values or user content.
+  const seen=new WeakSet();
+  let visited=0;
+  const walk=(node,depth)=>{
+    if(!node||typeof node!=='object'||seen.has(node))return;
+    if(depth>12){add('nested_scan_depth_limit');return;}
+    seen.add(node);visited++;
+    if(visited>50000){add('nested_scan_size_limit','error');return;}
+    if(Array.isArray(node)){for(const item of node){walk(item,depth+1);if(visited>50000)break;}return;}
+    for(const [key,val] of Object.entries(node)){
+      if(SECRET_FIELD.test(key))add('credential_field_detected','error');
+      if(depth===1&&key==='localStorage'&&val&&typeof val==='object'){
+        for(const storageKey of Object.keys(val)){
+          if(PRIVATE_STORAGE.test(storageKey))add('device_private_storage_detected','error');
+        }
+      }
+      if(val&&typeof val==='object')walk(val,depth+1);
+      if(visited>50000)break;
+    }
+  };
+  walk(payload,0);
+  let state=payload.state||payload.runtimeState;
+  const ls=payload.localStorage;
+  if(!state && ls&&typeof ls==='object'&&typeof ls[CORE_KEY]==='string'){
+    try{state=JSON.parse(ls[CORE_KEY])}catch(_){add('stored_state_invalid_json','error');}
+  }
+  if(!state && (Array.isArray(payload.missions)||integer(payload.xp)))state=payload;
+  if(!state||typeof state!=='object'||Array.isArray(state)){
+    add('missing_canonical_progress','error');
+    report.status='invalid';return report;
+  }
+  if(ls&&typeof ls==='object'&&typeof ls[CORE_KEY]==='string'&&payload.state){
+    try{
+      const stored=JSON.parse(ls[CORE_KEY]);
+      if(stored&&typeof stored==='object'&&(Number(stored.xp||0)!==Number(state.xp||0)||
+        COLLECTIONS.some(k=>Array.isArray(stored[k])&&Array.isArray(state[k])&&stored[k].length!==state[k].length)))
+        add('canonical_and_saved_state_disagree');
+    }catch(_){add('stored_state_invalid_json','error');}
+  }
+  if(state.xp!==undefined){
+    if(!integer(state.xp))add('invalid_total_xp','error');
+    else report.xp=state.xp;
+  }
+  for(const key of COLLECTIONS){
+    if(state[key]===undefined||state[key]===null)continue;
+    if(!Array.isArray(state[key])){add('invalid_collection_shape','error');continue;}
+    report.counts[key]=state[key].length;
+    const ids=new Set();
+    for(const item of state[key]){
+      if(!item||typeof item!=='object'||Array.isArray(item)){
+        add('invalid_record_shape','error');continue;
+      }
+      const id=item.id;
+      if(id===undefined||id===null||String(id).trim()==='')add('missing_record_id');
+      else if(ids.has(String(id)))add('duplicate_record_id','error');
+      else ids.add(String(id));
+      if(item.xp!==undefined&&!integer(item.xp))add('invalid_record_xp','error');
+      if(key==='missions'&&item.completions!==undefined){
+        if(!Array.isArray(item.completions))add('invalid_completion_shape','error');
+        else report.completionCount+=item.completions.length;
+      }
+    }
+  }
+  if(report.findings.some(x=>x.level==='error'))report.status='invalid';
+  else if(report.findings.length)report.status='review';
+  return report;
+}
+function compare(a,b){
+  const differences=[];
+  if(!a||!b||a.status==='invalid'||b.status==='invalid')
+    return {status:'not_comparable',differences:['invalid_source']};
+  if(a.xp!==b.xp)differences.push('total_xp_changed');
+  if(a.completionCount!==b.completionCount)differences.push('completion_count_changed');
+  for(const key of COLLECTIONS)if(a.counts[key]!==b.counts[key])
+    differences.push('count_changed_'+key);
+  return {status:differences.length?'different':'same_summary',
+    differences,identityAndContentNotCompared:true};
+}
+const makeReport=(file,current)=>({
+  schema:'mlv.granada.data-health-export.v1',
+  data: file||null,device:current||null,
+  comparison:file&&current?compare(current,file):null,
+  noPersonalFieldsExported:true,
+  cannotGuaranteeRestore:true
+});
+const getSaved=()=>{
+  try{return inspect(localStorage.getItem(CORE_KEY)||'','saved-progress')}
+  catch(_){return inspect('', 'saved-progress');}
+};
+let fileReport=null,currentReport=null,lastExport=null,diagnostic='Run a check to see the result.';
+const esc=(x)=>String(x||'');
+function render(){
+  if(typeof document==='undefined')return;
+  const pane=document.querySelector('[data-v30171-pane="data"]');
+  if(!pane)return;
+  let card=pane.querySelector('#mlvGranadaDataHealth');
+  if(!card){
+    card=document.createElement('section');
+    card.id='mlvGranadaDataHealth';card.className='card mlv-granada-health';
+    card.innerHTML='<h2>Data health & backup preflight</h2>'+
+      '<p>Inspect your saved progress or a JSON backup before importing. Checks are read-only and run entirely on this device. Nothing is uploaded or restored.</p>'+
+      '<div class="mlv-granada-health-actions">'+
+      '<button type="button" class="btn" data-granada-health="saved">Check saved progress</button>'+
+      '<button type="button" class="btn" data-granada-health="open-file">Inspect backup JSON</button>'+
+      '<button type="button" class="btn" data-granada-health="compare">Compare counts & XP</button>'+
+      '<button type="button" class="btn ghost" data-granada-health="copy">Copy safe report</button>'+
+      '<button type="button" class="btn ghost" data-granada-health="download">Download report</button></div>'+
+      '<input type="file" data-granada-health-file accept=".json,.michelslife,application/json">'+
+      '<div class="mlv-granada-health-output" role="status" aria-live="polite" aria-atomic="true">'+
+      '<strong data-granada-health-status>Not checked</strong>'+
+      '<small data-granada-health-summary>Read-only preflight. A healthy result does not guarantee a successful restore.</small></div>';
+    pane.appendChild(card);
+  }
+  const a=card.querySelector('[data-granada-health-status]');
+  const b=card.querySelector('[data-granada-health-summary]');
+  const report=fileReport||currentReport;
+  a.textContent=report?('Data health: '+report.status):'Not checked';
+  b.textContent=diagnostic;
+}
+function setReport(report,label){
+  const codes=report.findings.map(f=>f.code).join(', ')||'none';
+  diagnostic=label+': '+report.status+'; XP '+(report.xp===null?'unknown':report.xp)+
+    '; missions '+report.counts.missions+'; completions '+report.completionCount+
+    '; findings '+codes+'. Read-only; not a restore guarantee.';
+  lastExport=makeReport(fileReport,currentReport);
+  render();
+}
+async function inspectFile(file){
+  if(!file)return;
+  if(file.size>MAX_BYTES){
+    fileReport=inspect('', 'selected-file');
+    diagnostic='Selected file exceeds the 10 MiB safety limit.';
+    lastExport=makeReport(fileReport,currentReport);render();return;
+  }
+  try{
+    const body=await file.text();
+    fileReport=inspect(body,'selected-file');
+    setReport(fileReport,'Selected backup');
+  }catch(_){
+    fileReport=inspect('', 'selected-file');
+    diagnostic='The selected file could not be read.';
+    lastExport=makeReport(fileReport,currentReport);render();
+  }
+}
+async function copyReport(){
+  if(!lastExport){diagnostic='Run a check before exporting.';render();return;}
+  const json=JSON.stringify(lastExport,null,2);
+  try{
+    if(!navigator.clipboard?.writeText)throw Error('unavailable');
+    await navigator.clipboard.writeText(json);
+    diagnostic='Redacted report copied. No mission names, credentials or journal text included.';
+  }catch(_){
+    const input=document.createElement('textarea');input.value=json;
+    input.setAttribute('readonly','');input.style.position='fixed';
+    input.style.opacity='0';document.body.appendChild(input);input.select();
+    const copied=!!document.execCommand?.('copy');input.remove();
+    diagnostic=copied?'Redacted report copied.':'Clipboard unavailable. Use Download report instead.';
+  }
+  render();
+}
+function download(){
+  if(!lastExport){diagnostic='Run a check before exporting.';render();return;}
+  try{
+    const blob=new Blob([JSON.stringify(lastExport,null,2)+'\n'],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download='michels-life-data-health-redacted.json';
+    document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);
+    diagnostic='Requested redacted JSON download. Check your device downloads.';
+  }catch(_){diagnostic='Browser download unavailable. Try Copy safe report.';}
+  render();
+}
+if(typeof document!=='undefined'){
+  document.addEventListener('click',event=>{
+    const button=event.target.closest?.('[data-granada-health]');
+    if(!button)return;
+    event.preventDefault();
+    const action=button.dataset.granadaHealth;
+    if(action==='saved'){currentReport=getSaved();setReport(currentReport,'Saved progress');}
+    if(action==='open-file')button.closest('.mlv-granada-health')
+      ?.querySelector('[data-granada-health-file]')?.click();
+    if(action==='compare'){
+      if(!fileReport){diagnostic='Inspect a backup file first.';render();return;}
+      currentReport=getSaved();
+      const result=compare(currentReport,fileReport);
+      diagnostic='Backup vs saved progress: '+result.status+
+        '; '+(result.differences.join(', ')||'no count/XP difference')+
+        '. Contents and record identities are NOT compared.';
+      lastExport=makeReport(fileReport,currentReport);render();
+    }
+    if(action==='copy')copyReport();
+    if(action==='download')download();
+  });
+  document.addEventListener('change',e=>{
+    const input=e.target.closest?.('[data-granada-health-file]');
+    if(!input)return;
+    const file=input.files?.[0];input.value='';
+    if(file)inspectFile(file);
+  });
+  document.addEventListener('click',e=>{
+    if(e.target.closest?.('[data-v30171-setting="data"]'))setTimeout(render,140);
+  },true);
+  setTimeout(render,650);
+  setInterval(()=>{
+    const pane=document.querySelector('[data-v30171-pane="data"]');
+    if(pane?.classList.contains('active'))render();
+  },1700);
+}
+window.MLVGranadaDataHealth=Object.freeze({inspect,compare,getSaved,mount:render,
+  report:()=>makeReport(fileReport,currentReport)});
+})();
+</script>
+
 </body>
 </html>
