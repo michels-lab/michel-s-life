@@ -62,7 +62,12 @@ try{
     const status=card.locator('[data-granada-health-status]');
     await status.filter({hasText:'Data health: ok'}).waitFor({state:'visible',timeout:8000});
     const line=await card.locator('[data-granada-health-summary]').innerText();
-    assert(line.includes('XP 90')&&line.includes('missions 1'),'Saved progress counts not visible at '+width);
+    const canonical=JSON.parse(baseline||'{}');
+    const expectedXP=typeof canonical.xp==='number'?canonical.xp:null;
+    const expectedMissions=Array.isArray(canonical.missions)?canonical.missions.length:0;
+    assert(line.includes('XP '+(expectedXP===null?'unknown':expectedXP)) &&
+      line.includes('missions '+expectedMissions),
+      'Saved progress counts do not match real post-boot storage at '+width+': '+line);
     assert(!line.includes('CONFIDENTIAL')&&!line.includes('test-mission-private-id'),
       'Private content leaked into saved progress summary');
     const widths=await card.evaluate(el=>{
