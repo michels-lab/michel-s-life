@@ -9,7 +9,7 @@ import { chromium } from 'playwright';
  * Browser runtime and UI are real; provider responses, accounts, and content
  * are synthetic. This does not prove Galaxy/signed APK/live cloud acceptance.
  */
-const URL=process.env.MLV_UI_URL||'http://127.0.0.1:4174';
+const APP_URL=process.env.MLV_UI_URL||'http://127.0.0.1:4174';
 const SUPA='https://lqnkcqredlxrykynacwr.supabase.co';
 const USER='00000000-0000-0000-0000-000000000653';
 const DAY='2026-10-20';
@@ -112,7 +112,7 @@ async function device(platform){
   },platform);
   const page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
-  await page.goto(URL,{waitUntil:'domcontentloaded',timeout:60000});
+  await page.goto(APP_URL,{waitUntil:'domcontentloaded',timeout:60000});
   await page.waitForFunction(()=>typeof state!=='undefined'&&
     !!window.SupabaseSyncV30216?.signIn&&
     !!window.MLVCloudSharedStorageV30216?.capture&&
