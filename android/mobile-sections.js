@@ -959,8 +959,10 @@
         day.click();
         requestAnimationFrame(()=>{
           let root=document.getElementById('main')||main;
+          // A shared legacy redraw can reset activeTab while unmounting the
+          // mobile Calendar. Restore the user's current Calendar surface even
+          // if legacy navigation state became stale during the click.
           if(!root.querySelector('#tab-calendar .v30135-day[data-date]')&&
-             String(state?.activeTab||'')==='calendar'&&
              typeof window.__mlvAndroidFastRoute==='function'){
             window.__mlvAndroidFastRoute('calendar');
             root=document.getElementById('main')||root;
