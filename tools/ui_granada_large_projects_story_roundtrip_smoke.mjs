@@ -182,6 +182,21 @@ try{
   const baseline=Number(backend.remote?.revision||0);
   ok(baseline>=1,'Android authenticated first master missing');
   ok((await snap(android)).token,'Android did not establish its synthetic session');
+  // Authentication may quarantine a pre-login guest board (correct account
+  // isolation). Create the linked mission INSIDE the authenticated account,
+  // never assume a previous guest mission survived login.
+  await android.page.evaluate(id=>{
+    if(!state.missions.some(m=>m.id===id)){
+      state.missions.push({
+        id,name:'GRANADA canonical linked mission',
+        canonical:'granada canonical linked mission',
+        description:'Synthetic test only',type:'oneoff',category:'academic',
+        difficulty:'medium',xp:25,coins:0,days:[],archived:false,
+        hidden:false,createdAt:'2026-10-01T00:00:00.000Z',completions:[]
+      });
+      window.save();
+    }
+  },MISSION_ID);
 
   // Track A: actual Android Projects form and canonical mission link.
   await routeAndroid('projects');
