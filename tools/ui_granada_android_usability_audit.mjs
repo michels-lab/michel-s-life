@@ -72,7 +72,14 @@ try{
             !!document.querySelector('#tab-'+section+'.active') &&
             document.querySelector('#tab-'+section+'.active').getBoundingClientRect().width>0,
             route,{timeout:12000});
-          await page.waitForTimeout(120);
+          // A drawer tap may finish before its backdrop/slide animation.
+          // Measure persistent hit obstruction only after the real drawer
+          // has left the viewport; never waive an overlay that remains stuck.
+          await page.waitForFunction(()=>{
+            const sidebar=document.getElementById('v30171Sidebar');
+            return !sidebar || sidebar.getBoundingClientRect().right<=8;
+          },null,{timeout:6000});
+          await page.waitForTimeout(360);
           const measurement=await page.evaluate(route=>{
             const r=node=>{const x=node?.getBoundingClientRect();
               return x?{left:x.left,right:x.right,top:x.top,bottom:x.bottom,
