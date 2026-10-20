@@ -15,7 +15,8 @@ import signal
 import sys
 import time
 
-ALLOWED_EXE = frozenset(("emulator", "qemu-system-x86_64", "qemu-system-aarch64", "adb"))
+ALLOWED_EXE = frozenset(("emulator", "qemu-system-x86", "qemu-system-x86_64",
+                          "qemu-system-aar", "qemu-system-aarch64", "adb"))
 MAX_SAMPLES = 240
 
 
