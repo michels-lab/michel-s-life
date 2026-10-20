@@ -95,9 +95,22 @@ try{
   const portable=JSON.parse(shared[KEY]);
   assert.equal(portable.missions?.filter(m=>m.id===ID).length,1);
   assert.equal(portable.missions.find(m=>m.id===ID)?.weeklyTarget,4);
-  await android.page.evaluate(data=>window.MLVCloudSharedStorageV30216.restore(data),shared);
+  // A raw shared-storage restore is not an authoritative active runtime
+  // update: the still-open previous Android state can write its old mission
+  // array back into localStorage on the next tick. The production cloud
+  // restore also navigates immediately after writing. Mirror that same
+  // atomic restore-and-bootstrap boundary, not two separate tool calls.
+  const firstBoot=android.page.waitForEvent('load',{timeout:60000});
+  await android.page.evaluate(({data,id,key})=>{
+    window.MLVCloudSharedStorageV30216.restore(data);
+    const incoming=JSON.parse(localStorage.getItem(key)||'{}');
+    if(!incoming.missions?.some(m=>m.id===id))
+      throw Error('Raw cloud restore never installed incoming weekly mission');
+    window.location.reload();
+  },{data:shared,id:ID,key:KEY});
+  await firstBoot;
   for(let n=0;n<2;n++){
-    await android.page.reload({waitUntil:'domcontentloaded'});
+    if(n>0)await android.page.reload({waitUntil:'domcontentloaded'});
     await android.page.waitForFunction(()=>window.MLVCloudSharedStorageV30216&&
       typeof window.completeMission==='function',null,{timeout:60000});
     const got=await snapshot(android.page);verify(got,'Android restart '+(n+1));
