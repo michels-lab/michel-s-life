@@ -5,6 +5,7 @@ on:
     paths:
       - 'src/MichelsLife/frontend/account-boundary.mjs'
       - 'tools/test_granada_account_boundary.mjs'
+      - 'tools/ui_granada_account_boundary_crash_browser.mjs'
       - '.github/workflows/granada-account-boundary.yml'
   workflow_dispatch:
 
@@ -26,3 +27,14 @@ jobs:
         run: node --check tools/test_granada_account_boundary.mjs
       - name: Synthetic account switching, guest import and recovery QA
         run: node tools/test_granada_account_boundary.mjs
+      - name: Install Chromium for real persistent-storage crash and restart QA
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Run actual Chromium page-kill, account switching and forged-journal matrix
+        env:
+          MLV_ACCOUNT_BOUNDARY_BROWSER_URL: http://127.0.0.1:4188/
+        run: |
+          python -m http.server 4188 --directory . >/tmp/mlv-account-boundary-http.log 2>&1 &
+          node --check tools/ui_granada_account_boundary_crash_browser.mjs
+          node tools/ui_granada_account_boundary_crash_browser.mjs
