@@ -39,6 +39,14 @@ def fingerprint(value: Any) -> str:
 def canonical_state(snapshot: Any, allowlist: frozenset[str]) -> tuple[dict, dict]:
     if not isinstance(snapshot, dict):
         raise TriageError("unsupported_backup")
+    # A structured backup may carry unknown top-level credential/device data.
+    # Inspect only recognized envelope shapes; old formats should be sanitized
+    # by the separate opt-in safe converter before forensic comparison.
+    if "state" in snapshot or "runtimeState" in snapshot:
+        permitted = {"app", "type", "cloudPayloadVersion", "state",
+                     "runtimeState", "localStorage", "version"}
+        if set(snapshot) - permitted:
+            raise TriageError("unverified_envelope_fields")
     local = snapshot.get("localStorage", {})
     if not isinstance(local, dict) or any(not isinstance(key, str) for key in local):
         raise TriageError("invalid_local_storage")
