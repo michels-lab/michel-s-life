@@ -190,6 +190,75 @@ test('clean guest state never offers an empty import', () => {
   const {boundary:b}=make(); ready(b,A); b.signOut();
   b.startAccount(B); assert.equal(b.previewUnclaimed(),null);
 });
+const txnKey = 'michelsLife.accountBoundary.v1.transaction';
+const activeKey = 'michelsLife.accountBoundary.v1.active';
+const accountAKey = 'michelsLife.accountBoundary.v1.account.' + A;
+const reconstruct = s => new AccountBoundary(s,{boardKey,revisionKey,emptyBoard});
+test('WebView crash after overwriting board but before owner switch rolls back A atomically', () => {
+  const {s,boundary:b}=make();ready(b,A);
+  s.setItem(boardKey,'PRIVATE A BOARD');s.setItem(revisionKey,'A-R');
+  const original = new Map(s.map);
+  s.setItem(txnKey, JSON.stringify({version:1,changes:[
+    {key:accountAKey,before:s.getItem(accountAKey)},
+    {key:boardKey,before:s.getItem(boardKey)},
+    {key:revisionKey,before:s.getItem(revisionKey)},
+    {key:activeKey,before:s.getItem(activeKey)}
+  ]}));
+  s.setItem(accountAKey,'{\"version\":1,\"ownerId\":\"user-aaaaa\",\"board\":\"PRIVATE A BOARD\",\"revision\":\"A-R\"}');
+  s.setItem(boardKey,'PRIVATE B BOARD');s.removeItem(revisionKey);
+  s.setItem(activeKey, JSON.stringify({version:1,kind:'account',ownerId:B,state:'pending'}));
+  const restart=reconstruct(s);
+  assert.equal(restart.active().ownerId,A);
+  assert.equal(restart.authorizeUpload(A),true);
+  assert.equal(restart.authorizeUpload(B),false);
+  assert.deepEqual(s.map,original);
+  assert.equal(s.getItem(txnKey),null);
+});
+test('recovery fails closed and retains journal until storage becomes writable', () => {
+  const {s,boundary:b}=make();ready(b,A);
+  s.setItem(boardKey,'A BEFORE CRASH');
+  s.setItem(txnKey,JSON.stringify({version:1,changes:[
+    {key:boardKey,before:'A BEFORE CRASH'}
+  ]}));
+  s.map.set(boardKey,'B AFTER CRASH');s.failKey=boardKey;
+  deny(()=>reconstruct(s),'storage_rollback_failed');
+  assert.equal(s.getItem(txnKey)!==null,true);
+  s.failKey=null;
+  assert.equal(reconstruct(s).authorizeUpload(A),true);
+  assert.equal(s.getItem(boardKey),'A BEFORE CRASH');
+  assert.equal(s.getItem(txnKey),null);
+});
+test('untrusted crash journal may not overwrite credentials or arbitrary keys', () => {
+  const {s}=make({[boardKey]:'A'});
+  const initialToken=s.getItem(sessionKey);
+  s.setItem(txnKey,JSON.stringify({version:1,changes:[
+    {key:sessionKey,before:'FORGED_OTHER_TOKEN'}]}));
+  deny(()=>reconstruct(s),'corrupt_boundary_transaction');
+  assert.equal(s.getItem(sessionKey),initialToken);
+  assert.ok(s.getItem(txnKey));
+});
+test('corrupt duplicate journal records are never trusted', () => {
+  const {s}=make({[boardKey]:'A'});
+  for(const data of [
+    '{not-json',
+    JSON.stringify({version:1,changes:[null]}),
+    JSON.stringify({version:1,changes:[{key:boardKey,before:'X'},{key:boardKey,before:'Y'}]}),
+    JSON.stringify({version:1,changes:[{key:txnKey,before:null}]})
+  ]){
+    s.setItem(txnKey,data);
+    deny(()=>reconstruct(s),'corrupt_boundary_transaction');
+    assert.equal(s.getItem(boardKey),'A');
+  }
+});
+test('failure writing recovery journal never switches owners or board', () => {
+  const {s,boundary:b}=make();ready(b,A);
+  s.setItem(boardKey,'A ONLY');
+  const before=new Map(s.map);
+  s.failKey=txnKey;
+  deny(()=>b.startAccount(B),'storage_write_failed');
+  assert.deepEqual(s.map,before);
+  assert.equal(s.getItem(txnKey),null);
+});
 let count = 0;
 for(const [name, fn] of cases) {
   try { await fn(); count++; console.log(`PASS ${name}`); }
