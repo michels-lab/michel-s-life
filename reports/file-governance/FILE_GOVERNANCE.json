@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 275,
-  "classified_files_total": 271,
-  "docs_content_inspected": 77,
+  "tracked_files_total": 276,
+  "classified_files_total": 272,
+  "docs_content_inspected": 78,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
   "roles": {
@@ -13,7 +13,7 @@
     "build_script": 6,
     "config": 22,
     "database_migration": 3,
-    "document": 70,
+    "document": 71,
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
@@ -28,8 +28,8 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 2,
-  "inventory_fingerprint": "7213c1b822cd750459dd12a44d647e66740b9d13e2fe83bd37522b49e9d9b333",
-  "evidence_fingerprint": "0adecee13b754f123fdc430bcae1b0f21f2cd556b4da1940531da51918023949",
+  "inventory_fingerprint": "97439fc166b1485dc728326634ae6ac24e5900fd836756de54ca72e2e39a4b3a",
+  "evidence_fingerprint": "8d070cf37514b69860b3562c31344f3740c7451ff320a45f7e04ba2277bbd9b0",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -1180,6 +1180,13 @@
       "blob": "b382c050950b55ddc60fce93efd1ff8da4fed97d"
     },
     {
+      "path": "docs/audit/2026-10-21-granada-cloud-account-vault-exclusion.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "d1fdf397082c3b73cd5d931f38978014bb939f2b"
+    },
+    {
       "path": "docs/audit/2026-10-21-granada-ledger-integration-native-transport.md",
       "role": "document",
       "purpose": "manual/decision/report/historical note",
@@ -1737,7 +1744,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "8575e5342a2d824d9197ef4d03ce0c45a8c1f478"
+      "blob": "c0de5eb2431f12d0e59618fa1a9d109b3a9c010f"
     },
     {
       "path": "tools/ui_desktop_experience_smoke.mjs",
@@ -1931,11 +1938,11 @@
   ],
   "findings": [
     {
-      "id": "7a82d933cef3ff8b",
+      "id": "143fa10550341cde",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "14 implementation/config paths changed since this log's last commit; examples: .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-daily-mission-ledger.yml, .github/workflows/granada-recovery-loss-triage.yml, .github/workflows/ui-smoke.yml",
+      "observation": "15 implementation/config paths changed since this log's last commit; examples: .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-daily-mission-ledger.yml, .github/workflows/granada-recovery-loss-triage.yml, .github/workflows/ui-smoke.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
