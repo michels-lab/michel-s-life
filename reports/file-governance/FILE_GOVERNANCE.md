@@ -5,7 +5,7 @@ No file is auto-deleted or declared unused.
 
 ## Coverage
 
-Tracked: 252; classified: 252; readable documents: 70; above read cap: 0; findings: 36.
+Tracked: 256; classified: 252; readable documents: 70; above read cap: 0; findings: 26.
 
 ## File roles
 
@@ -14,12 +14,15 @@ Tracked: 252; classified: 252; readable documents: 70; above read cap: 0; findin
 | agent | 9 |
 | asset | 12 |
 | bitacora | 3 |
+| build_script | 6 |
 | config | 21 |
 | document | 63 |
 | index | 4 |
+| license | 1 |
 | source | 85 |
 | test | 6 |
-| unknown | 25 |
+| unknown | 15 |
+| web_ui | 3 |
 | workflow | 24 |
 
 ## Findings (human review required)
@@ -43,20 +46,10 @@ Tracked: 252; classified: 252; readable documents: 70; above read cap: 0; findin
 - **REVIEW / UNKNOWN_PURPOSE** .michelslab/release-intents/unified-v3219-a027.txt: No reliable purpose category from path. Next: Declare role after reviewing usage (ID 117c853700707dcb)
 - **REVIEW / UNKNOWN_PURPOSE** .michelslab/release-intents/unified-v3220-a028.txt: No reliable purpose category from path. Next: Declare role after reviewing usage (ID a4d3032878f168f9)
 - **REVIEW / UNKNOWN_PURPOSE** .michelslab/release-intents/unified-v3221-a029.txt: No reliable purpose category from path. Next: Declare role after reviewing usage (ID e2996ef78d5d5bfa)
-- **REVIEW / UNKNOWN_PURPOSE** BUILD_MICHELS_LIFE_WINDOWS.bat: No reliable purpose category from path. Next: Declare role after reviewing usage (ID 6b29c05b289a48c6)
-- **REVIEW / UNKNOWN_PURPOSE** LICENSE.txt: No reliable purpose category from path. Next: Declare role after reviewing usage (ID b1f1bb5a1d0c7fe5)
-- **REVIEW / UNKNOWN_PURPOSE** android/app/build.gradle.kts: No reliable purpose category from path. Next: Declare role after reviewing usage (ID 19cd65c90b9e6cfc)
-- **REVIEW / UNKNOWN_PURPOSE** android/build.gradle.kts: No reliable purpose category from path. Next: Declare role after reviewing usage (ID 6b94bcefb2676ae0)
-- **REVIEW / UNKNOWN_PURPOSE** android/settings.gradle.kts: No reliable purpose category from path. Next: Declare role after reviewing usage (ID 893790451fda3de8)
-- **REVIEW / UNKNOWN_PURPOSE** docs/privacy/index.html: No reliable purpose category from path. Next: Declare role after reviewing usage (ID 29c4bc472bbf6cc2)
-- **REVIEW / UNKNOWN_PURPOSE** installer/MichelsLife.iss: No reliable purpose category from path. Next: Declare role after reviewing usage (ID 0447a0a2fa736597)
 - **REVIEW / UNKNOWN_PURPOSE** installer/TaskbarPinning.txt: No reliable purpose category from path. Next: Declare role after reviewing usage (ID 5d4d30417d9f7a63)
-- **REVIEW / UNKNOWN_PURPOSE** src/MichelsLife/AppPatches/store-msix.html: No reliable purpose category from path. Next: Declare role after reviewing usage (ID f2f8c7261f55c7ae)
 - **REVIEW / UNKNOWN_PURPOSE** src/MichelsLife/GoogleCalendarService.cs.gz.b64: No reliable purpose category from path. Next: Declare role after reviewing usage (ID da1ab9955e45ac7e)
-- **REVIEW / UNKNOWN_PURPOSE** src/MichelsLife/MichelsLife.csproj: No reliable purpose category from path. Next: Declare role after reviewing usage (ID 29d65ec3399e151f)
 - **REVIEW / UNKNOWN_PURPOSE** src/MichelsLife/Program.cs.gz.b64: No reliable purpose category from path. Next: Declare role after reviewing usage (ID 6b807bddd0e10afd)
 - **REVIEW / UNKNOWN_PURPOSE** src/MichelsLife/app.manifest: No reliable purpose category from path. Next: Declare role after reviewing usage (ID fbebc509becff010)
-- **REVIEW / UNKNOWN_PURPOSE** src/MichelsLife/frontend/index.html: No reliable purpose category from path. Next: Declare role after reviewing usage (ID 081f775cafc4329a)
 - **REVIEW / UNKNOWN_PURPOSE** supabase/migrations/20261005112105_michels_life_initial_sync_schema.sql: No reliable purpose category from path. Next: Declare role after reviewing usage (ID b4d06c4850b3c6ab)
 - **REVIEW / UNKNOWN_PURPOSE** supabase/migrations/20261005112815_lock_michels_life_sync_to_authenticated.sql: No reliable purpose category from path. Next: Declare role after reviewing usage (ID 0a139aebccfaf828)
 - **REVIEW / UNKNOWN_PURPOSE** supabase/migrations/20261006070456_least_privilege_michels_life_sync.sql: No reliable purpose category from path. Next: Declare role after reviewing usage (ID 7a3cb6f5ba1d0140)

@@ -1,30 +1,33 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 252,
+  "tracked_files_total": 256,
   "classified_files_total": 252,
   "docs_content_inspected": 70,
   "large_docs_skipped": 0,
-  "excluded_reports": 0,
+  "excluded_reports": 4,
   "roles": {
     "agent": 9,
     "asset": 12,
     "bitacora": 3,
+    "build_script": 6,
     "config": 21,
     "document": 63,
     "index": 4,
+    "license": 1,
     "source": 85,
     "test": 6,
-    "unknown": 25,
+    "unknown": 15,
+    "web_ui": 3,
     "workflow": 24
   },
   "finding_counts": {
     "POSSIBLY_REDUNDANT_NAME": 11,
-    "UNKNOWN_PURPOSE": 25
+    "UNKNOWN_PURPOSE": 15
   },
-  "finding_total": 36,
-  "inventory_fingerprint": "b1fa31ce0b0ac9ec84f47ee0d3c0864cfab9f62bfa8023e54de92db16ebf5730",
-  "evidence_fingerprint": "9d1fb20c92e1db593ded8d08df21fe64ac1e7ec46db7d586b8e76a0ad46c5230",
+  "finding_total": 26,
+  "inventory_fingerprint": "02ee1937f4431e3765fe365df30229f4e3a328d22ba59739cf0867e06c7f5c23",
+  "evidence_fingerprint": "66c91ccb69b1347bb2dd399b60c3ad72601819a46f131ad9108965e531da6fb7",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -378,9 +381,9 @@
     },
     {
       "path": "BUILD_MICHELS_LIFE_WINDOWS.bat",
-      "role": "unknown",
-      "purpose": "function unknown: owner classification required",
-      "certainty": "unknown",
+      "role": "build_script",
+      "purpose": "platform build/project/installer script",
+      "certainty": "inferred",
       "blob": "9479b9baa368b496cc75cd5d20e6946d49398742"
     },
     {
@@ -399,9 +402,9 @@
     },
     {
       "path": "LICENSE.txt",
-      "role": "unknown",
-      "purpose": "function unknown: owner classification required",
-      "certainty": "unknown",
+      "role": "license",
+      "purpose": "licensing/notice",
+      "certainty": "rule",
       "blob": "cf1662c2a62cee457391676bf926e30c997442c1"
     },
     {
@@ -469,9 +472,9 @@
     },
     {
       "path": "android/app/build.gradle.kts",
-      "role": "unknown",
-      "purpose": "function unknown: owner classification required",
-      "certainty": "unknown",
+      "role": "build_script",
+      "purpose": "platform build/project/installer script",
+      "certainty": "inferred",
       "blob": "d9a34135ebef1616b6dec535aadacc824fccaf63"
     },
     {
@@ -749,9 +752,9 @@
     },
     {
       "path": "android/build.gradle.kts",
-      "role": "unknown",
-      "purpose": "function unknown: owner classification required",
-      "certainty": "unknown",
+      "role": "build_script",
+      "purpose": "platform build/project/installer script",
+      "certainty": "inferred",
       "blob": "f928a84390b953ebfda7816eae78d728b7d5a6fe"
     },
     {
@@ -777,9 +780,9 @@
     },
     {
       "path": "android/settings.gradle.kts",
-      "role": "unknown",
-      "purpose": "function unknown: owner classification required",
-      "certainty": "unknown",
+      "role": "build_script",
+      "purpose": "platform build/project/installer script",
+      "certainty": "inferred",
       "blob": "60eae73937805be9ef1c524b7f553f0d54bf9336"
     },
     {
@@ -1134,9 +1137,9 @@
     },
     {
       "path": "docs/privacy/index.html",
-      "role": "unknown",
-      "purpose": "function unknown: owner classification required",
-      "certainty": "unknown",
+      "role": "web_ui",
+      "purpose": "local HTML documentation or web interface",
+      "certainty": "inferred",
       "blob": "23d231d9fc9f98ed74060335e2d141d4440ec171"
     },
     {
@@ -1190,9 +1193,9 @@
     },
     {
       "path": "installer/MichelsLife.iss",
-      "role": "unknown",
-      "purpose": "function unknown: owner classification required",
-      "certainty": "unknown",
+      "role": "build_script",
+      "purpose": "platform build/project/installer script",
+      "certainty": "inferred",
       "blob": "79e020f9601183c122105b5c51b16dd0144fc02f"
     },
     {
@@ -1204,9 +1207,9 @@
     },
     {
       "path": "src/MichelsLife/AppPatches/store-msix.html",
-      "role": "unknown",
-      "purpose": "function unknown: owner classification required",
-      "certainty": "unknown",
+      "role": "web_ui",
+      "purpose": "local HTML documentation or web interface",
+      "certainty": "inferred",
       "blob": "0b72043faedbf3908d27fe549cd52b91a915e0a0"
     },
     {
@@ -1239,9 +1242,9 @@
     },
     {
       "path": "src/MichelsLife/MichelsLife.csproj",
-      "role": "unknown",
-      "purpose": "function unknown: owner classification required",
-      "certainty": "unknown",
+      "role": "build_script",
+      "purpose": "platform build/project/installer script",
+      "certainty": "inferred",
       "blob": "806827c3524265be36bc7e51312fd6c063dcee02"
     },
     {
@@ -1274,9 +1277,9 @@
     },
     {
       "path": "src/MichelsLife/frontend/index.html",
-      "role": "unknown",
-      "purpose": "function unknown: owner classification required",
-      "certainty": "unknown",
+      "role": "web_ui",
+      "purpose": "local HTML documentation or web interface",
+      "certainty": "inferred",
       "blob": "1080d8cc634f2530bdb22caa7d1de9964cd56eb1"
     },
     {
@@ -1459,7 +1462,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "fe0546a76c0cf308c99f0cc4f1c11aa0677496ec"
+      "blob": "3f704fa24a27aa107914d85b772b32227ffd82fa"
     },
     {
       "path": "tools/spanish_copy_source_audit.mjs",
@@ -1515,7 +1518,7 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "b94da69cd18c8066756acba162bc66618261b522"
+      "blob": "ebac5d9cfe86ff3c1e94b96468027a6578d1d708"
     },
     {
       "path": "tools/ui_android_chapter_motion_smoke.mjs",
@@ -1964,69 +1967,6 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "6b29c05b289a48c6",
-      "code": "UNKNOWN_PURPOSE",
-      "severity": "review",
-      "path": "BUILD_MICHELS_LIFE_WINDOWS.bat",
-      "observation": "No reliable purpose category from path",
-      "recommendation": "Declare role after reviewing usage",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "b1f1bb5a1d0c7fe5",
-      "code": "UNKNOWN_PURPOSE",
-      "severity": "review",
-      "path": "LICENSE.txt",
-      "observation": "No reliable purpose category from path",
-      "recommendation": "Declare role after reviewing usage",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "19cd65c90b9e6cfc",
-      "code": "UNKNOWN_PURPOSE",
-      "severity": "review",
-      "path": "android/app/build.gradle.kts",
-      "observation": "No reliable purpose category from path",
-      "recommendation": "Declare role after reviewing usage",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "6b94bcefb2676ae0",
-      "code": "UNKNOWN_PURPOSE",
-      "severity": "review",
-      "path": "android/build.gradle.kts",
-      "observation": "No reliable purpose category from path",
-      "recommendation": "Declare role after reviewing usage",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "893790451fda3de8",
-      "code": "UNKNOWN_PURPOSE",
-      "severity": "review",
-      "path": "android/settings.gradle.kts",
-      "observation": "No reliable purpose category from path",
-      "recommendation": "Declare role after reviewing usage",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "29c4bc472bbf6cc2",
-      "code": "UNKNOWN_PURPOSE",
-      "severity": "review",
-      "path": "docs/privacy/index.html",
-      "observation": "No reliable purpose category from path",
-      "recommendation": "Declare role after reviewing usage",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "0447a0a2fa736597",
-      "code": "UNKNOWN_PURPOSE",
-      "severity": "review",
-      "path": "installer/MichelsLife.iss",
-      "observation": "No reliable purpose category from path",
-      "recommendation": "Declare role after reviewing usage",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
       "id": "5d4d30417d9f7a63",
       "code": "UNKNOWN_PURPOSE",
       "severity": "review",
@@ -2036,28 +1976,10 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "f2f8c7261f55c7ae",
-      "code": "UNKNOWN_PURPOSE",
-      "severity": "review",
-      "path": "src/MichelsLife/AppPatches/store-msix.html",
-      "observation": "No reliable purpose category from path",
-      "recommendation": "Declare role after reviewing usage",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
       "id": "da1ab9955e45ac7e",
       "code": "UNKNOWN_PURPOSE",
       "severity": "review",
       "path": "src/MichelsLife/GoogleCalendarService.cs.gz.b64",
-      "observation": "No reliable purpose category from path",
-      "recommendation": "Declare role after reviewing usage",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "29d65ec3399e151f",
-      "code": "UNKNOWN_PURPOSE",
-      "severity": "review",
-      "path": "src/MichelsLife/MichelsLife.csproj",
       "observation": "No reliable purpose category from path",
       "recommendation": "Declare role after reviewing usage",
       "state": "REVIEW_REQUIRED"
@@ -2076,15 +1998,6 @@
       "code": "UNKNOWN_PURPOSE",
       "severity": "review",
       "path": "src/MichelsLife/app.manifest",
-      "observation": "No reliable purpose category from path",
-      "recommendation": "Declare role after reviewing usage",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "081f775cafc4329a",
-      "code": "UNKNOWN_PURPOSE",
-      "severity": "review",
-      "path": "src/MichelsLife/frontend/index.html",
       "observation": "No reliable purpose category from path",
       "recommendation": "Declare role after reviewing usage",
       "state": "REVIEW_REQUIRED"
