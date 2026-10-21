@@ -4,7 +4,8 @@ import {normalizeError,evidenceReport} from './granada_story_diagnostic_core.mjs
 // Android browser model: ONLY synthetic data. Native APK / provider is not tested.
 const base=process.env.MLV_ANDROID_UI_URL||'http://127.0.0.1:4174';
 const sha=process.env.MLV_SOURCE_SHA||process.env.GITHUB_SHA;
-const output='artifacts/granada-story-focus';
+const candidate=process.env.MLV_STORY_CLEARANCE_CANDIDATE==='1';
+const output=candidate?'artifacts/granada-story-focus/candidate':'artifacts/granada-story-focus/baseline';
 const cases=[];
 const browser=await chromium.launch({headless:true});
 const ok=(x,code)=>{if(!x)throw Error(code);};
@@ -37,7 +38,13 @@ for(const width of [320,360,412])for(const language of ['en','es']){
    },language);
    page=await context.newPage();
    page.on('pageerror',err=>errors.push(normalizeError(err,phase)));
+   async function installCandidate(){
+     if(!candidate)return;
+     await page.addScriptTag({type:'module',url:'/story-focus-safe-area.mjs'});
+     await page.waitForFunction(()=>!!window.__mlvStoryFocusClearance?.installed,null,{timeout:10000});
+   }
    await page.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
+   await installCandidate();
    await page.waitForFunction(()=>!!window.__mlvAndroidFastRoute &&
      !!document.getElementById('mlv-android-bottom-nav') &&
      !!document.getElementById('mlv-android-menu-button'),null,{timeout:60000});
@@ -86,6 +93,7 @@ for(const width of [320,360,412])for(const language of ['en','es']){
    await sheet.locator('[data-mobile-focus="close"]').tap({timeout:16000});
    phase='relaunch';
    await page.reload({waitUntil:'domcontentloaded',timeout:60000});
+   await installCandidate();
    await page.waitForFunction(()=>!!window.FocusStoryV30162?.focusState&&
      !!document.getElementById('mlv-android-bottom-nav'),null,{timeout:60000});
    const persisted=await page.evaluate(()=>({status:window.FocusStoryV30162?.focusState?.().status,
@@ -113,6 +121,10 @@ for(const width of [320,360,412])for(const language of ['en','es']){
      .filter({hasText:/start chapter|iniciar cap[ií]tulo/i}).first();
    ok(await submit.count()===1,'start_chapter_missing');
    await submit.scrollIntoViewIfNeeded();
+   if(candidate){
+     await page.evaluate(()=>window.__mlvStoryFocusClearance?.ensureSaveVisible());
+     await page.waitForTimeout(160);
+   }
    const hit=await submit.evaluate(el=>{
       const box=el.getBoundingClientRect(),x=box.left+box.width/2,y=box.top+box.height/2;
       const target=document.elementFromPoint(x,y);
@@ -141,6 +153,6 @@ try{report=evidenceReport({sourceSha:sha,cases});}
 catch(e){console.error('FAIL invalid provenance report:',e.message);process.exitCode=1;}
 if(report){
  await writeFile(output+'/evidence.json',JSON.stringify(report,null,2)+'\n');
- console.log('Android Story/Focus exact-commit browser matrix '+report.status+': '+report.passed+'/6; NOT installed/native QA.');
+ console.log((candidate?'SAFE-AREA CANDIDATE':'BASELINE')+' Android Story/Focus exact-commit browser matrix '+report.status+': '+report.passed+'/6; NOT installed/native QA.');
  if(report.status!=='PASS')process.exitCode=1;
 }
