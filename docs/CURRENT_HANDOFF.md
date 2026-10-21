@@ -1,3 +1,12 @@
+# GRANADA current checkpoint — 2026-10-21 (supersedes historical notes below)
+
+- **Verified main:** `22e8d0d91d93` (PR #159 safe legacy backup conversion merged with 35/35 regression gates; this does not update the public APK).
+- **New separate draft:** [PR #160](https://github.com/michels-lab/michel-s-life/pull/160), branch `granada/android-calendar-native-foundation-20261021`. Implemented new, disjoint Kotlin Calendar rules, actual bounded Google REST read/mission-only CRUD, dedicated explicit OAuth consent and fail-closed domain/structural tests; see `android/audit/2026-10-21-granada-native-calendar-foundation.md`.
+- **Truth/ownership:** #160 is NOT integrated with AndroidBridge, MainActivity or Settings because #134 owns those paths. Calendar sync in the public v0.2.9 app remains unavailable; do not turn the UI on or close #110. #135 mobile Calendar keyboard work and #156 Data Health also remain separate. Native Android/Galaxy provider, selected-account binding, offline/error/revocation and real event CRUD acceptance are outstanding.
+- **CI state when branch opened:** current PR-head exact workflows started; outcomes must be checked before claiming green or merging. No Windows builds, no merge, no version increment, no release.
+
+---
+
 # Michel's Life — GRANADA current integration checkpoint (2026-10-20)
 
 **This checkpoint overrides older branch/PR snapshots below; historical handoff is retained for traceability.** Verified main after three independent exact-head green PRs: `58e2fb7a2972d65a51be959d02ac432ecd87683a`.
