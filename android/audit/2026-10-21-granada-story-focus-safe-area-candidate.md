@@ -19,3 +19,9 @@
 - Other release blockers remain #139 emulator transport, #104 installed progress persistence, #108 cross-account data isolation and #55 cloud credential boundaries. No RC/beta or final release now.
 
 **Current state:** independent source candidate committed and 10/10 local geometry checks pass. Production integration, real Android signed testing, and final release are NOT complete.
+## Exact observed comparison — strict no-test-helper CI (2026-10-21)
+- [Source SHA 5f7b1852897a7fb43ebba0aa0ad3e3dd7ada1700](https://github.com/michels-lab/michel-s-life/commit/5f7b1852897a7fb43ebba0aa0ad3e3dd7ada1700) and [run 39661979474](https://github.com/michels-lab/michel-s-life/actions/runs/39661979474): code and 10/10 pure geometry checks pass.
+- **Unmodified Android browser model:** **RED 5/6**. In this repeat 412px Spanish failed with `chapter_submit_covered`, whereas earlier runs failed at 412px English. This is a shared 412px viewport obstruction, not proven language-exclusive.
+- **Opt-in safe-area candidate:** **GREEN 6/6** at 320/360/412 × English/Spanish, including real synthetic touchscreen Chapter submit and continued Focus deadline after a browser reload. Critically, the test **does not manually invoke the candidate scrolling helper**; it must react to ordinary form focusout/navigation events.
+- Distinguish browser-model acceptance from production integration. The shipping Android bridge does not yet load this candidate module; original baseline deliberately remains RED and PR #170 remains DRAFT. CI success of a temporary browser module is not signed APK or physical Galaxy proof.
+- New screenshots of actual synthetic chapter-save were added for the 412px candidate cases. Review them for visual layout before integrating in #134-owned Android mobile code. Issue #171 title broadened to EN/ES after observed locale variation.
