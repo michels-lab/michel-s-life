@@ -43,7 +43,7 @@ class EvidenceSummaryTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             r=native.summarize(Path(d),"failure","failure","a"*40)
             self.assertFalse(r["both_native_gates_pass"])
-            self.assertEqual(r["interpretation"],"both_native_gates_unverified")
+            self.assertEqual(r["interpretation"],"all_three_native_gates_unverified")
 
     def test_both_real_native_proofs_required(self):
         with tempfile.TemporaryDirectory() as d:
