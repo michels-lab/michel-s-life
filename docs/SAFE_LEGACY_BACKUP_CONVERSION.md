@@ -27,7 +27,7 @@ Reports output only counts, numeric XP, error codes and status. No user names, m
 
 ## Engineering validation
 
-- Dedicated `GRANADA safe offline legacy backup converter` CI uses **22** synthetic real-file test cases covering safe content parity, device-token exclusion, original byte invariance, output collision/symlink/hardlink protection, duplicate JSON, ID/XP issues, embedded-only and runtimeState exports, dry-run behavior and conversion idempotence.
+- Dedicated `GRANADA safe offline legacy backup converter` CI uses **25** synthetic real-file test cases covering safe content parity, device-token exclusion, original byte invariance, output collision/symlink/hardlink protection, duplicate JSON, ID/XP issues, embedded-only and runtimeState exports, dry-run behavior and conversion idempotence.
 - Also runs the existing read-only backup preflight regression suite and the **actual in-app** Node restore-allowlist contract tests, to prevent a tool that creates a file the app cannot safely import.
 - A passing synthetic job does not authorize a cloud upload or app production release. Developer Twin #134 and native Android build, Windows installers, existing `src/MichelsLife/frontend/index.html` in draft PR #156, and user-approved visual layouts are untouched.
 
