@@ -1,0 +1,55 @@
+name: GRANADA - offline backup recovery loss triage
+
+on:
+  push:
+    paths:
+      - 'tools/granada_recovery_loss_triage.py'
+      - 'tools/test_granada_recovery_loss_triage.py'
+      - 'docs/RECOVERY_LOSS_TRIAGE.md'
+      - '.github/workflows/granada-recovery-loss-triage.yml'
+  pull_request:
+    paths:
+      - 'tools/granada_recovery_loss_triage.py'
+      - 'tools/test_granada_recovery_loss_triage.py'
+      - 'docs/RECOVERY_LOSS_TRIAGE.md'
+      - '.github/workflows/granada-recovery-loss-triage.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-synthetic-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile and run actual two-backup loss triage regression
+        run: |
+          python -m py_compile tools/granada_recovery_loss_triage.py tools/test_granada_recovery_loss_triage.py
+          python -m unittest discover -s tools -p 'test_granada_recovery_loss_triage.py' -v
+      - name: Preserve original converter and preflight behavior
+        run: |
+          python -m unittest discover -s tools -p 'test_granada_backup_preflight.py' -v
+          python -m unittest discover -s tools -p 'test_granada_safe_backup_converter.py' -v
+      - name: Verify no network or destructive app write in triage
+        run: |
+          python - <<'PY'
+          import ast
+          from pathlib import Path
+          p = Path('tools/granada_recovery_loss_triage.py')
+          tree = ast.parse(p.read_text(encoding='utf-8'))
+          imports = [a.name for n in ast.walk(tree) if isinstance(n, ast.Import) for a in n.names]
+          imports += [n.module for n in ast.walk(tree) if isinstance(n, ast.ImportFrom)]
+          assert not any(i.split('.')[0] in {
+              'requests', 'urllib', 'http', 'socket', 'subprocess', 'supabase'
+          } for i in imports)
+          assert not any(isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+              and n.func.attr in ('unlink', 'remove', 'replace', 'rename', 'rmtree',
+                                  'write_text', 'write_bytes', 'post', 'put', 'delete')
+              for n in ast.walk(tree))
+          print('PASS: no provider client or destructive writes in offline comparison')
+          PY
