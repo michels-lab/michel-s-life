@@ -259,6 +259,101 @@ test('failure writing recovery journal never switches owners or board', () => {
   assert.deepEqual(s.map,before);
   assert.equal(s.getItem(txnKey),null);
 });
+const JOURNAL='michelsLife.journal.v30184';
+const withJournal=(entries={})=>{
+  const s=new Mem({[sessionKey]:'SYNTHETIC_LOCAL_TOKEN',[deviceKey]:'SYNTHETIC_DEVICE_ID',...entries});
+  return {s,boundary:new AccountBoundary(s,{boardKey,revisionKey,emptyBoard,
+    companionKeys:[JOURNAL]})};
+};
+test('Journal remains private to A after B login and after signout',()=>{
+  const {s,boundary:b}=withJournal();ready(b,A);
+  s.setItem(boardKey,'A MISSIONS');s.setItem(JOURNAL,'A PRIVATE JOURNAL');
+  b.startAccount(B);
+  assert.equal(s.getItem(boardKey),emptyBoard);
+  assert.equal(s.getItem(JOURNAL),null);
+  assert.equal(b.authorizeUpload(B),false);
+  b.confirmRemoteEmpty(B,{confirmedAccountId:B,isEmpty:true});
+  s.setItem(boardKey,'B MISSIONS');s.setItem(JOURNAL,'B PRIVATE JOURNAL');
+  b.signOut();
+  assert.equal(s.getItem(JOURNAL),null);
+  b.startAccount(A);
+  assert.equal(s.getItem(boardKey),'A MISSIONS');
+  assert.equal(s.getItem(JOURNAL),'A PRIVATE JOURNAL');
+  assert.equal(b.authorizeUpload(A),false);
+  b.confirmRemoteEmpty(A,{confirmedAccountId:A,isEmpty:true});
+  b.startAccount(B);
+  assert.equal(s.getItem(JOURNAL),'B PRIVATE JOURNAL');
+  assert.equal(s.getItem(sessionKey),'SYNTHETIC_LOCAL_TOKEN');
+});
+test('authenticated remote adoption replaces only its own Journal and preserves recovery',()=>{
+  const {s,boundary:b}=withJournal();ready(b,A);
+  s.setItem(JOURNAL,'OWNED A LOCAL JOURNAL');
+  b.startAccount(A);
+  b.adoptRemoteState(A,{board:'A REMOTE',revision:'remote-revision',
+    auxiliary:{[JOURNAL]:'OWNED A REMOTE JOURNAL'}});
+  assert.equal(s.getItem(JOURNAL),'OWNED A REMOTE JOURNAL');
+  assert.ok([...s.map.entries()].some(([key,v])=>
+    key.startsWith('michelsLife.accountBoundary.v1.recovery.')&&
+    v.includes('OWNED A LOCAL JOURNAL')));
+  b.startAccount(B);
+  assert.equal(s.getItem(JOURNAL),null);
+  b.adoptRemoteState(B,{board:'B REMOTE',revision:'b-r',
+    auxiliary:{[JOURNAL]:'B REMOTE JOURNAL'}});
+  assert.equal(s.getItem(JOURNAL),'B REMOTE JOURNAL');
+  b.startAccount(A);
+  assert.equal(s.getItem(JOURNAL),'OWNED A REMOTE JOURNAL');
+});
+test('guest with Journal only receives explicit consent preview, not silent upload',()=>{
+  const {s,boundary:b}=withJournal({[JOURNAL]:'GUEST PRIVATE JOURNAL'});
+  b.startAccount(B);
+  assert.equal(s.getItem(JOURNAL),null);
+  b.confirmRemoteEmpty(B,{confirmedAccountId:B,isEmpty:true});
+  const preview=b.previewUnclaimed();
+  assert.ok(preview&&preview.bytes>0);
+  deny(()=>b.importUnclaimed(B,{confirmedAccountId:B,confirmedDigest:preview.sha256,
+    explicitConsent:false,remoteEmptyConfirmed:true}),'consent_missing_or_wrong_destination');
+  assert.equal(s.getItem(JOURNAL),null);
+  b.importUnclaimed(B,{confirmedAccountId:B,confirmedDigest:preview.sha256,
+    explicitConsent:true,remoteEmptyConfirmed:true});
+  assert.equal(s.getItem(JOURNAL),'GUEST PRIVATE JOURNAL');
+  assert.equal(s.getItem(boardKey),emptyBoard);
+});
+test('Journal mutation invalidates consent-bound guest digest',()=>{
+  const {s,boundary:b}=withJournal({[boardKey]:'GUEST', [JOURNAL]:'GUEST JOURNAL'});
+  b.startAccount(B);b.confirmRemoteEmpty(B,{confirmedAccountId:B,isEmpty:true});
+  const preview=b.previewUnclaimed();
+  const vaultKey='michelsLife.accountBoundary.v1.unclaimed';
+  const vault=JSON.parse(s.getItem(vaultKey));
+  vault.auxiliary[JOURNAL]='TAMPERED JOURNAL';
+  s.setItem(vaultKey,JSON.stringify(vault));
+  deny(()=>b.importUnclaimed(B,{confirmedAccountId:B,confirmedDigest:preview.sha256,
+    explicitConsent:true,remoteEmptyConfirmed:true}),'preview_digest_mismatch');
+  assert.equal(s.getItem(JOURNAL),null);
+});
+test('companion config and remote snapshots reject provider credentials',()=>{
+  const {boundary:b}=withJournal();b.startAccount(A);
+  deny(()=>b.adoptRemoteState(A,{board:'A',revision:'r',
+    auxiliary:{[sessionKey]:'LEAKED_TOKEN'}}),'invalid_companion_snapshot');
+  assert.equal(b.authorizeUpload(A),false);
+  const {s}=make();
+  deny(()=>new AccountBoundary(s,{boardKey,revisionKey,emptyBoard,
+    companionKeys:[sessionKey]}),'invalid_companion_configuration');
+});
+test('interrupted Journal mutation rolls back safely before authorizing A',()=>{
+  const {s,boundary:b}=withJournal();ready(b,A);
+  s.setItem(JOURNAL,'ORIGINAL A');
+  s.setItem(txnKey,JSON.stringify({version:1,changes:[
+    {key:JOURNAL,before:'ORIGINAL A'},
+    {key:activeKey,before:s.getItem(activeKey)}
+  ]}));
+  s.setItem(JOURNAL,'FOREIGN B');
+  s.setItem(activeKey,JSON.stringify({version:1,kind:'account',ownerId:B,state:'ready'}));
+  const restarted=new AccountBoundary(s,{boardKey,revisionKey,emptyBoard,companionKeys:[JOURNAL]});
+  assert.equal(restarted.active().ownerId,A);
+  assert.equal(s.getItem(JOURNAL),'ORIGINAL A');
+  assert.equal(restarted.authorizeUpload(B),false);
+  assert.equal(s.getItem(txnKey),null);
+});
 let count = 0;
 for(const [name, fn] of cases) {
   try { await fn(); count++; console.log(`PASS ${name}`); }
