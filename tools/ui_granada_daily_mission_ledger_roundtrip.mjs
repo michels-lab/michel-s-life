@@ -9,7 +9,8 @@ import {
 const URL=process.env.MLV_UI_URL||'http://127.0.0.1:4173';
 const KEY='vida_rpg_personal_progress_v2';
 const IDS=['granada-daily-ledger-a','granada-daily-ledger-b'];
-const REWARDS=[11,17];
+// Align with the canonical Android daily/medium fixture used by UI smoke.
+const REWARDS=[25,25];
 const browser=await chromium.launch({headless:true});
 const opened=[];
 async function open(platform,shared=null){
@@ -98,25 +99,25 @@ async function run(){
   assert.deepEqual(state0.missions.map(m=>m.completions.length),[0,0]);
   progressStage='complete_a';
   const first=await act(desktop,'complete',IDS[0]);steps++;
-  equalXp(first,initialXp+11,'first daily');
+  equalXp(first,initialXp+REWARDS[0],'first daily');
   assert.equal(completions(first,0).length,1);
-  assert.equal(completions(first,0)[0].xp,11);
+  assert.equal(completions(first,0)[0].xp,REWARDS[0]);
   assertUnchangedOtherMission(state0,first,IDS[1]);
   progressStage='double_a';
   const double=await act(desktop,'complete',IDS[0]);steps++;
   assertExactLedger(double,first,'double complete');
   progressStage='complete_b';
   const both=await act(desktop,'complete',IDS[1]);steps++;
-  equalXp(both,initialXp+28,'two independent daily missions');
-  assert.equal(completions(both,1)[0].xp,17);
+  equalXp(both,initialXp+REWARDS[0]+REWARDS[1],'two independent daily missions');
+  assert.equal(completions(both,1)[0].xp,REWARDS[1]);
   progressStage='undo_a';
   const undone=await act(desktop,'undo',IDS[0]);steps++;
-  equalXp(undone,initialXp+17,'undo first');
+  equalXp(undone,initialXp+REWARDS[1],'undo first');
   assert.equal(completions(undone,0).length,0);
   assertUnchangedOtherMission(both,undone,IDS[1]);
   progressStage='recomplete_a';
   const recompleted=await act(desktop,'complete',IDS[0]);steps++;
-  equalXp(recompleted,initialXp+28,'recomplete first');
+  equalXp(recompleted,initialXp+REWARDS[0]+REWARDS[1],'recomplete first');
   assert.notEqual(completions(recompleted,0)[0].id,completions(first,0)[0].id,
     'Undo+recomplete reused completion history ID');
   assertUnchangedOtherMission(undone,recompleted,IDS[1]);
@@ -158,11 +159,11 @@ async function run(){
   }
   progressStage='android_undo_b';
   const androidUndo=await act(android,'undo',IDS[1]);steps++;
-  equalXp(androidUndo,initialXp+11,'Android undo second');
+  equalXp(androidUndo,initialXp+REWARDS[0],'Android undo second');
   assertUnchangedOtherMission(recompleted,androidUndo,IDS[0]);
   progressStage='android_recomplete_b';
   const androidRecomplete=await act(android,'complete',IDS[1]);steps++;
-  equalXp(androidRecomplete,initialXp+28,'Android recomplete second');
+  equalXp(androidRecomplete,initialXp+REWARDS[0]+REWARDS[1],'Android recomplete second');
   assert.notEqual(completions(androidRecomplete,1)[0].id,completions(recompleted,1)[0].id);
   assertUnchangedOtherMission(androidUndo,androidRecomplete,IDS[0]);
 
