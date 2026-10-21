@@ -1,13 +1,15 @@
 // Browser-only Android Story/Focus error provenance. Never capture personal content.
 const VALID_PHASES=new Set(['bootstrap','story','settings','focus','resume','relaunch','chapter','final']);
 const VALID_ERRORS=new Set(['SyntaxError','ReferenceError','TypeError','RangeError','EvalError','URIError']);
+const ASSERT_CODES=new Set(['story_drawer_target_missing','story_form_not_visible','pomodoro_hidden','focus_no_deadline','focus_reset_on_navigation','focus_not_persisted_after_browser_relaunch','progress_mutated_by_navigation','chapter_draft_lost','chapter_motto_lost','start_chapter_missing','chapter_submit_covered','unexpected_javascript_pageerror']);
 export function normalizeError(input,phase='bootstrap'){
   if(!VALID_PHASES.has(phase))throw Error('invalid diagnostic phase');
   const rawName=String(input?.name||'Error');
   const kind=VALID_ERRORS.has(rawName)?rawName:'RuntimeError';
   const message=String(input?.message||input||'');
   let code='runtime_error';
-  if(kind==='SyntaxError'||/unexpected token|unexpected identifier|invalid or unexpected token/i.test(message))code='script_syntax_error';
+  if(ASSERT_CODES.has(message))code=message;
+  else if(kind==='SyntaxError'||/unexpected token|unexpected identifier|invalid or unexpected token/i.test(message))code='script_syntax_error';
   else if(kind==='ReferenceError')code='undefined_binding';
   else if(kind==='TypeError')code='invalid_runtime_operation';
   else if(/timeout/i.test(message))code='interaction_timeout';
