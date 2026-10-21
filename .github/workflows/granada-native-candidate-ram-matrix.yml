@@ -6,6 +6,8 @@ on:
       - '.github/workflows/granada-native-candidate-ram-matrix.yml'
       - 'tools/granada_candidate_native_artifact.py'
       - 'tools/test_granada_candidate_native_artifact.py'
+      - 'tools/granada_native_candidate_ab_report.py'
+      - 'tools/test_granada_native_candidate_ab_report.py'
       - 'android/tools/granada_emulator_host_watch.py'
       - 'android/tools/granada_relaunch_transport_guard.py'
       - 'android/tools/smoke_candidate_apk_install.sh'
@@ -47,6 +49,7 @@ jobs:
           node tools/test_cloud_restore_storage.mjs
           bash -n android/tools/smoke_candidate_apk_install.sh
           python3 -m unittest -v tools/test_granada_candidate_native_artifact.py
+          python3 -m unittest -v tools/test_granada_native_candidate_ab_report.py
       - name: Download actual public base AppBundle for canonical source overlay
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -185,5 +188,37 @@ jobs:
         with:
           name: granada-native-candidate-3gib
           path: artifacts/candidate-install/
+          if-no-files-found: warn
+          retention-days: 14
+
+  native-evidence-summary:
+    name: Fail-closed combined native A/B outcome and private-safe report
+    needs: [compile, native-default, native-3gib]
+    if: always() && needs.compile.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Gather BOTH original native evidence bundles from this run
+        uses: actions/download-artifact@v4
+        with:
+          pattern: granada-native-candidate-*
+          path: artifacts/native-ab
+          merge-multiple: false
+      - name: Emit redacted A/B result and reject incomplete canonical state proof
+        shell: bash
+        run: |
+          python3 tools/granada_native_candidate_ab_report.py \
+            --root artifacts/native-ab \
+            --default-job '${{ needs.native-default.result }}' \
+            --three-gib-job '${{ needs.native-3gib.result }}' \
+            --sha "$(git rev-parse HEAD)" \
+            --output artifacts/native-ab-summary.json
+      - name: Keep redacted outcome visible EVEN IF native gate failed
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: granada-native-same-apk-ram-ab-summary
+          path: artifacts/native-ab-summary.json
           if-no-files-found: warn
           retention-days: 14
