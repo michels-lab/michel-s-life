@@ -11,6 +11,7 @@ on:
       - 'src/MichelsLife/frontend/index.html'
       - '.github/workflows/granada-safe-backup-converter.yml'
       - 'docs/SAFE_LEGACY_BACKUP_CONVERSION.md'
+      - 'docs/audit/2026-10-21-granada-legacy-safe-backup-converter.md'
   workflow_dispatch:
 
 permissions:
