@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 256,
-  "classified_files_total": 252,
-  "docs_content_inspected": 70,
+  "tracked_files_total": 261,
+  "classified_files_total": 257,
+  "docs_content_inspected": 71,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
   "roles": {
@@ -13,23 +13,23 @@
     "build_script": 6,
     "config": 22,
     "database_migration": 3,
-    "document": 63,
+    "document": 64,
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 8,
-    "source": 85,
-    "test": 6,
+    "source": 86,
+    "test": 7,
     "text_metadata": 1,
     "web_ui": 3,
-    "workflow": 24
+    "workflow": 26
   },
   "finding_counts": {
-    "POTENTIAL_UNLOGGED_CHANGES": 1
+    "POTENTIAL_UNLOGGED_CHANGES": 2
   },
-  "finding_total": 1,
-  "inventory_fingerprint": "8990bac670f4689ccbbf5cbc793320658cc6b88aa45e91ba40f575c240148c61",
-  "evidence_fingerprint": "0ce825e250e7fc588cce12e7b15c50a97e993199e0e13a9142788a961531696f",
+  "finding_total": 2,
+  "inventory_fingerprint": "4eddb6e812e62b645d40356cbe397b38bd63afcceb0a3c60c52c5e5264cf1f39",
+  "evidence_fingerprint": "dcb9ec7ca71eddaa68ae04b89fa8ef42caa6b905e983339225c7f19a45994477",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -128,6 +128,20 @@
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
       "blob": "71f6d2aa75faddaded22a36063cf327b4b591fe0"
+    },
+    {
+      "path": ".github/workflows/file-steward-pr-validation.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "5163f5e1348f32b455d7791aea6b4a5d649a9f31"
+    },
+    {
+      "path": ".github/workflows/granada-android-evidence-gate.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "8a2feaf6b1d139f9ce211686fba476a57987a752"
     },
     {
       "path": ".github/workflows/granada-android-usability.yml",
@@ -267,7 +281,7 @@
       "role": "agent",
       "purpose": "assistant role/instructions",
       "certainty": "rule",
-      "blob": "b1d01e48c04023ad108846e6f554987ed2fd56aa"
+      "blob": "e2194612f641fd0208c08894619c59a6b314e8a4"
     },
     {
       "path": ".michelslab/agents/intelligence-architect.md",
@@ -1138,6 +1152,13 @@
       "blob": "21258e36270afe682767c66d4053682ef87bc3f8"
     },
     {
+      "path": "docs/granada/2026-10-21-android-evidence-contract.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "b21b2183b4d751da05a2bb92211405a21fda20c6"
+    },
+    {
       "path": "docs/privacy/index.html",
       "role": "web_ui",
       "purpose": "local HTML documentation or web interface",
@@ -1404,6 +1425,13 @@
       "blob": "35042605dfc94ec24d110e05bbbdde6b61dda9e9"
     },
     {
+      "path": "tools/granada_android_evidence_gate.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "15a592a6edec1b02a5a29a92e200cfd7b8c040b8"
+    },
+    {
       "path": "tools/granada_android_usability_audit_core.mjs",
       "role": "source",
       "purpose": "code/test implementation",
@@ -1464,7 +1492,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "50d28a76044b68d08461f77dca182750eaae8a92"
+      "blob": "d6731638e75474a3b32f2a64ab74bd7b4fda3a95"
     },
     {
       "path": "tools/spanish_copy_source_audit.mjs",
@@ -1495,6 +1523,13 @@
       "blob": "a4edf2c6e0277bd92afdae70f1fe44873ef7154b"
     },
     {
+      "path": "tools/test_granada_android_evidence_gate.py",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "fd07dd4911c5fedffbad9aedfb0a93d0aa327462"
+    },
+    {
       "path": "tools/test_granada_android_usability_audit.mjs",
       "role": "test",
       "purpose": "code/test implementation",
@@ -1520,7 +1555,7 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "bbec7d5a91fc96ac4915b703dc31ea7c075475f3"
+      "blob": "056e6bd0ce805ed96d1ba635a4cbd86c25320ef0"
     },
     {
       "path": "tools/ui_android_chapter_motion_smoke.mjs",
@@ -1798,11 +1833,20 @@
   ],
   "findings": [
     {
-      "id": "768e12c85385e945",
+      "id": "b9bbaa276659c4b3",
+      "code": "POTENTIAL_UNLOGGED_CHANGES",
+      "severity": "review",
+      "path": "GIT_AUDIT_LOG.md",
+      "observation": "4 implementation/config paths changed since this log's last commit; examples: .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, tools/granada_android_evidence_gate.py, tools/test_granada_android_evidence_gate.py",
+      "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "978d02de138a9e33",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "23 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-emulator-transport-diagnostic.yml, .github/workflows/ci.yml, .github/workflows/granada-android-usability.yml, .github/workflows/granada-backup-preflight.yml, .github/workflows/granada-large-project-story-cloud.yml, .github/workflows/granada-safe-backup-converter.yml",
+      "observation": "27 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-emulator-transport-diagnostic.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-android-usability.yml, .github/workflows/granada-backup-preflight.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
