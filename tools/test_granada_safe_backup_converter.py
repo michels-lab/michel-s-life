@@ -259,6 +259,34 @@ class SafeBackupConversionTests(unittest.TestCase):
             convert(src, out, self.folder)
         self.assertFalse(out.exists())
 
+    def test_duplicate_embedded_json_keys_are_blocked(self):
+        src = self.write_input({"state": self.state, "localStorage": {
+            "vida_rpg_personal_progress_v2":
+                '{"xp":123,"xp":999,"missions":[]}'}})
+        out = self.folder / "safe.json"
+        with self.assertRaisesRegex(ConversionError, "duplicate_embedded_state_key"):
+            convert(src, out, ROOT)
+        self.assertFalse(out.exists())
+
+    def test_nested_camelcase_provider_tokens_are_not_exported(self):
+        for key in ("sessionToken", "apiKey", "clientSecret", "refreshToken",
+                    "privateKey"):
+            src = self.write_input({"state": {**self.state, "nested": {
+                key: "SENSITIVE_ACCESS_TOKEN_NOT_FOR_ARCHIVE"}}})
+            out = self.folder / "safe.json"
+            with self.assertRaisesRegex(ConversionError, "sensitive_field_in_progress"):
+                convert(src, out, ROOT)
+            self.assertFalse(out.exists())
+
+    def test_nonfinite_embedded_state_is_blocked(self):
+        src = self.write_input({"localStorage": {
+            "vida_rpg_personal_progress_v2":
+                '{"missions":[],"xp":NaN}'}})
+        out = self.folder / "safe.json"
+        with self.assertRaisesRegex(ConversionError, "nonfinite_embedded_state_number"):
+            convert(src, out, ROOT)
+        self.assertFalse(out.exists())
+
     def test_preflight_clean_report_no_new_provider_claim(self):
         src = self.write_input(self.legacy())
         out = self.folder / "safe.json"
