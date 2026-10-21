@@ -133,7 +133,11 @@ class DriveCloudEngine(
     }
 
     fun sync(accessToken: String, account: String, backupJson: String, localChangedAtRaw: String?, modeRaw: String): JSONObject {
-        validateBackup(backupJson)
+        // Never allow a native bridge caller to upload credentials, provider
+        // permissions, another device's identity or an unknown localStorage key.
+        // The shared WebView allowlist is useful UX; this native guard is an
+        // independent fail-closed defense before ANY Google network request.
+        validateBackup(backupJson, forUpload = true)
         val localChangedAt = parseInstant(localChangedAtRaw)
         if (localChangedAt != null) metaStore.markDirty(localChangedAt)
 
@@ -269,10 +273,12 @@ class DriveCloudEngine(
     fun restoreCloudBackup(accessToken: String, fileId: String): JSONObject {
         val info = getFileById(accessToken, fileId) ?: throw IllegalArgumentException("Cloud backup not found.")
         val content = downloadText(accessToken, info.id)
-        validateBackup(content)
+        // Legacy Drive files may contain token/device keys; preserve mission
+        // content but strip unauthorized keys before giving JSON to WebView.
+        val safeContent = validateBackup(content, forUpload = false)
         val hash = hashText(content)
         return JSONObject()
-            .put("backupJson", content)
+            .put("backupJson", safeContent)
             .put("localHash", hash)
             .put("remoteHash", hash)
             .put("remoteModifiedAt", info.modifiedTime?.toString() ?: JSONObject.NULL)
@@ -361,8 +367,9 @@ class DriveCloudEngine(
 
     private fun downloadCloudFile(accessToken: String, remote: CloudFileInfo): Pair<String, String> {
         val content = downloadText(accessToken, remote.id)
-        validateBackup(content)
-        return content to hashText(content)
+        val safeContent = validateBackup(content, forUpload = false)
+        // Identity is the raw remote object. Restorable JSON is always sanitized.
+        return safeContent to hashText(content)
     }
 
     private fun downloadText(accessToken: String, fileId: String): String {
@@ -421,7 +428,9 @@ class DriveCloudEngine(
     }
 
     private fun createHistoryBackup(accessToken: String, remote: CloudFileInfo, reason: String) {
-        try {
+        // Before overwriting remote state, a recoverable copy is mandatory.
+        // A failed history read/upload must STOP the destructive overwrite,
+        // never be silently swallowed and then report "Uploaded" as success.
             val now = Instant.now()
             if (reason.contains("auto", true) || reason.contains("newer_local", true)) {
                 val latest = listFiles(accessToken, "name contains '" + CLOUD_BACKUP_PREFIX + "'", 5)
@@ -432,14 +441,14 @@ class DriveCloudEngine(
             val name = CLOUD_BACKUP_PREFIX + now.toString().replace(":", "").replace("-", "").replace(".", "_") + ".json"
             val props = JSONObject()
                 .put("michelsLifeType", "history")
-                .put("michelsLifeHash", current.second)
+                // History contents are sanitized; hash their actual bytes.
+                .put("michelsLifeHash", hashText(current.first))
                 .put("michelsLifeCreatedAt", now.toString())
                 .put("michelsLifeReason", reason)
                 .put("michelsLifeSourceDevice", remote.sourceDeviceId)
                 .put("michelsLifeVersion", "android-" + ANDROID_VERSION)
             uploadJson(accessToken, null, name, current.first, props)
             pruneBackups(accessToken)
-        } catch (_: Exception) { }
     }
 
     private fun pruneBackups(accessToken: String) {
@@ -479,12 +488,72 @@ class DriveCloudEngine(
         } catch (_: Exception) { }
     }
 
-    private fun validateBackup(raw: String) {
-        if (raw.isBlank()) throw IllegalArgumentException("Michel's Life cloud payload is empty.")
+    // Match the shared frontend's explicit MLV_SHARED_STORAGE_KEYS policy.
+    // Unknown future keys are PRIVATE by default. The native Google Drive
+    // bridge must never trust arbitrary JSON even when called outside Settings.
+    private val sharedStorageKeys = setOf(
+        "vida_rpg_personal_progress_v2",
+        "michelsLife.backgroundSet.v3049",
+        "michelsLifeTheme.v3000", "michelsLifeTheme.v341",
+        "michelsLife.theme.v342", "michelsLife.theme.v343",
+        "michelsLifeThemePreset.v341",
+        "michelsLife.themePreset.v342", "michelsLife.themePreset.v343",
+        "michelsLife.colorTheme.v30184",
+        "michelsLife.typography.v303", "michelsLife.glassAtmosphere.v3042",
+        "michelsLife.panelTransparency.v3060", "michelsLife.premiumColor.v3044",
+        "michelsLife.textColor.v3042", "michelsLife.mutedTextColor.v3042",
+        "michelsLife.dayText.v3072", "michelsLife.dayText.v3073",
+        "michelsLife.dayChipText.v3062", "michelsLife.dayChipText.v3064",
+        "michelsLifePalette.v264", "michelsLife.journal.v30184",
+        "michelsLifeBackgroundSetsV3088", "michelsLife.language.v1"
+    )
+    private val sharedRootKeys = setOf(
+        "app", "type", "cloudPayloadVersion", "version", "state", "localStorage"
+    )
+
+    private fun validateBackup(raw: String, forUpload: Boolean): String {
+        val byteSize = raw.toByteArray(Charsets.UTF_8).size
+        if (byteSize == 0 || byteSize > 10 * 1024 * 1024) {
+            throw IllegalArgumentException("Cloud payload is empty or exceeds the safe size limit.")
+        }
         val root = JSONObject(raw)
-        val hasState = root.optJSONObject("state") != null
-        val hasStorage = root.optJSONObject("localStorage") != null
-        if (!hasState && !hasStorage) throw IllegalArgumentException("Cloud JSON does not contain a restorable Michel's Life state.")
+        val board = root.optJSONObject("state")
+        val storage = root.optJSONObject("localStorage")
+        if ((root.has("state") && board == null) ||
+            (root.has("localStorage") && storage == null) ||
+            (board == null && storage?.optString("vida_rpg_personal_progress_v2", "")?.isNotBlank() != true)) {
+            throw IllegalArgumentException("Cloud payload does not contain valid Michel's Life state.")
+        }
+
+        // Keep source user state intact, but never transmit or replay untrusted
+        // provider/device fields from the LOCAL STORAGE envelope.
+        val filtered = JSONObject()
+        for (key in root.keys()) {
+            if (key !in sharedRootKeys) {
+                if (forUpload) throw IllegalArgumentException("Cloud payload contains private or unsupported metadata.")
+                continue
+            }
+            if (key == "localStorage") {
+                val cleanStorage = JSONObject()
+                if (storage != null) for (storedKey in storage.keys()) {
+                    if (storedKey !in sharedStorageKeys || storage.opt(storedKey) !is String) {
+                        if (forUpload) throw IllegalArgumentException("Cloud payload contains unsafe device-local storage.")
+                        continue
+                    }
+                    cleanStorage.put(storedKey, storage.getString(storedKey))
+                }
+                filtered.put(key, cleanStorage)
+            } else {
+                filtered.put(key, root.get(key))
+            }
+        }
+        // A fresh, modern upload must use the explicit app-scoped envelope.
+        if (forUpload && root.optString("app", "") != "Michel's Life") {
+            throw IllegalArgumentException("Cloud payload does not identify Michel's Life.")
+        }
+        // Preserve modern upload serialization byte-for-byte for stable hashes.
+        // Legacy restore is always canonicalized to the sanitized envelope.
+        return if (forUpload) raw else filtered.toString()
     }
 
     private fun execute(request: Request, allowEmpty: Boolean = false): String {
