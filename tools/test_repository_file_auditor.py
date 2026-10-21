@@ -73,6 +73,18 @@ class FileStewardTests(unittest.TestCase):
                 self.assertEqual(audit.identify(path,{})[0], role)
         self.assertEqual(audit.identify("unrelated_solver/0/metal/T",{})[0],"unknown")
 
+    def test_product_source_validation_is_not_triggered_by_file_audit_commits(self):
+        content=(HERE.parent/".github/workflows/ci.yml").read_text(encoding="utf-8")
+        self.assertIn("  push:\n",content)
+        self.assertIn("  pull_request:\n",content)
+        self.assertIn("  workflow_dispatch:\n",content)
+        for block in ("  push:\n","  pull_request:\n"):
+            part=content.split(block,1)[1].split("  workflow_dispatch:",1)[0]
+            self.assertIn("    paths-ignore:\n",part)
+            self.assertIn("tools/repository_file_auditor.py",part)
+            self.assertIn("tools/test_repository_file_auditor.py",part)
+            self.assertIn("reports/file-governance/**",part)
+
     def test_foreign_domain_roles_not_imported(self):
         source=(HERE/"repository_file_auditor.py").read_text(encoding="utf-8")
         for token in ("cleanproy", "doctor_original", "freesurface", "OpenFOAM case"):
