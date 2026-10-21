@@ -28,7 +28,7 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 2,
-  "inventory_fingerprint": "785906c490f3b469d9be414a9a13c8462399016d7c2e47e3eb59c06f5d2ba690",
+  "inventory_fingerprint": "04dbfe77a1b211ca1229c3f20a95b28083ca21f5b4ce41613fb2a950d9d78960",
   "evidence_fingerprint": "dcb9ec7ca71eddaa68ae04b89fa8ef42caa6b905e983339225c7f19a45994477",
   "files": [
     {
@@ -393,7 +393,7 @@
       "role": "agent",
       "purpose": "assistant role/instructions",
       "certainty": "rule",
-      "blob": "f9dd914687c0fe7eaa6fe91e5cc44468b0c7ad96"
+      "blob": "75e1d37c844aa269f374f4cb97496b82aad6d91a"
     },
     {
       "path": "BUILD_MICHELS_LIFE_WINDOWS.bat",
