@@ -59,7 +59,7 @@ jobs:
       - name: Check Story, Settings, Focus, reload and chapter drafts using 6 touch cases
         run: |
           python -m http.server 4174 --directory artifacts/android-story-bundle >/tmp/mlv-story-http.log 2>&1 &
-          MLV_ANDROID_UI_URL=http://127.0.0.1:4174 node tools/ui_granada_story_focus_matrix.mjs
+          MLV_SOURCE_SHA="${{ github.event.pull_request.head.sha || github.sha }}" MLV_ANDROID_UI_URL=http://127.0.0.1:4174 node tools/ui_granada_story_focus_matrix.mjs
       - name: Save redacted failure evidence on green or red
         if: always()
         uses: actions/upload-artifact@v4
