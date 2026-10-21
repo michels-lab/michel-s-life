@@ -27,3 +27,10 @@
 4. Leave #168 OPEN until a source fix and real Android acceptance can be distinguished from an intermittent green browser replay.
 
 State: test harness implemented, integration/release NOT claimed. README and visual Themes/Current Chapter unchanged.
+
+## Actual first CI observed after PR creation (run #39658884722)
+- Source validation, Playwright installation and the new redacted diagnostic unit step all **PASS**.
+- Actual six-case synthetic touch run **RED: 5/6 PASS**, only **412px English** failed during the Story chapter phase; 320 EN/ES, 360 EN/ES and 412 ES passed. Screenshot and redacted error manifest were preserved in [artifact #12373176343](https://github.com/michels-lab/michel-s-life/actions/runs/39658884722/artifacts/12373176343).
+- Failed case reported generic `runtime_error` at assertion site, not evidence of a new JavaScript SyntaxError; source code source/line had insufficient detail to distinguish blocked button, lost text or race. Screenshot shows a running Focus mini panel above the bottom nav, overlapping the lower Story editor region at failure; **visual correlation only, not proven tap obstruction**.
+- Original workflow wrote GitHub's synthetic PR merge SHA `57c29ff7b38330f79c83a7cfbf1947121d80a6de` in its report, not PR HEAD. Corrected the provenance to pass `github.event.pull_request.head.sha` (or `github.sha` outside PR), and hardened diagnostics to include only predefined non-private assertion codes. The exact subsequent run must be checked.
+- **No fix to app UI was applied** because #156 owns frontend and #134 owns Android Story smoke/bridge. The red run remains a finding, not an approval or release.
