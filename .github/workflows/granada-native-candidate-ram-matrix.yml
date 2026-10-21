@@ -1,0 +1,189 @@
+name: GRANADA same-candidate Android16 guest RAM A/B
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/granada-native-candidate-ram-matrix.yml'
+      - 'tools/granada_candidate_native_artifact.py'
+      - 'tools/test_granada_candidate_native_artifact.py'
+      - 'android/tools/granada_emulator_host_watch.py'
+      - 'android/tools/granada_relaunch_transport_guard.py'
+      - 'android/tools/smoke_candidate_apk_install.sh'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  ANDROID_VERSION: '0.2.9'
+
+jobs:
+  compile:
+    name: Compile exactly one canonical Android debug candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Prepare native Android 16 SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+      - name: Validate original native and state probe gates
+        run: |
+          python android/tools/validate_sync_contract.py
+          python android/tools/validate_android_version.py
+          python android/tools/validate_android_mobile_ux.py
+          python android/tools/native_webview_state_probe.py self-test
+          node tools/test_cloud_restore_storage.mjs
+          bash -n android/tools/smoke_candidate_apk_install.sh
+          python3 -m unittest -v tools/test_granada_candidate_native_artifact.py
+      - name: Download actual public base AppBundle for canonical source overlay
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p android/build
+          python tools/download_latest_michels_life_bundle.py --repo michels-lab/michel-s-life-releases --output android/build/AppBundle.zip
+      - name: Package exact checkout's canonical frontend and real Android assets
+        run: |
+          python tools/bump_frontend_version.py --index src/MichelsLife/frontend/index.html
+          python tools/enable_i18n.py --index src/MichelsLife/frontend/index.html
+          python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
+          python tools/replace_bundle_index.py --bundle android/build/AppBundle.zip --index src/MichelsLife/frontend/index.html
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source src/MichelsLife/frontend/i18n.js --arcname i18n.js
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michel_duarte_avatar.jpg --arcname assets/michel_duarte_avatar.jpg
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_life_app_icon.svg --arcname assets/michels_life_app_icon.svg
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_life_mark.svg --arcname assets/michels_life_mark.svg
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_life_lockup.svg --arcname assets/michels_life_lockup.svg
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_lab_mark.png --arcname assets/michels_lab_mark.png
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_lab_lockup.png --arcname assets/michels_lab_lockup.png
+          python android/tools/prepare_bundle.py --bundle android/build/AppBundle.zip --assets android/app/src/main/assets/app
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.6.0'
+      - name: Build a SINGLE debug APK from this exact checkout
+        working-directory: android
+        run: gradle --no-daemon :app:assembleDebug
+      - name: Generate and verify exact-SHA candidate artifact digest
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/candidate
+          cp android/app/build/outputs/apk/debug/app-debug.apk artifacts/candidate/MichelsLife-Android-TEST-v0.2.9.apk
+          python3 tools/granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha "$(git rev-parse HEAD)" --create
+          python3 tools/granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha "$GITHUB_SHA" --verify
+      - name: Upload one SHA-pinned candidate for BOTH independent emulator jobs
+        uses: actions/upload-artifact@v4
+        with:
+          name: granada-android-candidate-identical-both-arms
+          path: artifacts/candidate/
+          if-no-files-found: error
+          retention-days: 10
+
+  native-default:
+    name: Native candidate - SDK default RAM / 512M heap
+    needs: compile
+    runs-on: ubuntu-latest
+    timeout-minutes: 36
+    env:
+      MLV_REQUIRE_NATIVE_STATE_PROBE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: granada-android-candidate-identical-both-arms
+          path: artifacts/candidate
+      - name: Fail closed unless APK bytes and commit match build job
+        shell: bash
+        run: |
+          python3 tools/granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha "$(git rev-parse HEAD)" --verify
+          python3 tools/granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha "$GITHUB_SHA" --verify
+      - name: Install pinned CI WebView probe
+        run: python3 -m pip install --disable-pip-version-check websocket-client==1.8.0
+      - name: Enable Android emulator acceleration
+        run: |
+          test -e /dev/kvm
+          sudo chmod 666 /dev/kvm
+      - name: "Real APK install, onboarding, native screenshots and TWO relaunches: baseline"
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          avd-name: granada-same-apk-default
+          heap-size: 512M
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu swiftshader -feature -Vulkan
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash android/tools/smoke_candidate_apk_install.sh
+      - name: Preserve native evidence and diagnostics EVEN ON RED
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: granada-native-candidate-default
+          path: artifacts/candidate-install/
+          if-no-files-found: warn
+          retention-days: 14
+
+  native-3gib:
+    name: Native candidate - explicit 3072M RAM / 512M heap
+    needs: compile
+    runs-on: ubuntu-latest
+    timeout-minutes: 36
+    env:
+      MLV_REQUIRE_NATIVE_STATE_PROBE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: granada-android-candidate-identical-both-arms
+          path: artifacts/candidate
+      - name: Fail closed unless APK bytes and commit match build job
+        shell: bash
+        run: |
+          python3 tools/granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha "$(git rev-parse HEAD)" --verify
+          python3 tools/granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha "$GITHUB_SHA" --verify
+      - name: Install pinned CI WebView probe
+        run: python3 -m pip install --disable-pip-version-check websocket-client==1.8.0
+      - name: Enable Android emulator acceleration
+        run: |
+          test -e /dev/kvm
+          sudo chmod 666 /dev/kvm
+      - name: "Real APK install, onboarding, native screenshots and TWO relaunches: 3 GiB"
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          avd-name: granada-same-apk-3gib
+          ram-size: 3072M
+          heap-size: 512M
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu swiftshader -feature -Vulkan
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash android/tools/smoke_candidate_apk_install.sh
+      - name: Preserve native evidence and diagnostics EVEN ON RED
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: granada-native-candidate-3gib
+          path: artifacts/candidate-install/
+          if-no-files-found: warn
+          retention-days: 14
