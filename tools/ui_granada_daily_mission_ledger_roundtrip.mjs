@@ -71,8 +71,11 @@ async function act(page,name,id){
 function completions(s,index){return s.missions[index].completions;}
 function equalXp(s,num,label){assert.equal(s.xp,num,label+' XP is incorrect');}
 let steps=0;
+let progressStage='bootstrap';
 async function run(){
+  progressStage='desktop_open';
   const desktop=await open('windows');
+  progressStage='fixture_seed';
   const initialXp=await desktop.evaluate(({ids,rewards})=>{
     const before=Number(state.xp||0);
     for(let n=0;n<ids.length;n++){
@@ -89,32 +92,40 @@ async function run(){
     window.save();
     return before;
   },{ids:IDS,rewards:REWARDS});
+  progressStage='initial_snapshot';
   let state0=await extract(desktop); steps++;
   equalXp(state0,initialXp,'baseline');
   assert.deepEqual(state0.missions.map(m=>m.completions.length),[0,0]);
+  progressStage='complete_a';
   const first=await act(desktop,'complete',IDS[0]);steps++;
   equalXp(first,initialXp+11,'first daily');
   assert.equal(completions(first,0).length,1);
   assert.equal(completions(first,0)[0].xp,11);
   assertUnchangedOtherMission(state0,first,IDS[1]);
+  progressStage='double_a';
   const double=await act(desktop,'complete',IDS[0]);steps++;
   assertExactLedger(double,first,'double complete');
+  progressStage='complete_b';
   const both=await act(desktop,'complete',IDS[1]);steps++;
   equalXp(both,initialXp+28,'two independent daily missions');
   assert.equal(completions(both,1)[0].xp,17);
+  progressStage='undo_a';
   const undone=await act(desktop,'undo',IDS[0]);steps++;
   equalXp(undone,initialXp+17,'undo first');
   assert.equal(completions(undone,0).length,0);
   assertUnchangedOtherMission(both,undone,IDS[1]);
+  progressStage='recomplete_a';
   const recompleted=await act(desktop,'complete',IDS[0]);steps++;
   equalXp(recompleted,initialXp+28,'recomplete first');
   assert.notEqual(completions(recompleted,0)[0].id,completions(first,0)[0].id,
     'Undo+recomplete reused completion history ID');
   assertUnchangedOtherMission(undone,recompleted,IDS[1]);
+  progressStage='desktop_reload';
   await desktop.reload({waitUntil:'domcontentloaded'});await ready(desktop);
   assertExactLedger(await extract(desktop),recompleted,'desktop reload');steps++;
 
   // Explicitly verify the portable capture excludes device-only/unknown keys.
+  progressStage='portable_capture';
   const shared=await desktop.evaluate(()=>{
     localStorage.setItem('mlvSyntheticDeviceLocalSentinel','LOCAL_ONLY_DEVICE_SECRET');
     return window.MLVCloudSharedStorageV30216.capture();
@@ -132,28 +143,36 @@ async function run(){
   },IDS),recompleted,'Portable state does not match original progress');
   steps++;
 
+  progressStage='android_first_open';
   const android=await open('android',shared);
   assertExactLedger(await extract(android),recompleted,'Android cold bootstrap');steps++;
+  progressStage='android_double_a';
   await act(android,'complete',IDS[0]);
   assertExactLedger(await extract(android),recompleted,'Android repeat-tap');steps++;
+  progressStage='android_reloads';
   for(const width of [360,412]){
     await android.setViewportSize({width,height:915});
     await android.reload({waitUntil:'domcontentloaded'});await ready(android);
     assertExactLedger(await extract(android),recompleted,'Android relaunch '+width);
     steps++;
   }
+  progressStage='android_undo_b';
   const androidUndo=await act(android,'undo',IDS[1]);steps++;
   equalXp(androidUndo,initialXp+11,'Android undo second');
   assertUnchangedOtherMission(recompleted,androidUndo,IDS[0]);
+  progressStage='android_recomplete_b';
   const androidRecomplete=await act(android,'complete',IDS[1]);steps++;
   equalXp(androidRecomplete,initialXp+28,'Android recomplete second');
   assert.notEqual(completions(androidRecomplete,1)[0].id,completions(recompleted,1)[0].id);
   assertUnchangedOtherMission(androidUndo,androidRecomplete,IDS[0]);
 
+  progressStage='reverse_capture';
   const reverse=await android.evaluate(()=>window.MLVCloudSharedStorageV30216.capture());
+  progressStage='reverse_desktop_open';
   const restoredDesktop=await open('windows',reverse);
   assertExactLedger(await extract(restoredDesktop),androidRecomplete,'Android to desktop');
   steps++;
+  progressStage='reverse_desktop_reload';
   await restoredDesktop.reload({waitUntil:'domcontentloaded'});await ready(restoredDesktop);
   assertExactLedger(await extract(restoredDesktop),androidRecomplete,'reverse desktop reload');
   steps++;
@@ -166,7 +185,7 @@ async function run(){
 try{
   await run();
 }catch(error){
-  console.error('GRANADA_DAILY_LEDGER_FAIL '+JSON.stringify(safeDiagnostic(error)));
+  console.error('GRANADA_DAILY_LEDGER_FAIL '+JSON.stringify({...safeDiagnostic(error),phase:progressStage}));
   process.exitCode=1;
 }finally{
   await Promise.allSettled(opened.map(x=>x.close()));
