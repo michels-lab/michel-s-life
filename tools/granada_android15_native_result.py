@@ -105,7 +105,7 @@ def validate(root, apk, source_sha, version):
             checksum_parts[1].lstrip("*") != apk.as_posix()):
         raise ValueError("native candidate artifact SHA256 or filename mismatch")
     package_info = (root/"package-info.txt").read_text(encoding="utf-8")
-    if not re.search(r"Package \\[com\\.michelslab\\.michelslife\\]", package_info):
+    if not re.search(r"Package \[com\.michelslab\.michelslife\]", package_info):
         raise ValueError("installed package identity mismatch")
     if f"versionName={version}" not in package_info:
         raise ValueError("installed version mismatch")
