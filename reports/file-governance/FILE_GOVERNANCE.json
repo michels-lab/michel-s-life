@@ -1,0 +1,2126 @@
+{
+  "schema_version": 1,
+  "audit_kind": "deterministic_full_tracked_tree",
+  "tracked_files_total": 252,
+  "classified_files_total": 252,
+  "docs_content_inspected": 70,
+  "large_docs_skipped": 0,
+  "excluded_reports": 0,
+  "roles": {
+    "agent": 9,
+    "asset": 12,
+    "bitacora": 3,
+    "config": 21,
+    "document": 63,
+    "index": 4,
+    "source": 85,
+    "test": 6,
+    "unknown": 25,
+    "workflow": 24
+  },
+  "finding_counts": {
+    "POSSIBLY_REDUNDANT_NAME": 11,
+    "UNKNOWN_PURPOSE": 25
+  },
+  "finding_total": 36,
+  "inventory_fingerprint": "b1fa31ce0b0ac9ec84f47ee0d3c0864cfab9f62bfa8023e54de92db16ebf5730",
+  "evidence_fingerprint": "9d1fb20c92e1db593ded8d08df21fe64ac1e7ec46db7d586b8e76a0ad46c5230",
+  "files": [
+    {
+      "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "d270216ee576d05c597186139762d7054f3a44b6"
+    },
+    {
+      "path": ".github/agents/app-maintainer.agent.md",
+      "role": "agent",
+      "purpose": "assistant role/instructions",
+      "certainty": "rule",
+      "blob": "20aceadf8e86dedee093ed0190391cf0e9a2856b"
+    },
+    {
+      "path": ".github/agents/qa-regression.agent.md",
+      "role": "agent",
+      "purpose": "assistant role/instructions",
+      "certainty": "rule",
+      "blob": "d29de8304286e81ab23f85da0c10eb7a577b2140"
+    },
+    {
+      "path": ".github/agents/release-manager.agent.md",
+      "role": "agent",
+      "purpose": "assistant role/instructions",
+      "certainty": "rule",
+      "blob": "3ba2b40a1ab02d7b614c38f54af691c4fcb37555"
+    },
+    {
+      "path": ".github/copilot-instructions.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "3e80306d3d7a6e4d38a74351f08fdb68eb1b6036"
+    },
+    {
+      "path": ".github/workflows/android-build.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "c784ad0b10bac9963755acb00e2f40d98ba228bd"
+    },
+    {
+      "path": ".github/workflows/android-direct-private-candidate-v026.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "277b5e7a4cd917a9411f07e8529e47cc068f22de"
+    },
+    {
+      "path": ".github/workflows/android-emulator-transport-diagnostic.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "9bf6b1b25b501874ce5fabba45617119ab00e477"
+    },
+    {
+      "path": ".github/workflows/android-public-install-smoke.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "96bd16876ee02f48fdf9a8864b327fd8b147b633"
+    },
+    {
+      "path": ".github/workflows/android-ui-smoke.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "1bcd500b5c0d8f715d896418f61143507ad834e1"
+    },
+    {
+      "path": ".github/workflows/build-store-msix.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "d4e919e046af06ec743525cc140beadd28486d7f"
+    },
+    {
+      "path": ".github/workflows/build-test-windows.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "09bdcc5ef9909c4e60053cc7a7032d752df0ff18"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "0cd25c9d95274f9bf4222a386047566c68c8c5a4"
+    },
+    {
+      "path": ".github/workflows/file-governance-audit.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "71f6d2aa75faddaded22a36063cf327b4b591fe0"
+    },
+    {
+      "path": ".github/workflows/granada-android-usability.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "38b86d6cfa65d0b496104344f37ba0c99485aa73"
+    },
+    {
+      "path": ".github/workflows/granada-backup-preflight.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "440046bd2d87c8a48733f6698117575b5b455563"
+    },
+    {
+      "path": ".github/workflows/granada-large-project-story-cloud.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "b2342dc506b68ca027bb00a62966b32aca4770d6"
+    },
+    {
+      "path": ".github/workflows/granada-safe-backup-converter.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "19aa5bb9d2bebe319ed84f557974731716742e1d"
+    },
+    {
+      "path": ".github/workflows/privacy-pages.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "8275501dd7aa9355dcf7d001dde6132fa53cb61f"
+    },
+    {
+      "path": ".github/workflows/release-unified-v3217-a025.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "c126cf912a8f99cb54f99d9652c1e56ded53e99e"
+    },
+    {
+      "path": ".github/workflows/release-unified-v3218-a026.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "924928866c67445854a2e5c5dcd93706653f350c"
+    },
+    {
+      "path": ".github/workflows/release-unified-v3219-a027.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "d6ea9174bddeae21b098f9f5ea2a29de56c119eb"
+    },
+    {
+      "path": ".github/workflows/release-unified-v3220-a028.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "528e77d07861b34c7f061ed952504bf71d481462"
+    },
+    {
+      "path": ".github/workflows/release-unified-v3221-a029.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "ea9cb2beb6daaf10ad568e3064a0a4ebb4746b6f"
+    },
+    {
+      "path": ".github/workflows/release-windows.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "a944a6adc8a1f901c5077932b7a279d3162b620f"
+    },
+    {
+      "path": ".github/workflows/stage-life-android-direct-v023.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "40eaf38ab3a76f4fca12f9734cb0bdca737da5f6"
+    },
+    {
+      "path": ".github/workflows/stage-life-android-direct-v024.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "b64fd8b9f2e8bd27b576d1e6a2fa3c908504bc0c"
+    },
+    {
+      "path": ".github/workflows/stage-life-android-direct-v025.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "1d596fa1e29a9a8baa3832d4e35b48c6428e6a14"
+    },
+    {
+      "path": ".github/workflows/ui-smoke.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "01fa1daa2e1fb49779abaf43162ce967d8438d78"
+    },
+    {
+      "path": ".gitignore",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "b158b4598f372be64999c0747c2e66e424457438"
+    },
+    {
+      "path": ".michelslab/GRANADA.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "d5f54a1354e4c7f43764ea61970ac6c2be6bbd5b"
+    },
+    {
+      "path": ".michelslab/agents/contrarian.md",
+      "role": "agent",
+      "purpose": "assistant role/instructions",
+      "certainty": "rule",
+      "blob": "b84820212317964d5594f54e2bd966fc161597ea"
+    },
+    {
+      "path": ".michelslab/agents/council.md",
+      "role": "agent",
+      "purpose": "assistant role/instructions",
+      "certainty": "rule",
+      "blob": "5a00937c973cd668e3437681fbbb5c089ecec8b4"
+    },
+    {
+      "path": ".michelslab/agents/file-steward.md",
+      "role": "agent",
+      "purpose": "assistant role/instructions",
+      "certainty": "rule",
+      "blob": "b1d01e48c04023ad108846e6f554987ed2fd56aa"
+    },
+    {
+      "path": ".michelslab/agents/intelligence-architect.md",
+      "role": "agent",
+      "purpose": "assistant role/instructions",
+      "certainty": "rule",
+      "blob": "f404f0795a333fee6ef83b7e057cbb3504a5a7a1"
+    },
+    {
+      "path": ".michelslab/agents/user-advocate.md",
+      "role": "agent",
+      "purpose": "assistant role/instructions",
+      "certainty": "rule",
+      "blob": "b77e2c1cdfc1c4348dd1c1c5347cbceb641c1817"
+    },
+    {
+      "path": ".michelslab/candidate-intents/android-direct-v026.txt",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "ebf84b2a11c55e80d8f6e695264ab8faf9c2e318"
+    },
+    {
+      "path": ".michelslab/file-audit-policy.json",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "f9b2987f4f645bc0d08a18d2a055ee3d82bb81b8"
+    },
+    {
+      "path": ".michelslab/project.yml",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "53e4375fec416d962996a20c5b943e01baf75d60"
+    },
+    {
+      "path": ".michelslab/release-intents/android-v023.txt",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "de3b8ba58391236d9101434e9baa41d6e09a3c8d"
+    },
+    {
+      "path": ".michelslab/release-intents/android-v024.txt",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "20dd72ed937a695fc4aab60736b375ecfc75c508"
+    },
+    {
+      "path": ".michelslab/release-intents/unified-v3217-a025.txt",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "747f0f2febb1fb4cd1036d2130d77f93b391a876"
+    },
+    {
+      "path": ".michelslab/release-intents/unified-v3218-a026.txt",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "8b261c5494ae5764c38812fab584d048b6996dc9"
+    },
+    {
+      "path": ".michelslab/release-intents/unified-v3219-a027.txt",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "87bff4a9859b1770876659b1e5dc3214a8662d30"
+    },
+    {
+      "path": ".michelslab/release-intents/unified-v3220-a028.txt",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "16499f39f56d39b764044fa4b6e8fd42ac5febf1"
+    },
+    {
+      "path": ".michelslab/release-intents/unified-v3221-a029.txt",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "a59fe652b7e3e14d63b2520572c2cce355c9612b"
+    },
+    {
+      "path": ".michelslab/release-requests/android-v0.2.2-unified-v3.0.216.json",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "3cf90b2f1d490ccc5719dbc708507dc352b1e579"
+    },
+    {
+      "path": ".michelslab/release-requests/source-transfer-windows-v3.0.216.json",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "38d9fb84419e9afd0df4cb1c2aefb044ecd4a71c"
+    },
+    {
+      "path": ".michelslab/release-requests/windows-v3.0.216.json",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "cb73c80f4bc41c042c3660b409087fa13ac4b24e"
+    },
+    {
+      "path": "AGENTS.md",
+      "role": "agent",
+      "purpose": "assistant role/instructions",
+      "certainty": "rule",
+      "blob": "fa83949a71354aff2aa644a2f5771c6042466ca9"
+    },
+    {
+      "path": "BUILD_MICHELS_LIFE_WINDOWS.bat",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "9479b9baa368b496cc75cd5d20e6946d49398742"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "role": "bitacora",
+      "purpose": "technical/audit change history",
+      "certainty": "rule",
+      "blob": "af2d609a461a73d71c7c8bb850359e8005f8b0f4"
+    },
+    {
+      "path": "GIT_AUDIT_LOG.md",
+      "role": "bitacora",
+      "purpose": "technical/audit change history",
+      "certainty": "rule",
+      "blob": "0152ad5b7f623ed1c91061caa4d5cb7603223ca9"
+    },
+    {
+      "path": "LICENSE.txt",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "cf1662c2a62cee457391676bf926e30c997442c1"
+    },
+    {
+      "path": "MICHELS_LAB_PROJECT.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "903cfe23c310887f58cbb1f6d3389dbc775aa8a5"
+    },
+    {
+      "path": "README.md",
+      "role": "index",
+      "purpose": "navigation/onboarding",
+      "certainty": "rule",
+      "blob": "286ed8a59215e315bab4e2e8abf0e22ff10c3196"
+    },
+    {
+      "path": "android/ANDROID_AUDIT_LOG.md",
+      "role": "bitacora",
+      "purpose": "technical/audit change history",
+      "certainty": "rule",
+      "blob": "5844ddb140a6f14948383c9488d31f79160a315d"
+    },
+    {
+      "path": "android/DIRECT_DISTRIBUTION_SIGNING.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "666b282276889adb223dc77ae1a82d7dabfd9644"
+    },
+    {
+      "path": "android/PLAY_CONSOLE_SUBMISSION_DRAFT.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "8b4a21292d9230609bd859d7411cc8e5df2fd30a"
+    },
+    {
+      "path": "android/PLAY_STORE_READINESS.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "b21423fe42dc74d92c5d11760783660ba0715e21"
+    },
+    {
+      "path": "android/PRIVACY_POLICY_DRAFT.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "cbbbffc147e1dd553f98df6214925636b13e8886"
+    },
+    {
+      "path": "android/README.md",
+      "role": "index",
+      "purpose": "navigation/onboarding",
+      "certainty": "rule",
+      "blob": "92143c5073233add1ee0b299da6d8b278a65dfce"
+    },
+    {
+      "path": "android/android-bridge.js",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "4a9004371484d16305c23b686f6858d5b6bf61f4"
+    },
+    {
+      "path": "android/app/build.gradle.kts",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "d9a34135ebef1616b6dec535aadacc824fccaf63"
+    },
+    {
+      "path": "android/app/src/main/AndroidManifest.xml",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "8498aaf1672ee24de1d4279a69decb385672556f"
+    },
+    {
+      "path": "android/app/src/main/java/com/michelslab/michelslife/AndroidBridge.kt",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "95d8fb2812ad40ffd1a4b045851d1cbf6b46f096"
+    },
+    {
+      "path": "android/app/src/main/java/com/michelslab/michelslife/CloudSync.kt",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "190ddfbb32afe1769a23d3475d6937afd2d13546"
+    },
+    {
+      "path": "android/app/src/main/java/com/michelslab/michelslife/GoogleAuthorizationCoordinator.kt",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "3cf6f319e1ad85c6a273e65dd9cb83714ed9dcd0"
+    },
+    {
+      "path": "android/app/src/main/java/com/michelslab/michelslife/MainActivity.kt",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "1ee63530e8535b232370781216a19501a0fdf66b"
+    },
+    {
+      "path": "android/app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "2dd4e23e6ba2969fb816d692637c854fb41ab516"
+    },
+    {
+      "path": "android/app/src/main/res/drawable-nodpi/michels_life_logo.jpg",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "3f170f27dcd460c45a892cde51d6385d6608cfe7"
+    },
+    {
+      "path": "android/app/src/main/res/drawable/ic_launcher.xml",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "f0608d9548511fb8cc216a04c1bf249d9d7c48d5"
+    },
+    {
+      "path": "android/app/src/main/res/drawable/ic_launcher_foreground.xml",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "76f60ca60fcc23930bd5829216bb54bb63138c31"
+    },
+    {
+      "path": "android/app/src/main/res/drawable/ic_stat_michels_focus.xml",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "8999fe7d35e42b97a90999796c1b2671eea2935b"
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "0bd5848ec7e8cc43377f669d9d3c68ef27bd53e4"
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "0bd5848ec7e8cc43377f669d9d3c68ef27bd53e4"
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-anydpi/ic_launcher.xml",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "f0608d9548511fb8cc216a04c1bf249d9d7c48d5"
+    },
+    {
+      "path": "android/app/src/main/res/mipmap-anydpi/ic_launcher_round.xml",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "f0608d9548511fb8cc216a04c1bf249d9d7c48d5"
+    },
+    {
+      "path": "android/app/src/main/res/values-v31/styles.xml",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "71bcd9b9e65ee99ca9bf609bb1a0bcdef0cb945a"
+    },
+    {
+      "path": "android/app/src/main/res/values/colors.xml",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "4e1542062706d07c4a9977b2f6d82f7909d80236"
+    },
+    {
+      "path": "android/app/src/main/res/values/styles.xml",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "e50dd80705375c3db8b49f8d139e165d87cc8211"
+    },
+    {
+      "path": "android/audit/2026-10-12-achievements-affirmations-actions.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "39fb0d3493bb64df090db0e0cd38a597ff37b3e2"
+    },
+    {
+      "path": "android/audit/2026-10-12-adb-screencap-recovery.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "d6744d2292cdd967557032335a5e4b078f4b4b11"
+    },
+    {
+      "path": "android/audit/2026-10-12-analytics-320.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "37a5c904a252fdf55a9fc77c526fe5336e676ba0"
+    },
+    {
+      "path": "android/audit/2026-10-12-calendar-day-navigation.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "57ea735768fc8ea27a345098ac5f69a5e7e58635"
+    },
+    {
+      "path": "android/audit/2026-10-12-calendar-density.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "16739431eb085c6751c672b02a34816ac00d0ee5"
+    },
+    {
+      "path": "android/audit/2026-10-12-compact-accessibility.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "992010b87e474ce98440369c6b6be0f1d7d794d4"
+    },
+    {
+      "path": "android/audit/2026-10-12-contracts-filter-touch.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "e132372056c4261f79c3fc3bfd2c5840c8eabfb6"
+    },
+    {
+      "path": "android/audit/2026-10-12-contracts-real-selection.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "21561072118633394660fb0e355fe1d179b4ca2d"
+    },
+    {
+      "path": "android/audit/2026-10-12-ime-navigation.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "ab414a09a29aa73bf19f5bda134c37da98f6fcaf"
+    },
+    {
+      "path": "android/audit/2026-10-12-journal-editor-save.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "5abd71a09ce8a8b277d9f6c76e309356e54c3ecb"
+    },
+    {
+      "path": "android/audit/2026-10-12-live-premium-editor.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "aa10a8078543b45c1e895d890be80791f3e0396a"
+    },
+    {
+      "path": "android/audit/2026-10-12-project-editor.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "bccb41b2d6d65c6eba7c4df7727631d9da21de7d"
+    },
+    {
+      "path": "android/audit/2026-10-12-quick-capture-keyboard.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "b005cec34bdf2fb3791feec08f262449892f53e5"
+    },
+    {
+      "path": "android/audit/2026-10-12-settings-320-pane-taps.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "5a1d98a2b7f3c294b793ca861e79b26647358857"
+    },
+    {
+      "path": "android/audit/2026-10-12-settings-all-panes.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "2e435f72cd7a69e4760b3f60168e8e582385019e"
+    },
+    {
+      "path": "android/audit/2026-10-12-ui-screenshot-gallery.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "6f66c80711d9f597a41480c65bed609c9e7b322a"
+    },
+    {
+      "path": "android/audit/2026-10-12-weekly-planner-touch.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "70c98b98f0ebb00d49ce540218341e432afafaf9"
+    },
+    {
+      "path": "android/audit/2026-10-12-weekly-review-density.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "3b85a71a8afee48e0a6ab63678727a42bd81a86c"
+    },
+    {
+      "path": "android/audit/2026-10-12-weekly-review-real-rows.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "ef241b4f4013d55525dc1c8e21d5cf7bf9685651"
+    },
+    {
+      "path": "android/audit/2026-10-19-granada-focus-alarm-lifecycle.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "1824556a8e52598067bc93f2cc2184e34830103c"
+    },
+    {
+      "path": "android/audit/2026-10-20-granada-android-touch-resilience.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "2510cc7efb24c568a292ba96e3c178b56baa7522"
+    },
+    {
+      "path": "android/audit/2026-10-20-granada-backup-preflight.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "24978273af4d5518591b5eeed447abb1eb0cb8f7"
+    },
+    {
+      "path": "android/build.gradle.kts",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "f928a84390b953ebfda7816eae78d728b7d5a6fe"
+    },
+    {
+      "path": "android/gradle.properties",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "2430f7ad2eea8cb2f5f18dc918246e09626d8687"
+    },
+    {
+      "path": "android/mobile-experience.js",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "5c3d076c52fb85b543db7dd04d1af3f396a973ee"
+    },
+    {
+      "path": "android/mobile-sections.js",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "1dc9008bdcd1588205aef74b93200189b79bbc72"
+    },
+    {
+      "path": "android/settings.gradle.kts",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "60eae73937805be9ef1c524b7f553f0d54bf9336"
+    },
+    {
+      "path": "android/tools/compare_signed_native_kpis.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "e92e6deb310e34ae242bc466f45d81888860a999"
+    },
+    {
+      "path": "android/tools/native_focus_lock_probe.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "524b9d22e09a9435b633f03e94f091bbdf39ea12"
+    },
+    {
+      "path": "android/tools/native_webview_state_probe.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "3cf5f863361d8942a116357836ed0c397860d265"
+    },
+    {
+      "path": "android/tools/prepare_bundle.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "3253d318ca39ab5c2dea8f1148a55ea3fe38fd9e"
+    },
+    {
+      "path": "android/tools/smoke_candidate_apk_install.sh",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "26ba0a5c63c8af9ff039edaf98b226a2f8d5b095"
+    },
+    {
+      "path": "android/tools/smoke_published_apk_install.sh",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "c1ffa990f9edb597ccd5dfe3dd7a3de3ef4b0e7a"
+    },
+    {
+      "path": "android/tools/validate_android_mobile_ux.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "3ee61f47ede3627d57932f56559db13d23f20a30"
+    },
+    {
+      "path": "android/tools/validate_android_version.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "5a7e17426999e8ca9e9ba264c3211574c606166b"
+    },
+    {
+      "path": "android/tools/validate_sync_contract.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "7f1e09b7ca66d1d3be0b6dfaf0e303c5759d4a1f"
+    },
+    {
+      "path": "android/tools/verify_direct_apk.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "bd1f0fb67f7d72901b8096f2175fbf509809e24e"
+    },
+    {
+      "path": "branding/developer-profile.json",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "a40a8ded60a84bd90aebe09b631dbb05cb0370a3"
+    },
+    {
+      "path": "branding/michel_duarte_avatar.jpg",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "18fe1a68722850c3d8f918dc0799f46ffeb6dbaf"
+    },
+    {
+      "path": "branding/michels_lab_lockup.png",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "7fd48093968b31ddacd3098f5b15d962de580652"
+    },
+    {
+      "path": "branding/michels_lab_mark.png",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "f205c15c3b6bd7fe676ced83fd1ea2ae24c25586"
+    },
+    {
+      "path": "branding/michels_lab_mark.svg",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "9abb337406da0b69800f142fbb6ffc5ddf0d1d58"
+    },
+    {
+      "path": "branding/michels_life_app_icon.svg",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "169c62ccb7dfc7fc25532925932cde0818d7fe13"
+    },
+    {
+      "path": "branding/michels_life_lockup.svg",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "edfa6026bfabbbe852d3cad8aa385de53b65775b"
+    },
+    {
+      "path": "branding/michels_life_logo.jpg",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "3f170f27dcd460c45a892cde51d6385d6608cfe7"
+    },
+    {
+      "path": "branding/michels_life_logo.png",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "be5c10dacb33a70df5cbd2573e5e74e66be7adb5"
+    },
+    {
+      "path": "branding/michels_life_logo.svg",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "030afc509bc30035814e893f65fed6798c8f9597"
+    },
+    {
+      "path": "branding/michels_life_logo.webp",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "87222b39db61d1b12a4637f7eccf19734e684791"
+    },
+    {
+      "path": "branding/michels_life_mark.svg",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "420a506ecffcebd3fc1cf6dbb8875168c039abfd"
+    },
+    {
+      "path": "docs/ANDROID_PLATFORM_PARITY.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "6c506221ea0b08d2bf267b11b726af3f22107e05"
+    },
+    {
+      "path": "docs/ANDROID_SIGNING_OPERATOR.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "e1d51c0480e06c12b999667bde6a7af837d229f7"
+    },
+    {
+      "path": "docs/BACKUP_PREFLIGHT.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "dfe9d31a3bb249ccf218c3da38788d4327db8ccc"
+    },
+    {
+      "path": "docs/BASELINE_3.0.207.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "9027a6510cea9c0291d695045d5bc9b42d7b2fc8"
+    },
+    {
+      "path": "docs/CURRENT_HANDOFF.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "4d038b3c8badf11c02069de922b89c90cc4a314f"
+    },
+    {
+      "path": "docs/DEVELOPER_BRANDING.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "22867967397c6ae1706880d13e368d21a364cdb4"
+    },
+    {
+      "path": "docs/GRANADA_GRANDE_GOVERNANCE_2026-10-20.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "d620dacf84ff9ae6ed67e351008c3ca2cae920d9"
+    },
+    {
+      "path": "docs/INFRASTRUCTURE_AUDIT.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "4d3249e13fdcc8a08e6dab476bea680ee04b9936"
+    },
+    {
+      "path": "docs/MICROSOFT_STORE.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "0c97c6bbb8599209f6e23ac4eda2417ab06f82ac"
+    },
+    {
+      "path": "docs/RELEASE_CHANNEL.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "b87a32c02952309b15a7161389215de7f57b5421"
+    },
+    {
+      "path": "docs/SAFE_LEGACY_BACKUP_CONVERSION.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "129f8dcf63bed1893c18c9c22abeff91eb1c6540"
+    },
+    {
+      "path": "docs/audit/2026-10-12-release-baseline-drift.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "d929e06c7fc30be577fc92055c809c7f9105b74d"
+    },
+    {
+      "path": "docs/audit/2026-10-19-granada-account-journal-consent.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "1d96a6f9e3c821b60dd7f49dc2357274b1d8d838"
+    },
+    {
+      "path": "docs/audit/2026-10-19-granada-account-vault-journal-consent.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "c6972374a832b29a781255c7023c2d08c98966c8"
+    },
+    {
+      "path": "docs/audit/2026-10-19-granada-android-google-calendar-truth.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "1745434882c34460ffcea82b5d31ce84a3572e15"
+    },
+    {
+      "path": "docs/audit/2026-10-19-granada-android-native-visual-provenance.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "eb9edbc54102df9218df78411715e7d07e68dd26"
+    },
+    {
+      "path": "docs/audit/2026-10-19-granada-cloud-boundary.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "72ea91ee284e3c6af5f43fed8d787d6f41dfc658"
+    },
+    {
+      "path": "docs/audit/2026-10-19-granada-consolidated-handoff.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "21f4b8d66f6785fe228510e7224b09283a74f9e0"
+    },
+    {
+      "path": "docs/audit/2026-10-19-granada-cross-device-offline.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "bb29075a1693728e47e5d6b0d2637690dae9a236"
+    },
+    {
+      "path": "docs/audit/2026-10-19-granada-emulator-transport-ab.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "ba462591f309c9cacb0d5601cd3f9de7defce372"
+    },
+    {
+      "path": "docs/audit/2026-10-19-granada-focus-visual-native-handoff.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "f52603ba1dbb0eed1aa35400c03e93b7ae6e6491"
+    },
+    {
+      "path": "docs/audit/2026-10-19-granada-privacy-emulator-handoff.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "c0552144b909d89bf881e0419d106954e8bf7109"
+    },
+    {
+      "path": "docs/audit/2026-10-19-granada-release-truth.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "52dac1431518394026d617361f3ac29e58464f8a"
+    },
+    {
+      "path": "docs/audit/2026-10-20-granada-grande-governance.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "0f613d8dad287d1535962d27c495dbc1b9731cd2"
+    },
+    {
+      "path": "docs/audit/2026-10-20-granada-journal-cloud-conflict.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "0b37bb9727d231af9cabf3b5476d1d85116c7c4c"
+    },
+    {
+      "path": "docs/audit/2026-10-20-granada-large-project-story-roundtrip.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "4842ebdd8bf2318bb80729d75d675ca192cd0fcf"
+    },
+    {
+      "path": "docs/audit/2026-10-21-granada-legacy-safe-backup-converter.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "3df4f3c12ea0740cf3b4b36514c16530fc41e0dc"
+    },
+    {
+      "path": "docs/audit/HANDOFF_LEGACY_2026-10-05.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "21258e36270afe682767c66d4053682ef87bc3f8"
+    },
+    {
+      "path": "docs/privacy/index.html",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "23d231d9fc9f98ed74060335e2d141d4440ec171"
+    },
+    {
+      "path": "docs/product-reviews/README.md",
+      "role": "index",
+      "purpose": "navigation/onboarding",
+      "certainty": "rule",
+      "blob": "7aeaacd8cdbd0ff712d2bea3284ea9d66de9caf2"
+    },
+    {
+      "path": "docs/releases/v3.0.216.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "0e03e9eccee478432959664381a7e7b27c2b5138"
+    },
+    {
+      "path": "docs/releases/v3.0.217.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "2be2d074e1d2c9d3c8d80f477588033732866bd8"
+    },
+    {
+      "path": "docs/releases/v3.0.218.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "2b6f643be6d72ae79c09c0da2a03a7cb93b3cbe6"
+    },
+    {
+      "path": "docs/releases/v3.0.219.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "64229ce0666404a530778632c4652b4deda1ca0e"
+    },
+    {
+      "path": "docs/releases/v3.0.220.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "8d44b27176ecdc3f291bb41c58c68ec003a39604"
+    },
+    {
+      "path": "docs/releases/v3.0.221.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "3ebaa40d1f3688791c3f804b01e528e0e1e23168"
+    },
+    {
+      "path": "installer/MichelsLife.iss",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "79e020f9601183c122105b5c51b16dd0144fc02f"
+    },
+    {
+      "path": "installer/TaskbarPinning.txt",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "d05986ef8b76b6d554385fe901ecbfaed94403e6"
+    },
+    {
+      "path": "src/MichelsLife/AppPatches/store-msix.html",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "0b72043faedbf3908d27fe549cd52b91a915e0a0"
+    },
+    {
+      "path": "src/MichelsLife/BuildSecrets.cs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "2194d77d5ca157df7c3c1dd17c48f8f7da076ae3"
+    },
+    {
+      "path": "src/MichelsLife/DesktopShell.cs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "9e9a9bf5dbeea4bcdb41df13baf9d792bcd3c07e"
+    },
+    {
+      "path": "src/MichelsLife/GoogleCalendarService.cs.gz.b64",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "e57bf48be87fa98edc102463370a65f864c9a080"
+    },
+    {
+      "path": "src/MichelsLife/InstallerLanguageBootstrap.cs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "42e9d8c333e87345bd178cf8e1d3c4b7a10917e0"
+    },
+    {
+      "path": "src/MichelsLife/MichelsLife.csproj",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "806827c3524265be36bc7e51312fd6c063dcee02"
+    },
+    {
+      "path": "src/MichelsLife/Program.cs.gz.b64",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "fcc202bf8b73047a80587edf6c7ba184076ab7c1"
+    },
+    {
+      "path": "src/MichelsLife/WindowIconBootstrap.cs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "c7463944c90a87367ebedb3357a0420d4fd6ccf1"
+    },
+    {
+      "path": "src/MichelsLife/app.manifest",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "fa8554016267895ee012121991c5513711aaddb9"
+    },
+    {
+      "path": "src/MichelsLife/frontend/i18n.js",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "581bae401fc83f372e95b5903568347842b8c927"
+    },
+    {
+      "path": "src/MichelsLife/frontend/index.html",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "1080d8cc634f2530bdb22caa7d1de9964cd56eb1"
+    },
+    {
+      "path": "store/AppxManifest.template.xml",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "1d59dad2a357bfcbb90e6802c0a9759dc1ce0e42"
+    },
+    {
+      "path": "supabase/README.md",
+      "role": "index",
+      "purpose": "navigation/onboarding",
+      "certainty": "rule",
+      "blob": "4f95649b39b0de751f5b2d9de7266488076c11d9"
+    },
+    {
+      "path": "supabase/migrations/20261005112105_michels_life_initial_sync_schema.sql",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "16622eb990deae7f2767323feced39c7d816db90"
+    },
+    {
+      "path": "supabase/migrations/20261005112815_lock_michels_life_sync_to_authenticated.sql",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "902a10290aa5f5f538219d8eae7236fbc57ad3d1"
+    },
+    {
+      "path": "supabase/migrations/20261006070456_least_privilege_michels_life_sync.sql",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "9db6f2cdf31423824d5c178dfb6352983468acfb"
+    },
+    {
+      "path": "tools/android_emulator_evidence_manifest.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "b1ceab2e3b3432aa8ec9ca943fdc136f73925c5b"
+    },
+    {
+      "path": "tools/android_emulator_transport_probe.sh",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "008f3b9ca1df2d4349d00ec233ac0530dc9d049e"
+    },
+    {
+      "path": "tools/android_screenshot_gallery.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "3e476324cc0f4c9d798ac2072ab39726facc9502"
+    },
+    {
+      "path": "tools/append_overlay.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "afec9cc86b875b94455a03e7848c5ebbc8e87d40"
+    },
+    {
+      "path": "tools/append_store_overlay.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "67f965e59f691e1fcbcb5c95689ec32ab30eabfa"
+    },
+    {
+      "path": "tools/build_desktop_browser_visual_manifest.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "907a26dcd47cd94c33e5dc3914db6b409cbcf76c"
+    },
+    {
+      "path": "tools/build_windows_local.ps1",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "67d497a90d1749fd8afe73a1887039fd97931fdb"
+    },
+    {
+      "path": "tools/bump_frontend_version.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "7989823e334afae70d83958d2faebaef8a82ed5e"
+    },
+    {
+      "path": "tools/create_store_assets.ps1",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "0e2d613a4d986d3b6f35d6c690068d8efa4b5862"
+    },
+    {
+      "path": "tools/download_latest_michels_life_bundle.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "3314a08afc741848c4e9329eed66273e749eec80"
+    },
+    {
+      "path": "tools/download_release_asset.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "c213c9182306d2186f77cd5a37666ac127d84fcd"
+    },
+    {
+      "path": "tools/enable_i18n.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "35042605dfc94ec24d110e05bbbdde6b61dda9e9"
+    },
+    {
+      "path": "tools/granada_android_usability_audit_core.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "0a188d7f29610c6b1263fb797059e909231cda18"
+    },
+    {
+      "path": "tools/granada_backup_preflight.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "0e4b0a12cd8d84f2c32939ee9367fa6398d55814"
+    },
+    {
+      "path": "tools/granada_safe_backup_converter.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "1ce49b54d37debbe101339241c884f15d121eaf2"
+    },
+    {
+      "path": "tools/inject_bundle_asset.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "7f8a0ae59278b1ceeee1d9dd543a01898ce2700b"
+    },
+    {
+      "path": "tools/materialize_host_source.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "3054bcd204a238f47d056ba44e6ec98661346ac0"
+    },
+    {
+      "path": "tools/release_smoke_test.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "8e02a9fd7ac2a026ee3f0f6ac6b0473543ea0b2b"
+    },
+    {
+      "path": "tools/render_store_manifest.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "6ccb1518077583a852a7a382ac29a24c6f38c352"
+    },
+    {
+      "path": "tools/replace_bundle_index.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "b2bb0f2e6fa5ee8d525fcd5b304258b05d583045"
+    },
+    {
+      "path": "tools/repository_file_auditor.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "fe0546a76c0cf308c99f0cc4f1c11aa0677496ec"
+    },
+    {
+      "path": "tools/spanish_copy_source_audit.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "60a31130ac5e41afd4ad36444ecbc6ccd9208520"
+    },
+    {
+      "path": "tools/store_smoke_test.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "38a9d4daa1755a2aa4c68cf561df28e4d0a73ff7"
+    },
+    {
+      "path": "tools/test_cloud_restore_storage.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "03dcd2a4a3c484ae233046db15638cc850148407"
+    },
+    {
+      "path": "tools/test_download_release_asset.py",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "a4edf2c6e0277bd92afdae70f1fe44873ef7154b"
+    },
+    {
+      "path": "tools/test_granada_android_usability_audit.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "d94eea4120d9c77dd16735f1d641e716afc5cfa0"
+    },
+    {
+      "path": "tools/test_granada_backup_preflight.py",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "3034481ea3aa50dac93e30ee781a73cedf514c26"
+    },
+    {
+      "path": "tools/test_granada_safe_backup_converter.py",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "7699962d062396fb478f8bf935b106cc44c7fc6f"
+    },
+    {
+      "path": "tools/test_repository_file_auditor.py",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "b94da69cd18c8066756acba162bc66618261b522"
+    },
+    {
+      "path": "tools/ui_android_chapter_motion_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "a1219751e90dc5909213f638753e6af590165dc5"
+    },
+    {
+      "path": "tools/ui_android_compact_accessibility_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "d8af49464674fa1e885e26f3d14933d4332e8e5a"
+    },
+    {
+      "path": "tools/ui_android_focus_alarm_lifecycle_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "a893151840f7fb180b69b9f4a411dd6d068d40b0"
+    },
+    {
+      "path": "tools/ui_android_google_calendar_truth_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "6a766d2c502dbab3aa578358a27ec63610344b0f"
+    },
+    {
+      "path": "tools/ui_android_ime_navigation_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "767cd507adb4e1b6de07fbc07b0bc85f7855cef4"
+    },
+    {
+      "path": "tools/ui_android_journal_save_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "efecf3f3c62a997f666b2ab5bed9f0c2eaeda5d5"
+    },
+    {
+      "path": "tools/ui_android_mobile_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "b25bcbeca2da7fc3b0346da5c870b5facf6b68eb"
+    },
+    {
+      "path": "tools/ui_android_onboarding_persistence_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "f05019a931ce5a14ad41fe1d81ba353a7aaccfdd"
+    },
+    {
+      "path": "tools/ui_android_premium_editor_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "a093339321ad3687ed4382a929447f8f8fa3e3ee"
+    },
+    {
+      "path": "tools/ui_android_quick_capture_keyboard_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "fa4977d2bc162e9625c601505c730651950a4888"
+    },
+    {
+      "path": "tools/ui_android_section_design_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "13e9ffc03c06417b019bf76e3b774de9bf4e57a4"
+    },
+    {
+      "path": "tools/ui_android_story_navigation_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "76cf4f3ec063a01193377f5a458499863bb6f7c3"
+    },
+    {
+      "path": "tools/ui_auto_update_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "287f00920124675ee30d86a28e8d6bb064d31993"
+    },
+    {
+      "path": "tools/ui_cloud_device_boundary_granada_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "8575e5342a2d824d9197ef4d03ce0c45a8c1f478"
+    },
+    {
+      "path": "tools/ui_desktop_experience_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "b20a66756bec8aa4c55cbb3128349c04ad07a595"
+    },
+    {
+      "path": "tools/ui_granada_android_usability_audit.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "8413ecd3ffed5f6d42775840933bc9fd609fd7cf"
+    },
+    {
+      "path": "tools/ui_granada_large_projects_story_roundtrip_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "39d40d1781fdbaf1a3283967baf7e488f0ec1834"
+    },
+    {
+      "path": "tools/ui_i18n_generated_corpus_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "03609a811ccf894480c883770151aef1d7c2058d"
+    },
+    {
+      "path": "tools/ui_installed_language_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "f0c6d439018b302a41e082652308c00c0ea162ba"
+    },
+    {
+      "path": "tools/ui_installer_language_settings_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "23434dbe7f433376343a990a161cffef91939a45"
+    },
+    {
+      "path": "tools/ui_language_roundtrip_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "8984c56affa39e6947af7b1274886bc3c521db1a"
+    },
+    {
+      "path": "tools/ui_quick_capture_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "63d3f5fcc96a04bea6efe8dc61b354f110dc5ec1"
+    },
+    {
+      "path": "tools/ui_settings_integrity_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "9db87f1c803ff155315a4575a2a90f323702daf7"
+    },
+    {
+      "path": "tools/ui_smoke_v303.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "4cda0e2eae4808478acb58cf5032828eaac6806d"
+    },
+    {
+      "path": "tools/ui_spanish_dashboard_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "c0fb6e4ab556c541d995b17cf5884f1b6d690078"
+    },
+    {
+      "path": "tools/ui_spanish_exhaustive_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "15366fb80961119cab2d3bbc89e6cae99c63a8be"
+    },
+    {
+      "path": "tools/ui_spanish_first_run_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "432f92acde14e1c159829da0a69a6dd42d52c644"
+    },
+    {
+      "path": "tools/ui_spanish_missions_probe.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "f9d28aefee645cddb9b4a3f3631d34477d900f1b"
+    },
+    {
+      "path": "tools/ui_spanish_seasonal_animation_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "3665606d2dbbcb77a7a7abc1705db15d5319df8e"
+    },
+    {
+      "path": "tools/ui_spanish_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "07e0e74b06c4dbe08804242c65888af16d829c71"
+    },
+    {
+      "path": "tools/ui_supabase_account_switch_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "3db99772fce9dcd51653b993e4d65673c5b0e958"
+    },
+    {
+      "path": "tools/ui_supabase_android_sync_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "5494c13177ef92ce740448001861d535e8a66e5e"
+    },
+    {
+      "path": "tools/ui_supabase_cross_device_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "0949e08976b2296ca44deb7de3c3e2a6de1ccf9b"
+    },
+    {
+      "path": "tools/ui_supabase_sync_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "3c21fb77afe952252542f152f80690b490aed2d0"
+    },
+    {
+      "path": "tools/validate_brand_identity.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "a912046cf690a33e4284e6ae90088dc49bbe0e85"
+    },
+    {
+      "path": "tools/validate_generated_index.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "0e30f3a5520429187c75a03456b65a0d31b1f5c6"
+    },
+    {
+      "path": "tools/validate_windows_build_pause.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "04a8de9652376f17afc705b9a34740fcfffc537a"
+    },
+    {
+      "path": "tools/visual_release_gate.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "724f2c9b5eb8b069e266eb1619375c97628d9202"
+    },
+    {
+      "path": "tools/windows_launch_smoke.ps1",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "bf77d7abeed70a61ee3e829877b0d72100a925d2"
+    }
+  ],
+  "findings": [
+    {
+      "id": "ec7b88364616f6cf",
+      "code": "POSSIBLY_REDUNDANT_NAME",
+      "severity": "review",
+      "path": ".github/workflows/granada-backup-preflight.yml",
+      "observation": "Backup/old/copy/draft name; may be intentional",
+      "recommendation": "Check references and history before archiving",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "ad3c3cd6a3834eef",
+      "code": "POSSIBLY_REDUNDANT_NAME",
+      "severity": "review",
+      "path": ".github/workflows/granada-safe-backup-converter.yml",
+      "observation": "Backup/old/copy/draft name; may be intentional",
+      "recommendation": "Check references and history before archiving",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "7afb0a8225098a1a",
+      "code": "POSSIBLY_REDUNDANT_NAME",
+      "severity": "review",
+      "path": "android/PLAY_CONSOLE_SUBMISSION_DRAFT.md",
+      "observation": "Backup/old/copy/draft name; may be intentional",
+      "recommendation": "Check references and history before archiving",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "537040ed16ac2de1",
+      "code": "POSSIBLY_REDUNDANT_NAME",
+      "severity": "review",
+      "path": "android/PRIVACY_POLICY_DRAFT.md",
+      "observation": "Backup/old/copy/draft name; may be intentional",
+      "recommendation": "Check references and history before archiving",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "30036a8a1c5ca684",
+      "code": "POSSIBLY_REDUNDANT_NAME",
+      "severity": "review",
+      "path": "docs/BACKUP_PREFLIGHT.md",
+      "observation": "Backup/old/copy/draft name; may be intentional",
+      "recommendation": "Check references and history before archiving",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "40d5ad51855e9a55",
+      "code": "POSSIBLY_REDUNDANT_NAME",
+      "severity": "review",
+      "path": "docs/SAFE_LEGACY_BACKUP_CONVERSION.md",
+      "observation": "Backup/old/copy/draft name; may be intentional",
+      "recommendation": "Check references and history before archiving",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "6552827bb116b503",
+      "code": "POSSIBLY_REDUNDANT_NAME",
+      "severity": "review",
+      "path": "tools/granada_backup_preflight.py",
+      "observation": "Backup/old/copy/draft name; may be intentional",
+      "recommendation": "Check references and history before archiving",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "9812184bdba86af5",
+      "code": "POSSIBLY_REDUNDANT_NAME",
+      "severity": "review",
+      "path": "tools/granada_safe_backup_converter.py",
+      "observation": "Backup/old/copy/draft name; may be intentional",
+      "recommendation": "Check references and history before archiving",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "1b7823cd6375b21b",
+      "code": "POSSIBLY_REDUNDANT_NAME",
+      "severity": "review",
+      "path": "tools/spanish_copy_source_audit.mjs",
+      "observation": "Backup/old/copy/draft name; may be intentional",
+      "recommendation": "Check references and history before archiving",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "f6cb184d6cd0c1f8",
+      "code": "POSSIBLY_REDUNDANT_NAME",
+      "severity": "review",
+      "path": "tools/test_granada_backup_preflight.py",
+      "observation": "Backup/old/copy/draft name; may be intentional",
+      "recommendation": "Check references and history before archiving",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "817910b19005e99c",
+      "code": "POSSIBLY_REDUNDANT_NAME",
+      "severity": "review",
+      "path": "tools/test_granada_safe_backup_converter.py",
+      "observation": "Backup/old/copy/draft name; may be intentional",
+      "recommendation": "Check references and history before archiving",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "7d00b0c1712876d3",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": ".michelslab/candidate-intents/android-direct-v026.txt",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "417a22a9256f65ec",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": ".michelslab/release-intents/android-v023.txt",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "aee29b7c3d0566f1",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": ".michelslab/release-intents/android-v024.txt",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "097f635071c59f07",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": ".michelslab/release-intents/unified-v3217-a025.txt",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "b3af36b6faf1fa35",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": ".michelslab/release-intents/unified-v3218-a026.txt",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "117c853700707dcb",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": ".michelslab/release-intents/unified-v3219-a027.txt",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "a4d3032878f168f9",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": ".michelslab/release-intents/unified-v3220-a028.txt",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "e2996ef78d5d5bfa",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": ".michelslab/release-intents/unified-v3221-a029.txt",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "6b29c05b289a48c6",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": "BUILD_MICHELS_LIFE_WINDOWS.bat",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "b1f1bb5a1d0c7fe5",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": "LICENSE.txt",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "19cd65c90b9e6cfc",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": "android/app/build.gradle.kts",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "6b94bcefb2676ae0",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": "android/build.gradle.kts",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "893790451fda3de8",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": "android/settings.gradle.kts",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "29c4bc472bbf6cc2",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": "docs/privacy/index.html",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "0447a0a2fa736597",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": "installer/MichelsLife.iss",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "5d4d30417d9f7a63",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": "installer/TaskbarPinning.txt",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "f2f8c7261f55c7ae",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": "src/MichelsLife/AppPatches/store-msix.html",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "da1ab9955e45ac7e",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": "src/MichelsLife/GoogleCalendarService.cs.gz.b64",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "29d65ec3399e151f",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": "src/MichelsLife/MichelsLife.csproj",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "6b807bddd0e10afd",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": "src/MichelsLife/Program.cs.gz.b64",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "fbebc509becff010",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": "src/MichelsLife/app.manifest",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "081f775cafc4329a",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": "src/MichelsLife/frontend/index.html",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "b4d06c4850b3c6ab",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": "supabase/migrations/20261005112105_michels_life_initial_sync_schema.sql",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "0a139aebccfaf828",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": "supabase/migrations/20261005112815_lock_michels_life_sync_to_authenticated.sql",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "7a3cb6f5ba1d0140",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": "supabase/migrations/20261006070456_least_privilege_michels_life_sync.sql",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    }
+  ],
+  "untracked_audited": false,
+  "ignored_audited": false,
+  "binary_contents_audited": false,
+  "scientific_validation": "NOT_CHECKED",
+  "app_installed_acceptance": "NOT_CHECKED",
+  "deletion_approved": false
+}
