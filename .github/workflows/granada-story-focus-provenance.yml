@@ -52,6 +52,7 @@ jobs:
           python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-story.zip --source branding/michels_lab_mark.png --arcname assets/michels_lab_mark.png
           python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-story.zip --source branding/michels_lab_lockup.png --arcname assets/michels_lab_lockup.png
           python android/tools/prepare_bundle.py --bundle artifacts/AppBundle-story.zip --assets artifacts/android-story-bundle
+          cp android/story-focus-safe-area.mjs artifacts/android-story-bundle/story-focus-safe-area.mjs
       - name: Install Chromium and touchscreen browser runtime
         run: |
           npm install --no-save playwright
@@ -60,6 +61,15 @@ jobs:
         run: |
           python -m http.server 4174 --directory artifacts/android-story-bundle >/tmp/mlv-story-http.log 2>&1 &
           MLV_SOURCE_SHA="${{ github.event.pull_request.head.sha || github.sha }}" MLV_ANDROID_UI_URL=http://127.0.0.1:4174 node tools/ui_granada_story_focus_matrix.mjs
+      - name: Check isolated Story safe-area geometry contract
+        if: always()
+        run: |
+          node --check android/story-focus-safe-area.mjs
+          node tools/test_granada_story_safe_area.mjs
+      - name: Compare opt-in Story safe-area candidate against unchanged baseline
+        if: always()
+        run: |
+          MLV_SOURCE_SHA="${{ github.event.pull_request.head.sha || github.sha }}" MLV_ANDROID_UI_URL=http://127.0.0.1:4174 MLV_STORY_CLEARANCE_CANDIDATE=1 node tools/ui_granada_story_focus_matrix.mjs
       - name: Save redacted failure evidence on green or red
         if: always()
         uses: actions/upload-artifact@v4
