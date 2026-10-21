@@ -137,6 +137,10 @@ def evaluate(old: Any, new: Any, allowlist: frozenset[str]) -> dict:
 
     a_missions = keyed(before["missions"], "missions")
     b_missions = keyed(after["missions"], "missions")
+    # Newly added as well as retained missions must have auditable history.
+    # Otherwise an invalid completion payload can slip past the comparison.
+    for mission in list(a_missions.values()) + list(b_missions.values()):
+        completion_events(mission)
     common = set(a_missions) & set(b_missions)
     completion_removed = completion_added = 0
     for identifier in common:
@@ -174,8 +178,14 @@ def evaluate(old: Any, new: Any, allowlist: frozenset[str]) -> dict:
         key in old_local and key in new_local and old_local[key] != new_local[key]
         for key in journal_keys
     )
+    journal_cleared = sum(
+        key in old_local and key in new_local and bool(old_local[key])
+        and not bool(new_local[key]) for key in journal_keys
+    )
     if journal_missing:
         danger.append("journal_storage_removed")
+    if journal_cleared:
+        danger.append("journal_storage_cleared")
     if journal_missing or journal_modified or any(
         key not in old_local and key in new_local for key in journal_keys
     ):
@@ -203,6 +213,7 @@ def evaluate(old: Any, new: Any, allowlist: frozenset[str]) -> dict:
         "journal_storage": {
             "removed_keys": journal_missing,
             "modified_keys": journal_modified,
+            "cleared_keys": journal_cleared,
         },
         "originals_unchanged": True,
         "automatic_merge_or_restore": False,
