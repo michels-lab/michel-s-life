@@ -90,8 +90,23 @@ def validate(root, apk, source_sha, version):
         raise ValueError("invalid exact source SHA")
     if not apk.is_file() or apk.stat().st_size < 100_000:
         raise ValueError("actual debug APK missing")
-    apk_digest = hashlib.file_digest(apk.open("rb"), "sha256").hexdigest()
+    with apk.open("rb") as handle:
+        apk_digest = hashlib.file_digest(handle, "sha256").hexdigest()
+    # The native runner must consume the exact APK built from this checkout.
+    # A hash alone computed after the fact does not bind a binary to the run.
+    pinned_source = (root/"current-source-commit.txt").read_text(encoding="utf-8").strip()
+    if pinned_source != source_sha:
+        raise ValueError("native candidate source SHA does not match checkout")
+    checksum_line = (root/"current-source-apk.sha256").read_text(encoding="utf-8").strip()
+    checksum_parts = checksum_line.split(maxsplit=1)
+    if (len(checksum_parts) != 2 or
+            not re.fullmatch(r"[0-9a-f]{64}", checksum_parts[0]) or
+            checksum_parts[0] != apk_digest or
+            checksum_parts[1].lstrip("*") != apk.as_posix()):
+        raise ValueError("native candidate artifact SHA256 or filename mismatch")
     package_info = (root/"package-info.txt").read_text(encoding="utf-8")
+    if not re.search(r"Package \\[com\\.michelslab\\.michelslife\\]", package_info):
+        raise ValueError("installed package identity mismatch")
     if f"versionName={version}" not in package_info:
         raise ValueError("installed version mismatch")
     first_pid = (root/"process-id.txt").read_text().strip()
