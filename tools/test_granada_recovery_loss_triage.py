@@ -166,6 +166,20 @@ class RecoveryTriageTests(unittest.TestCase):
         with self.assertRaisesRegex(TriageError, "invalid_embedded_progress"):
             canonical_state({"localStorage": local}, self.allowed)
 
+    def test_new_mission_malformed_completion_is_blocked(self):
+        newer = self.edit()
+        newer["missions"].append({"id": "NEW", "completions": {"bad": "shape"}})
+        with self.assertRaisesRegex(TriageError, "unverified_completion_format"):
+            self.compare(self.snap(), self.snap(newer))
+
+    def test_cleared_journal_is_flagged_without_reading_contents(self):
+        journal = "michelsLife.journal.v30184"
+        r = self.compare(self.snap(local={journal: "PRIVATE_DIARY"}),
+                         self.snap(local={journal: ""}))
+        self.assertEqual(r["journal_storage"]["cleared_keys"], 1)
+        self.assertIn("journal_storage_cleared", r["risk_signals"])
+        self.assertNotIn("PRIVATE_DIARY", json.dumps(r))
+
     def test_unknown_top_level_auth_metadata_rejected(self):
         old = self.snap()
         old["authorization"] = "VERY_PRIVATE_AUTH_VALUE"
