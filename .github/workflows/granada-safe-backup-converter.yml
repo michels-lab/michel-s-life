@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   offline-convert-and-recover:
-    name: Real-file 22-case offline backup conversion and existing restore contract
+    name: Real-file 25-case offline backup conversion and existing restore contract
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
