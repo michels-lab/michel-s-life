@@ -166,6 +166,12 @@ class RecoveryTriageTests(unittest.TestCase):
         with self.assertRaisesRegex(TriageError, "invalid_embedded_progress"):
             canonical_state({"localStorage": local}, self.allowed)
 
+    def test_unknown_top_level_auth_metadata_rejected(self):
+        old = self.snap()
+        old["authorization"] = "VERY_PRIVATE_AUTH_VALUE"
+        with self.assertRaisesRegex(TriageError, "unverified_envelope_fields"):
+            self.compare(old, self.snap())
+
     def test_storage_unknown_key_rejected(self):
         with self.assertRaisesRegex(TriageError, "unverified_storage_field"):
             self.compare(self.snap(local={"anotherApp.token": "UNSAFE_SECRET"}),
