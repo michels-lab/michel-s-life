@@ -101,6 +101,10 @@ jobs:
       MLV_REQUIRE_NATIVE_STATE_PROBE: '1'
     steps:
       - uses: actions/checkout@v4
+      - name: Initialize fail-closed artifact even if Android SDK download fails
+        run: |
+          mkdir -p artifacts/candidate-install
+          printf '%s\\n' '{"schema":"mlv.granada.native-attempt.v1","state":"not_verified","native_accepted":false}' > artifacts/candidate-install/arm-start.json
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -150,6 +154,10 @@ jobs:
       MLV_REQUIRE_NATIVE_STATE_PROBE: '1'
     steps:
       - uses: actions/checkout@v4
+      - name: Initialize fail-closed artifact even if Android SDK download fails
+        run: |
+          mkdir -p artifacts/candidate-install
+          printf '%s\\n' '{"schema":"mlv.granada.native-attempt.v1","state":"not_verified","native_accepted":false}' > artifacts/candidate-install/arm-start.json
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
