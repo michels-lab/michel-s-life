@@ -1,0 +1,28 @@
+name: GRANADA - account boundary contract
+
+on:
+  pull_request:
+    paths:
+      - 'src/MichelsLife/frontend/account-boundary.mjs'
+      - 'tools/test_granada_account_boundary.mjs'
+      - '.github/workflows/granada-account-boundary.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  account-boundary-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Parse browser-compatible account boundary module
+        run: node --check src/MichelsLife/frontend/account-boundary.mjs
+      - name: Parse deterministic two-account privacy regressions
+        run: node --check tools/test_granada_account_boundary.mjs
+      - name: Synthetic account switching, guest import and recovery QA
+        run: node tools/test_granada_account_boundary.mjs
