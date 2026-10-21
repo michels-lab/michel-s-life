@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 272,
-  "classified_files_total": 268,
-  "docs_content_inspected": 75,
+  "tracked_files_total": 274,
+  "classified_files_total": 270,
+  "docs_content_inspected": 76,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
   "roles": {
@@ -13,12 +13,12 @@
     "build_script": 6,
     "config": 22,
     "database_migration": 3,
-    "document": 68,
+    "document": 69,
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 8,
-    "source": 89,
+    "source": 90,
     "test": 9,
     "text_metadata": 1,
     "web_ui": 3,
@@ -28,8 +28,8 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 2,
-  "inventory_fingerprint": "4cca88773f4279ef1da3b68757b4c3b580801f2347e7be9d95dbda1668cdbb68",
-  "evidence_fingerprint": "7dc5047bf1ba197e2148a049df89c53c9fe3ebddbcc30495c0f5b617b3cc372a",
+  "inventory_fingerprint": "81142b2b0275e12188f7a596deee1c68817816396871ef92fbd5d9b8beeefb25",
+  "evidence_fingerprint": "0adecee13b754f123fdc430bcae1b0f21f2cd556b4da1940531da51918023949",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -260,7 +260,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "01fa1daa2e1fb49779abaf43162ce967d8438d78"
+      "blob": "b0123c3af4b06f001b354d3e301b358d63e71b89"
     },
     {
       "path": ".gitignore",
@@ -1173,6 +1173,13 @@
       "blob": "4842ebdd8bf2318bb80729d75d675ca192cd0fcf"
     },
     {
+      "path": "docs/audit/2026-10-20-granada-weekly-premium-idempotence.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "b382c050950b55ddc60fce93efd1ff8da4fed97d"
+    },
+    {
       "path": "docs/audit/2026-10-21-granada-legacy-safe-backup-converter.md",
       "role": "document",
       "purpose": "manual/decision/report/historical note",
@@ -1873,6 +1880,13 @@
       "blob": "3c21fb77afe952252542f152f80690b490aed2d0"
     },
     {
+      "path": "tools/ui_weekly_premium_progress_roundtrip_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "0c888ded957717312ac562a39e003a055567aaf2"
+    },
+    {
       "path": "tools/validate_brand_identity.py",
       "role": "source",
       "purpose": "code/test implementation",
@@ -1910,20 +1924,20 @@
   ],
   "findings": [
     {
-      "id": "8ff35816d7df9d1e",
+      "id": "7a82d933cef3ff8b",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "12 implementation/config paths changed since this log's last commit; examples: .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-daily-mission-ledger.yml, .github/workflows/granada-recovery-loss-triage.yml, tools/granada_android_evidence_gate.py",
+      "observation": "14 implementation/config paths changed since this log's last commit; examples: .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-daily-mission-ledger.yml, .github/workflows/granada-recovery-loss-triage.yml, .github/workflows/ui-smoke.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "4d99b1b572966485",
+      "id": "05902ffae94c0289",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "34 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-emulator-transport-diagnostic.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-android-usability.yml, .github/workflows/granada-backup-preflight.yml",
+      "observation": "35 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-emulator-transport-diagnostic.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-android-usability.yml, .github/workflows/granada-backup-preflight.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
