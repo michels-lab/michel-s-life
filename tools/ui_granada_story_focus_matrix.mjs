@@ -3,7 +3,7 @@ import {mkdir,writeFile} from 'node:fs/promises';
 import {normalizeError,evidenceReport} from './granada_story_diagnostic_core.mjs';
 // Android browser model: ONLY synthetic data. Native APK / provider is not tested.
 const base=process.env.MLV_ANDROID_UI_URL||'http://127.0.0.1:4174';
-const sha=process.env.GITHUB_SHA;
+const sha=process.env.MLV_SOURCE_SHA||process.env.GITHUB_SHA;
 const output='artifacts/granada-story-focus';
 const cases=[];
 const browser=await chromium.launch({headless:true});
