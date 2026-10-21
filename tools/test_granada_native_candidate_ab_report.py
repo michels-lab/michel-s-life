@@ -5,8 +5,10 @@ from pathlib import Path
 import struct
 import tempfile
 import unittest
+import sys
 
 ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT/'tools'))
 spec=importlib.util.spec_from_file_location("native_report",
     ROOT/"tools/granada_native_candidate_ab_report.py")
 native=importlib.util.module_from_spec(spec)
