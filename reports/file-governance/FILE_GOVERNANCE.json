@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 267,
-  "classified_files_total": 263,
-  "docs_content_inspected": 74,
+  "tracked_files_total": 272,
+  "classified_files_total": 268,
+  "docs_content_inspected": 75,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
   "roles": {
@@ -13,23 +13,23 @@
     "build_script": 6,
     "config": 22,
     "database_migration": 3,
-    "document": 67,
+    "document": 68,
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 8,
-    "source": 87,
-    "test": 8,
+    "source": 89,
+    "test": 9,
     "text_metadata": 1,
     "web_ui": 3,
-    "workflow": 27
+    "workflow": 28
   },
   "finding_counts": {
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 2,
-  "inventory_fingerprint": "2c2c53b3243ecc25aa73974dcb05cec91a79adb6b5dbcb15beb316661996f667",
-  "evidence_fingerprint": "77715ede535ffe8cd225571e041d9bd3567ff154e532af967579a44ba856a067",
+  "inventory_fingerprint": "4cca88773f4279ef1da3b68757b4c3b580801f2347e7be9d95dbda1668cdbb68",
+  "evidence_fingerprint": "7dc5047bf1ba197e2148a049df89c53c9fe3ebddbcc30495c0f5b617b3cc372a",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -156,6 +156,13 @@
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
       "blob": "440046bd2d87c8a48733f6698117575b5b455563"
+    },
+    {
+      "path": ".github/workflows/granada-daily-mission-ledger.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "41dcba058f2b3d4d2a87300436596e09683b4cf3"
     },
     {
       "path": ".github/workflows/granada-large-project-story-cloud.yml",
@@ -772,6 +779,13 @@
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
       "blob": "24978273af4d5518591b5eeed447abb1eb0cb8f7"
+    },
+    {
+      "path": "android/audit/2026-10-21-granada-daily-mission-ledger.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "7b84cb7f813dad79ea54d091c74412f9ee254258"
     },
     {
       "path": "android/build.gradle.kts",
@@ -1474,6 +1488,13 @@
       "blob": "0e4b0a12cd8d84f2c32939ee9367fa6398d55814"
     },
     {
+      "path": "tools/granada_mission_ledger_core.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "374feb88468c822dc8150a7d9a930df632662a9f"
+    },
+    {
       "path": "tools/granada_recovery_loss_triage.py",
       "role": "source",
       "purpose": "code/test implementation",
@@ -1577,6 +1598,13 @@
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "3034481ea3aa50dac93e30ee781a73cedf514c26"
+    },
+    {
+      "path": "tools/test_granada_mission_ledger.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "f832684411bd450870333c6f1c76d099d2154a8d"
     },
     {
       "path": "tools/test_granada_recovery_loss_triage.py",
@@ -1710,6 +1738,13 @@
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "8413ecd3ffed5f6d42775840933bc9fd609fd7cf"
+    },
+    {
+      "path": "tools/ui_granada_daily_mission_ledger_roundtrip.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "80a3478259cbf50ddc49c974c36d5ffd1bcd5f25"
     },
     {
       "path": "tools/ui_granada_large_projects_story_roundtrip_smoke.mjs",
@@ -1875,20 +1910,20 @@
   ],
   "findings": [
     {
-      "id": "879c8cec0d14abb9",
+      "id": "8ff35816d7df9d1e",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "8 implementation/config paths changed since this log's last commit; examples: .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-recovery-loss-triage.yml, tools/granada_android_evidence_gate.py, tools/granada_recovery_loss_triage.py",
+      "observation": "12 implementation/config paths changed since this log's last commit; examples: .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-daily-mission-ledger.yml, .github/workflows/granada-recovery-loss-triage.yml, tools/granada_android_evidence_gate.py",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "6fc87a8122455e56",
+      "id": "4d99b1b572966485",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "30 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-emulator-transport-diagnostic.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-android-usability.yml, .github/workflows/granada-backup-preflight.yml",
+      "observation": "34 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-emulator-transport-diagnostic.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-android-usability.yml, .github/workflows/granada-backup-preflight.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }

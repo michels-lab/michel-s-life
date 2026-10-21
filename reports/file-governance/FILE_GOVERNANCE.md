@@ -5,7 +5,7 @@ No file is auto-deleted or declared unused.
 
 ## Coverage
 
-Tracked: 267; classified: 263; readable documents: 74; above read cap: 0; findings: 2.
+Tracked: 272; classified: 268; readable documents: 75; above read cap: 0; findings: 2.
 
 ## File roles
 
@@ -17,21 +17,21 @@ Tracked: 267; classified: 263; readable documents: 74; above read cap: 0; findin
 | build_script | 6 |
 | config | 22 |
 | database_migration | 3 |
-| document | 67 |
+| document | 68 |
 | encoded_source | 2 |
 | index | 4 |
 | installer_metadata | 1 |
 | release_intent | 8 |
-| source | 87 |
-| test | 8 |
+| source | 89 |
+| test | 9 |
 | text_metadata | 1 |
 | web_ui | 3 |
-| workflow | 27 |
+| workflow | 28 |
 
 ## Findings (human review required)
 
-- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** GIT_AUDIT_LOG.md: 8 implementation/config paths changed since this log's last commit; examples: .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-recovery-loss-triage.yml, tools/granada_android_evidence_gate.py, tools/granada_recovery_loss_triage.py. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID 879c8cec0d14abb9)
-- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** android/ANDROID_AUDIT_LOG.md: 30 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-emulator-transport-diagnostic.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-android-usability.yml, .github/workflows/granada-backup-preflight.yml. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID 6fc87a8122455e56)
+- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** GIT_AUDIT_LOG.md: 12 implementation/config paths changed since this log's last commit; examples: .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-daily-mission-ledger.yml, .github/workflows/granada-recovery-loss-triage.yml, tools/granada_android_evidence_gate.py. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID 8ff35816d7df9d1e)
+- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** android/ANDROID_AUDIT_LOG.md: 34 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-emulator-transport-diagnostic.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-android-usability.yml, .github/workflows/granada-backup-preflight.yml. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID 4d99b1b572966485)
 
 Complete path → purpose/role/certainty list lives in FILE_GOVERNANCE.json. SUMMARY.json has counts only for master polling.
 A dated file, duplicate, or suspicious name is an **investigation candidate**, not unwanted material.
