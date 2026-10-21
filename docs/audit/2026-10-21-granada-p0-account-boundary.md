@@ -25,3 +25,16 @@
 4. Follow the GRANADA final-only release gate: integration + green exact-head CI + signing/provenance + real device continuity + owner acceptance. No RC/beta/prerelease.
 
 **State:** Functional standalone module implemented and locally tested; production wiring, exact-head CI, native proof, account-provider verification and public release **PENDING**.
+
+
+## Follow-up GRANADA — crash-consistent account transitions
+
+**Additional concrete threat:** `localStorage` writes one key at a time; a WebView/OS termination after updating the board but before updating the active-account marker could leave **mixed account ownership on the next startup**. Ordinary exception rollback is not sufficient for a process kill. The original helper did not persist a transaction marker.
+
+- Updated `src/MichelsLife/frontend/account-boundary.mjs` to create a **device-local write-ahead rollback journal** before every multi-key mutation. Original values are preserved only on this device; on normal completion the marker disappears. If a WebView terminates mid-switch, a subsequent `AccountBoundary` construction or `active()` call verifies and rolls back every key before any upload authorization.
+- Failed partial rollback leaves the journal in place and throws `storage_rollback_failed`; malformed or credentials-targeting journals fail closed with `corrupt_boundary_transaction`. Do not clear the marker or silently continue an account session. Storage quota failures on marker creation do not start a switch.
+- Added **five new fault-injection tests** (29 total): simulated crash with A board / B identity mixed, journal recovery delayed by storage failures, forged credential-targeting transaction, malformed/duplicate transaction keys, and failure before creating the journal.
+- Exact-head [account boundary CI run 39684463061](https://github.com/michels-lab/michel-s-life/actions/runs/39684463061) **PASS** for syntax checks + all synthetic boundary tests at code head `791f1291f843a5e0267e255a9fc905a63d55b8ef`. This head predates this documentation-only append; recheck final head. The preceding run was red for a malformed injected `null` test entry and was fixed explicitly by validating the entry before destructuring. Do not hide it.
+- Existing **Android16 APK build/install job** is a separate native acceptance requirement: earlier head compiled the APK but emulator install/launch failed. Check the latest actual job conclusion; until source is wired into production login/logout/cloud push/restore, real provider A/B account proof and signed native acceptance are missing, #108 stays OPEN.
+
+No main-repo merge, published feature, user account modification, Google/Supabase credential use, cross-project change, Windows native packaging, APK/signing or release was made in this security block.
