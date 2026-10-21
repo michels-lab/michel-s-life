@@ -4,13 +4,13 @@ Owner command: Michel's Life — Operación Granada.
 
 ## Preflight and files owned
 
-Verified source \`main\` HEAD at start: \`2621319b741b9cc7cebd5b3a05eb38414f88034d\`. Latest public release: Windows 3.0.221 + Android Direct 0.2.9; no new release created. Android active, Windows packaging paused.
+Verified source `main` HEAD at start: `2621319b741b9cc7cebd5b3a05eb38414f88034d`. Latest public release: Windows 3.0.221 + Android Direct 0.2.9; no new release created. Android active, Windows packaging paused.
 
-Separate branch: \`granada/offline-recovery-loss-triage-20261021\`. Only **new** code/test/workflow/docs paths:
-- \`tools/granada_recovery_loss_triage.py\`
-- \`tools/test_granada_recovery_loss_triage.py\`
-- \`.github/workflows/granada-recovery-loss-triage.yml\`
-- \`docs/RECOVERY_LOSS_TRIAGE.md\`
+Separate branch: `granada/offline-recovery-loss-triage-20261021`. Only **new** code/test/workflow/docs paths:
+- `tools/granada_recovery_loss_triage.py`
+- `tools/test_granada_recovery_loss_triage.py`
+- `.github/workflows/granada-recovery-loss-triage.yml`
+- `docs/RECOVERY_LOSS_TRIAGE.md`
 - This audit entry
 
 No frontend index, Android Developer Twin, CloudSync.kt, native transport, Calendar, Focus, signed channel, credential or release workflow modifications. Existing converter/preflight logic remains untouched.
