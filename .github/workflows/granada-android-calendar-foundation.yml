@@ -1,0 +1,38 @@
+name: GRANADA Android Calendar isolated native foundation
+
+on:
+  pull_request:
+    paths:
+      - 'android/app/src/main/java/com/michelslab/michelslife/CalendarSyncRules.kt'
+      - 'android/app/src/main/java/com/michelslab/michelslife/AndroidCalendarGateway.kt'
+      - 'android/app/src/main/java/com/michelslab/michelslife/AndroidCalendarConsent.kt'
+      - 'tools/kotlin/CalendarSyncRulesSpec.kt'
+      - 'tools/test_granada_calendar_native_contract.py'
+      - '.github/workflows/granada-android-calendar-foundation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolated-calendar-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Run 32+ executable Kotlin domain assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v kotlinc || { echo "::error::Kotlin compiler unavailable on runner; no test pass claimed."; exit 1; }
+          mkdir -p /tmp/mlv-calendar
+          kotlinc \
+            android/app/src/main/java/com/michelslab/michelslife/CalendarSyncRules.kt \
+            tools/kotlin/CalendarSyncRulesSpec.kt \
+            -include-runtime -d /tmp/mlv-calendar/calendar-safety.jar
+          java -jar /tmp/mlv-calendar/calendar-safety.jar
+      - name: Validate the native provider security wiring contract
+        run: python3 tools/test_granada_calendar_native_contract.py
