@@ -71,7 +71,7 @@ class SameCandidateTests(unittest.TestCase):
         self.assertIn("native-default:",wf)
         self.assertIn("native-3gib:",wf)
         self.assertEqual(wf.count("needs: compile"),2)
-        self.assertEqual(wf.count("granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha"),3)
+        self.assertEqual(wf.count("granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha"),6)
         self.assertIn("ram-size: 3072M",wf)
         self.assertNotIn("continue-on-error",wf)
         self.assertNotIn("windows",wf.lower())
