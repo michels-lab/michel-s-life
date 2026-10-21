@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Fail-closed and privacy-safe same-APK native Android16 RAM A/B summary.
+"""Fail-closed and privacy-safe same-APK native Android16 RAM/GPU three-arm summary.
 
 A native PASS requires SUCCESS of its real emulator job and complete
 PNG-CRC/size plus 3 canonical post-relaunch comparisons. Single-arm success
-is NOT evidence that RAM was the root cause. Never reads raw mission or account
+is NOT evidence that RAM or the graphics backend was the root cause. Never reads raw mission or account
 state files; outputs only whitelisted machine-readable result codes/counts.
 """
 from __future__ import annotations
@@ -78,24 +78,35 @@ def arm_report(path: Path, name: str, ci_status: str) -> dict:
     }
 
 
-def summarize(base: Path, default_job: str, ram3_job: str, source_sha: str) -> dict:
+def summarize(base: Path, default_job: str, ram3_job: str, source_sha: str,
+              software_job: str = "failure") -> dict:
     default = arm_report(base / "granada-native-candidate-default", "default", default_job)
     memory = arm_report(base / "granada-native-candidate-3gib", "3gib", ram3_job)
+    software = arm_report(base / "granada-native-candidate-3gib-software",
+                          "3gib-software", software_job)
     both_pass = default["native_gate_accepted"] and memory["native_gate_accepted"]
+    all_pass = both_pass and software["native_gate_accepted"]
     return {
-        "schema": "mlv.granada.single-apk-native-ram-matrix-report.v1",
+        "schema": "mlv.granada.single-apk-native-ram-gpu-matrix-report.v2",
         "source_checkout_sha": source_sha,
         "both_native_gates_pass": both_pass,
+        "all_three_native_gates_pass": all_pass,
+        "graphics_backend_causality_proven": False,
         "guest_ram_causality_proven": False,
         "same_apk_provenance_verified_in_each_arm": "by_each_job_before_emulator",
         "signed_public_release": False,
         "physical_galaxy_verified": False,
-        "arms": [default, memory],
+        "arms": [default, memory, software],
         "interpretation": (
-            "both_native_gates_pass" if both_pass else
+            "all_three_native_gates_pass" if all_pass else
+            "swiftshader_both_pass_software_unverified" if both_pass else
+            "3gib_software_only_not_causal_proof" if software["native_gate_accepted"]
+                 and not memory["native_gate_accepted"] else
+            "3gib_software_and_swiftshader_pass_default_unverified" if
+                 software["native_gate_accepted"] and memory["native_gate_accepted"] else
             "3gib_pass_only_not_causal_proof" if memory["native_gate_accepted"] else
             "default_pass_only" if default["native_gate_accepted"] else
-            "both_native_gates_unverified"
+            "all_three_native_gates_unverified"
         ),
     }
 
@@ -105,21 +116,23 @@ def main(argv=None) -> int:
     p.add_argument("--root", required=True)
     p.add_argument("--default-job", required=True)
     p.add_argument("--three-gib-job", required=True)
+    p.add_argument("--three-gib-software-job", required=True)
     p.add_argument("--sha", required=True)
     p.add_argument("--output", required=True)
     a = p.parse_args(argv)
-    result = summarize(Path(a.root), a.default_job, a.three_gib_job, a.sha)
+    result = summarize(Path(a.root), a.default_job, a.three_gib_job, a.sha,
+                       a.three_gib_software_job)
     out = Path(a.output)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(result, indent=2) + "\n")
     print("GRANADA_SAME_APK_NATIVE_RAM_AB " + json.dumps({
-        "both_native_gates_pass": result["both_native_gates_pass"],
+        "all_three_native_gates_pass": result["all_three_native_gates_pass"],
         "interpretation": result["interpretation"],
         "arms": [{"arm": x["arm"], "pass": x["native_gate_accepted"],
                   "host": x["host_vm_classification"]}
                  for x in result["arms"]],
     }, sort_keys=True))
-    return 0 if result["both_native_gates_pass"] else 1
+    return 0 if result["all_three_native_gates_pass"] else 1
 
 
 if __name__ == "__main__":
