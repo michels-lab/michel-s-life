@@ -28,7 +28,7 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 2,
-  "inventory_fingerprint": "cc919967a447867487c2419690710175ea9b0ca83ba4736860252abf1b6edbd3",
+  "inventory_fingerprint": "7efa4db7a3ddd43fc54fe9fa91f71b75de2a52b5c936b103ad1b75e0810bee14",
   "evidence_fingerprint": "dcb9ec7ca71eddaa68ae04b89fa8ef42caa6b905e983339225c7f19a45994477",
   "files": [
     {
@@ -64,7 +64,7 @@
       "role": "document",
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
-      "blob": "3e80306d3d7a6e4d38a74351f08fdb68eb1b6036"
+      "blob": "9ccbd948b1b5e7740562692e56466c765cc306d1"
     },
     {
       "path": ".github/workflows/android-build.yml",
@@ -393,7 +393,7 @@
       "role": "agent",
       "purpose": "assistant role/instructions",
       "certainty": "rule",
-      "blob": "fa83949a71354aff2aa644a2f5771c6042466ca9"
+      "blob": "f9dd914687c0fe7eaa6fe91e5cc44468b0c7ad96"
     },
     {
       "path": "BUILD_MICHELS_LIFE_WINDOWS.bat",
