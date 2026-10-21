@@ -1,0 +1,36 @@
+# Operación GRANADA — weekly Premium contract integrity
+
+Date: 2026-10-20, America/Monterrey.
+Repo: michels-lab/michel-s-life.
+Branch: granada/weekly-contract-progress-integrity-20261020.
+Base main: acda7a400d71a508e16ed7122656f1627676080d.
+Related issues: #54 (Android Premium Contracts parity), #104 (native XP/mission retention), #28 (same-account cloud sync).
+
+## Scope and acceptance
+
+New real-Chromium canonical test `tools/ui_weekly_premium_progress_roundtrip_smoke.mjs`, plus one dedicated step in the existing `ui-smoke.yml`, plus this audit. No shared app source or accepted graphics changed. No Kotlin/Android bridge/Developer Twin changes.
+
+1. Create one synthetic **weekly Premium mission** in the unchanged shared business model with `weeklyTarget=4`, a stable test ID and a per-completion XP reward.
+2. Complete once: require one unique dated completion and exactly one XP reward, with runtime state and stored state identical. Complete a second time on the same day: require unchanged XP/history.
+3. Undo: require all reward XP refunded and the completion ID removed. Complete once again: require exactly one reward, one **new** unique completion ID, no premature archive and preserved weekly target 4.
+4. Restart the Windows browser/runtime and require complete ID, target, completion history and XP unchanged.
+5. Capture shareable state using actual `MLVCloudSharedStorageV30216.capture()`, restore through actual `restore()` in an isolated Android platform Chromium context, perform **two** Android bootstraps and require unchanged weekly target, exact XP, mission ID and completion ID. Double-tap in Android after restore must still be a no-op.
+6. Run the same test in the repository's normal UI CI, preceded by a Node syntax check. Do not suppress failures or use synthetic provider success claims.
+
+## Validation boundaries
+
+The scenario uses the **real existing canonical mission and cloud-allowlist engines**, with synthetic test data. It does not establish a live Supabase account, backgrounded Android WebView, production signed APK or Galaxy physical acceptance, so it does not close #28/#54/#104. The Windows **test context** is allowed; Windows installers, MSIX and Desktop-native builds remain owner-paused.
+
+Active draft owners #134 (Developer Twin native/updater), #135 (Calendar/Journal mobile), #138 (native debug XP persistence), and draft #149 (Journal conflict test) are file-disjoint. Exact-head source, browser UI and Android UI must pass before merging. No new release/tag.
+
+## First exact-head CI and atomic-restore correction
+
+Initial browser UI job `118487444766` on head `c3372e8` passed its source/syntax checks and the desktop weekly exact-once/Undo/re-complete assertions. The Android roundtrip then failed at its first boot: no canonical weekly mission after raw `MLVCloudSharedStorageV30216.restore` plus a later independent Playwright `page.reload()`. The shared-storage allowlist does not change the already-running canonical `state` object. Because the Android frontend continues running between separate restore and reload calls, it may save its old state back to localStorage, overwriting the incoming mission. This test setup did **not** follow the production cloud restore's immediate navigation.
+
+Isolated test-only fix `889641f` now performs raw shared restore, verifies the inserted synthetic mission in storage, and requests `location.reload()` in the **same page execution**; Playwright awaits the resulting load before checking two subsequent independent Android bootstraps. The strong mission ID, weekly target, XP and unique-completion invariants remain unchanged. This is a test-fixture timing correction, not proof that signed/Galaxy live provider sync is complete. **New same-head CI remains pending**.
+
+## Second exact-head CI and correct first-bootstrap boundary
+
+The second UI run on head `baeab2f` still lost the weekly mission after import/reload. The guard that inspected the imported localStorage value **inside the active document** passed, so `MLVCloudSharedStorageV30216.restore` did write the expected mission. A subsequent reload, however, ran the app's real `beforeunload` persistence hook using its **older active Android state**, overwriting that imported mission. This is not a weekly-completion bug; it is an invalid test fixture trying to use a low-level allowlist restore as a live cross-account authority switch.
+
+Isolated test-only correction `7281f3b`: create the Android browser context **after capturing the canonical portable snapshot**, install allowlisted strings with an `addInitScript` **before the first Android runtime script executes**, and guard that import with a one-time sessionStorage marker. Check the first native-mode canonical browser bootstrap plus two *independent subsequent reloads* without re-seeding. This tests exact weekly state retention across device bootstrap and restarts, not live provider account ownership. The actual first-party Supabase `pull()` and Google cloud restore paths already have their own dedicated tests (#137/#149), and remain separate real-device acceptance. Original XP, ID, target and completion checks are unchanged. Exact-head checks pending.
