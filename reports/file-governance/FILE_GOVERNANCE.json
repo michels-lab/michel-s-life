@@ -11,23 +11,25 @@
     "asset": 12,
     "bitacora": 3,
     "build_script": 6,
-    "config": 21,
+    "config": 22,
+    "database_migration": 3,
     "document": 63,
+    "encoded_source": 2,
     "index": 4,
-    "license": 1,
+    "installer_metadata": 1,
+    "release_intent": 8,
     "source": 85,
     "test": 6,
-    "unknown": 15,
+    "text_metadata": 1,
     "web_ui": 3,
     "workflow": 24
   },
   "finding_counts": {
-    "POSSIBLY_REDUNDANT_NAME": 11,
-    "UNKNOWN_PURPOSE": 15
+    "POTENTIAL_UNLOGGED_CHANGES": 1
   },
-  "finding_total": 26,
-  "inventory_fingerprint": "e14ceb808e720b96aa6378528d4c1a72571b5a8fd28e164a5930f8b10213da70",
-  "evidence_fingerprint": "66c91ccb69b1347bb2dd399b60c3ad72601819a46f131ad9108965e531da6fb7",
+  "finding_total": 1,
+  "inventory_fingerprint": "8990bac670f4689ccbbf5cbc793320658cc6b88aa45e91ba40f575c240148c61",
+  "evidence_fingerprint": "0ce825e250e7fc588cce12e7b15c50a97e993199e0e13a9142788a961531696f",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -283,9 +285,9 @@
     },
     {
       "path": ".michelslab/candidate-intents/android-direct-v026.txt",
-      "role": "unknown",
-      "purpose": "function unknown: owner classification required",
-      "certainty": "unknown",
+      "role": "release_intent",
+      "purpose": "historical source-controlled release/candidate intent (preserve for traceability)",
+      "certainty": "rule",
       "blob": "ebf84b2a11c55e80d8f6e695264ab8faf9c2e318"
     },
     {
@@ -304,51 +306,51 @@
     },
     {
       "path": ".michelslab/release-intents/android-v023.txt",
-      "role": "unknown",
-      "purpose": "function unknown: owner classification required",
-      "certainty": "unknown",
+      "role": "release_intent",
+      "purpose": "historical source-controlled release/candidate intent (preserve for traceability)",
+      "certainty": "rule",
       "blob": "de3b8ba58391236d9101434e9baa41d6e09a3c8d"
     },
     {
       "path": ".michelslab/release-intents/android-v024.txt",
-      "role": "unknown",
-      "purpose": "function unknown: owner classification required",
-      "certainty": "unknown",
+      "role": "release_intent",
+      "purpose": "historical source-controlled release/candidate intent (preserve for traceability)",
+      "certainty": "rule",
       "blob": "20dd72ed937a695fc4aab60736b375ecfc75c508"
     },
     {
       "path": ".michelslab/release-intents/unified-v3217-a025.txt",
-      "role": "unknown",
-      "purpose": "function unknown: owner classification required",
-      "certainty": "unknown",
+      "role": "release_intent",
+      "purpose": "historical source-controlled release/candidate intent (preserve for traceability)",
+      "certainty": "rule",
       "blob": "747f0f2febb1fb4cd1036d2130d77f93b391a876"
     },
     {
       "path": ".michelslab/release-intents/unified-v3218-a026.txt",
-      "role": "unknown",
-      "purpose": "function unknown: owner classification required",
-      "certainty": "unknown",
+      "role": "release_intent",
+      "purpose": "historical source-controlled release/candidate intent (preserve for traceability)",
+      "certainty": "rule",
       "blob": "8b261c5494ae5764c38812fab584d048b6996dc9"
     },
     {
       "path": ".michelslab/release-intents/unified-v3219-a027.txt",
-      "role": "unknown",
-      "purpose": "function unknown: owner classification required",
-      "certainty": "unknown",
+      "role": "release_intent",
+      "purpose": "historical source-controlled release/candidate intent (preserve for traceability)",
+      "certainty": "rule",
       "blob": "87bff4a9859b1770876659b1e5dc3214a8662d30"
     },
     {
       "path": ".michelslab/release-intents/unified-v3220-a028.txt",
-      "role": "unknown",
-      "purpose": "function unknown: owner classification required",
-      "certainty": "unknown",
+      "role": "release_intent",
+      "purpose": "historical source-controlled release/candidate intent (preserve for traceability)",
+      "certainty": "rule",
       "blob": "16499f39f56d39b764044fa4b6e8fd42ac5febf1"
     },
     {
       "path": ".michelslab/release-intents/unified-v3221-a029.txt",
-      "role": "unknown",
-      "purpose": "function unknown: owner classification required",
-      "certainty": "unknown",
+      "role": "release_intent",
+      "purpose": "historical source-controlled release/candidate intent (preserve for traceability)",
+      "certainty": "rule",
       "blob": "a59fe652b7e3e14d63b2520572c2cce355c9612b"
     },
     {
@@ -402,9 +404,9 @@
     },
     {
       "path": "LICENSE.txt",
-      "role": "license",
-      "purpose": "licensing/notice",
-      "certainty": "rule",
+      "role": "text_metadata",
+      "purpose": "plain-text source/release/installer metadata; specific purpose inferred",
+      "certainty": "inferred",
       "blob": "cf1662c2a62cee457391676bf926e30c997442c1"
     },
     {
@@ -1200,9 +1202,9 @@
     },
     {
       "path": "installer/TaskbarPinning.txt",
-      "role": "unknown",
-      "purpose": "function unknown: owner classification required",
-      "certainty": "unknown",
+      "role": "installer_metadata",
+      "purpose": "Windows taskbar installer configuration",
+      "certainty": "inferred",
       "blob": "d05986ef8b76b6d554385fe901ecbfaed94403e6"
     },
     {
@@ -1228,9 +1230,9 @@
     },
     {
       "path": "src/MichelsLife/GoogleCalendarService.cs.gz.b64",
-      "role": "unknown",
-      "purpose": "function unknown: owner classification required",
-      "certainty": "unknown",
+      "role": "encoded_source",
+      "purpose": "compressed/encoded C# source artifact; code meaning not audited",
+      "certainty": "inferred",
       "blob": "e57bf48be87fa98edc102463370a65f864c9a080"
     },
     {
@@ -1249,9 +1251,9 @@
     },
     {
       "path": "src/MichelsLife/Program.cs.gz.b64",
-      "role": "unknown",
-      "purpose": "function unknown: owner classification required",
-      "certainty": "unknown",
+      "role": "encoded_source",
+      "purpose": "compressed/encoded C# source artifact; code meaning not audited",
+      "certainty": "inferred",
       "blob": "fcc202bf8b73047a80587edf6c7ba184076ab7c1"
     },
     {
@@ -1263,9 +1265,9 @@
     },
     {
       "path": "src/MichelsLife/app.manifest",
-      "role": "unknown",
-      "purpose": "function unknown: owner classification required",
-      "certainty": "unknown",
+      "role": "config",
+      "purpose": "native application execution manifest",
+      "certainty": "rule",
       "blob": "fa8554016267895ee012121991c5513711aaddb9"
     },
     {
@@ -1298,23 +1300,23 @@
     },
     {
       "path": "supabase/migrations/20261005112105_michels_life_initial_sync_schema.sql",
-      "role": "unknown",
-      "purpose": "function unknown: owner classification required",
-      "certainty": "unknown",
+      "role": "database_migration",
+      "purpose": "ordered database schema migration; never discard automatically",
+      "certainty": "rule",
       "blob": "16622eb990deae7f2767323feced39c7d816db90"
     },
     {
       "path": "supabase/migrations/20261005112815_lock_michels_life_sync_to_authenticated.sql",
-      "role": "unknown",
-      "purpose": "function unknown: owner classification required",
-      "certainty": "unknown",
+      "role": "database_migration",
+      "purpose": "ordered database schema migration; never discard automatically",
+      "certainty": "rule",
       "blob": "902a10290aa5f5f538219d8eae7236fbc57ad3d1"
     },
     {
       "path": "supabase/migrations/20261006070456_least_privilege_michels_life_sync.sql",
-      "role": "unknown",
-      "purpose": "function unknown: owner classification required",
-      "certainty": "unknown",
+      "role": "database_migration",
+      "purpose": "ordered database schema migration; never discard automatically",
+      "certainty": "rule",
       "blob": "9db6f2cdf31423824d5c178dfb6352983468acfb"
     },
     {
@@ -1462,7 +1464,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "5233e1e0466ce9bf333e24177d66e21b7d8fef84"
+      "blob": "50d28a76044b68d08461f77dca182750eaae8a92"
     },
     {
       "path": "tools/spanish_copy_source_audit.mjs",
@@ -1518,7 +1520,7 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "de43a587db0cf63a8dbe1045e00a81704b4a0d75"
+      "blob": "bbec7d5a91fc96ac4915b703dc31ea7c075475f3"
     },
     {
       "path": "tools/ui_android_chapter_motion_smoke.mjs",
@@ -1796,237 +1798,12 @@
   ],
   "findings": [
     {
-      "id": "ec7b88364616f6cf",
-      "code": "POSSIBLY_REDUNDANT_NAME",
+      "id": "768e12c85385e945",
+      "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
-      "path": ".github/workflows/granada-backup-preflight.yml",
-      "observation": "Backup/old/copy/draft name; may be intentional",
-      "recommendation": "Check references and history before archiving",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "ad3c3cd6a3834eef",
-      "code": "POSSIBLY_REDUNDANT_NAME",
-      "severity": "review",
-      "path": ".github/workflows/granada-safe-backup-converter.yml",
-      "observation": "Backup/old/copy/draft name; may be intentional",
-      "recommendation": "Check references and history before archiving",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "7afb0a8225098a1a",
-      "code": "POSSIBLY_REDUNDANT_NAME",
-      "severity": "review",
-      "path": "android/PLAY_CONSOLE_SUBMISSION_DRAFT.md",
-      "observation": "Backup/old/copy/draft name; may be intentional",
-      "recommendation": "Check references and history before archiving",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "537040ed16ac2de1",
-      "code": "POSSIBLY_REDUNDANT_NAME",
-      "severity": "review",
-      "path": "android/PRIVACY_POLICY_DRAFT.md",
-      "observation": "Backup/old/copy/draft name; may be intentional",
-      "recommendation": "Check references and history before archiving",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "30036a8a1c5ca684",
-      "code": "POSSIBLY_REDUNDANT_NAME",
-      "severity": "review",
-      "path": "docs/BACKUP_PREFLIGHT.md",
-      "observation": "Backup/old/copy/draft name; may be intentional",
-      "recommendation": "Check references and history before archiving",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "40d5ad51855e9a55",
-      "code": "POSSIBLY_REDUNDANT_NAME",
-      "severity": "review",
-      "path": "docs/SAFE_LEGACY_BACKUP_CONVERSION.md",
-      "observation": "Backup/old/copy/draft name; may be intentional",
-      "recommendation": "Check references and history before archiving",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "6552827bb116b503",
-      "code": "POSSIBLY_REDUNDANT_NAME",
-      "severity": "review",
-      "path": "tools/granada_backup_preflight.py",
-      "observation": "Backup/old/copy/draft name; may be intentional",
-      "recommendation": "Check references and history before archiving",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "9812184bdba86af5",
-      "code": "POSSIBLY_REDUNDANT_NAME",
-      "severity": "review",
-      "path": "tools/granada_safe_backup_converter.py",
-      "observation": "Backup/old/copy/draft name; may be intentional",
-      "recommendation": "Check references and history before archiving",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "1b7823cd6375b21b",
-      "code": "POSSIBLY_REDUNDANT_NAME",
-      "severity": "review",
-      "path": "tools/spanish_copy_source_audit.mjs",
-      "observation": "Backup/old/copy/draft name; may be intentional",
-      "recommendation": "Check references and history before archiving",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "f6cb184d6cd0c1f8",
-      "code": "POSSIBLY_REDUNDANT_NAME",
-      "severity": "review",
-      "path": "tools/test_granada_backup_preflight.py",
-      "observation": "Backup/old/copy/draft name; may be intentional",
-      "recommendation": "Check references and history before archiving",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "817910b19005e99c",
-      "code": "POSSIBLY_REDUNDANT_NAME",
-      "severity": "review",
-      "path": "tools/test_granada_safe_backup_converter.py",
-      "observation": "Backup/old/copy/draft name; may be intentional",
-      "recommendation": "Check references and history before archiving",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "7d00b0c1712876d3",
-      "code": "UNKNOWN_PURPOSE",
-      "severity": "review",
-      "path": ".michelslab/candidate-intents/android-direct-v026.txt",
-      "observation": "No reliable purpose category from path",
-      "recommendation": "Declare role after reviewing usage",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "417a22a9256f65ec",
-      "code": "UNKNOWN_PURPOSE",
-      "severity": "review",
-      "path": ".michelslab/release-intents/android-v023.txt",
-      "observation": "No reliable purpose category from path",
-      "recommendation": "Declare role after reviewing usage",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "aee29b7c3d0566f1",
-      "code": "UNKNOWN_PURPOSE",
-      "severity": "review",
-      "path": ".michelslab/release-intents/android-v024.txt",
-      "observation": "No reliable purpose category from path",
-      "recommendation": "Declare role after reviewing usage",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "097f635071c59f07",
-      "code": "UNKNOWN_PURPOSE",
-      "severity": "review",
-      "path": ".michelslab/release-intents/unified-v3217-a025.txt",
-      "observation": "No reliable purpose category from path",
-      "recommendation": "Declare role after reviewing usage",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "b3af36b6faf1fa35",
-      "code": "UNKNOWN_PURPOSE",
-      "severity": "review",
-      "path": ".michelslab/release-intents/unified-v3218-a026.txt",
-      "observation": "No reliable purpose category from path",
-      "recommendation": "Declare role after reviewing usage",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "117c853700707dcb",
-      "code": "UNKNOWN_PURPOSE",
-      "severity": "review",
-      "path": ".michelslab/release-intents/unified-v3219-a027.txt",
-      "observation": "No reliable purpose category from path",
-      "recommendation": "Declare role after reviewing usage",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "a4d3032878f168f9",
-      "code": "UNKNOWN_PURPOSE",
-      "severity": "review",
-      "path": ".michelslab/release-intents/unified-v3220-a028.txt",
-      "observation": "No reliable purpose category from path",
-      "recommendation": "Declare role after reviewing usage",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "e2996ef78d5d5bfa",
-      "code": "UNKNOWN_PURPOSE",
-      "severity": "review",
-      "path": ".michelslab/release-intents/unified-v3221-a029.txt",
-      "observation": "No reliable purpose category from path",
-      "recommendation": "Declare role after reviewing usage",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "5d4d30417d9f7a63",
-      "code": "UNKNOWN_PURPOSE",
-      "severity": "review",
-      "path": "installer/TaskbarPinning.txt",
-      "observation": "No reliable purpose category from path",
-      "recommendation": "Declare role after reviewing usage",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "da1ab9955e45ac7e",
-      "code": "UNKNOWN_PURPOSE",
-      "severity": "review",
-      "path": "src/MichelsLife/GoogleCalendarService.cs.gz.b64",
-      "observation": "No reliable purpose category from path",
-      "recommendation": "Declare role after reviewing usage",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "6b807bddd0e10afd",
-      "code": "UNKNOWN_PURPOSE",
-      "severity": "review",
-      "path": "src/MichelsLife/Program.cs.gz.b64",
-      "observation": "No reliable purpose category from path",
-      "recommendation": "Declare role after reviewing usage",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "fbebc509becff010",
-      "code": "UNKNOWN_PURPOSE",
-      "severity": "review",
-      "path": "src/MichelsLife/app.manifest",
-      "observation": "No reliable purpose category from path",
-      "recommendation": "Declare role after reviewing usage",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "b4d06c4850b3c6ab",
-      "code": "UNKNOWN_PURPOSE",
-      "severity": "review",
-      "path": "supabase/migrations/20261005112105_michels_life_initial_sync_schema.sql",
-      "observation": "No reliable purpose category from path",
-      "recommendation": "Declare role after reviewing usage",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "0a139aebccfaf828",
-      "code": "UNKNOWN_PURPOSE",
-      "severity": "review",
-      "path": "supabase/migrations/20261005112815_lock_michels_life_sync_to_authenticated.sql",
-      "observation": "No reliable purpose category from path",
-      "recommendation": "Declare role after reviewing usage",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "7a3cb6f5ba1d0140",
-      "code": "UNKNOWN_PURPOSE",
-      "severity": "review",
-      "path": "supabase/migrations/20261006070456_least_privilege_michels_life_sync.sql",
-      "observation": "No reliable purpose category from path",
-      "recommendation": "Declare role after reviewing usage",
+      "path": "android/ANDROID_AUDIT_LOG.md",
+      "observation": "23 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-emulator-transport-diagnostic.yml, .github/workflows/ci.yml, .github/workflows/granada-android-usability.yml, .github/workflows/granada-backup-preflight.yml, .github/workflows/granada-large-project-story-cloud.yml, .github/workflows/granada-safe-backup-converter.yml",
+      "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
   ],
