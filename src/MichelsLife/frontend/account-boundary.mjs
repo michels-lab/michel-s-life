@@ -142,7 +142,8 @@ export class AccountBoundary {
         !txn.changes.length || txn.changes.length > 32)
       throw new BoundaryError('corrupt_boundary_transaction');
     const seen = new Set();
-    for (const {key, before} of txn.changes) {
+    for (const change of txn.changes) {
+      const key = change?.key, before = change?.before;
       if (typeof key !== 'string' || seen.has(key) || key === TRANSACTION ||
           !(key === this.boardKey || key === this.revisionKey ||
             key.startsWith(BOUNDARY_PREFIX)) ||
