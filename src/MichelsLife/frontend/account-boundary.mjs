@@ -3,6 +3,7 @@ const ACTIVE = `${BOUNDARY_PREFIX}active`;
 const UNCLAIMED = `${BOUNDARY_PREFIX}unclaimed`;
 const GUEST = `${BOUNDARY_PREFIX}guest`;
 const RECEIPT = `${BOUNDARY_PREFIX}importReceipt`;
+const TRANSACTION = `${BOUNDARY_PREFIX}transaction`;
 const recoveryKey = (id, board) => `${BOUNDARY_PREFIX}recovery.${id}.${digest(board)}`;
 const accountKey = id => `${BOUNDARY_PREFIX}account.${id}`;
 const VALID_ID = /^[A-Za-z0-9_-]{6,128}$/;
@@ -70,26 +71,50 @@ function ensureVault(v, expectedOwner) {
   return v;
 }
 
+// A multi-key localStorage update is not atomic across WebView termination.
+// Journal original values before switching boards; fail closed on recovery.
+function rollback(storage, changes) {
+  try {
+    for (const {key, before} of [...changes].reverse()) {
+      if (storage.getItem(key) === before) continue;
+      if (before === null) storage.removeItem(key);
+      else storage.setItem(key, before);
+      if (storage.getItem(key) !== before) throw Error('rollback_not_verified');
+    }
+    storage.removeItem(TRANSACTION);
+    if (storage.getItem(TRANSACTION) !== null) throw Error('journal_not_cleared');
+    return true;
+  } catch { return false; }
+}
 function commit(storage, entries) {
-  const original = new Map();
-  for (const [key] of entries) original.set(key, storage.getItem(key));
-  const done = [];
+  if (storage.getItem(TRANSACTION) !== null)
+    throw new BoundaryError('transaction_requires_recovery');
+  const keys = new Set(), changes = [];
+  for (const [key, value] of entries) {
+    if (keys.has(key) || key === TRANSACTION || typeof key !== 'string' ||
+        !(value === null || typeof value === 'string'))
+      throw new BoundaryError('invalid_boundary_transaction');
+    keys.add(key);
+    changes.push({key, before:storage.getItem(key)});
+  }
+  if (!changes.length) return;
+  try {
+    storage.setItem(TRANSACTION, JSON.stringify({version:1,changes}));
+    if (storage.getItem(TRANSACTION) === null) throw Error('journal_not_stored');
+  } catch {
+    throw new BoundaryError(storage.getItem(TRANSACTION) === null ?
+      'storage_write_failed' : 'transaction_requires_recovery');
+  }
   try {
     for (const [key, value] of entries) {
       if (value === null) storage.removeItem(key);
       else storage.setItem(key, value);
-      done.push(key);
     }
-  } catch (e) {
-    let failed = false;
-    for (const key of done.reverse()) {
-      try {
-        const old = original.get(key);
-        if (old === null) storage.removeItem(key);
-        else storage.setItem(key, old);
-      } catch { failed = true; }
-    }
-    throw new BoundaryError(failed ? 'storage_rollback_failed' : 'storage_write_failed');
+    storage.removeItem(TRANSACTION);
+    if (storage.getItem(TRANSACTION) !== null) throw Error('journal_remains');
+  } catch {
+    throw new BoundaryError(rollback(storage, changes) ?
+      'storage_write_failed' : 'storage_rollback_failed');
   }
 }
 const serial = value => JSON.stringify(value);
@@ -105,8 +130,32 @@ export class AccountBoundary {
     this.boardKey = boardKey;
     this.revisionKey = revisionKey;
     this.emptyBoard = emptyBoard;
+    this.recoverInterrupted();
+  }
+  recoverInterrupted() {
+    const raw = this.s.getItem(TRANSACTION);
+    if (raw === null) return {recovered:false};
+    let txn;
+    try { txn = JSON.parse(raw); }
+    catch { throw new BoundaryError('corrupt_boundary_transaction'); }
+    if (!txn || txn.version !== 1 || !Array.isArray(txn.changes) ||
+        !txn.changes.length || txn.changes.length > 32)
+      throw new BoundaryError('corrupt_boundary_transaction');
+    const seen = new Set();
+    for (const {key, before} of txn.changes) {
+      if (typeof key !== 'string' || seen.has(key) || key === TRANSACTION ||
+          !(key === this.boardKey || key === this.revisionKey ||
+            key.startsWith(BOUNDARY_PREFIX)) ||
+          !(before === null || typeof before === 'string'))
+        throw new BoundaryError('corrupt_boundary_transaction');
+      seen.add(key);
+    }
+    if (!rollback(this.s, txn.changes))
+      throw new BoundaryError('storage_rollback_failed');
+    return {recovered:true};
   }
   active() {
+    this.recoverInterrupted();
     const a = readJson(this.s, ACTIVE);
     if (a === null) return null;
     if (a.version !== 1 || !['account', 'guest'].includes(a.kind) ||
@@ -198,6 +247,7 @@ export class AccountBoundary {
   // Never call this from auth callback alone. Show destination + digest + data
   // preview to the user and request an explicit affirmative action first.
   previewUnclaimed() {
+    this.recoverInterrupted();
     const v = readJson(this.s, UNCLAIMED) || readJson(this.s, GUEST);
     if (!v || v.version !== 1 || v.ownerId !== null || typeof v.board !== 'string' ||
         v.board === this.emptyBoard) return null;
