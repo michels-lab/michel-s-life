@@ -44,9 +44,31 @@ export function assertUnchangedOtherMission(before,after,otherId){
   const b=after.missions.find(m=>m.id===otherId);
   assert.deepEqual(b,a,'Editing a different mission altered untouched mission ledger');
 }
+export function differenceCode(actual,expected){
+  if(!actual||!expected||!Array.isArray(actual.missions)||!Array.isArray(expected.missions))
+    return 'snapshot_invalid';
+  if(actual.xp!==expected.xp)return 'total_xp_changed';
+  if(actual.missions.length!==expected.missions.length)return 'mission_count_changed';
+  for(let i=0;i<expected.missions.length;i++){
+    const a=actual.missions[i],b=expected.missions[i];
+    if(a?.id!==b?.id)return 'mission_identity_changed';
+    if(a.type!==b.type)return 'mission_recurrence_changed';
+    if(a.reward!==b.reward)return 'reward_amount_changed';
+    if(a.archived!==b.archived)return 'archival_state_changed';
+    if((a.completions||[]).length!==(b.completions||[]).length)
+      return 'completion_count_changed';
+    for(let j=0;j<(b.completions||[]).length;j++){
+      const x=a.completions[j],y=b.completions[j];
+      if(x.id!==y.id)return 'completion_identity_changed';
+      if(x.date!==y.date)return 'completion_date_changed';
+      if(x.xp!==y.xp)return 'completion_xp_changed';
+    }
+  }
+  return 'other_ledger_mismatch';
+}
 export function safeDiagnostic(error){
-  // Do not write mission titles, names, Journal contents or tokens to CI logs.
-  // A stable source-defined failure class is sufficient to open a bug.
+  // No original exception message, local state, title or credential serialized.
   return {test:'daily-mission-ledger',status:'failed',
-    category:error?.code==='ERR_ASSERTION'?'ledger_invariant':'runtime_failure'};
+    category:error?.code==='ERR_ASSERTION'?'ledger_invariant':'runtime_failure',
+    difference:differenceCode(error?.actual,error?.expected)};
 }
