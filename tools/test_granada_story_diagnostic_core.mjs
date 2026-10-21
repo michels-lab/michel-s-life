@@ -27,4 +27,6 @@ check('bad path prohibited',()=>{const c=matrix();c[0].passed=false;c[0].errors=
 check('oversize error list prohibited',()=>{const c=matrix();c[0].passed=false;c[0].errors=Array(36).fill(normalizeError(new Error('bad')));assert.throws(()=>evidenceReport({sourceSha:sha,cases:c}),/incomplete_case_evidence/);});
 check('non-number line prohibited',()=>{const c=matrix();c[0].passed=false;c[0].errors=[{...normalizeError(new Error('bad')),line:'1'}];assert.throws(()=>evidenceReport({sourceSha:sha,cases:c}),/unsafe_error_record/);});
 check('unapproved error category prohibited',()=>{const c=matrix();c[0].passed=false;c[0].errors=[{...normalizeError(new Error('bad')),kind:'TokenLeak'}];assert.throws(()=>evidenceReport({sourceSha:sha,cases:c}),/unsafe_error_record/);});
+check('allowlisted chapter overlay error survives redaction',()=>assert.equal(normalizeError(new Error('chapter_submit_covered'),'chapter').code,'chapter_submit_covered'));
+check('unknown assertion never reveals raw text',()=>assert.equal(normalizeError(new Error('owner PRIVATE journal'),'chapter').code,'runtime_error'));
 console.log(count+'/'+count+' Story/Focus provenance contract checks passed');
