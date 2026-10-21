@@ -121,10 +121,9 @@ for(const width of [320,360,412])for(const language of ['en','es']){
      .filter({hasText:/start chapter|iniciar cap[ií]tulo/i}).first();
    ok(await submit.count()===1,'start_chapter_missing');
    await submit.scrollIntoViewIfNeeded();
-   if(candidate){
-     await page.evaluate(()=>window.__mlvStoryFocusClearance?.ensureSaveVisible());
-     await page.waitForTimeout(160);
-   }
+   // No direct patch helper calls: the real form blur/navigation lifecycle
+   // must expose the CTA without a test-only imperative scroll bypass.
+   if(candidate)await page.waitForTimeout(160);
    const hit=await submit.evaluate(el=>{
       const box=el.getBoundingClientRect(),x=box.left+box.width/2,y=box.top+box.height/2;
       const target=document.elementFromPoint(x,y);
@@ -134,6 +133,9 @@ for(const width of [320,360,412])for(const language of ['en','es']){
    await submit.tap({timeout:16000});
    await page.waitForFunction(s=>document.getElementById('tab-story')?.textContent?.includes(s),
      syntheticTitle,{timeout:16000});
+   // Final screenshot proves the actual tapped chapter is visible, with
+   // running Focus still present, using only synthetic QA data.
+   if(candidate&&width===412)await page.screenshot({path:output+'/'+name+'-chapter-saved.png'});
    phase='final';
    ok(errors.length===0,'unexpected_javascript_pageerror');
    passed=true;
