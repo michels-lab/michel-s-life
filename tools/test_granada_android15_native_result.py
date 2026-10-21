@@ -27,7 +27,11 @@ class NativeAndroid15ResultTests(unittest.TestCase):
         self.root=pathlib.Path(self.temp.name)
         self.apk=self.root/"candidate.apk"
         self.apk.write_bytes(b"fake-debug-apk-fixture" * 10000)
-        (self.root/"package-info.txt").write_text("versionName=0.2.9\n")
+        (self.root/"current-source-commit.txt").write_text("a"*40 + "\n")
+        (self.root/"current-source-apk.sha256").write_text(
+            hashlib.sha256(self.apk.read_bytes()).hexdigest() + "  " + self.apk.as_posix() + "\n")
+        (self.root/"package-info.txt").write_text(
+            "Package [com.michelslab.michelslife]\nversionName=0.2.9\n")
         (self.root/"process-id.txt").write_text("123\n")
         (self.root/"relaunch-process-id.txt").write_text("567\n")
         for name in FRAMES:
@@ -65,7 +69,8 @@ class NativeAndroid15ResultTests(unittest.TestCase):
         (self.root/"process-id.txt").write_text("")
         with self.assertRaisesRegex(ValueError,"PID"):self.check()
     def test_wrong_version(self):
-        (self.root/"package-info.txt").write_text("versionName=0.2.8\n")
+        (self.root/"package-info.txt").write_text(
+            "Package [com.michelslab.michelslife]\nversionName=0.2.8\n")
         with self.assertRaisesRegex(ValueError,"version"):self.check()
     def test_missing_comparison(self):
         (self.root/REPORTS[1]).unlink()
@@ -85,6 +90,28 @@ class NativeAndroid15ResultTests(unittest.TestCase):
     def test_wrong_source(self):
         with self.assertRaisesRegex(ValueError,"source SHA"):
             validate(self.root,self.apk,"short","0.2.9")
+    def test_forged_source_commit_is_rejected(self):
+        (self.root/"current-source-commit.txt").write_text("b"*40 + "\n")
+        with self.assertRaisesRegex(ValueError, "source SHA"):
+            self.check()
+    def test_apk_modified_after_manifest_is_rejected(self):
+        self.apk.write_bytes(self.apk.read_bytes() + b"tampered")
+        with self.assertRaisesRegex(ValueError, "SHA256"):
+            self.check()
+    def test_manifest_references_foreign_binary_path(self):
+        f = self.root/"current-source-apk.sha256"
+        f.write_text(hashlib.sha256(self.apk.read_bytes()).hexdigest() + "  /tmp/unrelated.apk")
+        with self.assertRaisesRegex(ValueError, "filename mismatch"):
+            self.check()
+    def test_wrong_installed_android_package_rejected(self):
+        (self.root/"package-info.txt").write_text(
+            "Package [org.unrelated.application]\nversionName=0.2.9\n")
+        with self.assertRaisesRegex(ValueError, "package identity"):
+            self.check()
+    def test_missing_native_provenance_file_fails_closed(self):
+        (self.root/"current-source-apk.sha256").unlink()
+        with self.assertRaises(OSError):
+            self.check()
     def test_missing_apk(self):
         self.apk.unlink()
         with self.assertRaisesRegex(ValueError,"APK"):self.check()
