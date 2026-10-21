@@ -28,8 +28,8 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 2,
-  "inventory_fingerprint": "1e20a8c39d95cee293d14df8e9e056e2facfc9bee0df8af9486274a0de418311",
-  "evidence_fingerprint": "af5f420a3fcf5efb48707f5b1b0b725442f310f673e24740b930e5ae2d507fa5",
+  "inventory_fingerprint": "2c2c53b3243ecc25aa73974dcb05cec91a79adb6b5dbcb15beb316661996f667",
+  "evidence_fingerprint": "77715ede535ffe8cd225571e041d9bd3567ff154e532af967579a44ba856a067",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -120,7 +120,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "0cd25c9d95274f9bf4222a386047566c68c8c5a4"
+      "blob": "9aae606bfefa662b28b264e4e55bd91bc196d83c"
     },
     {
       "path": ".github/workflows/file-governance-audit.yml",
@@ -1597,7 +1597,7 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "056e6bd0ce805ed96d1ba635a4cbd86c25320ef0"
+      "blob": "9e3618525ac17538cda41d9d386d422b0ab33557"
     },
     {
       "path": "tools/ui_android_chapter_motion_smoke.mjs",
@@ -1875,11 +1875,11 @@
   ],
   "findings": [
     {
-      "id": "800bb8ed1ada2811",
+      "id": "879c8cec0d14abb9",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "7 implementation/config paths changed since this log's last commit; examples: .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-recovery-loss-triage.yml, tools/granada_android_evidence_gate.py, tools/granada_recovery_loss_triage.py, tools/test_granada_android_evidence_gate.py",
+      "observation": "8 implementation/config paths changed since this log's last commit; examples: .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-recovery-loss-triage.yml, tools/granada_android_evidence_gate.py, tools/granada_recovery_loss_triage.py",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
