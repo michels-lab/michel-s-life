@@ -199,9 +199,63 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+  native-3gib-software:
+    name: Native candidate - 3072M RAM / 512M heap / software GPU
+    needs: compile
+    runs-on: ubuntu-latest
+    timeout-minutes: 36
+    env:
+      MLV_REQUIRE_NATIVE_STATE_PROBE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize fail-closed artifact even if Android SDK download fails
+        run: |
+          mkdir -p artifacts/candidate-install
+          echo '{"schema":"mlv.granada.native-attempt.v1","state":"not_verified","native_accepted":false}' > artifacts/candidate-install/arm-start.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: granada-android-candidate-identical-both-arms
+          path: artifacts/candidate
+      - name: Fail closed unless APK bytes and commit match build job
+        shell: bash
+        run: |
+          python3 tools/granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha "$(git rev-parse HEAD)" --verify
+          python3 tools/granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha "$GITHUB_SHA" --verify
+      - name: Install pinned CI WebView probe
+        run: python3 -m pip install --disable-pip-version-check websocket-client==1.8.0
+      - name: Enable Android emulator acceleration
+        run: |
+          test -e /dev/kvm
+          sudo chmod 666 /dev/kvm
+      - name: "Real APK install, native screenshots and TWO relaunches: 3 GiB + software GPU"
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          avd-name: granada-same-apk-3gib-software
+          ram-size: 3072M
+          heap-size: 512M
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu software -feature -Vulkan
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash android/tools/smoke_candidate_apk_install.sh
+      - name: Preserve native evidence and diagnostics EVEN ON RED
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: granada-native-candidate-3gib-software
+          path: artifacts/candidate-install/
+          if-no-files-found: warn
+          retention-days: 14
+
   native-evidence-summary:
     name: Fail-closed combined native A/B outcome and private-safe report
-    needs: [compile, native-default, native-3gib]
+    needs: [compile, native-default, native-3gib, native-3gib-software]
     if: always() && needs.compile.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 8
@@ -220,6 +274,7 @@ jobs:
             --root artifacts/native-ab \
             --default-job '${{ needs.native-default.result }}' \
             --three-gib-job '${{ needs.native-3gib.result }}' \
+            --three-gib-software-job '${{ needs.native-3gib-software.result }}' \
             --sha "$(git rev-parse HEAD)" \
             --output artifacts/native-ab-summary.json
       - name: Keep redacted outcome visible EVEN IF native gate failed
