@@ -44,6 +44,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install pinned native WebView CDP probe dependency
+        run: |
+          python -m pip install --disable-pip-version-check websocket-client==1.8.0
+          python - <<'PY'
+          from websocket import create_connection
+          assert callable(create_connection), 'Native CDP transport is unavailable'
+          print('PASS: Native Android WebView CDP dependency is installed')
+          PY
       - name: Verify source/restore contract
         run: |
           python android/tools/validate_sync_contract.py
