@@ -7,6 +7,7 @@ fun main() {
     fun blocked(why: String, task: () -> Unit) {
         try { task(); error("Allowed unsafe input: " + why) }
         catch (e: IllegalArgumentException) { assertions++ }
+        catch (e: java.time.DateTimeException) { assertions++ }
     }
     val mission = "mission_123"
     val id = CalendarSyncRules.eventId(mission)
