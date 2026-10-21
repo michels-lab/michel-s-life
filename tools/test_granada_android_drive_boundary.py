@@ -63,7 +63,7 @@ class NativeGoogleDriveBoundaryTests(unittest.TestCase):
         self.assertIn("10 * 1024 * 1024",source)
         self.assertIn('root.optJSONObject("state")',source)
         self.assertIn('root.optJSONObject("localStorage")',source)
-        self.assertIn('root.optString("app", "") != "Michel\\'s Life"',source)
+        self.assertIn("root.optString(" + chr(34) + "app" + chr(34) + ", " + chr(34) + chr(34) + ") != " + chr(34) + "Michel's Life" + chr(34),source)
 
     def test_07_first_network_call_after_upload_validation(self):
         source=segment("fun sync(accessToken: String, account: String, backupJson: String", "\n    fun overview(")
