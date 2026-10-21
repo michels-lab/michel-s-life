@@ -1,3 +1,8 @@
+## 2026-10-21 — Product Perspective Council agent profiles (branch candidate)
+
+- Added **read-first review agents**: independent Contrarian, User Advocate, Intelligence Architect and Council with product-specific instructions. The Council synthesizes overlooked opportunities, alternative designs and measurable experiments; shared source-of-truth is `michels-lab/Michel-Software-Standards/standards/PERSPECTIVE_COUNCIL_STANDARD.md`.
+- Applies to daily/RPG planning, recurring tasks, completion histories, statistics and Android/Desktop user journeys; do not touch approved Themes, backgrounds or suspended Windows build/release work. Product-specific reviews are proposals, not implemented features or established test evidence. No live agent execution, CI validation, installed QA, production code changes or release claimed in this change.
+
 ## 2026-10-20 — GRANADA ambiciosa: macro-bloques multi-entregable (regla adoptada)
 
 **Orden del propietario:** evitar correcciones mínimas encadenadas; elegir campañas de desarrollo con aproximadamente **3–6 paquetes sustanciales relacionados y no interferentes**, cuando el backlog lo permita. Cada paquete debe entregar código/experiencia tangible, recuperar estados y bordes, añadir pruebas de regresión y documentar las verificaciones reales. El tamaño no justifica pisar ramas/claims, mezclar cuentas, omitir QA ni dar por concluida una aceptación física pendiente. Si algún paquete está bloqueado por login, hardware, CI o release, aparcarlo con issue/PR/SHA y continuar con otro trabajo seguro. El objetivo es hacer más, **no aparentarlo**. [Estándar maestro](https://github.com/michels-lab/Michel-Software-Standards/blob/main/standards/OPERACION_GRANADA_STANDARD.md).
