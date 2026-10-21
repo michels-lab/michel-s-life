@@ -9,8 +9,10 @@ import {
 const URL=process.env.MLV_UI_URL||'http://127.0.0.1:4173';
 const KEY='vida_rpg_personal_progress_v2';
 const IDS=['granada-daily-ledger-a','granada-daily-ledger-b'];
-// Align with the canonical Android daily/medium fixture used by UI smoke.
-const REWARDS=[25,25];
+// The real app canonicalizes medium difficulty to 50 XP on reload.
+// A 25-XP override masks a fixture mismatch as apparent persisted reward drift.
+// Assert actual medium-tier identity and preserve it across both platforms.
+const REWARDS=[50,50];
 const browser=await chromium.launch({headless:true});
 const opened=[];
 async function open(platform,shared=null){
