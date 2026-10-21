@@ -143,7 +143,7 @@ class SafeBackupConversionTests(unittest.TestCase):
         src = self.write_input({"state": {**self.state,
             "auth": {"refresh_token": "PRIVATE_ACCESS_KEY"}}})
         out = self.folder / "blocked.json"
-        with self.assertRaisesRegex(ConversionError, "unverified_progress_integrity"):
+        with self.assertRaisesRegex(ConversionError, "sensitive_field_in_progress"):
             convert(src, out, ROOT)
         self.assertFalse(out.exists())
 
