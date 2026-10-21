@@ -59,6 +59,62 @@ def source_allowlist(repo_root: Path) -> frozenset[str]:
     return frozenset(raw)
 
 
+def parse_embedded_state(raw: str) -> dict:
+    # Outer JSON duplicate keys are caught by granada_backup_preflight.
+    # An embedded JSON-as-text state must follow the SAME rule.
+    def no_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict:
+        out = {}
+        for key, value in pairs:
+            if key in out:
+                raise ConversionError("duplicate_embedded_state_key")
+            out[key] = value
+        return out
+
+    try:
+        state = json.loads(raw, object_pairs_hook=no_duplicate_keys,
+                           parse_constant=lambda _: (_ for _ in ()).throw(
+                               ConversionError("nonfinite_embedded_state_number")))
+    except (ValueError, TypeError, RecursionError) as exc:
+        raise ConversionError("invalid_embedded_state") from exc
+    if not isinstance(state, dict) or not state:
+        raise ConversionError("invalid_embedded_state")
+    return state
+
+
+def rejects_sensitive_state_keys(node: Any) -> bool:
+    # Do not treat user text VALUES as credentials. Inspect field names only.
+    # Preserve actual mission titles and Journal text, but never serialize a
+    # state subtree labelled like a provider token or login credential.
+    sensitive = frozenset((
+        "accesstoken", "refreshtoken", "idtoken", "apikey", "clientsecret",
+        "privatekey", "secretkey", "authorization", "bearer", "password",
+        "passwd", "credential", "credentials", "oauth", "authtoken",
+        "sessiontoken", "session", "login", "auth", "secret",
+    ))
+    pending = [(node, 0)]
+    seen = 0
+    while pending:
+        item, depth = pending.pop()
+        seen += 1
+        if depth > 40 or seen > 100000:
+            raise ConversionError("state_scan_limit")
+        if isinstance(item, dict):
+            for key, value in item.items():
+                normalized = re.sub(r"[^a-z0-9]", "", str(key).lower())
+                if normalized in sensitive or normalized.endswith(
+                    ("accesstoken", "refreshtoken", "sessiontoken", "clientsecret",
+                     "privatekey", "authtoken", "password", "apikey")
+                ):
+                    return True
+                if isinstance(value, (dict, list)):
+                    pending.append((value, depth + 1))
+        elif isinstance(item, list):
+            for value in item:
+                if isinstance(value, (dict, list)):
+                    pending.append((value, depth + 1))
+    return False
+
+
 def snapshot_to_safe(snapshot: Any, allowed: frozenset[str]) -> tuple[dict, dict]:
     if not isinstance(snapshot, dict):
         raise ConversionError("invalid_backup_root")
@@ -88,10 +144,7 @@ def snapshot_to_safe(snapshot: Any, allowed: frozenset[str]) -> tuple[dict, dict
         raw = raw_local[STORAGE_STATE_KEY]
         if not isinstance(raw, str):
             raise ConversionError("invalid_embedded_state")
-        try:
-            embedded = json.loads(raw)
-        except (ValueError, TypeError) as exc:
-            raise ConversionError("invalid_embedded_state") from exc
+        embedded = parse_embedded_state(raw)
 
     if primary is not None and (not isinstance(primary, dict) or not primary):
         raise ConversionError("invalid_primary_state")
@@ -106,6 +159,9 @@ def snapshot_to_safe(snapshot: Any, allowed: frozenset[str]) -> tuple[dict, dict
     # embedded board can be evidence of partial/cross-device corruption.
     if embedded is not None and embedded != primary:
         raise ConversionError("conflicting_progress_copies")
+
+    if rejects_sensitive_state_keys(primary):
+        raise ConversionError("sensitive_field_in_progress")
 
     # Fail closed on nested tokens, duplicate IDs, non-finite/invalid XP and
     # unknown shape. Legacy credentials in storage keys alone are repairable.
@@ -222,7 +278,7 @@ def main(argv: list[str] | None = None) -> int:
         result = convert(Path(opts.source),
                          Path(opts.output) if opts.output else None, repo_root)
         code = 0
-    except (ConversionError, TypeError, OverflowError, RecursionError) as exc:
+    except (ConversionError, ValueError, TypeError, OverflowError, RecursionError) as exc:
         result = {
             "schema": "mlv.granada.safe-backup-conversion.v1",
             "status": "blocked",
