@@ -4,9 +4,11 @@ const UNCLAIMED = `${BOUNDARY_PREFIX}unclaimed`;
 const GUEST = `${BOUNDARY_PREFIX}guest`;
 const RECEIPT = `${BOUNDARY_PREFIX}importReceipt`;
 const TRANSACTION = `${BOUNDARY_PREFIX}transaction`;
-const recoveryKey = (id, board) => `${BOUNDARY_PREFIX}recovery.${id}.${digest(board)}`;
+const recoveryKey = (id, board, companions = null) =>
+  `${BOUNDARY_PREFIX}recovery.${id}.${digest(companions ? JSON.stringify({board,companions}) : board)}`;
 const accountKey = id => `${BOUNDARY_PREFIX}account.${id}`;
 const VALID_ID = /^[A-Za-z0-9_-]{6,128}$/;
+const SHAREABLE_COMPANIONS = new Set(['michelsLife.journal.v30184']);
 
 // Browser and Node-compatible SHA-256; no Node-only API or external dependency.
 const SHA_K = [
@@ -119,7 +121,7 @@ function commit(storage, entries) {
 }
 const serial = value => JSON.stringify(value);
 export class AccountBoundary {
-  constructor(storage, { boardKey, revisionKey, emptyBoard }) {
+  constructor(storage, { boardKey, revisionKey, emptyBoard, companionKeys = [] }) {
     if (!storage || !['getItem', 'setItem', 'removeItem'].every(m => typeof storage[m] === 'function'))
       throw new BoundaryError('invalid_storage');
     if (![boardKey, revisionKey].every(k => typeof k === 'string' && k.length > 0) ||
@@ -129,8 +131,31 @@ export class AccountBoundary {
     this.s = storage;
     this.boardKey = boardKey;
     this.revisionKey = revisionKey;
+    if (!Array.isArray(companionKeys) ||
+        new Set(companionKeys).size !== companionKeys.length ||
+        !companionKeys.every(key => SHAREABLE_COMPANIONS.has(key) &&
+          key !== boardKey && key !== revisionKey))
+      throw new BoundaryError('invalid_companion_configuration');
+    this.companionKeys = [...companionKeys];
     this.emptyBoard = emptyBoard;
     this.recoverInterrupted();
+  }
+  _readCompanions() {
+    return Object.fromEntries(this.companionKeys.map(key=>[key,this.s.getItem(key)]));
+  }
+  _normalizeCompanions(value) {
+    if (value === undefined || value === null) value={};
+    if (!value || typeof value !== 'object' || Array.isArray(value))
+      throw new BoundaryError('invalid_companion_snapshot');
+    const keys=Object.keys(value);
+    if (keys.some(key=>!this.companionKeys.includes(key) ||
+        !(value[key] === null || typeof value[key] === 'string')))
+      throw new BoundaryError('invalid_companion_snapshot');
+    return Object.fromEntries(this.companionKeys.map(key=>[key,value[key] ?? null]));
+  }
+  _companionEntries(value) {
+    const safe=this._normalizeCompanions(value);
+    return this.companionKeys.map(key=>[key,safe[key]]);
   }
   recoverInterrupted() {
     const raw = this.s.getItem(TRANSACTION);
@@ -146,7 +171,7 @@ export class AccountBoundary {
       const key = change?.key, before = change?.before;
       if (typeof key !== 'string' || seen.has(key) || key === TRANSACTION ||
           !(key === this.boardKey || key === this.revisionKey ||
-            key.startsWith(BOUNDARY_PREFIX)) ||
+            this.companionKeys.includes(key) || key.startsWith(BOUNDARY_PREFIX)) ||
           !(before === null || typeof before === 'string'))
         throw new BoundaryError('corrupt_boundary_transaction');
       seen.add(key);
@@ -171,17 +196,19 @@ export class AccountBoundary {
     const a = this.active();
     const board = this.s.getItem(this.boardKey);
     const revision = this.s.getItem(this.revisionKey);
+    const auxiliary = this._readCompanions();
     if (a?.kind === 'account') {
       const key = accountKey(a.ownerId);
       // Presence of an account-bound marker is necessary for ownership; never
       // relabel the current board with targetAccountId.
-      return [key, serial({ version: 1, ownerId: a.ownerId, board: board ?? this.emptyBoard, revision })];
+      return [key, serial({ version: 1, ownerId: a.ownerId, board: board ?? this.emptyBoard, revision, auxiliary })];
     }
-    if ((board === null || board === this.emptyBoard) && revision === null) return null;
+    if ((board === null || board === this.emptyBoard) && revision === null &&
+        Object.values(auxiliary).every(v=>v===null)) return null;
     const key = a?.kind === 'guest' ? GUEST : UNCLAIMED;
     // Keep the original legacy rescue copy immutable rather than overwrite it.
     if (key === UNCLAIMED && this.s.getItem(key) !== null) return null;
-    return [key, serial({ version: 1, ownerId: null, board: board ?? this.emptyBoard, revision: null })];
+    return [key, serial({ version: 1, ownerId: null, board: board ?? this.emptyBoard, revision: null, auxiliary })];
   }
   startAccount(id) {
     id = accountId(id);
@@ -198,6 +225,7 @@ export class AccountBoundary {
     if (checkpoint) entries.push(checkpoint);
     entries.push([this.boardKey, target?.board ?? this.emptyBoard]);
     entries.push([this.revisionKey, target?.revision ?? null]);
+    entries.push(...this._companionEntries(target?.auxiliary));
     entries.push([ACTIVE, serial({ version: 1, kind: 'account', ownerId: id, state: 'pending' })]);
     commit(this.s, entries);
     return { accountId: id, state: 'pending', needsRemoteRead: true, hadOwnedLocal: !!target };
@@ -206,7 +234,7 @@ export class AccountBoundary {
     const checkpoint = this._checkpoint();
     const entries = checkpoint ? [checkpoint] : [];
     entries.push([this.boardKey, this.emptyBoard], [this.revisionKey, null],
-      [ACTIVE, serial({ version: 1, kind: 'guest', ownerId: null, state: 'guest' })]);
+      ...this._companionEntries({}), [ACTIVE, serial({ version: 1, kind: 'guest', ownerId: null, state: 'guest' })]);
     commit(this.s, entries);
     return { state: 'guest', canUpload: false };
   }
@@ -218,18 +246,19 @@ export class AccountBoundary {
     return id;
   }
   // Existing remote data: caller must use a genuine authenticated provider read.
-  adoptRemoteState(id, { board, revision }) {
+  adoptRemoteState(id, { board, revision, auxiliary = {} }) {
     id = this._requirePending(id);
     if (typeof board !== 'string' || typeof revision !== 'string' || !revision)
       throw new BoundaryError('invalid_remote_snapshot');
     const entries = [];
     const checkpoint = this._checkpoint();
     if (checkpoint) {
-      const recover = recoveryKey(id, this.s.getItem(this.boardKey) ?? this.emptyBoard);
+      const recover = recoveryKey(id, this.s.getItem(this.boardKey) ?? this.emptyBoard,
+        this.companionKeys.length ? this._readCompanions() : null);
       if (this.s.getItem(recover) === null) entries.push([recover, checkpoint[1]]);
     }
     entries.push([this.boardKey, board], [this.revisionKey, revision],
-      [ACTIVE, serial({ version: 1, kind: 'account', ownerId: id, state: 'ready' })]);
+      ...this._companionEntries(auxiliary), [ACTIVE, serial({ version: 1, kind: 'account', ownerId: id, state: 'ready' })]);
     commit(this.s, entries);
     return { state: 'ready', source: 'remote', canUpload: true };
   }
@@ -250,9 +279,13 @@ export class AccountBoundary {
   previewUnclaimed() {
     this.recoverInterrupted();
     const v = readJson(this.s, UNCLAIMED) || readJson(this.s, GUEST);
-    if (!v || v.version !== 1 || v.ownerId !== null || typeof v.board !== 'string' ||
-        v.board === this.emptyBoard) return null;
-    return { source: 'device-unclaimed', sha256: digest(v.board), bytes: new TextEncoder().encode(v.board).length };
+    if (!v || v.version !== 1 || v.ownerId !== null || typeof v.board !== 'string')
+      return null;
+    const auxiliary=this._normalizeCompanions(v.auxiliary);
+    if (v.board === this.emptyBoard && Object.values(auxiliary).every(v=>v===null)) return null;
+    const content=this.companionKeys.length ? JSON.stringify({board:v.board,auxiliary}) : v.board;
+    return { source:'device-unclaimed', sha256:digest(content),
+      bytes:new TextEncoder().encode(content).length };
   }
   importUnclaimed(id, { confirmedAccountId, confirmedDigest, explicitConsent, remoteEmptyConfirmed }) {
     id = accountId(id);
@@ -266,7 +299,8 @@ export class AccountBoundary {
     const preview = this.previewUnclaimed();
     if (!preview || confirmedDigest !== preview.sha256)
       throw new BoundaryError('preview_digest_mismatch');
-    if (this.s.getItem(this.boardKey) !== this.emptyBoard || this.s.getItem(this.revisionKey) !== null)
+    if (this.s.getItem(this.boardKey) !== this.emptyBoard || this.s.getItem(this.revisionKey) !== null ||
+        Object.values(this._readCompanions()).some(v=>v!==null))
       throw new BoundaryError('target_not_empty');
     const recover = recoveryKey(id, this.emptyBoard);
     const recoverEntry = this.s.getItem(recover) === null ?
@@ -274,6 +308,7 @@ export class AccountBoundary {
     commit(this.s, [...recoverEntry,
       [this.boardKey, source.board],
       [this.revisionKey, null],
+      ...this._companionEntries(source.auxiliary),
       [RECEIPT, serial({ version: 1, accountId: id, sourceDigest: preview.sha256 })]]);
     return { state: 'ready', imported: true, destinationAccountId: id };
   }
