@@ -31,7 +31,7 @@ const englishWords=new Set(('the and your you this that with from for into today
 const spanishWords=new Set(('el la los las un una de del y o tu tus tú este esta esto que con desde para hacia hoy ayer mañana semana misión misiones configuración guardar agregar eliminar editar abrir cerrar iniciar detener enfoque nube calendario respaldo proyecto capítulo actual completada pendiente elegir conectar sincronizar datos historia tema color idioma afirmación comando nuevo restablecer restaurar listo vinculado opcional importante principal rápida captura decisión razón perfil desarrollador licencia versión mostrar enviar automático nunca sin error historial cuenta desconectar reconectar subir descargar conservar usar aplicar quitar cambiar crear seleccionar todos ninguno siguiente anterior ver estado prioridad alerta notificación diario').split(' '));
 
 const properAllow=[
-  /Michel.?s Life/i,/Google/i,/OpenFOAM/i,/Python/i,/Instagram/i,/LinkedIn/i,/XP\b/i,/OAuth/i,/Drive/i,
+  /Michel.?s Life/i,/Google/i,/Python/i,/Instagram/i,/LinkedIn/i,/XP\b/i,/OAuth/i,/Drive/i,
   /Midnights/i,/Born to Die/i,/Paradise/i,/Ultraviolence/i,/Honeymoon/i,/Lust for Life/i,/Norman Fucking Rockwell/i,
   /Chemtrails Over the Country Club/i,/Blue Banisters/i,/Did You Know That There.?s a Tunnel Under Ocean Blvd/i,
   /The Tortured Poets Department/i,/The Life of a Showgirl/i,/folklore/i,/evermore/i,/reputation/i,/RED\b/i
