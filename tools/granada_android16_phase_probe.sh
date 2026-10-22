@@ -16,7 +16,8 @@ mkdir -p "$OUT"
 # Snapshot host-only process COUNTS and cgroup OOM counters. No process
 # arguments, UIDs, environment, user data, tokens or file contents.
 host_status(){
-  local label="$1" outfile="$OUT/host-$label.txt"
+  local label="$1"
+  local outfile="$OUT/host-$label.txt"
   {
     printf 'schema=mlv-granada-host-failure-v1\n'
     printf 'phase=%s\noperation=%s\nsample=%s\n' "$phase" "$operation" "$sample_index"
