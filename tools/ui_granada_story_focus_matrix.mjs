@@ -139,7 +139,12 @@ for(const width of [320,360,412])for(const language of ['en','es']){
    console.log('PASS Android Story/Focus touch '+name);
  }catch(error){
    errors.push(normalizeError(error,phase));
-   console.error('FAIL Android Story/Focus touch '+name+' ['+errors.map(e=>e.code).join(',')+']');
+   // The evidence schema already allows only sanitized category and source
+   // basename/line. Surface a small bounded sample for diagnosing the
+   // intermittent parser error without ever printing raw error text.
+   console.error('FAIL Android Story/Focus touch '+name+' ['+
+     [...new Set(errors.map(e=>e.code))].join(',')+'] '+
+     JSON.stringify(errors.slice(0,3)));
    if(page)try{await page.screenshot({path:output+'/'+name+'-failure.png',timeout:6000});}catch{}
  }finally{
    cases.push({width,language,passed,phase,errors});
