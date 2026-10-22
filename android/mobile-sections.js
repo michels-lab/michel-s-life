@@ -1338,15 +1338,18 @@
     else scroller.scrollTop+=delta;
     return true;
    }
+   let scrollCorrectionUntil=0;
    function onBlur(event){
     if(!event.target?.matches?.('#tab-story.active .v30162-story-form input, #tab-story.active .v30162-story-form textarea, #tab-story.active .v30162-story-form select'))return;
-    // Correct immediately when an IME closes; repeat after keyboard resize.
+    // Scroll correction is temporary after IME dismissal. Never hijack a
+    // person's later intentional scrolling through the Story archive.
+    scrollCorrectionUntil=win.performance.now()+1200;
     ensureSaveVisible();
     win.requestAnimationFrame(()=>win.requestAnimationFrame(ensureSaveVisible));
    }
    let scrollScheduled=false;
    function onScroll(){
-    if(disposed||scrollScheduled||
+    if(disposed||scrollScheduled||win.performance.now()>scrollCorrectionUntil||
        !doc.querySelector('#tab-story.active .v30162-story-form'))return;
     scrollScheduled=true;
     win.requestAnimationFrame(()=>{
