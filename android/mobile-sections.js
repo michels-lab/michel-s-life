@@ -1288,7 +1288,7 @@
    style.textContent=[
     'html[data-mlv-platform="android"] body.mlv-story-focus-clearance #tab-story.active {padding-bottom:var(--mlv-story-focus-clearance,210px)!important}',
     'html[data-mlv-platform="android"] body.mlv-story-focus-clearance #main {scroll-padding-bottom:var(--mlv-story-focus-clearance,210px)!important}',
-    'html[data-mlv-platform="android"] body.mlv-story-focus-clearance #tab-story.active .v30162-story-form button[type="submit"] {scroll-margin-bottom:var(--mlv-story-focus-clearance,210px)!important}'
+    'html[data-mlv-platform="android"] body.mlv-story-focus-clearance #tab-story.active .v30162-story-form button[type="submit"] {scroll-margin-bottom:var(--mlv-story-focus-clearance,210px)!important;bottom:var(--mlv-story-focus-clearance,210px)!important}'
    ].join('\n');doc.head.append(style);
    let scheduled=false,disposed=false;
    const visible=el=>{
@@ -1340,15 +1340,36 @@
    }
    function onBlur(event){
     if(!event.target?.matches?.('#tab-story.active .v30162-story-form input, #tab-story.active .v30162-story-form textarea, #tab-story.active .v30162-story-form select'))return;
+    // Correct immediately when an IME closes; repeat after keyboard resize.
+    ensureSaveVisible();
     win.requestAnimationFrame(()=>win.requestAnimationFrame(ensureSaveVisible));
    }
-   const observer=typeof win.MutationObserver==='function'?new win.MutationObserver(schedule):null;
-   observer?.observe(doc.body,{attributes:true,subtree:true,attributeFilter:['class','hidden','style','aria-hidden']});
+   let scrollScheduled=false;
+   function onScroll(){
+    if(disposed||scrollScheduled||
+       !doc.querySelector('#tab-story.active .v30162-story-form'))return;
+    scrollScheduled=true;
+    win.requestAnimationFrame(()=>{
+      scrollScheduled=false;
+      ensureSaveVisible();
+    });
+   }
+   const observer=typeof win.MutationObserver==='function'?new win.MutationObserver(records=>{
+     // The mini Focus panel can first be inserted AFTER the original Android
+     // layout has started. React to newly inserted nodes as well as styles.
+     if(records.some(record=>record.type==='childList'?
+       [...record.addedNodes,...record.removedNodes].some(node=>node.nodeType===1):
+       true))schedule();
+   }):null;
+   observer?.observe(doc.body,{attributes:true,childList:true,subtree:true,
+     attributeFilter:['class','hidden','style','aria-hidden']});
    win.addEventListener('resize',schedule,{passive:true});
+   doc.addEventListener('scroll',onScroll,true);
    doc.addEventListener('focusout',onBlur,true);
    refresh();
    return {installed:true,refresh,ensureSaveVisible,dispose(){
     disposed=true;observer?.disconnect();win.removeEventListener('resize',schedule);
+    doc.removeEventListener('scroll',onScroll,true);
     doc.removeEventListener('focusout',onBlur,true);
     doc.body.classList.remove('mlv-story-focus-clearance');
     doc.body.style.removeProperty('--mlv-story-focus-clearance');style.remove();
