@@ -78,6 +78,29 @@ class HostVerdictTests(unittest.TestCase):
         (self.d/"host-after-failure.txt").unlink()
         with self.assertRaises(ValueError):
             report(self.d,SHA)
+    def test_completed_host_lifecycle_is_not_misreported_as_missing_crash_data(self):
+        (self.d/"host-after-failure.txt").unlink()
+        (self.d/"host-after-success.txt").write_text(snapshot(
+            phase="verified-three-phases",operation="completed",sample=8))
+        (self.d/"phases-complete.txt").write_text("complete\\n")
+        x=report(self.d,SHA)
+        self.assertEqual(x["status"],"NO_FAILURE_OBSERVED")
+        self.assertEqual(x["classification"],"host_experiment_finished_without_failure")
+        self.assertIsNone(x["failed_operation"])
+        self.assertIsNone(x["failed_sample"])
+        self.assertFalse(x["physical_galaxy_verified"])
+        self.assertFalse(x["canonical_persistence_verified"])
+    def test_success_metadata_without_all_phase_markers_is_never_accepted(self):
+        (self.d/"host-after-failure.txt").unlink()
+        (self.d/"host-after-success.txt").write_text(snapshot(
+            phase="verified-three-phases",operation="completed",sample=8))
+        with self.assertRaisesRegex(ValueError,"phase_not_verified"):
+            report(self.d,SHA)
+    def test_simultaneous_host_success_and_failure_is_rejected(self):
+        (self.d/"host-after-success.txt").write_text(snapshot(
+            phase="verified-three-phases",operation="completed",sample=8))
+        with self.assertRaisesRegex(ValueError,"ambiguous_host_outcome"):
+            report(self.d,SHA)
     def test_source_sha_required(self):
         with self.assertRaisesRegex(ValueError,"invalid_source_sha"):
             report(self.d,"short")
