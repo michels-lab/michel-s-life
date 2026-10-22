@@ -15,3 +15,19 @@ Existing #139 / draft #157 repeatedly lose hosted QEMU/ADB around 30 seconds aft
 This is root-cause **diagnostics**, not proof of Michel's Life production function. An idle emulator is NOT app QA. This cannot close #139/#104/#108/#168/#171, nor does it replace signed Galaxy, Play/Direct signing, release updater, actual account/provider privacy checks, or live physical user acceptance. PR #157 owns the existing transport scripts and remains untouched. PR #134 owns existing Android launcher/updater and remains untouched; #170's Story production source is not modified. Windows release work remains paused.
 
 No public APK, Play/Store upload, release candidate, personal data, new external provider account, or other app was created.
+
+
+## First real hosted AVD experiment (run #39864598092, 2026-10-22)
+
+Exact commit `b3f51c466378a71b9862acaac485ff4aa0e7cfe4` produced a clear stage boundary:
+
+- The officially published Android Direct APK passed its independent SHA256 manifest; 11/11 synthetic evidence tests passed.
+- **Baseline (app absent): 8/8** real PNG samples passed with Android boot property, live ADB and no Michel's Life process.
+- **Installed but not opened: 8/8** real PNG samples passed with the app installed, Android healthy, and the app process still absent.
+- **Launched: 1/8** native sample passed with an actual launched MainActivity and app PID. The following sample exited `124` from a bounded ADB command timeout. The workflow and strict evidence manifest correctly failed and uploaded partial evidence, [artifact #12462939557](https://github.com/michels-lab/michel-s-life/actions/runs/39864598092/artifacts/12462939557).
+
+**Inference:** installation alone was not sufficient to trigger the hosted Android16 failure in this same-run experiment. The failure was correlated with active app/WebView use after launch; QEMU host-vs-guest cause, renderer/hardware acceleration, memory pressure and whether an application bug contributed **remain unproven**. Never generalize this as a verified physical Galaxy crash or a definitive native code diagnosis.
+
+### Second diagnostic iteration
+
+Added phase/operation/sample-only trace (boot/ADB/pid/framebuffer/CRC), plus read-only **host process counts** (emulator, QEMU) and cgroup `oom`/`oom_kill` counters and used memory before the experiment and after a failure. All outputs are bounded categorical/numeric metadata only: no process arguments, environment, private app content, account tokens or journal. Native screenshot and the 24-image acceptance requirements are unchanged. Rerun the complete same-official-APK experiment at exact updated source; do not claim a second-round result until observed.
