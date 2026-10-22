@@ -4,8 +4,7 @@ import {normalizeError,evidenceReport} from './granada_story_diagnostic_core.mjs
 // Android browser model: ONLY synthetic data. Native APK / provider is not tested.
 const base=process.env.MLV_ANDROID_UI_URL||'http://127.0.0.1:4174';
 const sha=process.env.MLV_SOURCE_SHA||process.env.GITHUB_SHA;
-const candidate=process.env.MLV_STORY_CLEARANCE_CANDIDATE==='1';
-const output=candidate?'artifacts/granada-story-focus/candidate':'artifacts/granada-story-focus/baseline';
+const output='artifacts/granada-story-focus/production';
 const cases=[];
 const browser=await chromium.launch({headless:true});
 const ok=(x,code)=>{if(!x)throw Error(code);};
@@ -38,13 +37,11 @@ for(const width of [320,360,412])for(const language of ['en','es']){
    },language);
    page=await context.newPage();
    page.on('pageerror',err=>errors.push(normalizeError(err,phase)));
-   async function installCandidate(){
-     if(!candidate)return;
-     await page.addScriptTag({type:'module',url:'/story-focus-safe-area.mjs'});
-     await page.waitForFunction(()=>!!window.__mlvStoryFocusClearance?.installed,null,{timeout:10000});
-   }
    await page.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
-   await installCandidate();
+   // Validate the same Android-owned JS injected into the actual bundle,
+   // never a test-only opt-in module or imperative scroll helper.
+   await page.waitForFunction(()=>window.__mlvStoryFocusClearance?.installed===true,
+     null,{timeout:16000});
    await page.waitForFunction(()=>!!window.__mlvAndroidFastRoute &&
      !!document.getElementById('mlv-android-bottom-nav') &&
      !!document.getElementById('mlv-android-menu-button'),null,{timeout:60000});
@@ -93,8 +90,8 @@ for(const width of [320,360,412])for(const language of ['en','es']){
    await sheet.locator('[data-mobile-focus="close"]').tap({timeout:16000});
    phase='relaunch';
    await page.reload({waitUntil:'domcontentloaded',timeout:60000});
-   await installCandidate();
-   await page.waitForFunction(()=>!!window.FocusStoryV30162?.focusState&&
+   await page.waitForFunction(()=>window.__mlvStoryFocusClearance?.installed===true&&
+     !!window.FocusStoryV30162?.focusState&&
      !!document.getElementById('mlv-android-bottom-nav'),null,{timeout:60000});
    const persisted=await page.evaluate(()=>({status:window.FocusStoryV30162?.focusState?.().status,
      deadline:window.FocusStoryV30162?.focusState?.().deadlineAt}));
@@ -121,9 +118,9 @@ for(const width of [320,360,412])for(const language of ['en','es']){
      .filter({hasText:/start chapter|iniciar cap[ií]tulo/i}).first();
    ok(await submit.count()===1,'start_chapter_missing');
    await submit.scrollIntoViewIfNeeded();
-   // No direct patch helper calls: the real form blur/navigation lifecycle
-   // must expose the CTA without a test-only imperative scroll bypass.
-   if(candidate)await page.waitForTimeout(160);
+   // No test-only scrolling or helper calls; the normal focusout/navigation
+   // lifecycle must leave the real chapter CTA unobstructed.
+   await page.waitForTimeout(160);
    const hit=await submit.evaluate(el=>{
       const box=el.getBoundingClientRect(),x=box.left+box.width/2,y=box.top+box.height/2;
       const target=document.elementFromPoint(x,y);
@@ -135,7 +132,7 @@ for(const width of [320,360,412])for(const language of ['en','es']){
      syntheticTitle,{timeout:16000});
    // Final screenshot proves the actual tapped chapter is visible, with
    // running Focus still present, using only synthetic QA data.
-   if(candidate&&width===412)await page.screenshot({path:output+'/'+name+'-chapter-saved.png'});
+   if(width===412)await page.screenshot({path:output+'/'+name+'-chapter-saved.png'});
    phase='final';
    ok(errors.length===0,'unexpected_javascript_pageerror');
    passed=true;
@@ -155,6 +152,6 @@ try{report=evidenceReport({sourceSha:sha,cases});}
 catch(e){console.error('FAIL invalid provenance report:',e.message);process.exitCode=1;}
 if(report){
  await writeFile(output+'/evidence.json',JSON.stringify(report,null,2)+'\n');
- console.log((candidate?'SAFE-AREA CANDIDATE':'BASELINE')+' Android Story/Focus exact-commit browser matrix '+report.status+': '+report.passed+'/6; NOT installed/native QA.');
+ console.log('PRODUCTION Android Story/Focus exact-commit browser touch matrix '+report.status+': '+report.passed+'/6; native signed Galaxy QA remains separate.');
  if(report.status!=='PASS')process.exitCode=1;
 }
