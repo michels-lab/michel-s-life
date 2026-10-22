@@ -7,6 +7,8 @@ on:
       - 'tools/granada_android16_phase_probe.sh'
       - 'tools/granada_android16_phase_evidence.py'
       - 'tools/test_granada_android16_phase_evidence.py'
+      - 'tools/granada_android16_host_verdict.py'
+      - 'tools/test_granada_android16_host_verdict.py'
   workflow_dispatch:
 
 permissions:
@@ -36,6 +38,8 @@ jobs:
           bash tools/granada_android16_phase_probe.sh --self-test
           python3 -m py_compile tools/granada_android16_phase_evidence.py
           python3 -m unittest -v tools/test_granada_android16_phase_evidence.py
+          python3 -m py_compile tools/granada_android16_host_verdict.py
+          python3 -m unittest -v tools/test_granada_android16_host_verdict.py
       - name: Fetch already published APK and verify official external SHA256 checksum
         shell: bash
         run: |
@@ -76,6 +80,14 @@ jobs:
             --root artifacts/granada-android16-phases \
             --source-sha "$(git rev-parse HEAD)" \
             --output artifacts/granada-android16-phases/report.json
+      - name: Emit only categorical host memory/VM/ADB failure diagnosis
+        if: always()
+        shell: bash
+        run: |
+          python3 tools/granada_android16_host_verdict.py \
+            --root artifacts/granada-android16-phases \
+            --source-sha "$(git rev-parse HEAD)" \
+            --output artifacts/granada-android16-phases/host-verdict.json
       - name: Keep fail-closed native/host phase evidence, including partial runs
         if: always()
         uses: actions/upload-artifact@v4
