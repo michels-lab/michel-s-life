@@ -33,6 +33,7 @@ jobs:
         run: |
           set -euo pipefail
           bash -n tools/granada_android16_phase_probe.sh
+          bash tools/granada_android16_phase_probe.sh --self-test
           python3 -m py_compile tools/granada_android16_phase_evidence.py
           python3 -m unittest -v tools/test_granada_android16_phase_evidence.py
       - name: Fetch already published APK and verify official external SHA256 checksum
