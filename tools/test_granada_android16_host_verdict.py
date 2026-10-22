@@ -82,7 +82,7 @@ class HostVerdictTests(unittest.TestCase):
         (self.d/"host-after-failure.txt").unlink()
         (self.d/"host-after-success.txt").write_text(snapshot(
             phase="verified-three-phases",operation="completed",sample=8))
-        (self.d/"phases-complete.txt").write_text("complete\\n")
+        (self.d/"phases-complete.txt").write_text("complete\n")
         x=report(self.d,SHA)
         self.assertEqual(x["status"],"NO_FAILURE_OBSERVED")
         self.assertEqual(x["classification"],"host_experiment_finished_without_failure")
