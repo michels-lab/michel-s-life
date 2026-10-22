@@ -36,6 +36,34 @@ for(const width of [320,360,412])for(const language of ['en','es']){
      window.MichelsLifeAndroid={postMessage(){}};
    },language);
    page=await context.newPage();
+   // Chrome DevTools reports script parse locations even when Playwright
+   // pageerror SyntaxError.stack is empty/unlocated. Never retain source
+   // contents, URLs, tokens, script text or user data.
+   const parseLocations=[];
+   const safePlace=(url,line,column,origin)=>{
+     let source='unlocated';
+     try {
+       const basename=new URL(String(url||''),'https://invalid.local/').pathname.split('/').pop();
+       if(/^[A-Za-z0-9_.-]+\\.(?:html|js|mjs)$/.test(basename||''))
+         source=basename;
+     }catch{}
+     return {origin,source,
+       line:Number.isSafeInteger(line)&&line>=0?line+1:null,
+       column:Number.isSafeInteger(column)&&column>=0?column+1:null};
+   };
+   const record=(detail)=>{
+     if(parseLocations.length<8)parseLocations.push(detail);
+   };
+   const cdp=await context.newCDPSession(page);
+   cdp.on('Debugger.scriptFailedToParse',event=>
+     record(safePlace(event.url,event.startLine,event.startColumn,'parser')));
+   cdp.on('Runtime.exceptionThrown',event=>{
+     const detail=event.exceptionDetails;
+     if(detail?.exception?.className==='SyntaxError')
+       record(safePlace(detail.url,detail.lineNumber,detail.columnNumber,'exception'));
+   });
+   await cdp.send('Debugger.enable');
+   await cdp.send('Runtime.enable');
    page.on('pageerror',err=>errors.push(normalizeError(err,phase)));
    await page.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
    // Validate the same Android-owned JS injected into the actual bundle,
@@ -144,7 +172,7 @@ for(const width of [320,360,412])for(const language of ['en','es']){
    // intermittent parser error without ever printing raw error text.
    console.error('FAIL Android Story/Focus touch '+name+' ['+
      [...new Set(errors.map(e=>e.code))].join(',')+'] '+
-     JSON.stringify(errors.slice(0,3)));
+     JSON.stringify({errors:errors.slice(0,3),parser:parseLocations}));
    if(page)try{await page.screenshot({path:output+'/'+name+'-failure.png',timeout:6000});}catch{}
  }finally{
    cases.push({width,language,passed,phase,errors});
