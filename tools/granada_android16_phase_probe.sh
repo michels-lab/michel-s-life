@@ -33,6 +33,36 @@ host_status(){
     ps -e -o comm= 2>/dev/null | awk '$1=="emulator" {n++} END{print n+0}'
   } > "$outfile"
 }
+if [[ "${1:-}" == "--self-test" ]]; then
+  # Unit-test host metadata independently: no ADB, APK download or emulator.
+  phase="probe-self-test"
+  operation="host_status"
+  sample_index=0
+  host_status "self-test"
+  python3 - "$OUT/host-self-test.txt" <<'PY'
+import re, sys
+from pathlib import Path
+rows=Path(sys.argv[1]).read_text().splitlines()
+assert rows[0] == "schema=mlv-granada-host-failure-v1"
+fields={}
+for row in rows[1:]:
+    assert re.fullmatch(r"[a-z_]+=[0-9a-z_-]+",row), "unsafe host field"
+    key,val=row.split("=",1)
+    assert key not in fields, "duplicate host field"
+    assert key in {"phase","operation","sample","cgroup_oom",
+        "cgroup_oom_kill","cgroup_memory_bytes","qemu_process_count",
+        "emulator_process_count"}, "unexpected host field"
+    fields[key]=val
+assert fields["phase"]=="probe-self-test"
+assert fields["operation"]=="host_status"
+assert fields["sample"]=="0"
+assert "qemu_process_count" in fields and "emulator_process_count" in fields
+assert all(v.isdecimal() for k,v in fields.items()
+           if k.startswith("cgroup_") or k.endswith("_count"))
+print("GRANADA_HOST_SELF_TEST_PASS no ADB, account or token data")
+PY
+  exit 0
+fi
 host_status "before"
 on_exit(){
   local result="$?"
