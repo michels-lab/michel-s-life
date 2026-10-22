@@ -79,7 +79,37 @@ def report(root: Path, source_sha: str) -> dict:
     if not SHA.fullmatch(source_sha):
         raise ValueError("invalid_source_sha")
     before = parse_snapshot(root / "host-before.txt")
-    after = parse_snapshot(root / "host-after-failure.txt")
+    failure = root / "host-after-failure.txt"
+    success = root / "host-after-success.txt"
+    if failure.exists() and success.exists():
+        raise ValueError("ambiguous_host_outcome")
+    if success.is_file():
+        # A completed native experiment is NOT a failed host diagnosis;
+        # a distinct image/persistence validator must still approve 24/24.
+        marker = root / "phases-complete.txt"
+        if ((root / "failed-stage.txt").exists() or marker.is_symlink() or
+                not marker.is_file() or marker.read_text().strip() != "complete"):
+            raise ValueError("phase_not_verified")
+        after = parse_snapshot(success)
+        if after["phase"] != "verified-three-phases" or after["operation"] != "completed":
+            raise ValueError("invalid_complete_host_snapshot")
+        summary = evaluate(before, after)
+        return {
+            "schema": "mlv.granada.android16.host_failure_verdict.v1",
+            "source_sha": source_sha,
+            "status": "NO_FAILURE_OBSERVED",
+            "classification": "host_experiment_finished_without_failure",
+            "failure_phase": None,
+            "failed_operation": None,
+            "failed_sample": None,
+            "host_process_alive_before": summary["host_process_alive_before"],
+            "host_process_alive_after": summary["host_process_alive_after"],
+            "host_oom_kill_delta": summary["host_oom_kill_delta"],
+            "native_app_state": "not_verified",
+            "canonical_persistence_verified": False,
+            "physical_galaxy_verified": False,
+        }
+    after = parse_snapshot(failure)
     result = evaluate(before, after)
     return {"schema": "mlv.granada.android16.host_failure_verdict.v1",
             "source_sha": source_sha, "status": "DIAGNOSTIC_ONLY", **result}
