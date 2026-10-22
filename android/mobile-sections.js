@@ -1263,6 +1263,7 @@
     force(modal?.querySelector('.modal-head .icon-btn'),'min-width','44px');
     force(modal?.querySelector('.modal-head .icon-btn'),'min-height','44px');
   }
+  const SPACE=18,MIN_PAD=110,MAX_PAD=400;
   // Production Android Story/Focus safe-area, derived from the six-case
   // touch-proven candidate. Scoped to Android Story and the active mini-player:
   // no changes to theme, Chapter engine, Focus deadline, account or rewards.
