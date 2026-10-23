@@ -23,3 +23,15 @@
 PR #170 cannot be considered accepted just because the targeted Story touch smoke is green. Before merge/public Android APK, require no failing critical browser or Android UI gates, native WebView loaded after **two** real force-stop relaunches with identical saved/live mission+completion IDs and XP, and release security checks. Native signed Galaxy/actual provider A/B and #139/#168 must not be bypassed. No release candidate policy; no release/public APK, no Windows packaging restart, no other app modules touched.
 
 **This checkpoint:** production Story/Focus safe-area correction committed in PR branch, provenance and native read-only diagnostics committed, no PR product merge, no release. Last published: Android Direct **v0.2.9**, Windows **v3.0.221**.
+
+
+## Exact-head CI follow-up on `1ff246dffb8b40c380071d7d807242ba180ff767`
+
+- [Android UI smoke #39912545686](https://github.com/michels-lab/michel-s-life/actions/runs/39912545686): **SUCCESS** including the previously failing Story→Today→Story chapter draft return and *Start Chapter* hit target. This is positive acceptance evidence for the **nav-only clearance correction** in browser Android UI.
+- [UI smoke #39912545795](https://github.com/michels-lab/michel-s-life/actions/runs/39912545795): **SUCCESS**.
+- [Source validation #39912545816](https://github.com/michels-lab/michel-s-life/actions/runs/39912545816): **SUCCESS**.
+- [Project/Story cross-platform browser #39912545774](https://github.com/michels-lab/michel-s-life/actions/runs/39912545774): **FAIL**, Windows browser had runtime exceptions; CI did not prove any XP/state divergence. Preserve this blocker.
+- [Native XP two-force-stop #39912545638](https://github.com/michels-lab/michel-s-life/actions/runs/39912545638): debuggable exact-head APK compiled and installed; **FAIL before the first synthetic mission was seeded**. The initial native Android framebuffer PNG passed (1080×2400). Then CDP returned timeout/unavailable. New privacy-safe `GRANADA_NATIVE_WEBVIEW_DIAGNOSTIC` classified `adb_reachable=false` and consequently `app_pid_present=null`, `boot_completed=null`, `cdp_http_reachable=null`, `native_window_visible=null`. This means the **guest/ADB connection was lost** when diagnosis ran; it does NOT show XP loss, app account failure or any completed force-stop/restart in this run. Do not count it as persistence acceptance.
+- Dedicated Story 6-case Chromium and independent native APK install were still executing at this checkpoint; their outcomes must not be guessed or backfilled.
+
+The single-feature Story nav touch fix is verified in actual browser mobile smoke, but the containing PR #170 **remains DRAFT and unmerged** due to independent unresolved native and script/runtime gates. Retain #139/#168/#171/#108. No release, no RC and no other project changes.
