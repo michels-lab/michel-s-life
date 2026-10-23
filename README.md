@@ -1,5 +1,9 @@
 # Michel's Life
 
+## Referencias visuales reales para Figma/Lovable (Operación Granada, 2026-10-23)
+
+[Cómo consultar y comparar las capturas oficiales de la app actual](docs/audit/2026-10-23-granada-canonical-design-reference.md). La CI de escritorio y Android genera `design-baseline.html` y `design-baseline.json` junto a sus capturas reales; las referencias están ligadas al SHA del código, paquete y tamaño de pantalla. **No son una aprobación de un rediseño ni sustituyen pruebas del APK/Windows instalado**. Diseños nuevos deben preservar las características aprobadas y compararse antes de consumir más créditos externos.
+
 ## Operación Granada — preservación visual y prototipo externo rechazado (2026-10-22)
 
 [Auditoría y prevención del prototipo Lovable rechazado](docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md). **El diseño actual de Michel's Life permanece como referencia aprobada.** Lovable UI Lab no es mejora aceptada, ni versión pública, ni reemplazo. Nuevas propuestas requieren capturas comparables, paridad de funciones y aceptación del propietario; el validador opcional es `tools/validate_external_ui_design.py`. No se cambió el frontend ni se publicó un release por este hallazgo.
