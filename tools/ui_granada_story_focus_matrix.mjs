@@ -10,7 +10,7 @@ const cases=[];
 const browser=await chromium.launch({headless:true});
 const ok=(x,code)=>{if(!x)throw Error(code);};
 await mkdir(output,{recursive:true});
-const inventory=JSON.parse(await readFile(output+'/inline-js-inventory.json','utf8'));
+const inventory=JSON.parse(await readFile('artifacts/granada-story-focus/inline-js-inventory.json','utf8'));
 if(inventory.mode!=='canonical_generated_android_html'||
    inventory.scriptCount<100||inventory.parseFailureCount!==0)
   throw Error('canonical_inline_js_audit_missing_or_failed');
