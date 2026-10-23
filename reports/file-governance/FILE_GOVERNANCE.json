@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 291,
-  "classified_files_total": 287,
-  "docs_content_inspected": 84,
+  "tracked_files_total": 292,
+  "classified_files_total": 288,
+  "docs_content_inspected": 85,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
   "roles": {
@@ -13,7 +13,7 @@
     "build_script": 6,
     "config": 22,
     "database_migration": 3,
-    "document": 77,
+    "document": 78,
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
@@ -29,7 +29,7 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "1b7b476800a595a0f68c83ae4a4e1e8321c455d5b724137875369a8e4d84890a",
+  "inventory_fingerprint": "ae036743d80ff364378b89f849cbf061f5a61ce0577aa635a0c66e8893a06114",
   "evidence_fingerprint": "180f19863f674b1d685dc16fc7d100c4b7ab6cdb0fae4b2cf0478893c7bdbc72",
   "files": [
     {
@@ -829,6 +829,13 @@
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
       "blob": "62d92a808b59a4457cfb23c4aaf5b1e41ac1cab3"
+    },
+    {
+      "path": "android/audit/2026-10-23-granada-two-real-android-cold-relaunches-green.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "7140842266d8211ef5870e523145307bf0f62f51"
     },
     {
       "path": "android/build.gradle.kts",
