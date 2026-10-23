@@ -166,7 +166,7 @@ jobs:
           assert data['realAndroidWebView'] is True and data['missionAndXpIdentical'] is True
           assert data['providerUsed'] is False and data['signedDeviceVerified'] is False
           assert data['xp']>=50
-          from tools.granada_android16_phase_evidence import png_info
+          from tools.granada_native_xp_relaunch import png_info
           for name in ('before','after-1','after-2'):
               png_info(root/(name+'.png'))
           print('GRANADA_NATIVE_REAL_XP_TWO_RELAUNCH_VERIFIED')
