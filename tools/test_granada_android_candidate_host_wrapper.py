@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+"""Offline fail-closed tests for host triage, without an APK or ADB emulator."""
+import json
+import shutil
+import subprocess
+import tempfile
+import unittest
+from pathlib import Path
+
+ROOT=Path(__file__).resolve().parent.parent
+
+class CandidateHostWrapper(unittest.TestCase):
+    def setUp(self):
+        self.tmp=tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root=Path(self.tmp.name)
+        (self.root/"tools").mkdir()
+        (self.root/"android/tools").mkdir(parents=True)
+        shutil.copy2(ROOT/"tools/granada_candidate_host_wrapper.sh",
+                     self.root/"tools/granada_candidate_host_wrapper.sh")
+        shutil.copy2(ROOT/"tools/granada_android16_host_verdict.py",
+                     self.root/"tools/granada_android16_host_verdict.py")
+        # The script's source is pinned to a synthetic but valid SHA in the
+        # isolated test git repository, and must not depend on any real account.
+        subprocess.run(["git","init","-q"],cwd=self.root,check=True)
+        subprocess.run(["git","-c","user.name=CI Test","-c",
+                        "user.email=ci@example.invalid","commit","--allow-empty",
+                        "-qm","synthetic fixture"],cwd=self.root,check=True)
+
+    def run_fake(self,code):
+        (self.root/"android/tools/smoke_candidate_apk_install.sh").write_text(
+            "#!/usr/bin/env bash\nexit "+str(code)+"\n",encoding="utf-8")
+        return subprocess.run(["bash","tools/granada_candidate_host_wrapper.sh"],
+                              cwd=self.root,stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE,text=True,timeout=20)
+
+    def test_failing_native_script_never_looks_green(self):
+        result=self.run_fake(27)
+        self.assertEqual(result.returncode,27)
+        out=self.root/"artifacts/candidate-install-host"
+        self.assertTrue((out/"host-before.txt").exists())
+        self.assertTrue((out/"host-after-failure.txt").exists())
+        verdict=json.loads((out/"diagnostic-verdict.json").read_text())
+        self.assertIn(verdict["status"],("DIAGNOSTIC_ONLY","INSUFFICIENT_EVIDENCE"))
+        self.assertIs(verdict["canonical_persistence_verified"],False)
+        self.assertIs(verdict["physical_galaxy_verified"],False)
+        self.assertFalse((out/"native-script-complete.txt").exists())
+        self.assertNotIn("token",json.dumps(verdict).lower())
+
+    def test_silent_green_without_actual_apk_evidence_is_rejected(self):
+        result=self.run_fake(0)
+        self.assertNotEqual(result.returncode,0)
+        self.assertFalse((self.root/"artifacts/candidate-install-host/native-script-complete.txt").exists())
+        self.assertIn("GRANADA_NATIVE_MISSING_REQUIRED_COMPARISON",result.stderr+result.stdout)
+
+    def test_wrapper_has_exact_original_script_without_skip_controls(self):
+        original=(ROOT/"tools/granada_candidate_host_wrapper.sh").read_text()
+        self.assertEqual(original.count("bash android/tools/smoke_candidate_apk_install.sh"),1)
+        self.assertNotIn("continue-on-error",original)
+        self.assertIn("trap failed EXIT",original)
+        self.assertIn("png_info(p)",original)
+        syntax=subprocess.run(["bash","-n",str(ROOT/"tools/granada_candidate_host_wrapper.sh")],
+                              capture_output=True,text=True)
+        self.assertEqual(syntax.returncode,0,syntax.stderr)
+
+if __name__=="__main__":
+    unittest.main()
