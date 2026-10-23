@@ -180,7 +180,7 @@ def evaluate(port,expr):
     if len(pages)!=1: raise RuntimeError("native_webview_target_unavailable")
     url=pages[0].get("webSocketDebuggerUrl")
     if not url: raise RuntimeError("native_debug_endpoint_unavailable")
-    ws=create_connection(url,timeout=18,suppress_origin=True)
+    ws=create_connection(url,timeout=9,suppress_origin=True)
     try:
         ws.send(json.dumps({"id":7,"method":"Runtime.evaluate",
             "params":{"expression":expr,"returnByValue":True}}))
@@ -195,7 +195,12 @@ def evaluate(port,expr):
         ws.close()
 
 def poll(port,expr):
-    for _ in range(12):
+    # Android16 can paint before its WebView devtools socket accepts a complete
+    # Runtime.evaluate response after process restart. Bounded re-evaluation
+    # is diagnostic only: no state mutation on CAPTURE, no fabricated result.
+    from websocket import WebSocketTimeoutException, WebSocketConnectionClosedException
+    reason="native_runtime_not_ready"
+    for attempt in range(16):
         try:
             item=evaluate(port,expr)
             if isinstance(item,dict) and item.get("ready") is True:
@@ -204,10 +209,16 @@ def poll(port,expr):
                 "account_present","already_seeded","exact_once_xp_failed",
                 "invalid_base_xp","live_saved_ledger_drift"):
                 raise ValueError("native_synthetic_state_invalid")
+            reason="native_canonical_pending"
+        except (WebSocketTimeoutException, WebSocketConnectionClosedException):
+            reason="native_debug_websocket_unresponsive"
         except (OSError, RuntimeError, TimeoutError):
-            pass
+            reason="native_webview_unavailable"
+        # Report only enum stage and attempt: never dump socket URLs, cookies,
+        # mission names, complete user records, or exception bodies to CI logs.
+        print(f"GRANADA_NATIVE_CDP_RETRY attempt={attempt+1} reason={reason}")
         time.sleep(2)
-    raise RuntimeError("native_webview_not_ready")
+    raise RuntimeError("native_webview_unverified_"+reason)
 
 def write(path,record):
     p=Path(path);p.parent.mkdir(parents=True,exist_ok=True)
