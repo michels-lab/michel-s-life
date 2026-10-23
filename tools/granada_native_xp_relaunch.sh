@@ -17,7 +17,7 @@ adb_safe(){ timeout 24s adb -s "$SERIAL" "$@"; }
 verify_frame(){
   python3 - "$1" <<'PY'
 import sys
-from tools.granada_android16_phase_evidence import png_info
+from tools.granada_native_xp_relaunch import png_info
 info=png_info(sys.argv[1])
 assert info["width"]>=240 and info["height"]>=400
 print("GRANADA_NATIVE_XP_PNG_PASS",info["width"],info["height"])
