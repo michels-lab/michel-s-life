@@ -52,3 +52,20 @@ The single-feature Story nav touch fix is verified in actual browser mobile smok
 - [Cross-platform Project/Story browser #39912545774](https://github.com/michels-lab/michel-s-life/actions/runs/39912545774): Windows browser runtime exception, FAIL. Must investigate without masking the runtime error; no evidence of a confirmed loss of missions or account data.
 
 **Exact result of GRANADA:** production Story nav overlay fault fixed **in open PR #170**, browser mobile general smoke validates the scenario, standalone safe native diagnostic and source hashes implemented, **no merge** of PR #170 and **no release**. Open blockers #168 (intermittent JS), #139 (host native), #171 (signed Android Story acceptance), #108/#55 (real A/B account isolation and credentials). Latest public Android 0.2.9, Windows 3.0.221. Never treat 24/24 native liveness of the previous public APK #178 as native acceptance of the new Story source.
+
+
+## GRANADA 2026-10-23 — generated inline script provenance and RED release gates
+
+**Root investigation, not a source fix yet.** Dedicated [Story six-case run #39912545657](https://github.com/michels-lab/michel-s-life/actions/runs/39912545657) remained **FAIL 4/6**, with 320 ES and 412 EN reporting genuine JavaScript `SyntaxError` on browser reload. Cross-platform [Project/Story #39912545774](https://github.com/michels-lab/michel-s-life/actions/runs/39912545774) also **FAIL**, Windows browser `Unexpected end of input`. Neither proves state loss; both block stable merge/release.
+
+New `tools/validate_granada_inline_scripts.mjs` compiles all enabled classic inline scripts of **the assembled actual Android HTML** (not only smaller separately checked JS files) using Node's syntax parser, and stores a synthetic-only **SHA256, source start-line, generated script ID and byte length** inventory without script text. [First inventory artifact #12484781799](https://github.com/michels-lab/michel-s-life/actions/runs/39915393613/artifacts/12484781799) was downloaded and inspected. Results: **184 script tags, 174 enabled classic scripts pass syntax parsing, 0 static syntax errors**. Yet the exact same run's interactive browser matrix still failed **2/6** on real script `SyntaxError` during reload (360 EN/ES), so static syntax passing does **not** waive the real error.
+
+Generated-HTML line mapping proves the earlier Chromium CDP script-start offsets are:
+- **line 12,748:** `v251-weekly-real-fix-script`, **18,792 bytes in generated canonical HTML**, versus **16,165 bytes** in one failed CDP script source record;
+- **line 17,358:** `v3021-dashboard-real-category-filter`, **2,224 bytes in generated canonical HTML**, versus **1,988 bytes** in another failed CDP script source record.
+
+The failed SHA fingerprints did not match complete static inline scripts. This supports **intermittent source mismatch, truncation or inspection discrepancy**, but **does not yet establish** whether browser/HTTP transport, runtime rewrite or Chrome inspector is responsible. Both source scripts compile as provided in canonical HTML. We therefore **did not edit unrelated canonical frontend scripts, hide `pageerror`, or close #168**.
+
+PR #170 updated **only its test infrastructure**: fixed a diagnostic URL-basename regex that falsely reported every JavaScript source as `unlocated`, expanded the formerly first-six CDP error-source cap to capture later reload events, and compares failed CDP script-source hashes/lengths with actual generated HTML. Added post-failure hashed DOM `script.textContent` check for the two implicated script IDs (never logs actual JavaScript/source/user content). The latest exact-head [Story run #39916005593](https://github.com/michels-lab/michel-s-life/actions/runs/39916005593) must be checked before claiming its result.
+
+Also the full exact-head source & UI gates, native debug **two force-stop + canonical XP**, signed Galaxy/proven A/B accounts remain independently required. #170 remains **DRAFT/UNMERGED** until relevant P0 failures are resolved. #168/#139/#171/#108 remain open. No RC/release/Windows native/cross-app changes.
