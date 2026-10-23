@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 289,
-  "classified_files_total": 285,
-  "docs_content_inspected": 83,
+  "tracked_files_total": 291,
+  "classified_files_total": 287,
+  "docs_content_inspected": 84,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
   "roles": {
@@ -13,12 +13,12 @@
     "build_script": 6,
     "config": 22,
     "database_migration": 3,
-    "document": 76,
+    "document": 77,
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 8,
-    "source": 94,
+    "source": 95,
     "test": 11,
     "text_metadata": 1,
     "web_ui": 3,
@@ -29,8 +29,8 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "2c22e31a77f5ee72be9d7b1b8f2ec1ebfc6320c9f3a8056ab2d50bff333738e1",
-  "evidence_fingerprint": "c3adaffe1b269c057571d28948ebd641ff77584355b8e977e9a20904c0b95cf0",
+  "inventory_fingerprint": "f647c52df7d5408d2faee7b80ba283e420d338c8b95a5707774fe124cc8167ad",
+  "evidence_fingerprint": "180f19863f674b1d685dc16fc7d100c4b7ab6cdb0fae4b2cf0478893c7bdbc72",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -100,7 +100,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "1bcd500b5c0d8f715d896418f61143507ad834e1"
+      "blob": "768826748c1f976635f1ca20690b8c408fe3e9ec"
     },
     {
       "path": ".github/workflows/build-store-msix.yml",
@@ -275,7 +275,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "b0123c3af4b06f001b354d3e301b358d63e71b89"
+      "blob": "fa4db98ff0356a664faead5a813f3787c6c4f0d1"
     },
     {
       "path": ".gitignore",
@@ -464,7 +464,7 @@
       "role": "index",
       "purpose": "navigation/onboarding",
       "certainty": "rule",
-      "blob": "119d60ed0d5923d73c0b7a7ba157b828d95d15df"
+      "blob": "7e33f6b7b858e6c6fc305520645af2299a859af9"
     },
     {
       "path": "android/ANDROID_AUDIT_LOG.md",
@@ -1258,6 +1258,13 @@
       "blob": "845ad2988226c4ee4eda00e7dd5b433177dbceaa"
     },
     {
+      "path": "docs/audit/2026-10-23-granada-canonical-design-reference.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "62eb114ab4fbfc420f50590db2caef34d9ca9c35"
+    },
+    {
       "path": "docs/audit/HANDOFF_LEGACY_2026-10-05.md",
       "role": "document",
       "purpose": "manual/decision/report/historical note",
@@ -1487,6 +1494,13 @@
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "67f965e59f691e1fcbcb5c95689ec32ab30eabfa"
+    },
+    {
+      "path": "tools/build_canonical_design_reference.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "87661214df799f1eeb0ea72fa7b114d3aa1f5185"
     },
     {
       "path": "tools/build_desktop_browser_visual_manifest.py",
@@ -2066,20 +2080,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "415edec43ffa2ecf",
+      "id": "c08875caf2821bb1",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "23 implementation/config paths changed since this log's last commit; examples: .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-android16-install-launch-isolation.yml, .github/workflows/granada-daily-mission-ledger.yml",
+      "observation": "25 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-android16-install-launch-isolation.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "94966551fdfb8e26",
+      "id": "129363dc454e50d1",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "43 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-emulator-transport-diagnostic.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-android-usability.yml",
+      "observation": "45 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-emulator-transport-diagnostic.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
