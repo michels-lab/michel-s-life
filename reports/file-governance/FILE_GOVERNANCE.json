@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 276,
-  "classified_files_total": 272,
-  "docs_content_inspected": 78,
+  "tracked_files_total": 283,
+  "classified_files_total": 279,
+  "docs_content_inspected": 79,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
   "roles": {
@@ -13,23 +13,23 @@
     "build_script": 6,
     "config": 22,
     "database_migration": 3,
-    "document": 71,
+    "document": 72,
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 8,
-    "source": 90,
-    "test": 9,
+    "source": 93,
+    "test": 11,
     "text_metadata": 1,
     "web_ui": 3,
-    "workflow": 28
+    "workflow": 29
   },
   "finding_counts": {
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 2,
-  "inventory_fingerprint": "97439fc166b1485dc728326634ae6ac24e5900fd836756de54ca72e2e39a4b3a",
-  "evidence_fingerprint": "8d070cf37514b69860b3562c31344f3740c7451ff320a45f7e04ba2277bbd9b0",
+  "inventory_fingerprint": "aa3561d9ce806becdfcbb3c9ad93477393b93a297af8c33f7b72cc53dace2f16",
+  "evidence_fingerprint": "2a6d68c4f624a986a3a4a7b9a56f9d129f58d302784aa9dcad1ef6562b88562b",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -149,6 +149,13 @@
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
       "blob": "38b86d6cfa65d0b496104344f37ba0c99485aa73"
+    },
+    {
+      "path": ".github/workflows/granada-android16-install-launch-isolation.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "12aa4c3f818a8fed744bfcdf5e231b603e130c1c"
     },
     {
       "path": ".github/workflows/granada-backup-preflight.yml",
@@ -786,6 +793,13 @@
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
       "blob": "7b84cb7f813dad79ea54d091c74412f9ee254258"
+    },
+    {
+      "path": "android/audit/2026-10-22-granada-api36-install-vs-launch.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "2e3651542d528e54592da510a167efe618e704cc"
     },
     {
       "path": "android/build.gradle.kts",
@@ -1488,6 +1502,27 @@
       "blob": "35042605dfc94ec24d110e05bbbdde6b61dda9e9"
     },
     {
+      "path": "tools/granada_android16_host_verdict.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "d8665565435330d9234f692c908cad510f07101f"
+    },
+    {
+      "path": "tools/granada_android16_phase_evidence.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "0114bf01b8722fb9a55697ef0c67f0fae55f45c3"
+    },
+    {
+      "path": "tools/granada_android16_phase_probe.sh",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "5e4a28f145368e8d53840205d38ef909f0f2a990"
+    },
+    {
       "path": "tools/granada_android_evidence_gate.py",
       "role": "source",
       "purpose": "code/test implementation",
@@ -1598,6 +1633,20 @@
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "a4edf2c6e0277bd92afdae70f1fe44873ef7154b"
+    },
+    {
+      "path": "tools/test_granada_android16_host_verdict.py",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "ffa5cd57e5e915e0bd91f818094cf07f9d1e847c"
+    },
+    {
+      "path": "tools/test_granada_android16_phase_evidence.py",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "9658aa2c62c3437cdb1df876a0a723d8a64a7bfe"
     },
     {
       "path": "tools/test_granada_android_evidence_gate.py",
@@ -1938,20 +1987,20 @@
   ],
   "findings": [
     {
-      "id": "143fa10550341cde",
+      "id": "b255dd7a97d849d3",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "15 implementation/config paths changed since this log's last commit; examples: .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-daily-mission-ledger.yml, .github/workflows/granada-recovery-loss-triage.yml, .github/workflows/ui-smoke.yml",
+      "observation": "21 implementation/config paths changed since this log's last commit; examples: .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-android16-install-launch-isolation.yml, .github/workflows/granada-daily-mission-ledger.yml, .github/workflows/granada-recovery-loss-triage.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "05902ffae94c0289",
+      "id": "004f16919e7159e6",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "35 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-emulator-transport-diagnostic.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-android-usability.yml, .github/workflows/granada-backup-preflight.yml",
+      "observation": "41 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-emulator-transport-diagnostic.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-android-usability.yml, .github/workflows/granada-android16-install-launch-isolation.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
