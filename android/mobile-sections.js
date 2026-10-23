@@ -1312,7 +1312,10 @@
     const mini=bounds('mlv-android-mini-focus'),nav=bounds('mlv-android-bottom-nav');
     const clearance=calculateStoryClearance({viewportHeight:win.innerHeight,miniTop:mini.rect?.top,
       miniVisible:mini.visible,navTop:nav.rect?.top,navVisible:nav.visible});
-    const enable=active&&mini.visible;
+    // The permanent Android bottom nav can cover Story's chapter submit
+    // even when the Focus mini-player is hidden. Reserve the safe-area
+    // whenever EITHER actual native overlay is visible, not only Focus.
+    const enable=active&&(mini.visible||nav.visible);
     if(doc.body.classList.contains('mlv-story-focus-clearance')!==enable)
      doc.body.classList.toggle('mlv-story-focus-clearance',enable);
     if(doc.body.style.getPropertyValue('--mlv-story-focus-clearance')!==clearance+'px')
@@ -1321,7 +1324,8 @@
    }
    function schedule(){if(!disposed&&!scheduled){scheduled=true;win.requestAnimationFrame(refresh);}}
    function ensureSaveVisible(){
-    const state=refresh();if(!state?.active||!state.mini.visible)return false;
+    const state=refresh();
+    if(!state?.active||!(state.mini.visible||state.nav.visible))return false;
     const btn=doc.querySelector('#tab-story.active .v30162-story-form button[type="submit"]');
     if(!btn)return false;
     const topbar=bounds('mlv-android-topbar'),rect=btn.getBoundingClientRect();
