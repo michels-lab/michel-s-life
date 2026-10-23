@@ -14,6 +14,13 @@ const historicalDigests=new Set([
   'f3248c86698be959d718a2358351d67642d276ecaa50326a780ae67fb36ae6b0',
   '710851ad32a142f0aa3f605e35d81dca5fe85e636d0633f1cfce1e3a4d39f4e2'
 ]);
+const historicalFailedSources=[
+ {id:'v251-weekly-real-fix-script',bytes:16165,
+  digest:'f3248c86698be959d718a2358351d67642d276ecaa50326a780ae67fb36ae6b0'},
+ {id:'v3021-dashboard-real-category-filter',bytes:1988,
+  digest:'8aa8f3f1e3fb67d692e0457b9ec0d86eb6b59f3a47ef4c678b3452d7c82791fa'}
+];
+const historicalPrefixChecks=[];
 const scripts=[];
 const failures=[];
 const linesBefore=(pos)=>html.slice(0,pos).split('\n').length;
@@ -25,6 +32,19 @@ while((match=pattern.exec(html))){
  const id=attrs.match(/\bid\s*=\s*["']([^"']+)["']/i)?.[1]||'unnamed';
  const safeId=/^[a-zA-Z0-9_.-]{1,96}$/.test(id)?id:'invalid-id';
  const source=match[2];
+ for(const observation of historicalFailedSources.filter(x=>x.id===safeId)){
+   const raw=Buffer.from(source,'utf8');
+   const prefix=raw.subarray(0,observation.bytes);
+   const prefixDigest=createHash('sha256').update(prefix).digest('hex');
+   historicalPrefixChecks.push({
+     id:safeId,
+     observationBytes:observation.bytes,
+     originalBytes:raw.length,
+     exactPrefixMatch:raw.length>=observation.bytes&&
+       prefix.length===observation.bytes&&prefixDigest===observation.digest,
+     fullSourceMatchesObserved:createHash('sha256').update(raw).digest('hex')===observation.digest
+   });
+ }
  const sha=createHash('sha256').update(source,'utf8').digest('hex');
  const bytes=Buffer.byteLength(source,'utf8');
  const startLine=linesBefore(match.index);
@@ -49,6 +69,7 @@ const report={
  scriptCount:scripts.length,
  validClassicCount:scripts.filter(x=>x.syntax==='valid').length,
  parseFailureCount:failures.length,
+ historicalPrefixChecks,
  previousCdpFingerprintMatches:scripts.filter(x=>x.historicalFingerprint).map(x=>({
    id:x.id,startLine:x.startLine,digest:x.digest
  })),
@@ -57,7 +78,9 @@ const report={
 await writeFile(output,JSON.stringify(report,null,2)+'\n');
 console.log('GRANADA_INLINE_JS_INVENTORY '+JSON.stringify({
  scripts:report.scriptCount,valid:report.validClassicCount,
- failed:report.parseFailureCount,matchingFailedCdp:report.previousCdpFingerprintMatches
+ failed:report.parseFailureCount,
+ previousFailedScriptPrefixChecks:report.historicalPrefixChecks,
+ matchingFailedCdp:report.previousCdpFingerprintMatches
 }));
 if(scripts.length<100||report.validClassicCount<100||failures.length>0){
  console.error('GRANADA_INLINE_JS_PARSE_FAIL '+JSON.stringify(failures));
