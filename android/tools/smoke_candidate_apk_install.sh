@@ -7,6 +7,21 @@ PKG="com.michelslab.michelslife"
 APK="${APK:-artifacts/candidate/MichelsLife-Android-TEST-v${ANDROID_VERSION}.apk}"
 OUT="artifacts/candidate-install"
 mkdir -p "$OUT"
+# GRANADA #139: host-only observer catches QEMU disappearance or runner OOM.
+# It never touches ADB, device storage, account information, or app state.
+# The EXIT trap preserves observer evidence on ALL script failures without
+# changing the original native test result or its exit code.
+python3 android/tools/granada_emulator_host_watch.py \
+    --out "$OUT" --interval 3 --samples 240 \
+    >"$OUT/granada-host-watch-summary.log" 2>&1 &
+GRANADA_WATCH_PID=$!
+cleanup_granada_host_watch() {
+  if kill -0 "$GRANADA_WATCH_PID" 2>/dev/null; then
+    kill -TERM "$GRANADA_WATCH_PID" 2>/dev/null || true
+    wait "$GRANADA_WATCH_PID" 2>/dev/null || true
+  fi
+}
+trap cleanup_granada_host_watch EXIT
 test -s "$APK"
 # Native WebView captures can fail with "error: closed" during adb transport
 # reconnects on hosted Android 16 emulators. Retry the exact native screenshot
@@ -37,13 +52,14 @@ capture_png(){
     rm -f "$tmp"
     echo "::warning::Native on-device screencap also unavailable ($attempt/5)"
     cat "$OUT/adb-shell-screencap-last.txt" "$OUT/adb-pull-screencap-last.txt" 2>/dev/null || true
-    # Repair only the CI runner's isolated adb transport, not the app. Keep
-    # camera/screenframe assertions fail-closed if Android really died.
-    timeout 10s adb devices -l >"$OUT/adb-device-retry-state.txt" 2>&1 || true
-    if ! grep -q $'\tdevice' "$OUT/adb-device-retry-state.txt"; then
-      timeout 8s adb kill-server || true
-      timeout 12s adb start-server || true
-      timeout 20s adb wait-for-device || true
+    # GRANADA #139: the same guarded native transport recovery is also
+    # required on EARLY framebuffer failures (before onboarding/relaunch).
+    # No fake fallback, no retry beyond bounded proof of the running app PID.
+    if ! python3 android/tools/granada_relaunch_transport_guard.py \
+        --package "$PKG" --serial emulator-5554 --attempts 3 --delay 2 \
+        --output "$OUT/granada-capture-transport-$attempt.json"; then
+      echo "::error::Native screenshot transport or real Android app process lost"
+      return 1
     fi
     sleep 3
   done
@@ -181,18 +197,12 @@ if [[ "$DEVICE_SIZE" =~ ^([0-9]+)x([0-9]+)$ ]]; then
   adb shell am force-stop "$PKG"
   adb shell am start -W -n "$PKG/.MainActivity" | tee "$OUT/relaunch-result.txt"
   sleep 20
-  RELAUNCH_PID_OK=0
-  for attempt in 1 2 3 4 5; do
-    if timeout 15s adb shell pidof "$PKG" >"$OUT/relaunch-process-id.txt" 2>"$OUT/adb-relaunch-last-error.txt" &&
-       test -s "$OUT/relaunch-process-id.txt"; then
-      RELAUNCH_PID_OK=1
-      break
-    fi
-    echo "::warning::Waiting for relaunched Android process and adb ($attempt/5)"
-    timeout 12s adb wait-for-device || true
-    sleep 3
-  done
-  if [ "$RELAUNCH_PID_OK" -ne 1 ]; then
+  # GRANADA #139: repair ONLY runner ADB transport with bounded retries.
+  # A valid process PID on the exact booted emulator is still mandatory.
+  # Never relaunch the app again, clear storage, or turn transport failure green.
+  if ! python3 android/tools/granada_relaunch_transport_guard.py \
+      --package "$PKG" --serial emulator-5554 --attempts 6 --delay 3 \
+      --output "$OUT/granada-relaunch-transport.json"; then
     echo "::error::Cannot verify native Android process after relaunch"
     exit 1
   fi
