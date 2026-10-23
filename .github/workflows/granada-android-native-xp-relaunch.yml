@@ -96,7 +96,7 @@ jobs:
           test -s artifacts/granada-native-xp-candidate/app-debug.apk
           cd artifacts/granada-native-xp-candidate
           sha256sum app-debug.apk > APK.sha256
-          printf '%s\n' "$GITHUB_SHA" > source-head.txt
+          printf '%s\n' "$(git rev-parse HEAD)" > source-head.txt
           test "$(cat source-head.txt)" = "${{ github.event.pull_request.head.sha || github.sha }}"
       - name: Upload identical debug candidate to native device job
         uses: actions/upload-artifact@v4
@@ -128,7 +128,7 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
           cd artifacts/granada-native-xp-candidate
-          test "$(cat source-head.txt)" = "$GITHUB_SHA"
+          test "$(cat source-head.txt)" = "${{ github.event.pull_request.head.sha || github.sha }}"
           sha256sum --check APK.sha256
           test -s app-debug.apk
       - name: Install pinned CI-only DevTools WebSocket probe
