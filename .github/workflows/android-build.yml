@@ -74,6 +74,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Assert exact candidate source SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
 
       - uses: actions/setup-java@v5
         with:
@@ -293,6 +300,13 @@ jobs:
       MLV_REQUIRE_NATIVE_STATE_PROBE: "1"
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Assert exact candidate source SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
 
       - name: Download candidate APK from SAME workflow run
         uses: actions/download-artifact@v4
@@ -312,6 +326,15 @@ jobs:
         run: |
           if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
 
+      - name: Reject unpinned PR head, unstated host resources or test bypass
+        run: python3 tools/test_granada_android_candidate_ci_contract.py
+
+      - name: Validate fail-closed real-host evidence wrapper with negative scenarios
+        shell: bash
+        run: |
+          bash -n tools/granada_candidate_host_wrapper.sh
+          python3 -m unittest -v tools/test_granada_android_candidate_host_wrapper.py
+
       - name: Install and launch real candidate in isolated Android 16 device
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -320,6 +343,9 @@ jobs:
           arch: x86_64
           profile: pixel_6
           avd-name: michels-life-candidate-android16
+          # Controlled parity with separately green Android16 two-relaunch test; no fix claim.
+          ram-size: 3072M
+          heap-size: 512M
           # API 36 + gfxstream Vulkan/legacy swiftshader_indirect crashed after the
           # installed WebView rendered on two clean hosted Linux runners. Use
           # current supported SwiftShader GLES and disable Vulkan explicitly;
@@ -327,7 +353,7 @@ jobs:
           emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu swiftshader -feature -Vulkan
           disable-animations: true
           emulator-boot-timeout: 600
-          script: bash android/tools/smoke_candidate_apk_install.sh
+          script: bash tools/granada_candidate_host_wrapper.sh
 
       - name: Retain exact installed APK evidence and Android screenshots
         if: always()
@@ -337,3 +363,12 @@ jobs:
           path: artifacts/candidate-install/
           if-no-files-found: warn
           retention-days: 30
+
+      - name: Retain bounded Android16 host and cgroup failure diagnosis
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MichelsLife-Android16-HostEvidence-v${{ env.ANDROID_VERSION }}
+          path: artifacts/candidate-install-host/
+          if-no-files-found: warn
+          retention-days: 14
