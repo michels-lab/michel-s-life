@@ -25,9 +25,45 @@ PY
 }
 native_shot(){
   local label="$1"
+  local dest="$OUT/$label.png"
+  local tmp="$OUT/$label.partial.png"
+  local remote="/sdcard/mlv-granada-synthetic-native-qa.png"
+  local attempt
   phase="native_frame_$label"
-  adb_safe exec-out screencap -p > "$OUT/$label.png"
-  verify_frame "$OUT/$label.png"
+  for attempt in 1 2 3 4; do
+    rm -f "$tmp"
+    # Always use real device framebuffer. An incomplete PNG (common during
+    # Android16 hosted ADB stalls) is NOT counted as a valid native screen.
+    if adb_safe exec-out screencap -p > "$tmp" 2>/dev/null &&
+        verify_frame "$tmp"; then
+      mv "$tmp" "$dest"
+      printf 'GRANADA_NATIVE_REAL_FRAME_PASS phase=%s capture=exec_out attempt=%s\n' "$label" "$attempt"
+      return 0
+    fi
+    rm -f "$tmp"
+    # Alternative transport captures the SAME Android framebuffer on-device
+    # first, then pulls the complete file; no browser mock or cached PNG.
+    if adb_safe shell screencap -p "$remote" >/dev/null 2>&1 &&
+        adb_safe pull "$remote" "$tmp" >/dev/null 2>&1 &&
+        verify_frame "$tmp"; then
+      mv "$tmp" "$dest"
+      adb_safe shell rm -f "$remote" >/dev/null 2>&1 || true
+      printf 'GRANADA_NATIVE_REAL_FRAME_PASS phase=%s capture=on_device_pull attempt=%s\n' "$label" "$attempt"
+      return 0
+    fi
+    rm -f "$tmp"
+    printf 'GRANADA_NATIVE_FRAME_RETRY phase=%s attempt=%s no_valid_pixels\n' "$label" "$attempt" >&2
+    # Only repair the ephemeral ADB host transport; never reset app data or
+    # substitute a browser-screen fixture for real Android screenshot proof.
+    if ! timeout 12s adb -s "$SERIAL" get-state 2>/dev/null | grep -qx device; then
+      timeout 12s adb kill-server >/dev/null 2>&1 || true
+      timeout 12s adb start-server >/dev/null 2>&1 || true
+      timeout 20s adb -s "$SERIAL" wait-for-device >/dev/null 2>&1 || true
+    fi
+    sleep 3
+  done
+  echo "::error::Native Android framebuffer not verified for $label after four real capture attempts"
+  return 1
 }
 native_pid(){
   local pid
