@@ -16,3 +16,11 @@
 ## Gates
 - New Python negative fixtures need executed CI result on exact PR source; candidate job must separately install/paint/onboard and prove two actual process restarts. This patch alone does not close #139 or #171 or authorize a new APK release.
 - Official last stable remains Windows v3.0.221 / Android Direct v0.2.9 from 2026-10-19; no release produced.
+
+## Follow-up: RAM parity experiment FAILED; add hard native host diagnosis
+
+- Actual exact-head #181 candidate smoke still **RED** at `fa9368a2c2af6f6bdcba8fb5b2bc3df3c71ddc67`, run [40010662716](https://github.com/michels-lab/michel-s-life/actions/runs/40010662716): 3 GiB RAM/512 MiB heap did **not** keep hosted QEMU alive beyond the first actual native frame. The existing `GRANADA_ANDROID_CANDIDATE_PROVENANCE_PARITY_PASS` only proves structural pinning; it cannot certify installation or persistence. Native test remains hard red. No rerun solely to hope for green.
+- New `tools/granada_candidate_host_wrapper.sh` wraps the unchanged real native APK install/onboarding/two-relaunch script, records process-name-only counts and cgroup OOM counters immediately at emulator startup and at failure, and consumes existing fail-closed `tools/granada_android16_host_verdict.py`. It preserves the true failing exit status and cannot substitute synthetic pixels. Only bounded categorical verdict is emitted; raw logcat/user data are never uploaded by this new diagnostic.
+- Success is not granted unless the original script returns 0 **and** three canonical native state comparison reports each say PASS **and** time-separated genuine CRC-complete PNG files exist. This is an added acceptance check, not a weakening.
+- New independent offline negative fixtures prove that a simulated native exit code 27 propagates as failure with host-only evidence, that a fake exit 0 without actual native evidence is still rejected, and that the original native smoke cannot silently disappear from the wrapper. Existing five negative SHA/resource/skip checks are retained and updated for the wrapped script.
+- **Still BLOCKED until exact-head host-classification workflow runs**. Even a host OOM classification does not establish app QA, a root-cause fix, physical Galaxy acceptance, signing or live account isolation. Do not merge/publish on this change alone.
