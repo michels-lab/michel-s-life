@@ -1,0 +1,32 @@
+import assert from 'node:assert/strict';
+import {normalizeError,evidenceReport} from './granada_story_diagnostic_core.mjs';
+const sha='1'.repeat(40);
+const matrix=()=>[320,360,412].flatMap(width=>['en','es'].map(language=>({width,language,passed:true,phase:'final',errors:[]})));
+let count=0;
+function check(name,fn){fn();console.log('PASS '+name);count++;}
+check('syntax error classified without raw literal',()=>{
+ const x=normalizeError({name:'SyntaxError',message:'Unexpected token : PRIVATE',stack:'at https://demo.invalid/path/index.html?token=SECRET:123:4'},'story');
+ assert.deepEqual(x,{phase:'story',code:'script_syntax_error',kind:'SyntaxError',source:'index.html',line:123,column:4});
+ assert.ok(!JSON.stringify(x).includes('SECRET'));
+});
+check('ReferenceError source location',()=>assert.equal(normalizeError({name:'ReferenceError',message:'SECRET',stack:'at (http://127.0.0.1/a/mobile.js:42:8)'},'focus').source,'mobile.js'));
+check('TypeError classification',()=>assert.equal(normalizeError(new TypeError('bad')).code,'invalid_runtime_operation'));
+check('timeout classification',()=>assert.equal(normalizeError({message:'Timeout 12000ms exceeded'}).code,'interaction_timeout'));
+check('context destruction classification',()=>assert.equal(normalizeError({message:'Execution context was destroyed'}).code,'browser_context_lost'));
+check('unknown error omits private text',()=>assert.equal(JSON.stringify(normalizeError({message:'access-token=PRIVATE'})).includes('PRIVATE'),false));
+check('invalid error phase rejected',()=>assert.throws(()=>normalizeError('x','auth-token'),/invalid diagnostic phase/));
+check('6-case green matrix',()=>{const x=evidenceReport({sourceSha:sha,cases:matrix()});assert.equal(x.status,'PASS');assert.equal(x.passed,6);});
+check('one red case fails entire matrix',()=>{const c=matrix();c[2].passed=false;c[2].errors=[normalizeError(new SyntaxError('bad'),'story')];assert.equal(evidenceReport({sourceSha:sha,cases:c}).status,'FAIL');});
+check('missing case prohibited',()=>assert.throws(()=>evidenceReport({sourceSha:sha,cases:matrix().slice(1)}),/incomplete_3_by_2_matrix/));
+check('duplicate case prohibited',()=>{const c=matrix();c[1]=c[0];assert.throws(()=>evidenceReport({sourceSha:sha,cases:c}),/duplicate_matrix_case/);});
+check('green with errors prohibited',()=>{const c=matrix();c[0].errors=[normalizeError('bad')];assert.throws(()=>evidenceReport({sourceSha:sha,cases:c}),/errors_cannot_pass/);});
+check('native evidence cannot be fabricated',()=>assert.throws(()=>evidenceReport({sourceSha:sha,apkSha:'2'.repeat(64),cases:matrix()}),/must_not_claim_native_apk/));
+check('missing SHA prohibited',()=>assert.throws(()=>evidenceReport({sourceSha:'bad',cases:matrix()}),/source_sha_required/));
+check('raw private annotations prohibited',()=>{const c=matrix();c[0].passed=false;c[0].errors=[{...normalizeError(new Error('bad'),'story'),comment:'PRIVATE'}];assert.throws(()=>evidenceReport({sourceSha:sha,cases:c}),/unsafe_error_record/);});
+check('bad path prohibited',()=>{const c=matrix();c[0].passed=false;c[0].errors=[{...normalizeError(new Error('bad'),'story'),source:'../secrets/private.js'}];assert.throws(()=>evidenceReport({sourceSha:sha,cases:c}),/unsafe_error_record/);});
+check('oversize error list prohibited',()=>{const c=matrix();c[0].passed=false;c[0].errors=Array(36).fill(normalizeError(new Error('bad')));assert.throws(()=>evidenceReport({sourceSha:sha,cases:c}),/incomplete_case_evidence/);});
+check('non-number line prohibited',()=>{const c=matrix();c[0].passed=false;c[0].errors=[{...normalizeError(new Error('bad')),line:'1'}];assert.throws(()=>evidenceReport({sourceSha:sha,cases:c}),/unsafe_error_record/);});
+check('unapproved error category prohibited',()=>{const c=matrix();c[0].passed=false;c[0].errors=[{...normalizeError(new Error('bad')),kind:'TokenLeak'}];assert.throws(()=>evidenceReport({sourceSha:sha,cases:c}),/unsafe_error_record/);});
+check('allowlisted chapter overlay error survives redaction',()=>assert.equal(normalizeError(new Error('chapter_submit_covered'),'chapter').code,'chapter_submit_covered'));
+check('unknown assertion never reveals raw text',()=>assert.equal(normalizeError(new Error('owner PRIVATE journal'),'chapter').code,'runtime_error'));
+console.log(count+'/'+count+' Story/Focus provenance contract checks passed');

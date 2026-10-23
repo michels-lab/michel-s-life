@@ -1,0 +1,78 @@
+name: GRANADA - Story Focus touch provenance
+
+on:
+  pull_request:
+    paths:
+      - 'tools/granada_story_diagnostic_core.mjs'
+      - 'tools/test_granada_story_diagnostic_core.mjs'
+      - 'tools/ui_granada_story_focus_matrix.mjs'
+      - 'tools/validate_granada_inline_scripts.mjs'
+      - '.github/workflows/granada-story-focus-provenance.yml'
+      - 'src/MichelsLife/frontend/**'
+      - 'android/android-bridge.js'
+      - 'android/mobile-experience.js'
+      - 'android/mobile-sections.js'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  story-focus-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate redacted error evidence contract
+        run: |
+          node --check tools/granada_story_diagnostic_core.mjs
+          node --check tools/test_granada_story_diagnostic_core.mjs
+          node --check tools/ui_granada_story_focus_matrix.mjs
+          node --check android/mobile-sections.js
+          node tools/test_granada_story_diagnostic_core.mjs
+      - name: Construct official-app synthetic browser fixture
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p artifacts
+          python tools/download_latest_michels_life_bundle.py --repo michels-lab/michel-s-life-releases --output artifacts/AppBundle-story.zip
+          python tools/bump_frontend_version.py --index src/MichelsLife/frontend/index.html
+          python tools/enable_i18n.py --index src/MichelsLife/frontend/index.html
+          python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
+          python tools/replace_bundle_index.py --bundle artifacts/AppBundle-story.zip --index src/MichelsLife/frontend/index.html
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-story.zip --source src/MichelsLife/frontend/i18n.js --arcname i18n.js
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-story.zip --source branding/michel_duarte_avatar.jpg --arcname assets/michel_duarte_avatar.jpg
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-story.zip --source branding/michels_life_app_icon.svg --arcname assets/michels_life_app_icon.svg
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-story.zip --source branding/michels_life_mark.svg --arcname assets/michels_life_mark.svg
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-story.zip --source branding/michels_life_lockup.svg --arcname assets/michels_life_lockup.svg
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-story.zip --source branding/michels_lab_mark.png --arcname assets/michels_lab_mark.png
+          python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-story.zip --source branding/michels_lab_lockup.png --arcname assets/michels_lab_lockup.png
+          python android/tools/prepare_bundle.py --bundle artifacts/AppBundle-story.zip --assets artifacts/android-story-bundle
+          node tools/validate_granada_inline_scripts.mjs artifacts/android-story-bundle/index.html
+      - name: Install Chromium and touchscreen browser runtime
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Verify PRODUCTION Story save, Focus timer and reload using 6 actual touchscreen cases
+        run: |
+          python -m http.server 4174 --directory artifacts/android-story-bundle >/tmp/mlv-story-http.log 2>&1 &
+          MLV_SOURCE_SHA="${{ github.event.pull_request.head.sha || github.sha }}" MLV_ANDROID_UI_URL=http://127.0.0.1:4174 node tools/ui_granada_story_focus_matrix.mjs
+      - name: Check isolated Story safe-area geometry contract
+        if: always()
+        run: |
+          node --check android/story-focus-safe-area.mjs
+          node tools/test_granada_story_safe_area.mjs
+      - name: Save redacted failure evidence on green or red
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: granada-story-focus-browser-matrix
+          path: artifacts/granada-story-focus/
+          if-no-files-found: warn
+          retention-days: 14

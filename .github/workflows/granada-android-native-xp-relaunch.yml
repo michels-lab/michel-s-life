@@ -1,0 +1,184 @@
+name: GRANADA Android real XP + two force-stop relaunches
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/granada-android-native-xp-relaunch.yml'
+      - 'tools/granada_native_xp_relaunch.py'
+      - 'tools/granada_native_xp_relaunch.sh'
+      - 'tools/test_granada_native_xp_relaunch.py'
+      - 'tools/granada_native_webview_failure_diagnosis.py'
+      - 'tools/test_granada_native_webview_failure_diagnosis.py'
+      - 'android/mobile-sections.js'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: granada-native-xp-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: One exact-commit Android debuggable candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Assert exact PR head and test contract before compilation
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          bash tools/granada_native_xp_relaunch.sh --self-test
+          python3 -m py_compile tools/granada_native_xp_relaunch.py
+          python3 -m py_compile tools/granada_native_webview_failure_diagnosis.py
+          node --check android/mobile-sections.js
+          python android/tools/native_webview_state_probe.py self-test
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Prepare actual Android16 SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+      - name: Validate canonical application and cloud boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          python android/tools/validate_sync_contract.py
+          python android/tools/validate_android_version.py
+          python android/tools/validate_android_mobile_ux.py
+          node tools/test_cloud_restore_storage.mjs
+      - name: Download official base AppBundle for canonical exact-commit Android assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p android/build
+          python tools/download_latest_michels_life_bundle.py --repo michels-lab/michel-s-life-releases --output android/build/AppBundle.zip
+      - name: Package real frontend and Android Story/Focus
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tools/bump_frontend_version.py --index src/MichelsLife/frontend/index.html
+          python tools/enable_i18n.py --index src/MichelsLife/frontend/index.html
+          python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
+          python tools/replace_bundle_index.py --bundle android/build/AppBundle.zip --index src/MichelsLife/frontend/index.html
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source src/MichelsLife/frontend/i18n.js --arcname i18n.js
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michel_duarte_avatar.jpg --arcname assets/michel_duarte_avatar.jpg
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_life_app_icon.svg --arcname assets/michels_life_app_icon.svg
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_life_mark.svg --arcname assets/michels_life_mark.svg
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_life_lockup.svg --arcname assets/michels_life_lockup.svg
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_lab_mark.png --arcname assets/michels_lab_mark.png
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_lab_lockup.png --arcname assets/michels_lab_lockup.png
+          python android/tools/prepare_bundle.py --bundle android/build/AppBundle.zip --assets android/app/src/main/assets/app
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.6.0'
+      - name: Compile installed candidate WebView APK
+        working-directory: android
+        run: gradle --no-daemon :app:assembleDebug
+      - name: Verify APK is from this exact SHA and preserve immutable digest
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/granada-native-xp-candidate
+          cp android/app/build/outputs/apk/debug/app-debug.apk artifacts/granada-native-xp-candidate/app-debug.apk
+          test -s artifacts/granada-native-xp-candidate/app-debug.apk
+          cd artifacts/granada-native-xp-candidate
+          sha256sum app-debug.apk > APK.sha256
+          printf '%s\n' "$(git rev-parse HEAD)" > source-head.txt
+          test "$(cat source-head.txt)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+      - name: Upload identical debug candidate to native device job
+        uses: actions/upload-artifact@v4
+        with:
+          name: granada-native-xp-exact-commit-debug-apk
+          path: artifacts/granada-native-xp-candidate/
+          if-no-files-found: error
+          retention-days: 7
+
+  native-xp:
+    name: Real Android16 debug WebView + two force-stop canonical ledgers
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: granada-native-xp-exact-commit-debug-apk
+          path: artifacts/granada-native-xp-candidate/
+      - name: Reject unexpected source, APK, release signing or unauthenticated tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          cd artifacts/granada-native-xp-candidate
+          test "$(cat source-head.txt)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          sha256sum --check APK.sha256
+          test -s app-debug.apk
+      - name: Install pinned CI-only DevTools WebSocket probe
+        run: python3 -m pip install --disable-pip-version-check websocket-client==1.8.0
+      - name: Require hardware acceleration
+        run: |
+          test -e /dev/kvm
+          sudo chmod 666 /dev/kvm
+      - name: "Installed Android16: native canonical mission completion XP and two REAL process restarts"
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          avd-name: granada-native-xp-two-cold-boot
+          ram-size: 3072M
+          heap-size: 512M
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu swiftshader -feature -Vulkan
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash tools/granada_native_xp_relaunch.sh
+      - name: Fail closed unless all THREE ledgers and exactly TWO restarts are approved
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(cat artifacts/granada-native-xp-relaunch/native-proof-complete.txt)" = complete
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('artifacts/granada-native-xp-relaunch')
+          assert not (root/'failed-phase.txt').exists()
+          data=json.loads((root/'native-two-force-stop-ledger.json').read_text())
+          assert data['pass'] is True and data['forcedRelaunches']==2
+          assert data['realAndroidWebView'] is True and data['missionAndXpIdentical'] is True
+          assert data['providerUsed'] is False and data['signedDeviceVerified'] is False
+          assert data['xp']>=50
+          from tools.granada_native_xp_relaunch import png_info
+          for name in ('before','after-1','after-2'):
+              png_info(root/(name+'.png'))
+          print('GRANADA_NATIVE_REAL_XP_TWO_RELAUNCH_VERIFIED')
+          PY
+      - name: Preserve real installed APK evidence even when native CI fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: granada-native-xp-two-relaunch-evidence
+          path: artifacts/granada-native-xp-relaunch/
+          if-no-files-found: warn
+          retention-days: 14
