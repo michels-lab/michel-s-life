@@ -18,7 +18,7 @@ class NativeXpRelaunchContract(unittest.TestCase):
                     struct.pack(">I",zlib.crc32(kind+data)&0xffffffff))
         body=(bytes.fromhex("89504e470d0a1a0a")+
               chunk(b"IHDR",struct.pack(">IIBBBBB",360,640,8,6,0,0,0))+
-              chunk(b"IDAT",zlib.compress((b"\\0"+b"\\0"*1440)*640))+
+              chunk(b"IDAT",zlib.compress((bytes([0])+bytes(1440))*640))+
               chunk(b"IEND",b""))
         with tempfile.TemporaryDirectory() as temp:
             p=Path(temp)/"native.png"
