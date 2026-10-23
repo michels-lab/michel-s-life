@@ -3,8 +3,8 @@
 from pathlib import Path
 
 SOURCE=Path(".github/workflows/android-build.yml")
-PIN="ref: ${ github.event.pull_request.head.sha || github.sha }}"
-VERIFY='test "$(git rev-parse HEAD)" = "${ github.event.pull_request.head.sha || github.sha }}"'
+PIN="ref: ${{ github.event.pull_request.head.sha || github.sha }}"
+VERIFY='test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"'
 
 def verify(src):
     if "  installed-candidate-smoke:\n" not in src or "  android:\n" not in src:
@@ -38,7 +38,7 @@ if __name__=="__main__":
     verify(original)
     reject("missing_ram",original.replace("ram-size: 3072M","",1))
     reject("missing_heap",original.replace("heap-size: 512M","",1))
-    reject("synthetic_merge_sha",original.replace(PIN,"ref: ${ github.sha }}",1))
+    reject("synthetic_merge_sha",original.replace(PIN,"ref: ${{ github.sha }}",1))
     reject("unchecked_source_sha",original.replace(VERIFY,"echo unchecked",1))
     reject("silent_native_failure",original.replace("script: bash android/tools/smoke_candidate_apk_install.sh","continue-on-error: true\n          script: bash android/tools/smoke_candidate_apk_install.sh",1))
     print("GRANADA_ANDROID_CANDIDATE_PROVENANCE_PARITY_PASS")
