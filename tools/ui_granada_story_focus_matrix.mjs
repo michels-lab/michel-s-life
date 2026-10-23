@@ -1,5 +1,6 @@
 import {chromium} from 'playwright';
 import {mkdir,writeFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
 import {normalizeError,evidenceReport} from './granada_story_diagnostic_core.mjs';
 // Android browser model: ONLY synthetic data. Native APK / provider is not tested.
 const base=process.env.MLV_ANDROID_UI_URL||'http://127.0.0.1:4174';
@@ -15,6 +16,8 @@ for(const width of [320,360,412])for(const language of ['en','es']){
  let context=null,page=null,phase='bootstrap',passed=false;
  const errors=[];
  const parseLocations=[];
+ const failureSourceHashes=[];
+ const sourceRequests=[];
  try{
    context=await browser.newContext({viewport:{width,height:915},screen:{width,height:915},isMobile:true,hasTouch:true,deviceScaleFactor:2.625});
    await context.addInitScript(locale=>{
@@ -55,8 +58,24 @@ for(const width of [320,360,412])for(const language of ['en','es']){
      if(parseLocations.length<8)parseLocations.push(detail);
    };
    const cdp=await context.newCDPSession(page);
-   cdp.on('Debugger.scriptFailedToParse',event=>
-     record(safePlace(event.url,event.startLine,event.startColumn,'parser')));
+   cdp.on('Debugger.scriptFailedToParse',event=>{
+     record(safePlace(event.url,event.startLine,event.startColumn,'parser'));
+     // Collect a digest of the failed script, NOT its contents. For an
+     // intermittent SyntaxError, this distinguishes a stable static inline
+     // script from an unexpectedly generated/truncated runtime script.
+     if(sourceRequests.length>=6||!event.scriptId)return;
+     sourceRequests.push(cdp.send('Debugger.getScriptSource',
+       {scriptId:event.scriptId}).then(reply=>{
+       const code=reply.scriptSource;
+       if(typeof code==='string'){
+         failureSourceHashes.push({
+           digest:createHash('sha256').update(code).digest('hex'),
+           bytes:Buffer.byteLength(code,'utf8'),
+           startLine:Number.isSafeInteger(event.startLine)?event.startLine+1:null
+         });
+       }
+     }).catch(()=>{}));
+   });
    cdp.on('Runtime.exceptionThrown',event=>{
      const detail=event.exceptionDetails;
      if(detail?.exception?.className==='SyntaxError')
@@ -170,9 +189,11 @@ for(const width of [320,360,412])for(const language of ['en','es']){
    // The evidence schema already allows only sanitized category and source
    // basename/line. Surface a small bounded sample for diagnosing the
    // intermittent parser error without ever printing raw error text.
+   await Promise.allSettled(sourceRequests);
    console.error('FAIL Android Story/Focus touch '+name+' ['+
      [...new Set(errors.map(e=>e.code))].join(',')+'] '+
-     JSON.stringify({errors:errors.slice(0,3),parser:parseLocations}));
+     JSON.stringify({errors:errors.slice(0,3),parser:parseLocations,
+       failedScriptFingerprints:failureSourceHashes.slice(0,6)}));
    if(page)try{await page.screenshot({path:output+'/'+name+'-failure.png',timeout:6000});}catch{}
  }finally{
    cases.push({width,language,passed,phase,errors});
