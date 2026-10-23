@@ -7,6 +7,8 @@ on:
       - 'tools/granada_native_xp_relaunch.py'
       - 'tools/granada_native_xp_relaunch.sh'
       - 'tools/test_granada_native_xp_relaunch.py'
+      - 'tools/granada_native_webview_failure_diagnosis.py'
+      - 'tools/test_granada_native_webview_failure_diagnosis.py'
       - 'android/mobile-sections.js'
   workflow_dispatch:
 
@@ -33,6 +35,7 @@ jobs:
           test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
           bash tools/granada_native_xp_relaunch.sh --self-test
           python3 -m py_compile tools/granada_native_xp_relaunch.py
+          python3 -m py_compile tools/granada_native_webview_failure_diagnosis.py
           node --check android/mobile-sections.js
           python android/tools/native_webview_state_probe.py self-test
       - uses: actions/setup-java@v5
