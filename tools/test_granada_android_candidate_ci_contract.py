@@ -20,10 +20,14 @@ def verify(src):
     options=native.split("avd-name: michels-life-candidate-android16",1)[1].split("script: bash android/tools/smoke_candidate_apk_install.sh",1)[0]
     if "ram-size: 3072M" not in options or "heap-size: 512M" not in options:
         raise AssertionError("missing_resource_parity")
-    if "script: bash android/tools/smoke_candidate_apk_install.sh" not in native:
+    if "script: bash tools/granada_candidate_host_wrapper.sh" not in native:
         raise AssertionError("native_smoke_replaced")
     if "continue-on-error: true" in native:
         raise AssertionError("native_failure_softened")
+    if 'python3 -m unittest -v tools/test_granada_android_candidate_host_wrapper.py' not in native:
+        raise AssertionError('host_wrapper_regression_missing')
+    if 'Retain bounded Android16 host and cgroup failure diagnosis' not in native:
+        raise AssertionError('native_host_diagnostic_artifact_missing')
 
 def reject(name,src):
     try:
@@ -40,5 +44,5 @@ if __name__=="__main__":
     reject("missing_heap",original.replace("heap-size: 512M","",1))
     reject("synthetic_merge_sha",original.replace(PIN,"ref: ${{ github.sha }}",1))
     reject("unchecked_source_sha",original.replace(VERIFY,"echo unchecked",1))
-    reject("silent_native_failure",original.replace("script: bash android/tools/smoke_candidate_apk_install.sh","continue-on-error: true\n          script: bash android/tools/smoke_candidate_apk_install.sh",1))
+    reject("silent_native_failure",original.replace("script: bash tools/granada_candidate_host_wrapper.sh","continue-on-error: true\n          script: bash tools/granada_candidate_host_wrapper.sh",1))
     print("GRANADA_ANDROID_CANDIDATE_PROVENANCE_PARITY_PASS")
