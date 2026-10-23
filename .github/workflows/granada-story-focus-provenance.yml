@@ -6,6 +6,7 @@ on:
       - 'tools/granada_story_diagnostic_core.mjs'
       - 'tools/test_granada_story_diagnostic_core.mjs'
       - 'tools/ui_granada_story_focus_matrix.mjs'
+      - 'tools/validate_granada_inline_scripts.mjs'
       - '.github/workflows/granada-story-focus-provenance.yml'
       - 'src/MichelsLife/frontend/**'
       - 'android/android-bridge.js'
@@ -53,6 +54,7 @@ jobs:
           python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-story.zip --source branding/michels_lab_mark.png --arcname assets/michels_lab_mark.png
           python tools/inject_bundle_asset.py --bundle artifacts/AppBundle-story.zip --source branding/michels_lab_lockup.png --arcname assets/michels_lab_lockup.png
           python android/tools/prepare_bundle.py --bundle artifacts/AppBundle-story.zip --assets artifacts/android-story-bundle
+          node tools/validate_granada_inline_scripts.mjs artifacts/android-story-bundle/index.html
       - name: Install Chromium and touchscreen browser runtime
         run: |
           npm install --no-save playwright
