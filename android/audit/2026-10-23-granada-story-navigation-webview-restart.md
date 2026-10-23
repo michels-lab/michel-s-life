@@ -69,3 +69,29 @@ The failed SHA fingerprints did not match complete static inline scripts. This s
 PR #170 updated **only its test infrastructure**: fixed a diagnostic URL-basename regex that falsely reported every JavaScript source as `unlocated`, expanded the formerly first-six CDP error-source cap to capture later reload events, and compares failed CDP script-source hashes/lengths with actual generated HTML. Added post-failure hashed DOM `script.textContent` check for the two implicated script IDs (never logs actual JavaScript/source/user content). The latest exact-head [Story run #39916005593](https://github.com/michels-lab/michel-s-life/actions/runs/39916005593) must be checked before claiming its result.
 
 Also the full exact-head source & UI gates, native debug **two force-stop + canonical XP**, signed Galaxy/proven A/B accounts remain independently required. #170 remains **DRAFT/UNMERGED** until relevant P0 failures are resolved. #168/#139/#171/#108 remain open. No RC/release/Windows native/cross-app changes.
+
+
+## GRANADA 2026-10-23 — actual installed Android16 **two force-stop XP persistence success**
+
+Latest production Story/Focus PR #170 head `78b8f66558b675c4a3a7644886b3110ad8df11d2`.
+
+### Corrected real Android Story button trap
+
+The previous head `a8c382d1...` failed standard Android UI smoke: chapter CTA `bottom=914.53125` sat **under fixed Android nav top=842**, even after `scrollIntoViewIfNeeded()`. A dedicated matrix alone had shown 6/6, but the general real-tab route still failed. **Source change** in Android-owned `android/mobile-sections.js` now tracks the actual reappearance of the native bottom bar after the soft keyboard hides (or return to Story) and runs one deferred safe-area scroll recalculation. Does not hijack continued user scrolling, Focus deadline, mission/XP state, themes or shared index. [Exact-head Android UI smoke #39918548684](https://github.com/michels-lab/michel-s-life/actions/runs/39918548684) **SUCCESS**, and dedicated production Story 6/6 [#39918548664](https://github.com/michels-lab/michel-s-life/actions/runs/39918548664) **SUCCESS**. Independent second six-case rerun was requested to check intermittent #168.
+
+### First exact-commit native debug APK two-relaunch acceptance — real milestone
+
+[Workflow #39918548698](https://github.com/michels-lab/michel-s-life/actions/runs/39918548698) **SUCCESS**. It built and SHA256-pinned a **new exact-story-source debuggable APK**, installed it on fresh KVM Android16 Pixel6 emulator, verified native 1080×2400 pixels and process PID, used **canonical app's real `completeMission()` + `save()`** through debug-only WebView CDP to finish a fixed synthetic daily mission **once for 50 XP** (repeat did not mint XP again), and then:
+
+- `am force-stop` #1: OS process exited, new `LaunchState: COLD`, distinct PID, actual native PNG and saved/live mission ID + completion ID + exact XP hash **unchanged**.
+- `am force-stop` #2: second OS process termination and cold relaunch, third distinct PID, genuine PNG and same identical saved/live canonical progress fingerprints.
+
+Log has `GRANADA_NATIVE_XP_SEED_PASS`, two `GRANADA_NATIVE_XP_CAPTURE_PASS`, `GRANADA_NATIVE_XP_TWO_RELAUNCH_PASS` and terminal `GRANADA_NATIVE_REAL_XP_TWO_RELAUNCH_VERIFIED`. [Immutable synthetic-only evidence artifact 12486612169](https://github.com/michels-lab/michel-s-life/actions/runs/39918548698/artifacts/12486612169). This is **installed-app OS process restart / local persistence evidence**, *not* a mocked browser reload. No actual user mission or remote service/account touched.
+
+**Other same-head completed green**: Source validation, canonical Project/Story cross-platform browser and Android UI smoke. Generic UI and independent native install/launch were still in progress at this audit checkpoint. No claims for unfinished runs.
+
+### Remaining release and merge boundaries
+
+- Real provider A/B Supabase ownership and guest/Journal vault integration #108/#169, signed public APK and physical Galaxy touchscreen/IME remain unverified.
+- Intermittent hosted Android ADB flakiness #139 and JavaScript `SyntaxError` #168 cannot be considered eliminated from **one** successful run; rerun strict browser story matrix on identical SHA and keep failure provenance.
+- #170 **still draft/unmerged** until exact-head full gates are reconciled. **No new public release / RC / Windows native build**, no cross-project changes.
