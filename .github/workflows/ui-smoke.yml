@@ -96,6 +96,17 @@ jobs:
             --platforms desktop-browser --surfaces home,about
           echo "Browser rendered-UI PASS only; Windows installed and Android APK need independent candidate evidence."
 
+      - name: Export real canonical desktop layout reference for external design tools
+        run: |
+          python tools/build_canonical_design_reference.py --self-test
+          python tools/build_canonical_design_reference.py \
+            --platform desktop-browser \
+            --directory artifacts/ui-smoke \
+            --bundle artifacts/AppBundle.zip \
+            --commit "$GITHUB_SHA"
+          echo "Actual current UI screenshots: artifacts/ui-smoke/design-baseline.html"
+          echo "Design baseline is not a visual approval or installed Windows evidence."
+
       - name: Audit automatic desktop update detection
         run: |
           export MLV_UI_URL=http://127.0.0.1:4173
