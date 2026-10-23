@@ -1364,3 +1364,9 @@ Still required before Play submission:
 - Stronger positive gate requires three persisted canonical comparison reports with `pass=true` plus four real CRC-complete native PNG checkpoints, on top of original native smoke. No successful structural fixture can replace required original APK acceptance.
 - Added `tools/test_granada_android_candidate_host_wrapper.py` negative tests for exit-code preservation, fake success without APK evidence and wrapper calling original smoke; CI runs these before costly emulator. Exact new-head CI/native result remains PENDING as of authoring.
 - Windows stays paused. No design/theme/frontend, user data, provider, signing key, main-branch merge or release changed. Branch PR #181 remains DRAFT. Detail: `android/audit/2026-10-23-granada-native-candidate-parity.md`.
+
+### GRANADA 2026-10-23 — GitHub native host artifact verified
+
+- In run `40012790317` exact code SHA `1d9cdd33463aed856535726aea7368a7d7a2e0dc`, the five CI contract negative fixtures and three host-wrapper negative fixtures PASS, as do source, Android UI, general UI and APK build. Real Android16 app first frame appears, followed by missing QEMU device at 30-second checkpoint, so **native remains FAIL**.
+- Retained host artifact ID `12526714368` confirms **host QEMU process count 1 → 0**. Memory `oom_kill` counters unavailable; **do not call this proven OOM**, app data loss or signed physical Galaxy result. `diagnostic-verdict.json`: `qemu_emulator_process_disappeared`, `native_app_state=not_verified`, `canonical_persistence_verified=false`.
+- Permanent full technical evidence in `android/audit/2026-10-23-granada-native-candidate-parity.md`; #139 linked; PR #181 remains draft with red native gate, main/release unchanged.
