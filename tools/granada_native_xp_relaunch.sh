@@ -14,6 +14,13 @@ trap 'result=$?; if ((result!=0)); then
 fi' EXIT
 
 adb_safe(){ timeout 24s adb -s "$SERIAL" "$@"; }
+diagnose(){
+  # Only approved booleans, counts and named native error categories reach CI.
+  # Never print or save raw logcat, user account state, private JS or adb shell dumps.
+  local safe_phase="$1"
+  timeout 38s python3 tools/granada_native_webview_failure_diagnosis.py \
+    --phase "$safe_phase" --output "$OUT/diagnostic-$safe_phase.json" || true
+}
 verify_frame(){
   python3 - "$1" <<'PY'
 import sys
@@ -77,6 +84,7 @@ capture_js(){
   pid="$(native_pid)"
   adb_safe forward tcp:9222 "localabstract:webview_devtools_remote_$pid"
   if ! python3 tools/granada_native_xp_relaunch.py "$action" --port 9222 --output "$OUT/$output.json"; then
+    diagnose "webview_capture_failed"
     adb_safe forward --remove tcp:9222 || true
     return 1
   fi
@@ -86,6 +94,7 @@ if [[ "${1:-}" == "--self-test" ]]; then
   bash -n "$0"
   python3 tools/granada_native_xp_relaunch.py self-test
   python3 -m unittest -v tools/test_granada_native_xp_relaunch.py
+  python3 -m unittest -v tools/test_granada_native_webview_failure_diagnosis.py
   echo "GRANADA_NATIVE_XP_OFFLINE_SELF_TEST_PASS"
   exit 0
 fi
@@ -108,6 +117,7 @@ capture_js seed "canonical-before"
 for number in 1 2; do
   phase="force_stop_$number"
   adb_safe shell am force-stop "$PKG"
+  diagnose "after_force_stop_$number"
   if adb_safe shell pidof "$PKG" | grep -qE '[0-9]'; then
     echo "::error::Android force-stop did not end the existing WebView process"
     exit 1
@@ -121,6 +131,7 @@ for number in 1 2; do
     exit 1
   fi
   first_pid="$new_pid"
+  diagnose "after_launch_$number"
   native_shot "after-$number"
   capture_js capture "canonical-after-$number"
 done
