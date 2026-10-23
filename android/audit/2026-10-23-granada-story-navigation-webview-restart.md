@@ -35,3 +35,20 @@ PR #170 cannot be considered accepted just because the targeted Story touch smok
 - Dedicated Story 6-case Chromium and independent native APK install were still executing at this checkpoint; their outcomes must not be guessed or backfilled.
 
 The single-feature Story nav touch fix is verified in actual browser mobile smoke, but the containing PR #170 **remains DRAFT and unmerged** due to independent unresolved native and script/runtime gates. Retain #139/#168/#171/#108. No release, no RC and no other project changes.
+
+
+## Closed exact-head CI accounting — same source `1ff246dffb8b40c380071d7d807242ba180ff767`
+
+**Green:**
+- Source validation #39912545816: success
+- Android UI smoke #39912545686: success, including exact real touch target on returned Story Chapter form (previously blocked by bottom bar)
+- General UI smoke #39912545795: success
+- Exact-commit debug APK compiler in native XP #39912545638 and APK build #39912545653: success (APK built, **not an accepted installed app**)
+
+**Red / release-blocking:**
+- [Dedicated Story 6-case matrix #39912545657](https://github.com/michels-lab/michel-s-life/actions/runs/39912545657): **4/6**. 320 EN, 360 EN/ES, 412 ES passed. 320 ES and 412 EN produced intermittent genuine `SyntaxError` on page **relaunch** despite the Chapter CTA itself being usable in other cases. Redacted CDP fingerprints of the failed scripts were `8aa8f3f1e3fb67d692e0457b9ec0d86eb6b59f3a47ef4c678b3452d7c82791fa` (1,988 bytes, start line 17,358) and `f3248c86698be959d718a2358351d67642d276ecaa50326a780ae67fb36ae6b0` (16,165 bytes, start line 12,748). Script source and user data were NOT logged. Parser location is not yet a proven source line. Keep #168 open.
+- [Native synthetic XP/two-force-stop #39912545638](https://github.com/michels-lab/michel-s-life/actions/runs/39912545638): exact-head APK compiler success, real initial Android 1080×2400 PNG passed; **before seeding the synthetic mission**, CDP timed out. The new categoric diagnostic recorded `adb_reachable=false` and `app_pid_present=null`, `boot_completed=null`, `cdp_http_reachable=null`. Two force-stop and saved XP evidence did NOT occur. The fail-closed job rejected the run. No claimed XP loss or retention.
+- [Separate native APK install/launch #39912545653](https://github.com/michels-lab/michel-s-life/actions/runs/39912545653): APK compiler success, fresh MainActivity launch `LaunchState: COLD`; all five initial real-frame screenshots failed; then emulator port 5554 refused. No native application pixel acceptance. This confirms hosted emulator instability remains #139, not that the production Story fix failed or passed on a physical device.
+- [Cross-platform Project/Story browser #39912545774](https://github.com/michels-lab/michel-s-life/actions/runs/39912545774): Windows browser runtime exception, FAIL. Must investigate without masking the runtime error; no evidence of a confirmed loss of missions or account data.
+
+**Exact result of GRANADA:** production Story nav overlay fault fixed **in open PR #170**, browser mobile general smoke validates the scenario, standalone safe native diagnostic and source hashes implemented, **no merge** of PR #170 and **no release**. Open blockers #168 (intermittent JS), #139 (host native), #171 (signed Android Story acceptance), #108/#55 (real A/B account isolation and credentials). Latest public Android 0.2.9, Windows 3.0.221. Never treat 24/24 native liveness of the previous public APK #178 as native acceptance of the new Story source.
