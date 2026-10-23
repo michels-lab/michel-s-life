@@ -189,7 +189,8 @@ for(const width of [320,360,412])for(const language of ['en','es']){
    // The evidence schema already allows only sanitized category and source
    // basename/line. Surface a small bounded sample for diagnosing the
    // intermittent parser error without ever printing raw error text.
-   await Promise.allSettled(sourceRequests);
+   await Promise.race([Promise.allSettled(sourceRequests),
+     new Promise(resolve=>setTimeout(resolve,1800))]);
    console.error('FAIL Android Story/Focus touch '+name+' ['+
      [...new Set(errors.map(e=>e.code))].join(',')+'] '+
      JSON.stringify({errors:errors.slice(0,3),parser:parseLocations,
