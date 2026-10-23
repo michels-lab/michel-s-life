@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 283,
-  "classified_files_total": 279,
-  "docs_content_inspected": 79,
+  "tracked_files_total": 284,
+  "classified_files_total": 280,
+  "docs_content_inspected": 80,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
   "roles": {
@@ -13,7 +13,7 @@
     "build_script": 6,
     "config": 22,
     "database_migration": 3,
-    "document": 72,
+    "document": 73,
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
@@ -28,7 +28,7 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 2,
-  "inventory_fingerprint": "aa3561d9ce806becdfcbb3c9ad93477393b93a297af8c33f7b72cc53dace2f16",
+  "inventory_fingerprint": "486622254d7638f8fe28bcf3ac6c93093417b500cc7856b2808d8a98a6b4e637",
   "evidence_fingerprint": "2a6d68c4f624a986a3a4a7b9a56f9d129f58d302784aa9dcad1ef6562b88562b",
   "files": [
     {
@@ -800,6 +800,13 @@
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
       "blob": "2e3651542d528e54592da510a167efe618e704cc"
+    },
+    {
+      "path": "android/audit/2026-10-22-granada-native-24-frames-green-closure.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "170c678d74f5eb40fb9e9acd7ba0e532f341596f"
     },
     {
       "path": "android/build.gradle.kts",
