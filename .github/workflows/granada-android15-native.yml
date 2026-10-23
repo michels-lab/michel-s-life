@@ -1,0 +1,135 @@
+name: GRANADA Android15 alternate native persistence
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/granada-android15-native.yml'
+      - 'tools/granada_android15_native_result.py'
+      - 'tools/test_granada_android15_native_result.py'
+  push:
+    branches: [granada/android15-native-isolation-20261021]
+  workflow_dispatch:
+permissions:
+  contents: read
+env:
+  ANDROID_VERSION: '0.2.9'
+jobs:
+  offline-contract:
+    name: Synthetic evidence contract and Android source guard
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          python -m unittest discover -s tools -p 'test_granada_android15_native_result.py' -v
+          python android/tools/native_webview_state_probe.py self-test
+          python android/tools/validate_android_version.py
+          bash -n android/tools/smoke_candidate_apk_install.sh
+
+  actual-apk-android15:
+    name: API35 real debug APK install and two native cold relaunches
+    needs: offline-contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      MLV_REQUIRE_NATIVE_STATE_PROBE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned native WebView CDP probe dependency
+        run: |
+          python -m pip install --disable-pip-version-check websocket-client==1.8.0
+          python - <<'PY'
+          from websocket import create_connection
+          assert callable(create_connection), 'Native CDP transport is unavailable'
+          print('PASS: Native Android WebView CDP dependency is installed')
+          PY
+      - name: Verify source/restore contract
+        run: |
+          python android/tools/validate_sync_contract.py
+          python android/tools/validate_android_mobile_ux.py
+          node tools/test_cloud_restore_storage.mjs
+      - name: Install Android36 compilation SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+      - name: Download canonical public bootstrap
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p android/build
+          python tools/download_latest_michels_life_bundle.py --repo michels-lab/michel-s-life-releases --output android/build/AppBundle.zip
+      - name: Reconstruct canonical assets from exact checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tools/bump_frontend_version.py --index src/MichelsLife/frontend/index.html
+          python tools/enable_i18n.py --index src/MichelsLife/frontend/index.html
+          python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
+          python tools/replace_bundle_index.py --bundle android/build/AppBundle.zip --index src/MichelsLife/frontend/index.html
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source src/MichelsLife/frontend/i18n.js --arcname i18n.js
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michel_duarte_avatar.jpg --arcname assets/michel_duarte_avatar.jpg
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_life_app_icon.svg --arcname assets/michels_life_app_icon.svg
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_life_mark.svg --arcname assets/michels_life_mark.svg
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_life_lockup.svg --arcname assets/michels_life_lockup.svg
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_lab_mark.png --arcname assets/michels_lab_mark.png
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_lab_lockup.png --arcname assets/michels_lab_lockup.png
+          python android/tools/prepare_bundle.py --bundle android/build/AppBundle.zip --assets android/app/src/main/assets/app
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.6.0'
+      - name: Build one exact-source debug candidate APK
+        working-directory: android
+        run: gradle --no-daemon :app:assembleDebug
+      - name: Pin candidate APK digest and source commit
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/candidate artifacts/candidate-install
+          cp android/app/build/outputs/apk/debug/app-debug.apk "artifacts/candidate/MichelsLife-Android-TEST-v$ANDROID_VERSION.apk"
+          sha256sum "artifacts/candidate/MichelsLife-Android-TEST-v$ANDROID_VERSION.apk" > artifacts/candidate-install/current-source-apk.sha256
+          git rev-parse HEAD > artifacts/candidate-install/current-source-commit.txt
+      - name: Configure KVM
+        run: |
+          test -e /dev/kvm
+          sudo chmod 666 /dev/kvm
+      - name: Install APK, onboarding and two native force-stop relaunches
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          avd-name: granada-native-api35
+          ram-size: 3072M
+          heap-size: 512M
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu swiftshader -feature -Vulkan
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash android/tools/smoke_candidate_apk_install.sh
+      - name: Fail closed on missing native pixels or incomplete progress comparisons
+        run: |
+          python tools/granada_android15_native_result.py \
+            --evidence artifacts/candidate-install \
+            --apk "artifacts/candidate/MichelsLife-Android-TEST-v$ANDROID_VERSION.apk" \
+            --source-sha "$(git rev-parse HEAD)" \
+            --version "$ANDROID_VERSION" \
+            --output artifacts/candidate-install/api35-final-evidence.json
+      - name: Preserve native diagnostics even on RED
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: granada-api35-real-native-guest-evidence
+          path: artifacts/candidate-install/
+          if-no-files-found: warn
+          retention-days: 10
