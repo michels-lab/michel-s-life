@@ -1291,6 +1291,10 @@
     'html[data-mlv-platform="android"] body.mlv-story-focus-clearance #tab-story.active .v30162-story-form button[type="submit"] {scroll-margin-bottom:var(--mlv-story-focus-clearance,210px)!important;bottom:var(--mlv-story-focus-clearance,210px)!important}'
    ].join('\n');doc.head.append(style);
    let scheduled=false,disposed=false;
+   // Track overlay arrival separately from field blur. Mobile keyboard
+   // dismissal can re-create the fixed bottom bar AFTER focusout executes.
+   let previousOverlayState='';
+   let overlayAdjustmentScheduled=false;
    const visible=el=>{
     if(!el||el.hidden)return false;
     const c=win.getComputedStyle(el);
@@ -1322,7 +1326,31 @@
      doc.body.style.setProperty('--mlv-story-focus-clearance',clearance+'px');
     return {active,mini,nav,clearance};
    }
-   function schedule(){if(!disposed&&!scheduled){scheduled=true;win.requestAnimationFrame(refresh);}}
+   function schedule(){
+    if(disposed||scheduled)return;
+    scheduled=true;
+    win.requestAnimationFrame(()=>{
+     const state=refresh();
+     const overlayState=state?.active
+       ?String(state.mini.visible)+'/'+String(state.nav.visible):'inactive';
+     const entered=state?.active&&(state.mini.visible||state.nav.visible)&&
+       previousOverlayState!==overlayState;
+     previousOverlayState=overlayState;
+     // A form can be fully visible to scrollIntoViewIfNeeded() yet covered
+     // by Android's fixed bottom nav after the IME hides. React to the bar
+     // actually reappearing, not to perpetual background scrolling.
+     if(entered&&!overlayAdjustmentScheduled){
+      overlayAdjustmentScheduled=true;
+      win.requestAnimationFrame(()=>{
+       overlayAdjustmentScheduled=false;
+       const focused=doc.activeElement;
+       if(focused?.matches?.('#tab-story.active .v30162-story-form input, #tab-story.active .v30162-story-form textarea'))
+        return;
+       ensureSaveVisible();
+      });
+     }
+    });
+   }
    function ensureSaveVisible(){
     const state=refresh();
     if(!state?.active||!(state.mini.visible||state.nav.visible))return false;
@@ -1373,7 +1401,9 @@
    win.addEventListener('resize',schedule,{passive:true});
    doc.addEventListener('scroll',onScroll,true);
    doc.addEventListener('focusout',onBlur,true);
-   refresh();
+   const first=refresh();
+   previousOverlayState=first?.active
+     ?String(first.mini.visible)+'/'+String(first.nav.visible):'inactive';
    return {installed:true,refresh,ensureSaveVisible,dispose(){
     disposed=true;observer?.disconnect();win.removeEventListener('resize',schedule);
     doc.removeEventListener('scroll',onScroll,true);
