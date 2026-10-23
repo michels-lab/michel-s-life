@@ -74,6 +74,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Assert exact candidate source SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
 
       - uses: actions/setup-java@v5
         with:
@@ -293,6 +300,13 @@ jobs:
       MLV_REQUIRE_NATIVE_STATE_PROBE: "1"
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Assert exact candidate source SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
 
       - name: Download candidate APK from SAME workflow run
         uses: actions/download-artifact@v4
@@ -312,6 +326,9 @@ jobs:
         run: |
           if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
 
+      - name: Reject unpinned PR head, unstated host resources or test bypass
+        run: python3 tools/test_granada_android_candidate_ci_contract.py
+
       - name: Install and launch real candidate in isolated Android 16 device
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -320,6 +337,9 @@ jobs:
           arch: x86_64
           profile: pixel_6
           avd-name: michels-life-candidate-android16
+          # Controlled parity with separately green Android16 two-relaunch test; no fix claim.
+          ram-size: 3072M
+          heap-size: 512M
           # API 36 + gfxstream Vulkan/legacy swiftshader_indirect crashed after the
           # installed WebView rendered on two clean hosted Linux runners. Use
           # current supported SwiftShader GLES and disable Vulkan explicitly;
