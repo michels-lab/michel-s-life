@@ -1,5 +1,5 @@
 import {chromium} from 'playwright';
-import {mkdir,writeFile} from 'node:fs/promises';
+import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {normalizeError,evidenceReport} from './granada_story_diagnostic_core.mjs';
 // Android browser model: ONLY synthetic data. Native APK / provider is not tested.
@@ -10,6 +10,11 @@ const cases=[];
 const browser=await chromium.launch({headless:true});
 const ok=(x,code)=>{if(!x)throw Error(code);};
 await mkdir(output,{recursive:true});
+const inventory=JSON.parse(await readFile(output+'/inline-js-inventory.json','utf8'));
+if(inventory.mode!=='canonical_generated_android_html'||
+   inventory.scriptCount<100||inventory.parseFailureCount!==0)
+  throw Error('canonical_inline_js_audit_missing_or_failed');
+const staticInline=new Map(inventory.scripts.filter(x=>x.syntax==='valid').map(x=>[x.digest,x]));
 try{
 for(const width of [320,360,412])for(const language of ['en','es']){
  const name=String(width)+'-'+language;
@@ -47,7 +52,7 @@ for(const width of [320,360,412])for(const language of ['en','es']){
      let source='unlocated';
      try {
        const basename=new URL(String(url||''),'https://invalid.local/').pathname.split('/').pop();
-       if(/^[A-Za-z0-9_.-]+\\.(?:html|js|mjs)$/.test(basename||''))
+       if(/^[A-Za-z0-9_.-]+\.(?:html|js|mjs)$/.test(basename||''))
          source=basename;
      }catch{}
      return {origin,source,
@@ -55,7 +60,8 @@ for(const width of [320,360,412])for(const language of ['en','es']){
        column:Number.isSafeInteger(column)&&column>=0?column+1:null};
    };
    const record=(detail)=>{
-     if(parseLocations.length<8)parseLocations.push(detail);
+     if(parseLocations.length>=16)parseLocations.shift();
+     parseLocations.push(detail);
    };
    const cdp=await context.newCDPSession(page);
    cdp.on('Debugger.scriptFailedToParse',event=>{
@@ -63,15 +69,18 @@ for(const width of [320,360,412])for(const language of ['en','es']){
      // Collect a digest of the failed script, NOT its contents. For an
      // intermittent SyntaxError, this distinguishes a stable static inline
      // script from an unexpectedly generated/truncated runtime script.
-     if(sourceRequests.length>=6||!event.scriptId)return;
+     if(sourceRequests.length>=80||!event.scriptId)return;
      sourceRequests.push(cdp.send('Debugger.getScriptSource',
        {scriptId:event.scriptId}).then(reply=>{
        const code=reply.scriptSource;
-       if(typeof code==='string'){
+       if(typeof code==='string'&&code.length>0){
+         const digest=createHash('sha256').update(code).digest('hex');
+         const original=staticInline.get(digest);
+         if(failureSourceHashes.length>=16)failureSourceHashes.shift();
          failureSourceHashes.push({
-           digest:createHash('sha256').update(code).digest('hex'),
-           bytes:Buffer.byteLength(code,'utf8'),
-           startLine:Number.isSafeInteger(event.startLine)?event.startLine+1:null
+           digest,bytes:Buffer.byteLength(code,'utf8'),
+           startLine:Number.isSafeInteger(event.startLine)?event.startLine+1:null,
+           inlineId:original?.id||null,canonicalInlineMatch:!!original
          });
        }
      }).catch(()=>{}));
@@ -194,7 +203,7 @@ for(const width of [320,360,412])for(const language of ['en','es']){
    console.error('FAIL Android Story/Focus touch '+name+' ['+
      [...new Set(errors.map(e=>e.code))].join(',')+'] '+
      JSON.stringify({errors:errors.slice(0,3),parser:parseLocations,
-       failedScriptFingerprints:failureSourceHashes.slice(0,6)}));
+       failedScriptFingerprints:failureSourceHashes.slice(-12)}));
    if(page)try{await page.screenshot({path:output+'/'+name+'-failure.png',timeout:6000});}catch{}
  }finally{
    cases.push({width,language,passed,phase,errors});
