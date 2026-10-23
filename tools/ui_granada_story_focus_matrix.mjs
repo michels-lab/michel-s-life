@@ -76,11 +76,16 @@ for(const width of [320,360,412])for(const language of ['en','es']){
        if(typeof code==='string'&&code.length>0){
          const digest=createHash('sha256').update(code).digest('hex');
          const original=staticInline.get(digest);
+         const startLine=Number.isSafeInteger(event.startLine)?event.startLine+1:null;
+         const sameLine=inventory.scripts.find(x=>x.startLine===startLine)||null;
          if(failureSourceHashes.length>=16)failureSourceHashes.shift();
          failureSourceHashes.push({
-           digest,bytes:Buffer.byteLength(code,'utf8'),
-           startLine:Number.isSafeInteger(event.startLine)?event.startLine+1:null,
-           inlineId:original?.id||null,canonicalInlineMatch:!!original
+           digest,bytes:Buffer.byteLength(code,'utf8'),startLine,
+           inlineId:original?.id||sameLine?.id||null,
+           canonicalInlineMatch:!!original,
+           sameLineOriginalBytes:sameLine?.bytes??null,
+           truncatedRelativeToStatic:sameLine?.bytes>Buffer.byteLength(code,'utf8')
+             ?sameLine.bytes-Buffer.byteLength(code,'utf8'):0
          });
        }
      }).catch(()=>{}));
@@ -200,10 +205,32 @@ for(const width of [320,360,412])for(const language of ['en','es']){
    // intermittent parser error without ever printing raw error text.
    await Promise.race([Promise.allSettled(sourceRequests),
      new Promise(resolve=>setTimeout(resolve,1800))]);
+   // Compare the browser's ACTUAL DOM text for the two suspect script tags
+   // with the frozen canonical bundle inventory. Hashes/sizes ONLY, never JS
+   // source, account data, journal content or arbitrary URLs.
+   const suspectIds=['v251-weekly-real-fix-script','v3021-dashboard-real-category-filter'];
+   const domIntegrity=page?await page.evaluate(async ids=>{
+     const result=[];
+     for(const id of ids){
+       const el=document.getElementById(id);
+       if(!el){result.push({id,missing:true});continue;}
+       const source=el.textContent||'';
+       const bytes=new TextEncoder().encode(source);
+       const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)))
+         .map(x=>x.toString(16).padStart(2,'0')).join('');
+       result.push({id,bytes:bytes.length,digest});
+     }
+     return result;
+   },suspectIds).catch(()=>[]):[];
+   const compared=domIntegrity.map(x=>{
+     const original=inventory.scripts.find(s=>s.id===x.id);
+     return {id:x.id,domBytes:x.bytes??null,expectedBytes:original?.bytes??null,
+       domMatchesCanonical:!!original&&x.digest===original.digest,missing:!!x.missing};
+   });
    console.error('FAIL Android Story/Focus touch '+name+' ['+
      [...new Set(errors.map(e=>e.code))].join(',')+'] '+
      JSON.stringify({errors:errors.slice(0,3),parser:parseLocations,
-       failedScriptFingerprints:failureSourceHashes.slice(-12)}));
+       failedScriptFingerprints:failureSourceHashes.slice(-12),domScriptIntegrity:compared}));
    if(page)try{await page.screenshot({path:output+'/'+name+'-failure.png',timeout:6000});}catch{}
  }finally{
    cases.push({width,language,passed,phase,errors});
