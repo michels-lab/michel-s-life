@@ -1,5 +1,9 @@
 import unittest
-from tools.granada_native_xp_relaunch import ID, REWARD, compact, compare, sha
+import zlib
+import struct
+import tempfile
+from pathlib import Path
+from tools.granada_native_xp_relaunch import ID, REWARD, compact, compare, sha, png_info
 
 def sample(xp=317):
     return {"ready":True,"xp":xp,"missionCount":2,
@@ -8,6 +12,27 @@ def sample(xp=317):
         "completions":[{"id":"synthetic-completion-id","xp":REWARD}]}
 
 class NativeXpRelaunchContract(unittest.TestCase):
+    def test_native_png_crc_validation_is_self_contained(self):
+        def chunk(kind,data):
+            return (struct.pack(">I",len(data))+kind+data+
+                    struct.pack(">I",zlib.crc32(kind+data)&0xffffffff))
+        body=(bytes.fromhex("89504e470d0a1a0a")+
+              chunk(b"IHDR",struct.pack(">IIBBBBB",360,640,8,6,0,0,0))+
+              chunk(b"IDAT",zlib.compress((b"\\0"+b"\\0"*1440)*640))+
+              chunk(b"IEND",b""))
+        with tempfile.TemporaryDirectory() as temp:
+            p=Path(temp)/"native.png"
+            p.write_bytes(body)
+            info=png_info(p)
+            self.assertEqual((info["width"],info["height"]),(360,640))
+            self.assertEqual(len(info["sha256"]),64)
+            corrupted=bytearray(body);corrupted[20]^=1;p.write_bytes(corrupted)
+            with self.assertRaises(ValueError):
+                png_info(p)
+            p.write_bytes(body[:-12])
+            with self.assertRaisesRegex(ValueError,"incomplete_native_png"):
+                png_info(p)
+
     def test_valid_native_synthetic_ledger_digest(self):
         x=compact(sample())
         self.assertEqual(x["xp"],317)
