@@ -5,7 +5,7 @@ No file is auto-deleted or declared unused.
 
 ## Coverage
 
-Tracked: 286; classified: 282; readable documents: 82; above read cap: 0; findings: 2.
+Tracked: 289; classified: 285; readable documents: 83; above read cap: 0; findings: 6.
 
 ## File roles
 
@@ -17,21 +17,25 @@ Tracked: 286; classified: 282; readable documents: 82; above read cap: 0; findin
 | build_script | 6 |
 | config | 22 |
 | database_migration | 3 |
-| document | 75 |
+| document | 76 |
 | encoded_source | 2 |
 | index | 4 |
 | installer_metadata | 1 |
 | release_intent | 8 |
-| source | 93 |
+| source | 94 |
 | test | 11 |
 | text_metadata | 1 |
 | web_ui | 3 |
-| workflow | 29 |
+| workflow | 30 |
 
 ## Findings (human review required)
 
-- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** GIT_AUDIT_LOG.md: 21 implementation/config paths changed since this log's last commit; examples: .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-android16-install-launch-isolation.yml, .github/workflows/granada-daily-mission-ledger.yml, .github/workflows/granada-recovery-loss-triage.yml. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID b255dd7a97d849d3)
-- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** android/ANDROID_AUDIT_LOG.md: 41 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-emulator-transport-diagnostic.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-android-usability.yml, .github/workflows/granada-android16-install-launch-isolation.yml. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID 004f16919e7159e6)
+- **CONFIRMED / BROKEN_RELATIVE_LINK** docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md: Missing: docs/src/MichelsLife/frontend/index.html. Next: Fix link or restore target (ID 41ca2b94e805646f)
+- **CONFIRMED / BROKEN_RELATIVE_LINK** docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md: Missing: docs/AGENTS.md. Next: Fix link or restore target (ID 7a232f866547f4b1)
+- **CONFIRMED / BROKEN_RELATIVE_LINK** docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md: Missing: docs/tools/ui_android_section_design_smoke.mjs. Next: Fix link or restore target (ID c9b0ed37825bd396)
+- **CONFIRMED / BROKEN_RELATIVE_LINK** docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md: Missing: docs/android/audit/2026-10-12-ui-screenshot-gallery.md. Next: Fix link or restore target (ID 55915b207228a042)
+- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** GIT_AUDIT_LOG.md: 23 implementation/config paths changed since this log's last commit; examples: .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-android16-install-launch-isolation.yml, .github/workflows/granada-daily-mission-ledger.yml. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID 415edec43ffa2ecf)
+- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** android/ANDROID_AUDIT_LOG.md: 43 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-emulator-transport-diagnostic.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-android-usability.yml. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID 94966551fdfb8e26)
 
 Complete path → purpose/role/certainty list lives in FILE_GOVERNANCE.json. SUMMARY.json has counts only for master polling.
 A dated file, duplicate, or suspicious name is an **investigation candidate**, not unwanted material.

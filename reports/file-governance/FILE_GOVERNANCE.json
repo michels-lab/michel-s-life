@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 286,
-  "classified_files_total": 282,
-  "docs_content_inspected": 82,
+  "tracked_files_total": 289,
+  "classified_files_total": 285,
+  "docs_content_inspected": 83,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
   "roles": {
@@ -13,23 +13,24 @@
     "build_script": 6,
     "config": 22,
     "database_migration": 3,
-    "document": 75,
+    "document": 76,
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 8,
-    "source": 93,
+    "source": 94,
     "test": 11,
     "text_metadata": 1,
     "web_ui": 3,
-    "workflow": 29
+    "workflow": 30
   },
   "finding_counts": {
+    "BROKEN_RELATIVE_LINK": 4,
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
-  "finding_total": 2,
-  "inventory_fingerprint": "c85d83038af0ed9476469925588bc9b4800c026dccd3b08c8a35b30f76c552f4",
-  "evidence_fingerprint": "2a6d68c4f624a986a3a4a7b9a56f9d129f58d302784aa9dcad1ef6562b88562b",
+  "finding_total": 6,
+  "inventory_fingerprint": "4c31c779a422d163ea352e02e1ea05f4147fabb413a2dd2f947bc26de14fd1c1",
+  "evidence_fingerprint": "c3adaffe1b269c057571d28948ebd641ff77584355b8e977e9a20904c0b95cf0",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -121,6 +122,13 @@
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
       "blob": "9aae606bfefa662b28b264e4e55bd91bc196d83c"
+    },
+    {
+      "path": ".github/workflows/external-ui-baseline-guard.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "8cc2b194976a334dd629382698528b9e4d23137d"
     },
     {
       "path": ".github/workflows/file-governance-audit.yml",
@@ -414,7 +422,7 @@
       "role": "agent",
       "purpose": "assistant role/instructions",
       "certainty": "rule",
-      "blob": "75e1d37c844aa269f374f4cb97496b82aad6d91a"
+      "blob": "5fc57b9b85e71edee9343f7687089bbadc3dd243"
     },
     {
       "path": "BUILD_MICHELS_LIFE_WINDOWS.bat",
@@ -456,7 +464,7 @@
       "role": "index",
       "purpose": "navigation/onboarding",
       "certainty": "rule",
-      "blob": "a62275346aac4f882d02d411797a001dd68f431e"
+      "blob": "119d60ed0d5923d73c0b7a7ba157b828d95d15df"
     },
     {
       "path": "android/ANDROID_AUDIT_LOG.md",
@@ -1243,6 +1251,13 @@
       "blob": "87830d11bebe633e99429c04afcd64332385cad8"
     },
     {
+      "path": "docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "845ad2988226c4ee4eda00e7dd5b433177dbceaa"
+    },
+    {
       "path": "docs/audit/HANDOFF_LEGACY_2026-10-05.md",
       "role": "document",
       "purpose": "manual/decision/report/historical note",
@@ -1978,6 +1993,13 @@
       "blob": "a912046cf690a33e4284e6ae90088dc49bbe0e85"
     },
     {
+      "path": "tools/validate_external_ui_design.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "c5aff8130927186089c85dab3641153eff2cf177"
+    },
+    {
       "path": "tools/validate_generated_index.py",
       "role": "source",
       "purpose": "code/test implementation",
@@ -2008,20 +2030,56 @@
   ],
   "findings": [
     {
-      "id": "b255dd7a97d849d3",
+      "id": "41ca2b94e805646f",
+      "code": "BROKEN_RELATIVE_LINK",
+      "severity": "confirmed",
+      "path": "docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md",
+      "observation": "Missing: docs/src/MichelsLife/frontend/index.html",
+      "recommendation": "Fix link or restore target",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "7a232f866547f4b1",
+      "code": "BROKEN_RELATIVE_LINK",
+      "severity": "confirmed",
+      "path": "docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md",
+      "observation": "Missing: docs/AGENTS.md",
+      "recommendation": "Fix link or restore target",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "c9b0ed37825bd396",
+      "code": "BROKEN_RELATIVE_LINK",
+      "severity": "confirmed",
+      "path": "docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md",
+      "observation": "Missing: docs/tools/ui_android_section_design_smoke.mjs",
+      "recommendation": "Fix link or restore target",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "55915b207228a042",
+      "code": "BROKEN_RELATIVE_LINK",
+      "severity": "confirmed",
+      "path": "docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md",
+      "observation": "Missing: docs/android/audit/2026-10-12-ui-screenshot-gallery.md",
+      "recommendation": "Fix link or restore target",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "415edec43ffa2ecf",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "21 implementation/config paths changed since this log's last commit; examples: .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-android16-install-launch-isolation.yml, .github/workflows/granada-daily-mission-ledger.yml, .github/workflows/granada-recovery-loss-triage.yml",
+      "observation": "23 implementation/config paths changed since this log's last commit; examples: .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-android16-install-launch-isolation.yml, .github/workflows/granada-daily-mission-ledger.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "004f16919e7159e6",
+      "id": "94966551fdfb8e26",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "41 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-emulator-transport-diagnostic.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-android-usability.yml, .github/workflows/granada-android16-install-launch-isolation.yml",
+      "observation": "43 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-emulator-transport-diagnostic.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-android-usability.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
