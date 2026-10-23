@@ -10,9 +10,45 @@ import argparse
 import hashlib
 import json
 import re
+import struct
+import zlib
 import time
 from pathlib import Path
 from urllib.request import urlopen
+
+def png_info(path):
+    """Inspect complete native screenshot, never an empty/forged PNG signature."""
+    data=Path(path).read_bytes()
+    if len(data)<100 or len(data)>8_000_000 or not data.startswith(bytes.fromhex("89504e470d0a1a0a")):
+        raise ValueError("invalid_native_png")
+    n=8
+    dimensions=None
+    finished=False
+    while n+12<=len(data):
+        size=struct.unpack_from(">I",data,n)[0]
+        if size>8_000_000 or n+size+12>len(data):
+            raise ValueError("truncated_native_png")
+        kind=data[n+4:n+8]
+        body=data[n+8:n+8+size]
+        crc=struct.unpack_from(">I",data,n+8+size)[0]
+        if zlib.crc32(kind+body)&0xffffffff!=crc:
+            raise ValueError("native_png_crc_mismatch")
+        if kind==b"IHDR":
+            if dimensions is not None or len(body)!=13:
+                raise ValueError("invalid_native_png_header")
+            dimensions=struct.unpack_from(">II",body)
+            if not (240<=dimensions[0]<=4096 and 400<=dimensions[1]<=4096):
+                raise ValueError("invalid_native_resolution")
+        n+=size+12
+        if kind==b"IEND":
+            if size!=0 or n!=len(data):
+                raise ValueError("incomplete_native_png")
+            finished=True
+            break
+    if not finished or dimensions is None:
+        raise ValueError("incomplete_native_png")
+    return {"width":dimensions[0],"height":dimensions[1],
+            "sha256":hashlib.sha256(data).hexdigest()}
 
 PKG = "com.michelslab.michelslife"
 KEY = "vida_rpg_personal_progress_v2"
