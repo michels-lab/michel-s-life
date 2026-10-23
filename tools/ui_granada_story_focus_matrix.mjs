@@ -14,6 +14,7 @@ for(const width of [320,360,412])for(const language of ['en','es']){
  const name=String(width)+'-'+language;
  let context=null,page=null,phase='bootstrap',passed=false;
  const errors=[];
+ const parseLocations=[];
  try{
    context=await browser.newContext({viewport:{width,height:915},screen:{width,height:915},isMobile:true,hasTouch:true,deviceScaleFactor:2.625});
    await context.addInitScript(locale=>{
@@ -39,7 +40,6 @@ for(const width of [320,360,412])for(const language of ['en','es']){
    // Chrome DevTools reports script parse locations even when Playwright
    // pageerror SyntaxError.stack is empty/unlocated. Never retain source
    // contents, URLs, tokens, script text or user data.
-   const parseLocations=[];
    const safePlace=(url,line,column,origin)=>{
      let source='unlocated';
      try {
