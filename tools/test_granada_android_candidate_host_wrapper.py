@@ -20,6 +20,8 @@ class CandidateHostWrapper(unittest.TestCase):
                      self.root/"tools/granada_candidate_host_wrapper.sh")
         shutil.copy2(ROOT/"tools/granada_android16_host_verdict.py",
                      self.root/"tools/granada_android16_host_verdict.py")
+        shutil.copy2(ROOT/"tools/granada_android16_phase_evidence.py",
+                     self.root/"tools/granada_android16_phase_evidence.py")
         # The script's source is pinned to a synthetic but valid SHA in the
         # isolated test git repository, and must not depend on any real account.
         subprocess.run(["git","init","-q"],cwd=self.root,check=True)
