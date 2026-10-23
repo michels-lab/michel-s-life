@@ -1,0 +1,101 @@
+name: GRANADA Android16 isolated install versus WebView launch
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/granada-android16-install-launch-isolation.yml'
+      - 'tools/granada_android16_phase_probe.sh'
+      - 'tools/granada_android16_phase_evidence.py'
+      - 'tools/test_granada_android16_phase_evidence.py'
+      - 'tools/granada_android16_host_verdict.py'
+      - 'tools/test_granada_android16_host_verdict.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: granada-phase-isolation-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  native-phase-isolation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 34
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      MLV_PHASE_APK: artifacts/granada-phase-public/MichelsLife-Android-Direct-v0.2.9.apk
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Enforce fail-closed stage checks and validate real PNG evidence parser
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha || github.sha }}"
+          bash -n tools/granada_android16_phase_probe.sh
+          bash tools/granada_android16_phase_probe.sh --self-test
+          python3 -m py_compile tools/granada_android16_phase_evidence.py
+          python3 -m unittest -v tools/test_granada_android16_phase_evidence.py
+          python3 -m py_compile tools/granada_android16_host_verdict.py
+          python3 -m unittest -v tools/test_granada_android16_host_verdict.py
+      - name: Fetch already published APK and verify official external SHA256 checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/granada-phase-public
+          gh release download v3.0.221 \
+            --repo michels-lab/michel-s-life-releases \
+            --pattern 'MichelsLife-Android-Direct-v0.2.9.apk' \
+            --pattern 'MichelsLife-Android-Direct-v0.2.9.apk.sha256' \
+            --dir artifacts/granada-phase-public
+          cd artifacts/granada-phase-public
+          test -s MichelsLife-Android-Direct-v0.2.9.apk
+          test -s MichelsLife-Android-Direct-v0.2.9.apk.sha256
+          sha256sum -c MichelsLife-Android-Direct-v0.2.9.apk.sha256
+      - name: Prepare KVM acceleration for genuine API36 native device
+        run: |
+          test -e /dev/kvm
+          sudo chmod 666 /dev/kvm
+      - name: "Same published APK: idle baseline → installed but NOT launched → real WebView launch"
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          avd-name: granada-install-vs-webview-launch
+          ram-size: 3072M
+          heap-size: 512M
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu swiftshader -feature -Vulkan
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash tools/granada_android16_phase_probe.sh
+      - name: Audit real Android native frame hashes, phase completion and source
+        if: always()
+        shell: bash
+        run: |
+          python3 tools/granada_android16_phase_evidence.py \
+            --root artifacts/granada-android16-phases \
+            --source-sha "$(git rev-parse HEAD)" \
+            --output artifacts/granada-android16-phases/report.json
+      - name: Emit only categorical host memory/VM/ADB failure diagnosis
+        if: always()
+        shell: bash
+        run: |
+          python3 tools/granada_android16_host_verdict.py \
+            --root artifacts/granada-android16-phases \
+            --source-sha "$(git rev-parse HEAD)" \
+            --output artifacts/granada-android16-phases/host-verdict.json
+      - name: Keep fail-closed native/host phase evidence, including partial runs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: granada-android16-install-versus-webview-phase-evidence
+          path: artifacts/granada-android16-phases/
+          if-no-files-found: warn
+          retention-days: 10
