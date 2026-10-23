@@ -95,3 +95,20 @@ Log has `GRANADA_NATIVE_XP_SEED_PASS`, two `GRANADA_NATIVE_XP_CAPTURE_PASS`, `GR
 - Real provider A/B Supabase ownership and guest/Journal vault integration #108/#169, signed public APK and physical Galaxy touchscreen/IME remain unverified.
 - Intermittent hosted Android ADB flakiness #139 and JavaScript `SyntaxError` #168 cannot be considered eliminated from **one** successful run; rerun strict browser story matrix on identical SHA and keep failure provenance.
 - #170 **still draft/unmerged** until exact-head full gates are reconciled. **No new public release / RC / Windows native build**, no cross-project changes.
+
+
+## GRANADA same-SHA final seven-gate reconciliation — 2026-10-23
+
+On current Story/Focus PR #170 head `78b8f66558b675c4a3a7644886b3110ad8df11d2`, **6 of 7 required GitHub workflows finished GREEN**:
+- Source validation **SUCCESS**
+- General UI smoke **SUCCESS**
+- Android UI smoke **SUCCESS**, including fixed real Chapter CTA previously underneath the bottom navigation bar after IME dismissal
+- Dedicated six-case Story/Focus touch matrix **SUCCESS 6/6**, and an **independent retry of the exact same SHA also SUCCESS 6/6** ([run 39918548664](https://github.com/michels-lab/michel-s-life/actions/runs/39918548664))
+- GRANADA Project/Story cross-platform cloud browser roundtrip **SUCCESS**
+- Exact-head Android16 debuggable APK canonical XP through **two real cold force-stop process restarts SUCCESS** ([run 39918548698](https://github.com/michels-lab/michel-s-life/actions/runs/39918548698)). Native-scope proof in prior subsection; no account data or signed device proof
+
+**ONE exact-head workflow FAILED and remains release/merge blocking**: [Build Android test APK workflow 39918548660](https://github.com/michels-lab/michel-s-life/actions/runs/39918548660) (both first attempt and rerun #2). APK compilation itself passed, real candidate was installed/launched with `LaunchState: COLD`, but independent hosted API36 generic emulator stopped accepting ADB/PNG: `step0-after-30s.png` failed five attempts after `error: closed`, device offline and eventual port 5554 refusal. This neither invalidates the **different independent green native two-relaunch proof**, nor permits claiming this particular native run passed.
+
+**Controlled environment differential to investigate:** successful 2-cold-relaunch workflow explicitly uses `ram-size: 3072M`, `heap-size: 512M`; the generic `.github/workflows/android-build.yml` runner omits explicit memory/heap. This configuration difference does **not prove an OOM**. File is owned by developer work PR #134, so no unsanctioned modification was made here; owner notified through #134 and issue #139.
+
+**Decision:** #170 stays DRAFT/UNMERGED; issue #171 production patch is browser/installed-debug-tested in branch, not a public APK; #168 intermittent JS parsing, #139 hosted native, #108 live A/B account remain OPEN. No build has been signed/published, no Play/Direct release, no RC or Windows native work.
