@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 296,
-  "classified_files_total": 292,
-  "docs_content_inspected": 86,
+  "tracked_files_total": 297,
+  "classified_files_total": 293,
+  "docs_content_inspected": 87,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
   "roles": {
@@ -13,7 +13,7 @@
     "build_script": 6,
     "config": 22,
     "database_migration": 3,
-    "document": 79,
+    "document": 80,
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
@@ -29,8 +29,8 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "e54f3027b089e38f3af274b5f9dfa378230507b0c4bec84b566b3ae6a3e294b0",
-  "evidence_fingerprint": "629f4601c208126870a11f303314d488f7b6706ec3d7ea7d5f8c7201b71cff95",
+  "inventory_fingerprint": "533a29ecdaf7965263c9b1e6d33077056643ac651c7ff7cb5f412f9c4e373197",
+  "evidence_fingerprint": "aac20ac6f802d93ed5feb0e83823ec92c8571c3d232bf400eadd1a8bae880bf2",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -789,6 +789,13 @@
       "blob": "1824556a8e52598067bc93f2cc2184e34830103c"
     },
     {
+      "path": "android/audit/2026-10-19-granada-native-progress-integrity.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "b962fbaa2d8df3db015670d828fd27c2b072975f"
+    },
+    {
       "path": "android/audit/2026-10-20-granada-android-touch-resilience.md",
       "role": "document",
       "purpose": "manual/decision/report/historical note",
@@ -905,7 +912,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "3cf5f863361d8942a116357836ed0c397860d265"
+      "blob": "9fbc0a0841a0cc95373a5a5ce5403d45cda51a80"
     },
     {
       "path": "android/tools/prepare_bundle.py",
@@ -2115,20 +2122,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "7e0e42126d8337e3",
+      "id": "a59a27344d0405ce",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "28 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-android16-install-launch-isolation.yml",
+      "observation": "29 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-android16-install-launch-isolation.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "12af5533ee783e81",
+      "id": "3edfa4b52796daec",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "48 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-emulator-transport-diagnostic.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml",
+      "observation": "49 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-emulator-transport-diagnostic.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
