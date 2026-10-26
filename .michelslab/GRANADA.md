@@ -1,3 +1,13 @@
+# GRANADA — prioridad de convergencia Android (2026-10-26)
+
+**Esta norma actual sustituye la cuota histórica de 3–6 PR/paquetes más abajo.** En repositorios con congestión, GRANADA primero revisa GitHub real, corrige CI aplicable, integra PR existentes con evidencia exact-head y conserva los problemas bloqueados con reentrada; **NO abre automáticamente nuevas ramas diagnósticas** ni archiva por antigüedad/título. Si hay más de 12 PR abiertos, más de 8 PR de implementación o más de 3 líneas de producto independientes, congelar trabajo nuevo no crítico. Las excepciones P0 requieren demostrar necesidad, propiedad separada y plan de reducción neta de deuda.
+
+**Aplicación actual:** Michel's Life es Android-first; Windows/MSIX sigue pausado. CI de APK instalado, pruebas Galaxy, OAuth real, firma y publicación no se declaran terminadas por autopruebas ni render de navegador. No cerrar #53/#55/#108/#168/#171/#139 hasta cumplir sus criterios propios. No modificar UI/Themes/bases visuales aprobadas por higiene de backlog. Usar el [estándar maestro vigente](https://github.com/michels-lab/Michel-Software-Standards/blob/main/standards/OPERACION_GRANADA_STANDARD.md).
+
+**Último punto de reentrada y reporte de la ejecución:** [auditoría Android 2026-10-26](../android/audit/2026-10-26-granada-convergence-android.md). Antes 14 PR; después 12 tras integrar **#152 y #138 QA-only**. Sus pruebas de fuente pasaron; candidato nativo Android16 continúa BLOCKED por #139, no hay release. Revisar estado LIVE en el siguiente turno.
+
+---
+
 ## GRANADA AMBICIOSA — ampliación del propietario (2026-10-20)
 
 **Obligatorio para este repo y sus Developer Twins:** cada invocación GRANADA debe perseguir un macro-bloque de alto impacto y **varios entregables funcionales y comprobables** (normalmente 3–6 paquetes sustanciales relacionados, si son compatibles), en vez de un micro-PR aislado. Cubrir comportamiento completo, errores/recuperación, persistencia, UI y pruebas de integración donde corresponda. Si un elemento está bloqueado/ocupado, apartarlo con issue/PR/SHA y continuar con el siguiente independiente sin invadir sus archivos. Aceptación física, CI, merge y publicación son hitos distintos. Nunca fabricar datos, hacer clics inseguros ni publicar un release implícitamente.
