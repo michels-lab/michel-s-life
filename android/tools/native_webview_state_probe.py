@@ -27,6 +27,14 @@ PAGE_SCRIPT = r"""(() => {
       String(item?.id ?? item?.contractId ?? ('index:' + n))).sort();
   }
   const ids = saved.missions.map(m => String(m?.id ?? '')).sort();
+  // Audit immutable canonical progress rather than just mission IDs. The
+  // remote CDP result is transient; Python persists only counts/hashes.
+  const completions = saved.missions.flatMap(m =>
+    (Array.isArray(m?.completions) ? m.completions : []).map(c =>
+      JSON.stringify([String(m.id ?? ''), String(c?.id ?? ''),
+        String(c?.date ?? ''), Number(c?.xp ?? 0)])
+    )).sort();
+  const xp = Number(saved.xp ?? 0);
   const kpis = [...document.querySelectorAll('#tab-dashboard .v131-kpi')]
     .map(el => String(el.textContent || '').replace(/\s+/g,' ').trim())
     .filter(v => /mission|contract/i.test(v));
@@ -34,7 +42,7 @@ PAGE_SCRIPT = r"""(() => {
     generic: saved.settings?.v30200GenericProfile === true,
     missions: saved.missions.length,
     ids, duplicateMissionIds: new Set(ids).size !== ids.length,
-    collections, kpis
+    completions, xp, collections, kpis
   };
 })()"""
 
@@ -62,6 +70,12 @@ def sanitize(raw):
         raise RuntimeError("Canonical mission collection and mission IDs do not agree")
     if raw.get("missions") != len(ids):
         raise RuntimeError("Canonical mission count does not agree with stored mission IDs")
+    completions = raw.get("completions")
+    if not isinstance(completions, list) or any(not isinstance(x, str) for x in completions):
+        raise RuntimeError("Native canonical mission completion history is unavailable")
+    xp = raw.get("xp")
+    if isinstance(xp, bool) or not isinstance(xp, (int, float)) or not float("-inf") < xp < float("inf") or xp < 0:
+        raise RuntimeError("Native canonical XP total is invalid or unavailable")
     kpis = raw.get("kpis")
     if not isinstance(kpis, list) or not all(isinstance(kpi, str) for kpi in kpis):
         raise RuntimeError("Native Dashboard mission/contract KPI text is unavailable")
@@ -74,6 +88,9 @@ def sanitize(raw):
         "genericProfile": True,
         "missionCount": len(ids),
         "missionIdsDigest": digest(ids),
+        "missionCompletionCount": len(completions),
+        "missionCompletionsDigest": digest(sorted(completions)),
+        "totalXpDigest": digest(xp),
         "collections": {key: {"count": len(values), "idsDigest": digest(values)}
                         for key, values in sorted(collections.items())},
         "dashboardKpiCount": len(raw.get("kpis", [])),
@@ -130,6 +147,9 @@ def compare(before, after, outfile):
         "collections_identical": first["collections"] == second["collections"],
         "dashboard_kpis_identical": first["dashboardKpisDigest"] == second["dashboardKpisDigest"],
         "mission_counts_identical": first["missionCount"] == second["missionCount"],
+        "mission_completion_counts_identical": first["missionCompletionCount"] == second["missionCompletionCount"],
+        "mission_completion_ids_and_values_identical": first["missionCompletionsDigest"] == second["missionCompletionsDigest"],
+        "xp_total_identical": first["totalXpDigest"] == second["totalXpDigest"],
         "onboarding_completed_both": first["onboardingComplete"] and second["onboardingComplete"]
     }
     result = {"checks": checks, "pass": all(checks.values()), "before": first, "after": second,
@@ -144,9 +164,12 @@ def self_test():
     fixture = {"ready": True, "done": True, "generic": True, "missions": 2,
                "ids": ["raw-id-alpha","raw-id-beta"], "duplicateMissionIds": False,
                "collections": {"missions":["raw-id-alpha","raw-id-beta"],"goals":[]},
+               "completions": [], "xp": 0,
                "kpis":["Today's missions 0/2","Contracts 0 active"]}
     cleaned = sanitize(fixture)
     assert cleaned["missionCount"] == 2 and cleaned["collections"]["goals"]["count"] == 0
+    assert cleaned["missionCompletionCount"] == 0 and cleaned["totalXpDigest"] == digest(0)
+    assert cleaned["missionCompletionsDigest"] == digest([])
     assert "raw-id-alpha" not in json.dumps(cleaned) and "Today's" not in json.dumps(cleaned)
     try:
         sanitize({**fixture, "collections": {"missions":["a","b"],"goals":["contract1"]}})
@@ -168,6 +191,38 @@ def self_test():
     else:
         raise AssertionError("Canonical mission ID mismatch must fail")
     assert digest(["a","b"]) != digest(["a","c"])
+    # Any completion-ID, XP amount or total-XP mutation must fail across
+    # force-stop/relaunch even if all mission/goal IDs and KPIs are unchanged.
+    with_progress = sanitize({**fixture, "xp": 23,
+        "completions": ['["raw-id-alpha","comp-1","2026-10-19",23]']})
+    changed_completion = sanitize({**fixture, "xp": 23,
+        "completions": ['["raw-id-alpha","comp-2","2026-10-19",23]']})
+    changed_xp = sanitize({**fixture, "xp": 46,
+        "completions": ['["raw-id-alpha","comp-1","2026-10-19",23]']})
+    assert with_progress["missionCompletionsDigest"] != changed_completion["missionCompletionsDigest"]
+    assert with_progress["totalXpDigest"] != changed_xp["totalXpDigest"]
+    for bad in ({**fixture, "completions": None}, {**fixture, "xp": -2},
+                {**fixture, "xp": None}):
+        try:
+            sanitize(bad)
+        except RuntimeError:
+            pass
+        else:
+            raise AssertionError("Missing/invalid native progress must fail")
+    from tempfile import TemporaryDirectory
+    with TemporaryDirectory() as temp:
+        baseline = Path(temp) / "baseline.json"
+        mutated = Path(temp) / "mutated.json"
+        report = Path(temp) / "report.json"
+        baseline.write_text(json.dumps(with_progress), encoding="utf-8")
+        for sample in (changed_completion, changed_xp):
+            mutated.write_text(json.dumps(sample), encoding="utf-8")
+            try:
+                compare(str(baseline), str(mutated), str(report))
+            except RuntimeError:
+                pass
+            else:
+                raise AssertionError("Changed completion/XP passed native restart comparison")
     print("PASS: synthetic canonical snapshot sanitization and unexpected-seed gate")
 
 if __name__ == "__main__":
