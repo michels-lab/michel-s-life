@@ -19,3 +19,16 @@ Additional **real-device** checks still needed: ongoing Pomodoro countdown while
 - Validator source added on an isolated branch. It is **not executed against a physical Galaxy** in this block and should not be marked as physical acceptance.
 - Existing `main` still reports unconditional `backgroundDelivery: true` in `NativeFocusAlarm.status()`. Corrective Android implementation is owned by draft PR #151 and **must not be edited concurrently here**.
 - Merge/use this validator only when its source checks and review pass; physical status capture and native device acceptance remain open. No version increase, package build, release, UI redesign or modification to user data.
+
+
+## 2026-10-26 — GRANADA continuation: fail-closed evidence consistency and privacy
+
+**Specific defect in the earlier verifier:** a plausible-looking four-snapshot JSON could contain arbitrary private keys, omit actual NativeFocusAlarm fields, misreport the ongoing countdown or use an inconsistent `deliveryReason`, yet be presented as a successful 'real capture'. Pure JSON assertions cannot establish physical-device provenance; an apparent PASS must never be described as native-device proof.
+
+**Changes scoped to this QA branch:** 
+1. The executable validator now checks the exact expected set of `NativeFocusAlarm.status()` fields, types, channel/permission-specific delivery reason and countdown availability, inexact-alarm disclosure and nonnegative numeric deadline; rejects unexpected top-level/snapshot/status keys to prevent private strings entering the report.
+2. A bounded 64 KiB input and categorical errors prevent raw private JSON from appearing in action logs; output explicitly states 'NOT physical-device verification'.
+3. New `tools/test_granada_focus_evidence_contract.mjs` covers **21 synthetic acceptance/adversarial cases**: duplicate, missing, fabricated guarantee, mutable reason, muted channel, permission denied, types, private keys and inverted countdown reporting.
+4. New `.github/workflows/granada-focus-evidence.yml` checks Node syntax and invokes the real regression test on the exact PR head, with no Android app build, packaging, visual changes or account actions.
+
+**Evidence:** 21 pure evaluation cases were executed during generation with **21/21 passing**; the actual Node script and exact-head GitHub Actions outcome require separate CI verification. The physical Galaxy capture, APK source/signature provenance, screen-locked countdown and delivery under Doze are NOT evidenced here. PR #151 retains exclusive ownership of native Kotlin runtime correction. PR #152 stays DRAFT until its relevant gates are assessed. No release or merge performed by this block.
