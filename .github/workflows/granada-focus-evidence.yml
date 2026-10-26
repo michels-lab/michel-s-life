@@ -1,0 +1,26 @@
+name: GRANADA Focus evidence consistency and privacy
+on:
+  pull_request:
+    paths:
+      - 'android/tools/verify_focus_notification_status.mjs'
+      - 'tools/test_granada_focus_evidence_contract.mjs'
+      - '.github/workflows/granada-focus-evidence.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  focus-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Fail closed against malformed, private or misleading native status
+        run: |
+          node --check android/tools/verify_focus_notification_status.mjs
+          node --check tools/test_granada_focus_evidence_contract.mjs
+          node tools/test_granada_focus_evidence_contract.mjs
