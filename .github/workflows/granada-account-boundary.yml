@@ -7,6 +7,7 @@ on:
       - 'src/MichelsLife/frontend/index.html'
       - 'tools/test_granada_supabase_entry_gate.mjs'
       - 'tools/test_granada_supabase_account_race.mjs'
+      - 'tools/test_granada_restore_review_gate.mjs'
       - 'tools/test_granada_supabase_stale_overview_guest.mjs'
       - 'tools/test_granada_account_boundary.mjs'
       - 'tools/ui_granada_account_boundary_crash_browser.mjs'
@@ -43,6 +44,10 @@ jobs:
         run: |
           node --check tools/test_granada_supabase_stale_overview_guest.mjs
           node tools/test_granada_supabase_stale_overview_guest.mjs
+      - name: Prevent silent backup-restore cloud overwrite and cross-account restores
+        run: |
+          node --check tools/test_granada_restore_review_gate.mjs
+          node tools/test_granada_restore_review_gate.mjs
       - name: Install Chromium for real persistent-storage crash and restart QA
         run: |
           npm install --no-save playwright
