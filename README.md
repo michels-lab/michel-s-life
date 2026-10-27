@@ -1,5 +1,10 @@
 # Michel's Life
 
+
+## Operación Granada — procedencia del APK Android y estabilidad del emulador (2026-10-23)
+
+[Auditoría técnica, fallos nativos reproducidos y pruebas negativas del candidato](android/audit/2026-10-23-granada-native-candidate-parity.md). El PR #181 fija el SHA exacto de compilación/prueba y ensaya 3 GiB de RAM en el emulador que perdió ADB; **es una prueba de infraestructura pendiente, no una corrección Android confirmada ni una nueva versión publicada**. Se preserva el diseño y Windows sigue pausado.
+
 ## Referencias visuales reales para Figma/Lovable (Operación Granada, 2026-10-23)
 
 [Cómo consultar y comparar las capturas oficiales de la app actual](docs/audit/2026-10-23-granada-canonical-design-reference.md). La CI de escritorio y Android genera `design-baseline.html` y `design-baseline.json` junto a sus capturas reales; las referencias están ligadas al SHA del código, paquete y tamaño de pantalla. **No son una aprobación de un rediseño ni sustituyen pruebas del APK/Windows instalado**. Diseños nuevos deben preservar las características aprobadas y compararse antes de consumir más créditos externos.
