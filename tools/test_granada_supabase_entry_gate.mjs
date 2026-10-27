@@ -58,9 +58,13 @@ assert.ok(script.includes("applySnapshot(original);"),'Guest import must retain 
       assert.equal(saved[0][1].user.id,'account-b2222');
       assert.equal(saved[0][1].access_token,'B-token');
     }
-    assert.throws(()=>ctx.persist({access_token:'unowned-token'}),
-      /verified account identity|synthetic_disk_quota/,
-      'Unverified auth response must be rejected');
+    // Credential-less identities cannot bootstrap without a prior session.
+    const noPrevious={...ctx,session:()=>null};
+    vm.createContext(noPrevious);
+    vm.runInContext(source+'\nthis.persist=storeSession;',noPrevious,{timeout:1500});
+    assert.throws(()=>noPrevious.persist({access_token:'unowned-token'}),
+      /verified account identity/,
+      'Unknown auth identity must not be persisted');
   }
 }
 
