@@ -62,10 +62,10 @@ class CandidateHostWrapper(unittest.TestCase):
         self.assertTrue(p.is_file())
         rows=p.read_text().splitlines()
         self.assertGreaterEqual(len(rows),2)
-        self.assertEqual("epoch_utc\\tqemu_processes\\tqemu_rss_kib\\thost_available_kib\\tcgroup_memory_bytes",rows[0])
+        self.assertEqual("epoch_utc\tqemu_processes\tqemu_rss_kib\thost_available_kib\tcgroup_memory_bytes",rows[0])
         self.assertLessEqual(len(rows),482)
         for row in rows[1:]:
-            parts=row.split("\\t")
+            parts=row.split("\t")
             self.assertEqual(5,len(parts))
             self.assertTrue(all(x.lstrip("-").isdigit() for x in parts))
         self.assertNotIn("token",p.read_text().lower())
