@@ -55,6 +55,38 @@ class CandidateHostWrapper(unittest.TestCase):
         self.assertFalse((self.root/"artifacts/candidate-install-host/native-script-complete.txt").exists())
         self.assertIn("GRANADA_NATIVE_MISSING_REQUIRED_COMPARISON",result.stderr+result.stdout)
 
+    def test_host_timeline_is_bounded_numeric_only(self):
+        result=self.run_fake(27)
+        self.assertEqual(result.returncode,27)
+        p=self.root/"artifacts/candidate-install-host/host-memory-timeline.tsv"
+        self.assertTrue(p.is_file())
+        rows=p.read_text().splitlines()
+        self.assertGreaterEqual(len(rows),2)
+        self.assertEqual("epoch_utc\\tqemu_processes\\tqemu_rss_kib\\thost_available_kib\\tcgroup_memory_bytes",rows[0])
+        self.assertLessEqual(len(rows),482)
+        for row in rows[1:]:
+            parts=row.split("\\t")
+            self.assertEqual(5,len(parts))
+            self.assertTrue(all(x.lstrip("-").isdigit() for x in parts))
+        self.assertNotIn("token",p.read_text().lower())
+        self.assertNotIn("password",p.read_text().lower())
+
+    def test_failing_native_script_still_does_not_claim_complete_after_sampling(self):
+        failed=self.run_fake(39)
+        self.assertEqual(39,failed.returncode)
+        root=self.root/"artifacts/candidate-install-host"
+        self.assertTrue((root/"host-memory-timeline.tsv").exists())
+        self.assertFalse((root/"native-script-complete.txt").exists())
+        self.assertIn("GRANADA_CANDIDATE_NATIVE_SMOKE_FAILED status=39",failed.stderr)
+
+    def test_sampler_has_no_real_device_or_fake_frame_bypass(self):
+        code=(ROOT/"tools/granada_candidate_host_wrapper.sh").read_text()
+        self.assertEqual(1,code.count("bash android/tools/smoke_candidate_apk_install.sh"))
+        self.assertIn("watch_host &",code)
+        self.assertIn("stop_watch",code)
+        self.assertNotIn("continue-on-error",code)
+        self.assertNotIn("touch artifacts/candidate-install/step0.png",code)
+
     def test_wrapper_has_exact_original_script_without_skip_controls(self):
         original=(ROOT/"tools/granada_candidate_host_wrapper.sh").read_text()
         self.assertEqual(original.count("bash android/tools/smoke_candidate_apk_install.sh"),1)
