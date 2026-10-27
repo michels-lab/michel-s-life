@@ -114,7 +114,7 @@ function overviewFixture(){
 }
 
 function guestFixture(){
- let id=A,token='A_ACCESS',removed=0,downloads=0,confirmCount=0;
+ let id=A,token='A_ACCESS',removed=0,downloads=0,confirmCount=0,remoteReads=0;
  const remote=deferred(),push=deferred(),applied=[],stash=[],original='{"state":{"missions":[]}}';
  const guest={snapshot:{state:{missions:[{id:'GUEST_ONLY'}],xp:10}}};
  const storage=new Map([['guest-vault',JSON.stringify(guest)]]);
@@ -130,7 +130,7 @@ function guestFixture(){
   boardOwner:()=>id,
   ensureSession:async()=>({access_token:token,user:{id,email:id+'@invalid.test'}}),
   safeJson:(v,def=null)=>{try{return JSON.parse(v)}catch{return def}},
-  remoteState:()=>remote.promise,
+  remoteState:()=>{remoteReads++;return remote.promise},
   meta:()=>({revision:0}),hasPersonalBoard:()=>false,
   confirm:()=>{confirmCount++;return true},
   capture:()=>original,
@@ -144,13 +144,14 @@ function guestFixture(){
  vm.runInContext(ownership+'\n'+guestSource+'\nthis.runGuest=guestImport;',ctx,{timeout:3000});
  return {
   runGuest:ctx.runGuest,remote,push,applied,stash,storage,localStorage,
-  get removed(){return removed},get downloads(){return downloads},get confirmCount(){return confirmCount},
+  get removed(){return removed},get downloads(){return downloads},get confirmCount(){return confirmCount},get remoteReads(){return remoteReads},
   switchToB:()=>{id=B;token='B_ACCESS'}
  };
 }
 // A's eligibility read is stale: do not request consent or apply guest data.
 {
  const x=guestFixture(),task=x.runGuest();
+ await until(()=>x.remoteReads===1,'delayed guest eligibility read');
  x.switchToB();x.remote.resolve(null);
  await assert.rejects(task,/Authenticated account changed during sync/);
  assert.equal(x.applied.length,0);assert.equal(x.confirmCount,0);
@@ -168,6 +169,16 @@ function guestFixture(){
  assert.equal(x.removed,0,'Guest source remains recoverable after interrupted import');
  assert.equal(x.downloads,0,'No reload after stale import');
 }
+// A's provider upload fails after the account changes: even error rollback
+// cannot write the guest/A snapshot over B's newly active local board.
+{
+ const x=guestFixture(),task=x.runGuest();
+ x.remote.resolve(null);await until(()=>x.stash.length===1,'guest rejected upload');
+ x.switchToB();x.push.reject(new Error('synthetic upload rejected'));
+ await assert.rejects(task,/Account changed during guest import/);
+ assert.equal(x.applied.length,1,'Rejected A upload must not roll back into B');
+ assert.equal(x.removed,0);assert.equal(x.downloads,0);
+}
 // Same account path succeeds and removes guest ONLY after confirmed upload.
 {
  const x=guestFixture(),task=x.runGuest();
@@ -178,4 +189,4 @@ function guestFixture(){
  assert.equal(x.removed,1);
  assert.equal(x.downloads,1);
 }
-console.log('PASS: 7/7 production Supabase stale device/history and guest import ownership regressions');
+console.log('PASS: 8/8 production Supabase stale device/history and guest import ownership regressions');
