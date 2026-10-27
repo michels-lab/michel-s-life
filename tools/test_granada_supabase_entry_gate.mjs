@@ -26,6 +26,44 @@ assert.ok(script.includes("const remote=await remoteState(s);\n   if(remote)thro
 assert.ok(!script.includes("push('explicit_guest_import',{force:true})"),'Guest import must never force overwrite');
 assert.ok(script.includes("applySnapshot(original);"),'Guest import must retain rollback');
 
+// Test the REAL credential-persistence function with forced account-switch
+// failure. New account credentials must never precede the local board change.
+{
+  const source=extract('function storeSession(data){','async function ensureSession(){');
+  const old={access_token:'A-token',refresh_token:'A-refresh',user:{id:'account-a1111'}};
+  for(const mustFail of [false,true]){
+    const events=[],saved=[];
+    let visible='account-a1111';
+    const ctx={session:()=>old,boardOwner:()=>visible,
+      prepareAccountBoard:id=>{
+        events.push('isolate:'+id);
+        if(mustFail)throw new Error('synthetic_disk_quota');
+        visible=id;
+      },
+      localStorage:{setItem:(key,value)=>{
+        events.push('persist:'+visible);saved.push([key,JSON.parse(value)]);
+      }},SESSION_KEY:'device-session',Date,Math,Number,String,
+      syncRuntime:()=>events.push('render')
+    };
+    vm.createContext(ctx);vm.runInContext(source+'\nthis.persist=storeSession;',ctx,{timeout:1500});
+    const token={access_token:'B-token',refresh_token:'B-refresh',
+      expires_in:3600,user:{id:'account-b2222'}};
+    if(mustFail){
+      assert.throws(()=>ctx.persist(token),/synthetic_disk_quota/);
+      assert.equal(saved.length,0,'Failed board swap must not persist B token');
+      assert.deepEqual(events,['isolate:account-b2222']);
+    }else{
+      ctx.persist(token);
+      assert.deepEqual(events,['isolate:account-b2222','persist:account-b2222','render']);
+      assert.equal(saved[0][1].user.id,'account-b2222');
+      assert.equal(saved[0][1].access_token,'B-token');
+    }
+    assert.throws(()=>ctx.persist({access_token:'unowned-token'}),
+      /verified account identity|synthetic_disk_quota/,
+      'Unverified auth response must be rejected');
+  }
+}
+
 // Password, sign-up and OTP cannot inherit the previous account ID when the
 // provider response omits the verified user. This is a production source gate.
 for(const [label,section] of [
