@@ -26,11 +26,11 @@
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
-    "POTENTIAL_UNLOGGED_CHANGES": 2
+    "POTENTIAL_UNLOGGED_CHANGES": 1
   },
-  "finding_total": 6,
-  "inventory_fingerprint": "6ba27d4f0b33260f5e58b190fcb4752869e2cfa1c0be66e0bb4f81b6da22b628",
-  "evidence_fingerprint": "1700c794834497942b224c91abf11670d77ac81b2a9d1bb4ebf204b2e5febbbc",
+  "finding_total": 5,
+  "inventory_fingerprint": "57952bc2001c47dc486b2e6aa2e1a16efc64af982952dd5aec3c0230acf5a755",
+  "evidence_fingerprint": "bfa55c2ab2e6f410cd87a37a38d56ae5a1ee1347db2551d3220756766c846396",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -492,7 +492,7 @@
       "role": "bitacora",
       "purpose": "technical/audit change history",
       "certainty": "rule",
-      "blob": "5844ddb140a6f14948383c9488d31f79160a315d"
+      "blob": "42bd656c74ef99ec0f6f4da06dfcddae4c9de310"
     },
     {
       "path": "android/DIRECT_DISTRIBUTION_SIGNING.md",
@@ -2190,15 +2190,6 @@
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
       "observation": "37 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-drive-privacy.yml, .github/workflows/granada-android-evidence-gate.yml",
-      "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "eb2bb53ff0467cc7",
-      "code": "POTENTIAL_UNLOGGED_CHANGES",
-      "severity": "review",
-      "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "57 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-emulator-transport-diagnostic.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-drive-privacy.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
