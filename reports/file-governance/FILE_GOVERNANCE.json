@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 298,
-  "classified_files_total": 294,
-  "docs_content_inspected": 88,
+  "tracked_files_total": 301,
+  "classified_files_total": 297,
+  "docs_content_inspected": 89,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
   "roles": {
@@ -13,24 +13,24 @@
     "build_script": 6,
     "config": 22,
     "database_migration": 3,
-    "document": 81,
+    "document": 82,
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 8,
     "source": 96,
-    "test": 12,
+    "test": 13,
     "text_metadata": 1,
     "web_ui": 3,
-    "workflow": 31
+    "workflow": 32
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "247e16e96c09d72903b40c348421d5deb5607648f6fd73f36b2a1a392b1266ee",
-  "evidence_fingerprint": "aac20ac6f802d93ed5feb0e83823ec92c8571c3d232bf400eadd1a8bae880bf2",
+  "inventory_fingerprint": "451c14839d32fe05ecf599a033b911f098a6eadca67f53fcc6afb5a1b5b4f5c8",
+  "evidence_fingerprint": "6189e36649de29594b16e5e4bef869a87dcf02368d515ed8d9f36fc6e467de17",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -143,6 +143,13 @@
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
       "blob": "5163f5e1348f32b455d7791aea6b4a5d649a9f31"
+    },
+    {
+      "path": ".github/workflows/granada-android-drive-privacy.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "076df43573665e35039d05e40cddb51178cdd3f7"
     },
     {
       "path": ".github/workflows/granada-android-evidence-gate.yml",
@@ -548,7 +555,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "190ddfbb32afe1769a23d3475d6937afd2d13546"
+      "blob": "9ad158ca429634f115837426efcfc492bf7ae2a6"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/GoogleAuthorizationCoordinator.kt",
@@ -808,6 +815,13 @@
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
       "blob": "24978273af4d5518591b5eeed447abb1eb0cb8f7"
+    },
+    {
+      "path": "android/audit/2026-10-20-granada-drive-native-privacy.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "b6c759eefa0856b32b2c60fb361d66572c631864"
     },
     {
       "path": "android/audit/2026-10-20-granada-focus-permission-evidence.md",
@@ -1741,6 +1755,13 @@
       "blob": "9658aa2c62c3437cdb1df876a0a723d8a64a7bfe"
     },
     {
+      "path": "tools/test_granada_android_drive_boundary.py",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "25915bb27e18e84cdeebf3fc38b2074a75475132"
+    },
+    {
       "path": "tools/test_granada_android_evidence_gate.py",
       "role": "test",
       "purpose": "code/test implementation",
@@ -2129,20 +2150,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "a59a27344d0405ce",
+      "id": "5398d439ab7bb6ea",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "29 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-android16-install-launch-isolation.yml",
+      "observation": "32 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-drive-privacy.yml, .github/workflows/granada-android-evidence-gate.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "3edfa4b52796daec",
+      "id": "f3c02a896fcac432",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "49 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-emulator-transport-diagnostic.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml",
+      "observation": "52 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-emulator-transport-diagnostic.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-drive-privacy.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
