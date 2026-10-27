@@ -1,0 +1,102 @@
+name: GRANADA Data Health and recovery safety
+
+on:
+  pull_request:
+    paths:
+      - 'src/MichelsLife/frontend/index.html'
+      - 'tools/test_granada_data_health.mjs'
+      - 'tools/ui_granada_data_health_smoke.mjs'
+      - '.github/workflows/granada-data-health.yml'
+      - 'android/audit/2026-10-20-granada-data-health.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  RELEASES_REPO: michels-lab/michel-s-life-releases
+
+jobs:
+  data-health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: 'Test real in-app health inspector - 18 privacy JSON and comparison cases'
+        run: |
+          node --check tools/test_granada_data_health.mjs
+          node --check tools/ui_granada_data_health_smoke.mjs
+          node --test tools/test_granada_data_health.mjs
+      - name: Download existing AppBundle only — no release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p artifacts
+          python tools/download_latest_michels_life_bundle.py \
+            --repo "$RELEASES_REPO" --output artifacts/granada-data-health-bundle.zip
+      - name: Overlay canonical frontend into Android browser fixture
+        run: |
+          python tools/bump_frontend_version.py --index src/MichelsLife/frontend/index.html
+          python tools/enable_i18n.py --index src/MichelsLife/frontend/index.html
+          python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
+          python tools/replace_bundle_index.py \
+            --bundle artifacts/granada-data-health-bundle.zip \
+            --index src/MichelsLife/frontend/index.html
+          python tools/inject_bundle_asset.py \
+            --bundle artifacts/granada-data-health-bundle.zip \
+            --source src/MichelsLife/frontend/i18n.js --arcname i18n.js
+          python tools/inject_bundle_asset.py \
+            --bundle artifacts/granada-data-health-bundle.zip \
+            --source branding/michel_duarte_avatar.jpg \
+            --arcname assets/michel_duarte_avatar.jpg
+          python tools/inject_bundle_asset.py \
+            --bundle artifacts/granada-data-health-bundle.zip \
+            --source branding/michels_life_app_icon.svg \
+            --arcname assets/michels_life_app_icon.svg
+          python tools/inject_bundle_asset.py \
+            --bundle artifacts/granada-data-health-bundle.zip \
+            --source branding/michels_life_mark.svg \
+            --arcname assets/michels_life_mark.svg
+          python tools/inject_bundle_asset.py \
+            --bundle artifacts/granada-data-health-bundle.zip \
+            --source branding/michels_life_lockup.svg \
+            --arcname assets/michels_life_lockup.svg
+          python tools/inject_bundle_asset.py \
+            --bundle artifacts/granada-data-health-bundle.zip \
+            --source branding/michels_lab_mark.png \
+            --arcname assets/michels_lab_mark.png
+          python tools/inject_bundle_asset.py \
+            --bundle artifacts/granada-data-health-bundle.zip \
+            --source branding/michels_lab_lockup.png \
+            --arcname assets/michels_lab_lockup.png
+          python android/tools/prepare_bundle.py \
+            --bundle artifacts/granada-data-health-bundle.zip \
+            --assets artifacts/granada-data-health-android
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Start synthetic Android browser fixture
+        run: |
+          python -m http.server 4174 --directory artifacts/granada-data-health-android \
+            >/tmp/mlv-granada-data-health.log 2>&1 &
+      - name: Real Settings Data taps, import, compare, privacy, reload 360/412
+        env:
+          MLV_ANDROID_UI_URL: http://127.0.0.1:4174
+        run: node tools/ui_granada_data_health_smoke.mjs
+      - name: Retain synthetic-only screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: granada-data-health-android-qa
+          path: |
+            artifacts/granada-data-health/*.png
+            /tmp/mlv-granada-data-health.log
+          retention-days: 7
+          if-no-files-found: warn
