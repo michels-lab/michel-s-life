@@ -30819,6 +30819,8 @@ function prepareAccountBoard(id){
  if(saved?.snapshot?.state){applySnapshot(saved.snapshot);if(saved.meta&&typeof saved.meta==='object')localStorage.setItem(META_KEY,JSON.stringify(saved.meta))}
  else if(!previous)for(const [key,value] of guestVisuals)localStorage.setItem(key,value);
  localStorage.setItem(BOARD_OWNER_KEY,target);
+ // Prevent displaying A's device/history list while B authenticates.
+ overview={devices:[],backups:[],currentDeviceId:deviceId(),currentDeviceName:deviceName()};
  try{renderAll?.()}catch(_){}
 }
 function assertOwnedBoard(s){
@@ -31014,14 +31016,28 @@ function scheduleAutoSync(){
  if(applying||!runtime.connected)return;saveMeta({dirty:true});clearTimeout(syncTimer);syncTimer=setTimeout(()=>sync('auto',{silent:true}).catch(()=>{}),2500)
 }
 async function refreshOverview(){
- const s=await ensureSession().catch(()=>null);if(!s){overview={devices:[],backups:[],currentDeviceId:deviceId(),currentDeviceName:deviceName()};scheduleMount();return overview}
+ const s=await ensureSession().catch(()=>null);
+ if(!s){
+  // A's delayed refresh must not wipe B's already active device list.
+  if(!session()){
+   overview={devices:[],backups:[],currentDeviceId:deviceId(),currentDeviceName:deviceName()};
+   scheduleMount()
+  }
+  return overview
+ }
  try{
+  assertOwnedBoard(s);
   const [devices,history]=await Promise.all([
    request('/rest/v1/ml_devices?select=device_id,platform,label,app_version,last_action,last_seen_at&order=last_seen_at.desc&limit=12',{access:s.access_token}),
    request('/rest/v1/ml_state_history?select=id,revision,source_device_id,source_platform,app_version,reason,created_at&order=created_at.desc&limit=10',{access:s.access_token})
   ]);
-  overview={devices:(devices||[]).map(d=>({deviceId:d.device_id,deviceName:d.label||d.platform,lastSeenAt:d.last_seen_at,appVersion:d.app_version,lastAction:d.last_action,platform:d.platform})),backups:(history||[]).map(h=>({fileId:h.id,createdAt:h.created_at,reason:h.reason,appVersion:h.app_version,sourceDeviceId:h.source_device_id,revision:h.revision})),currentDeviceId:deviceId(),currentDeviceName:deviceName()};lastOverviewAt=Date.now();await touchDevice(s,'online')
- }catch(err){runtime.cloudError=String(err.message||err)}
+  assertOwnedBoard(s); // Never display A's late history on B's screen.
+  overview={devices:(devices||[]).map(d=>({deviceId:d.device_id,deviceName:d.label||d.platform,lastSeenAt:d.last_seen_at,appVersion:d.app_version,lastAction:d.last_action,platform:d.platform})),backups:(history||[]).map(h=>({fileId:h.id,createdAt:h.created_at,reason:h.reason,appVersion:h.app_version,sourceDeviceId:h.source_device_id,revision:h.revision})),currentDeviceId:deviceId(),currentDeviceName:deviceName()};lastOverviewAt=Date.now();await touchDevice(s,'online');assertOwnedBoard(s)
+ }catch(err){
+  // Suppress stale A errors once B becomes owner, without exposing A metadata.
+  try{assertOwnedBoard(s)}catch(_){return overview}
+  runtime.cloudError=String(err.message||err)
+ }
  scheduleMount();return overview
 }
 function getOverview(){return overview}
@@ -31078,19 +31094,24 @@ document.addEventListener('click',async e=>{
    const x=saved.snapshot.state;
    const count=(Array.isArray(x.missions)?x.missions.length:0)+' missions / '+(Array.isArray(x.goals)?x.goals.length:0)+' Premium contracts';
    const remote=await remoteState(s);
+   assertOwnedBoard(s); // Login could change while checking guest eligibility.
    if(remote)throw new Error('Guest import is blocked: this account already has cloud data. Restore and compare existing data first; no overwrite is allowed.');
    if(hasPersonalBoard()||Number(meta().revision||0)>0)
      throw new Error('Guest import is blocked: this account already has local progress. Protect it before attempting import.');
    if(!confirm('Import '+count+' into EMPTY Supabase account '+String(s.user.email||s.user.id)+'? This one-time action uploads the saved guest board; it cannot replace an existing cloud board.'))return;
+   assertOwnedBoard(s); // Confirm action must still target the same account.
    const original=safeJson(capture(),null),originalMeta=localStorage.getItem(META_KEY);
    if(!original?.state)throw new Error('Local recovery snapshot is not available; import cancelled.');
    stashLocalBoard(accountVaultKey(s.user.id));
    try{
      applySnapshot(saved.snapshot);
      const result=await push('explicit_guest_import');
+     assertOwnedBoard(s); // B must not inherit or delete A's guest source.
      if(result?.conflict)throw new Error('The cloud changed during import; the guest copy was preserved.');
      localStorage.removeItem(GUEST_VAULT);location.reload();
    }catch(err){
+     // Never roll back A's guest snapshot onto newly authenticated B.
+     try{assertOwnedBoard(s)}catch(_){throw new Error('Account changed during guest import; saved guest copy preserved and new account untouched.')}
      try{
        applySnapshot(original);
        if(originalMeta===null)localStorage.removeItem(META_KEY);
