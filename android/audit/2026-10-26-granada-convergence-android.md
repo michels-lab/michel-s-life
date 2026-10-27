@@ -1,3 +1,25 @@
+## Continuación Granada — 2026-10-26, integración Data Health y medición QEMU
+
+**Backlog antes → después:** 10 → **9 PR abiertos**; **13 issues abiertos** sin cierres artificiales. **0 PR/ramas nuevas**, **1 PR fusionado**, **0 releases/APK oficiales**, **0 cambios en Themes/Current Chapter/Windows**.
+
+### PR #156 Data Health fusionado en `main`
+- [PR #156](https://github.com/michels-lab/michel-s-life/pull/156), head fuente `80582f1abfb375f65ce5702c41c1aa4ad3c46ca8`, merge squash **`a3b9a5f03502ca7a963508a4073848f428df5d0d`**.
+- Panel read-only integrado a Settings > Data: revisión local del progreso, inspección offline de JSON/.michelslife con límite de 10 MiB, comparación numérica de XP y completaciones y exportación de informe con códigos de hallazgos/conteos. No importa/restaura/sincroniza/elimina ni usa credenciales. El mensaje al usuario advierte que **no certifica capacidad de restauración**.
+- [Data Health CI exact-head #39403330473](https://github.com/michels-lab/michel-s-life/actions/runs/39403330473): SUCCESS (18 pruebas fuente de privacidad/comparación y flujo móvil Chromium). Source/UI/Android UI/Story cloud PASS; [Android Build #39403330462](https://github.com/michels-lab/michel-s-life/actions/runs/39403330462) job de ensamblado SUCCESS, **installed candidate FAIL** por pérdida del emulador QEMU/ADB. No se declara aprobado el uso en APK físico ni restaura cuentas reales. Issue #55/#108/#54 siguen abiertos.
+- Diff revisado: solo agrega Settings Data Health, una suite de prueba y su workflow, sin tocar Kotlin/Auth, Themes, Home ni módulos visuales principales. Tests de escritorio/navegador no equivalen a Galaxy.
+
+### PR #181 — artefacto numérico real de Android 16 descargado e inspeccionado
+- Fuente `1bb286f2f2080c68bf549c65d5a9d3846eec148d`, [run real #40441373678](https://github.com/michels-lab/michel-s-life/actions/runs/40441373678), [HostEvidence artifact #12707181068](https://github.com/michels-lab/michel-s-life/actions/runs/40441373678/artifacts/12707181068).
+- El ZIP contiene verdict, host-before, host-after-failure y 75 registros temporales numéricos a intervalos de ~3 s. QEMU pasó de **1 proceso a 0** alrededor de 100 segundos desde el primer muestreo, con RSS máximo registrado **4,369,920 KiB (~4.17 GiB)**. La memoria total disponible en host nunca bajó de **10,964,680 KiB (~10.46 GiB)**. El contador cgroup figuró siempre como `-1` y `host_oom_kill_delta=null`; **no hay pruebas de OOM del host ni prueba concluyente que lo descarte para todos los límites/procesos**. No atribuir causa sin evidencia.
+- QEMU desapareció antes de la segunda captura real `step0-after-30s.png`; error ADB `device emulator-5554 not found`; 5 reintentos, comparación canónica incompleta. Verdict: `qemu_emulator_process_disappeared`, `DIAGNOSTIC_ONLY`, `canonical_persistence_verified=false`.
+- Exact-head [source validation #40441373669](https://github.com/michels-lab/michel-s-life/actions/runs/40441373669), [Android UI #40441373672](https://github.com/michels-lab/michel-s-life/actions/runs/40441373672), [UI #40441373767](https://github.com/michels-lab/michel-s-life/actions/runs/40441373767) SUCCESS. Android build subjob SUCCESS, workflow global FAIL por installed smoke; no verde ficticio.
+- Ruta alternativa [PR #166 Android API35, run #39677022880](https://github.com/michels-lab/michel-s-life/actions/runs/39677022880) también falló por desaparición de `emulator-5554` ya desde `step0.png`. Ni API35 ni API36 representan aceptación nativa.
+- Se documentó evidencia cuantitativa y reentrada en [issue #139](https://github.com/michels-lab/michel-s-life/issues/139). PR #181 sigue **DRAFT**; sin otro PR de diagnóstico y sin rerun sin hipótesis. No se usaron datos personales ni cuentas reales.
+
+**Próximo GRANADA:** mantener foco en el bloqueo QEMU/API35/36 existente #139/#181, distinguir límites de cgroup vs GPU/host, y después validar de forma real las correcciones P0 de Google Drive, aislamiento A/B #169 y Story #168/#171. No cerrar #55/#108/#53 ni publicar APK hasta los gates firmados, nativos y de cuenta. Windows permanece pausado.
+
+---
+
 ## Addendum — corregidas regresiones del propio monitor de #181 (2026-10-26)
 
 - Primera prueba de la nueva telemetría `3de3b1e7fc23204a8527d29ea4c1ca90374861f4`: [CI #40440438800](https://github.com/michels-lab/michel-s-life/actions/runs/40440438800) compiló Android (`android`: SUCCESS), pero la fase pre-emulador cayó en `bash -n` por un fallback de QEMU mal citado. No se ejecutó el dispositivo en ese run.
