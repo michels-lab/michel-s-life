@@ -25,10 +25,31 @@ assert.ok(!script.includes("await push('first_upload')"),'Old automatic first up
 assert.ok(script.includes("const remote=await remoteState(s);\n   if(remote)throw new Error('Guest import is blocked:"),'Guest import must reject existing remote before confirmation');
 assert.ok(!script.includes("push('explicit_guest_import',{force:true})"),'Guest import must never force overwrite');
 assert.ok(script.includes("applySnapshot(original);"),'Guest import must retain rollback');
+
+// Password, sign-up and OTP cannot inherit the previous account ID when the
+// provider response omits the verified user. This is a production source gate.
+for(const [label,section] of [
+  ['password',extract('async function signIn(email,password){','async function signUp(')],
+  ['sign-up',extract('async function signUp(email,password){','function authMode(){')],
+  ['OTP',extract('async function verifyOtp(email,token){','function signOutLocal(){')]
+]) {
+  const proof=section.indexOf('!data?.user?.id');
+  const stored=section.indexOf('storeSession(data)');
+  assert.ok(proof>=0&&stored>proof,label+' must prove returned identity BEFORE local session storage');
+}
+const initSource=extract('async function initializeAfterAuth(){','function copy(){');
+assert.ok(initSource.indexOf('prepareAccountBoard(initial.user.id)')>=0);
+assert.ok(initSource.indexOf('prepareAccountBoard(initial.user.id)')<initSource.indexOf('await ensureSession()'),
+  'Account board must switch synchronously before the first auth await');
+const refreshSource=extract('async function ensureSession(){','function syncRuntime(){');
+assert.ok(refreshSource.includes('Session refresh changed the authenticated account'),
+  'Refresh must reject token user ID switching');
+
+
 assert.ok(script.includes("localStorage.removeItem(GUEST_VAULT);location.reload();"),'Guest vault must only be deleted after accepted upload');
 
 function fixture() {
-  let active='account-a1111',remoteRows=[],postCount=0,reads=0;
+  let active='account-a1111',remoteRows=[],postCount=0,reads=0,prepares=0;
   const calls=[];
   const runtime={cloudBusy:false,cloudConflict:null,cloudError:'',connected:true};
   const ctx={
@@ -49,13 +70,14 @@ function fixture() {
     meta:()=>({revision:0}),deviceId:()=> 'local-device-only',platform:()=> 'android',
     touchDevice:async()=>{},saveMeta:()=>{},writeHistory:async()=>{},
     es:()=>false,notify:()=>{},scheduleMount:()=>{},syncRuntime:()=>{},
-    refreshOverview:async()=>{},prepareAccountBoard:id=>assert.equal(id,active)
+    refreshOverview:async()=>{},prepareAccountBoard:id=>{prepares++;assert.equal(id,active)}
   };
   vm.createContext(ctx);
   vm.runInContext(runtimeSource,ctx,{timeout:3000});
   return {api:ctx.production,runtime,calls,
     get postCount(){return postCount},
     get reads(){return reads},
+    get prepares(){return prepares},
     switchAccount:v=>{active=v},
     setRemote:rows=>{remoteRows=rows}
   };
@@ -63,11 +85,15 @@ function fixture() {
 
 {
   const x=fixture();
-  await x.api.initializeAfterAuth();
+  const loginA=x.api.initializeAfterAuth();
+  assert.equal(x.prepares,1,'Account A board must switch before auth yields');
+  await loginA;
   assert.equal(x.postCount,0,'Signing in must never auto-upload a first board');
   assert.equal(x.runtime.cloudConflict.remoteRevision,0);
   x.switchAccount('account-b2222');
-  await x.api.initializeAfterAuth();
+  const loginB=x.api.initializeAfterAuth();
+  assert.equal(x.prepares,2,'Account B board must switch before auth yields');
+  await loginB;
   assert.equal(x.postCount,0,'A to empty B must never upload A automatically');
   const output=await x.api.sync('auto',{silent:true});
   assert.equal(output.requiresOwnerConfirmation,true);
