@@ -30855,8 +30855,27 @@ async function ensureSession(){
  let s=session();if(!s?.access_token)return null;
  if(Number(s.expires_at||0)-Date.now()>120000)return s;
  if(!s.refresh_token){signOutLocal();return null}
- try{const data=await request('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:{refresh_token:s.refresh_token}});if(data?.user?.id&&String(data.user.id)!==String(s?.user?.id||''))throw new Error('Session refresh changed the authenticated account; local sync is blocked.');return storeSession(data)}
- catch(err){signOutLocal();throw err}
+ try{
+  const data=await request('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:{refresh_token:s.refresh_token}});
+  // A refresh started under account A must never resurrect A (or erase B)
+  // after the user changes login while the HTTP request is pending.
+  const live=session();
+  if(!live||live.access_token!==s.access_token||
+     live.refresh_token!==s.refresh_token||
+     String(live.user?.id||'')!==String(s.user?.id||''))
+   throw new Error('Session changed during refresh; outdated credential response ignored.');
+  if(data?.user?.id&&String(data.user.id)!==String(s?.user?.id||''))
+   throw new Error('Session refresh changed the authenticated account; local sync is blocked.');
+  return storeSession(data)
+ }catch(err){
+  const live=session();
+  // Never call signOutLocal for an old failed refresh if B signed in.
+  if(live?.access_token===s.access_token&&
+     live?.refresh_token===s.refresh_token&&
+     String(live?.user?.id||'')===String(s.user?.id||''))
+   signOutLocal();
+  throw err
+ }
 }
 function syncRuntime(){
  const s=session(),m=meta();runtime.connected=!!s?.access_token;runtime.cloudReady=runtime.connected;runtime.account=s?.user?.email||'';runtime.cloudLastSync=m.lastSync||'';runtime.revision=Number(m.revision||0);runtime.lastRemoteAt=m.lastRemoteAt||'';scheduleMount()
