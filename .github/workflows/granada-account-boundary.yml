@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'src/MichelsLife/frontend/account-boundary.mjs'
+      - 'src/MichelsLife/frontend/index.html'
+      - 'tools/test_granada_supabase_entry_gate.mjs'
       - 'tools/test_granada_account_boundary.mjs'
       - 'tools/ui_granada_account_boundary_crash_browser.mjs'
       - '.github/workflows/granada-account-boundary.yml'
@@ -27,6 +29,10 @@ jobs:
         run: node --check tools/test_granada_account_boundary.mjs
       - name: Synthetic account switching, guest import and recovery QA
         run: node tools/test_granada_account_boundary.mjs
+      - name: Check real production Supabase A/B identity and first-upload safety gates
+        run: |
+          node --check tools/test_granada_supabase_entry_gate.mjs
+          node tools/test_granada_supabase_entry_gate.mjs
       - name: Install Chromium for real persistent-storage crash and restart QA
         run: |
           npm install --no-save playwright
