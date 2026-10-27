@@ -149,3 +149,61 @@ const mustReject=async pending=>{
   assert.equal(x.saved.length,1,'Normal explicit upload still completes');
 }
 console.log('PASS: 9/9 production Supabase async account-switch and same-account regressions');
+
+
+// The refresh branch is production code too: refresh and logout must not
+// resurrect an old identity or wipe a newly authenticated account.
+const refreshSource=extract('async function ensureSession(){','function syncRuntime(){');
+function refreshFixture(){
+  let live={access_token:'A_ACCESS',refresh_token:'A_REFRESH',expires_at:0,user:{id:A}};
+  const refreshRequests=[],persisted=[],localSignOut=[];
+  const ctx={
+    session:()=>live,Date,Number,String,
+    request:(path)=>{
+      assert.equal(path,'/auth/v1/token?grant_type=refresh_token');
+      const deferredRequest=deferred();refreshRequests.push(deferredRequest);return deferredRequest.promise;
+    },
+    storeSession:data=>{persisted.push(data);return data},
+    signOutLocal:()=>localSignOut.push(live.user.id)
+  };
+  vm.createContext(ctx);
+  vm.runInContext(refreshSource+'\\nthis.refresh=ensureSession;',ctx,{timeout:3000});
+  return {
+    refresh:ctx.refresh,refreshRequests,persisted,localSignOut,
+    switchToB:()=>{live={access_token:'B_ACCESS',refresh_token:'B_REFRESH',expires_at:0,user:{id:B}}}
+  };
+}
+{
+  const x=refreshFixture(),op=x.refresh();
+  await until(()=>x.refreshRequests.length===1,'in-flight successful refresh');
+  x.switchToB();
+  x.refreshRequests[0].resolve({access_token:'LATE_A_TOKEN',user:{id:A}});
+  await assert.rejects(op,/Session changed during refresh/);
+  assert.equal(x.persisted.length,0,'Old refresh must not persist an A token after B login');
+  assert.equal(x.localSignOut.length,0,'Old refresh must not sign out B');
+}
+{
+  const x=refreshFixture(),op=x.refresh();
+  await until(()=>x.refreshRequests.length===1,'in-flight failing refresh');
+  x.switchToB();
+  x.refreshRequests[0].reject(new Error('synthetic provider offline'));
+  await assert.rejects(op,/synthetic provider offline/);
+  assert.equal(x.localSignOut.length,0,'Old failed refresh must not sign out B');
+}
+{
+  const x=refreshFixture(),op=x.refresh();
+  await until(()=>x.refreshRequests.length===1,'same-account refresh');
+  x.refreshRequests[0].resolve({access_token:'NEW_A_TOKEN',user:{id:A}});
+  await op;
+  assert.equal(x.persisted.length,1,'Current account may refresh normally');
+  assert.equal(x.localSignOut.length,0);
+}
+{
+  const x=refreshFixture(),op=x.refresh();
+  await until(()=>x.refreshRequests.length===1,'wrong identity refresh');
+  x.refreshRequests[0].resolve({access_token:'UNEXPECTED_B_TOKEN',user:{id:B}});
+  await assert.rejects(op,/Session refresh changed the authenticated account/);
+  assert.equal(x.persisted.length,0,'Mismatched token is never stored');
+  assert.equal(x.localSignOut.length,1,'Invalid current refresh invalidates only current A');
+}
+console.log('PASS: 4/4 production token refresh A/B concurrency regressions');
