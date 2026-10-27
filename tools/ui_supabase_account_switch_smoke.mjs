@@ -108,6 +108,14 @@ try{
     'Guest mission or Journal was not retained in a reversible local vault');
   ok(!remote.has(ids.a)&&!(writes.get(ids.a)||0),
     'First A login created remote master without owner approval');
+  ok((await page.evaluate(()=>({
+    setup:window.SupabaseSyncV30216.runtime.firstMasterPending,
+    conflict:window.SupabaseSyncV30216.runtime.cloudConflict,
+    modalVisible:document.getElementById('mlv197CloudConflictOverlay')?.classList.contains('show')||false
+  }))).setup===true,'New A must show explicit owner-setup pending state');
+  ok(!(await page.evaluate(()=>
+    document.getElementById('mlv197CloudConflictOverlay')?.classList.contains('show'))),
+    'An empty remote account must not obstruct Guest import or Sync actions with conflict modal');
 
   // The ONLY guest import action must show the actual destination account and
   // respect Cancel without altering either canonical local state or remote.
@@ -183,6 +191,9 @@ try{
     'B sees A or guest mission/Journal without consent');
   ok(!remote.has(ids.b)&&!(writes.get(ids.b)||0),
     'B sign-in created a cloud master without owner action');
+  ok(!(await page.evaluate(()=>
+    document.getElementById('mlv197CloudConflictOverlay')?.classList.contains('show'))),
+    'Empty B account must not trigger a blocking cloud-conflict modal');
   await page.evaluate(async()=>
     window.SupabaseSyncV30216.sync('upload',{silent:true}));
   ok(remote.get(ids.b)?.user_id===ids.b&&writes.get(ids.b)===1,
