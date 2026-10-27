@@ -170,7 +170,13 @@ function fixture() {
   vm.createContext(ctx);
   const realOwnership=extract('function boardOwner(){','function capture(){');
   const realRestore=extract('function applySnapshot(snapshot){','async function pull(');
-  vm.runInContext(realOwnership+'\n'+realRestore+
+  const accountStorageConstants=[
+    "const BOARD_OWNER_KEY='michelsLife.supabase.boardOwner.v30218';",
+    "const ACCOUNT_VAULT='michelsLife.supabase.localAccount.v30218.';",
+    "const GUEST_VAULT='michelsLife.supabase.localGuest.v30218';",
+    "const META_KEY='michelsLife.supabase.meta.v30216';"
+  ].join('\\n');
+  vm.runInContext(accountStorageConstants+'\n'+realOwnership+'\n'+realRestore+
     '\nthis.board={prepareAccountBoard,boardOwner};',ctx,{timeout:3000});
   ctx.board.prepareAccountBoard('account-b2222');
   assert.equal(ctx.board.boardOwner(),'account-b2222');
