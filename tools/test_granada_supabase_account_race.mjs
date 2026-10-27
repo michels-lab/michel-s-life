@@ -14,7 +14,9 @@ function extract(start,end){
   assert.ok(a>=0&&b>a&&source.indexOf(start,a+1)===-1,'Ambiguous production function '+start);
   return source.slice(a,b);
 }
+const restoreHelper=extract('function pendingRestoreReview(){','function assertOwnedBoard(s){');
 const real=[
+  restoreHelper,
   extract('function assertOwnedBoard(s){','function capture(){'),
   extract('async function signOut(){','async function remoteState(s){'),
   extract('async function remoteState(s){','async function touchDevice('),
@@ -42,6 +44,8 @@ function fixture(){
   const runtime={cloudBusy:false,cloudConflict:null,firstMasterPending:false,cloudError:'',connected:true,revision:0};
   const ctx={
     runtime,BUILD:'3.0.TEST',Date,JSON,Math,Number,String,encodeURIComponent,
+    RESTORE_REVIEW_KEY:'michelsLife.restoreReview.v1',
+    localStorage:{getItem:()=>null,removeItem:()=>{}},
     boardOwner:()=>owner,
     session:()=>({access_token:token,user:{id:owner,email:owner+'@invalid.test'}}),
     ensureSession:async()=>({access_token:token,user:{id:owner,email:owner+'@invalid.test'}}),
