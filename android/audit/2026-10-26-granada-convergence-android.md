@@ -1,3 +1,12 @@
+## Addendum — corregidas regresiones del propio monitor de #181 (2026-10-26)
+
+- Primera prueba de la nueva telemetría `3de3b1e7fc23204a8527d29ea4c1ca90374861f4`: [CI #40440438800](https://github.com/michels-lab/michel-s-life/actions/runs/40440438800) compiló Android (`android`: SUCCESS), pero la fase pre-emulador cayó en `bash -n` por un fallback de QEMU mal citado. No se ejecutó el dispositivo en ese run.
+- Segunda prueba tras corregir fallback `56ffa9ab0163b4f437baca0cc1e6e26d1ac87590`: [CI #40440979296](https://github.com/michels-lab/michel-s-life/actions/runs/40440979296) volvió a compilar, pero `bash -n` detectó que un reemplazo había dejado **bloque terminal duplicado** en el wrapper; tampoco probó la instalación nativa. No etiquetar estos fallos como QEMU.
+- El mismo PR #181 corrigió **ambos defectos**; eliminó tail duplicado y agregó guard de unicidad para wrapper/monitor/heredoc y final de archivo, conservando seis regresiones locales. **HEAD actual `1bb286f2f2080c68bf549c65d5a9d3846eec148d`**; [CI candidato #40441373678](https://github.com/michels-lab/michel-s-life/actions/runs/40441373678), source/UI/Android UI se ejecutaban al documentar. Inspección exact-head del contenido confirmó 1 bloque shell, 1 comando de APK nativa, 1 heredoc y 1 trigger EXIT. Falta validación Bash/CI efectiva del head final.
+- Se documentan explícitamente los dos errores de instrumentación para no atribuirlos a Google Drive, Focus o al emulador. **Mantener #181 draft y #139 abierto** hasta que exista prueba Android16 instalada con capturas/estado canónico reales; ningún nuevo release.
+
+---
+
 ## Continuación Granada — 2026-10-26 (segundo bloque)
 
 **Estado real:** se volvió a consultar GitHub. El repositorio pasó de **12 a 10 PR abiertos** mediante dos integraciones funcionales P0; **no se creó ninguna rama ni PR**. Los 13 issues originales continúan abiertos porque sus criterios completos de cuenta/Android real no están aprobados. No hubo cambio de versión, distribuciones, firmas, Themes, Home, Chapter ni Windows.
