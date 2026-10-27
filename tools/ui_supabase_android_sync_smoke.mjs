@@ -54,11 +54,20 @@ try{
   }));
 
   ok(after.runtime.connected,'Android Supabase sign-in did not connect');
-  ok(after.remote?.source_platform==='android','Android master snapshot has wrong platform: '+JSON.stringify(after.remote));
-  ok(/^and_/.test(after.remote?.source_device_id||''),'Android snapshot has wrong device id');
+  ok(after.remote===null,'P0: Android sign-in must not auto-create a cloud master');
   ok(after.devices.some(d=>d.platform==='android'&&/^and_/.test(d.device_id||'')),'Android device registration missing: '+JSON.stringify(after.devices));
+  const pending=await page.evaluate(async()=>window.SupabaseSyncV30216.sync('auto',{silent:true}));
+  ok(pending?.requiresOwnerConfirmation===true,'Android background sync must require owner action on an empty account');
+  ok((await page.evaluate(()=>window.__supaMock.remote))===null,'Android background sync wrote first master without consent');
+  await page.evaluate(async()=>window.SupabaseSyncV30216.sync('upload',{silent:true}));
+  const explicit=await page.evaluate(()=>({remote:window.__supaMock.remote,pushes:window.__supaMock.pushes}));
+  ok(explicit.pushes===1,'Explicit Android account creation must push exactly once');
+  ok(explicit.remote?.source_platform==='android','Android master snapshot has wrong platform: '+JSON.stringify(explicit.remote));
+  ok(/^and_/.test(explicit.remote?.source_device_id||''),'Android snapshot has wrong device id');
+  ok(explicit.remote?.user_id==='00000000-0000-0000-0000-000000000216',
+    'Android master does not belong to the authenticated synthetic account');
 
-  console.log('OK: Android shared Supabase sync identifies platform/device correctly');
+  console.log('OK: Android Supabase account-first write requires explicit owner action and keeps device identity');
 } finally {
   await browser.close();
 }
