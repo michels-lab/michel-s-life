@@ -31,7 +31,7 @@ watch_pid=""
 readonly SAMPLES="$OUT/host-memory-timeline.tsv"
 sample_host(){
   local qemu available cgroup
-  qemu="$(ps -e -o comm=,rss= 2>/dev/null | awk '$1 ~ /^qemu-system/ {n++; kb+=$2} END {printf "%d\t%d",n+0,kb+0}')" || qemu=
+  qemu="$(ps -e -o comm=,rss= 2>/dev/null | awk '$1 ~ /^qemu-system/ {n++; kb+=$2} END {printf "%d\t%d",n+0,kb+0}')" || qemu="$(printf '0\t0')"
   available="$(awk '$1=="MemAvailable:" && $2 ~ /^[0-9]+$/ {print $2;exit}' /proc/meminfo 2>/dev/null)" || available=""
   cgroup="$(cat /sys/fs/cgroup/memory.current 2>/dev/null)" || cgroup=""
   [[ "$available" =~ ^[0-9]+$ ]] || available="-1"
