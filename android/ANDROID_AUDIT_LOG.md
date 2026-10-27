@@ -1,3 +1,11 @@
+## 2026-10-27 — GRANADA Android: respuestas Supabase tardías, panel de dispositivos y guest import A/B
+
+- Continuación dentro del [PR #169](https://github.com/michels-lab/michel-s-life/pull/169), sin abrir nueva rama. Se protegieron las rutas reales de cuenta/sync de `index.html` y las pruebas de producción bajo `tools/test_granada_supabase_account_race.mjs` (13 casos) y `tools/test_granada_supabase_stale_overview_guest.mjs` (8 casos), además de las 35 comprobaciones del módulo transaccional y la prueba real Chromium page-kill ya existentes.
+- **Dispositivos/historial:** limpiar vistas al pasar de A→B, filtrar en consulta Supabase por `user_id` y validar el propietario de cada fila recibida; errores y respuestas A retrasados no pueden volver a mostrar información en B. RLS de servidor y proveedor real NO están validados por pruebas sintéticas.
+- **Importación guest:** verificar identidad tras consulta remota, consentimiento y upload; si cambió la cuenta, no aplicar rollback del snapshot de A sobre B ni eliminar la copia guest. Es posible que un POST anterior al cambio ya haya alcanzado la nube; sin transacciones de extremo a extremo no se puede anular.
+- **CI:** el primer intento #40524524278 quedó rojo por aserción antigua de orden de instrucciones; se fortaleció el test para asegurar la nueva comprobación de identidad antes de mostrar consentimiento. El contrato anterior del PR, ejecutado en #40522200441, pasó, pero no prueba estos últimos cambios. La última revisión de código antes de este registro era `8aab7e8c6b8bd81b50e74f3b20bf361333000854`; resultados del siguiente HEAD se revisan separadamente. No adjudicar PASS mientras haya checks pendientes.
+- Bloqueos vigentes: integrar de forma segura el vault transaccional separado en flujo de producción, probar A/B real Supabase/Drive, crash/reinicio físico Galaxy, firma, permisos, y emulador GitHub Android16 #139. #55/#108 siguen abiertos; #169 sigue DRAFT. **Sin merge/release, sin builds Windows, sin cambios visuales aprobados, sin credenciales o datos privados.**
+
 ## 2026-10-19 — Platform priority: Android now, Windows packaging paused
 
 - Owner explicitly postponed Michel's Life Windows/Desktop development, Store MSIX builds, and installer/release packaging until the app is final; screenshots refer to automatic GitHub Actions jobs.
