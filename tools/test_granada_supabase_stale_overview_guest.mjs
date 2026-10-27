@@ -36,7 +36,7 @@ function overviewFixture(){
  const pending=[],touches=[],runtime={cloudError:''},mounts=[];
  const overview={devices:[],backups:[],currentDeviceId:'device-local',currentDeviceName:'Synthetic Device'};
  const ctx={
-  overview,runtime,lastOverviewAt:0,Date,String,
+  overview,runtime,lastOverviewAt:0,Date,String,encodeURIComponent,
   session:()=>({access_token:token,user:{id}}),
   ensureSession:async()=>({access_token:token,user:{id}}),
   boardOwner:()=>id,
@@ -55,9 +55,11 @@ function overviewFixture(){
   resolvePair:(start,who)=>{
    const rows=pending.slice(start,start+2);
    assert.equal(rows.length,2,'Expected both device and history provider requests');
+   assert.ok(rows.every(row=>row.path.includes('&user_id=eq.'+who)),
+    'Every device/history query must be filtered by authenticated owner');
    for(const row of rows){
-    if(row.path.includes('/ml_devices?'))row.deferred.resolve([{device_id:who+'-device',label:who+' private device',platform:'android'}]);
-    else if(row.path.includes('/ml_state_history?'))row.deferred.resolve([{id:who+'-history',revision:1,source_device_id:who+'-device'}]);
+    if(row.path.includes('/ml_devices?'))row.deferred.resolve([{user_id:who,device_id:who+'-device',label:who+' private device',platform:'android'}]);
+    else if(row.path.includes('/ml_state_history?'))row.deferred.resolve([{user_id:who,id:who+'-history',revision:1,source_device_id:who+'-device'}]);
     else throw Error('Unexpected provider request');
    }
   }
@@ -85,6 +87,21 @@ function overviewFixture(){
  assert.equal(x.view().devices[0].deviceId,B+'-device');
  assert.equal(x.view().backups[0].fileId,B+'-history');
  assert.deepEqual(x.touches,[B]);
+}
+// A broken provider/RLS response for A containing B rows must fail closed.
+{
+ const x=overviewFixture(),a=x.run();
+ await until(()=>x.pending.length===2,'foreign device-history rows');
+ for(const row of x.pending){
+  row.deferred.resolve(row.path.includes('/ml_devices?')
+   ?[{user_id:B,device_id:B+'-device',label:'PRIVATE B DEVICE'}]
+   :[{user_id:B,id:B+'-history',reason:'PRIVATE B HISTORY'}]);
+ }
+ await a;
+ assert.equal(x.view().devices.length,0,'Foreign devices must never render');
+ assert.equal(x.view().backups.length,0,'Foreign history must never render');
+ assert.match(x.runtime.cloudError,/ownership mismatch/);
+ assert.equal(x.touches.length,0);
 }
 // Positive control: current A's own rows must render normally.
 {
@@ -161,4 +178,4 @@ function guestFixture(){
  assert.equal(x.removed,1);
  assert.equal(x.downloads,1);
 }
-console.log('PASS: 6/6 production Supabase stale device/history and guest import ownership regressions');
+console.log('PASS: 7/7 production Supabase stale device/history and guest import ownership regressions');
