@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 302,
-  "classified_files_total": 298,
-  "docs_content_inspected": 90,
+  "tracked_files_total": 306,
+  "classified_files_total": 302,
+  "docs_content_inspected": 91,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
   "roles": {
@@ -13,24 +13,24 @@
     "build_script": 6,
     "config": 22,
     "database_migration": 3,
-    "document": 83,
+    "document": 84,
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 8,
-    "source": 96,
-    "test": 13,
+    "source": 97,
+    "test": 14,
     "text_metadata": 1,
     "web_ui": 3,
-    "workflow": 32
+    "workflow": 33
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "ddea1a859d6ccc0d2fb3fad371f0ad1ef95e482d936db854cb3f1e28c3738435",
-  "evidence_fingerprint": "b003f07fe33381ece3f386c9c83267d7a034ef65d51c5325d586e0b49063a270",
+  "inventory_fingerprint": "23abd744f98115b7579aa1cab0c85ff61d4399c81d566c5f4cefb5812a791655",
+  "evidence_fingerprint": "1700c794834497942b224c91abf11670d77ac81b2a9d1bb4ebf204b2e5febbbc",
   "untracked_audited": false,
   "ignored_audited": false,
   "binary_contents_audited": false,
