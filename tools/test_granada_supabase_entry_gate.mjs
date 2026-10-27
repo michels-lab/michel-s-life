@@ -132,4 +132,65 @@ function fixture() {
   assert.equal(val.revision,9);
   assert.equal(x.postCount,0,'Existing cloud data must never be overwritten by automatic sync');
 }
+
+// Exercise the production board-owner / vault functions (not a mock boundary).
+// A and B must retain independent Journal and board data, with credentials and
+// device identity staying outside account-owned shareable snapshots.
+{
+  const board='vida_rpg_personal_progress_v2',
+        ownerKey='michelsLife.supabase.boardOwner.v30218',
+        sessionKey='michelsLife.supabase.session.v30216',
+        deviceKey='michelsLife.supabase.device.v30216',
+        metaKey='michelsLife.supabase.meta.v30216',
+        journal='michelsLife.journal.v30184';
+  const entries=new Map([
+    [board,JSON.stringify({xp:81,missions:[{id:'A-only'}],settings:{characterName:'A'}})],
+    [ownerKey,'account-a1111'],[journal,JSON.stringify({records:['A PRIVATE JOURNAL']})],
+    [sessionKey,'SYNTHETIC_SESSION_LOCAL'],[deviceKey,'SYNTHETIC_DEVICE_LOCAL'],
+    [metaKey,JSON.stringify({revision:12})]
+  ]);
+  const storage={
+    getItem:k=>entries.has(k)?entries.get(k):null,
+    setItem:(k,v)=>entries.set(k,String(v)),
+    removeItem:k=>entries.delete(k)
+  };
+  const ctx={localStorage:storage,JSON,String,Number,Object,Date,encodeURIComponent,
+    applying:false,safeJson:(value,defaultValue=null)=>{try{return JSON.parse(value)}catch{return defaultValue}},
+    meta:()=>JSON.parse(storage.getItem(metaKey)||'{}'),
+    state:JSON.parse(storage.getItem(board)),
+    defaultState:()=>({xp:0,missions:[],settings:{}}),
+    renderAll:()=>{},
+    window:{MLVCloudSharedStorageV30216:{
+      capture:()=>({[journal]:storage.getItem(journal)}),
+      restore:source=>{if(source&&source[journal]!==undefined&&source[journal]!==null)
+        storage.setItem(journal,source[journal]);else storage.removeItem(journal)}
+    }}
+  };
+  ctx.capture=()=>JSON.stringify({state:ctx.state,localStorage:ctx.window.MLVCloudSharedStorageV30216.capture()});
+  vm.createContext(ctx);
+  const realOwnership=extract('function boardOwner(){','function capture(){');
+  const realRestore=extract('function applySnapshot(snapshot){','async function pull(');
+  vm.runInContext(realOwnership+'\n'+realRestore+
+    '\nthis.board={prepareAccountBoard,boardOwner};',ctx,{timeout:3000});
+  ctx.board.prepareAccountBoard('account-b2222');
+  assert.equal(ctx.board.boardOwner(),'account-b2222');
+  assert.equal(JSON.parse(storage.getItem(board)).missions.length,0);
+  assert.equal(storage.getItem(journal),null,'Account A journal must not be visible under B');
+  assert.equal(storage.getItem(sessionKey),'SYNTHETIC_SESSION_LOCAL');
+  assert.equal(storage.getItem(deviceKey),'SYNTHETIC_DEVICE_LOCAL');
+  const aVault=JSON.parse(storage.getItem('michelsLife.supabase.localAccount.v30218.account-a1111'));
+  assert.equal(aVault.snapshot.state.missions[0].id,'A-only');
+  ctx.state={xp:25,missions:[{id:'B-only'}],settings:{characterName:'B'}};
+  storage.setItem(board,JSON.stringify(ctx.state));
+  storage.setItem(journal,JSON.stringify({records:['B PRIVATE JOURNAL']}));
+  ctx.board.prepareAccountBoard('account-a1111');
+  assert.equal(JSON.parse(storage.getItem(board)).missions[0].id,'A-only');
+  assert.equal(JSON.parse(storage.getItem(journal)).records[0],'A PRIVATE JOURNAL');
+  ctx.board.prepareAccountBoard('account-b2222');
+  assert.equal(JSON.parse(storage.getItem(board)).missions[0].id,'B-only');
+  assert.equal(JSON.parse(storage.getItem(journal)).records[0],'B PRIVATE JOURNAL');
+  assert.equal(storage.getItem(sessionKey),'SYNTHETIC_SESSION_LOCAL');
+  assert.equal(storage.getItem(deviceKey),'SYNTHETIC_DEVICE_LOCAL');
+}
+
 console.log('PASS: production Supabase first-login, A/B, guest, remote-ownership and explicit-write gates (synthetic provider)');
