@@ -30844,7 +30844,7 @@ async function ensureSession(){
  let s=session();if(!s?.access_token)return null;
  if(Number(s.expires_at||0)-Date.now()>120000)return s;
  if(!s.refresh_token){signOutLocal();return null}
- try{const data=await request('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:{refresh_token:s.refresh_token}});return storeSession(data)}
+ try{const data=await request('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:{refresh_token:s.refresh_token}});if(data?.user?.id&&String(data.user.id)!==String(s?.user?.id||''))throw new Error('Session refresh changed the authenticated account; local sync is blocked.');return storeSession(data)}
  catch(err){signOutLocal();throw err}
 }
 function syncRuntime(){
@@ -30852,13 +30852,13 @@ function syncRuntime(){
 }
 async function signIn(email,password){
  runtime.cloudBusy=true;runtime.cloudAction='auth';runtime.cloudError='';scheduleMount();
- try{const data=await request('/auth/v1/token?grant_type=password',{method:'POST',body:{email,password}});storeSession(data);await initializeAfterAuth();return data}
+ try{const data=await request('/auth/v1/token?grant_type=password',{method:'POST',body:{email,password}});if(!data?.access_token||!data?.user?.id)throw new Error('Supabase sign-in did not return a verified account identity.');storeSession(data);await initializeAfterAuth();return data}
  catch(err){runtime.cloudError=String(err.message||err);throw err}finally{runtime.cloudBusy=false;runtime.cloudAction='';scheduleMount()}
 }
 async function signUp(email,password){
  runtime.cloudBusy=true;runtime.cloudAction='auth';runtime.cloudError='';scheduleMount();
  try{const data=await request('/auth/v1/signup',{method:'POST',body:{email,password}});
-   if(data?.access_token){storeSession(data);await initializeAfterAuth()}
+   if(data?.access_token){if(!data?.user?.id)throw new Error('Supabase sign-up did not return a verified account identity.');storeSession(data);await initializeAfterAuth()}
    else notify(es()?'Cuenta creada':'Account created',es()?'Revisa tu correo para confirmar la cuenta y después inicia sesión.':'Check your email to confirm the account, then sign in.');
    return data
  }catch(err){runtime.cloudError=String(err.message||err);throw err}finally{runtime.cloudBusy=false;runtime.cloudAction='';scheduleMount()}
@@ -30872,7 +30872,7 @@ async function requestOtp(email){
 }
 async function verifyOtp(email,token){
  runtime.cloudBusy=true;runtime.cloudAction='auth-code';runtime.cloudError='';scheduleMount();
- try{const data=await request('/auth/v1/verify',{method:'POST',body:{email,token,type:'email'}});storeSession(data);localStorage.removeItem(OTP_EMAIL_KEY);await initializeAfterAuth();return data}
+ try{const data=await request('/auth/v1/verify',{method:'POST',body:{email,token,type:'email'}});if(!data?.access_token||!data?.user?.id)throw new Error('Supabase code verification did not return a verified account identity.');storeSession(data);localStorage.removeItem(OTP_EMAIL_KEY);await initializeAfterAuth();return data}
  catch(err){runtime.cloudError=String(err.message||err);throw err}finally{runtime.cloudBusy=false;runtime.cloudAction='';scheduleMount()}
 }
 function signOutLocal(){
@@ -30987,8 +30987,11 @@ async function refreshOverview(){
 }
 function getOverview(){return overview}
 async function initializeAfterAuth(){
- const s=await ensureSession();if(!s?.user?.id)throw new Error('Authenticated account identity is unavailable.');
- prepareAccountBoard(s.user.id);syncRuntime();
+ const initial=session();if(!initial?.access_token||!initial?.user?.id)throw new Error('Authenticated account identity is unavailable.');
+ // Switch visible board synchronously before any awaited network operation or UI timer.
+ prepareAccountBoard(initial.user.id);syncRuntime();
+ const s=await ensureSession();
+ if(!s?.user?.id||String(s.user.id)!==String(initial.user.id))throw new Error('Account changed during authentication. Sync blocked.');
  const remote=await remoteState(s);
  if(!remote){
    runtime.cloudConflict={message:'No cloud board for this account. Review your local data and choose Use this PC explicitly; no automatic upload.',remoteRevision:0,localRevision:Number(meta().revision||0)};
