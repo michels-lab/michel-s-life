@@ -6,6 +6,7 @@ on:
       - 'src/MichelsLife/frontend/account-boundary.mjs'
       - 'src/MichelsLife/frontend/index.html'
       - 'tools/test_granada_supabase_entry_gate.mjs'
+      - 'tools/test_granada_supabase_account_race.mjs'
       - 'tools/test_granada_account_boundary.mjs'
       - 'tools/ui_granada_account_boundary_crash_browser.mjs'
       - '.github/workflows/granada-account-boundary.yml'
@@ -33,6 +34,10 @@ jobs:
         run: |
           node --check tools/test_granada_supabase_entry_gate.mjs
           node tools/test_granada_supabase_entry_gate.mjs
+      - name: Verify real production delayed-account-switch safety and same-account paths
+        run: |
+          node --check tools/test_granada_supabase_account_race.mjs
+          node tools/test_granada_supabase_account_race.mjs
       - name: Install Chromium for real persistent-storage crash and restart QA
         run: |
           npm install --no-save playwright
