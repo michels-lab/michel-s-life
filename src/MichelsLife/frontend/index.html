@@ -30888,8 +30888,12 @@ async function signOut(){
  const s=await ensureSession().catch(()=>null);try{if(s?.access_token)await request('/auth/v1/logout',{method:'POST',access:s.access_token})}catch(_){}signOutLocal()
 }
 async function remoteState(s){
- const rows=await request('/rest/v1/ml_state?select=user_id,snapshot,revision,source_device_id,source_platform,app_version,updated_at&limit=1',{access:s.access_token});
- return Array.isArray(rows)&&rows.length?rows[0]:null
+ const id=String(s?.user?.id||'');
+ if(!id||!s?.access_token)throw new Error('Authenticated Supabase account ID is required before reading cloud state.');
+ const rows=await request('/rest/v1/ml_state?select=user_id,snapshot,revision,source_device_id,source_platform,app_version,updated_at&user_id=eq.'+encodeURIComponent(id)+'&limit=1',{access:s.access_token});
+ if(!Array.isArray(rows))throw new Error('Supabase did not return a verifiable account-scoped response.');
+ if(rows.some(row=>String(row?.user_id||'')!==id))throw new Error('Supabase remote ownership mismatch; account sync blocked.');
+ return rows.length?rows[0]:null
 }
 async function touchDevice(s,action='connected'){
  const user=s.user?.id;if(!user)return;
@@ -30906,6 +30910,8 @@ async function push(reason='manual',opts={}){
  assertOwnedBoard(s);const raw=capture();if(!raw)throw new Error('Michel’s Life could not capture a sync snapshot.');
  const snapshot=safeJson(raw,null);if(!snapshot)throw new Error('Snapshot is not valid JSON.');
  const localRevision=Number(meta().revision||0),remote=await remoteState(s),remoteRevision=Number(remote?.revision||0),force=!!opts.force;
+ if(!remote&&!['explicit_empty_remote_upload','explicit_guest_import'].includes(reason))
+   throw new Error('New Supabase cloud state requires an explicit account-owner action; background first upload is disabled.');
  if(remote&&!force&&remoteRevision!==localRevision){runtime.cloudConflict={message:'Remote revision '+remoteRevision+' changed before upload.',remoteRevision,localRevision};return {conflict:true,remoteRevision,localRevision}}
  const nextRevision=Math.max(remoteRevision,localRevision)+1,now=new Date().toISOString(),row={user_id:s.user.id,snapshot,revision:nextRevision,source_device_id:deviceId(),source_platform:platform(),app_version:BUILD,updated_at:now};
  if(!remote){
@@ -30948,7 +30954,15 @@ async function sync(mode='auto',opts={}){
  try{
   const s=await ensureSession();if(!s){if(!opts.silent)notify(es()?'Supabase':'Supabase',es()?'Inicia sesión para sincronizar.':'Sign in to sync.');return null}
   assertOwnedBoard(s);const remote=await remoteState(s),m=meta();
-  if(!remote){const out=await push('first_upload');if(!out?.conflict&&!opts.silent)notify(es()?'Sincronizado':'Synced',es()?'Este equipo creó el estado maestro en Supabase.':'This PC created the master state in Supabase.');return out}
+  if(!remote){
+   if(mode!=='upload'){
+     runtime.cloudConflict={message:'This account has no cloud board. Automatic first upload is blocked; review the local board and choose Use this PC explicitly.',remoteRevision:0,localRevision:Number(meta().revision||0)};
+     scheduleMount();return {requiresOwnerConfirmation:true,remoteRevision:0}
+   }
+   const out=await push('explicit_empty_remote_upload');
+   if(!out?.conflict&&!opts.silent)notify(es()?'Sincronizado':'Synced',es()?'Este equipo creó el estado maestro en Supabase.':'This PC created the master state in Supabase.');
+   return out
+ }
   if(mode==='download')return await pull({reload:opts.reload!==false});
   if(mode==='upload')return await push('manual_upload',{force:true});
   const remoteRev=Number(remote.revision||0),localRev=Number(m.revision||0);
@@ -30973,7 +30987,17 @@ async function refreshOverview(){
 }
 function getOverview(){return overview}
 async function initializeAfterAuth(){
- const s=await ensureSession();prepareAccountBoard(s?.user?.id);syncRuntime();await refreshOverview();const remote=await remoteState(s);if(!remote)await push('first_upload');else{const m=meta();if(!m.revision){runtime.cloudConflict={message:'Existing Supabase data requires an explicit first-device choice.',remoteRevision:Number(remote.revision||0),localRevision:0};runtime.lastRemoteAt=remote.updated_at||''}}scheduleMount()
+ const s=await ensureSession();if(!s?.user?.id)throw new Error('Authenticated account identity is unavailable.');
+ prepareAccountBoard(s.user.id);syncRuntime();
+ const remote=await remoteState(s);
+ if(!remote){
+   runtime.cloudConflict={message:'No cloud board for this account. Review your local data and choose Use this PC explicitly; no automatic upload.',remoteRevision:0,localRevision:Number(meta().revision||0)};
+ }else{
+   const m=meta();
+   if(!m.revision)runtime.cloudConflict={message:'Existing Supabase data requires an explicit first-device choice.',remoteRevision:Number(remote.revision||0),localRevision:0};
+   runtime.lastRemoteAt=remote.updated_at||'';
+ }
+ await refreshOverview();scheduleMount()
 }
 function copy(){return es()?{title:'Sync de Michel’s Life',desc:'Supabase es la nube principal para Desktop y Android.',account:'Cuenta',status:'Estado',revision:'Revisión',signed:'Conectado',offline:'Sin sesión',email:'Correo',password:'Contraseña',login:'Iniciar sesión',signup:'Crear cuenta',logout:'Cerrar sesión',sync:'Sincronizar ahora',upload:'Usar este PC',download:'Usar nube',devices:'Dispositivos',none:'Todavía no hay dispositivos sincronizados.',primary:'Supabase es la fuente de verdad. Google Drive queda temporalmente como respaldo de transición.',passwordMode:'Contraseña',codeMode:'Código',sendCode:'Enviar código',verifyCode:'Entrar con código',code:'Código de 6 dígitos',codeHint:'La contraseña es el método principal. Usa código solo cuando lo prefieras o no tengas tu contraseña a la mano.'}:{title:'Michel’s Life Sync',desc:'Supabase is the primary cloud for Desktop and Android.',account:'Account',status:'Status',revision:'Revision',signed:'Connected',offline:'Signed out',email:'Email',password:'Password',login:'Sign in',signup:'Create account',logout:'Sign out',sync:'Sync now',upload:'Use this PC',download:'Use cloud',devices:'Devices',none:'No synced devices yet.',primary:'Supabase is the source of truth. Google Drive remains temporarily as a transition fallback.',passwordMode:'Password',codeMode:'Code',sendCode:'Send code',verifyCode:'Sign in with code',code:'6-digit code',codeHint:'Password is the primary sign-in method. Use a code only when you prefer it or do not have your password handy.'}}
 function cardHtml(){
@@ -31008,12 +31032,27 @@ document.addEventListener('click',async e=>{
    if(!saved?.snapshot?.state)throw new Error('No previous local board is available.');
    const x=saved.snapshot.state;
    const count=(Array.isArray(x.missions)?x.missions.length:0)+' missions / '+(Array.isArray(x.goals)?x.goals.length:0)+' Premium contracts';
-   if(!confirm('Import '+count+' into Supabase account '+String(s.user.email||s.user.id)+'? The current board and cloud state will be replaced; an existing cloud version is preserved in history.'))return;
+   const remote=await remoteState(s);
+   if(remote)throw new Error('Guest import is blocked: this account already has cloud data. Restore and compare existing data first; no overwrite is allowed.');
+   if(hasPersonalBoard()||Number(meta().revision||0)>0)
+     throw new Error('Guest import is blocked: this account already has local progress. Protect it before attempting import.');
+   if(!confirm('Import '+count+' into EMPTY Supabase account '+String(s.user.email||s.user.id)+'? This one-time action uploads the saved guest board; it cannot replace an existing cloud board.'))return;
+   const original=safeJson(capture(),null),originalMeta=localStorage.getItem(META_KEY);
+   if(!original?.state)throw new Error('Local recovery snapshot is not available; import cancelled.');
    stashLocalBoard(accountVaultKey(s.user.id));
-   applySnapshot(saved.snapshot);
-   const result=await push('explicit_guest_import',{force:true});
-   if(result?.conflict)throw new Error('Cloud changed during import.');
-   localStorage.removeItem(GUEST_VAULT);location.reload();
+   try{
+     applySnapshot(saved.snapshot);
+     const result=await push('explicit_guest_import');
+     if(result?.conflict)throw new Error('The cloud changed during import; the guest copy was preserved.');
+     localStorage.removeItem(GUEST_VAULT);location.reload();
+   }catch(err){
+     try{
+       applySnapshot(original);
+       if(originalMeta===null)localStorage.removeItem(META_KEY);
+       else localStorage.setItem(META_KEY,originalMeta);
+     }catch(_){throw new Error('Import failed and local recovery could not be verified. Stop syncing to protect this device.')}
+     throw err
+   }
   }
   else if(a==='logout')await signOut();else if(a==='sync')await sync('auto',{silent:false});else if(a==='upload')await sync('upload',{silent:false});else if(a==='download'){if(confirm(es()?'¿Usar la copia de Supabase en este equipo? Se conservará la sesión.':'Use the Supabase copy on this PC? Your session will be preserved.'))await sync('download',{silent:false})}
  }catch(err){notify(es()?'Supabase':'Supabase',String(err.message||err),'error')}finally{scheduleMount()}
