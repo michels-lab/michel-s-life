@@ -31027,11 +31027,15 @@ async function refreshOverview(){
  }
  try{
   assertOwnedBoard(s);
+  const account=encodeURIComponent(String(s.user.id));
   const [devices,history]=await Promise.all([
-   request('/rest/v1/ml_devices?select=device_id,platform,label,app_version,last_action,last_seen_at&order=last_seen_at.desc&limit=12',{access:s.access_token}),
-   request('/rest/v1/ml_state_history?select=id,revision,source_device_id,source_platform,app_version,reason,created_at&order=created_at.desc&limit=10',{access:s.access_token})
+   request('/rest/v1/ml_devices?select=user_id,device_id,platform,label,app_version,last_action,last_seen_at&user_id=eq.'+account+'&order=last_seen_at.desc&limit=12',{access:s.access_token}),
+   request('/rest/v1/ml_state_history?select=user_id,id,revision,source_device_id,source_platform,app_version,reason,created_at&user_id=eq.'+account+'&order=created_at.desc&limit=10',{access:s.access_token})
   ]);
   assertOwnedBoard(s); // Never display A's late history on B's screen.
+  if(!Array.isArray(devices)||!Array.isArray(history)||
+     [...devices,...history].some(row=>String(row?.user_id||'')!==String(s.user.id)))
+   throw new Error('Supabase device/history ownership mismatch; account-scoped list blocked.');
   overview={devices:(devices||[]).map(d=>({deviceId:d.device_id,deviceName:d.label||d.platform,lastSeenAt:d.last_seen_at,appVersion:d.app_version,lastAction:d.last_action,platform:d.platform})),backups:(history||[]).map(h=>({fileId:h.id,createdAt:h.created_at,reason:h.reason,appVersion:h.app_version,sourceDeviceId:h.source_device_id,revision:h.revision})),currentDeviceId:deviceId(),currentDeviceName:deviceName()};lastOverviewAt=Date.now();await touchDevice(s,'online');assertOwnedBoard(s)
  }catch(err){
   // Suppress stale A errors once B becomes owner, without exposing A metadata.
