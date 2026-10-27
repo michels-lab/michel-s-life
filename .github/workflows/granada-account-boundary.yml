@@ -7,6 +7,7 @@ on:
       - 'src/MichelsLife/frontend/index.html'
       - 'tools/test_granada_supabase_entry_gate.mjs'
       - 'tools/test_granada_supabase_account_race.mjs'
+      - 'tools/test_granada_supabase_stale_overview_guest.mjs'
       - 'tools/test_granada_account_boundary.mjs'
       - 'tools/ui_granada_account_boundary_crash_browser.mjs'
       - '.github/workflows/granada-account-boundary.yml'
@@ -38,6 +39,10 @@ jobs:
         run: |
           node --check tools/test_granada_supabase_account_race.mjs
           node tools/test_granada_supabase_account_race.mjs
+      - name: Verify account-scoped device/history and guest import during delayed requests
+        run: |
+          node --check tools/test_granada_supabase_stale_overview_guest.mjs
+          node tools/test_granada_supabase_stale_overview_guest.mjs
       - name: Install Chromium for real persistent-storage crash and restart QA
         run: |
           npm install --no-save playwright
