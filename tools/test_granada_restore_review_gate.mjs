@@ -113,7 +113,7 @@ function syncFixture(owner=A,reviewRaw=review(A),remote=null){
   ensureSession:async()=>({access_token:'TOKEN_'+active,user:{id:active}}),
   runtime,meta:()=>({revision:0}),safeJson:(v,d=null)=>{try{return JSON.parse(v)}catch{return d}},
   request:async(path,{method='GET'}={})=>{
-   if(path.includes('/ml_state?select=')){reads++;return remote}
+   if(path.includes('/ml_state?select=')){reads++;return remote===null?[]:remote}
    if(method==='POST'||method==='PATCH'){uploads++;const d=deferred();pending.push(d);return d.promise}
    return []
   },
