@@ -30822,7 +30822,12 @@ function prepareAccountBoard(id){
  try{renderAll?.()}catch(_){}
 }
 function assertOwnedBoard(s){
- if(!s?.user?.id||boardOwner()!==String(s.user.id))throw new Error('Board ownership needs confirmation. Sign out and sign back in before syncing.');
+ // Async Supabase I/O can complete AFTER an A→B account switch or logout.
+ // Check the actual live session AND token, not just the former board marker.
+ const live=session(),expected=String(s?.user?.id||'');
+ if(!expected||!s?.access_token||boardOwner()!==expected||
+    String(live?.user?.id||'')!==expected||live?.access_token!==s.access_token)
+  throw new Error('Authenticated account changed during sync. Local state was not modified; sign in again before retrying.');
 }
 
 function capture(){try{return window.GoogleCloudV30192?.capture?.()||window.GoogleCloudV30191?.capture?.()||''}catch(_){return''}}
@@ -30891,7 +30896,11 @@ function signOutLocal(){
  scheduleMount();setTimeout(()=>location.reload(),80);
 }
 async function signOut(){
- const s=await ensureSession().catch(()=>null);try{if(s?.access_token)await request('/auth/v1/logout',{method:'POST',access:s.access_token})}catch(_){}signOutLocal()
+ const s=await ensureSession().catch(()=>null);
+ if(s)assertOwnedBoard(s);
+ try{if(s?.access_token)await request('/auth/v1/logout',{method:'POST',access:s.access_token})}catch(_){}
+ if(s)assertOwnedBoard(s); // A's delayed logout must not wipe B's session.
+ signOutLocal()
 }
 async function remoteState(s){
  const id=String(s?.user?.id||'');
@@ -30916,6 +30925,7 @@ async function push(reason='manual',opts={}){
  assertOwnedBoard(s);const raw=capture();if(!raw)throw new Error('Michel’s Life could not capture a sync snapshot.');
  const snapshot=safeJson(raw,null);if(!snapshot)throw new Error('Snapshot is not valid JSON.');
  const localRevision=Number(meta().revision||0),remote=await remoteState(s),remoteRevision=Number(remote?.revision||0),force=!!opts.force;
+ assertOwnedBoard(s); // Verify owner once remote I/O has completed.
  if(!remote&&!['explicit_empty_remote_upload','explicit_guest_import'].includes(reason))
    throw new Error('New Supabase cloud state requires an explicit account-owner action; background first upload is disabled.');
  if(remote&&!force&&remoteRevision!==localRevision){runtime.cloudConflict={message:'Remote revision '+remoteRevision+' changed before upload.',remoteRevision,localRevision};return {conflict:true,remoteRevision,localRevision}}
@@ -30925,6 +30935,7 @@ async function push(reason='manual',opts={}){
    catch(err){if(err?.status===409){const latest=await remoteState(s),latestRevision=Number(latest?.revision||0);runtime.cloudConflict={message:'Another device created the Supabase master first.',remoteRevision:latestRevision,localRevision};return {conflict:true,remoteRevision:latestRevision,localRevision}}throw err}
  }else if(force){
    await writeHistory(s,remote,'before_'+reason);
+   assertOwnedBoard(s); // History I/O might complete in another account.
    await request('/rest/v1/ml_state?on_conflict=user_id',{method:'POST',access:s.access_token,body:row,prefer:'resolution=merge-duplicates,return=representation'})
  }else{
    const path='/rest/v1/ml_state?user_id=eq.'+encodeURIComponent(s.user.id)+'&revision=eq.'+remoteRevision;
@@ -30932,6 +30943,7 @@ async function push(reason='manual',opts={}){
    if(!Array.isArray(updated)||updated.length!==1){const latest=await remoteState(s),latestRevision=Number(latest?.revision||0);runtime.cloudConflict={message:'Another device updated Supabase during this upload.',remoteRevision:latestRevision,localRevision};return {conflict:true,remoteRevision:latestRevision,localRevision}}
    try{await writeHistory(s,remote,'before_'+reason)}catch(_){}
  }
+ assertOwnedBoard(s); // Do not save A's upload receipt in B's local metadata.
  runtime.cloudConflict=null;runtime.firstMasterPending=false;saveMeta({revision:nextRevision,lastSync:now,lastRemoteAt:now,lastLocalHash:raw.length,dirty:false});
  runtime.cloudLastSync=now;runtime.revision=nextRevision;runtime.lastRemoteAt=now;await touchDevice(s,'upload');return row
 }
@@ -30950,9 +30962,10 @@ function applySnapshot(snapshot){
 }
 async function pull({reload=true}={}){
  const s=await ensureSession();if(!s)throw new Error(es()?'Inicia sesión en Supabase.':'Sign in to Supabase.');
- assertOwnedBoard(s);const remote=await remoteState(s);if(!remote)return null;
+ assertOwnedBoard(s);const remote=await remoteState(s);assertOwnedBoard(s);if(!remote)return null;
  const localRaw=capture(),localSnapshot=safeJson(localRaw,null);
  if(localSnapshot){await writeHistory(s,{snapshot:localSnapshot,revision:Math.max(1,Number(meta().revision||1)),source_device_id:deviceId(),source_platform:platform(),app_version:BUILD},'before_download_local')}
+ assertOwnedBoard(s); // A delayed recovery-history POST may outlive the login.
  applySnapshot(remote.snapshot);const now=new Date().toISOString();saveMeta({revision:Number(remote.revision||0),lastSync:now,lastRemoteAt:remote.updated_at||now,dirty:false});runtime.cloudLastSync=now;runtime.revision=Number(remote.revision||0);runtime.lastRemoteAt=remote.updated_at||now;runtime.cloudConflict=null;await touchDevice(s,'download');if(reload)location.reload();return remote
 }
 async function sync(mode='auto',opts={}){
@@ -30960,6 +30973,7 @@ async function sync(mode='auto',opts={}){
  try{
   const s=await ensureSession();if(!s){if(!opts.silent)notify(es()?'Supabase':'Supabase',es()?'Inicia sesión para sincronizar.':'Sign in to sync.');return null}
   assertOwnedBoard(s);const remote=await remoteState(s),m=meta();
+   assertOwnedBoard(s); // Protect B's UI after A's async read.
   if(!remote){
    if(mode!=='upload'){
      runtime.cloudConflict=null;runtime.firstMasterPending=true;
@@ -30999,6 +31013,7 @@ async function initializeAfterAuth(){
  const s=await ensureSession();
  if(!s?.user?.id||String(s.user.id)!==String(initial.user.id))throw new Error('Account changed during authentication. Sync blocked.');
  const remote=await remoteState(s);
+ assertOwnedBoard(s);
  if(!remote){
    runtime.cloudConflict=null;runtime.firstMasterPending=true;
  }else{
@@ -31007,7 +31022,7 @@ async function initializeAfterAuth(){
    if(!m.revision)runtime.cloudConflict={message:'Existing Supabase data requires an explicit first-device choice.',remoteRevision:Number(remote.revision||0),localRevision:0};
    runtime.lastRemoteAt=remote.updated_at||'';
  }
- await refreshOverview();scheduleMount()
+ await refreshOverview();assertOwnedBoard(s);scheduleMount()
 }
 function copy(){return es()?{title:'Sync de Michel’s Life',desc:'Supabase es la nube principal para Desktop y Android.',account:'Cuenta',status:'Estado',revision:'Revisión',signed:'Conectado',offline:'Sin sesión',email:'Correo',password:'Contraseña',login:'Iniciar sesión',signup:'Crear cuenta',logout:'Cerrar sesión',sync:'Sincronizar ahora',upload:'Usar este PC',download:'Usar nube',devices:'Dispositivos',none:'Todavía no hay dispositivos sincronizados.',primary:'Supabase es la fuente de verdad. Google Drive queda temporalmente como respaldo de transición.',passwordMode:'Contraseña',codeMode:'Código',sendCode:'Enviar código',verifyCode:'Entrar con código',code:'Código de 6 dígitos',codeHint:'La contraseña es el método principal. Usa código solo cuando lo prefieras o no tengas tu contraseña a la mano.'}:{title:'Michel’s Life Sync',desc:'Supabase is the primary cloud for Desktop and Android.',account:'Account',status:'Status',revision:'Revision',signed:'Connected',offline:'Signed out',email:'Email',password:'Password',login:'Sign in',signup:'Create account',logout:'Sign out',sync:'Sync now',upload:'Use this PC',download:'Use cloud',devices:'Devices',none:'No synced devices yet.',primary:'Supabase is the source of truth. Google Drive remains temporarily as a transition fallback.',passwordMode:'Password',codeMode:'Code',sendCode:'Send code',verifyCode:'Sign in with code',code:'6-digit code',codeHint:'Password is the primary sign-in method. Use a code only when you prefer it or do not have your password handy.'}}
 function cardHtml(){
