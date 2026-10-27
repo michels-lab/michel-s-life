@@ -165,4 +165,25 @@ function syncFixture(owner=A,reviewRaw=review(A),remote=null){
  assert.equal(result.revision,4);assert.equal(x.applied,1);
  assert.equal(x.store.getItem(key),null);
 }
-console.log('PASS: 10/10 production-sourced local restore review and Supabase/Drive overwrite guards');
+
+// Guest restoration has an explicit, distinct migration path: background/normal
+// upload stays blocked while a confirmed guest import may create the empty cloud.
+assert.ok(supa.includes("if(!confirm('Import '+count+"),
+ 'Guest migration must retain affirmative destination consent');
+{
+ const x=syncFixture(A,review(''));
+ await assert.rejects(x.api.push('manual_upload',{restoreReviewed:true}),/original account/);
+ assert.equal(x.reads,0,'Unclaimed guest board must not authorize ordinary account upload');
+}
+{
+ const x=syncFixture(A,review(''));
+ const op=x.api.push('explicit_guest_import',{restoreReviewed:true});
+ for(let n=0;n<12&&x.pending.length===0;n++)await tick();
+ assert.equal(x.pending.length,1,'Confirmed guest migration reaches empty cloud');
+ assert.ok(x.store.getItem(key),'Guest source review must remain until cloud ACK');
+ x.pending[0].resolve([]);
+ await op;
+ assert.equal(x.store.getItem(key),null,'Accepted guest migration clears review marker');
+}
+
+console.log('PASS: 12/12 production-sourced local restore review and Supabase/Drive overwrite guards');
