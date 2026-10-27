@@ -30785,6 +30785,7 @@ const OTP_EMAIL_KEY='michelsLife.supabase.otpEmail.v30216';
 const BOARD_OWNER_KEY='michelsLife.supabase.boardOwner.v30218';
 const ACCOUNT_VAULT='michelsLife.supabase.localAccount.v30218.';
 const GUEST_VAULT='michelsLife.supabase.localGuest.v30218';
+const RESTORE_REVIEW_KEY='michelsLife.restoreReview.v1';
 const POLL_MS=30000;
 let syncTimer=0,pollTimer=0,applying=false,mountTimer=0,lastOverviewAt=0,authModeState='password';
 let overview={devices:[],backups:[],currentDeviceId:'',currentDeviceName:''};
@@ -30844,6 +30845,14 @@ function prepareAccountBoard(id){
  // Prevent displaying A's device/history list while B authenticates.
  overview={devices:[],backups:[],currentDeviceId:deviceId(),currentDeviceName:deviceName()};
  try{renderAll?.()}catch(_){}
+}
+function pendingRestoreReview(){
+ const raw=localStorage.getItem(RESTORE_REVIEW_KEY);
+ if(raw===null)return null;
+ const proof=safeJson(raw,null);
+ if(!proof||proof.version!==1||typeof proof.ownerId!=='string')
+  throw new Error('Interrupted local restore needs manual cloud review.');
+ return proof
 }
 function assertOwnedBoard(s){
  // Async Supabase I/O can complete AFTER an A→B account switch or logout.
@@ -30965,7 +30974,12 @@ async function writeHistory(s,row,reason){
 }
 async function push(reason='manual',opts={}){
  const s=await ensureSession();if(!s)throw new Error(es()?'Inicia sesión en Supabase.':'Sign in to Supabase.');
- assertOwnedBoard(s);const raw=capture();if(!raw)throw new Error('Michel’s Life could not capture a sync snapshot.');
+ assertOwnedBoard(s);
+ const review=pendingRestoreReview();
+ if(review&&(!opts.restoreReviewed||review.ownerId!==String(s.user.id)))
+  throw new Error('Local restore requires explicit cloud review under its original account.');
+ const reviewProof=localStorage.getItem(RESTORE_REVIEW_KEY);
+ const raw=capture();if(!raw)throw new Error('Michel’s Life could not capture a sync snapshot.');
  const snapshot=safeJson(raw,null);if(!snapshot)throw new Error('Snapshot is not valid JSON.');
  const localRevision=Number(meta().revision||0),remote=await remoteState(s),remoteRevision=Number(remote?.revision||0),force=!!opts.force;
  assertOwnedBoard(s); // Verify owner once remote I/O has completed.
@@ -30987,6 +31001,8 @@ async function push(reason='manual',opts={}){
    try{await writeHistory(s,remote,'before_'+reason)}catch(_){}
  }
  assertOwnedBoard(s); // Do not save A's upload receipt in B's local metadata.
+ if(review&&reviewProof===localStorage.getItem(RESTORE_REVIEW_KEY))
+  localStorage.removeItem(RESTORE_REVIEW_KEY);
  runtime.cloudConflict=null;runtime.firstMasterPending=false;saveMeta({revision:nextRevision,lastSync:now,lastRemoteAt:now,lastLocalHash:raw.length,dirty:false});
  runtime.cloudLastSync=now;runtime.revision=nextRevision;runtime.lastRemoteAt=now;await touchDevice(s,'upload');return row
 }
@@ -31009,25 +31025,29 @@ async function pull({reload=true}={}){
  const localRaw=capture(),localSnapshot=safeJson(localRaw,null);
  if(localSnapshot){await writeHistory(s,{snapshot:localSnapshot,revision:Math.max(1,Number(meta().revision||1)),source_device_id:deviceId(),source_platform:platform(),app_version:BUILD},'before_download_local')}
  assertOwnedBoard(s); // A delayed recovery-history POST may outlive the login.
- applySnapshot(remote.snapshot);const now=new Date().toISOString();saveMeta({revision:Number(remote.revision||0),lastSync:now,lastRemoteAt:remote.updated_at||now,dirty:false});runtime.cloudLastSync=now;runtime.revision=Number(remote.revision||0);runtime.lastRemoteAt=remote.updated_at||now;runtime.cloudConflict=null;await touchDevice(s,'download');if(reload)location.reload();return remote
+ applySnapshot(remote.snapshot);localStorage.removeItem(RESTORE_REVIEW_KEY);
+ const now=new Date().toISOString();saveMeta({revision:Number(remote.revision||0),lastSync:now,lastRemoteAt:remote.updated_at||now,dirty:false});runtime.cloudLastSync=now;runtime.revision=Number(remote.revision||0);runtime.lastRemoteAt=remote.updated_at||now;runtime.cloudConflict=null;await touchDevice(s,'download');if(reload)location.reload();return remote
 }
 async function sync(mode='auto',opts={}){
  if(runtime.cloudBusy)return null;runtime.cloudBusy=true;runtime.cloudAction=mode;runtime.cloudError='';scheduleMount();
  try{
   const s=await ensureSession();if(!s){if(!opts.silent)notify(es()?'Supabase':'Supabase',es()?'Inicia sesión para sincronizar.':'Sign in to sync.');return null}
-  assertOwnedBoard(s);const remote=await remoteState(s),m=meta();
+  assertOwnedBoard(s);
+   if(mode==='auto'&&pendingRestoreReview())
+    return {requiresOwnerConfirmation:true,restorePendingReview:true};
+   const remote=await remoteState(s),m=meta();
    assertOwnedBoard(s); // Protect B's UI after A's async read.
   if(!remote){
    if(mode!=='upload'){
      runtime.cloudConflict=null;runtime.firstMasterPending=true;
      scheduleMount();return {requiresOwnerConfirmation:true,remoteRevision:0}
    }
-   const out=await push('explicit_empty_remote_upload');
+   const out=await push('explicit_empty_remote_upload',{restoreReviewed:opts.restoreReviewed===true});
    if(!out?.conflict&&!opts.silent)notify(es()?'Sincronizado':'Synced',es()?'Este equipo creó el estado maestro en Supabase.':'This PC created the master state in Supabase.');
    return out
  }
   if(mode==='download')return await pull({reload:opts.reload!==false});
-  if(mode==='upload')return await push('manual_upload',{force:true});
+  if(mode==='upload')return await push('manual_upload',{force:true,restoreReviewed:opts.restoreReviewed===true});
   const remoteRev=Number(remote.revision||0),localRev=Number(m.revision||0);
   if(remoteRev>localRev){if(!opts.silent)notify(es()?'Cambio remoto disponible':'Remote change available',es()?'Supabase tiene una revisión más nueva. Abre Sync Center para usarla.':'Supabase has a newer revision. Open Sync Center to use it.');runtime.cloudConflict={message:'Remote revision '+remoteRev+' is newer than local revision '+localRev,remoteRevision:remoteRev,localRevision:localRev};return remote}
   runtime.cloudConflict=null;if(m.dirty)return await push('auto');await touchDevice(s,'online');return remote;
@@ -31094,13 +31114,14 @@ function cardHtml(){
  '<div class="mlv216-supa-grid"><div class="mlv216-supa-kpi"><small>'+esc(c.status)+'</small><b>'+esc(runtime.connected?c.signed:c.offline)+'</b></div><div class="mlv216-supa-kpi"><small>'+esc(c.account)+'</small><b>'+esc(runtime.account||'—')+'</b></div><div class="mlv216-supa-kpi"><small>'+esc(c.revision)+'</small><b>'+esc(String(runtime.revision||'—'))+'</b></div></div>'+
  (runtime.connected&&!ownerVerified?'<div class="mlv216-supa-note mlv216-supa-error" role="alert">This board was saved before account ownership was verified. To prevent mixing accounts, sign out and sign back in; the current local board is saved safely on this device for explicit import.</div>':'')+
  (runtime.connected&&runtime.firstMasterPending?'<div class="mlv216-supa-note" role="status">'+esc(es()?'Esta cuenta todavía no tiene una copia en Supabase. Tu tablero no se subirá automáticamente. Revisa los datos y elige Usar este equipo cuando quieras crearla.':'This account has no Supabase backup yet. Your board will not upload automatically. Review your data and choose Use this PC when ready.')+'</div>':'')+
+ (runtime.connected&&localStorage.getItem(RESTORE_REVIEW_KEY)?'<div class="mlv216-supa-note" role="status">'+esc(es()?'Restauración local pendiente. Revisa la cuenta y pulsa «Usar este PC» para actualizar la nube.':'Local restore awaiting review. Check your account and choose Use this PC before updating the cloud.')+'</div>':'')+
  (runtime.connected&&localStorage.getItem(GUEST_VAULT)?'<div class="mlv216-supa-note"><b>Previous local board saved.</b> Not uploaded to this account. Import only with your confirmation.</div><div class="mlv216-supa-actions"><button class="btn ghost" data-mlv216-supa="import-guest">Import previous local board…</button></div>':'')+
  (runtime.connected?'<div class="mlv216-supa-actions"><button class="btn primary" data-mlv216-supa="sync" '+(runtime.cloudBusy||!ownerVerified?'disabled':'')+'>'+esc(c.sync)+'</button><button class="btn" data-mlv216-supa="upload" '+(runtime.cloudBusy||!ownerVerified?'disabled':'')+'>'+esc(c.upload)+'</button><button class="btn ghost" data-mlv216-supa="download" '+(runtime.cloudBusy||!ownerVerified?'disabled':'')+'>'+esc(c.download)+'</button><button class="btn ghost" data-mlv216-supa="logout">'+esc(c.logout)+'</button></div>':authHtml)+
  (runtime.cloudError?'<div class="mlv216-supa-note mlv216-supa-error">'+esc(runtime.cloudError)+'</div>':'')+
  '<div class="mlv216-supa-note">'+esc(c.primary)+'</div><div class="section-title" style="margin-top:12px"><div><h3>'+esc(c.devices)+'</h3></div></div><div class="mlv216-supa-device-list">'+(devices.length?devices.map(d=>'<div class="mlv216-supa-device"><div><b>'+esc(d.deviceName||d.platform||'Device')+(d.deviceId===deviceId()?' · '+(es()?'Este equipo':'This PC'):'')+'</b><small>'+esc(d.platform||'')+' · v'+esc(d.appVersion||'—')+'</small></div><span class="pill">'+esc(d.lastAction||'synced')+'</span></div>').join(''):'<div class="mlv216-supa-note">'+esc(c.none)+'</div>')+'</div></section>'
 }
 function pane(){return document.querySelector('[data-v30171-pane="sync"]')}
-function cardSignature(){return JSON.stringify([authMode(),localStorage.getItem(OTP_EMAIL_KEY)||'',boardOwner(),runtime.connected,runtime.cloudReady,runtime.cloudBusy,runtime.cloudError,runtime.account,runtime.revision,runtime.cloudLastSync,runtime.cloudConflict?.message||'',runtime.firstMasterPending,overview.currentDeviceId,overview.devices])}
+function cardSignature(){return JSON.stringify([authMode(),localStorage.getItem(OTP_EMAIL_KEY)||'',boardOwner(),runtime.connected,runtime.cloudReady,runtime.cloudBusy,runtime.cloudError,runtime.account,runtime.revision,runtime.cloudLastSync,runtime.cloudConflict?.message||'',runtime.firstMasterPending,localStorage.getItem(RESTORE_REVIEW_KEY)||'',overview.currentDeviceId,overview.devices])}
 function mount(){
  if(String(state?.activeTab||'')!=='settings')return;const p=pane();if(!p)return;const old=p.querySelector('[data-mlv216-supabase-card]'),sig=cardSignature();if(old&&old.dataset.mlv216Sig===sig)return;const tmp=document.createElement('template');tmp.innerHTML=cardHtml();const next=tmp.content.firstElementChild;if(!next)return;next.dataset.mlv216Sig=sig;if(old)old.replaceWith(next);else p.appendChild(next)
 }
@@ -31146,7 +31167,17 @@ document.addEventListener('click',async e=>{
      throw err
    }
   }
-  else if(a==='logout')await signOut();else if(a==='sync')await sync('auto',{silent:false});else if(a==='upload')await sync('upload',{silent:false});else if(a==='download'){if(confirm(es()?'¿Usar la copia de Supabase en este equipo? Se conservará la sesión.':'Use the Supabase copy on this PC? Your session will be preserved.'))await sync('download',{silent:false})}
+  else if(a==='logout')await signOut();else if(a==='sync')await sync('auto',{silent:false});else if(a==='upload'){
+    const review=pendingRestoreReview();
+    if(review){
+     const current=await ensureSession();assertOwnedBoard(current);
+     if(review.ownerId!==String(current.user.id))
+      throw new Error('This restore belongs to another local account; it cannot be uploaded to this one.');
+     if(!confirm(es()?'¿Subir el respaldo restaurado y reemplazar la copia de esta cuenta en Supabase?':'Upload this restored backup and replace this account’s Supabase copy?'))return;
+     assertOwnedBoard(current);
+    }
+    await sync('upload',{silent:false,restoreReviewed:!!review})
+   }else if(a==='download'){if(confirm(es()?'¿Usar la copia de Supabase en este equipo? Se conservará la sesión.':'Use the Supabase copy on this PC? Your session will be preserved.'))await sync('download',{silent:false})}
  }catch(err){notify(es()?'Supabase':'Supabase',String(err.message||err),'error')}finally{scheduleMount()}
 },true);
 document.addEventListener('click',e=>{if(e.target.closest?.('[data-v30171-setting="sync"]')){setTimeout(()=>{mount();refreshOverview()},80)}},true);
