@@ -111,7 +111,7 @@ async function device(platform){
     localStorage.setItem('michelsLife.language.userOverrideBase.v1','en');
   },platform);
   const page=await context.newPage(),errors=[];
-  page.on('pageerror',e=>errors.push(e.message));
+  page.on('pageerror',e=>errors.push((e.stack||e.message).slice(0,1800)));
   await page.goto(APP_URL,{waitUntil:'domcontentloaded',timeout:60000});
   await page.waitForFunction(()=>typeof state!=='undefined'&&
     !!window.SupabaseSyncV30216?.signIn&&
@@ -182,9 +182,16 @@ try{
   // under account isolation. Both runtimes now use the SAME synthetic account.
   await android.page.evaluate(async()=>window.SupabaseSyncV30216.signIn(
     'granada@example.com','synthetic-password'));
-  const baseline=Number(backend.remote?.revision||0);
-  ok(baseline>=1,'Android authenticated first master missing');
+  // P0 #108: authentication MUST NOT create a cloud master automatically.
+  ok(backend.remote===null,'Sign-in silently created a cloud master');
   ok((await snap(android)).token,'Android did not establish its synthetic session');
+  // Model the explicit owner action through the production API. This does NOT
+  // grant consent to overwrite a nonempty remote account or transfer guest data.
+  const created=await android.page.evaluate(async()=>
+    window.SupabaseSyncV30216.sync('upload',{silent:true}));
+  const baseline=Number(backend.remote?.revision||0);
+  ok(baseline>=1&&created?.revision===baseline,
+    'Explicit owner action did not create account-scoped first master');
   // Authentication may quarantine a pre-login guest board (correct account
   // isolation). Create the linked mission INSIDE the authenticated account,
   // never assume a previous guest mission survived login.

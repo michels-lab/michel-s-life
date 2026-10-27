@@ -135,7 +135,17 @@ try{
   const first=await sessionSnapshot(desktop.page);
   ok(first.platform==='windows','Desktop context did not identify as Windows');
   ok(first.runtime.connected,'Desktop did not establish Supabase session');
-  ok(backend.remote&&Number(backend.remote.revision)>=1,'Desktop did not create first Supabase master');
+  ok(backend.remote===null&&backend.writes===0,
+    'P0: Desktop sign-in created a master before explicit account-owner approval');
+  const pending=await desktop.page.evaluate(async()=>
+    window.SupabaseSyncV30216.sync('auto',{silent:true}));
+  ok(pending?.requiresOwnerConfirmation===true&&backend.remote===null,
+    'Desktop automatic sync must preserve an empty account without writing');
+  const firstCreate=await desktop.page.evaluate(async()=>
+    window.SupabaseSyncV30216.sync('upload',{silent:true}));
+  ok(backend.remote&&Number(backend.remote.revision)>=1&&backend.writes===1&&
+    firstCreate?.user_id===USER_ID,
+    'Explicit Desktop owner action did not create exactly one matching master');
   const shareableStorage=backend.remote.snapshot?.localStorage||{};
   const sharedKeys=Object.keys(shareableStorage);
   ok(shareableStorage['michelsLife.themePreset.v343']==='parity-theme-20261011',
