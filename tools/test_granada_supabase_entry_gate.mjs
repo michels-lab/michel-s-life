@@ -93,7 +93,7 @@ assert.ok(script.includes("localStorage.removeItem(GUEST_VAULT);location.reload(
 function fixture() {
   let active='account-a1111',remoteRows=[],postCount=0,reads=0,prepares=0;
   const calls=[];
-  const runtime={cloudBusy:false,cloudConflict:null,cloudError:'',connected:true};
+  const runtime={cloudBusy:false,cloudConflict:null,firstMasterPending:false,cloudError:'',connected:true};
   const ctx={
     runtime,BUILD:'3.0.TEST',applying:false,
     encodeURIComponent,Date,JSON,Number,String,Math,
@@ -131,7 +131,8 @@ function fixture() {
   assert.equal(x.prepares,1,'Account A board must switch before auth yields');
   await loginA;
   assert.equal(x.postCount,0,'Signing in must never auto-upload a first board');
-  assert.equal(x.runtime.cloudConflict.remoteRevision,0);
+  assert.equal(x.runtime.firstMasterPending,true,'Empty cloud must show owner setup, not a conflict');
+  assert.equal(x.runtime.cloudConflict,null,'No cloud account must not open the conflict overlay');
   x.switchAccount('account-b2222');
   const loginB=x.api.initializeAfterAuth();
   assert.equal(x.prepares,2,'Account B board must switch before auth yields');
