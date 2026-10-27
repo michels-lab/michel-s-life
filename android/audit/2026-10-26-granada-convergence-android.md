@@ -1,3 +1,32 @@
+## Continuación Granada — 2026-10-26 (segundo bloque)
+
+**Estado real:** se volvió a consultar GitHub. El repositorio pasó de **12 a 10 PR abiertos** mediante dos integraciones funcionales P0; **no se creó ninguna rama ni PR**. Los 13 issues originales continúan abiertos porque sus criterios completos de cuenta/Android real no están aprobados. No hubo cambio de versión, distribuciones, firmas, Themes, Home, Chapter ni Windows.
+
+### #158 Drive Android: protección nativa de snapshots (merge fuente)
+
+- Merge squash **`7efe77889731a35152a108e8afe6aea2e07ba09d`** desde head exacto `4db7756562cdfd34579ff6cbb1956ab1b201d6ef`; [PR](https://github.com/michels-lab/michel-s-life/pull/158).
+- [CI dirigido 39538742457](https://github.com/michels-lab/michel-s-life/actions/runs/39538742457) SUCCESS: regresiones del contrato y allowlist, restauración local segura, y compilación Gradle de `CloudSync.kt` de producción. Source/UI/Android UI también pasaron.
+- `CloudSync.kt` rechaza subir metadatos/desconocidos y claves locales de autenticación, filtra claves privadas al restaurar legado y exige crear el respaldo histórico antes de reemplazar remoto. La auditoría del diff no encontró solapamiento con #134/#156/#181.
+- **No verificado:** backend Google Drive real con dos cuentas, legado de propietario, Galaxy/Android firmado y protección de extremo a extremo. #55 y #108 **siguen abiertos**. Workflow general de Android16 tenía subjob `android` verde pero humo nativo rojo por transporte QEMU/ADB de #139. Merge **no es release ni aceptación de usuario**.
+
+### #151 Focus: contrato de permisos y disponibilidad (merge fuente)
+
+- Merge squash **`2e519a042c555e970e9521385a933884e2e0b1ea`** desde head `1356abc8a764b6103b4f0060f6cf081998d49c5d`; [PR](https://github.com/michels-lab/michel-s-life/pull/151).
+- [Compilación exact-head 39381910489](https://github.com/michels-lab/michel-s-life/actions/runs/39381910489), subjob Android SUCCESS; UI/Android UI/source SUCCESS, humo de emulador candidato FAILED por #139. Kotlin minSdk=26 permite comprobación del canal.
+- Reporte `NativeFocusAlarm.status()` deja de afirmar `backgroundDelivery=true` cuando notificaciones están bloqueadas. Reporta permisos del sistema/canal de completación, canal de countdown y naturaleza inexacta; no cambia el planificador ni inventa garantías Doze. El validador #152 ya integrado verifica el contrato con 21 regresiones sintéticas.
+- **No verificado:** notificaciones reales en Galaxy, Doze, pantalla bloqueada, canales/OS y finalización de temporizador. #53 sigue abierto. No hay APK nueva.
+
+### #181 Android16 — instrumentación sobre PR existente (NO merge)
+
+- Rama de [PR #181](https://github.com/michels-lab/michel-s-life/pull/181), commit instrumentado `3de3b1e7fc23204a8527d29ea4c1ca90374861f4`: registra en artifact `host-memory-timeline.tsv` cifras numéricas de presencia y RSS QEMU, RAM `MemAvailable`, bytes cgroup cuando disponibles, cada 3 s máximo 480 muestras. Agrega tres regresiones y modifica el mismo workflow para disparar prueba Android nativa ante cambios al diagnosticador.
+- No se cambiaron RAM del AVD ni `-gpu swiftshader`, estado/tema/JS de app, scripts de instalación, validación de capturas ni datos del propietario. El watchdog **no es una solución confirmada de QEMU**.
+- [Source validation exact-head 40440438798](https://github.com/michels-lab/michel-s-life/actions/runs/40440438798): SUCCESS. Otras [pruebas 40440438800](https://github.com/michels-lab/michel-s-life/actions/runs/40440438800) y UI permanecían pendientes/in-progress al registrar este bloque; NO certificar instalación ni persistencia. Mantener PR #181 DRAFT y issue #139 OPEN hasta evidencia real.
+- Comentario de reentrada en [issue #139](https://github.com/michels-lab/michel-s-life/issues/139); revisar próximo artefacto numérico y diferenciar fallo anfitrión de fallo de app. No falsificar píxeles, no false-green por compilación, no random rerun.
+
+**Granada siguiente:** primero terminar #181 y diagnosticar runner sin crear otra rama; después pruebas real-provider A/B de #158 y permisos/dispositivo #151 antes de release. Priorizar wiring real #169/#156 sin pisar sus propietarios, Story #168/#171 sin cambios visuales no solicitados. Mantener Windows pausado.
+
+---
+
 # Michel's Life — Operación Granada: convergencia Android (2026-10-26)
 
 ## Estado verificado antes / después
