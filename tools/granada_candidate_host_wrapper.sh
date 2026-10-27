@@ -25,9 +25,38 @@ snapshot(){
     ps -e -o comm= 2>/dev/null | awk '$1=="emulator" {n++} END{print n+0}'
   } > "$OUT/host-$label.txt"
 }
+# Bound numeric-only host memory timeline to distinguish QEMU disappearance
+# from RAM pressure. No process command lines, logcat, account data or filenames.
+watch_pid=""
+readonly SAMPLES="$OUT/host-memory-timeline.tsv"
+sample_host(){
+  local qemu available cgroup
+  qemu="$(ps -e -o comm=,rss= 2>/dev/null | awk '$1 ~ /^qemu-system/ {n++; kb+=$2} END {printf "%d %d",n+0,kb+0}')" || qemu="0 0"
+  available="$(awk '$1=="MemAvailable:" && $2 ~ /^[0-9]+$/ {print $2;exit}' /proc/meminfo 2>/dev/null)" || available=""
+  cgroup="$(cat /sys/fs/cgroup/memory.current 2>/dev/null)" || cgroup=""
+  [[ "$available" =~ ^[0-9]+$ ]] || available="-1"
+  [[ "$cgroup" =~ ^[0-9]+$ ]] || cgroup="-1"
+  printf '%s\t%s\t%s\t%s\n' "$(date +%s)" "$qemu" "$available" "$cgroup" >> "$SAMPLES"
+}
+watch_host(){
+  local count=0
+  while (( count < 480 )); do
+    sleep 3
+    sample_host
+    count=$((count+1))
+  done
+}
+stop_watch(){
+  if [[ -n "$watch_pid" ]]; then
+    kill "$watch_pid" 2>/dev/null || true
+    wait "$watch_pid" 2>/dev/null || true
+    watch_pid=""
+  fi
+}
 failed(){
   local status="$?"
   trap - EXIT
+  stop_watch
   if (( status != 0 )); then
     # Presence of the first REAL PNG indicates the launch was reached, not an
     # assumption about what crashed. Never publish raw logcat or user records.
@@ -47,6 +76,10 @@ failed(){
 trap failed EXIT
 
 snapshot "before"
+printf 'epoch_utc\tqemu_processes\tqemu_rss_kib\thost_available_kib\tcgroup_memory_bytes\n' > "$SAMPLES"
+sample_host
+watch_host &
+watch_pid="$!"
 # Keep the actual existing real install/onboarding/two-relaunch script. A
 # missing native transport remains RED; no background retries or mocked frames.
 bash android/tools/smoke_candidate_apk_install.sh
