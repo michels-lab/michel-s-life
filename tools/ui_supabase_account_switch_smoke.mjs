@@ -106,9 +106,8 @@ try{
   ok(aInitial.guestVault?.snapshot?.state?.missions?.some(m=>m.id===GUEST_MISSION)&&
     aInitial.guestVault.snapshot.localStorage?.['michelsLife.journal.v30184']===JOURNAL.guest,
     'Guest mission or Journal was not retained in a reversible local vault');
-  ok(remote.get(ids.a)?.snapshot?.state?.missions?.every(m=>m.id!==GUEST_MISSION)&&
-    remote.get(ids.a)?.snapshot?.localStorage?.['michelsLife.journal.v30184']!==JOURNAL.guest,
-    'Guest content leaked to initial account before explicit consent');
+  ok(!remote.has(ids.a)&&!(writes.get(ids.a)||0),
+    'First A login created remote master without owner approval');
 
   // The ONLY guest import action must show the actual destination account and
   // respect Cancel without altering either canonical local state or remote.
@@ -139,7 +138,14 @@ try{
     'Dismissing guest import discarded vault or applied guest data');
 
   ok((await page.evaluate(()=>window.SupabaseSyncV30216.platform()))===(android?'android':'windows'),'Platform detection changed');
-  ok(remote.has(ids.a),'A account must create its own initial master');
+  ok(!remote.has(ids.a),'Sign-in or declined guest import created A cloud master');
+  const createdA=await page.evaluate(async()=>
+    window.SupabaseSyncV30216.sync('upload',{silent:true}));
+  ok(createdA?.user_id===ids.a&&remote.get(ids.a)?.revision===1&&writes.get(ids.a)===1,
+    'Explicit A account master choice did not create one owned remote revision');
+  ok(!remote.get(ids.a)?.snapshot?.state?.missions?.some(m=>m.id===GUEST_MISSION)&&
+    remote.get(ids.a)?.snapshot?.localStorage?.['michelsLife.journal.v30184']!==JOURNAL.guest,
+    'Owner-approved empty A master unexpectedly imported guest mission/Journal');
   await page.evaluate(async ({mission,journal})=>{
     state.xp=777;state.history.push({id:'a-secret-history',type:'private',description:'A_ONLY'});
     state.missions.push({id:mission,name:'A only synthetic mission',type:'oneoff',
@@ -175,9 +181,16 @@ try{
   ok(!b.missionIds.includes(A_MISSION)&&!b.missionIds.includes(GUEST_MISSION)&&
     b.journal!==JOURNAL.a&&b.journal!==JOURNAL.guest,
     'B sees A or guest mission/Journal without consent');
-  ok(remote.get(ids.b)?.snapshot?.state?.xp!==777,'B uploaded A data into its empty master');
+  ok(!remote.has(ids.b)&&!(writes.get(ids.b)||0),
+    'B sign-in created a cloud master without owner action');
+  await page.evaluate(async()=>
+    window.SupabaseSyncV30216.sync('upload',{silent:true}));
+  ok(remote.get(ids.b)?.user_id===ids.b&&writes.get(ids.b)===1,
+    'Explicit B owner approval did not create the correct cloud master');
+  ok(remote.get(ids.b)?.snapshot?.state?.xp!==777,
+    'B explicitly uploaded A data into its master');
   ok(!remote.get(ids.b)?.snapshot?.state?.missions?.some(m=>
-      m.id===A_MISSION||m.id===GUEST_MISSION)&&
+    m.id===A_MISSION||m.id===GUEST_MISSION)&&
     remote.get(ids.b)?.snapshot?.localStorage?.['michelsLife.journal.v30184']!==JOURNAL.a&&
     remote.get(ids.b)?.snapshot?.localStorage?.['michelsLife.journal.v30184']!==JOURNAL.guest,
     'B remote master inherited another account/guest mission or journal');
@@ -237,63 +250,42 @@ try{
     remote.get(ids.a).snapshot.localStorage?.['michelsLife.journal.v30184']===JOURNAL.a,
     'Cross-account round trip unexpectedly touched A cloud');
 
-  // Explicit Accept is a separate, intentional destructive authority change:
-  // A's old master must be recoverable from both the local per-account vault
-  // and the versioned cloud history before guest data replaces that master.
+  // Existing cloud masters must NEVER be overwritten by legacy Guest Import,
+  // even if someone clicks the button. No consent dialog is offered.
   const bCloudBeforeImport=JSON.stringify(remote.get(ids.b));
   await logout();
   await login('a@example.test');
   const aBeforeImport=await local();
   ok(aBeforeImport.missionIds.includes(A_MISSION)&&
     aBeforeImport.guestVault?.snapshot?.state?.xp===314,
-    'A and guest recovery snapshots are not ready for consented import');
-  const aRemoteBeforeImport=structuredClone(remote.get(ids.a));
-  const aHistoryCount=history.filter(h=>h.user_id===ids.a).length;
+    'A and guest local recovery snapshots changed before blocked import');
+  const originalRemote=JSON.stringify(remote.get(ids.a));
+  const originalHistoryCount=history.filter(h=>h.user_id===ids.a).length;
+  const originalAWrites=writes.get(ids.a);
   await page.evaluate(()=>{
     state.activeTab='settings';renderAll();
     window.LeftNavV30171.buildSettings();
     window.LeftNavV30171.activateSetting('sync');
   });
-  const approved=page.locator('[data-mlv216-supa="import-guest"]');
-  await approved.waitFor({state:'visible',timeout:10000});
-  const importedReload=page.waitForEvent('load',{timeout:30000});
-  let approvedDestination='';
-  page.once('dialog',async dialog=>{
-    approvedDestination=dialog.message();
-    await dialog.accept();
-  });
-  await approved.click();
-  await importedReload;
-  await ready();
-  const aAfterImport=await local();
-  const cloudAfterImport=remote.get(ids.a);
-  const aNewHistory=history.filter(h=>h.user_id===ids.a).slice(aHistoryCount);
-  ok(approvedDestination.includes('a@example.test')&&
-    approvedDestination.toLowerCase().includes('import'),
-    'Consented import did not disclose the destination account');
-  ok(aAfterImport.xp===314&&aAfterImport.stored===314&&
-    aAfterImport.missionIds.includes(GUEST_MISSION)&&
-    !aAfterImport.missionIds.includes(A_MISSION)&&
-    aAfterImport.journal===JOURNAL.guest,
-    'Explicit guest import did not actually apply the guest mission/Journal');
-  ok(cloudAfterImport.revision>aRemoteBeforeImport.revision&&
-    cloudAfterImport.snapshot.state.xp===314&&
-    cloudAfterImport.snapshot.state.missions.some(m=>m.id===GUEST_MISSION)&&
-    cloudAfterImport.snapshot.localStorage?.['michelsLife.journal.v30184']===JOURNAL.guest,
-    'Explicit guest import did not publish only after owner consent');
-  ok(aNewHistory.some(h=>
-    h.reason==='before_explicit_guest_import'&&
-    h.snapshot?.state?.xp===777&&
-    h.snapshot?.state?.missions?.some(m=>m.id===A_MISSION)&&
-    h.snapshot?.localStorage?.['michelsLife.journal.v30184']===JOURNAL.a),
-    'Consented import replaced A cloud without preserving A previous private master');
-  ok(!aAfterImport.guestVault&&
-    aAfterImport.vaultA?.snapshot?.state?.missions?.some(m=>m.id===A_MISSION)&&
-    aAfterImport.vaultA?.snapshot?.localStorage?.['michelsLife.journal.v30184']===JOURNAL.a,
-    'Consented guest import discarded the prior A account local backup');
+  const blockedImport=page.locator('[data-mlv216-supa="import-guest"]');
+  await blockedImport.waitFor({state:'visible',timeout:10000});
+  let invalidConsentDialog=false;
+  page.once('dialog',async d=>{invalidConsentDialog=true;await d.dismiss()});
+  await blockedImport.click();
+  await page.waitForTimeout(250);
+  const aAfterDenied=await local();
+  ok(!invalidConsentDialog,'A populated cloud account offered destructive Guest Import consent');
+  ok(JSON.stringify(remote.get(ids.a))===originalRemote&&
+    writes.get(ids.a)===originalAWrites&&
+    history.filter(h=>h.user_id===ids.a).length===originalHistoryCount,
+    'Blocked Guest Import modified existing A cloud master/history');
+  ok(aAfterDenied.xp===777&&aAfterDenied.journal===JOURNAL.a&&
+    aAfterDenied.missionIds.includes(A_MISSION)&&
+    aAfterDenied.guestVault?.snapshot?.state?.xp===314,
+    'Blocked Guest Import changed account A or deleted guest recovery source');
   ok(JSON.stringify(remote.get(ids.b))===bCloudBeforeImport,
-    'Importing local guest content into A changed B remote account');
+    'Blocked import changed B remote account');
 
   console.log('OK: '+(android?'Android':'Windows')+
-    ' mode: A/B/C account isolation preserves missions, journals, reversible vaults, guest import Cancel/Accept with history, and remote revisions');
+    ' mode: A/B/C account isolation preserves missions, journals, reversible vaults, guest import Cancel/Reject-existing-cloud, and remote revisions');
 }finally{await context.close();await browser.close();}
