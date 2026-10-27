@@ -175,7 +175,7 @@ function fixture() {
     "const ACCOUNT_VAULT='michelsLife.supabase.localAccount.v30218.';",
     "const GUEST_VAULT='michelsLife.supabase.localGuest.v30218';",
     "const META_KEY='michelsLife.supabase.meta.v30216';"
-  ].join('\\n');
+  ].join('\n');
   vm.runInContext(accountStorageConstants+'\n'+realOwnership+'\n'+realRestore+
     '\nthis.board={prepareAccountBoard,boardOwner};',ctx,{timeout:3000});
   ctx.board.prepareAccountBoard('account-b2222');
