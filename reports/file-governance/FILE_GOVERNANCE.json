@@ -29,7 +29,7 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "68d22df7b564a5b5b5611b312cf4b0093e85112d586ed017389348758f179dc1",
+  "inventory_fingerprint": "ddea1a859d6ccc0d2fb3fad371f0ad1ef95e482d936db854cb3f1e28c3738435",
   "evidence_fingerprint": "b003f07fe33381ece3f386c9c83267d7a034ef65d51c5325d586e0b49063a270",
   "files": [
     {
@@ -884,7 +884,7 @@
       "role": "document",
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
-      "blob": "64d0ea14d2d0a1f541a6213b8c80a8158cf11fee"
+      "blob": "e323469e7e1ab341d4569d1e618b086e8d9520ee"
     },
     {
       "path": "android/build.gradle.kts",
