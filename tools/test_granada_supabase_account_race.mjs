@@ -167,7 +167,7 @@ function refreshFixture(){
     signOutLocal:()=>localSignOut.push(live.user.id)
   };
   vm.createContext(ctx);
-  vm.runInContext(refreshSource+'\\nthis.refresh=ensureSession;',ctx,{timeout:3000});
+  vm.runInContext(refreshSource+'\nthis.refresh=ensureSession;',ctx,{timeout:3000});
   return {
     refresh:ctx.refresh,refreshRequests,persisted,localSignOut,
     switchToB:()=>{live={access_token:'B_ACCESS',refresh_token:'B_REFRESH',expires_at:0,user:{id:B}}}
