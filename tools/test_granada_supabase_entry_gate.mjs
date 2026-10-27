@@ -22,7 +22,13 @@ const chunks=[
 const runtimeSource=chunks.join('\n')+
   '\nthis.production={remoteState,push,sync,initializeAfterAuth};';
 assert.ok(!script.includes("await push('first_upload')"),'Old automatic first upload remains');
-assert.ok(script.includes("const remote=await remoteState(s);\n   if(remote)throw new Error('Guest import is blocked:"),'Guest import must reject existing remote before confirmation');
+const guestScript=script.slice(script.indexOf("else if(a==='import-guest'){"),script.indexOf("else if(a==='logout')"));
+const eligibility=guestScript.indexOf("const remote=await remoteState(s);");
+const recheck=guestScript.indexOf('assertOwnedBoard(s); // Login could change while checking guest eligibility.');
+const rejectRemote=guestScript.indexOf("if(remote)throw new Error('Guest import is blocked:");
+const confirmGuest=guestScript.indexOf("if(!confirm('Import '");
+assert.ok(eligibility>=0&&recheck>eligibility&&rejectRemote>recheck&&confirmGuest>rejectRemote,
+ 'Guest import must recheck live owner and reject existing remote before consent');
 assert.ok(!script.includes("push('explicit_guest_import',{force:true})"),'Guest import must never force overwrite');
 assert.ok(script.includes("applySnapshot(original);"),'Guest import must retain rollback');
 
@@ -199,6 +205,8 @@ function fixture() {
   };
   const ctx={localStorage:storage,JSON,String,Number,Object,Date,encodeURIComponent,
     applying:false,safeJson:(value,defaultValue=null)=>{try{return JSON.parse(value)}catch{return defaultValue}},
+    overview:{devices:[{deviceId:'previous-account'}],backups:[{fileId:'previous-history'}]},
+    deviceId:()=> 'synthetic-device',deviceName:()=> 'Synthetic Android',
     meta:()=>JSON.parse(storage.getItem(metaKey)||'{}'),
     state:JSON.parse(storage.getItem(board)),
     defaultState:()=>({xp:0,missions:[],settings:{}}),
@@ -223,6 +231,8 @@ function fixture() {
     '\nthis.board={prepareAccountBoard,boardOwner};',ctx,{timeout:3000});
   ctx.board.prepareAccountBoard('account-b2222');
   assert.equal(ctx.board.boardOwner(),'account-b2222');
+  assert.equal(ctx.overview.devices.length,0,'A device preview must disappear on B switch');
+  assert.equal(ctx.overview.backups.length,0,'A history preview must disappear on B switch');
   assert.equal(JSON.parse(storage.getItem(board)).missions.length,0);
   assert.equal(storage.getItem(journal),null,'Account A journal must not be visible under B');
   assert.equal(storage.getItem(sessionKey),'SYNTHETIC_SESSION_LOCAL');
