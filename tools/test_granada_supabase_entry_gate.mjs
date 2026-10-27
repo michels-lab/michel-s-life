@@ -13,13 +13,14 @@ function extract(start,end) {
   assert.ok(a>=0&&b>a&&script.indexOf(start,a+1)===-1,'Missing or ambiguous production function '+start);
   return script.slice(a,b);
 }
+const restoreHelper=extract('function pendingRestoreReview(){','function assertOwnedBoard(s){');
 const chunks=[
   extract('async function remoteState(s){','async function touchDevice('),
   extract("async function push(reason='manual',opts={}){",'function applySnapshot('),
   extract("async function sync(mode='auto',opts={}){",'function scheduleAutoSync()'),
   extract('async function initializeAfterAuth(){','function copy(){')
 ];
-const runtimeSource=chunks.join('\n')+
+const runtimeSource=restoreHelper+'\n'+chunks.join('\n')+
   '\nthis.production={remoteState,push,sync,initializeAfterAuth};';
 assert.ok(!script.includes("await push('first_upload')"),'Old automatic first upload remains');
 const guestScript=script.slice(script.indexOf("else if(a==='import-guest'){"),script.indexOf("else if(a==='logout')"));
@@ -102,6 +103,8 @@ function fixture() {
   const runtime={cloudBusy:false,cloudConflict:null,firstMasterPending:false,cloudError:'',connected:true};
   const ctx={
     runtime,BUILD:'3.0.TEST',applying:false,
+    RESTORE_REVIEW_KEY:'michelsLife.restoreReview.v1',
+    localStorage:{getItem:()=>null,removeItem:()=>{}},
     encodeURIComponent,Date,JSON,Number,String,Math,
     session:()=>({access_token:'SYNTHETIC',user:{id:active,email:active+'@invalid.test'}}),
     ensureSession:async()=>({access_token:'SYNTHETIC',user:{id:active,email:active+'@invalid.test'}}),
