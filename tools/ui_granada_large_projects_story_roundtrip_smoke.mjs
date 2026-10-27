@@ -111,7 +111,7 @@ async function device(platform){
     localStorage.setItem('michelsLife.language.userOverrideBase.v1','en');
   },platform);
   const page=await context.newPage(),errors=[];
-  page.on('pageerror',e=>errors.push(e.message));
+  page.on('pageerror',e=>errors.push((e.stack||e.message).slice(0,1800)));
   await page.goto(APP_URL,{waitUntil:'domcontentloaded',timeout:60000});
   await page.waitForFunction(()=>typeof state!=='undefined'&&
     !!window.SupabaseSyncV30216?.signIn&&
