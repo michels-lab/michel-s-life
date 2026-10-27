@@ -30836,8 +30836,14 @@ async function request(path,{method='GET',body=null,access=null,prefer='',header
 }
 function storeSession(data){
  if(!data?.access_token)return null;
+ const previous=session(),user=data.user||previous?.user||null;
+ const owner=String(user?.id||'');
+ if(!owner)throw new Error('Supabase session is missing a verified account identity.');
+ // Never expose account A's visible board while account B's credentials
+ // have already been persisted. Fail closed before switching credentials.
+ if(boardOwner()!==owner)prepareAccountBoard(owner);
  const expiresAt=Date.now()+Math.max(30,Number(data.expires_in||3600))*1000;
- const next={access_token:data.access_token,refresh_token:data.refresh_token||session()?.refresh_token||'',expires_at:expiresAt,user:data.user||session()?.user||null};
+ const next={access_token:data.access_token,refresh_token:data.refresh_token||previous?.refresh_token||'',expires_at:expiresAt,user};
  localStorage.setItem(SESSION_KEY,JSON.stringify(next));syncRuntime();return next
 }
 async function ensureSession(){
