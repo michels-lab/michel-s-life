@@ -164,19 +164,20 @@ class AndroidBridge(
                 .put("version", DriveCloudEngine.ANDROID_VERSION)
                 .put("status", "ok"))
             "updateStatus" -> {
+                // No remote release feed is queried by this action. Never report a
+                // successful "up to date" result based only on local metadata.
                 val channel = installChannel()
                 respondOk(requestId, JSONObject()
-                    .put("updateAvailable", false)
-                    .put("managedExternally", true)
+                    .put("updateAvailable", JSONObject.NULL)
+                    .put("updateCheckPerformed", false)
+                    .put("managedExternally", channel == "google-play")
                     .put("channel", channel)
                     .put("version", DriveCloudEngine.ANDROID_VERSION)
-                    .put(
-                        "status",
-                        if (channel == "google-play")
-                            "Updates are managed by Google Play."
-                        else
-                            "Test build. Production updates are delivered through Google Play."
-                    ))
+                    .put("status", "unchecked")
+                    .put("message", if (channel == "google-play")
+                        "This build does not check releases; check Google Play for updates."
+                    else
+                        "Automatic update checking is unavailable in this build. Check the official Michel's Life release source."))
             }
             else -> respondError(requestId, "This Michel's Life desktop action is not available on Android yet: " + action)
         }
