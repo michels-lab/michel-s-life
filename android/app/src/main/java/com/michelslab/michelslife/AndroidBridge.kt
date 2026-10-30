@@ -164,20 +164,26 @@ class AndroidBridge(
                 .put("version", DriveCloudEngine.ANDROID_VERSION)
                 .put("status", "ok"))
             "updateStatus" -> {
-                // No remote release feed is queried by this action. Never report a
-                // successful "up to date" result based only on local metadata.
+                // Google Play owns its own update channel. For a sideloaded
+                // Android Direct APK, check ONLY the official public release,
+                // asynchronously, with bounded network timeouts and no writes.
                 val channel = installChannel()
-                respondOk(requestId, JSONObject()
-                    .put("updateAvailable", JSONObject.NULL)
-                    .put("updateCheckPerformed", false)
-                    .put("managedExternally", channel == "google-play")
-                    .put("channel", channel)
-                    .put("version", DriveCloudEngine.ANDROID_VERSION)
-                    .put("status", "unchecked")
-                    .put("message", if (channel == "google-play")
-                        "This build does not check releases; check Google Play for updates."
-                    else
-                        "Automatic update checking is unavailable in this build. Check the official Michel's Life release source."))
+                if (channel == "google-play") {
+                    respondOk(requestId, JSONObject()
+                        .put("channel", "google-play")
+                        .put("version", DriveCloudEngine.ANDROID_VERSION)
+                        .put("managedExternally", true)
+                        .put("updateAvailable", JSONObject.NULL)
+                        .put("updateCheckPerformed", false)
+                        .put("status", "unchecked")
+                        .put("message", "Check Google Play for updates to this installation."))
+                } else {
+                    executor.execute {
+                        respondOk(requestId, AndroidDirectUpdateChecker.check(
+                            DriveCloudEngine.ANDROID_VERSION
+                        ))
+                    }
+                }
             }
             else -> respondError(requestId, "This Michel's Life desktop action is not available on Android yet: " + action)
         }
