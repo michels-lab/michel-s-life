@@ -302,6 +302,128 @@ try{
     audit.push({id:'calendar',width,calendar});
   }
 
+  // GRANADA: canonical Calendar keyboard + TalkBack behavior. The cells
+  // are divs in the shared renderer, so phone size alone does not give them
+  // native focus/activation semantics. Test the REAL selection handler,
+  // English accessible name, focus, Enter/Space, and Journal autosave status.
+  for(const width of [412,360]){
+    await route('calendar',width);
+    const month=page.locator('#tab-calendar [data-v30135-cal="view"][data-view="month"]');
+    if(await month.count())await month.click();
+    const cell=page.locator('#tab-calendar .v30135-day[data-date]').nth(4);
+    const date=await cell.getAttribute('data-date');
+    const semantics=await cell.evaluate(el=>({
+      tag:el.tagName.toLowerCase(),role:el.getAttribute('role'),
+      tabIndex:el.tabIndex,name:el.getAttribute('aria-label'),
+      pressed:el.getAttribute('aria-pressed'),
+      rect:el.getBoundingClientRect().toJSON()
+    }));
+    assert(/^\d{4}-\d{2}-\d{2}$/.test(date||'')&&
+      semantics.tag==='div'&&semantics.role==='button'&&semantics.tabIndex===0&&
+      semantics.name?.startsWith('Select ')&&semantics.name.includes(date.slice(0,4))&&
+      ['true','false'].includes(semantics.pressed)&&semantics.rect.height>=44,
+      'Android Calendar cell is visually clickable but missing TalkBack/keyboard semantics: '+
+        JSON.stringify({width,semantics}));
+    await cell.focus();
+    await cell.press('Enter');
+    try{
+      await page.waitForFunction(date=>{
+        const selected=document.querySelector('#tab-calendar .v30135-day.selected[data-date="'+date+'"]');
+        const saved=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')
+          ?.settings?.v30135CalendarSelected;
+        return !!selected&&saved===date&&selected.getAttribute('aria-pressed')==='true';
+      },date,{timeout:10000});
+    }catch(error){
+      const diagnosis=await page.evaluate(date=>{
+        const rows=[...document.querySelectorAll('#tab-calendar .v30135-day[data-date]')];
+        const marked=rows.filter(el=>el.classList.contains('selected')).map(el=>({
+          date:el.dataset.date,pressed:el.getAttribute('aria-pressed'),
+          keyboard:el.dataset.mlvAndroidKeyboard,
+          role:el.getAttribute('role')
+        }));
+        const target=rows.find(el=>el.dataset.date===date);
+        const data=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}');
+        return {
+          expected:date,selected:marked,
+          activeTab:state.activeTab,bodyTab:document.body.dataset.mlvAndroidTab,
+          mainChildren:[...(document.getElementById('main')?.children||[])].map(el=>({
+            id:el.id,active:el.classList.contains('active'),hasCalendar:!!el.querySelector('.v30135-day')
+          })).slice(0,15),
+          renderMainPresent:typeof window.renderMain==='function',
+          androidFastRoutePresent:typeof window.__mlvAndroidFastRoute==='function',
+          storedDate:data.settings?.v30135CalendarSelected,
+          runtimeDate:state.settings?.v30135CalendarSelected,
+          calendarTabActive:document.getElementById('tab-calendar')?.classList.contains('active'),
+          calendarView:state.settings?.v30135CalendarView,
+          targetPresent:!!target,
+          targetHasKeyboardListener:target?.dataset.mlvAndroidKeyboard,
+          targetRole:target?.getAttribute('role'),
+          activeElement:document.activeElement?.getAttribute('data-date')||document.activeElement?.tagName,
+          cells:rows.length
+        };
+      },date);
+      throw new Error('GRANADA canonical calendar Enter selection failed at '+width+
+        'px: '+JSON.stringify(diagnosis)+'; cause: '+String(error.message||error));
+    }
+    const next=page.locator('#tab-calendar .v30135-day[data-date]').nth(9);
+    const nextDate=await next.getAttribute('data-date');
+    await next.focus();
+    await next.press('Space');
+    try{
+      await page.waitForFunction(date=>{
+        const selected=document.querySelector('#tab-calendar .v30135-day.selected[data-date="'+date+'"]');
+        const saved=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')
+          ?.settings?.v30135CalendarSelected;
+        return !!selected&&saved===date&&selected.getAttribute('aria-pressed')==='true';
+      },nextDate,{timeout:10000});
+    }catch(error){
+      const diagnosis=await page.evaluate(date=>{
+        const rows=[...document.querySelectorAll('#tab-calendar .v30135-day[data-date]')];
+        const marked=rows.filter(el=>el.classList.contains('selected')).map(el=>({
+          date:el.dataset.date,pressed:el.getAttribute('aria-pressed'),
+          keyboard:el.dataset.mlvAndroidKeyboard,
+          role:el.getAttribute('role')
+        }));
+        const target=rows.find(el=>el.dataset.date===date);
+        const data=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}');
+        return {
+          expected:date,selected:marked,
+          activeTab:state.activeTab,bodyTab:document.body.dataset.mlvAndroidTab,
+          mainChildren:[...(document.getElementById('main')?.children||[])].map(el=>({
+            id:el.id,active:el.classList.contains('active'),hasCalendar:!!el.querySelector('.v30135-day')
+          })).slice(0,15),
+          renderMainPresent:typeof window.renderMain==='function',
+          androidFastRoutePresent:typeof window.__mlvAndroidFastRoute==='function',
+          storedDate:data.settings?.v30135CalendarSelected,
+          runtimeDate:state.settings?.v30135CalendarSelected,
+          calendarTabActive:document.getElementById('tab-calendar')?.classList.contains('active'),
+          calendarView:state.settings?.v30135CalendarView,
+          targetPresent:!!target,
+          targetHasKeyboardListener:target?.dataset.mlvAndroidKeyboard,
+          targetRole:target?.getAttribute('role'),
+          activeElement:document.activeElement?.getAttribute('data-date')||document.activeElement?.tagName,
+          cells:rows.length
+        };
+      },nextDate);
+      throw new Error('GRANADA canonical calendar Space selection failed at '+width+
+        'px: '+JSON.stringify(diagnosis)+'; cause: '+String(error.message||error));
+    }
+    assert(nextDate!==date,'Keyboard smoke did not select two distinct Calendar days');
+    await page.screenshot({path:output+'/calendar-keyboard-'+width+'.png'});
+    audit.push({id:'calendar-keyboard-talkback',width,enter:true,space:true,
+      selectedDatePreserved:true});
+  }
+  await route('journal',360);
+  const saveStatus=await page.locator('#tab-journal #mlv184JournalSaveState').evaluate(el=>({
+    role:el.getAttribute('role'),live:el.getAttribute('aria-live'),
+    atomic:el.getAttribute('aria-atomic')
+  }));
+  assert(saveStatus.role==='status'&&saveStatus.live==='polite'&&
+    saveStatus.atomic==='true',
+    'Journal canonical save indicator is not announced to assistive technology: '+
+      JSON.stringify(saveStatus));
+  audit.push({id:'journal-save-screenreader',liveRegion:true});
+
   // Story has a legacy-compatible route, but mobile render is still mandatory.
   audit.push(await route('story'));
 
