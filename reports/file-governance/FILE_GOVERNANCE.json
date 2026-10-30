@@ -26,11 +26,11 @@
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
-    "POTENTIAL_UNLOGGED_CHANGES": 1
+    "POTENTIAL_UNLOGGED_CHANGES": 2
   },
-  "finding_total": 5,
-  "inventory_fingerprint": "18460d906cec5883154347f0d93922ce7d4df8440f88a3375108c2b5b8a345ad",
-  "evidence_fingerprint": "bfa55c2ab2e6f410cd87a37a38d56ae5a1ee1347db2551d3220756766c846396",
+  "finding_total": 6,
+  "inventory_fingerprint": "83d377c659f2a3ad4b91571d92c5870b1523ba0d68a37f96a19acabdd5b52ced",
+  "evidence_fingerprint": "13b5acf3692d2d8f954a04b69267f95d82dc14c9468f5c8dc567002e77a137db",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -1927,7 +1927,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "76cf4f3ec063a01193377f5a458499863bb6f7c3"
+      "blob": "3d9439454239903e944eb8ed6eb12e76b6635f7c"
     },
     {
       "path": "tools/ui_auto_update_smoke.mjs",
@@ -2185,11 +2185,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "6fef5dbdea05c8b6",
+      "id": "1c4680694332f48d",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "37 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-drive-privacy.yml, .github/workflows/granada-android-evidence-gate.yml",
+      "observation": "38 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-drive-privacy.yml, .github/workflows/granada-android-evidence-gate.yml",
+      "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "bec241b1ef55769a",
+      "code": "POTENTIAL_UNLOGGED_CHANGES",
+      "severity": "review",
+      "path": "android/ANDROID_AUDIT_LOG.md",
+      "observation": "1 implementation/config paths changed since this log's last commit; examples: tools/ui_android_story_navigation_smoke.mjs",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
