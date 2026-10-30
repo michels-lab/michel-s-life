@@ -189,6 +189,15 @@ class AndroidBridge(
                         .put("updateCheckPerformed", false)
                         .put("status", "unchecked")
                         .put("message", "Test build; official Direct update status does not apply."))
+                } else if (!AndroidDirectSigner.isTrusted(activity)) {
+                    respondOk(requestId, JSONObject()
+                        .put("channel", "untrusted")
+                        .put("version", DriveCloudEngine.ANDROID_VERSION)
+                        .put("managedExternally", false)
+                        .put("updateAvailable", JSONObject.NULL)
+                        .put("updateCheckPerformed", false)
+                        .put("status", "unchecked")
+                        .put("message", "Installed APK signing identity is not the official Android Direct certificate."))
                 } else {
                     executor.execute {
                         respondOk(requestId, AndroidDirectUpdateChecker.check(
