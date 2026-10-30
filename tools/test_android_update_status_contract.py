@@ -55,6 +55,15 @@ class UpdateStatusContract(unittest.TestCase):
         self.assertIn('.put("updateAvailable", difference > 0)', self.checker)
         self.assertIn('.put("updateCheckPerformed", true)', self.checker)
 
+    def test_installed_apk_must_have_trusted_direct_signer(self):
+        signer = (ROOT / "android/app/src/main/java/com/michelslab/michelslife/AndroidDirectSigner.kt").read_text()
+        cert = (ROOT / "android/app/src/main/java/com/michelslab/michelslife/AndroidDirectCertificate.java").read_text()
+        self.assertIn("AndroidDirectSigner.isTrusted(activity)", self.bridge)
+        self.assertIn('.put("channel", "untrusted")', self.bridge)
+        self.assertIn("PackageManager.GET_SIGNING_CERTIFICATES", signer)
+        self.assertIn("matchesInstalledSigner", signer)
+        self.assertIn("36a9f5144243d14ebade9d38559cfd7d4d9207c1edba01e6f0fbdd5f076a50fa", cert)
+
     def test_no_silent_install_or_user_state_mutations(self):
         self.assertNotIn("ACTION_INSTALL_PACKAGE", self.checker)
         self.assertNotIn("DownloadManager", self.checker)
