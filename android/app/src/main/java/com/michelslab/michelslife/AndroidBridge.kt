@@ -177,6 +177,18 @@ class AndroidBridge(
                         .put("updateCheckPerformed", false)
                         .put("status", "unchecked")
                         .put("message", "Check Google Play for updates to this installation."))
+                } else if ((activity.applicationInfo.flags and
+                    android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
+                    // A debug APK is never a permanently signed Direct release,
+                    // even if both builds contain the same versionName.
+                    respondOk(requestId, JSONObject()
+                        .put("channel", "test")
+                        .put("version", DriveCloudEngine.ANDROID_VERSION)
+                        .put("managedExternally", false)
+                        .put("updateAvailable", JSONObject.NULL)
+                        .put("updateCheckPerformed", false)
+                        .put("status", "unchecked")
+                        .put("message", "Test build; official Direct update status does not apply."))
                 } else {
                     executor.execute {
                         respondOk(requestId, AndroidDirectUpdateChecker.check(
