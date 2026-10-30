@@ -39,6 +39,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
       - name: Enforce owner's Windows packaging pause
         run: python tools/validate_windows_build_pause.py
 
@@ -64,6 +68,14 @@ jobs:
 
       - name: Enforce truthful Android updater status contract
         run: python -m unittest tools/test_android_update_status_contract.py
+
+      - name: Execute strict real JVM Android Direct version regressions
+        run: |
+          mkdir -p "$RUNNER_TEMP/ml-direct-version"
+          javac -d "$RUNNER_TEMP/ml-direct-version" \
+            android/app/src/main/java/com/michelslab/michelslife/AndroidReleaseVersion.java \
+            tools/AndroidReleaseVersionContractTest.java
+          java -cp "$RUNNER_TEMP/ml-direct-version" com.michelslab.michelslife.AndroidReleaseVersionContractTest
 
       - name: Reject ephemeral Android debug signing as stable direct distribution
         run: python android/tools/verify_direct_apk.py --self-test
