@@ -22,6 +22,11 @@ class UpdateStatusContract(unittest.TestCase):
         self.assertIn('.put("updateAvailable", JSONObject.NULL)', self.bridge)
         self.assertIn('.put("updateCheckPerformed", false)', self.bridge)
 
+    def test_debug_install_is_not_misrepresented_as_signed_direct(self):
+        self.assertIn("ApplicationInfo.FLAG_DEBUGGABLE", self.bridge)
+        self.assertIn('.put("channel", "test")', self.bridge)
+        self.assertIn('Test build; official Direct update status does not apply.', self.bridge)
+
     def test_direct_check_is_off_ui_thread(self):
         self.assertIn('executor.execute {', self.bridge)
         self.assertIn('AndroidDirectUpdateChecker.check(', self.bridge)
