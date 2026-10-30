@@ -74,8 +74,11 @@ jobs:
           mkdir -p "$RUNNER_TEMP/ml-direct-version"
           javac -d "$RUNNER_TEMP/ml-direct-version" \
             android/app/src/main/java/com/michelslab/michelslife/AndroidReleaseVersion.java \
-            tools/AndroidReleaseVersionContractTest.java
+            tools/AndroidReleaseVersionContractTest.java \
+            android/app/src/main/java/com/michelslab/michelslife/AndroidDirectCertificate.java \
+            tools/AndroidDirectCertificateContractTest.java
           java -cp "$RUNNER_TEMP/ml-direct-version" com.michelslab.michelslife.AndroidReleaseVersionContractTest
+          java -cp "$RUNNER_TEMP/ml-direct-version" com.michelslab.michelslife.AndroidDirectCertificateContractTest
 
       - name: Reject ephemeral Android debug signing as stable direct distribution
         run: python android/tools/verify_direct_apk.py --self-test
