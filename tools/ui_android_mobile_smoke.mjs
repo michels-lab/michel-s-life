@@ -1016,9 +1016,13 @@ try{
   const afterFrame=await page.evaluate(()=>Number(document.getElementById('v30146Canvas')?.dataset?.frame||0));
   if(beforeFrame>0)ok(afterFrame>beforeFrame,'Seasonal animation stalled in Android mobile viewport: '+JSON.stringify({beforeFrame,afterFrame}));
 
+  // The actual Pixel2 API35 artifact is 1080x1920: at Android WebView
+  // density its CSS viewport is much shorter than the usual 412x915 smoke.
+  // Keep the main app test unchanged, but validate first-run onboarding
+  // against the proven short native window (no browser-only large-screen pass).
   const freshContext=await browser.newContext({
-    viewport:{width:412,height:915},
-    screen:{width:412,height:915},
+    viewport:{width:412,height:731},
+    screen:{width:412,height:731},
     deviceScaleFactor:2.625,
     isMobile:true,
     hasTouch:true
@@ -1080,6 +1084,8 @@ try{
        colorsStep1.cardBackground===colorsStep2.cardBackground,
        'Unexpected Android onboarding palette recolor on Continue: '+JSON.stringify({colorsStep1,colorsStep2}));
   }
+  // Step two and its real Finish button must also fit a 360x640 phone.
+  await fresh.setViewportSize({width:360,height:640});
   await fresh.waitForSelector('#mlv200Onboarding .mlv200-focus input[type="checkbox"]',{state:'visible',timeout:5000});
   const freshInstallOnboarding=await fresh.evaluate(()=>{
     const root=document.getElementById('mlv200Onboarding');
