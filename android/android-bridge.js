@@ -1032,6 +1032,10 @@
   function renderDirectUpdater(){
     const pane=q('#tab-settings [data-v30171-pane="about"]');
     if(!pane)return;
+    // Canonical About uses an inner author/studio layout with its own
+    // child-visibility rules. Add our action to that visible About content,
+    // not as an unrelated direct sibling of its protected sections.
+    const host=q('[data-mlv-about-core]',pane)||pane;
     let section=q('#mlv-android-direct-updater',pane);
     if(!section){
       section=document.createElement('section');
@@ -1060,7 +1064,7 @@
       link.hidden=true;
       link.style.cssText='display:inline-block;margin-top:8px;text-decoration:underline';
       section.append(heading,button,status,link);
-      pane.appendChild(section);
+      host.appendChild(section);
       button.addEventListener('click',checkDirectUpdater);
     }
     const t=updaterLabels(), button=q('#mlv-android-check-updates',section);
