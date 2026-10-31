@@ -388,6 +388,15 @@
     }
     setImportantOnce(actions,'flex','0 0 auto');
     setImportantOnce(actions,'position','relative');
+    // On real short Android WebViews the canonical button's explicit sizing
+    // can override stylesheet min-height, leaving a 37px partial tap target.
+    // Preserve the same action/handler while enforcing accessible geometry.
+    qa('button',actions).forEach(button=>{
+      setImportantOnce(button,'min-height','48px');
+      setImportantOnce(button,'height','auto');
+      setImportantOnce(button,'box-sizing','border-box');
+      setImportantOnce(button,'flex-shrink','0');
+    });
     return true;
   }
 
