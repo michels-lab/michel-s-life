@@ -150,6 +150,10 @@ jobs:
         working-directory: android
         run: gradle --no-daemon :app:assembleDebug
 
+      - name: Exercise real Kotlin Android Direct release parser with fake public metadata
+        working-directory: android
+        run: gradle --no-daemon :app:testDebugUnitTest --tests 'com.michelslab.michelslife.AndroidDirectUpdateCheckerTest'
+
       - name: Prepare optional Play upload keystore
         shell: bash
         run: |
