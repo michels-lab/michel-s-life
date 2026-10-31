@@ -1056,6 +1056,21 @@ try{
     const next=fresh.locator('#mlv200Onboarding [data-mlv200-onboard="next"]');
     ok(await next.count(),'Fresh onboarding has no Continue button');
     await fresh.waitForTimeout(1600);
+    // Actual Pixel2 native evidence shows the FIRST Continue half-clipped,
+    // while the original browser smoke only inspected steps 2/3. Hit-test
+    // without Playwright auto-scroll to reproduce the real inaccessible CTA.
+    const step1Geometry=await next.evaluate(button=>{
+      const rect=button.getBoundingClientRect();
+      const hit=document.elementFromPoint(rect.left+rect.width/2,
+        rect.top+rect.height/2);
+      return {bottom:rect.bottom,top:rect.top,height:rect.height,
+        viewport:innerHeight,hit:hit===button||button.contains(hit),
+        documentWidth:document.documentElement.scrollWidth};
+    });
+    ok(step1Geometry.height>=44&&step1Geometry.top>=0&&
+      step1Geometry.bottom<=step1Geometry.viewport-35&&
+      step1Geometry.hit&&step1Geometry.documentWidth<=412,
+      'Real first-step Continue clipped by Android gesture bar: '+JSON.stringify(step1Geometry));
     const colorState=()=>fresh.evaluate(()=>{
       const tokens=['--accent','--ui-accent-rgb','--ui-panel-rgb','--ui-card-rgb','--ui-gold-rgb'];
       const get=(el)=>Object.fromEntries(tokens.map(k=>[k,getComputedStyle(el).getPropertyValue(k).trim()]));
