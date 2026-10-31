@@ -1064,15 +1064,21 @@
       button.addEventListener('click',checkDirectUpdater);
     }
     const t=updaterLabels(), button=q('#mlv-android-check-updates',section);
-    q('[data-mlv-update-title]',section).textContent=t.title;
+    const title=q('[data-mlv-update-title]',section);
+    if(title.textContent!==t.title)title.textContent=t.title;
     button.disabled=!!directUpdater.pending;
-    button.textContent=directUpdater.pending?t.checking:t.check;
+    const buttonLabel=directUpdater.pending?t.checking:t.check;
+    if(button.textContent!==buttonLabel)button.textContent=buttonLabel;
     const status=q('#mlv-android-update-result',section);
     const link=q('#mlv-android-update-official-link',section);
-    link.hidden=true;link.style.display='none';link.removeAttribute('href');link.textContent='';
     const data=directUpdater.last;
     if(!data){
-      status.textContent=t.initial;return;
+      if(status.textContent!==t.initial)status.textContent=t.initial;
+      if(!link.hidden||link.hasAttribute('href')){
+        link.hidden=true;link.style.display='none';link.removeAttribute('href');
+        link.textContent='';
+      }
+      return;
     }
     const state=String(data.status||'unchecked');
     const byState={
@@ -1080,6 +1086,7 @@
       ahead_of_public_release:t.ahead,unchecked:t.unchecked
     };
     let message=byState[state]||t.unchecked;
+    let validatedUrl='';
     if(state==='unchecked'){
       if(data.channel==='google-play')message=t.play;
       else if(data.channel==='test')message=t.test;
@@ -1094,9 +1101,17 @@
       if(installed&&latest)message+=' · '+t.installed+': '+installed+
         ' · '+t.latest+': '+latest;
       const url=allowedReleaseUrl(data.releasePageUrl);
-      if(url){link.href=url;link.textContent=t.official;link.hidden=false;link.style.display='inline-block';}
+      if(url)validatedUrl=url;
     }
-    status.textContent=message;
+    if(status.textContent!==message)status.textContent=message;
+    if(validatedUrl){
+      if(link.getAttribute('href')!==validatedUrl)link.href=validatedUrl;
+      if(link.textContent!==t.official)link.textContent=t.official;
+      if(link.hidden){link.hidden=false;link.style.display='inline-block';}
+    }else if(!link.hidden||link.hasAttribute('href')){
+      link.hidden=true;link.style.display='none';link.removeAttribute('href');
+      link.textContent='';
+    }
   }
   function finishDirectUpdater(requestId,data){
     if(!directUpdater.pending||directUpdater.pending!==requestId)return;
