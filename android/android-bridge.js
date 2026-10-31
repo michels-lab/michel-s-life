@@ -1067,7 +1067,7 @@
     button.textContent=directUpdater.pending?t.checking:t.check;
     const status=q('#mlv-android-update-result',section);
     const link=q('#mlv-android-update-official-link',section);
-    link.hidden=true;link.removeAttribute('href');link.textContent='';
+    link.hidden=true;link.style.display='none';link.removeAttribute('href');link.textContent='';
     const data=directUpdater.last;
     if(!data){
       status.textContent=t.initial;return;
@@ -1092,7 +1092,7 @@
       if(installed&&latest)message+=' · '+t.installed+': '+installed+
         ' · '+t.latest+': '+latest;
       const url=allowedReleaseUrl(data.releasePageUrl);
-      if(url){link.href=url;link.textContent=t.official;link.hidden=false;}
+      if(url){link.href=url;link.textContent=t.official;link.hidden=false;link.style.display='inline-block';}
     }
     status.textContent=message;
   }
