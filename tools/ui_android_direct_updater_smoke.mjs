@@ -45,8 +45,15 @@ try{
     const el=document.querySelector('#mlv-android-check-updates');
     const pane=document.querySelector('#tab-settings [data-v30171-pane="about"]');
     const style=pane?getComputedStyle(pane):null;
+    const section=document.querySelector('#mlv-android-direct-updater');
+    const card=section?.parentElement;
     return {paneVisible:!!(pane&&pane.getClientRects().length),
       paneDisplay:style?.display||'',buttonVisible:!!(el&&el.getClientRects().length),
+      buttonDisplay:el?getComputedStyle(el).display:null,
+      cardParent:card?.getAttribute('data-mlv-about-core')!==null?'about-core':card?.tagName||'',
+      cardDisplay:section?getComputedStyle(section).display:null,
+      cardVisibility:section?getComputedStyle(section).visibility:null,
+      cardHeight:section?.getBoundingClientRect().height||0,
       activeSetting:document.querySelector('#tab-settings .v30171-settings-nav [data-v30171-setting].active')?.dataset.v30171Setting||'',
       settingKeys:[...document.querySelectorAll('#tab-settings .v30171-settings-nav [data-v30171-setting]')].map(x=>x.dataset.v30171Setting)};
   });
