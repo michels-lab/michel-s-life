@@ -151,6 +151,20 @@ def validate(root, apk, source_sha, version):
         "limitations": "not Android 16, signed APK, Galaxy, Play, live account or provider proof",
     }
 
+def failure_stage(root):
+    """Sanitized stage category. File existence is diagnostic, NEVER acceptance."""
+    if not (root/"step0.png").is_file():
+        return "first_native_frame_unavailable"
+    if not (root/"step4-after-native-finish.png").is_file():
+        return "onboarding_navigation_incomplete"
+    if not (root/"native-state-before.json").is_file():
+        return "onboarding_finish_state_unverified"
+    if not (root/"native-state-after.json").is_file():
+        return "first_relaunch_state_unverified"
+    if not (root/"native-state-after-second-relaunch.json").is_file():
+        return "second_relaunch_state_unverified"
+    return "native_evidence_or_comparison_invalid"
+
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--evidence", required=True, type=pathlib.Path)
@@ -177,6 +191,7 @@ if __name__ == "__main__":
             "reason": reason,
             "source_sha": a.source_sha if re.fullmatch(r"[0-9a-f]{40}",a.source_sha) else "",
             "native_accepted": False,
+            "failure_stage": failure_stage(a.evidence),
             "scope": "Android15 installed-APK persistence gate",
         }
         try:
