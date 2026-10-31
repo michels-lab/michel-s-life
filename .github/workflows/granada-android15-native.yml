@@ -138,11 +138,12 @@ jobs:
           api-level: 35
           target: google_apis
           arch: x86_64
-          # Controlled alternative to the previous API35 run that lost the
-          # QEMU process during capture. Change guest graphics/memory demand,
-          # NOT the installed APK, source, screenshots or persistence guards.
-          # A green result still would not certify API36 or a physical Galaxy.
-          profile: pixel_2
+          # The Pixel-2 low-memory run kept QEMU alive through first screenshots
+          # but did not reach persisted Finish: the original native touch
+          # coordinates were calibrated for Pixel 6. Hold geometry constant
+          # while continuing to test smaller guest RAM and software GPU.
+          # No weakening of native evidence or Android API36/Galaxy claims.
+          profile: pixel_6
           avd-name: granada-native-api35
           ram-size: 2048M
           heap-size: 256M
