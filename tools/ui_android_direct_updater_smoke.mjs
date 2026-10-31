@@ -87,6 +87,20 @@ try{
     'Real update must show correct Android version');
   check(await page.locator('#mlv-android-update-official-link').getAttribute('href')===official,
     'Only exact official release link should render');
+  // The Android maintenance loop runs every second; it must not spam
+  // an aria-live region or flicker the official link on every sweep.
+  const repeatedUpdates=await page.evaluate(()=>new Promise(resolve=>{
+    const status=document.querySelector('#mlv-android-update-result');
+    const link=document.querySelector('#mlv-android-update-official-link');
+    let writes=0;
+    const watcher=new MutationObserver(muts=>{writes+=muts.length});
+    watcher.observe(status,{subtree:true,childList:true,characterData:true});
+    watcher.observe(link,{attributes:true,childList:true,subtree:true});
+    setTimeout(()=>{watcher.disconnect();resolve(writes)},1250);
+  }));
+  check(repeatedUpdates===0,
+    'Updater must not repeatedly re-announce an unchanged status or flicker the link: '+repeatedUpdates);
+
   const tab=await page.locator('#mlv-android-update-official-link').getAttribute('target');
   check(tab==='_self','Official link must use MainActivity external URL handler (popups disabled)');
 
