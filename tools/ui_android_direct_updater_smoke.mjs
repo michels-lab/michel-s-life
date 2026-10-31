@@ -116,6 +116,9 @@ try{
   const tab=await page.locator('#mlv-android-update-official-link').getAttribute('target');
   check(tab==='_self','Official link must use MainActivity external URL handler (popups disabled)');
 
+  check(await page.evaluate(()=>window.__directCheckCalls.length)===1,
+    'About made extra native update queries without another user click');
+
   // The canonical About renderer may replace the button DOM after the first
   // check. Simulate that explicit rerender and verify the delegated action still
   // reaches the native bridge from a newly-created (unbound) button.
@@ -130,6 +133,7 @@ try{
   }catch(error){
     const diagnostics=await page.evaluate(()=>({
       count:window.__directCheckCalls?.length||0,
+      requestIds:window.__directCheckCalls?.map(x=>String(x.requestId).slice(0,80)),
       buttonCount:document.querySelectorAll('#mlv-android-check-updates').length,
       disabled:document.querySelector('#mlv-android-check-updates')?.disabled,
       updaterVisible:!!document.querySelector('#mlv-android-direct-updater')?.getClientRects().length,
