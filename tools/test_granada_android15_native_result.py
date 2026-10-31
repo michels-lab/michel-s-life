@@ -156,5 +156,34 @@ class NativeAndroid15ResultTests(unittest.TestCase):
         self.assertEqual(report["status"],"PASS")
         self.assertEqual(report["frame_count"],len(FRAMES))
         self.assertEqual(report["canonical_comparisons"],len(REPORTS))
+class NativeWorkflowFailClosedPolicyTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.workflow=(pathlib.Path(__file__).parents[1]/
+            ".github/workflows/granada-android15-native.yml").read_text()
+
+    def test_exact_head_checked_before_both_suites(self):
+        self.assertEqual(self.workflow.count(
+            "Require exact PR-head source checkout, not synthetic merge"),2)
+        self.assertEqual(self.workflow.count(
+            "ref: ${{ github.event.pull_request.head.sha || github.sha }}"),2)
+
+    def test_no_false_green_after_android_emulator_loss(self):
+        self.assertIn(
+            "      - name: Fail closed on missing native pixels or incomplete progress comparisons",
+            self.workflow)
+        self.assertIn(
+            "        if: always()\n        run: |\n          python tools/granada_android15_native_result.py",
+            self.workflow)
+        self.assertNotIn("continue-on-error: true",self.workflow)
+        self.assertIn("      - name: Preserve native diagnostics even on RED",self.workflow)
+
+    def test_stale_queued_emulator_runs_cancel_and_native_assertions_unchanged(self):
+        self.assertIn("  cancel-in-progress: true",self.workflow)
+        self.assertIn("script: bash android/tools/smoke_candidate_apk_install.sh",
+                      self.workflow)
+        self.assertIn("tools/granada_android15_native_result.py",self.workflow)
+        self.assertIn("MLV_REQUIRE_NATIVE_STATE_PROBE: '1'",self.workflow)
+
 if __name__ == "__main__":
     unittest.main()
