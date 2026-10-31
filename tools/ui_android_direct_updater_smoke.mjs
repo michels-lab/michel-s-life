@@ -14,7 +14,12 @@ try{
     window.MichelsLifeAndroid={
       postMessage(json){
         const req=JSON.parse(json);
-        if(req.action==='updateStatus')window.__directCheckCalls.push(req);
+        // The shared canonical updater may independently query updateStatus.
+        // Count ONLY requests initiated by this new About action; otherwise
+        // unrelated startup checks can make a correct second click look broken.
+        if(req.action==='updateStatus'&&
+           String(req.requestId||'').startsWith('mlv-direct-updates-'))
+          window.__directCheckCalls.push(req);
       }
     };
     try{
