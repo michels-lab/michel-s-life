@@ -111,9 +111,28 @@ try{
   const tab=await page.locator('#mlv-android-update-official-link').getAttribute('target');
   check(tab==='_self','Official link must use MainActivity external URL handler (popups disabled)');
 
-  // A second query must create a distinct request and reject an off-site link.
+  // The canonical About renderer may replace the button DOM after the first
+  // check. Simulate that explicit rerender and verify the delegated action still
+  // reaches the native bridge from a newly-created (unbound) button.
+  await page.evaluate(()=>{
+    const original=document.querySelector('#mlv-android-check-updates');
+    if(!original)throw Error('Missing About updater before redraw test');
+    original.replaceWith(original.cloneNode(true));
+  });
   await page.locator('#mlv-android-check-updates').click();
-  await page.waitForFunction(()=>window.__directCheckCalls.length===2);
+  try{
+    await page.waitForFunction(()=>window.__directCheckCalls.length===2,null,{timeout:6000});
+  }catch(error){
+    const diagnostics=await page.evaluate(()=>({
+      count:window.__directCheckCalls?.length||0,
+      buttonCount:document.querySelectorAll('#mlv-android-check-updates').length,
+      disabled:document.querySelector('#mlv-android-check-updates')?.disabled,
+      updaterVisible:!!document.querySelector('#mlv-android-direct-updater')?.getClientRects().length,
+      activeSetting:document.querySelector('#tab-settings .v30171-settings-nav [data-v30171-setting].active')?.dataset.v30171Setting||'',
+      status:document.querySelector('#mlv-android-update-result')?.textContent?.slice(0,150)
+    }));
+    throw Error('Native query lost after About redraw: '+JSON.stringify(diagnostics)+' '+String(error));
+  }
   const req2=await page.evaluate(()=>window.__directCheckCalls[1]);
   check(req2.requestId!==req.requestId,'Repeated checks must use unique request IDs');
   await page.evaluate(req=>window.__mlvAndroidReceive(JSON.stringify({
