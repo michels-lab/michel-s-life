@@ -149,6 +149,38 @@ class NativeAndroid15ResultTests(unittest.TestCase):
         self.assertEqual(report["status"],"FAIL")
         self.assertIs(report["native_accepted"],False)
 
+    def test_sanitized_stage_first_frame(self):
+        (self.root/"step0.png").unlink()
+        result,output=self.run_cli()
+        self.assertNotEqual(result.returncode,0)
+        self.assertEqual(json.loads(output.read_text())["failure_stage"],
+                         "first_native_frame_unavailable")
+
+    def test_sanitized_stage_finish_not_verified(self):
+        (self.root/"native-state-before.json").unlink(missing_ok=True)
+        (self.root/REPORTS[0]).unlink()
+        result,output=self.run_cli()
+        self.assertNotEqual(result.returncode,0)
+        self.assertEqual(json.loads(output.read_text())["failure_stage"],
+                         "onboarding_finish_state_unverified")
+
+    def test_sanitized_stage_first_relaunch_missing(self):
+        (self.root/"native-state-before.json").write_text("{}")
+        (self.root/REPORTS[0]).unlink()
+        result,output=self.run_cli()
+        self.assertNotEqual(result.returncode,0)
+        self.assertEqual(json.loads(output.read_text())["failure_stage"],
+                         "first_relaunch_state_unverified")
+
+    def test_sanitized_stage_second_relaunch_missing(self):
+        (self.root/"native-state-before.json").write_text("{}")
+        (self.root/"native-state-after.json").write_text("{}")
+        (self.root/REPORTS[0]).unlink()
+        result,output=self.run_cli()
+        self.assertNotEqual(result.returncode,0)
+        self.assertEqual(json.loads(output.read_text())["failure_stage"],
+                         "second_relaunch_state_unverified")
+
     def test_complete_native_evidence_cli_reports_true_success(self):
         result,output=self.run_cli()
         self.assertEqual(result.returncode,0,result.stderr)
