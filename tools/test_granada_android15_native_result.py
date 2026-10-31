@@ -1,5 +1,6 @@
 import hashlib
 import json
+import os
 import pathlib
 import struct
 import subprocess
@@ -212,11 +213,48 @@ class NativeWorkflowFailClosedPolicyTests(unittest.TestCase):
 
     def test_stale_queued_emulator_runs_cancel_and_native_assertions_unchanged(self):
         self.assertIn("  cancel-in-progress: true",self.workflow)
-        self.assertIn("pixels=\"$(adb shell wm size",self.workflow)
-        self.assertIn('if [[ "$pixels" != "1080x2400" ]]',self.workflow)
-        self.assertIn("bash android/tools/smoke_candidate_apk_install.sh",self.workflow)
+        self.assertIn("script: bash android/tools/granada_api35_native_preflight.sh",self.workflow)
+        self.assertNotIn("script: |\\n            set -euo pipefail",self.workflow)
+        native=(pathlib.Path(__file__).parents[1]/
+            "android/tools/granada_api35_native_preflight.sh").read_text()
+        self.assertIn('if [[ "$pixels" != "1080x2400" ]]',native)
+        self.assertIn("exec bash android/tools/smoke_candidate_apk_install.sh",native)
         self.assertIn("tools/granada_android15_native_result.py",self.workflow)
         self.assertIn("MLV_REQUIRE_NATIVE_STATE_PROBE: '1'",self.workflow)
+
+class NativeBashEntrypointTests(unittest.TestCase):
+    """The actual emulator runner executes commands through /bin/sh -c."""
+    def invoke_with_stub_adb(self, response, exit_code=0, arg="--verify-geometry"):
+        with tempfile.TemporaryDirectory() as d:
+            adb=pathlib.Path(d)/"adb"
+            adb.write_text("#!/bin/sh\\nprintf '%s\\\\n' '"+response+"'\\nexit "+str(exit_code)+"\\n")
+            adb.chmod(0o755)
+            root=pathlib.Path(__file__).parents[1]
+            env=os.environ.copy()
+            env["PATH"]=d+os.pathsep+env.get("PATH","")
+            # Intentionally use /bin/sh exactly as android-emulator-runner does.
+            return subprocess.run(
+                ["/bin/sh","-c","bash android/tools/granada_api35_native_preflight.sh "+arg],
+                cwd=root,env=env,capture_output=True,text=True,timeout=20
+            )
+
+    def test_runner_dash_shell_can_call_explicit_bash(self):
+        r=self.invoke_with_stub_adb("Physical size: 1080x2400")
+        self.assertEqual(r.returncode,0,r.stderr)
+        self.assertIn("1080x2400",r.stdout)
+
+    def test_foreign_display_size_fails_before_native_taps(self):
+        r=self.invoke_with_stub_adb("Physical size: 1080x1920")
+        self.assertNotEqual(r.returncode,0)
+        self.assertIn("Uncalibrated native onboarding",r.stderr)
+
+    def test_missing_adb_fails_not_green(self):
+        r=self.invoke_with_stub_adb("",exit_code=1)
+        self.assertNotEqual(r.returncode,0)
+
+    def test_unexpected_arguments_are_rejected(self):
+        r=self.invoke_with_stub_adb("Physical size: 1080x2400",arg="--unexpected")
+        self.assertEqual(r.returncode,2)
 
 if __name__ == "__main__":
     unittest.main()
