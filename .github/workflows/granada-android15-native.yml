@@ -109,11 +109,15 @@ jobs:
           api-level: 35
           target: google_apis
           arch: x86_64
-          profile: pixel_6
+          # Controlled alternative to the previous API35 run that lost the
+          # QEMU process during capture. Change guest graphics/memory demand,
+          # NOT the installed APK, source, screenshots or persistence guards.
+          # A green result still would not certify API36 or a physical Galaxy.
+          profile: pixel_2
           avd-name: granada-native-api35
-          ram-size: 3072M
-          heap-size: 512M
-          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu swiftshader -feature -Vulkan
+          ram-size: 2048M
+          heap-size: 256M
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu software -feature -Vulkan
           disable-animations: true
           emulator-boot-timeout: 600
           script: bash android/tools/smoke_candidate_apk_install.sh
