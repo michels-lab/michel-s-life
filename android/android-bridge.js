@@ -1054,7 +1054,9 @@
       const link=document.createElement('a');
       link.id='mlv-android-update-official-link';
       link.rel='noopener noreferrer';
-      link.target='_blank';
+      // The native WebView forbids pop-up windows; same-frame navigation is
+      // intercepted by MainActivity and opened with external ACTION_VIEW.
+      link.target='_self';
       link.hidden=true;
       link.style.cssText='display:inline-block;margin-top:8px;text-decoration:underline';
       section.append(heading,button,status,link);
