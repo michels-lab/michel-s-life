@@ -367,6 +367,27 @@
       }
       card.insertBefore(scroller,actions);
     }
+    // The real 1080x1920 Android screenshot and compact-browser reproduction
+    // exposed a flex min-content trap: scroll was taller than its parent card
+    // and pushed Continue / Finish below the clipped bottom edge. Enforce
+    // the three actual flex children, not just the outer gesture-bar padding.
+    const scroll=q('.mlv-android-onboard-scroll',card);
+    setImportantOnce(card,'display','flex');
+    setImportantOnce(card,'flex-direction','column');
+    setImportantOnce(card,'min-height','0');
+    setImportantOnce(card,'height','100%');
+    setImportantOnce(card,'overflow','hidden');
+    setImportantOnce(head,'flex','0 0 auto');
+    if(scroll){
+      setImportantOnce(scroll,'display','block');
+      setImportantOnce(scroll,'flex','1 1 0px');
+      setImportantOnce(scroll,'height','0px');
+      setImportantOnce(scroll,'min-height','0');
+      setImportantOnce(scroll,'overflow-y','auto');
+      setImportantOnce(scroll,'overflow-x','hidden');
+    }
+    setImportantOnce(actions,'flex','0 0 auto');
+    setImportantOnce(actions,'position','relative');
     return true;
   }
 
