@@ -227,7 +227,7 @@ class NativeBashEntrypointTests(unittest.TestCase):
     def invoke_with_stub_adb(self, response, exit_code=0, arg="--verify-geometry"):
         with tempfile.TemporaryDirectory() as d:
             adb=pathlib.Path(d)/"adb"
-            adb.write_text("#!/bin/sh\\nprintf '%s\\\\n' '"+response+"'\\nexit "+str(exit_code)+"\\n")
+            adb.write_text(os.linesep.join(["#!/bin/sh", "echo '"+response+"'", "exit "+str(exit_code), ""]))
             adb.chmod(0o755)
             root=pathlib.Path(__file__).parents[1]
             env=os.environ.copy()
