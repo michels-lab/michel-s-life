@@ -122,6 +122,10 @@ jobs:
           emulator-boot-timeout: 600
           script: bash android/tools/smoke_candidate_apk_install.sh
       - name: Fail closed on missing native pixels or incomplete progress comparisons
+        # Run even when the emulator step itself goes RED, so that the artifact
+        # always includes an explicit unverified verdict instead of skipped QA.
+        # Never use continue-on-error: missing real native evidence remains RED.
+        if: always()
         run: |
           python tools/granada_android15_native_result.py \
             --evidence artifacts/candidate-install \
