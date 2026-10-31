@@ -133,6 +133,15 @@ try{
     'An untrusted installed APK must not be labelled as current');
   check(await page.locator('#mlv-android-update-official-link').isHidden(),
     'Untrusted installed APK must not receive an official update link');
+
+  // Runtime language switch must update the actual About controls without
+  // changing release verification authority or trusting the untrusted APK.
+  await page.evaluate(()=>window.MichelsLifeI18n?.setLanguage?.('es',{userInitiated:false}));
+  await page.waitForFunction(()=>document.querySelector('#mlv-android-check-updates')
+    ?.textContent?.includes('Buscar actualizaciones'),null,{timeout:12000});
+  check(/firma oficial Android Direct/.test(
+    await page.locator('#mlv-android-update-result').textContent()),
+    'Spanish language switch must retain the security warning');
   const state=await page.evaluate(()=>JSON.parse(
     localStorage.getItem('vida_rpg_personal_progress_v2')||'{}'));
   check(state.xp===initial.xp&&state.coins===initial.coins,
