@@ -976,6 +976,7 @@
       const active=activeTabId();
       if(active&&active!==lastActive){lastActive=active;updateTopbarTitle();}
       enforceMobileFlowGeometry();
+      renderDirectUpdater();
     };
 
     attachNavObserver();
@@ -986,6 +987,182 @@
   }
 
   installFastNavCapture();
+
+  // Android Direct updater: a small Android-only control hosted INSIDE the
+  // canonical About pane. The native bridge is the only release authority.
+  // No alternate state engine, APK installation, credentials or external HTML.
+  const directUpdater={
+    next:0,pending:null,last:null,timeout:null
+  };
+  const updaterLabels=()=>{
+    const lang=String(window.MichelsLifeI18n?.language||
+      localStorage.getItem('michelsLife.language.v1')||'en').toLowerCase();
+    return lang.startsWith('es')?{
+      title:'Actualizaciones Android',check:'Buscar actualizaciones',
+      checking:'Consultando la versión oficial…',
+      initial:'Comprueba si existe una nueva versión oficial.',
+      available:'Hay una nueva versión Android Direct disponible',
+      current:'Ya tienes la versión pública más reciente',
+      ahead:'Esta instalación es más reciente que la versión pública',
+      unchecked:'No fue posible comprobar la versión. Inténtalo de nuevo.',
+      play:'Esta instalación se actualiza desde Google Play.',
+      test:'Versión de prueba: no se puede certificar como Android Direct.',
+      untrusted:'Esta instalación no tiene la firma oficial Android Direct.',
+      official:'Ver publicación oficial',installed:'Instalada',
+      latest:'Disponible'
+    }:{
+      title:'Android updates',check:'Check for updates',
+      checking:'Checking the official release…',
+      initial:'Check for a newer official public release.',
+      available:'A newer Android Direct version is available',
+      current:'You have the latest public Android version',
+      ahead:'This installation is newer than the public release',
+      unchecked:'The update could not be verified. Try again.',
+      play:'Google Play manages updates for this installation.',
+      test:'Test build: official Android Direct status does not apply.',
+      untrusted:'This APK is not signed with the official Android Direct identity.',
+      official:'Open official release',installed:'Installed',
+      latest:'Latest'
+    };
+  };
+  const allowedReleaseUrl=raw=>{
+    const url=String(raw||'');
+    return /^https:\/\/github\.com\/michels-lab\/michel-s-life-releases\/releases\/tag\/v[0-9]+\.[0-9]+\.[0-9]+$/.test(url)?url:'';
+  };
+  function renderDirectUpdater(){
+    const pane=q('#tab-settings [data-v30171-pane="about"]');
+    if(!pane)return;
+    // Canonical About uses an inner author/studio layout with its own
+    // child-visibility rules. Add our action to that visible About content,
+    // not as an unrelated direct sibling of its protected sections.
+    const host=q('[data-mlv-about-core]',pane)||pane;
+    let section=q('#mlv-android-direct-updater',pane);
+    if(!section){
+      section=document.createElement('section');
+      section.id='mlv-android-direct-updater';
+      section.setAttribute('aria-label','Android release verification');
+      section.style.cssText='margin:16px 0;padding:16px;border:1px solid var(--ui-border,rgba(160,170,200,.3));border-radius:14px;background:var(--ui-card,rgba(28,30,42,.6));color:inherit;max-width:100%;box-sizing:border-box';
+      const heading=document.createElement('h3');
+      heading.dataset.mlvUpdateTitle='1';
+      heading.style.cssText='margin:0 0 10px;font-size:1rem';
+      const button=document.createElement('button');
+      button.type='button';
+      button.id='mlv-android-check-updates';
+      button.style.cssText='min-height:44px;min-width:175px;max-width:100%;padding:9px 14px;border-radius:10px;cursor:pointer';
+      const status=document.createElement('p');
+      status.id='mlv-android-update-result';
+      status.setAttribute('role','status');
+      status.setAttribute('aria-live','polite');
+      status.setAttribute('aria-atomic','true');
+      status.style.cssText='margin:12px 0 0;overflow-wrap:anywhere;line-height:1.5';
+      const link=document.createElement('a');
+      link.id='mlv-android-update-official-link';
+      link.rel='noopener noreferrer';
+      // The native WebView forbids pop-up windows; same-frame navigation is
+      // intercepted by MainActivity and opened with external ACTION_VIEW.
+      link.target='_self';
+      link.hidden=true;
+      link.style.cssText='display:inline-block;margin-top:8px;text-decoration:underline';
+      section.append(heading,button,status,link);
+      host.appendChild(section);
+      // Do not bind this directly to a canonical About DOM node: Settings
+      // redraws and UI adapters may clone/replace that node after a check.
+      // One delegated listener below survives those rerenders.
+    }
+    const t=updaterLabels(), button=q('#mlv-android-check-updates',section);
+    const title=q('[data-mlv-update-title]',section);
+    if(title.textContent!==t.title)title.textContent=t.title;
+    button.disabled=!!directUpdater.pending;
+    const buttonLabel=directUpdater.pending?t.checking:t.check;
+    if(button.textContent!==buttonLabel)button.textContent=buttonLabel;
+    const status=q('#mlv-android-update-result',section);
+    const link=q('#mlv-android-update-official-link',section);
+    const data=directUpdater.last;
+    if(!data){
+      if(status.textContent!==t.initial)status.textContent=t.initial;
+      if(!link.hidden||link.hasAttribute('href')){
+        link.hidden=true;link.style.display='none';link.removeAttribute('href');
+        link.textContent='';
+      }
+      return;
+    }
+    const state=String(data.status||'unchecked');
+    const byState={
+      update_available:t.available,up_to_date:t.current,
+      ahead_of_public_release:t.ahead,unchecked:t.unchecked
+    };
+    let message=byState[state]||t.unchecked;
+    let validatedUrl='';
+    if(state==='unchecked'){
+      if(data.channel==='google-play')message=t.play;
+      else if(data.channel==='test')message=t.test;
+      else if(data.channel==='untrusted')message=t.untrusted;
+    }
+    if(['update_available','up_to_date','ahead_of_public_release'].includes(state)&&
+       data.updateCheckPerformed===true){
+      const installed=/^\d+\.\d+\.\d+$/.test(String(data.version||''))?
+        String(data.version):'';
+      const latest=/^\d+\.\d+\.\d+$/.test(String(data.latestVersion||''))?
+        String(data.latestVersion):'';
+      if(installed&&latest)message+=' · '+t.installed+': '+installed+
+        ' · '+t.latest+': '+latest;
+      const url=allowedReleaseUrl(data.releasePageUrl);
+      if(url)validatedUrl=url;
+    }
+    if(status.textContent!==message)status.textContent=message;
+    if(validatedUrl){
+      if(link.getAttribute('href')!==validatedUrl)link.href=validatedUrl;
+      if(link.textContent!==t.official)link.textContent=t.official;
+      if(link.hidden){link.hidden=false;link.style.display='inline-block';}
+    }else if(!link.hidden||link.hasAttribute('href')){
+      link.hidden=true;link.style.display='none';link.removeAttribute('href');
+      link.textContent='';
+    }
+  }
+  function finishDirectUpdater(requestId,data){
+    if(!directUpdater.pending||directUpdater.pending!==requestId)return;
+    if(directUpdater.timeout)clearTimeout(directUpdater.timeout);
+    directUpdater.timeout=null;directUpdater.pending=null;
+    directUpdater.last=(data&&typeof data==='object')?data:{status:'unchecked'};
+    renderDirectUpdater();
+  }
+  function checkDirectUpdater(){
+    if(directUpdater.pending)return;
+    // Browser fixtures and unsupported native shells must never silently
+    // manufacture an up-to-date result.
+    if(typeof window.MichelsLifeAndroid?.postMessage!=='function'){
+      directUpdater.last={status:'unchecked'};renderDirectUpdater();return;
+    }
+    const requestId='mlv-direct-updates-'+(++directUpdater.next)+'-'+Date.now();
+    directUpdater.pending=requestId;directUpdater.last=null;
+    renderDirectUpdater();
+    directUpdater.timeout=setTimeout(()=>finishDirectUpdater(requestId,{
+      status:'unchecked'
+    }),19000);
+    try{
+      window.chrome.webview.postMessage({
+        channel:'michels-life-google-calendar',requestId,
+        action:'updateStatus',payload:{}
+      });
+    }catch(_){finishDirectUpdater(requestId,{status:'unchecked'});}
+  }
+  // Delegated once per Android document; About/Settings rerenders replace
+  // button nodes, so per-element listeners silently die after the first check.
+  // Only this exact action is handled, never the host Settings nav.
+  window.addEventListener('click',event=>{
+    const button=event.target?.closest?.('#mlv-android-check-updates');
+    if(!button || button.disabled || !button.closest('#mlv-android-direct-updater'))return;
+    checkDirectUpdater();
+  },true);
+
+  window.chrome.webview.addEventListener('message',event=>{
+    const msg=event?.data;
+    if(!msg||msg.channel!=='michels-life-google-calendar-response'||
+       typeof msg.requestId!=='string'||msg.requestId!==directUpdater.pending)return;
+    finishDirectUpdater(msg.requestId,msg.ok===true?msg.payload:{
+      status:'unchecked'
+    });
+  });
 
   // Run in <head> before Michel's Life body scripts can sanitize an existing profile as fresh.
   stabilizeAndroidOnboarding();

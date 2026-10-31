@@ -164,19 +164,47 @@ class AndroidBridge(
                 .put("version", DriveCloudEngine.ANDROID_VERSION)
                 .put("status", "ok"))
             "updateStatus" -> {
+                // Google Play owns its own update channel. For a sideloaded
+                // Android Direct APK, check ONLY the official public release,
+                // asynchronously, with bounded network timeouts and no writes.
                 val channel = installChannel()
-                respondOk(requestId, JSONObject()
-                    .put("updateAvailable", false)
-                    .put("managedExternally", true)
-                    .put("channel", channel)
-                    .put("version", DriveCloudEngine.ANDROID_VERSION)
-                    .put(
-                        "status",
-                        if (channel == "google-play")
-                            "Updates are managed by Google Play."
-                        else
-                            "Test build. Production updates are delivered through Google Play."
-                    ))
+                if (channel == "google-play") {
+                    respondOk(requestId, JSONObject()
+                        .put("channel", "google-play")
+                        .put("version", DriveCloudEngine.ANDROID_VERSION)
+                        .put("managedExternally", true)
+                        .put("updateAvailable", JSONObject.NULL)
+                        .put("updateCheckPerformed", false)
+                        .put("status", "unchecked")
+                        .put("message", "Check Google Play for updates to this installation."))
+                } else if ((activity.applicationInfo.flags and
+                    android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
+                    // A debug APK is never a permanently signed Direct release,
+                    // even if both builds contain the same versionName.
+                    respondOk(requestId, JSONObject()
+                        .put("channel", "test")
+                        .put("version", DriveCloudEngine.ANDROID_VERSION)
+                        .put("managedExternally", false)
+                        .put("updateAvailable", JSONObject.NULL)
+                        .put("updateCheckPerformed", false)
+                        .put("status", "unchecked")
+                        .put("message", "Test build; official Direct update status does not apply."))
+                } else if (!AndroidDirectSigner.isTrusted(activity)) {
+                    respondOk(requestId, JSONObject()
+                        .put("channel", "untrusted")
+                        .put("version", DriveCloudEngine.ANDROID_VERSION)
+                        .put("managedExternally", false)
+                        .put("updateAvailable", JSONObject.NULL)
+                        .put("updateCheckPerformed", false)
+                        .put("status", "unchecked")
+                        .put("message", "Installed APK signing identity is not the official Android Direct certificate."))
+                } else {
+                    executor.execute {
+                        respondOk(requestId, AndroidDirectUpdateChecker.check(
+                            DriveCloudEngine.ANDROID_VERSION
+                        ))
+                    }
+                }
             }
             else -> respondError(requestId, "This Michel's Life desktop action is not available on Android yet: " + action)
         }
