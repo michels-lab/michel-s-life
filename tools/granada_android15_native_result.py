@@ -165,5 +165,25 @@ if __name__ == "__main__":
         a.output.write_text(json.dumps(result,sort_keys=True,indent=2)+"\n")
         print("GRANADA_ANDROID15_NATIVE",json.dumps(result,sort_keys=True))
     except (ValueError, OSError, KeyError, json.JSONDecodeError) as err:
-        print("GRANADA_ANDROID15_NATIVE",json.dumps({"status":"FAIL","reason":str(err)}),file=sys.stderr)
+        # Even a missing QEMU-created artifact must yield machine-readable
+        # evidence. Do not serialize exception paths, screenshots, CDP state,
+        # journal content, credentials, or raw Android WebView output.
+        reason = (
+            str(err)[:180] if isinstance(err, ValueError)
+            else "required_native_evidence_missing_or_invalid"
+        )
+        result = {
+            "status": "FAIL",
+            "reason": reason,
+            "source_sha": a.source_sha if re.fullmatch(r"[0-9a-f]{40}",a.source_sha) else "",
+            "native_accepted": False,
+            "scope": "Android15 installed-APK persistence gate",
+        }
+        try:
+            a.output.parent.mkdir(parents=True, exist_ok=True)
+            a.output.write_text(json.dumps(result,sort_keys=True,indent=2)+"\n")
+        except OSError:
+            # Still fail hard, even if the GitHub artifact folder is unusable.
+            pass
+        print("GRANADA_ANDROID15_NATIVE",json.dumps(result,sort_keys=True),file=sys.stderr)
         sys.exit(1)
