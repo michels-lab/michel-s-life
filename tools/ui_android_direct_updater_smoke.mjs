@@ -1,4 +1,5 @@
 import {chromium} from 'playwright';
+import {mkdir} from 'node:fs/promises';
 
 const url=process.env.MLV_ANDROID_UI_URL||'http://127.0.0.1:4174';
 const browser=await chromium.launch({headless:true});
@@ -99,6 +100,11 @@ try{
     'Real update must show correct Android version');
   check(await page.locator('#mlv-android-update-official-link').getAttribute('href')===official,
     'Only exact official release link should render');
+  await mkdir('artifacts/android-ui-smoke',{recursive:true});
+  await page.locator('#mlv-android-direct-updater').screenshot({
+    path:'artifacts/android-ui-smoke/update-about-en-412.png'
+  });
+
   // The Android maintenance loop runs every second; it must not spam
   // an aria-live region or flicker the official link on every sweep.
   const repeatedUpdates=await page.evaluate(()=>new Promise(resolve=>{
@@ -177,6 +183,20 @@ try{
   check(/firma oficial Android Direct/.test(
     await page.locator('#mlv-android-update-result').textContent()),
     'Spanish language switch must retain the security warning');
+  await page.setViewportSize({width:360,height:915});
+  const compact=await page.locator('#mlv-android-check-updates').evaluate(button=>{
+    const rect=button.getBoundingClientRect();
+    const panel=button.closest('#mlv-android-direct-updater').getBoundingClientRect();
+    return {height:rect.height,buttonWidth:rect.width,panelWidth:panel.width,
+      viewport:innerWidth,scrollWidth:document.documentElement.scrollWidth};
+  });
+  check(compact.height>=44&&compact.panelWidth<=compact.viewport&&
+    compact.scrollWidth<=compact.viewport+2,
+    'Spanish compact Android update control must remain touch-safe without horizontal overflow: '+JSON.stringify(compact));
+  await page.locator('#mlv-android-direct-updater').screenshot({
+    path:'artifacts/android-ui-smoke/update-about-es-360.png'
+  });
+
   const state=await page.evaluate(()=>JSON.parse(
     localStorage.getItem('vida_rpg_personal_progress_v2')||'{}'));
   check(state.xp===initial.xp&&state.coins===initial.coins,
