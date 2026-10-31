@@ -78,7 +78,7 @@ try{
   check(await page.locator('#mlv-android-update-official-link').getAttribute('href')===official,
     'Only exact official release link should render');
   const tab=await page.locator('#mlv-android-update-official-link').getAttribute('target');
-  check(tab==='_blank','Official link must not replace app WebView');
+  check(tab==='_self','Official link must use MainActivity external URL handler (popups disabled)');
 
   // A second query must create a distinct request and reject an off-site link.
   await page.locator('#mlv-android-check-updates').click();
