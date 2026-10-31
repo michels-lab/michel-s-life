@@ -150,18 +150,9 @@ jobs:
           emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu software -feature -Vulkan
           disable-animations: true
           emulator-boot-timeout: 600
-          script: |
-            set -euo pipefail
-            # Native onboarding taps in the unchanged candidate script were
-            # calibrated using an actual 1080x2400 Pixel6 screenshot. A
-            # different guest resolution must not yield a misleading claim
-            # that the app lost its onboarding completion state.
-            pixels="$(adb shell wm size | tr -d '\r' | sed -n 's/^Physical size: //p' | head -1)"
-            if [[ "$pixels" != "1080x2400" ]]; then
-              echo "::error::Uncalibrated native touch geometry ($pixels); required Pixel6 1080x2400"
-              exit 1
-            fi
-            bash android/tools/smoke_candidate_apk_install.sh
+          # The runner launches this command using /bin/sh -c; an explicit
+          # Bash entrypoint is required for pipefail and calibrated native taps.
+          script: bash android/tools/granada_api35_native_preflight.sh
       - name: Fail closed on missing native pixels or incomplete progress comparisons
         # Run even when the emulator step itself goes RED, so that the artifact
         # always includes an explicit unverified verdict instead of skipped QA.
