@@ -367,6 +367,36 @@
       }
       card.insertBefore(scroller,actions);
     }
+    // The real 1080x1920 Android screenshot and compact-browser reproduction
+    // exposed a flex min-content trap: scroll was taller than its parent card
+    // and pushed Continue / Finish below the clipped bottom edge. Enforce
+    // the three actual flex children, not just the outer gesture-bar padding.
+    const scroll=q('.mlv-android-onboard-scroll',card);
+    setImportantOnce(card,'display','flex');
+    setImportantOnce(card,'flex-direction','column');
+    setImportantOnce(card,'min-height','0');
+    setImportantOnce(card,'height','100%');
+    setImportantOnce(card,'overflow','hidden');
+    setImportantOnce(head,'flex','0 0 auto');
+    if(scroll){
+      setImportantOnce(scroll,'display','block');
+      setImportantOnce(scroll,'flex','1 1 0px');
+      setImportantOnce(scroll,'height','0px');
+      setImportantOnce(scroll,'min-height','0');
+      setImportantOnce(scroll,'overflow-y','auto');
+      setImportantOnce(scroll,'overflow-x','hidden');
+    }
+    setImportantOnce(actions,'flex','0 0 auto');
+    setImportantOnce(actions,'position','relative');
+    // On real short Android WebViews the canonical button's explicit sizing
+    // can override stylesheet min-height, leaving a 37px partial tap target.
+    // Preserve the same action/handler while enforcing accessible geometry.
+    qa('button',actions).forEach(button=>{
+      setImportantOnce(button,'min-height','48px');
+      setImportantOnce(button,'height','auto');
+      setImportantOnce(button,'box-sizing','border-box');
+      setImportantOnce(button,'flex-shrink','0');
+    });
     return true;
   }
 
@@ -691,7 +721,7 @@
         #v3000SkyImg{filter:none!important;transform:none!important}
         /* The wizard owns the whole foreground. Fixed Android chrome must never
            sit on top of first-run steps or hijack taps before Continue. */
-        #mlv200Onboarding{position:fixed!important;inset:0!important;z-index:2147483500!important;display:flex!important;justify-content:center!important;align-items:stretch!important;width:100vw!important;height:100dvh!important;max-height:100dvh!important;min-height:0!important;box-sizing:border-box!important;padding:max(12px,env(safe-area-inset-top,0px)) 8px max(42px,env(safe-area-inset-bottom,0px))!important;overflow:hidden!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(3,7,13,.96)!important}
+        #mlv200Onboarding{position:fixed!important;inset:0!important;z-index:2147483500!important;display:flex!important;justify-content:center!important;align-items:stretch!important;width:100vw!important;height:100dvh!important;max-height:100dvh!important;min-height:0!important;box-sizing:border-box!important;padding:max(12px,env(safe-area-inset-top,0px)) 8px max(90px,calc(env(safe-area-inset-bottom,0px) + 56px))!important;overflow:hidden!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(3,7,13,.96)!important}
         body:has(#mlv200Onboarding:not([hidden])) #mlv-android-topbar{visibility:hidden!important;pointer-events:none!important}
         #mlv200Onboarding .mlv200-onboard-card{display:flex!important;flex-direction:column!important;width:100%!important;max-width:560px!important;height:100%!important;max-height:100%!important;min-height:0!important;min-width:0!important;overflow:hidden!important;box-sizing:border-box!important;padding:14px!important;border-radius:18px!important}
         #mlv200Onboarding .mlv200-onboard-head{flex:0 0 auto!important;min-width:0!important;margin-bottom:12px!important}

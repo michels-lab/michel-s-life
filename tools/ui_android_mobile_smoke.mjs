@@ -1016,9 +1016,13 @@ try{
   const afterFrame=await page.evaluate(()=>Number(document.getElementById('v30146Canvas')?.dataset?.frame||0));
   if(beforeFrame>0)ok(afterFrame>beforeFrame,'Seasonal animation stalled in Android mobile viewport: '+JSON.stringify({beforeFrame,afterFrame}));
 
+  // The actual Pixel2 API35 artifact is 1080x1920: at Android WebView
+  // density its CSS viewport is much shorter than the usual 412x915 smoke.
+  // Keep the main app test unchanged, but validate first-run onboarding
+  // against the proven short native window (no browser-only large-screen pass).
   const freshContext=await browser.newContext({
-    viewport:{width:412,height:915},
-    screen:{width:412,height:915},
+    viewport:{width:412,height:731},
+    screen:{width:412,height:731},
     deviceScaleFactor:2.625,
     isMobile:true,
     hasTouch:true
@@ -1052,6 +1056,21 @@ try{
     const next=fresh.locator('#mlv200Onboarding [data-mlv200-onboard="next"]');
     ok(await next.count(),'Fresh onboarding has no Continue button');
     await fresh.waitForTimeout(1600);
+    // Actual Pixel2 native evidence shows the FIRST Continue half-clipped,
+    // while the original browser smoke only inspected steps 2/3. Hit-test
+    // without Playwright auto-scroll to reproduce the real inaccessible CTA.
+    const step1Geometry=await next.evaluate(button=>{
+      const rect=button.getBoundingClientRect();
+      const hit=document.elementFromPoint(rect.left+rect.width/2,
+        rect.top+rect.height/2);
+      return {bottom:rect.bottom,top:rect.top,height:rect.height,
+        viewport:innerHeight,hit:hit===button||button.contains(hit),
+        documentWidth:document.documentElement.scrollWidth};
+    });
+    ok(step1Geometry.height>=44&&step1Geometry.top>=0&&
+      step1Geometry.bottom<=step1Geometry.viewport-35&&
+      step1Geometry.hit&&step1Geometry.documentWidth<=412,
+      'Real first-step Continue clipped by Android gesture bar: '+JSON.stringify(step1Geometry));
     const colorState=()=>fresh.evaluate(()=>{
       const tokens=['--accent','--ui-accent-rgb','--ui-panel-rgb','--ui-card-rgb','--ui-gold-rgb'];
       const get=(el)=>Object.fromEntries(tokens.map(k=>[k,getComputedStyle(el).getPropertyValue(k).trim()]));
@@ -1080,6 +1099,8 @@ try{
        colorsStep1.cardBackground===colorsStep2.cardBackground,
        'Unexpected Android onboarding palette recolor on Continue: '+JSON.stringify({colorsStep1,colorsStep2}));
   }
+  // Step two and its real Finish button must also fit a 360x640 phone.
+  await fresh.setViewportSize({width:360,height:640});
   await fresh.waitForSelector('#mlv200Onboarding .mlv200-focus input[type="checkbox"]',{state:'visible',timeout:5000});
   const freshInstallOnboarding=await fresh.evaluate(()=>{
     const root=document.getElementById('mlv200Onboarding');
