@@ -14,20 +14,28 @@ final class AndroidDirectCertificate {
     private AndroidDirectCertificate() { }
 
     static boolean matchesInstalledSigner(byte[][] certificateBytes) {
+        return matchesSigner(certificateBytes, EXPECTED_SHA256);
+    }
+
+    // Package-visible only to exercise both positive and negative signature
+    // validation using synthetic certificates, not the production private key.
+    static boolean matchesSigner(byte[][] certificateBytes, String expectedSha256) {
         if (certificateBytes == null || certificateBytes.length != 1 ||
-            certificateBytes[0] == null || certificateBytes[0].length == 0) return false;
+            certificateBytes[0] == null || certificateBytes[0].length == 0 ||
+            expectedSha256 == null || !expectedSha256.matches("(?i)[0-9a-f]{64}"))
+            return false;
         try {
             byte[] actual = MessageDigest.getInstance("SHA-256").digest(certificateBytes[0]);
-            return MessageDigest.isEqual(actual, decodeExpected());
+            return MessageDigest.isEqual(actual, decodeExpected(expectedSha256));
         } catch (NoSuchAlgorithmException e) {
             return false;
         }
     }
 
-    private static byte[] decodeExpected() {
+    private static byte[] decodeExpected(String digest) {
         byte[] bytes = new byte[32];
         for (int i = 0; i < bytes.length; i++)
-            bytes[i] = (byte)Integer.parseInt(EXPECTED_SHA256.substring(i * 2, i * 2 + 2), 16);
+            bytes[i] = (byte)Integer.parseInt(digest.substring(i * 2, i * 2 + 2), 16);
         return bytes;
     }
 }
