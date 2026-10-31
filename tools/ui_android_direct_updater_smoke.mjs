@@ -37,11 +37,21 @@ try{
     'Could not navigate to canonical Settings');
   await page.waitForFunction(()=>!!document.querySelector(
     '#tab-settings [data-v30171-pane="about"]'),null,{timeout:15000});
-  await page.evaluate(()=>{
-    if(typeof window.LeftNavV30171?.activateSetting==='function')
-      window.LeftNavV30171.activateSetting('about');
-  });
+  const aboutNav=page.locator('#tab-settings .v30171-settings-nav [data-v30171-setting="about"]');
+  check(await aboutNav.count()===1,'Canonical Settings must expose one About category');
+  await aboutNav.click({timeout:10000});
   await page.waitForSelector('#mlv-android-check-updates',{timeout:8000});
+  const aboutUi=await page.evaluate(()=>{
+    const el=document.querySelector('#mlv-android-check-updates');
+    const pane=document.querySelector('#tab-settings [data-v30171-pane="about"]');
+    const style=pane?getComputedStyle(pane):null;
+    return {paneVisible:!!(pane&&pane.getClientRects().length),
+      paneDisplay:style?.display||'',buttonVisible:!!(el&&el.getClientRects().length),
+      activeSetting:document.querySelector('#tab-settings .v30171-settings-nav [data-v30171-setting].active')?.dataset.v30171Setting||'',
+      settingKeys:[...document.querySelectorAll('#tab-settings .v30171-settings-nav [data-v30171-setting]')].map(x=>x.dataset.v30171Setting)};
+  });
+  check(aboutUi.buttonVisible&&aboutUi.paneVisible,
+    'Updater button must be actually visible inside selected About pane: '+JSON.stringify(aboutUi));
   check(await page.locator('#mlv-android-direct-updater').count()===1,
     'Android must add exactly one updater to canonical About');
   check(await page.locator('#mlv-android-update-official-link').isHidden(),
