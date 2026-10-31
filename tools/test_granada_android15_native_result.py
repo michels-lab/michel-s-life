@@ -2,6 +2,8 @@ import hashlib
 import json
 import pathlib
 import struct
+import subprocess
+import sys
 import tempfile
 import unittest
 import zlib
@@ -115,5 +117,44 @@ class NativeAndroid15ResultTests(unittest.TestCase):
     def test_missing_apk(self):
         self.apk.unlink()
         with self.assertRaisesRegex(ValueError,"APK"):self.check()
+    def run_cli(self):
+        output=self.root/"api35-final-evidence.json"
+        result=subprocess.run(
+            [sys.executable,str(pathlib.Path(__file__).with_name("granada_android15_native_result.py")),
+             "--evidence",str(self.root),"--apk",str(self.apk),
+             "--source-sha","a"*40,"--version","0.2.9","--output",str(output)],
+            capture_output=True,text=True,timeout=10
+        )
+        return result,output
+
+    def test_failed_emulator_still_writes_private_safe_failure_artifact(self):
+        # A real killed QEMU host can leave no screenshots or package info.
+        (self.root/"package-info.txt").unlink()
+        for name in FRAMES:(self.root/name).unlink()
+        result,output=self.run_cli()
+        self.assertNotEqual(result.returncode,0)
+        report=json.loads(output.read_text())
+        self.assertEqual(report["status"],"FAIL")
+        self.assertIs(report["native_accepted"],False)
+        self.assertEqual(report["reason"],"required_native_evidence_missing_or_invalid")
+        self.assertNotIn(str(self.root),output.read_text())
+        self.assertNotIn("localStorage",output.read_text())
+        self.assertNotIn("token",output.read_text())
+
+    def test_failed_native_comparison_preserves_red_verdict(self):
+        (self.root/REPORTS[0]).unlink()
+        result,output=self.run_cli()
+        self.assertNotEqual(result.returncode,0)
+        report=json.loads(output.read_text())
+        self.assertEqual(report["status"],"FAIL")
+        self.assertIs(report["native_accepted"],False)
+
+    def test_complete_native_evidence_cli_reports_true_success(self):
+        result,output=self.run_cli()
+        self.assertEqual(result.returncode,0,result.stderr)
+        report=json.loads(output.read_text())
+        self.assertEqual(report["status"],"PASS")
+        self.assertEqual(report["frame_count"],len(FRAMES))
+        self.assertEqual(report["canonical_comparisons"],len(REPORTS))
 if __name__ == "__main__":
     unittest.main()
