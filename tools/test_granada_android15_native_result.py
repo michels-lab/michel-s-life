@@ -212,8 +212,9 @@ class NativeWorkflowFailClosedPolicyTests(unittest.TestCase):
 
     def test_stale_queued_emulator_runs_cancel_and_native_assertions_unchanged(self):
         self.assertIn("  cancel-in-progress: true",self.workflow)
-        self.assertIn("script: bash android/tools/smoke_candidate_apk_install.sh",
-                      self.workflow)
+        self.assertIn("pixels=\"$(adb shell wm size",self.workflow)
+        self.assertIn('if [[ "$pixels" != "1080x2400" ]]',self.workflow)
+        self.assertIn("bash android/tools/smoke_candidate_apk_install.sh",self.workflow)
         self.assertIn("tools/granada_android15_native_result.py",self.workflow)
         self.assertIn("MLV_REQUIRE_NATIVE_STATE_PROBE: '1'",self.workflow)
 
