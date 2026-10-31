@@ -62,14 +62,14 @@ class AndroidDirectUpdateCheckerTest {
     @Test fun draftsAndPrereleasesNeverPass() {
         unchecked(AndroidDirectUpdateChecker.parse(release().put("draft", true), "0.2.9"))
         unchecked(AndroidDirectUpdateChecker.parse(release().put("prerelease", true), "0.2.9"))
-        unchecked(AndroidDirectUpdateChecker.parse(release().remove("draft"), "0.2.9"))
+        unchecked(AndroidDirectUpdateChecker.parse(release().apply { remove("draft") }, "0.2.9"))
     }
 
     @Test fun missingOrWrongMetadataNeverPasses() {
-        unchecked(AndroidDirectUpdateChecker.parse(release().remove("published_at"), "0.2.9"))
+        unchecked(AndroidDirectUpdateChecker.parse(release().apply { remove("published_at") }, "0.2.9"))
         unchecked(AndroidDirectUpdateChecker.parse(release().put("html_url", "https://example.org/x"), "0.2.9"))
         unchecked(AndroidDirectUpdateChecker.parse(release().put("tag_name", "v3.0.221-rc1"), "0.2.9"))
-        unchecked(AndroidDirectUpdateChecker.parse(release().remove("assets"), "0.2.9"))
+        unchecked(AndroidDirectUpdateChecker.parse(release().apply { remove("assets") }, "0.2.9"))
     }
 
     @Test fun noOrMultipleAndroidApksNeverPass() {
