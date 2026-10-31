@@ -7,7 +7,16 @@ on:
       - 'tools/test_granada_android15_native_result.py'
   push:
     branches: [granada/android15-native-isolation-20261021]
+    paths:
+      - '.github/workflows/granada-android15-native.yml'
+      - 'tools/granada_android15_native_result.py'
+      - 'tools/test_granada_android15_native_result.py'
   workflow_dispatch:
+# PR and push for the same branch must not keep two competing hosted QEMU
+# instances running or validate stale candidate heads after new commits.
+concurrency:
+  group: granada-api35-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 permissions:
   contents: read
 env:
@@ -19,9 +28,19 @@ jobs:
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Require exact PR-head source checkout, not synthetic merge
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git rev-parse HEAD
       - run: |
           python -m unittest discover -s tools -p 'test_granada_android15_native_result.py' -v
           python android/tools/native_webview_state_probe.py self-test
@@ -37,6 +56,8 @@ jobs:
       MLV_REQUIRE_NATIVE_STATE_PROBE: '1'
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -44,6 +65,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Require exact PR-head source checkout, not synthetic merge
+        shell: bash
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD"
+          git rev-parse HEAD
       - name: Install pinned native WebView CDP probe dependency
         run: |
           python -m pip install --disable-pip-version-check websocket-client==1.8.0
