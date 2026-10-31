@@ -1065,7 +1065,9 @@
       link.style.cssText='display:inline-block;margin-top:8px;text-decoration:underline';
       section.append(heading,button,status,link);
       host.appendChild(section);
-      button.addEventListener('click',checkDirectUpdater);
+      // Do not bind this directly to a canonical About DOM node: Settings
+      // redraws and UI adapters may clone/replace that node after a check.
+      // One delegated listener below survives those rerenders.
     }
     const t=updaterLabels(), button=q('#mlv-android-check-updates',section);
     const title=q('[data-mlv-update-title]',section);
@@ -1144,6 +1146,15 @@
       });
     }catch(_){finishDirectUpdater(requestId,{status:'unchecked'});}
   }
+  // Delegated once per Android document; About/Settings rerenders replace
+  // button nodes, so per-element listeners silently die after the first check.
+  // Only this exact action is handled, never the host Settings nav.
+  window.addEventListener('click',event=>{
+    const button=event.target?.closest?.('#mlv-android-check-updates');
+    if(!button || button.disabled || !button.closest('#mlv-android-direct-updater'))return;
+    checkDirectUpdater();
+  },true);
+
   window.chrome.webview.addEventListener('message',event=>{
     const msg=event?.data;
     if(!msg||msg.channel!=='michels-life-google-calendar-response'||
