@@ -197,9 +197,14 @@ try{
     const b=button.getBoundingClientRect(),n=nav.getBoundingClientRect();
     const x=b.left+b.width/2,y=b.top+b.height/2;
     const hit=document.elementFromPoint(x,y);
+    const style=getComputedStyle(button);
     return {buttonBottom:b.bottom,barTop:n.top,height:b.height,
       viewport:innerHeight,buttonReceivesTouch:hit===button||button.contains(hit),
-      horizontalOverflow:document.documentElement.scrollWidth>innerWidth+2};
+      horizontalOverflow:document.documentElement.scrollWidth>innerWidth+2,
+      computedPosition:style.position,computedBottom:style.bottom,
+      mobileMedia:matchMedia('(max-width:380px)').matches,
+      keyboardEditing:document.body.classList.contains('mlv-android-keyboard-editing'),
+      visualViewportHeight:window.visualViewport?.height||0};
   });
   assert(small.height>=44&&small.buttonBottom<=small.barTop-5&&
     small.buttonReceivesTouch&&!small.horizontalOverflow,
