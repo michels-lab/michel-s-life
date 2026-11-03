@@ -599,6 +599,19 @@
       #tab-story .v30162-story-form button{
         bottom:12px!important
       }
+      /* At 360px the Android visual viewport can sit ~42px below the
+         browser's fixed containing block (observed actual touch geometry).
+         Give the Chapter CTA a larger reserve on narrow phones so it never
+         overlaps the persistent 73px navigation bar. */
+      @media(max-width:380px){
+        html[data-mlv-platform="android"] #tab-story .v30162-story-form button{
+          bottom:calc(156px + env(safe-area-inset-bottom,0px))!important
+        }
+        html[data-mlv-platform="android"] body.mlv-android-keyboard-editing
+        #tab-story .v30162-story-form button{
+          bottom:12px!important
+        }
+      }
       html[data-mlv-platform="android"] #tab-story
       :is(.v30162-story-form input,.v30162-story-actions button):focus-visible{
         outline:2px solid var(--ui-accent,#75e4ff)!important;
