@@ -1023,7 +1023,13 @@
             window.innerHeight-14;
           const safeBottom=Math.min(window.innerHeight-14,maxBottom);
           if(Number.isFinite(rect.bottom)&&Number.isFinite(safeBottom)){
-            const shift=Math.min(0,Math.floor(safeBottom-rect.bottom));
+            // Even if the first pass happens before the layout's transformed
+            // ancestor settles, leave a guaranteed 96px separation while the
+            // native bar is visible. This prevents a later paint from putting
+            // the CTA back over the navigation (observed 914px vs 842px).
+            const overlapShift=Math.floor(safeBottom-rect.bottom);
+            const shift=navShown?Math.min(-96,overlapShift):
+              Math.min(0,overlapShift);
             force(chapterSubmit,'transform','translate3d(0,'+shift+'px,0)');
           }
         }
@@ -1359,6 +1365,16 @@
     // MobileExperience drops keyboard-editing at the next macrotask; give
     // that class update one frame, then restore above-nav Chapter placement.
     document.addEventListener('focusout',()=>setTimeout(enforceRendered,40),{passive:true});
+    // The Android bottom navigation is restored by toggling a BODY class,
+    // without a resize, a scroll event, or child insertion. Recalculate the
+    // original Story button after the actual keyboard/navigation transition.
+    const bodyClassObserver=new MutationObserver(()=>{
+      if(document.querySelector('#tab-story.active .v30162-story-form'))
+        requestAnimationFrame(enforceRendered);
+    });
+    bodyClassObserver.observe(document.body,{
+      attributes:true,attributeFilter:['class']
+    });
     // Scroll geometry also moves the transformed Story containing block.
     // Follow only visible Story scrolls, coalesced in the same RAF as resize.
     document.addEventListener('scroll',()=>{
