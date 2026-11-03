@@ -43,9 +43,12 @@ jobs:
           git rev-parse HEAD
       - run: |
           python -m unittest discover -s tools -p 'test_granada_android15_native_result.py' -v
+          python -m unittest discover -s android/tools -p 'test_native_webview_onboarding_target.py' -v
           python android/tools/native_webview_state_probe.py self-test
           python android/tools/validate_android_version.py
+          python -m py_compile android/tools/native_webview_onboarding_target.py
           bash -n android/tools/smoke_candidate_apk_install.sh
+          bash -n android/tools/granada_api35_native_preflight.sh
 
   actual-apk-android15:
     name: API35 real debug APK install and two native cold relaunches
