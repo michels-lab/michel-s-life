@@ -1318,7 +1318,9 @@
       requestAnimationFrame(()=>{resizePending=false;enforceRendered();});
     },{passive:true});
     document.addEventListener('focusin',()=>requestAnimationFrame(enforceRendered),{passive:true});
-    document.addEventListener('focusout',()=>setTimeout(enforceRendered,180),{passive:true});
+    // MobileExperience drops keyboard-editing at the next macrotask; give
+    // that class update one frame, then restore above-nav Chapter placement.
+    document.addEventListener('focusout',()=>setTimeout(enforceRendered,40),{passive:true});
     const modal=document.getElementById('modalRoot');
     if(modal){
       const modalObserver=new MutationObserver(()=>{
