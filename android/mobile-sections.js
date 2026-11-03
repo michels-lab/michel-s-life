@@ -569,7 +569,7 @@
         gap:12px!important;align-items:stretch!important;
         /* Reserve the exact space of the persistent mobile chapter action
            instead of allowing it to cover the last editor control. */
-        padding-bottom:calc(122px + env(safe-area-inset-bottom,0px))!important
+        padding-bottom:calc(180px + env(safe-area-inset-bottom,0px))!important
       }
       html[data-mlv-platform="android"] #tab-story .v30162-story-form label{
         display:grid!important;min-width:0!important;gap:5px!important;
@@ -590,7 +590,7 @@
         position:fixed!important;
         left:12px!important;right:12px!important;width:auto!important;
         max-width:calc(100vw - 24px)!important;
-        bottom:calc(98px + env(safe-area-inset-bottom,0px))!important;
+        bottom:calc(144px + env(safe-area-inset-bottom,0px))!important;
         box-sizing:border-box!important;
         z-index:2147482970!important;
         box-shadow:0 10px 30px rgba(0,0,0,.35)!important
@@ -598,19 +598,6 @@
       html[data-mlv-platform="android"] body.mlv-android-keyboard-editing
       #tab-story .v30162-story-form button{
         bottom:12px!important
-      }
-      /* At 360px the Android visual viewport can sit ~42px below the
-         browser's fixed containing block (observed actual touch geometry).
-         Give the Chapter CTA a larger reserve on narrow phones so it never
-         overlaps the persistent 73px navigation bar. */
-      @media(max-width:380px){
-        html[data-mlv-platform="android"] #tab-story .v30162-story-form button{
-          bottom:calc(156px + env(safe-area-inset-bottom,0px))!important
-        }
-        html[data-mlv-platform="android"] body.mlv-android-keyboard-editing
-        #tab-story .v30162-story-form button{
-          bottom:12px!important
-        }
       }
       html[data-mlv-platform="android"] #tab-story
       :is(.v30162-story-form input,.v30162-story-actions button):focus-visible{
