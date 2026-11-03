@@ -1373,7 +1373,31 @@
     document.addEventListener('focusin',()=>requestAnimationFrame(enforceRendered),{passive:true});
     // MobileExperience drops keyboard-editing at the next macrotask; give
     // that class update one frame, then restore above-nav Chapter placement.
-    document.addEventListener('focusout',()=>setTimeout(enforceRendered,40),{passive:true});
+    document.addEventListener('focusout',()=>{
+      setTimeout(enforceRendered,40);
+      // A delayed canonical scroll and Focus mini-player paint can move the
+      // transformed Story containing block after the first frame.
+      setTimeout(enforceRendered,260);
+    },{passive:true});
+    // Observe the actual Focus mini-player appearing, not just BODY classes:
+    // its hidden attribute is updated independently by the timer engine.
+    let observedMini=null;
+    const miniVisibilityObserver=new MutationObserver(()=>{
+      if(document.querySelector('#tab-story.active .v30162-story-form'))
+        requestAnimationFrame(enforceRendered);
+    });
+    const watchMini=()=>{
+      const mini=document.getElementById('mlv-android-mini-focus');
+      if(!mini||mini===observedMini)return;
+      miniVisibilityObserver.disconnect();
+      observedMini=mini;
+      miniVisibilityObserver.observe(mini,{
+        attributes:true,attributeFilter:['hidden','class']
+      });
+    };
+    watchMini();
+    const miniMountObserver=new MutationObserver(watchMini);
+    miniMountObserver.observe(document.body,{childList:true});
     // The Android bottom navigation is restored by toggling a BODY class,
     // without a resize, a scroll event, or child insertion. Recalculate the
     // original Story button after the actual keyboard/navigation transition.
