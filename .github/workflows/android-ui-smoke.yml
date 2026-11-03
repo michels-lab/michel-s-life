@@ -94,7 +94,9 @@ jobs:
       - name: Start Android browser fixture for all mandatory smoke gates
         run: |
           python -m http.server 4174 --directory artifacts/android-ui-bundle >/tmp/mlv-android-http.log 2>&1 &
-          curl --fail --retry 12 --retry-delay 1 http://127.0.0.1:4174/ >/dev/null
+          # http.server starts asynchronously; a first connection-refused is
+          # expected for milliseconds, but a dead fixture must still fail RED.
+          curl --fail --retry-connrefused --retry 12 --retry-delay 1 http://127.0.0.1:4174/ >/dev/null
 
       # Run the formerly masked P0 Story test before the broad Settings audit.
       # Both gates remain strict and RED on failure; nothing is skipped.
