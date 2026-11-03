@@ -183,7 +183,20 @@ if [[ "$DEVICE_SIZE" =~ ^([0-9]+)x([0-9]+)$ ]]; then
   native_onboard 2 tap-target
   sleep 8
   capture_png "$OUT/step3-after-native-continue.png"
-  native_onboard 3 assert
+  # Occasionally the hosted emulator drops a genuine adb touchscreen event
+  # while WebView stays on the Choose Your Focus screen. Retry ONCE only
+  # after an independent read-only CDP check proves step 2 is still visible.
+  # Do not change DOM state, skip focus choices, or count a screenshot as
+  # successful navigation. Stage 3 MUST be observed after the final tap.
+  if ! native_onboard 3 assert; then
+    echo "::warning::First native step-2 Continue tap did not advance; require live step 2 before one bounded retry"
+    capture_png "$OUT/step3-after-first-continue-attempt.png"
+    native_onboard 2 assert
+    native_onboard 2 tap-target
+    sleep 8
+    capture_png "$OUT/step3-after-native-continue.png"
+    native_onboard 3 assert
+  fi
 
   native_onboard 3 tap-target
   sleep 12
