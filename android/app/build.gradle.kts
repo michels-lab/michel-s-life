@@ -77,4 +77,7 @@ dependencies {
     implementation("androidx.webkit:webkit:1.16.0")
     implementation("com.google.android.gms:play-services-auth:22.0.0")
     implementation("com.squareup.okhttp3:okhttp:5.4.0")
+    // Real JVM tests for Android Direct release metadata; never bundled in APK.
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20240303")
 }

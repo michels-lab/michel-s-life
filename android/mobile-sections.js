@@ -566,7 +566,10 @@
       }
       html[data-mlv-platform="android"] #tab-story .v30162-story-form{
         display:grid!important;grid-template-columns:minmax(0,1fr)!important;
-        gap:12px!important;align-items:stretch!important
+        gap:12px!important;align-items:stretch!important;
+        /* Reserve the exact space of the persistent mobile chapter action
+           instead of allowing it to cover the last editor control. */
+        padding-bottom:calc(180px + env(safe-area-inset-bottom,0px))!important
       }
       html[data-mlv-platform="android"] #tab-story .v30162-story-form label{
         display:grid!important;min-width:0!important;gap:5px!important;
@@ -579,16 +582,22 @@
         margin:0!important;padding:12px!important;font-size:16px!important
       }
       html[data-mlv-platform="android"] #tab-story .v30162-story-form button{
-        width:100%!important;min-height:48px!important;font-size:14px!important;
-        /* Physical Galaxy: Start chapter was underneath the persistent bar.
-           Keep the genuine canonical form action thumb-reachable. */
-        position:sticky!important;
-        bottom:calc(88px + env(safe-area-inset-bottom,0px))!important;
-        z-index:12!important
+        min-height:48px!important;font-size:14px!important;
+        /* Sticky remains clipped by the short Chapter card: at 412px the
+           button bottom was 914px while the native nav begins at 842px.
+           This genuine Chapter action must be fixed ABOVE the bottom nav,
+           never cloned, re-submitted or covered by a touch-stealing overlay. */
+        position:fixed!important;
+        left:12px!important;right:12px!important;width:auto!important;
+        max-width:calc(100vw - 24px)!important;
+        bottom:calc(144px + env(safe-area-inset-bottom,0px))!important;
+        box-sizing:border-box!important;
+        z-index:2147482970!important;
+        box-shadow:0 10px 30px rgba(0,0,0,.35)!important
       }
       html[data-mlv-platform="android"] body.mlv-android-keyboard-editing
       #tab-story .v30162-story-form button{
-        bottom:10px!important
+        bottom:12px!important
       }
       html[data-mlv-platform="android"] #tab-story
       :is(.v30162-story-form input,.v30162-story-actions button):focus-visible{
@@ -977,6 +986,73 @@
         force(el,'box-sizing','border-box');
         if(el.matches('input,textarea,select'))force(el,'font-size','16px');
       });
+      const chapterForm=main.querySelector('#tab-story .v30162-story-form');
+      // HTML button defaults to submit when its type is omitted. Some
+      // canonical Chapter builds use that implicit submit form.
+      const chapterSubmit=chapterForm?.querySelector(
+        'button[type="submit"],button:not([type])')||
+        chapterForm?.querySelector('button');
+      if(chapterForm&&chapterSubmit){
+        // A later canonical Story renderer can restore position:static even
+        // after our mobile stylesheet. Own the ACTUAL native button geometry
+        // as we already do for mission and Contracts touch controls.
+        force(chapterForm,'display','grid');
+        force(chapterForm,'grid-template-columns','minmax(0,1fr)');
+        force(chapterForm,'padding-bottom','180px');
+        for(const [key,val] of [
+          ['position','fixed'],['left','12px'],['right','12px'],
+          ['width','auto'],['max-width','calc(100vw - 24px)'],
+          ['min-height','48px'],['z-index','2147482970']
+        ])force(chapterSubmit,key,val);
+        force(chapterSubmit,'bottom',
+          document.body.classList.contains('mlv-android-keyboard-editing')?'12px':'144px');
+        // The Chapter tab sits inside a transformed scroll surface on some
+        // Android views. CSS position:fixed can therefore be relative to that
+        // ancestor, NOT the device viewport. The real browser reports
+        // position:fixed yet a buttonBottom=914 and native barTop=842.
+        // Use actual bounding boxes to move only the ORIGINAL submit control
+        // above the bar, preserving its canonical form submit handler.
+        const storyActive=!!chapterSubmit.closest('#tab-story.active');
+        if(storyActive){
+          force(chapterSubmit,'transform','none');
+          const rect=chapterSubmit.getBoundingClientRect();
+          const nav=document.getElementById('mlv-android-bottom-nav');
+          const navShown=!!nav&&getComputedStyle(nav).display!=='none'&&
+            getComputedStyle(nav).visibility!=='hidden';
+          // Both the persistent navigation AND the running/paused Focus
+          // mini-player can intercept Story. In the actual 412px mobile CI,
+          // the CTA cleared the nav (bottom 814 < nav top 842) but its center
+          // still landed UNDER the live Focus mini-player. Reserve space for
+          // whichever chrome edge is higher; never hide Focus or clone submit.
+          const mini=document.getElementById('mlv-android-mini-focus');
+          const miniStyle=mini?getComputedStyle(mini):null;
+          const miniShown=!!mini&&!mini.hidden&&
+            miniStyle.display!=='none'&&miniStyle.visibility!=='hidden'&&
+            mini.getClientRects().length>0;
+          const navEdge=navShown?nav.getBoundingClientRect().top-14:Infinity;
+          const miniEdge=miniShown?mini.getBoundingClientRect().top-14:Infinity;
+          const safeBottom=Math.min(window.innerHeight-14,navEdge,miniEdge);
+          if(Number.isFinite(rect.bottom)&&Number.isFinite(safeBottom)){
+            const overlapShift=Math.floor(safeBottom-rect.bottom);
+            // Focus can be active before the mini-player's hidden/layout
+            // attributes settle (verified live touch CI). Reserve enough room
+            // from the canonical timer-active state, not only a mini rect read
+            // that was absent during the first Story tab activation.
+            // Browser-touch CI now proves the 412px full Story+Focus
+            // roundtrip succeeds with a 288px reserve. At 360px, the
+            // transformed Chapter ancestor changes its containing-block
+            // offset (~60px), so use a compact reserve instead of allowing
+            // the running mini-player to intercept Start Chapter.
+            const focusActive=document.body.classList.contains('mlv-android-timer-active');
+            const compact=window.innerWidth<=380;
+            const reserve=navShown&&(miniShown||focusActive)?
+              (compact?-380:-288):-144;
+            const shift=navShown?Math.min(reserve,overlapShift):
+              Math.min(0,overlapShift);
+            force(chapterSubmit,'transform','translate3d(0,'+shift+'px,0)');
+          }
+        }
+      }
     }
     if(window.innerWidth<=720){
       // Desktop About CSS may restyle the canonical 210/300px portrait after
@@ -1282,6 +1358,74 @@
       });
     });
     observer.observe(main,{childList:true,subtree:true});
+    // The owner router activates pre-rendered Story tabs by class mutation.
+    // It may not insert ANY child when returning to an unfinished chapter:
+    // the original Story submit must be repositioned upon activation too.
+    const storyTab=main.querySelector('#tab-story');
+    if(storyTab){
+      const storyActivationObserver=new MutationObserver(()=>{
+        if(storyTab.classList.contains('active'))
+          requestAnimationFrame(enforceRendered);
+      });
+      storyActivationObserver.observe(storyTab,{
+        attributes:true,attributeFilter:['class','style']
+      });
+    }
+    // Visual viewport changes and IME transitions don't insert DOM nodes.
+    // Reassert the canonical Chapter CTA geometry after those transitions,
+    // coalescing resize events instead of polling every Pomodoro tick.
+    let resizePending=false;
+    window.addEventListener('resize',()=>{
+      if(resizePending)return;
+      resizePending=true;
+      requestAnimationFrame(()=>{resizePending=false;enforceRendered();});
+    },{passive:true});
+    document.addEventListener('focusin',()=>requestAnimationFrame(enforceRendered),{passive:true});
+    // MobileExperience drops keyboard-editing at the next macrotask; give
+    // that class update one frame, then restore above-nav Chapter placement.
+    document.addEventListener('focusout',()=>{
+      setTimeout(enforceRendered,40);
+      // A delayed canonical scroll and Focus mini-player paint can move the
+      // transformed Story containing block after the first frame.
+      setTimeout(enforceRendered,260);
+    },{passive:true});
+    // Observe the actual Focus mini-player appearing, not just BODY classes:
+    // its hidden attribute is updated independently by the timer engine.
+    let observedMini=null;
+    const miniVisibilityObserver=new MutationObserver(()=>{
+      if(document.querySelector('#tab-story.active .v30162-story-form'))
+        requestAnimationFrame(enforceRendered);
+    });
+    const watchMini=()=>{
+      const mini=document.getElementById('mlv-android-mini-focus');
+      if(!mini||mini===observedMini)return;
+      miniVisibilityObserver.disconnect();
+      observedMini=mini;
+      miniVisibilityObserver.observe(mini,{
+        attributes:true,attributeFilter:['hidden','class']
+      });
+    };
+    watchMini();
+    const miniMountObserver=new MutationObserver(watchMini);
+    miniMountObserver.observe(document.body,{childList:true});
+    // The Android bottom navigation is restored by toggling a BODY class,
+    // without a resize, a scroll event, or child insertion. Recalculate the
+    // original Story button after the actual keyboard/navigation transition.
+    const bodyClassObserver=new MutationObserver(()=>{
+      if(document.querySelector('#tab-story.active .v30162-story-form'))
+        requestAnimationFrame(enforceRendered);
+    });
+    bodyClassObserver.observe(document.body,{
+      attributes:true,attributeFilter:['class']
+    });
+    // Scroll geometry also moves the transformed Story containing block.
+    // Follow only visible Story scrolls, coalesced in the same RAF as resize.
+    document.addEventListener('scroll',()=>{
+      if(!document.querySelector('#tab-story.active .v30162-story-form')||
+         resizePending)return;
+      resizePending=true;
+      requestAnimationFrame(()=>{resizePending=false;enforceRendered();});
+    },{passive:true,capture:true});
     const modal=document.getElementById('modalRoot');
     if(modal){
       const modalObserver=new MutationObserver(()=>{
