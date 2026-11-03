@@ -181,15 +181,21 @@ try{
     const rect=button.getBoundingClientRect(),barRect=bar.getBoundingClientRect();
     const cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
     const hit=document.elementFromPoint(cx,cy);
+    const mini=document.getElementById('mlv-android-mini-focus');
+    const miniVisible=!!mini&&!mini.hidden&&
+      getComputedStyle(mini).display!=='none'&&mini.getClientRects().length>0;
+    const miniTop=miniVisible?mini.getBoundingClientRect().top:null;
     const style=getComputedStyle(button);
-    return {buttonBottom:rect.bottom,barTop:barRect.top,
+    return {buttonBottom:rect.bottom,barTop:barRect.top,miniTop,
       centerIsButton:hit===button||button.contains(hit),inViewport:cy>0&&cy<innerHeight,
+      hitOwner:hit?.id||hit?.closest('[id]')?.id||hit?.tagName||'',
       computedPosition:style.position,computedBottom:style.bottom,
       computedTransform:style.transform,inlineTransform:button.style.transform,
       buttonType:button.getAttribute('type')||'implicit',
       storyActive:!!button.closest('#tab-story.active'),insideMain:!!button.closest('#main')};
   });
   assert(touchTarget.buttonBottom<=touchTarget.barTop-5&&
+    (touchTarget.miniTop===null||touchTarget.buttonBottom<=touchTarget.miniTop-5)&&
     touchTarget.centerIsButton&&touchTarget.inViewport&&
     touchTarget.computedPosition==='fixed',
     'Story Start chapter submit is covered by mobile bar/overlay: '+JSON.stringify(touchTarget));
@@ -204,7 +210,11 @@ try{
     const x=b.left+b.width/2,y=b.top+b.height/2;
     const hit=document.elementFromPoint(x,y);
     const style=getComputedStyle(button);
-    return {buttonBottom:b.bottom,barTop:n.top,height:b.height,
+    const mini=document.getElementById('mlv-android-mini-focus');
+    const miniTop=mini&&!mini.hidden&&getComputedStyle(mini).display!=='none'&&
+      mini.getClientRects().length?mini.getBoundingClientRect().top:null;
+    return {buttonBottom:b.bottom,barTop:n.top,miniTop,height:b.height,
+      hitOwner:hit?.id||hit?.closest('[id]')?.id||hit?.tagName||'',
       viewport:innerHeight,buttonReceivesTouch:hit===button||button.contains(hit),
       horizontalOverflow:document.documentElement.scrollWidth>innerWidth+2,
       computedPosition:style.position,computedBottom:style.bottom,
@@ -213,6 +223,7 @@ try{
       visualViewportHeight:window.visualViewport?.height||0};
   });
   assert(small.height>=44&&small.buttonBottom<=small.barTop-5&&
+    (small.miniTop===null||small.buttonBottom<=small.miniTop-5)&&
     small.buttonReceivesTouch&&!small.horizontalOverflow&&
     small.computedPosition==='fixed',
     'Story Start chapter must be safely tappable at 360px: '+JSON.stringify(small));
