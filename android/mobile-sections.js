@@ -1019,16 +1019,24 @@
           const nav=document.getElementById('mlv-android-bottom-nav');
           const navShown=!!nav&&getComputedStyle(nav).display!=='none'&&
             getComputedStyle(nav).visibility!=='hidden';
-          const maxBottom=navShown?nav.getBoundingClientRect().top-14:
-            window.innerHeight-14;
-          const safeBottom=Math.min(window.innerHeight-14,maxBottom);
+          // Both the persistent navigation AND the running/paused Focus
+          // mini-player can intercept Story. In the actual 412px mobile CI,
+          // the CTA cleared the nav (bottom 814 < nav top 842) but its center
+          // still landed UNDER the live Focus mini-player. Reserve space for
+          // whichever chrome edge is higher; never hide Focus or clone submit.
+          const mini=document.getElementById('mlv-android-mini-focus');
+          const miniStyle=mini?getComputedStyle(mini):null;
+          const miniShown=!!mini&&!mini.hidden&&
+            miniStyle.display!=='none'&&miniStyle.visibility!=='hidden'&&
+            mini.getClientRects().length>0;
+          const navEdge=navShown?nav.getBoundingClientRect().top-14:Infinity;
+          const miniEdge=miniShown?mini.getBoundingClientRect().top-14:Infinity;
+          const safeBottom=Math.min(window.innerHeight-14,navEdge,miniEdge);
           if(Number.isFinite(rect.bottom)&&Number.isFinite(safeBottom)){
-            // The transformed Story ancestor may settle another ~42px
-            // after the first geometry pass (real CI observed 862px after a
-            // -96px shift, with native navigation starting at 842px).
-            // Keep a bounded 144px reserve as well as the measured overlap;
-            // the same actual submit element and handler stay in place.
             const overlapShift=Math.floor(safeBottom-rect.bottom);
+            // Story is inside a transformed containing block; a 144px
+            // baseline is required after canonical tab switching. When Focus
+            // is present, geometry supplies any larger necessary displacement.
             const shift=navShown?Math.min(-144,overlapShift):
               Math.min(0,overlapShift);
             force(chapterSubmit,'transform','translate3d(0,'+shift+'px,0)');
