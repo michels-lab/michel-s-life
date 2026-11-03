@@ -987,7 +987,11 @@
         if(el.matches('input,textarea,select'))force(el,'font-size','16px');
       });
       const chapterForm=main.querySelector('#tab-story .v30162-story-form');
-      const chapterSubmit=chapterForm?.querySelector('button[type="submit"]');
+      // HTML button defaults to submit when its type is omitted. Some
+      // canonical Chapter builds use that implicit submit form.
+      const chapterSubmit=chapterForm?.querySelector(
+        'button[type="submit"],button:not([type])')||
+        chapterForm?.querySelector('button');
       if(chapterForm&&chapterSubmit){
         // A later canonical Story renderer can restore position:static even
         // after our mobile stylesheet. Own the ACTUAL native button geometry
@@ -1329,6 +1333,19 @@
       });
     });
     observer.observe(main,{childList:true,subtree:true});
+    // The owner router activates pre-rendered Story tabs by class mutation.
+    // It may not insert ANY child when returning to an unfinished chapter:
+    // the original Story submit must be repositioned upon activation too.
+    const storyTab=main.querySelector('#tab-story');
+    if(storyTab){
+      const storyActivationObserver=new MutationObserver(()=>{
+        if(storyTab.classList.contains('active'))
+          requestAnimationFrame(enforceRendered);
+      });
+      storyActivationObserver.observe(storyTab,{
+        attributes:true,attributeFilter:['class','style']
+      });
+    }
     // Visual viewport changes and IME transitions don't insert DOM nodes.
     // Reassert the canonical Chapter CTA geometry after those transitions,
     // coalescing resize events instead of polling every Pomodoro tick.
