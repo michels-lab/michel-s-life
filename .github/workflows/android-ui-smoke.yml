@@ -91,9 +91,20 @@ jobs:
             --bundle artifacts/AppBundle-android.zip \
             --assets artifacts/android-ui-bundle
 
-      - name: Audit Android mobile UX at 412x915
+      - name: Start Android browser fixture for all mandatory smoke gates
         run: |
           python -m http.server 4174 --directory artifacts/android-ui-bundle >/tmp/mlv-android-http.log 2>&1 &
+          curl --fail --retry 12 --retry-delay 1 http://127.0.0.1:4174/ >/dev/null
+
+      # Run the formerly masked P0 Story test before the broad Settings audit.
+      # Both gates remain strict and RED on failure; nothing is skipped.
+      - name: Reproduce Story launch trap with REAL Android touch navigation and visible Pomodoro
+        run: |
+          export MLV_ANDROID_UI_URL=http://127.0.0.1:4174
+          node tools/ui_android_story_navigation_smoke.mjs
+
+      - name: Audit Android mobile UX at 412x915
+        run: |
           export MLV_ANDROID_UI_URL=http://127.0.0.1:4174
           export MLV_ANDROID_UI_SCREENSHOT=artifacts/android-ui-smoke/android-mobile.png
           node tools/ui_android_mobile_smoke.mjs
@@ -102,11 +113,6 @@ jobs:
         run: |
           export MLV_ANDROID_UI_URL=http://127.0.0.1:4174
           node tools/ui_android_chapter_motion_smoke.mjs
-
-      - name: Reproduce Story launch trap with REAL Android touch navigation and visible Pomodoro
-        run: |
-          export MLV_ANDROID_UI_URL=http://127.0.0.1:4174
-          node tools/ui_android_story_navigation_smoke.mjs
 
       - name: Prevent onboarding mission and contract drift on WebView relaunch
         run: |
