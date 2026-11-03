@@ -1,3 +1,26 @@
+## Próxima reentrada GRANADA — 2026-10-26: 9 PR, priorizar QA nativa y privacidad
+
+- **Estado live de esta ejecución:** 9 PR y 13 issues abiertos. [PR #156 Data Health](https://github.com/michels-lab/michel-s-life/pull/156) fusionado a `main` `a3b9a5f03502ca7a963508a4073848f428df5d0d`. El control local read-only todavía NO es una restauración validada ni un APK público.
+- En [PR #181](https://github.com/michels-lab/michel-s-life/pull/181), fuente `1bb286f2f2080c68bf549c65d5a9d3846eec148d`, los tests source/UI/Android UI y build APK pasaron, **instalación nativa Android16 roja**. Host artifact real 12707181068: 75 mediciones, QEMU desaparece, RSS máximo 4,369,920 KiB, host libre mínimo 10,964,680 KiB; no hay cgroup OOM observable. [PR #166 Android15](https://github.com/michels-lab/michel-s-life/pull/166) también falla en framebuffer inicial. No prometer arreglo por cambio de RAM sin evidencia.
+- Leer el [log consolidado](../android/audit/2026-10-26-granada-convergence-android.md) y [#139](https://github.com/michels-lab/michel-s-life/issues/139) antes de tocar CI; no crear otro PR del mismo host. P0: completar wiring comprobable de cuentas A/B #169/#108 y restauración #55, Story/Focus #168/#171 y alarmas #53 **sin pisar fuentes en PR activos**.
+- Windows y releases pausados; ninguna APK oficial distribuida en este bloque. Ningún issue P0 cerrado.
+
+## Reentrada — 2026-10-26 (bloque de integración P0, consultar estado LIVE antes de siguiente ejecución)
+
+- De 12 a **10 PR abiertos** después de fusionar [#158 Drive privacy](https://github.com/michels-lab/michel-s-life/pull/158) (`7efe77889731a35152a108e8afe6aea2e07ba09d`) y [#151 Focus permission truth](https://github.com/michels-lab/michel-s-life/pull/151) (`2e519a042c555e970e9521385a933884e2e0b1ea`). **Ningún issue P0 se cierra:** estos son fixes de fuente con Kotlin/contrato probados, todavía sin Google Drive/Galaxy real.
+- [#181](https://github.com/michels-lab/michel-s-life/pull/181) conserva propiedad exclusiva de diagnóstico Android16. Head actual de su instrumentación corregida `56ffa9ab0163b4f437baca0cc1e6e26d1ac87590`; pipeline [40440979296](https://github.com/michels-lab/michel-s-life/actions/runs/40440979296) en progreso al registrar. Nuevo `host-memory-timeline.tsv` numérico, sin secretos, pero **no se ha demostrado arreglo QEMU**. Primera ejecución `3de3b1e...` falló **bash -n** por quoting del sampler; corregido en SHA posterior, se requiere comprobar CI exacto; no omitir el antecedente.
+- Leer bitácora [Granada Android 2026-10-26](../android/audit/2026-10-26-granada-convergence-android.md) y [#139](https://github.com/michels-lab/michel-s-life/issues/139). Sin release Android/Windows/Play; no iniciar una 13.ª rama cuando los P0 restantes tienen propietarios. No inventar validación física.
+
+# GRANADA — prioridad de convergencia Android (2026-10-26)
+
+**Esta norma actual sustituye la cuota histórica de 3–6 PR/paquetes más abajo.** En repositorios con congestión, GRANADA primero revisa GitHub real, corrige CI aplicable, integra PR existentes con evidencia exact-head y conserva los problemas bloqueados con reentrada; **NO abre automáticamente nuevas ramas diagnósticas** ni archiva por antigüedad/título. Si hay más de 12 PR abiertos, más de 8 PR de implementación o más de 3 líneas de producto independientes, congelar trabajo nuevo no crítico. Las excepciones P0 requieren demostrar necesidad, propiedad separada y plan de reducción neta de deuda.
+
+**Aplicación actual:** Michel's Life es Android-first; Windows/MSIX sigue pausado. CI de APK instalado, pruebas Galaxy, OAuth real, firma y publicación no se declaran terminadas por autopruebas ni render de navegador. No cerrar #53/#55/#108/#168/#171/#139 hasta cumplir sus criterios propios. No modificar UI/Themes/bases visuales aprobadas por higiene de backlog. Usar el [estándar maestro vigente](https://github.com/michels-lab/Michel-Software-Standards/blob/main/standards/OPERACION_GRANADA_STANDARD.md).
+
+**Último punto de reentrada y reporte de la ejecución:** [auditoría Android 2026-10-26](../android/audit/2026-10-26-granada-convergence-android.md). Antes 14 PR; después 12 tras integrar **#152 y #138 QA-only**. Sus pruebas de fuente pasaron; candidato nativo Android16 continúa BLOCKED por #139, no hay release. Revisar estado LIVE en el siguiente turno.
+
+---
+
 ## GRANADA AMBICIOSA — ampliación del propietario (2026-10-20)
 
 **Obligatorio para este repo y sus Developer Twins:** cada invocación GRANADA debe perseguir un macro-bloque de alto impacto y **varios entregables funcionales y comprobables** (normalmente 3–6 paquetes sustanciales relacionados, si son compatibles), en vez de un micro-PR aislado. Cubrir comportamiento completo, errores/recuperación, persistencia, UI y pruebas de integración donde corresponda. Si un elemento está bloqueado/ocupado, apartarlo con issue/PR/SHA y continuar con el siguiente independiente sin invadir sus archivos. Aceptación física, CI, merge y publicación son hitos distintos. Nunca fabricar datos, hacer clics inseguros ni publicar un release implícitamente.

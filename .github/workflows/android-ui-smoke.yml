@@ -146,6 +146,18 @@ jobs:
           export MLV_UI_URL=http://127.0.0.1:4174
           node tools/ui_supabase_android_sync_smoke.mjs
 
+      - name: Export real canonical Android browser UI reference for external design tools
+        if: success()
+        run: |
+          python tools/build_canonical_design_reference.py --self-test
+          python tools/build_canonical_design_reference.py \
+            --platform android-browser \
+            --directory artifacts/android-ui-smoke \
+            --bundle artifacts/AppBundle-android.zip \
+            --commit "$GITHUB_SHA"
+          echo "Current mobile layout comparison: artifacts/android-ui-smoke/design-baseline.html"
+          echo "This is NOT evidence of native installed Android/Galaxy runtime."
+
       - name: Build offline Android screenshot gallery (even after earlier failures)
         if: always()
         run: |

@@ -36,7 +36,15 @@ try{
   });
   const page=await context.newPage();
   const errors=[];
-  page.on('pageerror',e=>errors.push(e.message));
+  // Preserve the original failure and its actual browser stack/URL. A naked
+  // "Unexpected token" message cannot distinguish inline script vs injection.
+  page.on('pageerror',e=>{
+    errors.push({
+      message:String(e.message||e),
+      stack:String(e.stack||'').slice(0,6000),
+      pageUrl:page.url()
+    });
+  });
   await mkdir(out,{recursive:true});
   await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
   await page.waitForFunction(()=>!!window.__mlvAndroidFastRoute &&
@@ -190,7 +198,7 @@ try{
   await start.tap({timeout:12000});
   await page.waitForFunction(name=>document.querySelector('#tab-story')
     ?.textContent?.includes(name),chapterName,{timeout:12000});
-  assert(errors.length===0,'Android Story/Pomodoro navigation page errors: '+errors.join(' | '));
+  assert(errors.length===0,'Android Story/Pomodoro navigation page errors: '+JSON.stringify(errors));
   await page.screenshot({path:out+'/04-chapter-started.png'});
   console.log('PASS: Story form -> Settings -> Pomodoro continuous countdown -> Story arrows -> Today; draft survived real tab switches and chapter submit persisted');
 }finally{await browser.close();}

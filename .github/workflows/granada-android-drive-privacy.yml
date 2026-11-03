@@ -1,0 +1,51 @@
+name: GRANADA Android Drive privacy and backup-before-overwrite
+
+on:
+  pull_request:
+    paths:
+      - 'android/app/src/main/java/com/michelslab/michelslife/CloudSync.kt'
+      - 'tools/test_granada_android_drive_boundary.py'
+      - '.github/workflows/granada-android-drive-privacy.yml'
+      - 'android/audit/2026-10-20-granada-drive-native-privacy.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-drive-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 26
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Inspect exact production native upload and restore boundary
+        run: |
+          python3 -m py_compile tools/test_granada_android_drive_boundary.py
+          python3 -m unittest -v tools/test_granada_android_drive_boundary.py
+      - name: Existing cloud identity and account restore safety
+        run: |
+          node tools/test_cloud_restore_storage.mjs
+          python android/tools/validate_sync_contract.py
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Prepare official Android SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.6.0'
+      - name: Compile REAL Android Kotlin production bridge and Google Drive engine
+        working-directory: android
+        run: gradle --no-daemon :app:assembleDebug

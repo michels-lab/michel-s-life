@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 261,
-  "classified_files_total": 257,
-  "docs_content_inspected": 71,
+  "tracked_files_total": 306,
+  "classified_files_total": 302,
+  "docs_content_inspected": 91,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
   "roles": {
@@ -13,23 +13,24 @@
     "build_script": 6,
     "config": 22,
     "database_migration": 3,
-    "document": 64,
+    "document": 84,
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 8,
-    "source": 86,
-    "test": 7,
+    "source": 97,
+    "test": 14,
     "text_metadata": 1,
     "web_ui": 3,
-    "workflow": 26
+    "workflow": 33
   },
   "finding_counts": {
+    "BROKEN_RELATIVE_LINK": 4,
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
-  "finding_total": 2,
-  "inventory_fingerprint": "cc919967a447867487c2419690710175ea9b0ca83ba4736860252abf1b6edbd3",
-  "evidence_fingerprint": "dcb9ec7ca71eddaa68ae04b89fa8ef42caa6b905e983339225c7f19a45994477",
+  "finding_total": 6,
+  "inventory_fingerprint": "83d377c659f2a3ad4b91571d92c5870b1523ba0d68a37f96a19acabdd5b52ced",
+  "evidence_fingerprint": "13b5acf3692d2d8f954a04b69267f95d82dc14c9468f5c8dc567002e77a137db",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -64,7 +65,7 @@
       "role": "document",
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
-      "blob": "3e80306d3d7a6e4d38a74351f08fdb68eb1b6036"
+      "blob": "9ccbd948b1b5e7740562692e56466c765cc306d1"
     },
     {
       "path": ".github/workflows/android-build.yml",
@@ -99,7 +100,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "1bcd500b5c0d8f715d896418f61143507ad834e1"
+      "blob": "768826748c1f976635f1ca20690b8c408fe3e9ec"
     },
     {
       "path": ".github/workflows/build-store-msix.yml",
@@ -120,7 +121,14 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "0cd25c9d95274f9bf4222a386047566c68c8c5a4"
+      "blob": "9aae606bfefa662b28b264e4e55bd91bc196d83c"
+    },
+    {
+      "path": ".github/workflows/external-ui-baseline-guard.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "8cc2b194976a334dd629382698528b9e4d23137d"
     },
     {
       "path": ".github/workflows/file-governance-audit.yml",
@@ -137,6 +145,13 @@
       "blob": "5163f5e1348f32b455d7791aea6b4a5d649a9f31"
     },
     {
+      "path": ".github/workflows/granada-android-drive-privacy.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "076df43573665e35039d05e40cddb51178cdd3f7"
+    },
+    {
       "path": ".github/workflows/granada-android-evidence-gate.yml",
       "role": "workflow",
       "purpose": "GitHub Actions automation",
@@ -151,6 +166,13 @@
       "blob": "38b86d6cfa65d0b496104344f37ba0c99485aa73"
     },
     {
+      "path": ".github/workflows/granada-android16-install-launch-isolation.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "12aa4c3f818a8fed744bfcdf5e231b603e130c1c"
+    },
+    {
       "path": ".github/workflows/granada-backup-preflight.yml",
       "role": "workflow",
       "purpose": "GitHub Actions automation",
@@ -158,11 +180,39 @@
       "blob": "440046bd2d87c8a48733f6698117575b5b455563"
     },
     {
+      "path": ".github/workflows/granada-daily-mission-ledger.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "41dcba058f2b3d4d2a87300436596e09683b4cf3"
+    },
+    {
+      "path": ".github/workflows/granada-data-health.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "22795799ad42c54b45d2f916b2c034d4c5264c0b"
+    },
+    {
+      "path": ".github/workflows/granada-focus-evidence.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "fe87bcb35f1be9729bf02ac5365103939822e9da"
+    },
+    {
       "path": ".github/workflows/granada-large-project-story-cloud.yml",
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
       "blob": "b2342dc506b68ca027bb00a62966b32aca4770d6"
+    },
+    {
+      "path": ".github/workflows/granada-recovery-loss-triage.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "0b2d7a94a6f5cc15d3b042e8234759341831b90c"
     },
     {
       "path": ".github/workflows/granada-safe-backup-converter.yml",
@@ -246,7 +296,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "01fa1daa2e1fb49779abaf43162ce967d8438d78"
+      "blob": "fa4db98ff0356a664faead5a813f3787c6c4f0d1"
     },
     {
       "path": ".gitignore",
@@ -260,7 +310,7 @@
       "role": "document",
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
-      "blob": "d5f54a1354e4c7f43764ea61970ac6c2be6bbd5b"
+      "blob": "d4aff1b816f1c452906ab4776b19f4ccfbd54c37"
     },
     {
       "path": ".michelslab/agents/contrarian.md",
@@ -393,7 +443,7 @@
       "role": "agent",
       "purpose": "assistant role/instructions",
       "certainty": "rule",
-      "blob": "fa83949a71354aff2aa644a2f5771c6042466ca9"
+      "blob": "5fc57b9b85e71edee9343f7687089bbadc3dd243"
     },
     {
       "path": "BUILD_MICHELS_LIFE_WINDOWS.bat",
@@ -435,14 +485,14 @@
       "role": "index",
       "purpose": "navigation/onboarding",
       "certainty": "rule",
-      "blob": "286ed8a59215e315bab4e2e8abf0e22ff10c3196"
+      "blob": "7e33f6b7b858e6c6fc305520645af2299a859af9"
     },
     {
       "path": "android/ANDROID_AUDIT_LOG.md",
       "role": "bitacora",
       "purpose": "technical/audit change history",
       "certainty": "rule",
-      "blob": "5844ddb140a6f14948383c9488d31f79160a315d"
+      "blob": "42bd656c74ef99ec0f6f4da06dfcddae4c9de310"
     },
     {
       "path": "android/DIRECT_DISTRIBUTION_SIGNING.md",
@@ -512,7 +562,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "190ddfbb32afe1769a23d3475d6937afd2d13546"
+      "blob": "9ad158ca429634f115837426efcfc492bf7ae2a6"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/GoogleAuthorizationCoordinator.kt",
@@ -533,7 +583,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "2dd4e23e6ba2969fb816d692637c854fb41ab516"
+      "blob": "4771eab09620d58b3edaaf561e050bc48765246e"
     },
     {
       "path": "android/app/src/main/res/drawable-nodpi/michels_life_logo.jpg",
@@ -753,6 +803,13 @@
       "blob": "1824556a8e52598067bc93f2cc2184e34830103c"
     },
     {
+      "path": "android/audit/2026-10-19-granada-native-progress-integrity.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "b962fbaa2d8df3db015670d828fd27c2b072975f"
+    },
+    {
       "path": "android/audit/2026-10-20-granada-android-touch-resilience.md",
       "role": "document",
       "purpose": "manual/decision/report/historical note",
@@ -765,6 +822,83 @@
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
       "blob": "24978273af4d5518591b5eeed447abb1eb0cb8f7"
+    },
+    {
+      "path": "android/audit/2026-10-20-granada-data-health.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "a926a3ee64540b34d03ede0a9908be1ec596d511"
+    },
+    {
+      "path": "android/audit/2026-10-20-granada-drive-native-privacy.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "b6c759eefa0856b32b2c60fb361d66572c631864"
+    },
+    {
+      "path": "android/audit/2026-10-20-granada-focus-permission-evidence.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "87224e42d4171a2932ad3c6cb613191b7cff7991"
+    },
+    {
+      "path": "android/audit/2026-10-20-granada-focus-permission-status.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "45fe270fbacc9262de2edc4090395dad949e53d3"
+    },
+    {
+      "path": "android/audit/2026-10-21-granada-daily-mission-ledger.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "7b84cb7f813dad79ea54d091c74412f9ee254258"
+    },
+    {
+      "path": "android/audit/2026-10-22-granada-api36-install-vs-launch.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "2e3651542d528e54592da510a167efe618e704cc"
+    },
+    {
+      "path": "android/audit/2026-10-22-granada-native-24-frames-green-closure.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "170c678d74f5eb40fb9e9acd7ba0e532f341596f"
+    },
+    {
+      "path": "android/audit/2026-10-22-granada-native-xp-webview-relaunch-blockers.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "2bccbf8ada2d37cf275252c544533e1ece36ebe6"
+    },
+    {
+      "path": "android/audit/2026-10-23-granada-story-navigation-webview-restart.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "62d92a808b59a4457cfb23c4aaf5b1e41ac1cab3"
+    },
+    {
+      "path": "android/audit/2026-10-23-granada-two-real-android-cold-relaunches-green.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "7140842266d8211ef5870e523145307bf0f62f51"
+    },
+    {
+      "path": "android/audit/2026-10-26-granada-convergence-android.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "78503cd209eaba1a3c52ac58915e513e3c863797"
     },
     {
       "path": "android/build.gradle.kts",
@@ -820,7 +954,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "3cf5f863361d8942a116357836ed0c397860d265"
+      "blob": "9fbc0a0841a0cc95373a5a5ce5403d45cda51a80"
     },
     {
       "path": "android/tools/prepare_bundle.py",
@@ -870,6 +1004,13 @@
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "bd1f0fb67f7d72901b8096f2175fbf509809e24e"
+    },
+    {
+      "path": "android/tools/verify_focus_notification_status.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "151f46804b17f72370b1e664c69dd1d50c15830f"
     },
     {
       "path": "branding/developer-profile.json",
@@ -998,6 +1139,13 @@
       "blob": "22867967397c6ae1706880d13e368d21a364cdb4"
     },
     {
+      "path": "docs/GRANADA_APP_PLUGIN_AUDIT_2026-10-21.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "d297dda2c7a385842ae94eb6771af010cc9995be"
+    },
+    {
       "path": "docs/GRANADA_GRANDE_GOVERNANCE_2026-10-20.md",
       "role": "document",
       "purpose": "manual/decision/report/historical note",
@@ -1017,6 +1165,13 @@
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
       "blob": "0c97c6bbb8599209f6e23ac4eda2417ab06f82ac"
+    },
+    {
+      "path": "docs/RECOVERY_LOSS_TRIAGE.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "bf41c4db8d8fb0364f2b0fc0afb5c3fd3d2f9ab2"
     },
     {
       "path": "docs/RELEASE_CHANNEL.md",
@@ -1138,11 +1293,53 @@
       "blob": "4842ebdd8bf2318bb80729d75d675ca192cd0fcf"
     },
     {
+      "path": "docs/audit/2026-10-20-granada-weekly-premium-idempotence.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "b382c050950b55ddc60fce93efd1ff8da4fed97d"
+    },
+    {
+      "path": "docs/audit/2026-10-21-granada-cloud-account-vault-exclusion.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "d1fdf397082c3b73cd5d931f38978014bb939f2b"
+    },
+    {
+      "path": "docs/audit/2026-10-21-granada-ledger-integration-native-transport.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "fb78f20e8db58a1d1957c6a6b66958c926371f2b"
+    },
+    {
       "path": "docs/audit/2026-10-21-granada-legacy-safe-backup-converter.md",
       "role": "document",
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
       "blob": "3df4f3c12ea0740cf3b4b36514c16530fc41e0dc"
+    },
+    {
+      "path": "docs/audit/2026-10-21-granada-offline-recovery-loss-triage.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "87830d11bebe633e99429c04afcd64332385cad8"
+    },
+    {
+      "path": "docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "845ad2988226c4ee4eda00e7dd5b433177dbceaa"
+    },
+    {
+      "path": "docs/audit/2026-10-23-granada-canonical-design-reference.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "62eb114ab4fbfc420f50590db2caef34d9ca9c35"
     },
     {
       "path": "docs/audit/HANDOFF_LEGACY_2026-10-05.md",
@@ -1303,7 +1500,7 @@
       "role": "web_ui",
       "purpose": "local HTML documentation or web interface",
       "certainty": "inferred",
-      "blob": "1080d8cc634f2530bdb22caa7d1de9964cd56eb1"
+      "blob": "0736b0f414e3767c7dc24b94e9d72beca72a4e0d"
     },
     {
       "path": "store/AppxManifest.template.xml",
@@ -1376,6 +1573,13 @@
       "blob": "67f965e59f691e1fcbcb5c95689ec32ab30eabfa"
     },
     {
+      "path": "tools/build_canonical_design_reference.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "87661214df799f1eeb0ea72fa7b114d3aa1f5185"
+    },
+    {
       "path": "tools/build_desktop_browser_visual_manifest.py",
       "role": "source",
       "purpose": "code/test implementation",
@@ -1425,6 +1629,27 @@
       "blob": "35042605dfc94ec24d110e05bbbdde6b61dda9e9"
     },
     {
+      "path": "tools/granada_android16_host_verdict.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "d8665565435330d9234f692c908cad510f07101f"
+    },
+    {
+      "path": "tools/granada_android16_phase_evidence.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "0114bf01b8722fb9a55697ef0c67f0fae55f45c3"
+    },
+    {
+      "path": "tools/granada_android16_phase_probe.sh",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "5e4a28f145368e8d53840205d38ef909f0f2a990"
+    },
+    {
       "path": "tools/granada_android_evidence_gate.py",
       "role": "source",
       "purpose": "code/test implementation",
@@ -1444,6 +1669,20 @@
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "0e4b0a12cd8d84f2c32939ee9367fa6398d55814"
+    },
+    {
+      "path": "tools/granada_mission_ledger_core.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "374feb88468c822dc8150a7d9a930df632662a9f"
+    },
+    {
+      "path": "tools/granada_recovery_loss_triage.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "2d18241438e21495c226eebc9026d057c0b4687a"
     },
     {
       "path": "tools/granada_safe_backup_converter.py",
@@ -1523,6 +1762,27 @@
       "blob": "a4edf2c6e0277bd92afdae70f1fe44873ef7154b"
     },
     {
+      "path": "tools/test_granada_android16_host_verdict.py",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "ffa5cd57e5e915e0bd91f818094cf07f9d1e847c"
+    },
+    {
+      "path": "tools/test_granada_android16_phase_evidence.py",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "9658aa2c62c3437cdb1df876a0a723d8a64a7bfe"
+    },
+    {
+      "path": "tools/test_granada_android_drive_boundary.py",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "25915bb27e18e84cdeebf3fc38b2074a75475132"
+    },
+    {
       "path": "tools/test_granada_android_evidence_gate.py",
       "role": "test",
       "purpose": "code/test implementation",
@@ -1544,6 +1804,34 @@
       "blob": "3034481ea3aa50dac93e30ee781a73cedf514c26"
     },
     {
+      "path": "tools/test_granada_data_health.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "35c17e6033803c3743b16cc3e0feaee1e13229cc"
+    },
+    {
+      "path": "tools/test_granada_focus_evidence_contract.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "cec7e98025ac46a014fa4f691c6d5f50dd79351a"
+    },
+    {
+      "path": "tools/test_granada_mission_ledger.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "f832684411bd450870333c6f1c76d099d2154a8d"
+    },
+    {
+      "path": "tools/test_granada_recovery_loss_triage.py",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "d616fe9bcf953dc8008c2b0da5a31077ccbbe7c7"
+    },
+    {
       "path": "tools/test_granada_safe_backup_converter.py",
       "role": "test",
       "purpose": "code/test implementation",
@@ -1555,7 +1843,7 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "056e6bd0ce805ed96d1ba635a4cbd86c25320ef0"
+      "blob": "9e3618525ac17538cda41d9d386d422b0ab33557"
     },
     {
       "path": "tools/ui_android_chapter_motion_smoke.mjs",
@@ -1639,7 +1927,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "76cf4f3ec063a01193377f5a458499863bb6f7c3"
+      "blob": "3d9439454239903e944eb8ed6eb12e76b6635f7c"
     },
     {
       "path": "tools/ui_auto_update_smoke.mjs",
@@ -1653,7 +1941,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "8575e5342a2d824d9197ef4d03ce0c45a8c1f478"
+      "blob": "c0de5eb2431f12d0e59618fa1a9d109b3a9c010f"
     },
     {
       "path": "tools/ui_desktop_experience_smoke.mjs",
@@ -1668,6 +1956,20 @@
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "8413ecd3ffed5f6d42775840933bc9fd609fd7cf"
+    },
+    {
+      "path": "tools/ui_granada_daily_mission_ledger_roundtrip.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "80a3478259cbf50ddc49c974c36d5ffd1bcd5f25"
+    },
+    {
+      "path": "tools/ui_granada_data_health_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "355c45a69f3fb69c9dcefc94cb43193382d4f3f6"
     },
     {
       "path": "tools/ui_granada_large_projects_story_roundtrip_smoke.mjs",
@@ -1796,11 +2098,25 @@
       "blob": "3c21fb77afe952252542f152f80690b490aed2d0"
     },
     {
+      "path": "tools/ui_weekly_premium_progress_roundtrip_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "0c888ded957717312ac562a39e003a055567aaf2"
+    },
+    {
       "path": "tools/validate_brand_identity.py",
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "a912046cf690a33e4284e6ae90088dc49bbe0e85"
+    },
+    {
+      "path": "tools/validate_external_ui_design.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "c5aff8130927186089c85dab3641153eff2cf177"
     },
     {
       "path": "tools/validate_generated_index.py",
@@ -1833,20 +2149,56 @@
   ],
   "findings": [
     {
-      "id": "b9bbaa276659c4b3",
+      "id": "41ca2b94e805646f",
+      "code": "BROKEN_RELATIVE_LINK",
+      "severity": "confirmed",
+      "path": "docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md",
+      "observation": "Missing: docs/src/MichelsLife/frontend/index.html",
+      "recommendation": "Fix link or restore target",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "7a232f866547f4b1",
+      "code": "BROKEN_RELATIVE_LINK",
+      "severity": "confirmed",
+      "path": "docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md",
+      "observation": "Missing: docs/AGENTS.md",
+      "recommendation": "Fix link or restore target",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "c9b0ed37825bd396",
+      "code": "BROKEN_RELATIVE_LINK",
+      "severity": "confirmed",
+      "path": "docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md",
+      "observation": "Missing: docs/tools/ui_android_section_design_smoke.mjs",
+      "recommendation": "Fix link or restore target",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "55915b207228a042",
+      "code": "BROKEN_RELATIVE_LINK",
+      "severity": "confirmed",
+      "path": "docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md",
+      "observation": "Missing: docs/android/audit/2026-10-12-ui-screenshot-gallery.md",
+      "recommendation": "Fix link or restore target",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "1c4680694332f48d",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "4 implementation/config paths changed since this log's last commit; examples: .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, tools/granada_android_evidence_gate.py, tools/test_granada_android_evidence_gate.py",
+      "observation": "38 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-drive-privacy.yml, .github/workflows/granada-android-evidence-gate.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "978d02de138a9e33",
+      "id": "bec241b1ef55769a",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "27 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-emulator-transport-diagnostic.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-evidence-gate.yml, .github/workflows/granada-android-usability.yml, .github/workflows/granada-backup-preflight.yml",
+      "observation": "1 implementation/config paths changed since this log's last commit; examples: tools/ui_android_story_navigation_smoke.mjs",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }

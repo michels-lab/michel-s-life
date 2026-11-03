@@ -23,6 +23,15 @@
 - **CI:** el primer intento #40524524278 quedó rojo por aserción antigua de orden de instrucciones; se fortaleció el test para asegurar la nueva comprobación de identidad antes de mostrar consentimiento. El contrato anterior del PR, ejecutado en #40522200441, pasó, pero no prueba estos últimos cambios. La última revisión de código antes de este registro era `8aab7e8c6b8bd81b50e74f3b20bf361333000854`; resultados del siguiente HEAD se revisan separadamente. No adjudicar PASS mientras haya checks pendientes.
 - Bloqueos vigentes: integrar de forma segura el vault transaccional separado en flujo de producción, probar A/B real Supabase/Drive, crash/reinicio físico Galaxy, firma, permisos, y emulador GitHub Android16 #139. #55/#108 siguen abiertos; #169 sigue DRAFT. **Sin merge/release, sin builds Windows, sin cambios visuales aprobados, sin credenciales o datos privados.**
 
+## 2026-11-03 — GRANADA #169: convergencia de main (sin release)
+- Integración conservadora propuesta: Data Health ya integrado en main (#156) se mantiene junto con aislamiento A/B y 12 regresiones de sync del PR #169; los únicos archivos compartidos resueltos son `index.html` y el historial Android.
+- Un merge de código no certifica Android instalado, proveedor Supabase real ni Galaxy. Preservar todos los gates originales; Windows pausado y sin cambios a distribución.
+
+## 2026-10-26 — GRANADA Android: 9 PR pendientes, Data Health integrado, QEMU medido
+- Se fusionó [#156](https://github.com/michels-lab/michel-s-life/pull/156) a `main` con commit `a3b9a5f03502ca7a963508a4073848f428df5d0d`: Settings > Data Health, comprobación offline de progreso/backups y exportación redacted, sin restauraciones/destrucción/sync. Exact PR-head CI Data Health, Source, UI, Android UI y Kotlin build PASS; installed Android16 FAIL. Sin APK/release ni aceptación Galaxy.
+- [#181](https://github.com/michels-lab/michel-s-life/pull/181) sigue DRAFT; host artifact real [12707181068](https://github.com/michels-lab/michel-s-life/actions/runs/40441373678/artifacts/12707181068) inspeccionado: 75 muestras, QEMU pasa de 1 a 0, RSS max 4,369,920 KiB, host disponible mínimo 10,964,680 KiB, cgroup no disponible. No probar OOM ni aprobar persistencia; API35 PR #166 tampoco mantuvo emulador vivo. Tests UI/source sí pasan, installed native rojo.
+- Estado de GitHub: **9 PR, 13 issues** abiertos; una integración y cero PR/ramas nuevos en esta ejecución. P0 #55/#108/#53/#168/#171 y host #139 siguen abiertos. No cambios en themes/Chapter ni Windows. Informe completo y punto de reentrada: [auditoría GRANADA Android](audit/2026-10-26-granada-convergence-android.md).
+
 ## 2026-10-19 — Platform priority: Android now, Windows packaging paused
 
 - Owner explicitly postponed Michel's Life Windows/Desktop development, Store MSIX builds, and installer/release packaging until the app is final; screenshots refer to automatic GitHub Actions jobs.

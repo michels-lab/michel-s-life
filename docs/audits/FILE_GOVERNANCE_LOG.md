@@ -29,3 +29,143 @@ Automatic evidence deltas, pending human triage. No deletion authority.
 ## 2026-10-21 17:55 UTC
 
 - All tracked 261; findings 2; inventory cc919967a447; evidence dcb9ec7ca71e. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-21 19:44 UTC
+
+- All tracked 261; findings 2; inventory 7efa4db7a3dd; evidence dcb9ec7ca71e. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-21 20:32 UTC
+
+- All tracked 262; findings 2; inventory 785906c490f3; evidence dcb9ec7ca71e. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-21 20:48 UTC
+
+- All tracked 262; findings 2; inventory 04dbfe77a1b2; evidence dcb9ec7ca71e. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-21 21:05 UTC
+
+- All tracked 267; findings 2; inventory 1e20a8c39d95; evidence af5f420a3fcf. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-21 21:14 UTC
+
+- All tracked 267; findings 2; inventory 2c2c53b3243e; evidence 77715ede535f. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-21 21:32 UTC
+
+- All tracked 272; findings 2; inventory 4cca88773f42; evidence 7dc5047bf1ba. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-21 21:33 UTC
+
+- All tracked 274; findings 2; inventory 81142b2b0275; evidence 0adecee13b75. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-21 21:34 UTC
+
+- All tracked 275; findings 2; inventory 7213c1b822cd; evidence 0adecee13b75. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-21 22:29 UTC
+
+- All tracked 276; findings 2; inventory 97439fc166b1; evidence 8d070cf37514. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-23 02:00 UTC
+
+- All tracked 283; findings 2; inventory aa3561d9ce80; evidence 2a6d68c4f624. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-23 02:19 UTC
+
+- All tracked 284; findings 2; inventory 486622254d76; evidence 2a6d68c4f624. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-23 04:41 UTC
+
+- All tracked 285; findings 2; inventory a8e45b639385; evidence 2a6d68c4f624. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-23 06:42 UTC
+
+- All tracked 286; findings 2; inventory a2a16fc422c4; evidence 2a6d68c4f624. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-23 06:44 UTC
+
+- All tracked 286; findings 2; inventory 7f87efb00726; evidence 2a6d68c4f624. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-23 06:46 UTC
+
+- All tracked 286; findings 2; inventory d38813c17632; evidence 2a6d68c4f624. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-23 07:11 UTC
+
+- All tracked 286; findings 2; inventory c85d83038af0; evidence 2a6d68c4f624. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-23 07:31 UTC
+
+- All tracked 289; findings 6; inventory 4c31c779a422; evidence c3adaffe1b26. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-23 07:42 UTC
+
+- All tracked 289; findings 6; inventory 2c22e31a77f5; evidence c3adaffe1b26. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-23 07:50 UTC
+
+- All tracked 291; findings 6; inventory f647c52df7d5; evidence 180f19863f67. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-23 07:51 UTC
+
+- All tracked 291; findings 6; inventory 1b7b476800a5; evidence 180f19863f67. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-23 10:35 UTC
+
+- All tracked 292; findings 6; inventory ae036743d80f; evidence 180f19863f67. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-26 22:58 UTC
+
+- All tracked 296; findings 6; inventory e54f3027b089; evidence 629f4601c208. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-26 23:00 UTC
+
+- All tracked 297; findings 6; inventory 533a29ecdaf7; evidence aac20ac6f802. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-26 23:04 UTC
+
+- All tracked 298; findings 6; inventory cc7c74e88a72; evidence aac20ac6f802. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-26 23:04 UTC
+
+- All tracked 298; findings 6; inventory 247e16e96c09; evidence aac20ac6f802. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-27 02:50 UTC
+
+- All tracked 301; findings 6; inventory 451c14839d32; evidence 6189e36649de. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-27 02:51 UTC
+
+- All tracked 302; findings 6; inventory 4f4dd14672d9; evidence b003f07fe333. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-27 02:51 UTC
+
+- All tracked 302; findings 6; inventory fcc80944de90; evidence b003f07fe333. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-27 02:54 UTC
+
+- All tracked 302; findings 6; inventory 68d22df7b564; evidence b003f07fe333. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-27 02:58 UTC
+
+- All tracked 302; findings 6; inventory ddea1a859d6c; evidence b003f07fe333. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-27 03:09 UTC
+
+- All tracked 306; findings 6; inventory 23abd744f981; evidence 1700c7948344. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-27 03:11 UTC
+
+- All tracked 306; findings 6; inventory 6ba27d4f0b33; evidence 1700c7948344. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-27 03:11 UTC
+
+- All tracked 306; findings 5; inventory 57952bc2001c; evidence bfa55c2ab2e6. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-27 03:12 UTC
+
+- All tracked 306; findings 5; inventory 18460d906cec; evidence bfa55c2ab2e6. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-10-30 22:49 UTC
+
+- All tracked 306; findings 6; inventory 83d377c659f2; evidence 13b5acf3692d. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.

@@ -1,0 +1,101 @@
+name: GRANADA Android daily mission XP and persistence
+
+on:
+  pull_request:
+    paths:
+      - 'tools/granada_mission_ledger_core.mjs'
+      - 'tools/test_granada_mission_ledger.mjs'
+      - 'tools/ui_granada_daily_mission_ledger_roundtrip.mjs'
+      - '.github/workflows/granada-daily-mission-ledger.yml'
+      - 'src/MichelsLife/frontend/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: granada-daily-ledger-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  executable-daily-ledger-acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify isolated invariant core and redacted diagnostics
+        run: |
+          node --check tools/granada_mission_ledger_core.mjs
+          node --check tools/ui_granada_daily_mission_ledger_roundtrip.mjs
+          node --test tools/test_granada_mission_ledger.mjs
+      - name: Download canonical existing public AppBundle (not a new release)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p artifacts
+          python tools/download_latest_michels_life_bundle.py \
+            --repo michels-lab/michel-s-life-releases \
+            --output artifacts/AppBundle-granada.zip
+      - name: Prepare canonical source-controlled Android and Windows browser runtime
+        run: |
+          python tools/bump_frontend_version.py --index src/MichelsLife/frontend/index.html
+          python tools/enable_i18n.py --index src/MichelsLife/frontend/index.html
+          python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
+          python tools/replace_bundle_index.py \
+            --bundle artifacts/AppBundle-granada.zip \
+            --index src/MichelsLife/frontend/index.html
+          python tools/inject_bundle_asset.py \
+            --bundle artifacts/AppBundle-granada.zip \
+            --source src/MichelsLife/frontend/i18n.js --arcname i18n.js
+          python tools/inject_bundle_asset.py \
+            --bundle artifacts/AppBundle-granada.zip \
+            --source branding/michel_duarte_avatar.jpg \
+            --arcname assets/michel_duarte_avatar.jpg
+          python tools/inject_bundle_asset.py \
+            --bundle artifacts/AppBundle-granada.zip \
+            --source branding/michels_life_app_icon.svg \
+            --arcname assets/michels_life_app_icon.svg
+          python tools/inject_bundle_asset.py \
+            --bundle artifacts/AppBundle-granada.zip \
+            --source branding/michels_life_mark.svg \
+            --arcname assets/michels_life_mark.svg
+          python tools/inject_bundle_asset.py \
+            --bundle artifacts/AppBundle-granada.zip \
+            --source branding/michels_life_lockup.svg \
+            --arcname assets/michels_life_lockup.svg
+          python tools/inject_bundle_asset.py \
+            --bundle artifacts/AppBundle-granada.zip \
+            --source branding/michels_lab_mark.png \
+            --arcname assets/michels_lab_mark.png
+          python tools/inject_bundle_asset.py \
+            --bundle artifacts/AppBundle-granada.zip \
+            --source branding/michels_lab_lockup.png \
+            --arcname assets/michels_lab_lockup.png
+          python android/tools/prepare_bundle.py \
+            --bundle artifacts/AppBundle-granada.zip \
+            --assets artifacts/granada-daily-browser
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Start isolated synthetic web runtime
+        run: |
+          python -m http.server 4174 --directory artifacts/granada-daily-browser >/tmp/mlv-granada-daily-http.log 2>&1 &
+      - name: Real canonical mission state tests with two platform cold boots
+        env:
+          MLV_UI_URL: http://127.0.0.1:4174
+        run: node tools/ui_granada_daily_mission_ledger_roundtrip.mjs
+      - name: Retain server log on failure (no user data)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: granada-daily-ledger-http-failure
+          path: /tmp/mlv-granada-daily-http.log
+          retention-days: 7
+          if-no-files-found: warn

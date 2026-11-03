@@ -14,6 +14,16 @@ const DISALLOWED=[
   'michelsLife.supabase.boardOwner.v30218',
   'michelsLife.supabase.localGuest.v30218',
   'michelsLife.supabase.localAccount.v30218.synthetic',
+  // GRANADA #108: newer crash-safe account vaults are LOCAL ONLY.
+  // Never include migration snapshots, owner markers or rollback journals
+  // in a cross-device Supabase or Google Drive export/import.
+  'michelsLife.accountBoundary.v1.active',
+  'michelsLife.accountBoundary.v1.unclaimed',
+  'michelsLife.accountBoundary.v1.guest',
+  'michelsLife.accountBoundary.v1.account.synthetic',
+  'michelsLife.accountBoundary.v1.recovery.synthetic.digest',
+  'michelsLife.accountBoundary.v1.importReceipt',
+  'michelsLife.accountBoundary.v1.transaction',
   'michelsLife.google.auth',
   'michelsLife.google.refreshToken',
   'michelsLife.local.notification.id',
@@ -85,6 +95,8 @@ function assertSafePayload(packet,expected,{mission,xp,journal,theme}){
     assert.equal(stateInMap.missions.filter(m=>m.id===mission).length,1,'Mission ID lost or doubled in capture');
     for(const key of DISALLOWED)assert.equal(Object.hasOwn(source,key),false,
       'Device-local key escaped shareable capture: '+key);
+    assert.equal(Object.keys(source).some(k=>k.startsWith('michelsLife.accountBoundary.v1.')),false,
+      'An account owner vault or crash recovery journal was exported to cloud');
   }
   assert.equal(packet.backup.state.xp,xp,'Canonical cloud backup lost XP');
   assert.equal(packet.backup.state.missions.filter(m=>m.id===mission).length,1,
@@ -133,6 +145,9 @@ try{
     xp:23,mission:'granada-origin-android',journal:'SYNTHETIC_ANDROID_JOURNAL',theme:'granada-android-theme'
   });
 
+  // The cloud round-trip must not gain a new account-vault credential path
+  // simply because a fresh app version adds more local-only record types.
+  assert.equal(DISALLOWED.filter(k=>k.startsWith('michelsLife.accountBoundary.v1.')).length,7);
   const androidAdopt=await adoptSharedOnly(android,winBackup.backup.localStorage);
   assert.deepEqual(androidAdopt.after,androidAdopt.before,
     'Windows cloud restore overwrote Android auth, device ID, notifications or local vault');

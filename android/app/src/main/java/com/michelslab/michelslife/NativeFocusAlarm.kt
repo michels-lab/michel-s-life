@@ -103,12 +103,35 @@ internal object NativeFocusAlarm {
 
     fun status(context: Context): JSONObject {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val permitted = notificationPermissionGranted(context)
+        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        // API 26+ users can block just the Focus channel while leaving app
+        // notifications enabled. Runtime permission alone is not proof that
+        // an alarm completion can actually display a notification.
+        val completionChannel = manager.getNotificationChannel(CHANNEL_ID)
+        val runningChannel = manager.getNotificationChannel(ACTIVE_CHANNEL_ID)
+        val completionAllowed = permitted &&
+            (completionChannel == null ||
+                completionChannel.importance != NotificationManager.IMPORTANCE_NONE)
+        val ongoingAllowed = permitted &&
+            (runningChannel == null ||
+                runningChannel.importance != NotificationManager.IMPORTANCE_NONE)
+        val reason = when {
+            !permitted -> "notification-permission-disabled"
+            !completionAllowed -> "focus-completion-channel-disabled"
+            else -> "inexact-alarm-may-be-delayed-by-battery"
+        }
         return JSONObject()
-            .put("notificationsGranted", notificationPermissionGranted(context))
+            .put("notificationsGranted", permitted)
             .put("ongoingCountdownSupported", true)
+            .put("ongoingCountdownAvailable", ongoingAllowed)
             .put("activeDeadlineAt", prefs.getLong(KEY_DEADLINE, 0L))
             .put("precision", "battery-optimized-inexact")
-            .put("backgroundDelivery", true)
+            // Registered with AlarmManager does not imply an actual visible
+            // background notification, especially if user revoked permission.
+            .put("backgroundDelivery", completionAllowed)
+            .put("backgroundDeliveryGuaranteed", false)
+            .put("deliveryReason", reason)
     }
 
     private fun intent(context: Context, token: String): PendingIntent {
