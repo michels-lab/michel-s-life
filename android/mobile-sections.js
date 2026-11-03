@@ -986,6 +986,23 @@
         force(el,'box-sizing','border-box');
         if(el.matches('input,textarea,select'))force(el,'font-size','16px');
       });
+      const chapterForm=main.querySelector('#tab-story .v30162-story-form');
+      const chapterSubmit=chapterForm?.querySelector('button[type="submit"]');
+      if(chapterForm&&chapterSubmit){
+        // A later canonical Story renderer can restore position:static even
+        // after our mobile stylesheet. Own the ACTUAL native button geometry
+        // as we already do for mission and Contracts touch controls.
+        force(chapterForm,'display','grid');
+        force(chapterForm,'grid-template-columns','minmax(0,1fr)');
+        force(chapterForm,'padding-bottom','180px');
+        for(const [key,val] of [
+          ['position','fixed'],['left','12px'],['right','12px'],
+          ['width','auto'],['max-width','calc(100vw - 24px)'],
+          ['min-height','48px'],['z-index','2147482970']
+        ])force(chapterSubmit,key,val);
+        force(chapterSubmit,'bottom',
+          document.body.classList.contains('mlv-android-keyboard-editing')?'12px':'144px');
+      }
     }
     if(window.innerWidth<=720){
       // Desktop About CSS may restyle the canonical 210/300px portrait after
@@ -1291,6 +1308,17 @@
       });
     });
     observer.observe(main,{childList:true,subtree:true});
+    // Visual viewport changes and IME transitions don't insert DOM nodes.
+    // Reassert the canonical Chapter CTA geometry after those transitions,
+    // coalescing resize events instead of polling every Pomodoro tick.
+    let resizePending=false;
+    window.addEventListener('resize',()=>{
+      if(resizePending)return;
+      resizePending=true;
+      requestAnimationFrame(()=>{resizePending=false;enforceRendered();});
+    },{passive:true});
+    document.addEventListener('focusin',()=>requestAnimationFrame(enforceRendered),{passive:true});
+    document.addEventListener('focusout',()=>setTimeout(enforceRendered,180),{passive:true});
     const modal=document.getElementById('modalRoot');
     if(modal){
       const modalObserver=new MutationObserver(()=>{
