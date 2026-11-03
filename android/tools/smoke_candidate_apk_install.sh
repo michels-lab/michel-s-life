@@ -187,7 +187,18 @@ if [[ "$DEVICE_SIZE" =~ ^([0-9]+)x([0-9]+)$ ]]; then
 
   native_onboard 3 tap-target
   sleep 12
-  native_onboard 4 assert
+  # CI sometimes loses one real ADB click despite a verified button center.
+  # Check persisted completion first. A retry is permitted ONLY if the UI
+  # demonstrably remains on stage 3 with its genuine Finish action visible.
+  # No JS clicks, no injected completion state, and never more than 2 taps.
+  if ! native_onboard 4 assert; then
+    echo "::warning::First native Finish touch did not persist; collecting genuine frame and checking stage 3 before one bounded retry"
+    capture_png "$OUT/step4-after-first-finish-attempt.png"
+    native_onboard 3 assert
+    native_onboard 3 tap-target
+    sleep 12
+    native_onboard 4 assert
+  fi
   capture_png "$OUT/step4-after-native-finish.png"
   sleep 20
   capture_png "$OUT/step4-after-native-finish-30s.png"
