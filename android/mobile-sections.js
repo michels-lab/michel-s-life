@@ -1023,12 +1023,13 @@
             window.innerHeight-14;
           const safeBottom=Math.min(window.innerHeight-14,maxBottom);
           if(Number.isFinite(rect.bottom)&&Number.isFinite(safeBottom)){
-            // Even if the first pass happens before the layout's transformed
-            // ancestor settles, leave a guaranteed 96px separation while the
-            // native bar is visible. This prevents a later paint from putting
-            // the CTA back over the navigation (observed 914px vs 842px).
+            // The transformed Story ancestor may settle another ~42px
+            // after the first geometry pass (real CI observed 862px after a
+            // -96px shift, with native navigation starting at 842px).
+            // Keep a bounded 144px reserve as well as the measured overlap;
+            // the same actual submit element and handler stay in place.
             const overlapShift=Math.floor(safeBottom-rect.bottom);
-            const shift=navShown?Math.min(-96,overlapShift):
+            const shift=navShown?Math.min(-144,overlapShift):
               Math.min(0,overlapShift);
             force(chapterSubmit,'transform','translate3d(0,'+shift+'px,0)');
           }
