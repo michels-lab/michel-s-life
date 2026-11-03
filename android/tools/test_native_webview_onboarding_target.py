@@ -57,13 +57,13 @@ class RealNativeOnboardTargetTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             resolve_touch(geometry(),2,1200,2400)
         with self.assertRaisesRegex(ValueError,"system_insets"):
-            resolve_touch(dict(geometry(),innerHeight=600),2,1080,2400)
+            resolve_touch(dict(geometry(y=400),innerHeight=600),2,1080,2400)
 
     def test_target_must_be_inside_actual_live_webview(self):
         with self.assertRaises(ValueError):
             resolve_touch(geometry(y=910),2,1080,2400)
         with self.assertRaises(ValueError):
-            resolve_touch(geometry(x=-1),2,1080,2400)
+            resolve_touch(dict(geometry(),x=-1),2,1080,2400)
 
     def test_real_cdp_is_readonly_and_step4_checks_canonical_done(self):
         js=expression(4)
