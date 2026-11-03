@@ -175,44 +175,35 @@ if [[ "$DEVICE_SIZE" =~ ^([0-9]+)x([0-9]+)$ ]]; then
     fi
   }
 
-  native_onboard 1 tap-target
-  sleep 8
-  capture_png "$OUT/step2-after-native-continue.png"
-  native_onboard 2 assert
-
-  native_onboard 2 tap-target
-  sleep 8
-  capture_png "$OUT/step3-after-native-continue.png"
-  # Occasionally the hosted emulator drops a genuine adb touchscreen event
-  # while WebView stays on the Choose Your Focus screen. Retry ONCE only
-  # after an independent read-only CDP check proves step 2 is still visible.
-  # Do not change DOM state, skip focus choices, or count a screenshot as
-  # successful navigation. Stage 3 MUST be observed after the final tap.
-  if ! native_onboard 3 assert; then
-    echo "::warning::First native step-2 Continue tap did not advance; require live step 2 before one bounded retry"
-    capture_png "$OUT/step3-after-first-continue-attempt.png"
-    native_onboard 2 assert
-    native_onboard 2 tap-target
-    sleep 8
-    capture_png "$OUT/step3-after-native-continue.png"
-    native_onboard 3 assert
-  fi
-
-  native_onboard 3 tap-target
-  sleep 12
-  # CI sometimes loses one real ADB click despite a verified button center.
-  # Check persisted completion first. A retry is permitted ONLY if the UI
-  # demonstrably remains on stage 3 with its genuine Finish action visible.
-  # No JS clicks, no injected completion state, and never more than 2 taps.
-  if ! native_onboard 4 assert; then
-    echo "::warning::First native Finish touch did not persist; collecting genuine frame and checking stage 3 before one bounded retry"
-    capture_png "$OUT/step4-after-first-finish-attempt.png"
-    native_onboard 3 assert
-    native_onboard 3 tap-target
-    sleep 12
-    native_onboard 4 assert
-  fi
-  capture_png "$OUT/step4-after-native-finish.png"
+  # One strict, bounded recovery policy for ALL 3 onboarding transitions.
+  # ADB reports successful input dispatch even when its touch is lost by a
+  # busy hosted WebView. Each attempt still uses the CURRENT visible, enabled,
+  # 44px+ button's live CDP geometry and a REAL adb shell input tap.
+  # If the destination does not appear, retry at most ONCE, and only when the
+  # source step is independently verified to remain active. Never write state
+  # or click inside CDP. The final destination gate is mandatory.
+  native_transition(){
+    local from="$1" to="$2" frame="$3" delay="$4" attempt
+    for attempt in 1 2; do
+      native_onboard "$from" assert
+      native_onboard "$from" tap-target
+      sleep "$delay"
+      capture_png "$OUT/$frame"
+      if native_onboard "$to" assert; then
+        echo "PASS: native onboarding $from->$to verified after real ADB attempt $attempt"
+        return 0
+      fi
+      if [[ "$attempt" -eq 1 ]]; then
+        cp "$OUT/$frame" "$OUT/${frame%.png}-first-attempt.png"
+        echo "::warning::Native step $from->$to did not advance on first real touch; retry once only if step $from is still verified"
+      fi
+    done
+    echo "::error::Native onboarding step $from->$to did not verify after two real touch attempts"
+    return 1
+  }
+  native_transition 1 2 "step2-after-native-continue.png" 8
+  native_transition 2 3 "step3-after-native-continue.png" 8
+  native_transition 3 4 "step4-after-native-finish.png" 12
   sleep 20
   capture_png "$OUT/step4-after-native-finish-30s.png"
   adb shell uiautomator dump --compressed /sdcard/mlv-pre-relaunch.xml >"$OUT/pre-relaunch-accessibility-output.txt" 2>&1 || true
