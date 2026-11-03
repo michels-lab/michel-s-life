@@ -8,6 +8,7 @@ on:
       - 'tools/test_granada_supabase_entry_gate.mjs'
       - 'tools/test_granada_supabase_account_race.mjs'
       - 'tools/test_granada_supabase_inflight_edits.mjs'
+      - 'tools/test_granada_supabase_inflight_restore.mjs'
       - 'tools/test_granada_restore_review_gate.mjs'
       - 'tools/test_granada_supabase_stale_overview_guest.mjs'
       - 'tools/test_granada_account_boundary.mjs'
@@ -45,6 +46,10 @@ jobs:
         run: |
           node --check tools/test_granada_supabase_inflight_edits.mjs
           node tools/test_granada_supabase_inflight_edits.mjs
+      - name: Preserve local edits and verified recovery points during Supabase downloads
+        run: |
+          node --check tools/test_granada_supabase_inflight_restore.mjs
+          node tools/test_granada_supabase_inflight_restore.mjs
       - name: Verify account-scoped device/history and guest import during delayed requests
         run: |
           node --check tools/test_granada_supabase_stale_overview_guest.mjs
