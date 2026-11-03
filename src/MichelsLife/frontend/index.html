@@ -31006,8 +31006,22 @@ async function push(reason='manual',opts={}){
  assertOwnedBoard(s); // Do not save A's upload receipt in B's local metadata.
  if(review&&reviewProof===localStorage.getItem(RESTORE_REVIEW_KEY))
   localStorage.removeItem(RESTORE_REVIEW_KEY);
- runtime.cloudConflict=null;runtime.firstMasterPending=false;saveMeta({revision:nextRevision,lastSync:now,lastRemoteAt:now,lastLocalHash:raw.length,dirty:false});
- runtime.cloudLastSync=now;runtime.revision=nextRevision;runtime.lastRemoteAt=now;await touchDevice(s,'upload');return row
+ // The user can edit missions/Journal while a remote read or upload is in flight.
+ // A successful server ACK only proves receipt of the earlier captured snapshot.
+ // Preserve the unsent edit (even when the new JSON has exactly the same length).
+ const pendingLocalChanges=capture()!==raw;
+ runtime.cloudConflict=null;runtime.firstMasterPending=false;
+ saveMeta({revision:nextRevision,lastSync:now,lastRemoteAt:now,lastLocalHash:raw.length,dirty:pendingLocalChanges});
+ runtime.cloudLastSync=now;runtime.revision=nextRevision;runtime.lastRemoteAt=now;
+ await touchDevice(s,'upload');
+ assertOwnedBoard(s);
+ // A late edit during touchDevice() may have armed a timer while cloudBusy.
+ // Re-arm after the complete upload path instead of silently losing that retry.
+ if(meta().dirty){
+   clearTimeout(syncTimer);
+   syncTimer=setTimeout(()=>sync('auto',{silent:true}).catch(()=>{}),2500);
+ }
+ return row
 }
 function applySnapshot(snapshot){
  if(!snapshot||typeof snapshot!=='object')throw new Error('Supabase snapshot is not restorable.');
