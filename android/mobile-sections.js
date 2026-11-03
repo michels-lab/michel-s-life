@@ -566,7 +566,10 @@
       }
       html[data-mlv-platform="android"] #tab-story .v30162-story-form{
         display:grid!important;grid-template-columns:minmax(0,1fr)!important;
-        gap:12px!important;align-items:stretch!important
+        gap:12px!important;align-items:stretch!important;
+        /* Reserve the exact space of the persistent mobile chapter action
+           instead of allowing it to cover the last editor control. */
+        padding-bottom:calc(122px + env(safe-area-inset-bottom,0px))!important
       }
       html[data-mlv-platform="android"] #tab-story .v30162-story-form label{
         display:grid!important;min-width:0!important;gap:5px!important;
@@ -579,16 +582,22 @@
         margin:0!important;padding:12px!important;font-size:16px!important
       }
       html[data-mlv-platform="android"] #tab-story .v30162-story-form button{
-        width:100%!important;min-height:48px!important;font-size:14px!important;
-        /* Physical Galaxy: Start chapter was underneath the persistent bar.
-           Keep the genuine canonical form action thumb-reachable. */
-        position:sticky!important;
-        bottom:calc(88px + env(safe-area-inset-bottom,0px))!important;
-        z-index:12!important
+        min-height:48px!important;font-size:14px!important;
+        /* Sticky remains clipped by the short Chapter card: at 412px the
+           button bottom was 914px while the native nav begins at 842px.
+           This genuine Chapter action must be fixed ABOVE the bottom nav,
+           never cloned, re-submitted or covered by a touch-stealing overlay. */
+        position:fixed!important;
+        left:12px!important;right:12px!important;width:auto!important;
+        max-width:calc(100vw - 24px)!important;
+        bottom:calc(98px + env(safe-area-inset-bottom,0px))!important;
+        box-sizing:border-box!important;
+        z-index:2147482970!important;
+        box-shadow:0 10px 30px rgba(0,0,0,.35)!important
       }
       html[data-mlv-platform="android"] body.mlv-android-keyboard-editing
       #tab-story .v30162-story-form button{
-        bottom:10px!important
+        bottom:12px!important
       }
       html[data-mlv-platform="android"] #tab-story
       :is(.v30162-story-form input,.v30162-story-actions button):focus-visible{
