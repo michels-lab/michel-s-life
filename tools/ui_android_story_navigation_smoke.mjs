@@ -218,6 +218,8 @@ try{
       viewport:innerHeight,buttonReceivesTouch:hit===button||button.contains(hit),
       horizontalOverflow:document.documentElement.scrollWidth>innerWidth+2,
       computedPosition:style.position,computedBottom:style.bottom,
+      computedTransform:style.transform,
+      focusActive:document.body.classList.contains('mlv-android-timer-active'),
       mobileMedia:matchMedia('(max-width:380px)').matches,
       keyboardEditing:document.body.classList.contains('mlv-android-keyboard-editing'),
       visualViewportHeight:window.visualViewport?.height||0};
