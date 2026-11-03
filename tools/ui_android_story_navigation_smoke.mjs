@@ -182,10 +182,12 @@ try{
     const cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
     const hit=document.elementFromPoint(cx,cy);
     return {buttonBottom:rect.bottom,barTop:barRect.top,
-      centerIsButton:hit===button||button.contains(hit),inViewport:cy>0&&cy<innerHeight};
+      centerIsButton:hit===button||button.contains(hit),inViewport:cy>0&&cy<innerHeight,
+      computedPosition:getComputedStyle(button).position};
   });
   assert(touchTarget.buttonBottom<=touchTarget.barTop-5&&
-    touchTarget.centerIsButton&&touchTarget.inViewport,
+    touchTarget.centerIsButton&&touchTarget.inViewport&&
+    touchTarget.computedPosition==='fixed',
     'Story Start chapter submit is covered by mobile bar/overlay: '+JSON.stringify(touchTarget));
   await page.screenshot({path:out+'/04a-chapter-cta-safe-412.png'});
   // On smaller phones the same real button and persistent nav must remain
@@ -207,7 +209,8 @@ try{
       visualViewportHeight:window.visualViewport?.height||0};
   });
   assert(small.height>=44&&small.buttonBottom<=small.barTop-5&&
-    small.buttonReceivesTouch&&!small.horizontalOverflow,
+    small.buttonReceivesTouch&&!small.horizontalOverflow&&
+    small.computedPosition==='fixed',
     'Story Start chapter must be safely tappable at 360px: '+JSON.stringify(small));
   await page.screenshot({path:out+'/04b-chapter-cta-safe-360.png'});
   await page.setViewportSize({width:412,height:915});
