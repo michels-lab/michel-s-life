@@ -181,9 +181,13 @@ try{
     const rect=button.getBoundingClientRect(),barRect=bar.getBoundingClientRect();
     const cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
     const hit=document.elementFromPoint(cx,cy);
+    const style=getComputedStyle(button);
     return {buttonBottom:rect.bottom,barTop:barRect.top,
       centerIsButton:hit===button||button.contains(hit),inViewport:cy>0&&cy<innerHeight,
-      computedPosition:getComputedStyle(button).position};
+      computedPosition:style.position,computedBottom:style.bottom,
+      computedTransform:style.transform,inlineTransform:button.style.transform,
+      buttonType:button.getAttribute('type')||'implicit',
+      storyActive:!!button.closest('#tab-story.active'),insideMain:!!button.closest('#main')};
   });
   assert(touchTarget.buttonBottom<=touchTarget.barTop-5&&
     touchTarget.centerIsButton&&touchTarget.inViewport&&
