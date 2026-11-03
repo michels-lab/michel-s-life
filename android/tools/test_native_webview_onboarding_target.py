@@ -72,6 +72,21 @@ class RealNativeOnboardTargetTests(unittest.TestCase):
         self.assertNotIn("localStorage.setItem",js)
         self.assertNotIn(".click()",js)
 
+    def test_finish_retry_is_bounded_and_requires_real_step3(self):
+        shell=(ROOT/"android/tools/smoke_candidate_apk_install.sh").read_text()
+        block=shell.split("  native_onboard 3 tap-target",1)[1].split(
+            '  capture_png "$OUT/step4-after-native-finish.png"',1)[0]
+        self.assertIn("if ! native_onboard 4 assert; then",block)
+        self.assertIn('capture_png "$OUT/step4-after-first-finish-attempt.png"',block)
+        self.assertIn("native_onboard 3 assert",block)
+        self.assertIn("native_onboard 3 tap-target",block)
+        self.assertIn("sleep 12",block)
+        self.assertIn("native_onboard 4 assert",block)
+        self.assertNotIn("localStorage.setItem",block)
+        self.assertNotIn("window.eval",block)
+        self.assertEqual(shell.count("native_onboard 3 tap-target"),2)
+        self.assertEqual(shell.count("native_onboard 3 assert"),2)
+
     def test_native_harness_uses_adb_and_real_step_transition_assertions(self):
         shell=(ROOT/"android/tools/smoke_candidate_apk_install.sh").read_text()
         self.assertIn('timeout 15s adb shell input tap "$tap_x" "$tap_y"',shell)
