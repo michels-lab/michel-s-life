@@ -256,5 +256,28 @@ class NativeBashEntrypointTests(unittest.TestCase):
         r=self.invoke_with_stub_adb("Physical size: 1080x2400",arg="--unexpected")
         self.assertEqual(r.returncode,2)
 
+class Android16ProvenHostProfilePolicyTests(unittest.TestCase):
+    """A lighter emulator is allowed; skipping true native evidence is not."""
+    @classmethod
+    def setUpClass(cls):
+        cls.workflow=(pathlib.Path(__file__).parents[1]/
+            ".github/workflows/android-build.yml").read_text()
+
+    def test_android16_uses_successfully_tested_pixel6_software_renderer(self):
+        block=self.workflow.split("  installed-candidate-smoke:",1)[1]
+        self.assertIn("api-level: 36",block)
+        self.assertIn("profile: pixel_6",block)
+        self.assertIn("ram-size: 2048M",block)
+        self.assertIn("heap-size: 256M",block)
+        self.assertIn("-gpu software -feature -Vulkan",block)
+
+    def test_android16_still_installs_exact_candidate_and_checks_native_state(self):
+        block=self.workflow.split("  installed-candidate-smoke:",1)[1]
+        self.assertIn('MLV_REQUIRE_NATIVE_STATE_PROBE: "1"',block)
+        self.assertIn("Download candidate APK from SAME workflow run",block)
+        self.assertIn("script: bash android/tools/smoke_candidate_apk_install.sh",block)
+        self.assertIn("Retain exact installed APK evidence and Android screenshots",block)
+        self.assertNotIn("continue-on-error: true",block)
+
 if __name__ == "__main__":
     unittest.main()
