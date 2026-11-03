@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Offline checks for REAL Android ADB touch geometry; no emulator required."""
 import pathlib
+import subprocess
+import tempfile
 import sys
 import unittest
 
@@ -72,42 +74,93 @@ class RealNativeOnboardTargetTests(unittest.TestCase):
         self.assertNotIn("localStorage.setItem",js)
         self.assertNotIn(".click()",js)
 
-    def test_second_continue_retry_is_bounded_and_requires_still_on_step2(self):
+    def test_every_step_uses_the_same_bounded_verified_native_advance(self):
         shell=(ROOT/"android/tools/smoke_candidate_apk_install.sh").read_text()
-        block=shell.split("  native_onboard 2 tap-target",1)[1].split(
-            "  native_onboard 3 tap-target",1)[0]
-        self.assertIn("if ! native_onboard 3 assert; then",block)
-        self.assertIn('capture_png "$OUT/step3-after-first-continue-attempt.png"',block)
-        self.assertIn("native_onboard 2 assert",block)
-        self.assertIn("native_onboard 2 tap-target",block)
-        self.assertIn('capture_png "$OUT/step3-after-native-continue.png"',block)
-        self.assertIn("native_onboard 3 assert",block)
-        self.assertEqual(shell.count("native_onboard 2 tap-target"),2)
+        block=shell.split("  native_transition(){",1)[1].split(
+            '  native_transition 1 2 "step2-after-native-continue.png" 8',1)[0]
+        for phrase in (
+            "for attempt in 1 2; do",
+            'native_onboard "$from" assert',
+            'native_onboard "$from" tap-target',
+            'if native_onboard "$to" assert; then',
+            'capture_png "$OUT/$frame"',
+            'cp "$OUT/$frame" "$OUT/${frame%.png}-first-attempt.png"',
+            'return 0', 'return 1'
+        ):
+            self.assertIn(phrase,block)
+        self.assertEqual(shell.count('  native_transition 1 2 "step2-after-native-continue.png" 8'),1)
+        self.assertEqual(shell.count('  native_transition 2 3 "step3-after-native-continue.png" 8'),1)
+        self.assertEqual(shell.count('  native_transition 3 4 "step4-after-native-finish.png" 12'),1)
         self.assertNotIn("localStorage.setItem",block)
         self.assertNotIn(".click()",block)
+        self.assertNotIn("continue-on-error",block)
 
-    def test_finish_retry_is_bounded_and_requires_real_step3(self):
+    def simulate_real_native_transition(self,success_after):
         shell=(ROOT/"android/tools/smoke_candidate_apk_install.sh").read_text()
-        block=shell.split("  native_onboard 3 tap-target",1)[1].split(
-            '  capture_png "$OUT/step4-after-native-finish.png"',1)[0]
-        self.assertIn("if ! native_onboard 4 assert; then",block)
-        self.assertIn('capture_png "$OUT/step4-after-first-finish-attempt.png"',block)
-        self.assertIn("native_onboard 3 assert",block)
-        self.assertIn("native_onboard 3 tap-target",block)
-        self.assertIn("sleep 12",block)
-        self.assertIn("native_onboard 4 assert",block)
-        self.assertNotIn("localStorage.setItem",block)
-        self.assertNotIn("window.eval",block)
-        self.assertEqual(shell.count("native_onboard 3 tap-target"),2)
-        self.assertEqual(block.count("native_onboard 3 assert"),1)
+        body=shell.split("  native_transition(){",1)[1].split(
+            '  native_transition 1 2 "step2-after-native-continue.png" 8',1)[0]
+        source="native_transition(){"+body
+        # Only mock the ADB transport and screenshot calls. The real Bash
+        # transition policy is executed unmodified, including its two-tap cap.
+        harness="""set -euo pipefail
+OUT="$1"
+threshold="$2"
+actual_stage=1
+taps=0
+native_onboard(){
+  local target="$1" mode="$2"
+  if [[ "$mode" == assert ]]; then
+    [[ "$target" == "$actual_stage" ]]
+  else
+    [[ "$target" == "$actual_stage" ]] || return 1
+    taps=$((taps+1))
+    if [[ "$taps" -ge "$threshold" ]]; then actual_stage=2; fi
+  fi
+}
+capture_png(){ : > "$1"; }
+sleep(){ :; }
+"""
+        harness+=source+"""
+if native_transition 1 2 "step2-after-native-continue.png" 8; then
+  echo "VERDICT=PASS"
+else
+  echo "VERDICT=FAIL"
+fi
+echo "TAPS=$taps"
+echo "STAGE=$actual_stage"
+"""
+        with tempfile.TemporaryDirectory() as d:
+            proc=subprocess.run(
+                ["bash","-c",harness,"native-transition",d,str(success_after)],
+                capture_output=True,text=True,timeout=10
+            )
+        self.assertEqual(proc.returncode,0,proc.stderr)
+        return proc.stdout
 
-    def test_native_harness_uses_adb_and_real_step_transition_assertions(self):
+    def test_live_native_advance_successful_first_touch(self):
+        output=self.simulate_real_native_transition(1)
+        self.assertIn("VERDICT=PASS",output)
+        self.assertIn("TAPS=1",output)
+        self.assertIn("STAGE=2",output)
+
+    def test_live_native_advance_recovers_one_lost_touch(self):
+        output=self.simulate_real_native_transition(2)
+        self.assertIn("VERDICT=PASS",output)
+        self.assertIn("TAPS=2",output)
+        self.assertIn("STAGE=2",output)
+
+    def test_live_native_advance_fails_red_when_two_touches_are_lost(self):
+        output=self.simulate_real_native_transition(3)
+        self.assertIn("VERDICT=FAIL",output)
+        self.assertIn("TAPS=2",output)
+        self.assertIn("STAGE=1",output)
+
+    def test_native_harness_preserves_real_adb_touch_and_three_gate_chain(self):
         shell=(ROOT/"android/tools/smoke_candidate_apk_install.sh").read_text()
         self.assertIn('timeout 15s adb shell input tap "$tap_x" "$tap_y"',shell)
-        for stage in (1,2,3):
-            self.assertIn(f"native_onboard {stage} tap-target",shell)
-        for stage in (2,3,4):
-            self.assertIn(f"native_onboard {stage} assert",shell)
+        self.assertIn('native_onboard "$from" assert',shell)
+        self.assertIn('native_onboard "$to" assert',shell)
+        self.assertIn('native_onboard "$from" tap-target',shell)
         self.assertNotIn('NEXT_Y="$((H * 84 / 100))"',shell)
         self.assertNotIn('FINISH_Y="$((H * 62 / 100))"',shell)
         self.assertNotIn('localStorage.setItem(',shell)
