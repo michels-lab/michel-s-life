@@ -1002,6 +1002,27 @@
         ])force(chapterSubmit,key,val);
         force(chapterSubmit,'bottom',
           document.body.classList.contains('mlv-android-keyboard-editing')?'12px':'144px');
+        // The Chapter tab sits inside a transformed scroll surface on some
+        // Android views. CSS position:fixed can therefore be relative to that
+        // ancestor, NOT the device viewport. The real browser reports
+        // position:fixed yet a buttonBottom=914 and native barTop=842.
+        // Use actual bounding boxes to move only the ORIGINAL submit control
+        // above the bar, preserving its canonical form submit handler.
+        const storyActive=!!chapterSubmit.closest('#tab-story.active');
+        if(storyActive){
+          force(chapterSubmit,'transform','none');
+          const rect=chapterSubmit.getBoundingClientRect();
+          const nav=document.getElementById('mlv-android-bottom-nav');
+          const navShown=!!nav&&getComputedStyle(nav).display!=='none'&&
+            getComputedStyle(nav).visibility!=='hidden';
+          const maxBottom=navShown?nav.getBoundingClientRect().top-14:
+            window.innerHeight-14;
+          const safeBottom=Math.min(window.innerHeight-14,maxBottom);
+          if(Number.isFinite(rect.bottom)&&Number.isFinite(safeBottom)){
+            const shift=Math.min(0,Math.floor(safeBottom-rect.bottom));
+            force(chapterSubmit,'transform','translate3d(0,'+shift+'px,0)');
+          }
+        }
       }
     }
     if(window.innerWidth<=720){
@@ -1321,6 +1342,14 @@
     // MobileExperience drops keyboard-editing at the next macrotask; give
     // that class update one frame, then restore above-nav Chapter placement.
     document.addEventListener('focusout',()=>setTimeout(enforceRendered,40),{passive:true});
+    // Scroll geometry also moves the transformed Story containing block.
+    // Follow only visible Story scrolls, coalesced in the same RAF as resize.
+    document.addEventListener('scroll',()=>{
+      if(!document.querySelector('#tab-story.active .v30162-story-form')||
+         resizePending)return;
+      resizePending=true;
+      requestAnimationFrame(()=>{resizePending=false;enforceRendered();});
+    },{passive:true,capture:true});
     const modal=document.getElementById('modalRoot');
     if(modal){
       const modalObserver=new MutationObserver(()=>{
