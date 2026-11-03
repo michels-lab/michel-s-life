@@ -146,9 +146,28 @@ jobs:
         with:
           gradle-version: '9.6.0'
 
+      - name: Verify Android Direct runtime signer matches distribution pin
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+          configured = os.environ.get("ANDROID_DIRECT_CERT_SHA256", "").lower()
+          source = Path("android/app/src/main/java/com/michelslab/michelslife/AndroidDirectCertificate.java").read_text()
+          pinned = re.search(r'EXPECTED_SHA256\s*=\s*"([0-9a-f]{64})"', source)
+          if not pinned or not re.fullmatch(r"[0-9a-f]{64}", configured) or pinned.group(1) != configured:
+              raise SystemExit("FAIL: runtime signer pin does not match configured official Android Direct certificate")
+          print("PASS: runtime signer pin matches configured official Android Direct certificate")
+          PY
+
       - name: Build debug APK
         working-directory: android
         run: gradle --no-daemon :app:assembleDebug
+
+      - name: Exercise real Kotlin Android Direct release parser with fake public metadata
+        working-directory: android
+        run: gradle --no-daemon :app:testDebugUnitTest --tests 'com.michelslab.michelslife.AndroidDirectUpdateCheckerTest'
 
       - name: Prepare optional Play upload keystore
         shell: bash
