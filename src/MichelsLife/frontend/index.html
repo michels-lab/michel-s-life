@@ -31040,8 +31040,15 @@ async function pull({reload=true}={}){
  const s=await ensureSession();if(!s)throw new Error(es()?'Inicia sesión en Supabase.':'Sign in to Supabase.');
  assertOwnedBoard(s);const remote=await remoteState(s);assertOwnedBoard(s);if(!remote)return null;
  const localRaw=capture(),localSnapshot=safeJson(localRaw,null);
- if(localSnapshot){await writeHistory(s,{snapshot:localSnapshot,revision:Math.max(1,Number(meta().revision||1)),source_device_id:deviceId(),source_platform:platform(),app_version:BUILD},'before_download_local')}
+ // A cloud download must never destroy a board we could not first recover.
+ if(!localSnapshot||typeof localSnapshot!=='object'||!localSnapshot.state)
+  throw new Error('Cannot verify a local recovery snapshot. Cloud download cancelled; local progress was preserved.');
+ await writeHistory(s,{snapshot:localSnapshot,revision:Math.max(1,Number(meta().revision||1)),source_device_id:deviceId(),source_platform:platform(),app_version:BUILD},'before_download_local');
  assertOwnedBoard(s); // A delayed recovery-history POST may outlive the login.
+ // The user may keep editing while the recovery history POST is in flight.
+ // Its saved copy predates those edits, so abort rather than overwriting them.
+ if(capture()!==localRaw)
+  throw new Error('Local data changed during cloud download. No progress was overwritten; review and retry the download.');
  applySnapshot(remote.snapshot);localStorage.removeItem(RESTORE_REVIEW_KEY);
  const now=new Date().toISOString();saveMeta({revision:Number(remote.revision||0),lastSync:now,lastRemoteAt:remote.updated_at||now,dirty:false});runtime.cloudLastSync=now;runtime.revision=Number(remote.revision||0);runtime.lastRemoteAt=remote.updated_at||now;runtime.cloudConflict=null;await touchDevice(s,'download');if(reload)location.reload();return remote
 }
