@@ -99,7 +99,7 @@ class RealNativeOnboardTargetTests(unittest.TestCase):
         self.assertNotIn("localStorage.setItem",block)
         self.assertNotIn("window.eval",block)
         self.assertEqual(shell.count("native_onboard 3 tap-target"),2)
-        self.assertEqual(shell.count("native_onboard 3 assert"),2)
+        self.assertEqual(block.count("native_onboard 3 assert"),1)
 
     def test_native_harness_uses_adb_and_real_step_transition_assertions(self):
         shell=(ROOT/"android/tools/smoke_candidate_apk_install.sh").read_text()
