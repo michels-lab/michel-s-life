@@ -1038,10 +1038,15 @@
             // attributes settle (verified live touch CI). Reserve enough room
             // from the canonical timer-active state, not only a mini rect read
             // that was absent during the first Story tab activation.
-            // 288px covers the native nav + full Focus mini-player + spacing
-            // on both 412px and 360px phones with transformed Story ancestors.
+            // Browser-touch CI now proves the 412px full Story+Focus
+            // roundtrip succeeds with a 288px reserve. At 360px, the
+            // transformed Chapter ancestor changes its containing-block
+            // offset (~60px), so use a compact reserve instead of allowing
+            // the running mini-player to intercept Start Chapter.
             const focusActive=document.body.classList.contains('mlv-android-timer-active');
-            const reserve=navShown&&(miniShown||focusActive)?-288:-144;
+            const compact=window.innerWidth<=380;
+            const reserve=navShown&&(miniShown||focusActive)?
+              (compact?-380:-288):-144;
             const shift=navShown?Math.min(reserve,overlapShift):
               Math.min(0,overlapShift);
             force(chapterSubmit,'transform','translate3d(0,'+shift+'px,0)');
