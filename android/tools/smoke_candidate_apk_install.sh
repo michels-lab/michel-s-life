@@ -143,30 +143,51 @@ DEVICE_SIZE="$(adb shell wm size | tr -d '\r' | sed -n 's/^Physical size: //p' |
 if [[ "$DEVICE_SIZE" =~ ^([0-9]+)x([0-9]+)$ ]]; then
   W="${BASH_REMATCH[1]}"
   H="${BASH_REMATCH[2]}"
-  X="$((W * 83 / 100))"
-  Y="$((H * 78 / 100))"
-  echo "Tapping installed WebView step-1 Continue at pixel $X,$Y on $DEVICE_SIZE"
-  adb shell input tap "$X" "$Y"
+  # Identify each real visible Continue/Finish in the running APK using
+  # READ-ONLY Chrome DevTools geometry; execute the touch via REAL adb input.
+  # The previous blind 78%/84%/62% Y coordinates reached step 2 but failed
+  # to advance to step 3, as proved by native screenshots 13028086485.
+  # Never set localStorage, click via JavaScript, bypass a step, or call a
+  # skipped onboarding a persisted success.
+  native_onboard(){
+    local stage="$1" mode="$2" pid target tap_x tap_y
+    pid="$(timeout 15s adb shell pidof "$PKG" | tr -d '\r\n ')"
+    if [[ ! "$pid" =~ ^[0-9]+$ ]]; then
+      echo "::error::Native onboarding process is missing at stage $stage"
+      return 1
+    fi
+    timeout 15s adb forward tcp:9222 "localabstract:webview_devtools_remote_$pid"
+    if ! target="$(python3 android/tools/native_webview_onboarding_target.py \
+      --port 9222 --stage "$stage" --mode "$mode" --width "$W" --height "$H")"; then
+      timeout 8s adb forward --remove tcp:9222 || true
+      echo "::error::Native onboarding target unavailable at stage $stage"
+      return 1
+    fi
+    timeout 8s adb forward --remove tcp:9222
+    if [[ "$mode" == "tap-target" ]]; then
+      read -r tap_x tap_y <<< "$target"
+      if [[ ! "$tap_x" =~ ^[0-9]+$ || ! "$tap_y" =~ ^[0-9]+$ ]]; then
+        echo "::error::Native onboarding target returned invalid screen pixels"
+        return 1
+      fi
+      echo "Tapping REAL installed Android onboarding button at $tap_x,$tap_y (stage $stage)"
+      timeout 15s adb shell input tap "$tap_x" "$tap_y"
+    fi
+  }
+
+  native_onboard 1 tap-target
   sleep 8
   capture_png "$OUT/step2-after-native-continue.png"
-  # On the pinned 1080x2400 Pixel 6 emulator, the step 2 focus footer
-  # Continue is lower than the step 1 button (roughly 84% of display height).
-  # Capture the next real packaged-WebView state separately. Do not call
-  # this a native Finish pass until the resulting screenshot is inspected.
-  NEXT_X="$((W * 83 / 100))"
-  NEXT_Y="$((H * 84 / 100))"
-  echo "Tapping installed WebView step-2 Continue at pixel $NEXT_X,$NEXT_Y on $DEVICE_SIZE"
-  adb shell input tap "$NEXT_X" "$NEXT_Y"
+  native_onboard 2 assert
+
+  native_onboard 2 tap-target
   sleep 8
   capture_png "$OUT/step3-after-native-continue.png"
-  # The step-3 Finish setup control is at ~81% width, 62% height on
-  # this pinned device. This coordinate is grounded in the same-run
-  # step-3 screenshot, not guessed from the browser-only fixture.
-  FINISH_X="$((W * 81 / 100))"
-  FINISH_Y="$((H * 62 / 100))"
-  echo "Tapping installed WebView Finish setup at pixel $FINISH_X,$FINISH_Y on $DEVICE_SIZE"
-  adb shell input tap "$FINISH_X" "$FINISH_Y"
+  native_onboard 3 assert
+
+  native_onboard 3 tap-target
   sleep 12
+  native_onboard 4 assert
   capture_png "$OUT/step4-after-native-finish.png"
   sleep 20
   capture_png "$OUT/step4-after-native-finish-30s.png"
