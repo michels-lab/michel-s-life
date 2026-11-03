@@ -1034,10 +1034,15 @@
           const safeBottom=Math.min(window.innerHeight-14,navEdge,miniEdge);
           if(Number.isFinite(rect.bottom)&&Number.isFinite(safeBottom)){
             const overlapShift=Math.floor(safeBottom-rect.bottom);
-            // Story is inside a transformed containing block; a 144px
-            // baseline is required after canonical tab switching. When Focus
-            // is present, geometry supplies any larger necessary displacement.
-            const shift=navShown?Math.min(-144,overlapShift):
+            // Focus can be active before the mini-player's hidden/layout
+            // attributes settle (verified live touch CI). Reserve enough room
+            // from the canonical timer-active state, not only a mini rect read
+            // that was absent during the first Story tab activation.
+            // 288px covers the native nav + full Focus mini-player + spacing
+            // on both 412px and 360px phones with transformed Story ancestors.
+            const focusActive=document.body.classList.contains('mlv-android-timer-active');
+            const reserve=navShown&&(miniShown||focusActive)?-288:-144;
+            const shift=navShown?Math.min(reserve,overlapShift):
               Math.min(0,overlapShift);
             force(chapterSubmit,'transform','translate3d(0,'+shift+'px,0)');
           }
