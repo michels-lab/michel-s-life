@@ -70,7 +70,7 @@ async function reachPatch(x){
  x.remote.resolve({user_id:A,revision:5});
  await until(()=>x.writes.length===1,'revision-checked PATCH');
  assert.match(x.writes[0].path,/revision=eq.5/);
- return task;
+ return {task};
 }
 async function finish(x,task){
  x.patch.resolve([{user_id:A,revision:6}]);
@@ -80,7 +80,7 @@ async function finish(x,task){
 }
 // Positive control: no intervening changes means the exact uploaded snapshot is clean.
 {
- const x=fixture(),task=await reachPatch(x);
+ const x=fixture(),{task}=await reachPatch(x);
  assert.equal(x.writes[0].body.snapshot.state.missions[0].id,'alpha');
  await finish(x,task);
  assert.equal(x.read().dirty,false);
@@ -89,7 +89,7 @@ async function finish(x,task){
 // Original defect: two same-length mission IDs can change during an ACK wait.
 // Previously saveMeta({dirty:false}) hid the unuploaded "bravo" forever.
 {
- const x=fixture(),task=await reachPatch(x);
+ const x=fixture(),{task}=await reachPatch(x);
  x.edit('bravo'); // Same JSON length as alpha, but different user data.
  await finish(x,task);
  assert.equal(x.writes[0].body.snapshot.state.missions[0].id,'alpha');
@@ -114,7 +114,7 @@ async function finish(x,task){
 // server response. The original 2500ms timer may have run while cloudBusy.
 // Ensure the successful upload's tail explicitly re-arms the pending work.
 {
- const x=fixture(),task=await reachPatch(x);
+ const x=fixture(),{task}=await reachPatch(x);
  x.patch.resolve([{user_id:A,revision:6}]);
  await until(()=>x.touchCalls===1,'delayed touchDevice');
  assert.equal(x.read().dirty,false);
@@ -126,7 +126,7 @@ async function finish(x,task){
 // Fail-closed: if a changed payload cannot be captured after the server ACK,
 // do not advertise this device's local snapshot as fully synchronized.
 {
- const x=fixture(),task=await reachPatch(x);
+ const x=fixture(),{task}=await reachPatch(x);
  x.failCapture();
  await finish(x,task);
  assert.equal(x.read().dirty,true);
@@ -134,7 +134,7 @@ async function finish(x,task){
 }
 // A login switch during the final provider touch must not queue A's retry on B.
 {
- const x=fixture(),task=await reachPatch(x);
+ const x=fixture(),{task}=await reachPatch(x);
  x.patch.resolve([{user_id:A,revision:6}]);
  await until(()=>x.touchCalls===1,'account-switch tail');
  x.switchToB();x.touch.resolve();
