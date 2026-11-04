@@ -39,6 +39,23 @@
     }
   }
 
+  function focusNotificationPresentation(state){
+    const allowed=state?.notificationsGranted===true;
+    const countdown=state?.ongoingCountdownAvailable===true;
+    const completion=state?.backgroundDelivery===true;
+    return {
+      note:!allowed
+        ?'Allow Michel’s Life notifications to show Pomodoro with the screen locked.'
+        :!countdown
+          ?'The running Pomodoro notification channel is disabled in Android settings.'
+          :!completion
+            ?'The Focus completion-alert channel is disabled in Android settings.'
+            :'Countdown available on the lock screen. Battery saving may delay completion alerts.',
+      showAction:!(allowed&&countdown&&completion),
+      actionLabel:allowed?'Settings':'Enable'
+    };
+  }
+
   function requestNativeFocusPermission(){
     const native=window.MichelsLifeAndroid;
     try{
@@ -1291,21 +1308,12 @@
     if(typeof native?.focusNotificationStatus==='function'){
       try{
         const state=JSON.parse(native.focusNotificationStatus());
-        const allowed=state.notificationsGranted===true;
-        const countdown=state.ongoingCountdownAvailable===true;
-        const completion=state.backgroundDelivery===true;
-        const note=!allowed
-          ?'Allow Michel’s Life notifications to show Pomodoro with the screen locked.'
-          :!countdown
-            ?'The running Pomodoro notification channel is disabled in Android settings.'
-            :!completion
-              ?'The Focus completion-alert channel is disabled in Android settings.'
-              :'Countdown available on the lock screen. Battery saving may delay completion alerts.';
-        writeText(q('.mlv-android-focus-system-note',root),note);
+        const ui=focusNotificationPresentation(state);
+        writeText(q('.mlv-android-focus-system-note',root),ui.note);
         const enable=q('#mlv-focus-enable-notifications',root);
         if(enable){
-          enable.hidden=allowed&&countdown&&completion;
-          writeText(enable,allowed?'Settings':'Enable');
+          enable.hidden=!ui.showAction;
+          writeText(enable,ui.actionLabel);
         }
       }catch(_){}
     }
