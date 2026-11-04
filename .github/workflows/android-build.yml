@@ -104,6 +104,7 @@ jobs:
             android/app/src/main/java/com/michelslab/michelslife/FocusDeliveryPolicy.java \
             tools/FocusDeliveryPolicyTest.java
           java -cp /tmp/mlv-focus-delivery-contract FocusDeliveryPolicyTest
+          node tools/test_android_focus_notification_ui.mjs
 
       - name: Validate Android mobile UX layer
         run: |
