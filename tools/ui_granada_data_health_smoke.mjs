@@ -35,7 +35,32 @@ try{
     },seed);
     const page=await context.newPage();
     const errors=[];
-    page.on('pageerror',e=>errors.push(e.message));
+    // Keep the real failure red, but retain script provenance for the
+    // intermittent Android 412px "Unexpected end of input" page error.
+    // Do not export URLs with query strings, source code or page contents.
+    const safeLocation=raw=>{
+      try {
+        const url=new URL(raw,base);
+        return url.origin===new URL(base).origin ? url.pathname : '[external-script]';
+      } catch { return '[unknown-script]'; }
+    };
+    page.on('pageerror',e=>errors.push({
+      message:String(e.message||'').slice(0,200),
+      stack:String(e.stack||'').split('\n').slice(0,4).map(frame=>
+        frame.replace(/https?:\/\/[^\s)]+/g,match=>safeLocation(match))).join(' | ').slice(0,600)
+    }));
+    const cdp=await context.newCDPSession(page);
+    await cdp.send('Runtime.enable');
+    cdp.on('Runtime.exceptionThrown',({exceptionDetails:d})=>{
+      // CDP often provides source coordinates even when pageerror.stack is empty.
+      // Record only the local script path/position and bounded exception category.
+      if(!d||errors.length>=8)return;
+      const message=String(d.exception?.className||d.text||'ScriptError').slice(0,100);
+      const source=safeLocation(d.url||'');
+      const key=source+':'+d.lineNumber+':'+d.columnNumber;
+      if(!errors.some(x=>x.cdpLocation===key))
+        errors.push({message,cdpLocation:key});
+    });
     await page.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
     await page.waitForFunction(()=>
       !!window.MLVGranadaDataHealth &&
@@ -148,7 +173,7 @@ try{
       assert.equal(progressProjection(await page.evaluate(k=>localStorage.getItem(k),key)),
         baselineProgress,'Mission IDs, XP or completions changed on WebView reload');
     }
-    assert.equal(errors.length,0,'App page errors: '+errors.join('; '));
+    assert.equal(errors.length,0,'App page errors: '+JSON.stringify(errors));
     console.log('GRANADA_DATA_HEALTH_ANDROID_PASS '+JSON.stringify({
       width,visible:true,inspect:true,unsafeRejected:true,comparison:true,
       twoReloads:true,storageUntouched:true,pageErrors:0
