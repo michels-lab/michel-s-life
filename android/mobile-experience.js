@@ -39,10 +39,36 @@
     }
   }
 
+  function focusNotificationPresentation(state){
+    const allowed=state?.notificationsGranted===true;
+    const countdown=state?.ongoingCountdownAvailable===true;
+    const completion=state?.backgroundDelivery===true;
+    return {
+      note:!allowed
+        ?'Allow Michel’s Life notifications to show Pomodoro with the screen locked.'
+        :!countdown
+          ?'The running Pomodoro notification channel is disabled in Android settings.'
+          :!completion
+            ?'The Focus completion-alert channel is disabled in Android settings.'
+            :'Countdown available on the lock screen. Battery saving may delay completion alerts.',
+      showAction:!(allowed&&countdown&&completion),
+      actionLabel:allowed?'Settings':'Enable'
+    };
+  }
+
   function requestNativeFocusPermission(){
     const native=window.MichelsLifeAndroid;
-    try{native?.requestFocusNotificationPermission?.();}
-    catch(error){console.warn('Focus notification permission unavailable:',String(error));}
+    try{
+      const status=typeof native?.focusNotificationStatus==='function'
+        ?JSON.parse(native.focusNotificationStatus()||'{}'):{};
+      // Android does not reopen a blocked Focus channel through the runtime
+      // POST_NOTIFICATIONS prompt. Show the actual system app settings.
+      if(status.notificationsGranted===true &&
+         (status.ongoingCountdownAvailable===false||
+          status.backgroundDelivery===false))
+        native.openFocusNotificationSettings?.();
+      else native?.requestFocusNotificationPermission?.();
+    }catch(error){console.warn('Focus notification permission unavailable:',String(error));}
   }
   const isFocusOpen=()=>!!(root&&!root.hidden);
   function fmt(ms){
@@ -1282,11 +1308,13 @@
     if(typeof native?.focusNotificationStatus==='function'){
       try{
         const state=JSON.parse(native.focusNotificationStatus());
-        writeText(q('.mlv-android-focus-system-note',root),state.notificationsGranted?
-           'Countdown available in notifications and on the lock screen. Battery saving may delay completion alerts.':
-           'Allow Michel’s Life notifications to show the countdown with the screen locked.');
+        const ui=focusNotificationPresentation(state);
+        writeText(q('.mlv-android-focus-system-note',root),ui.note);
         const enable=q('#mlv-focus-enable-notifications',root);
-        if(enable)enable.hidden=!!state.notificationsGranted;
+        if(enable){
+          enable.hidden=!ui.showAction;
+          writeText(enable,ui.actionLabel);
+        }
       }catch(_){}
     }
   }

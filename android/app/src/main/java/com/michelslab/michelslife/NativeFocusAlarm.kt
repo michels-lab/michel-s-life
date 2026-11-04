@@ -162,8 +162,20 @@ internal object NativeFocusAlarm {
         // cancel/reissue the pending alarm while the WebView has yet to render
         // the transition (Doze can defer the receiver for a short time).
         if (deadline <= now) {
+            // A different (or reset) clock may be past its deadline while a
+            // previous session's Android alarm is still registered. Revoke
+            // that old alarm instead of leaving a ghost lock-screen alert.
+            val keepPending = FocusDeliveryPolicy.keepExpiredPendingAlarm(
+                mode, deadline,
+                prefs.getLong(KEY_DEADLINE, 0L),
+                prefs.getString(KEY_TOKEN, "")
+            )
+            if (!keepPending) {
+                cancel(context)
+                return status(context).put("scheduled", false)
+            }
             hideRunning(context)
-            return status(context).put("scheduled", prefs.getLong(KEY_DEADLINE, 0L) == deadline)
+            return status(context).put("scheduled", true)
         }
 
         val token = "$mode:$deadline"

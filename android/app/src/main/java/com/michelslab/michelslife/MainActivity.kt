@@ -21,6 +21,19 @@ class MainActivity : Activity() {
     lateinit var cloud: DriveCloudEngine
         private set
     private val executor = Executors.newSingleThreadExecutor()
+    private var notificationOpenGeneration = 0
+    private var pendingNotificationOpen: Runnable? = null
+
+    // The notification can cold-start this Activity before the canonical
+    // Story/Focus JavaScript has finished booting. A page-finished event only
+    // means the HTML loaded; it does not prove the mobile UI is ready.
+    private fun stopPendingNotificationOpen() {
+        notificationOpenGeneration++
+        if (::webView.isInitialized) {
+            pendingNotificationOpen?.let { webView.removeCallbacks(it) }
+        }
+        pendingNotificationOpen = null
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,12 +106,38 @@ class MainActivity : Activity() {
     }
 
     private fun openPomodoroFromNotification() {
-        if (!::webView.isInitialized ||
+        stopPendingNotificationOpen()
+        if (!::webView.isInitialized || isDestroyed ||
             !intent.getBooleanExtra(NativeFocusAlarm.EXTRA_OPEN_FOCUS, false)) return
-        intent.removeExtra(NativeFocusAlarm.EXTRA_OPEN_FOCUS)
+        attemptNotificationFocusOpen(notificationOpenGeneration, 0)
+    }
+
+    private fun attemptNotificationFocusOpen(generation: Int, retries: Int) {
+        if (generation != notificationOpenGeneration || isDestroyed ||
+            !intent.getBooleanExtra(NativeFocusAlarm.EXTRA_OPEN_FOCUS, false)) return
+
+        // Do not acknowledge/consume the notification tap until the REAL
+        // Android Focus workspace opens. Optional chaining can silently do
+        // nothing during WebView cold start, losing the user's action.
         webView.evaluateJavascript(
-            "window.MichelsLifeMobileExperience?.openFocus?.();", null
-        )
+            "(function(){try{return window.MichelsLifeMobileExperience?.openFocus?.()===true;}" +
+                "catch(_){return false;}})();"
+        ) { opened ->
+            if (generation != notificationOpenGeneration || isDestroyed ||
+                !intent.getBooleanExtra(NativeFocusAlarm.EXTRA_OPEN_FOCUS, false)) {
+                return@evaluateJavascript
+            }
+            if (opened == "true") {
+                intent.removeExtra(NativeFocusAlarm.EXTRA_OPEN_FOCUS)
+                pendingNotificationOpen = null
+            } else if (FocusDeliveryPolicy.shouldRetryNotificationOpen(true, false, retries)) {
+                val retry = Runnable { attemptNotificationFocusOpen(generation, retries + 1) }
+                pendingNotificationOpen = retry
+                webView.postDelayed(retry, 300L)
+            }
+            // A timed-out request remains pending for a later onResume or
+            // page-finished event; no uncontrolled polling and no fake success.
+        }
     }
 
     override fun onNewIntent(newIntent: Intent) {
@@ -125,10 +164,12 @@ class MainActivity : Activity() {
                 "window.MichelsLifeMobileExperience?.resyncNativeNotification?.();" +
                 "window.dispatchEvent(new Event('focus'));", null
             )
+            openPomodoroFromNotification()
         }
     }
 
     override fun onPause() {
+        stopPendingNotificationOpen()
         if (::webView.isInitialized) webView.onPause()
         super.onPause()
     }
@@ -140,6 +181,7 @@ class MainActivity : Activity() {
     }
 
     override fun onDestroy() {
+        stopPendingNotificationOpen()
         executor.shutdownNow()
         if (::webView.isInitialized) webView.destroy()
         super.onDestroy()

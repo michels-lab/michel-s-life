@@ -95,6 +95,17 @@ jobs:
       - name: Validate Android version metadata
         run: python android/tools/validate_android_version.py
 
+      - name: Test real Focus native alarm ownership and notification launch policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/mlv-focus-delivery-contract
+          javac -encoding UTF-8 -d /tmp/mlv-focus-delivery-contract \
+            android/app/src/main/java/com/michelslab/michelslife/FocusDeliveryPolicy.java \
+            tools/FocusDeliveryPolicyTest.java
+          java -cp /tmp/mlv-focus-delivery-contract FocusDeliveryPolicyTest
+          node tools/test_android_focus_notification_ui.mjs
+
       - name: Validate Android mobile UX layer
         run: |
           node --check android/android-bridge.js
