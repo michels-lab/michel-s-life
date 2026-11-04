@@ -250,6 +250,22 @@ test('corrupt duplicate journal records are never trusted', () => {
     assert.equal(s.getItem(boardKey),'A');
   }
 });
+test('valid owned recovery journal rolls back after abrupt shutdown', () => {
+  const {s,boundary:b}=make();ready(b,A);
+  const key='michelsLife.accountBoundary.v1.recovery.'+A+'.'+'a'.repeat(64);
+  const savedBoard=s.getItem(boardKey);
+  s.setItem(txnKey,JSON.stringify({version:1,changes:[
+    {key,before:null},
+    {key:boardKey,before:savedBoard}
+  ]}));
+  s.setItem(key,'INTERRUPTED RECOVERY WRITE');
+  s.setItem(boardKey,'INTERRUPTED BOARD WRITE');
+  const restarted=reconstruct(s);
+  assert.equal(restarted.active().ownerId,A);
+  assert.equal(s.getItem(key),null);
+  assert.equal(s.getItem(boardKey),savedBoard);
+  assert.equal(s.getItem(txnKey),null);
+});
 test('malformed boundary-prefix keys cannot be restored from a forged journal', () => {
   const {s}=make({[boardKey]:'SAFE BOARD'});
   const forgedKeys=[
