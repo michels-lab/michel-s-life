@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 306,
-  "classified_files_total": 302,
+  "tracked_files_total": 313,
+  "classified_files_total": 309,
   "docs_content_inspected": 91,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -18,19 +18,19 @@
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 8,
-    "source": 97,
-    "test": 14,
+    "source": 101,
+    "test": 16,
     "text_metadata": 1,
     "web_ui": 3,
-    "workflow": 33
+    "workflow": 34
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "83d377c659f2a3ad4b91571d92c5870b1523ba0d68a37f96a19acabdd5b52ced",
-  "evidence_fingerprint": "13b5acf3692d2d8f954a04b69267f95d82dc14c9468f5c8dc567002e77a137db",
+  "inventory_fingerprint": "b93e7ad4116731e281cc654d46d89dcd9aa2483c88fc2b91309c9344f7bb9a03",
+  "evidence_fingerprint": "74b08474a1944e47cdae90c6168f7846f9fe53235fa377dd037b256c646f6ece",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -220,6 +220,13 @@
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
       "blob": "19aa5bb9d2bebe319ed84f557974731716742e1d"
+    },
+    {
+      "path": ".github/workflows/granada-story-focus-provenance.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "7c52d9b9b412d1541d784eb3e13168dbcf2f9cd7"
     },
     {
       "path": ".github/workflows/privacy-pages.yml",
@@ -926,7 +933,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "1dc9008bdcd1588205aef74b93200189b79bbc72"
+      "blob": "8428dd86e3677ed9de492bb57fa3ea50a4e85f80"
     },
     {
       "path": "android/settings.gradle.kts",
@@ -934,6 +941,13 @@
       "purpose": "platform build/project/installer script",
       "certainty": "inferred",
       "blob": "60eae73937805be9ef1c524b7f553f0d54bf9336"
+    },
+    {
+      "path": "android/story-focus-safe-area.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "fe5b25dd2b2060df99bfbbd8d6e730789c3870e5"
     },
     {
       "path": "android/tools/compare_signed_native_kpis.py",
@@ -1692,6 +1706,13 @@
       "blob": "1ce49b54d37debbe101339241c884f15d121eaf2"
     },
     {
+      "path": "tools/granada_story_diagnostic_core.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "a7ce521f982d3bcce261253cbe134be0cd364f32"
+    },
+    {
       "path": "tools/inject_bundle_asset.py",
       "role": "source",
       "purpose": "code/test implementation",
@@ -1839,6 +1860,20 @@
       "blob": "7699962d062396fb478f8bf935b106cc44c7fc6f"
     },
     {
+      "path": "tools/test_granada_story_diagnostic_core.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "9e23d5980bcc8f8abea8585cd39151c114b60889"
+    },
+    {
+      "path": "tools/test_granada_story_safe_area.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "5dd4ddbf7864413e0f0ec1960844a9635d58ab1d"
+    },
+    {
       "path": "tools/test_repository_file_auditor.py",
       "role": "test",
       "purpose": "code/test implementation",
@@ -1977,6 +2012,13 @@
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "39d40d1781fdbaf1a3283967baf7e488f0ec1834"
+    },
+    {
+      "path": "tools/ui_granada_story_focus_matrix.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "76b2b9defe79743d12980489fedbcd7ff7024ae0"
     },
     {
       "path": "tools/ui_i18n_generated_corpus_smoke.mjs",
@@ -2126,6 +2168,13 @@
       "blob": "0e30f3a5520429187c75a03456b65a0d31b1f5c6"
     },
     {
+      "path": "tools/validate_granada_inline_scripts.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "c30dc5a0a6bb23cc3711e87c498c158fc1d8cad9"
+    },
+    {
       "path": "tools/validate_windows_build_pause.py",
       "role": "source",
       "purpose": "code/test implementation",
@@ -2185,20 +2234,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "1c4680694332f48d",
+      "id": "6e893375bdcfac48",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "38 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-drive-privacy.yml, .github/workflows/granada-android-evidence-gate.yml",
+      "observation": "46 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-drive-privacy.yml, .github/workflows/granada-android-evidence-gate.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "bec241b1ef55769a",
+      "id": "82911d5598710a80",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "1 implementation/config paths changed since this log's last commit; examples: tools/ui_android_story_navigation_smoke.mjs",
+      "observation": "9 implementation/config paths changed since this log's last commit; examples: .github/workflows/granada-story-focus-provenance.yml, android/mobile-sections.js, android/story-focus-safe-area.mjs, tools/granada_story_diagnostic_core.mjs, tools/test_granada_story_diagnostic_core.mjs, tools/test_granada_story_safe_area.mjs",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
