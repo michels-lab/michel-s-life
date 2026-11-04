@@ -35,31 +35,43 @@ try{
     },seed);
     const page=await context.newPage();
     const errors=[];
-    // Keep the real failure red, but retain script provenance for the
-    // intermittent Android 412px "Unexpected end of input" page error.
-    // Do not export URLs with query strings, source code or page contents.
+    const provenance=[];
+    const scriptSources=new Map();
+    // Playwright owns the pass/fail count. CDP supplies bounded diagnostics
+    // separately, so one JavaScript exception never counts as two failures.
     const safeLocation=raw=>{
       try {
         const url=new URL(raw,base);
-        return url.origin===new URL(base).origin ? url.pathname : '[external-script]';
+        if(url.origin!==new URL(base).origin)return '[external-script]';
+        // Avoid reporting app/account identifiers in arbitrary URL paths.
+        return /^\\/(?:src\\/|android\\/|assets\\/|scripts\\/)/.test(url.pathname)
+          ? url.pathname.slice(0,180) : '[inline-or-app-script]';
       } catch { return '[unknown-script]'; }
     };
     page.on('pageerror',e=>errors.push({
-      message:String(e.message||'').slice(0,200),
-      stack:String(e.stack||'').split('\n').slice(0,4).map(frame=>
-        frame.replace(/https?:\/\/[^\s)]+/g,match=>safeLocation(match))).join(' | ').slice(0,600)
+      message:String(e.message||'').slice(0,160),
+      stack:String(e.stack||'').split('\\n').slice(0,4).map(frame=>
+        frame.replace(/https?:\\/\\/[^\\s)]+/g,match=>safeLocation(match))).join(' | ').slice(0,480)
     }));
     const cdp=await context.newCDPSession(page);
     await cdp.send('Runtime.enable');
+    await cdp.send('Debugger.enable');
+    cdp.on('Debugger.scriptParsed',d=>{
+      if(d?.scriptId&&scriptSources.size<500)
+        scriptSources.set(d.scriptId,safeLocation(d.url||''));
+    });
     cdp.on('Runtime.exceptionThrown',({exceptionDetails:d})=>{
-      // CDP often provides source coordinates even when pageerror.stack is empty.
-      // Record only the local script path/position and bounded exception category.
-      if(!d||errors.length>=8)return;
-      const message=String(d.exception?.className||d.text||'ScriptError').slice(0,100);
-      const source=safeLocation(d.url||'');
-      const key=source+':'+d.lineNumber+':'+d.columnNumber;
-      if(!errors.some(x=>x.cdpLocation===key))
-        errors.push({message,cdpLocation:key});
+      if(!d||provenance.length>=8)return;
+      const frame=d.stackTrace?.callFrames?.[0];
+      const source=safeLocation(d.url||frame?.url||'')==='[unknown-script]'
+        ? scriptSources.get(d.executionContextId)||'[inline-or-app-script]'
+        : safeLocation(d.url||frame?.url||'');
+      provenance.push({
+        category:String(d.exception?.className||d.text||'ScriptError').slice(0,80),
+        script:source,
+        line:Number.isInteger(frame?.lineNumber)?frame.lineNumber:d.lineNumber,
+        column:Number.isInteger(frame?.columnNumber)?frame.columnNumber:d.columnNumber
+      });
     });
     await page.goto(base,{waitUntil:'domcontentloaded',timeout:60000});
     await page.waitForFunction(()=>
@@ -173,7 +185,7 @@ try{
       assert.equal(progressProjection(await page.evaluate(k=>localStorage.getItem(k),key)),
         baselineProgress,'Mission IDs, XP or completions changed on WebView reload');
     }
-    assert.equal(errors.length,0,'App page errors: '+JSON.stringify(errors));
+    assert.equal(errors.length,0,'App page errors: '+JSON.stringify({errors,provenance}));
     console.log('GRANADA_DATA_HEALTH_ANDROID_PASS '+JSON.stringify({
       width,visible:true,inspect:true,unsafeRejected:true,comparison:true,
       twoReloads:true,storageUntouched:true,pageErrors:0
