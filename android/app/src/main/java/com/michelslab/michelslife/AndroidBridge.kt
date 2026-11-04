@@ -53,6 +53,28 @@ class AndroidBridge(
         return NativeFocusAlarm.status(activity).toString()
     }
 
+    /** When the user disabled just the Focus notification channel, a new
+     * POST_NOTIFICATIONS permission dialog cannot restore that channel.
+     * Open the genuine Android app-notification settings instead. */
+    @JavascriptInterface
+    fun openFocusNotificationSettings() {
+        activity.runOnUiThread {
+            try {
+                activity.startActivity(
+                    Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                        putExtra(
+                            android.provider.Settings.EXTRA_APP_PACKAGE,
+                            activity.packageName
+                        )
+                    }
+                )
+            } catch (_: Exception) {
+                // OS settings are not guaranteed on every manufacturer.
+                // Do not claim notification delivery was enabled.
+            }
+        }
+    }
+
     @JavascriptInterface
     fun postMessage(raw: String) {
         try {
