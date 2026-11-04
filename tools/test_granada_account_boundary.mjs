@@ -250,6 +250,22 @@ test('corrupt duplicate journal records are never trusted', () => {
     assert.equal(s.getItem(boardKey),'A');
   }
 });
+test('malformed boundary-prefix keys cannot be restored from a forged journal', () => {
+  const {s}=make({[boardKey]:'SAFE BOARD'});
+  const forgedKeys=[
+    'michelsLife.accountBoundary.v1.unrelated.secret',
+    'michelsLife.accountBoundary.v1.account.../outside',
+    'michelsLife.accountBoundary.v1.recovery.user-aaaaa.invalid',
+    'michelsLife.accountBoundary.v1.transaction.extra'
+  ];
+  for(const key of forgedKeys){
+    s.setItem(txnKey,JSON.stringify({version:1,changes:[{key,before:'FORGED VALUE'}]}));
+    deny(()=>reconstruct(s),'corrupt_boundary_transaction');
+    assert.equal(s.getItem(key),null,'Forged key must not be modified: '+key);
+    assert.equal(s.getItem(boardKey),'SAFE BOARD');
+    s.removeItem(txnKey);
+  }
+});
 test('failure writing recovery journal never switches owners or board', () => {
   const {s,boundary:b}=make();ready(b,A);
   s.setItem(boardKey,'A ONLY');
