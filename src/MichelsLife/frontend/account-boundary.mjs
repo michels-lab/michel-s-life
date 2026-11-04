@@ -9,6 +9,14 @@ const recoveryKey = (id, board, companions = null) =>
 const accountKey = id => `${BOUNDARY_PREFIX}account.${id}`;
 const VALID_ID = /^[A-Za-z0-9_-]{6,128}$/;
 const SHAREABLE_COMPANIONS = new Set(['michelsLife.journal.v30184']);
+// Only keys that this boundary actually writes may be replayed from a
+// crash journal. A broad prefix check could overwrite unrelated local data.
+const isJournalKey = key => key === ACTIVE || key === UNCLAIMED ||
+  key === GUEST || key === RECEIPT ||
+  (key.startsWith(`${BOUNDARY_PREFIX}account.`) &&
+    VALID_ID.test(key.slice(`${BOUNDARY_PREFIX}account.`.length))) ||
+  (key.startsWith(`${BOUNDARY_PREFIX}recovery.`) &&
+    /^[A-Za-z0-9_-]{6,128}\.[a-f0-9]{64}$/.test(key.slice(`${BOUNDARY_PREFIX}recovery.`.length)));
 
 // Browser and Node-compatible SHA-256; no Node-only API or external dependency.
 const SHA_K = [
@@ -171,7 +179,7 @@ export class AccountBoundary {
       const key = change?.key, before = change?.before;
       if (typeof key !== 'string' || seen.has(key) || key === TRANSACTION ||
           !(key === this.boardKey || key === this.revisionKey ||
-            this.companionKeys.includes(key) || key.startsWith(BOUNDARY_PREFIX)) ||
+            this.companionKeys.includes(key) || isJournalKey(key)) ||
           !(before === null || typeof before === 'string'))
         throw new BoundaryError('corrupt_boundary_transaction');
       seen.add(key);
