@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 313,
-  "classified_files_total": 309,
+  "tracked_files_total": 316,
+  "classified_files_total": 312,
   "docs_content_inspected": 91,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -18,8 +18,8 @@
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 8,
-    "source": 101,
-    "test": 16,
+    "source": 103,
+    "test": 17,
     "text_metadata": 1,
     "web_ui": 3,
     "workflow": 34
@@ -29,8 +29,8 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "b93e7ad4116731e281cc654d46d89dcd9aa2483c88fc2b91309c9344f7bb9a03",
-  "evidence_fingerprint": "74b08474a1944e47cdae90c6168f7846f9fe53235fa377dd037b256c646f6ece",
+  "inventory_fingerprint": "4c75fbb4ac39f2cf52250cc906bc3fded287545cb167415b8709d5c113501771",
+  "evidence_fingerprint": "09214ed40236a0b0ac69b9f60869b1166239155f2b45719785e500d3bf0aa669",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -72,7 +72,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "c784ad0b10bac9963755acb00e2f40d98ba228bd"
+      "blob": "052e4102ebae2ee7e323f4a813eddc645f4e9948"
     },
     {
       "path": ".github/workflows/android-direct-private-candidate-v026.yml",
@@ -562,7 +562,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "95d8fb2812ad40ffd1a4b045851d1cbf6b46f096"
+      "blob": "124dcc693f57eaafdf207771b9479e22da3c68b2"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/CloudSync.kt",
@@ -570,6 +570,13 @@
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "9ad158ca429634f115837426efcfc492bf7ae2a6"
+    },
+    {
+      "path": "android/app/src/main/java/com/michelslab/michelslife/FocusDeliveryPolicy.java",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "83bc5c6bf4e8f9c6d07a677c121ec46b04b661b2"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/GoogleAuthorizationCoordinator.kt",
@@ -583,14 +590,14 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "1ee63530e8535b232370781216a19501a0fdf66b"
+      "blob": "94bcc484a101b142015f24ac6f7a578f804a4c19"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt",
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "4771eab09620d58b3edaaf561e050bc48765246e"
+      "blob": "fc1e4631c7b5726b23e260fda7946a425478e990"
     },
     {
       "path": "android/app/src/main/res/drawable-nodpi/michels_life_logo.jpg",
@@ -926,7 +933,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "5c3d076c52fb85b543db7dd04d1af3f396a973ee"
+      "blob": "fc31a7610b36dec1a5201e12bf81c9cf2ae70d57"
     },
     {
       "path": "android/mobile-sections.js",
@@ -961,7 +968,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "524b9d22e09a9435b633f03e94f091bbdf39ea12"
+      "blob": "1dbf5a682506036301bd8d4b01f34dc58a5d8d69"
     },
     {
       "path": "android/tools/native_webview_state_probe.py",
@@ -1552,6 +1559,13 @@
       "blob": "9db6f2cdf31423824d5c178dfb6352983468acfb"
     },
     {
+      "path": "tools/FocusDeliveryPolicyTest.java",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "9475fa8d5ce6963cef4a2b38c910629fb3018b9e"
+    },
+    {
       "path": "tools/android_emulator_evidence_manifest.py",
       "role": "source",
       "purpose": "code/test implementation",
@@ -1767,6 +1781,13 @@
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "38a9d4daa1755a2aa4c68cf561df28e4d0a73ff7"
+    },
+    {
+      "path": "tools/test_android_focus_notification_ui.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "5b6598023e7b29bbc30ff4a4c7031492889eb8f6"
     },
     {
       "path": "tools/test_cloud_restore_storage.mjs",
@@ -2234,20 +2255,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "6e893375bdcfac48",
+      "id": "7b20cb134de724d5",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "46 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-drive-privacy.yml, .github/workflows/granada-android-evidence-gate.yml",
+      "observation": "54 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-drive-privacy.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "82911d5598710a80",
+      "id": "ea0811a0b1ad6d49",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "9 implementation/config paths changed since this log's last commit; examples: .github/workflows/granada-story-focus-provenance.yml, android/mobile-sections.js, android/story-focus-safe-area.mjs, tools/granada_story_diagnostic_core.mjs, tools/test_granada_story_diagnostic_core.mjs, tools/test_granada_story_safe_area.mjs",
+      "observation": "18 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/granada-story-focus-provenance.yml, android/app/src/main/java/com/michelslab/michelslife/AndroidBridge.kt, android/app/src/main/java/com/michelslab/michelslife/FocusDeliveryPolicy.java, android/app/src/main/java/com/michelslab/michelslife/MainActivity.kt, android/app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
