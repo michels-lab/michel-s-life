@@ -53,8 +53,8 @@ export function installStoryFocusSafeArea(win=window){
   scheduled=false;if(disposed)return null;
   const active=!!doc.querySelector('#tab-story.active .v30162-story-form');
   const mini=bounds('mlv-android-mini-focus'),nav=bounds('mlv-android-bottom-nav');
-  const bounds=viewport();
-  const clearance=calculateStoryClearance({viewportHeight:bounds.bottom,miniTop:mini.rect?.top,
+  const view=viewport();
+  const clearance=calculateStoryClearance({viewportHeight:view.bottom,miniTop:mini.rect?.top,
     miniVisible:mini.visible,navTop:nav.rect?.top,navVisible:nav.visible});
   const enable=active&&mini.visible;
   if(doc.body.classList.contains('mlv-story-focus-clearance')!==enable)
