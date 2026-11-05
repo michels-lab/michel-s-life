@@ -310,7 +310,24 @@ try{
      backend.writes===beforeConflictWrites&&Number(backend.remote.revision)===winner,
      'Offline local edit was altered or remotely uploaded before explicit Use Cloud');
 
-  await android.page.evaluate(async()=>window.SupabaseSyncV30216.pull({reload:false}));
+  const beforePull=await android.page.evaluate(()=>window.SupabaseSyncV30216.capture());
+  try {
+    await android.page.evaluate(async()=>window.SupabaseSyncV30216.pull({reload:false}));
+  } catch (error) {
+    const afterPull=await android.page.evaluate(()=>window.SupabaseSyncV30216.capture());
+    const before=JSON.parse(beforePull),after=JSON.parse(afterPull);
+    const changed=(a,b)=>[...new Set([...Object.keys(a||{}),...Object.keys(b||{})])]
+      .filter(key=>JSON.stringify(a?.[key])!==JSON.stringify(b?.[key]));
+    // Names only, never export the Journal, mission body, credentials or state.
+    console.error('GRANADA_CLOUD_DOWNLOAD_CONCURRENT_FIELDS',
+      JSON.stringify({
+        stateFields:changed(before.state,after.state).slice(0,35),
+        storageKeys:changed(before.localStorage,after.localStorage).slice(0,35),
+        offlineJournalPreserved:(await snap(android)).journal===OFFLINE_JOURNAL,
+        remoteRevisionUnchanged:Number(backend.remote.revision)===winner
+      }));
+    throw error;
+  }
   const safety=backend.history.filter(h=>
     h.reason==='before_download_local'&&h.source_platform==='android'&&
     JSON.stringify(h.snapshot).includes(OFFLINE_JOURNAL)&&
