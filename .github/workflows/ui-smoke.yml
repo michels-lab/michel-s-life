@@ -150,10 +150,11 @@ jobs:
           node --check tools/ui_android_focus_alarm_lifecycle_smoke.mjs
           node tools/ui_android_focus_alarm_lifecycle_smoke.mjs
 
-      - name: Require honest Android Google Calendar provider-unavailable status
+      - name: Verify Android Calendar fallback and real Read button via synthetic native response
         run: |
           export MLV_UI_URL=http://127.0.0.1:4173
           node tools/ui_android_google_calendar_truth_smoke.mjs
+          node tools/ui_android_calendar_read_smoke.mjs
 
       - name: Audit Supabase cross-device Windows Android sync
         run: |
