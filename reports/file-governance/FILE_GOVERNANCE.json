@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 316,
-  "classified_files_total": 312,
+  "tracked_files_total": 326,
+  "classified_files_total": 322,
   "docs_content_inspected": 91,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -18,19 +18,19 @@
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 8,
-    "source": 103,
-    "test": 17,
+    "source": 105,
+    "test": 24,
     "text_metadata": 1,
     "web_ui": 3,
-    "workflow": 34
+    "workflow": 35
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "4c75fbb4ac39f2cf52250cc906bc3fded287545cb167415b8709d5c113501771",
-  "evidence_fingerprint": "09214ed40236a0b0ac69b9f60869b1166239155f2b45719785e500d3bf0aa669",
+  "inventory_fingerprint": "1a8c8474652cd784c3acdcf6df480ab7b768618c211a08a2c318f697b62c859c",
+  "evidence_fingerprint": "6a26696ed1add1a056657126b089a52cfa8cd059282a02c499782dc7edb0958b",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -143,6 +143,13 @@
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
       "blob": "5163f5e1348f32b455d7791aea6b4a5d649a9f31"
+    },
+    {
+      "path": ".github/workflows/granada-account-boundary.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "59ee217ac7437acab7dd6ab39d74391dc34d844b"
     },
     {
       "path": ".github/workflows/granada-android-drive-privacy.yml",
@@ -1510,6 +1517,13 @@
       "blob": "fa8554016267895ee012121991c5513711aaddb9"
     },
     {
+      "path": "src/MichelsLife/frontend/account-boundary.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "b25fff46baca1e2584f88bb67ab238157a3b0cad"
+    },
+    {
       "path": "src/MichelsLife/frontend/i18n.js",
       "role": "source",
       "purpose": "code/test implementation",
@@ -1521,7 +1535,7 @@
       "role": "web_ui",
       "purpose": "local HTML documentation or web interface",
       "certainty": "inferred",
-      "blob": "0736b0f414e3767c7dc24b94e9d72beca72a4e0d"
+      "blob": "fe55d723cc4b6ccb7499994d80824f09897abcc2"
     },
     {
       "path": "store/AppxManifest.template.xml",
@@ -1804,6 +1818,13 @@
       "blob": "a4edf2c6e0277bd92afdae70f1fe44873ef7154b"
     },
     {
+      "path": "tools/test_granada_account_boundary.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "683724c7e0af6b378e10c5de6e24dfcf4c3ac9e5"
+    },
+    {
       "path": "tools/test_granada_android16_host_verdict.py",
       "role": "test",
       "purpose": "code/test implementation",
@@ -1874,6 +1895,13 @@
       "blob": "d616fe9bcf953dc8008c2b0da5a31077ccbbe7c7"
     },
     {
+      "path": "tools/test_granada_restore_review_gate.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "e79901c911c47f51fee039d716b9a37be2bdc554"
+    },
+    {
       "path": "tools/test_granada_safe_backup_converter.py",
       "role": "test",
       "purpose": "code/test implementation",
@@ -1893,6 +1921,41 @@
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "5dd4ddbf7864413e0f0ec1960844a9635d58ab1d"
+    },
+    {
+      "path": "tools/test_granada_supabase_account_race.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "1fb96281cc04f82b33142cb0f142f1371eb88cbb"
+    },
+    {
+      "path": "tools/test_granada_supabase_entry_gate.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "2302dff4e880cfbc789a7e1951a0c9eb5f5ce0b3"
+    },
+    {
+      "path": "tools/test_granada_supabase_inflight_edits.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "45f9799d2d16b982f1a4a23c828476723295636c"
+    },
+    {
+      "path": "tools/test_granada_supabase_inflight_restore.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "588fa845b0aa87b070959ee4427aac64e44508cd"
+    },
+    {
+      "path": "tools/test_granada_supabase_stale_overview_guest.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "1096b13c7072bbd5324b99e871710af4a4b3dd64"
     },
     {
       "path": "tools/test_repository_file_auditor.py",
@@ -2007,6 +2070,13 @@
       "blob": "b20a66756bec8aa4c55cbb3128349c04ad07a595"
     },
     {
+      "path": "tools/ui_granada_account_boundary_crash_browser.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "090f71cd434ec1dcbfc15c750bb9ea0b82f1e56d"
+    },
+    {
       "path": "tools/ui_granada_android_usability_audit.mjs",
       "role": "source",
       "purpose": "code/test implementation",
@@ -2025,14 +2095,14 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "355c45a69f3fb69c9dcefc94cb43193382d4f3f6"
+      "blob": "0ce421808dac600d4cad211e4eb1f40dc361aacc"
     },
     {
       "path": "tools/ui_granada_large_projects_story_roundtrip_smoke.mjs",
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "39d40d1781fdbaf1a3283967baf7e488f0ec1834"
+      "blob": "e8801f1dba6de5294073ca3d777709e64aa65ea3"
     },
     {
       "path": "tools/ui_granada_story_focus_matrix.mjs",
@@ -2137,28 +2207,28 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "3db99772fce9dcd51653b993e4d65673c5b0e958"
+      "blob": "e1f2bb76b818f8a27236f0dd5a12f8efaeb8e6ce"
     },
     {
       "path": "tools/ui_supabase_android_sync_smoke.mjs",
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "5494c13177ef92ce740448001861d535e8a66e5e"
+      "blob": "c8035bca980b1450de751aef92644c401c216f9f"
     },
     {
       "path": "tools/ui_supabase_cross_device_smoke.mjs",
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "0949e08976b2296ca44deb7de3c3e2a6de1ccf9b"
+      "blob": "df8f0fc9e4ff0a6c6f90d62bfee29620f68f1ae7"
     },
     {
       "path": "tools/ui_supabase_sync_smoke.mjs",
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "3c21fb77afe952252542f152f80690b490aed2d0"
+      "blob": "09dae90f088a6d06ed902d0a1fcdf8dad4571c81"
     },
     {
       "path": "tools/ui_weekly_premium_progress_roundtrip_smoke.mjs",
@@ -2255,20 +2325,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "7b20cb134de724d5",
+      "id": "4bb8e6ad6e70f0d2",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "54 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-drive-privacy.yml",
+      "observation": "69 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-account-boundary.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "ea0811a0b1ad6d49",
+      "id": "342d8ab59f96cc2f",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "18 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/granada-story-focus-provenance.yml, android/app/src/main/java/com/michelslab/michelslife/AndroidBridge.kt, android/app/src/main/java/com/michelslab/michelslife/FocusDeliveryPolicy.java, android/app/src/main/java/com/michelslab/michelslife/MainActivity.kt, android/app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt",
+      "observation": "35 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/granada-account-boundary.yml, .github/workflows/granada-story-focus-provenance.yml, android/app/src/main/java/com/michelslab/michelslife/AndroidBridge.kt, android/app/src/main/java/com/michelslab/michelslife/FocusDeliveryPolicy.java, android/app/src/main/java/com/michelslab/michelslife/MainActivity.kt",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
