@@ -28,6 +28,7 @@ checks={
  "safe event links":"https://calendar.google.com/" in gateway and "safeLink" in gateway,
  "real bridge action":'"calendarRead" -> activity.runOnUiThread' in bridge and
     "calendarGateway.readEvents(" in bridge,
+ "account identity required":'if (email.isBlank()) throw SecurityException' in bridge,
  "no automatic provider writes":'"sync" -> respondError(' in bridge and
     'bridge(\'calendarRead\',syncRange())' in ui,
  "no auto OAuth": "if(opts.silent)return null;" in ui,
