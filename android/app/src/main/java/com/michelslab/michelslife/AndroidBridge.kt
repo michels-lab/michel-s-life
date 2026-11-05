@@ -15,10 +15,13 @@ class AndroidBridge(
     private val activity: MainActivity,
     private val webView: WebView,
     private val auth: GoogleAuthorizationCoordinator,
+    private val calendarConsent: AndroidCalendarConsent,
     private val cloud: DriveCloudEngine,
     private val meta: CloudMetaStore,
     private val executor: ExecutorService
 ) {
+    private val calendarGateway = AndroidCalendarGateway()
+
     companion object {
         private const val CHANNEL = "michels-life-google-calendar"
         private const val RESPONSE = "michels-life-google-calendar-response"
@@ -74,6 +77,9 @@ class AndroidBridge(
             }
         }
     }
+
+    @JavascriptInterface
+    fun calendarReadAvailable(): Boolean = true
 
     @JavascriptInterface
     fun postMessage(raw: String) {
@@ -174,12 +180,42 @@ class AndroidBridge(
                     respondError(requestId, e.message ?: "Could not open Calendar.")
                 }
             }
-            // Android OAuth currently has Drive app-folder/email grants, not
-            // the Calendar read/write grants or Calendar provider implementation.
-            // Never report an empty successful sync or a fictional timestamp.
+            // Explicit Android-only Calendar read. Uses an independent
+            // read-only consent token, never the Drive app-folder credential.
+            // No mission, XP, Supabase or cloud backup is mutated here.
+            "calendarRead" -> activity.runOnUiThread {
+                calendarConsent.authorize(true) { result ->
+                    result.onFailure {
+                        respondError(requestId, "Google Calendar permission was not granted or is unavailable.")
+                    }
+                    result.onSuccess { authorized ->
+                        if (authorized == null) {
+                            respondError(requestId, "Google Calendar permission is required.")
+                            return@onSuccess
+                        }
+                        executor.execute {
+                            try {
+                                val email = cloud.fetchUserEmail(authorized.accessToken)
+                                val events = calendarGateway.readEvents(
+                                    authorized.accessToken,
+                                    payload.optString("timeMin"),
+                                    payload.optString("timeMax")
+                                )
+                                respondOk(requestId, events.put("account", email))
+                            } catch (_: Exception) {
+                                // Never echo provider JSON, bearer credentials
+                                // or account identifiers into errors/logs.
+                                respondError(requestId, "Google Calendar could not be read. Check the connection and permissions.")
+                            }
+                        }
+                    }
+                }
+            }
+            // The original desktop 'sync' can publish missions in bulk.
+            // Native Android does not do that without per-action write consent.
             "sync" -> respondError(
                 requestId,
-                "Google Calendar sync is not available on Android yet. No calendar events were read or written."
+                "Google Calendar publishing is not enabled on Android. No events were written."
             )
             "diagnostics" -> respondOk(requestId, JSONObject()
                 .put("platform", "Android")
