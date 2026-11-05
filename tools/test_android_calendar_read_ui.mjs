@@ -87,7 +87,7 @@ passed++;
 
 const separate=harness();
 const p=separate.read();
-assert.equal(await separate.read(),null === separate.runtime.lastResult ? null : separate.runtime.lastResult);
+assert.equal(await separate.read(),null,'a second simultaneous tap must not launch another request');
 await p;
 assert.equal(separate.requests.length,1,'Concurrent reads cannot duplicate OAuth requests');
 passed++;
