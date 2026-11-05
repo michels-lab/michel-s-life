@@ -127,13 +127,28 @@ try{
     session:window.SupabaseSyncV30216.session()
   }));
   ok(first.runtime.connected&&first.runtime.cloudReady,'Sign-in did not activate Supabase runtime');
-  ok(Number.isInteger(first.mock.remote?.revision)&&first.mock.remote.revision>=1&&first.mock.pushes===1,'First sign-in did not create exactly one master snapshot: '+JSON.stringify({revision:first.mock.remote?.revision,pushes:first.mock.pushes,devices:first.mock.devices}));
+  ok(first.mock.remote===null&&first.mock.pushes===0,
+    'P0: first sign-in must NOT automatically create a cloud master: '+JSON.stringify(first.mock));
   ok(first.mock.devices>=1,'Device registration missing');
+  const automatic=await page.evaluate(async()=>window.SupabaseSyncV30216.sync('auto',{silent:true}));
+  ok(automatic?.requiresOwnerConfirmation===true,'Empty cloud must require an explicit owner choice');
+  ok((await page.evaluate(()=>window.__supaMock.pushes))===0,'Automatic initial sync pushed data without consent');
+  // Explicit owner choice through the real production API, not a mocked
+  // provider write. Later dirty-sync, CAS and cloud history assertions remain.
+  const created=await page.evaluate(async()=>window.SupabaseSyncV30216.sync('upload',{silent:true}));
+  const initial=await page.evaluate(()=>({
+    revision:window.__supaMock.remote?.revision,
+    pushes:window.__supaMock.pushes,
+    ownerId:window.__supaMock.remote?.user_id
+  }));
+  ok(created?.revision===initial.revision&&initial.revision>=1&&initial.pushes===1&&
+    initial.ownerId==='00000000-0000-0000-0000-000000000216',
+    'Explicit owner upload did not create a correctly scoped cloud master: '+JSON.stringify(initial));
 
   await page.evaluate(()=>{state.xp=Number(state.xp||0)+1;window.save();});
   await page.waitForTimeout(2900);
   const dirtyPush=await page.evaluate(()=>({revision:window.__supaMock.remote?.revision,pushes:window.__supaMock.pushes,meta:JSON.parse(localStorage.getItem('michelsLife.supabase.meta.v30216')||'{}')}));
-  ok(dirtyPush.revision===first.mock.remote.revision+1&&dirtyPush.pushes===first.mock.pushes+1,'Dirty save did not generate exactly one new revision: '+JSON.stringify(dirtyPush));
+  ok(dirtyPush.revision===initial.revision+1&&dirtyPush.pushes===initial.pushes+1,'Dirty save did not generate exactly one new revision: '+JSON.stringify(dirtyPush));
   ok(dirtyPush.meta.dirty===false,'Dirty flag was not cleared after upload');
 
   const beforeConflict=dirtyPush.pushes;
