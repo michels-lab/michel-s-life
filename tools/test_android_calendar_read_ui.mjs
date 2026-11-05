@@ -61,6 +61,8 @@ passed++;
 normal.changeOwner('account-b');
 assert.equal(normal.view().length,0);
 assert.equal(normal.runtime.calendarAccount,'');
+assert.equal(normal.runtime.lastResult,null,
+  'Cached Google provider response must be wiped after A-to-B switch');
 passed++;
 
 const automatic=harness();
@@ -89,6 +91,8 @@ resolveProvider({events:[{id:'foreign',title:'Wrong account'}],account:'other@ex
 assert.equal(await pending,null);
 assert.equal(inflight.runtime.calendarEvents.length,0,
   'An A->B sign-in during the request must discard A Calendar events');
+assert.equal(inflight.runtime.lastResult,null,
+  'A late provider reply may not survive as a cached result');
 assert.match(inflight.runtime.error,/account changed/);
 passed++;
 
