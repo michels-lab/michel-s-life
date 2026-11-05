@@ -32,7 +32,8 @@ checks={
     'bridge(\'calendarRead\',syncRange())' in ui,
  "no auto OAuth": "if(opts.silent)return null;" in ui,
  "ephemeral Android event view":"calendarEvents:[]" in ui and
-    "calendarViewEvents(){return window.__MICHELSLIFE_PLATFORM__==='android'?runtime.calendarEvents" in ui,
+    "return runtime.calendarEvents" in ui and
+    "runtime.calendarOwnerId!==current" in ui,
  "prevents account switch disclosure":"accountNow!==accountAtStart" in ui,
  "real read button":"Read Google Calendar" in ui,
  "does not store bearer credentials":"SharedPreferences" not in consent+gateway and
