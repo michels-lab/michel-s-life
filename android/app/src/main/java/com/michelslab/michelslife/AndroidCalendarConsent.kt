@@ -11,11 +11,10 @@ import com.google.android.gms.common.api.Scope
  * Separate per-action Google Calendar consent. This does not reuse Drive's
  * app-folder credential, persist tokens, or automatically request permissions.
  *
- * Future bridge integration must forward onActivityResult(requestCode, ...) and
- * verify the resulting Google identity belongs to the currently selected user
- * before any publish/remove action. The bridge/UI are currently owned by #134.
+ * MainActivity forwards the consent result to this coordinator. The Android
+ * bridge uses READ_SCOPE only and never exposes remote writes on this route.
  */
-internal class AndroidCalendarConsent(private val activity: Activity) {
+class AndroidCalendarConsent(private val activity: Activity) {
     companion object { private const val REQUEST_CALENDAR_CONSENT = 4192 }
 
     data class Session(val accessToken: String, val grantedScopes: List<String>)
