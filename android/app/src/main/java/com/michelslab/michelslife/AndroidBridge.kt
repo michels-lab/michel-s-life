@@ -196,6 +196,7 @@ class AndroidBridge(
                         executor.execute {
                             try {
                                 val email = cloud.fetchUserEmail(authorized.accessToken)
+                                if (email.isBlank()) throw SecurityException("Google Calendar account identity is unavailable.")
                                 val events = calendarGateway.readEvents(
                                     authorized.accessToken,
                                     payload.optString("timeMin"),
