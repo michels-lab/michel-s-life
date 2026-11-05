@@ -300,6 +300,16 @@ try{
     window.SupabaseSyncV30216.runtime.cloudConflict))?.remoteRevision,
     'Account conflict not surfaced to user state');
 
+  // The app's autosave/reconciliation tick may still be finishing the local
+  // offline edit. A real user who chooses Use Cloud after seeing a conflict
+  // waits for that in-flight write to settle. Test the same sequential flow:
+  // do NOT bypass the production concurrent-edit guard in pull().
+  await android.page.waitForTimeout(3200);
+  const settled=await snap(android);
+  ok(settled.journal===OFFLINE_JOURNAL&&Number(settled.xp)===119&&
+     backend.writes===beforeConflictWrites&&Number(backend.remote.revision)===winner,
+     'Offline local edit was altered or remotely uploaded before explicit Use Cloud');
+
   await android.page.evaluate(async()=>window.SupabaseSyncV30216.pull({reload:false}));
   const safety=backend.history.filter(h=>
     h.reason==='before_download_local'&&h.source_platform==='android'&&
