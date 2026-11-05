@@ -29622,9 +29622,11 @@ async function syncNow(opts={}){
    runtime.error='This Android build does not support Google Calendar reading.';
    mountGoogleSettings();return null
   }
-  if(runtime.busy)return runtime.lastResult;
+  // Flush data that belongs to a previous Supabase account.
+  calendarViewEvents();
+  if(runtime.busy)return null;
   const accountAtStart=String(window.SupabaseSyncV30216?.session?.()?.user?.id||'');
-  runtime.busy=true;runtime.error='';runtime.calendarEvents=[];runtime.calendarAccount='';
+  runtime.busy=true;runtime.error='';runtime.calendarEvents=[];runtime.calendarAccount='';runtime.lastResult=null;runtime.calendarOwnerId=accountAtStart;
   mountGoogleSettings();decorateCalendar();
   try{
    const res=await bridge('calendarRead',syncRange());
@@ -29638,7 +29640,7 @@ async function syncNow(opts={}){
    toastSafe('Google Calendar',res.events.length+' events read. Your missions were not changed.');
    return res
   }catch(err){
-   runtime.calendarEvents=[];runtime.calendarAccount='';runtime.calendarOwnerId='';runtime.error=String(err?.message||err);
+   runtime.calendarEvents=[];runtime.calendarAccount='';runtime.calendarOwnerId='';runtime.lastResult=null;runtime.error=String(err?.message||err);
    mountGoogleSettings();return null
   }finally{runtime.busy=false;mountGoogleSettings();decorateCalendar()}
  }
@@ -29653,7 +29655,7 @@ function calendarViewEvents(){
   // A successful read belongs to the session under which it was made.
   // Purge it immediately after logout or an A->B switch, even if no new
   // Calendar request has been started. The provider list is view-only.
-  runtime.calendarEvents=[];runtime.calendarAccount='';runtime.calendarOwnerId=current;
+  runtime.calendarEvents=[];runtime.calendarAccount='';runtime.calendarOwnerId=current;runtime.lastResult=null;
  }
  return runtime.calendarEvents
 }
