@@ -1,0 +1,47 @@
+name: GRANADA Android Google Calendar read integration
+
+on:
+  pull_request:
+    paths:
+      - 'android/app/src/main/java/com/michelslab/michelslife/AndroidCalendarConsent.kt'
+      - 'android/app/src/main/java/com/michelslab/michelslife/AndroidCalendarGateway.kt'
+      - 'android/app/src/main/java/com/michelslab/michelslife/CalendarSyncRules.kt'
+      - 'android/app/src/main/java/com/michelslab/michelslife/AndroidBridge.kt'
+      - 'android/app/src/main/java/com/michelslab/michelslife/MainActivity.kt'
+      - 'src/MichelsLife/frontend/index.html'
+      - 'tools/test_android_calendar_read_ui.mjs'
+      - 'tools/test_android_calendar_read_contract.py'
+      - 'tools/kotlin/CalendarSyncRulesSpec.kt'
+      - '.github/workflows/granada-android-calendar-read.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  calendar-read:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Execute actual Android Calendar UI with consent, A/B and no cloud leaks
+        run: node tools/test_android_calendar_read_ui.mjs
+      - name: Assert independent read-only grant and real native bridge wiring
+        run: python3 tools/test_android_calendar_read_contract.py
+      - name: Execute pure Kotlin Calendar event ownership and time rules
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v kotlinc || { echo "::error::Kotlin compiler unavailable"; exit 1; }
+          mkdir -p /tmp/mlv-calendar-read
+          kotlinc \
+            android/app/src/main/java/com/michelslab/michelslife/CalendarSyncRules.kt \
+            tools/kotlin/CalendarSyncRulesSpec.kt \
+            -include-runtime -d /tmp/mlv-calendar-read/calendar-rules.jar
+          java -jar /tmp/mlv-calendar-read/calendar-rules.jar
