@@ -115,19 +115,35 @@ internal class AndroidCalendarGateway(
             .addQueryParameter("maxResults", "250")
             .addQueryParameter("orderBy", "startTime").build()
         val events = JSONArray()
+        var managedCount = 0
         for (event in listAll(accessToken, url)) {
             val privateTags = event.optJSONObject("extendedProperties")?.optJSONObject("private")
+            val allDay = event.optJSONObject("start")?.has("date") == true
+            val start = event.optJSONObject("start")?.optString(if (allDay) "date" else "dateTime").orEmpty()
+            val end = event.optJSONObject("end")?.optString(if (allDay) "date" else "dateTime").orEmpty()
+            if (start.isBlank() || end.isBlank()) continue
+            val managed = privateTags?.optString(CalendarSyncRules.OWNER_KEY) ==
+                CalendarSyncRules.OWNER_VALUE
+            if (managed) managedCount++
+            // The shared calendar expects a title + ISO string, not Google's
+            // nested {date,dateTime} shape. These are read-only view records:
+            // no mission, XP, Journal or cloud state is modified here.
+            val link = event.optString("htmlLink")
+            val safeLink = if (link.startsWith("https://calendar.google.com/") ||
+                link.startsWith("https://www.google.com/calendar/")) link
+                else "https://calendar.google.com/"
             events.put(JSONObject()
-                .put("id", event.optString("id"))
-                .put("summary", event.optString("summary"))
-                .put("start", event.optJSONObject("start"))
-                .put("end", event.optJSONObject("end"))
-                .put("allDay", event.optJSONObject("start")?.has("date") == true)
-                .put("managed", privateTags?.optString(CalendarSyncRules.OWNER_KEY) ==
-                    CalendarSyncRules.OWNER_VALUE))
+                .put("id", event.optString("id").take(180))
+                .put("title", event.optString("summary").take(500))
+                .put("start", start)
+                .put("end", end)
+                .put("allDay", allDay)
+                .put("htmlLink", safeLink)
+                .put("managed", managed))
         }
         return JSONObject().put("events", events)
             .put("googleEventCount", events.length())
+            .put("managedEventCount", managedCount)
             .put("provider", "google-calendar")
     }
 
