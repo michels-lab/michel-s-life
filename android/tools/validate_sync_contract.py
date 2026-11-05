@@ -49,18 +49,28 @@ if "file.parentFile != base || !file.isFile" not in bridge:
 if 'name.matches(Regex("[A-Za-z0-9._-]+"))' not in bridge:
     raise SystemExit("Android restore point file name must reject separators and invalid input")
 
-# An Android Calendar implementation must never report success with a
-# synthetic empty event array or a made-up syncedAt timestamp.
+# Native Google Calendar can now READ through a separate, explicitly consented
+# OAuth route. The generic desktop 'sync' action may publish in bulk, so it
+# must remain rejected in Android until per-mission write approval exists.
+# Never accept a fictional successful sync or claim a provider read silently.
 calendar_action = bridge.split('"sync" ->', 1)
 if len(calendar_action) != 2:
-    raise SystemExit("Android Google Calendar bridge action is missing")
+    raise SystemExit("Android Google Calendar desktop action is missing")
 calendar_branch = calendar_action[1].split('else ->', 1)[0]
-if 'respondError(' not in calendar_branch or 'Google Calendar sync is not available' not in calendar_branch:
-    raise SystemExit("Android must explicitly reject Calendar sync until real provider integration is implemented")
+if 'respondError(' not in calendar_branch or 'publishing is not enabled' not in calendar_branch:
+    raise SystemExit("Android must reject bulk Calendar publishing without explicit write consent")
 if '"sync" -> respondOk(' in bridge:
     raise SystemExit("Android Calendar may not return a synthetic successful sync")
-if 'androidCalendarUnavailable' not in frontend or 'Calendar sync unavailable' not in frontend:
-    raise SystemExit("Android Google Calendar Settings must expose the unavailable status")
+if '"calendarRead" -> activity.runOnUiThread' not in bridge:
+    raise SystemExit("Android must use a real consented native Calendar read route")
+if "calendarGateway.readEvents(" not in bridge:
+    raise SystemExit("Android Calendar cannot report a successful read without contacting Google")
+if '"calendarUpsert"' in bridge or '"calendarDelete"' in bridge:
+    raise SystemExit("Native Calendar write actions require separate approval and scope")
+if "Read Google Calendar" not in frontend or "calendarViewEvents()" not in frontend:
+    raise SystemExit("Android Calendar UI must expose real fetched events")
+if "if(opts.silent)return null;" not in frontend:
+    raise SystemExit("Calendar OAuth must not be requested by an automatic background sync")
 
 private_candidate = (repo / ".github/workflows/android-direct-private-candidate-v026.yml").read_text(encoding="utf-8")
 # Owner-invoked signed-candidate tests must never run on feature refs or imply
