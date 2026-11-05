@@ -6,6 +6,12 @@ export function calculateStoryClearance({viewportHeight,miniTop,miniVisible,navT
   .filter(v=>Number.isFinite(v)&&v>0).reduce((a,b)=>Math.min(a,b),viewportHeight);
  return Math.round(Math.max(MIN_PAD,Math.min(MAX_PAD,Math.max(0,viewportHeight-floor)+SPACE+46)));
 }
+export function visibleViewportBounds({innerHeight,offsetTop=0,height}){
+ const top=Number.isFinite(offsetTop)?Math.max(0,offsetTop):0;
+ const fallback=Number.isFinite(innerHeight)&&innerHeight>0?innerHeight:0;
+ const extent=Number.isFinite(height)&&height>0?height:fallback;
+ return {top,bottom:Math.min(fallback||top+extent,top+extent)};
+}
 export function calculateScrollCorrection({buttonTop,buttonBottom,availableTop,availableBottom}){
  if(![buttonTop,buttonBottom,availableTop,availableBottom].every(Number.isFinite)||
     buttonBottom<buttonTop||availableBottom<=availableTop)return 0;
@@ -24,6 +30,10 @@ export function installStoryFocusSafeArea(win=window){
   'html[data-mlv-platform="android"] body.mlv-story-focus-clearance #tab-story.active .v30162-story-form button[type="submit"] {scroll-margin-bottom:var(--mlv-story-focus-clearance,210px)!important}'
  ].join('\n');doc.head.append(style);
  let scheduled=false,disposed=false;
+ const viewport=()=>visibleViewportBounds({
+  innerHeight:win.innerHeight,offsetTop:win.visualViewport?.offsetTop,
+  height:win.visualViewport?.height
+ });
  const visible=el=>{
   if(!el||el.hidden)return false;
   const c=win.getComputedStyle(el);
@@ -43,7 +53,8 @@ export function installStoryFocusSafeArea(win=window){
   scheduled=false;if(disposed)return null;
   const active=!!doc.querySelector('#tab-story.active .v30162-story-form');
   const mini=bounds('mlv-android-mini-focus'),nav=bounds('mlv-android-bottom-nav');
-  const clearance=calculateStoryClearance({viewportHeight:win.innerHeight,miniTop:mini.rect?.top,
+  const view=viewport();
+  const clearance=calculateStoryClearance({viewportHeight:view.bottom,miniTop:mini.rect?.top,
     miniVisible:mini.visible,navTop:nav.rect?.top,navVisible:nav.visible});
   const enable=active&&mini.visible;
   if(doc.body.classList.contains('mlv-story-focus-clearance')!==enable)
@@ -58,12 +69,13 @@ export function installStoryFocusSafeArea(win=window){
   const btn=doc.querySelector('#tab-story.active .v30162-story-form button[type="submit"]');
   if(!btn)return false;
   const topbar=bounds('mlv-android-topbar'),rect=btn.getBoundingClientRect();
+  const view=viewport();
   const delta=calculateScrollCorrection({
     buttonTop:rect.top,buttonBottom:rect.bottom,
-    availableTop:topbar.visible?topbar.rect.bottom:0,
-    availableBottom:Math.min(win.innerHeight,
-     state.mini.visible?state.mini.rect.top:win.innerHeight,
-     state.nav.visible?state.nav.rect.top:win.innerHeight)
+    availableTop:Math.max(view.top,topbar.visible?topbar.rect.bottom:view.top),
+    availableBottom:Math.min(view.bottom,
+     state.mini.visible?state.mini.rect.top:view.bottom,
+     state.nav.visible?state.nav.rect.top:view.bottom)
   });
   if(!delta)return true;
   const scroller=scrollParent(btn);
@@ -78,10 +90,14 @@ export function installStoryFocusSafeArea(win=window){
  const observer=typeof win.MutationObserver==='function'?new win.MutationObserver(schedule):null;
  observer?.observe(doc.body,{attributes:true,subtree:true,attributeFilter:['class','hidden','style','aria-hidden']});
  win.addEventListener('resize',schedule,{passive:true});
+ win.visualViewport?.addEventListener?.('resize',schedule,{passive:true});
+ win.visualViewport?.addEventListener?.('scroll',schedule,{passive:true});
  doc.addEventListener('focusout',onBlur,true);
  refresh();
  return {installed:true,refresh,ensureSaveVisible,dispose(){
   disposed=true;observer?.disconnect();win.removeEventListener('resize',schedule);
+  win.visualViewport?.removeEventListener?.('resize',schedule);
+  win.visualViewport?.removeEventListener?.('scroll',schedule);
   doc.removeEventListener('focusout',onBlur,true);
   doc.body.classList.remove('mlv-story-focus-clearance');
   doc.body.style.removeProperty('--mlv-story-focus-clearance');style.remove();

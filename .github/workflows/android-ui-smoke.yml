@@ -68,8 +68,11 @@ jobs:
 
       - name: Install Chromium test runtime
         run: |
-          npm install --no-save playwright
+          npm install --no-save --no-package-lock playwright@1.58.2
           npx playwright install --with-deps chromium
+
+      - name: Test keyboard-aware Story and Focus clearance
+        run: node --test tools/story_focus_visual_viewport.test.mjs
 
       - name: Overlay canonical Michel's Life frontend
         run: |
