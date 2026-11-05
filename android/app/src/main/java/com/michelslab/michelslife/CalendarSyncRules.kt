@@ -13,6 +13,7 @@ import java.time.temporal.ChronoUnit
  */
 internal object CalendarSyncRules {
     const val EVENTS_SCOPE = "https://www.googleapis.com/auth/calendar.events"
+    const val READ_SCOPE = "https://www.googleapis.com/auth/calendar.events.readonly"
     const val OWNER_KEY = "michelsLifeOwner"
     const val OWNER_VALUE = "michels-life"
     const val MISSION_KEY = "michelsLifeMissionId"
