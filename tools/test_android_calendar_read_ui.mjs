@@ -56,6 +56,13 @@ assert.equal(normal.settings.events[0].id,'previous-local-mission',
   'Google provider events must not overwrite shared/synced settings');
 passed++;
 
+// A->B after an already successful read must not leave A's Google events
+// visible inside B's Calendar (not only guard the request while in-flight).
+normal.changeOwner('account-b');
+assert.equal(normal.view().length,0);
+assert.equal(normal.runtime.calendarAccount,'');
+passed++;
+
 const automatic=harness();
 assert.equal(await automatic.read({silent:true}),null);
 assert.equal(automatic.requests.length,0,
