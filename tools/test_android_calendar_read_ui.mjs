@@ -10,9 +10,12 @@ const start=source.indexOf('async function syncNow(opts={}){');
 const end=source.indexOf('async function refreshStatus(opts={})',start);
 const viewStart=source.indexOf('function calendarViewEvents(){',end);
 const viewEnd=source.indexOf('function eventsForDate(k){',viewStart);
-assert(start>=0 && end>start && viewEnd>viewStart,
+const mutationStart=source.indexOf('function onLocalMutation(){');
+const mutationEnd=source.indexOf('function installStorageWatch(){',mutationStart);
+assert(start>=0 && end>start && viewEnd>viewStart && mutationEnd>mutationStart,
   'Real production Android Calendar implementation not found');
-const production=source.slice(start,end)+'\n'+source.slice(viewStart,viewEnd);
+const production=source.slice(start,end)+'\n'+source.slice(viewStart,viewEnd)+
+  '\n'+source.slice(mutationStart,mutationEnd);
 let passed=0;
 
 function harness({provider,available=true}={}){
@@ -38,7 +41,7 @@ function harness({provider,available=true}={}){
     }
   });
   vm.runInContext(production+
-    '\nthis.readAndroidCalendar=syncNow;this.viewCalendarEvents=calendarViewEvents;',
+    '\nthis.readAndroidCalendar=syncNow;this.viewCalendarEvents=calendarViewEvents;this.storageMutation=onLocalMutation;',
     context,{timeout:1500});
   return {runtime,settings,requests,context,changeOwner:id=>{owner=id},
     read:opts=>context.readAndroidCalendar(opts),
@@ -59,6 +62,9 @@ passed++;
 // A->B after an already successful read must not leave A's Google events
 // visible inside B's Calendar (not only guard the request while in-flight).
 normal.changeOwner('account-b');
+normal.context.storageMutation();
+assert.equal(normal.runtime.calendarEvents.length,0,
+  'Android session storage mutation must purge stale Google records immediately');
 assert.equal(normal.view().length,0);
 assert.equal(normal.runtime.calendarAccount,'');
 assert.equal(normal.runtime.lastResult,null,
