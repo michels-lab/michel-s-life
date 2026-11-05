@@ -18,6 +18,8 @@ class MainActivity : Activity() {
         private set
     lateinit var auth: GoogleAuthorizationCoordinator
         private set
+    lateinit var calendarConsent: AndroidCalendarConsent
+        private set
     lateinit var cloud: DriveCloudEngine
         private set
     private val executor = Executors.newSingleThreadExecutor()
@@ -41,6 +43,7 @@ class MainActivity : Activity() {
         NativeFocusAlarm.createChannel(this)
         val meta = CloudMetaStore(this)
         auth = GoogleAuthorizationCoordinator(this)
+        calendarConsent = AndroidCalendarConsent(this)
         cloud = DriveCloudEngine(this, meta)
 
         // CI can inspect canonical WebView localStorage only in debuggable TEST
@@ -76,7 +79,7 @@ class MainActivity : Activity() {
         }
 
         webView.addJavascriptInterface(
-            AndroidBridge(this, webView, auth, cloud, meta, executor),
+            AndroidBridge(this, webView, auth, calendarConsent, cloud, meta, executor),
             "MichelsLifeAndroid"
         )
 
@@ -176,6 +179,8 @@ class MainActivity : Activity() {
 
     @Deprecated("Deprecated in Android; retained for Google authorization resolution compatibility.")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (::calendarConsent.isInitialized &&
+            calendarConsent.onActivityResult(requestCode, resultCode, data)) return
         if (::auth.isInitialized && auth.onActivityResult(requestCode, resultCode, data)) return
         super.onActivityResult(requestCode, resultCode, data)
     }

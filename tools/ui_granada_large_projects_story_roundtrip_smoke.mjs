@@ -168,6 +168,53 @@ async function revisionAdvanced(before,label){
     ', actual revision '+backend.remote?.revision);
 }
 
+/** Wait for the actual shareable board to settle before a *user initiated*
+ * cloud adoption. Sign-in can finish while a startup save is still pending.
+ * Never switch off pull()'s concurrent-write guard or discard a changed board.
+ */
+async function waitForBoardQuiescence(dev,label,{timeoutMs=12000,quietMs=1250}={}){
+  let previous=null,steadySince=Date.now(),observations=0;
+  const started=Date.now();
+  while(Date.now()-started<timeoutMs){
+    const now=await dev.page.evaluate(()=>{
+      const sync=window.SupabaseSyncV30216;
+      return {board:sync.capture(),cloudBusy:!!sync.runtime.cloudBusy};
+    });
+    if(!now.cloudBusy&&now.board===previous){
+      observations++;
+      if(Date.now()-steadySince>=quietMs&&observations>=4)return now.board;
+    }else{
+      previous=now.board;steadySince=Date.now();observations=0;
+    }
+    await new Promise(r=>setTimeout(r,200));
+  }
+  throw Error(label+': local board never became quiescent; refused unsafe download');
+}
+
+async function verifiedCloudChoice(dev,label){
+  for(let attempt=0;attempt<3;attempt++){
+    const before=await waitForBoardQuiescence(dev,label);
+    try{
+      return await dev.page.evaluate(async()=>
+        window.SupabaseSyncV30216.pull({reload:false}));
+    }catch(error){
+      if(!String(error?.message||error).includes('Local data changed during cloud download'))
+        throw error;
+      const after=await dev.page.evaluate(()=>window.SupabaseSyncV30216.capture());
+      // The product intentionally refused to overwrite a newer local save.
+      // This is an *explicit new user choice*, never automatic app retry.
+      if(attempt===2)throw Error(label+': repeated concurrent local edits; '+
+        'download correctly blocked without overwriting them');
+      if(after===before)throw Error(label+
+        ': download rejected but no observable board mutation; inspect guard');
+      // Only report whether a local edit happened; never log private board,
+      // mission contents, Journal or provider data.
+      console.log('GRANADA_CLOUD_DOWNLOAD_BLOCKED_EDIT '+label+
+        ' attempt '+(attempt+1)+'; local board preserved for explicit retry');
+    }
+  }
+}
+
 async function routeAndroid(id){
   const done=await android.page.evaluate(id=>window.__mlvAndroidFastRoute?.(id),id);
   assert.notEqual(done,false,'Android route refused '+id);
@@ -258,7 +305,7 @@ try{
     'New Windows client silently adopted Android cloud authority');
   ok(Number(backend.remote.revision)===androidRevision,
     'Windows sign-in overwrote Android Project/Story without consent');
-  await desktop.page.evaluate(async()=>window.SupabaseSyncV30216.pull({reload:false}));
+  await verifiedCloudChoice(desktop,'Windows first cloud adoption');
   await desktop.page.reload({waitUntil:'domcontentloaded',timeout:60000});
   await desktop.page.waitForFunction(()=>!!window.JournalV30189?.entry&&
     !!window.SupabaseSyncV30216?.runtime,null,{timeout:60000});
@@ -300,7 +347,34 @@ try{
     window.SupabaseSyncV30216.runtime.cloudConflict))?.remoteRevision,
     'Account conflict not surfaced to user state');
 
-  await android.page.evaluate(async()=>window.SupabaseSyncV30216.pull({reload:false}));
+  // The app's autosave/reconciliation tick may still be finishing the local
+  // offline edit. A real user who chooses Use Cloud after seeing a conflict
+  // waits for that in-flight write to settle. Test the same sequential flow:
+  // do NOT bypass the production concurrent-edit guard in pull().
+  await android.page.waitForTimeout(3200);
+  const settled=await snap(android);
+  ok(settled.journal===OFFLINE_JOURNAL&&Number(settled.xp)===119&&
+     backend.writes===beforeConflictWrites&&Number(backend.remote.revision)===winner,
+     'Offline local edit was altered or remotely uploaded before explicit Use Cloud');
+
+  const beforePull=await android.page.evaluate(()=>window.SupabaseSyncV30216.capture());
+  try {
+    await android.page.evaluate(async()=>window.SupabaseSyncV30216.pull({reload:false}));
+  } catch (error) {
+    const afterPull=await android.page.evaluate(()=>window.SupabaseSyncV30216.capture());
+    const before=JSON.parse(beforePull),after=JSON.parse(afterPull);
+    const changed=(a,b)=>[...new Set([...Object.keys(a||{}),...Object.keys(b||{})])]
+      .filter(key=>JSON.stringify(a?.[key])!==JSON.stringify(b?.[key]));
+    // Names only, never export the Journal, mission body, credentials or state.
+    console.error('GRANADA_CLOUD_DOWNLOAD_CONCURRENT_FIELDS',
+      JSON.stringify({
+        stateFields:changed(before.state,after.state).slice(0,35),
+        storageKeys:changed(before.localStorage,after.localStorage).slice(0,35),
+        offlineJournalPreserved:(await snap(android)).journal===OFFLINE_JOURNAL,
+        remoteRevisionUnchanged:Number(backend.remote.revision)===winner
+      }));
+    throw error;
+  }
   const safety=backend.history.filter(h=>
     h.reason==='before_download_local'&&h.source_platform==='android'&&
     JSON.stringify(h.snapshot).includes(OFFLINE_JOURNAL)&&
