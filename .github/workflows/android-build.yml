@@ -388,7 +388,7 @@ jobs:
         run: |
           if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
 
-      - name: Install and launch real candidate in isolated Android 16 device
+      - name: Install and launch real candidate in isolated Android 15 device
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
@@ -396,10 +396,8 @@ jobs:
           arch: x86_64
           profile: pixel_6
           avd-name: michels-life-candidate-android15
-          # API 36 + gfxstream Vulkan/legacy swiftshader_indirect crashed after the
-          # installed WebView rendered on two clean hosted Linux runners. Use
-          # current supported SwiftShader GLES and disable Vulkan explicitly;
-          # never weaken native screenshot assertions to mask black frames.
+          # Match Android 16's SwiftShader/GLES and no-Vulkan backend, changing
+          # only the guest API level. Keep actual native screenshot checks.
           emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu swiftshader -feature -Vulkan
           disable-animations: true
           emulator-boot-timeout: 600
