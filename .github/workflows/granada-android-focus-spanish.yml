@@ -1,0 +1,26 @@
+name: GRANADA Android bilingual Focus UI
+on:
+  pull_request:
+    paths:
+      - 'android/mobile-experience.js'
+      - 'tools/test_android_focus_spanish.mjs'
+      - 'tools/ui_android_focus_alarm_lifecycle_smoke.mjs'
+      - '.github/workflows/granada-android-focus-spanish.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  focus-bilingual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate canonical Android Focus source and regressions
+        run: |
+          node --check android/mobile-experience.js
+          node --check tools/test_android_focus_spanish.mjs
+          node --check tools/ui_android_focus_alarm_lifecycle_smoke.mjs
+          node --test tools/test_android_focus_spanish.mjs
