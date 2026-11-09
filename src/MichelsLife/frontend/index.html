@@ -30933,7 +30933,9 @@ function stashLocalBoard(key){
 function clearLocalBoard(){
  applying=true;
  try{
-   sharePolicy().restore({});
+   // Explicit sign-out/account switch is the ONLY empty shared wipe path.
+   // Foreign or malformed backup imports remain fail-closed.
+   sharePolicy().restore({},{replace:true,allowEmptyRollback:true});
    state=defaultState();state.settings.v30200GenericProfile=true;state.settings.onboardingRequired=false;state.settings.characterName='Player';
    localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(state));
    localStorage.removeItem(META_KEY);
