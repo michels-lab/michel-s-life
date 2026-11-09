@@ -124,12 +124,15 @@ for(const width of [320,360,412])for(const language of ['en','es']){
    const navGeometry=await page.evaluate(()=>[...document.querySelectorAll(
      '#mlv-android-bottom-nav [data-mobile-tab]')].map(el=>{
        const box=el.getBoundingClientRect();
+       const text=el.lastElementChild;
        return {tab:el.dataset.mobileTab,width:box.width,height:box.height,
-         left:box.left,right:box.right};
+         left:box.left,right:box.right,top:box.top,
+         translatedLabelClipped:!!text&&text.scrollWidth>text.clientWidth+1};
      }));
    ok(navGeometry.length===6&&navGeometry.every(x=>
-     x.width>=44&&x.height>=44&&x.left>=0&&x.right<=width+1),
-     'Android nav has clipped or undersized targets: '+JSON.stringify(navGeometry));
+     x.width>=44&&x.height>=44&&x.left>=0&&x.right<=width+1&&
+     Math.abs(x.top-navGeometry[0].top)<=1&&!x.translatedLabelClipped),
+     'Android nav wraps rows or clips translated labels or touch targets: '+JSON.stringify(navGeometry));
    // Navigate away first so an already-active Story cannot fake a PASS.
    await nav.locator('[data-mobile-tab="dashboard"]').tap({timeout:16000});
    await page.waitForSelector('#tab-dashboard.active',{state:'visible',timeout:16000});
