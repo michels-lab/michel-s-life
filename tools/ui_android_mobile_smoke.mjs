@@ -306,23 +306,45 @@ try{
       todayFocus.tile.bottom<=todayFocus.metrics.top+2&&todayFocus.label==='Start',
     'Today does not expose a touch-size Focus entry above metrics: '+JSON.stringify(todayFocus));
   await page.locator('#mlv-android-menu-button').click();
-  await page.waitForTimeout(260);
+  // An opened drawer must actually enter the touch viewport; aria-expanded
+  // alone is not success if an old CSS transform leaves it at -105%.
+  await page.waitForFunction(()=>{
+    const drawer=document.getElementById('v30171Sidebar');
+    const bounds=drawer?.getBoundingClientRect();
+    return document.body.classList.contains('mlv-android-nav-open')&&
+      !!bounds&&bounds.left>=-2;
+  },null,{timeout:1600});
   const drawerOpen=await page.evaluate(()=>{
-    const s=document.getElementById('v30171Sidebar').getBoundingClientRect();
+    const side=document.getElementById('v30171Sidebar');
+    const s=side.getBoundingClientRect();
     const d=document.getElementById('v30175ActionDock')?.getBoundingClientRect();
     return {
       bodyOpen:document.body.classList.contains('mlv-android-nav-open'),
       left:s.left,right:s.right,width:s.width,
+      inlineTransform:side.style.getPropertyValue('transform'),
+      inlineTransition:side.style.getPropertyValue('transition'),
       actionDock:d?{left:d.left,top:d.top,right:d.right,bottom:d.bottom,width:d.width,height:d.height}:null,
       expanded:document.getElementById('mlv-android-menu-button')?.getAttribute('aria-expanded')
     };
   });
-  ok(drawerOpen.bodyOpen&&drawerOpen.left>=-2&&drawerOpen.expanded==='true','Drawer did not open correctly: '+JSON.stringify(drawerOpen));
+  ok(drawerOpen.bodyOpen&&drawerOpen.left>=-2&&drawerOpen.expanded==='true'&&
+      /^translateX\(0(?:px)?\)$/.test(drawerOpen.inlineTransform)&&drawerOpen.inlineTransition==='none',
+    'Drawer did not become immediately touch-ready: '+JSON.stringify(drawerOpen));
   if(drawerOpen.actionDock)ok(drawerOpen.actionDock.left>=-2&&drawerOpen.actionDock.right<=drawerOpen.right+2,'Quick actions are not contained inside the open Android drawer: '+JSON.stringify(drawerOpen));
 
   await page.locator('#mlv-android-drawer-backdrop').click({position:{x:400,y:300}});
   await page.waitForTimeout(240);
   ok(!(await page.evaluate(()=>document.body.classList.contains('mlv-android-nav-open'))),'Backdrop did not close drawer');
+  await page.locator('#mlv-android-menu-button').click();
+  await page.waitForFunction(()=>{
+    const side=document.getElementById('v30171Sidebar');
+    return document.body.classList.contains('mlv-android-nav-open')&&
+      !!side&&side.getBoundingClientRect().left>=-2&&
+      side.style.getPropertyValue('transition')==='none';
+  },null,{timeout:1600});
+  await page.locator('#mlv-android-drawer-backdrop').click({position:{x:400,y:300}});
+  await page.waitForFunction(()=>!document.body.classList.contains('mlv-android-nav-open'),
+    null,{timeout:1400});
 
   await page.locator('#mlv-android-next-section').click();
   await page.waitForFunction(
