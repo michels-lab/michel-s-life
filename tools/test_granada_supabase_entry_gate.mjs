@@ -216,8 +216,14 @@ function fixture() {
     renderAll:()=>{},
     window:{MLVCloudSharedStorageV30216:{
       capture:()=>({[journal]:storage.getItem(journal)}),
-      restore:source=>{if(source&&source[journal]!==undefined&&source[journal]!==null)
-        storage.setItem(journal,source[journal]);else storage.removeItem(journal)}
+      restore:(source,options={})=>{
+        // The production transaction restores the board and Journal together.
+        if(source&&source[journal]!==undefined&&source[journal]!==null)
+          storage.setItem(journal,source[journal]);
+        else storage.removeItem(journal);
+        if(options.incomingState)
+          storage.setItem(board,JSON.stringify(options.incomingState));
+      }
     }}
   };
   ctx.capture=()=>JSON.stringify({state:ctx.state,localStorage:ctx.window.MLVCloudSharedStorageV30216.capture()});
