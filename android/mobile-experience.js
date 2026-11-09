@@ -113,7 +113,8 @@
       ['[data-mobile-focus="custom"]','Apply custom preset','Aplicar duración'],
       ['.mlv-android-focus-stats>div:first-child span','Linked mission','Misión vinculada'],
       ['.mlv-android-focus-stats>div:nth-child(2) span','Finished today','Completadas hoy'],
-      ['.mlv-focus-notification-copy strong','Lock-screen countdown','Cuenta regresiva en pantalla bloqueada']
+      ['.mlv-focus-notification-copy strong','Lock-screen countdown','Cuenta regresiva en pantalla bloqueada'],
+      ['.mlv-android-focus-system-note','Allow notifications to follow your session when the screen is off.','Activa las notificaciones para seguir tu sesión con la pantalla apagada.']
     ];
     for(const [selector,en,es] of labels){
       const el=q(selector,root);
