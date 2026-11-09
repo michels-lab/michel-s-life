@@ -1143,6 +1143,15 @@
             <button type="button" id="mlv-focus-enable-notifications" data-mobile-focus="enable-notifications" hidden>Enable</button>
           </div>
         </section>`;
+      // User-edited custom minutes are a draft until Apply. A locale change,
+      // a periodic countdown tick or a blur must not silently throw them away.
+      root.addEventListener('input',event=>{
+        const id=event.target?.id;
+        if(id==='mlv-android-focus-work'||id==='mlv-android-focus-break')
+          event.target.dataset.mlvFocusDirty='1';
+      });
+      const clearDurationDraft=()=>root.querySelectorAll('#mlv-android-focus-work,#mlv-android-focus-break')
+        .forEach(input=>delete input.dataset.mlvFocusDirty);
       root.addEventListener('click',event=>{
         const source=event.target.closest('[data-mobile-focus],[data-mobile-preset],#mlv-android-focus-dim');
         if(!source)return;
@@ -1153,7 +1162,10 @@
           // Delegate to the authoritative desktop Focus implementation; it
           // owns confirmation, session persistence and linked mission state.
           const original=q('#v30162FocusDock [data-v30162-preset="'+preset+'"]');
-          if(original)original.click();
+          if(original){
+            original.click();
+            clearDurationDraft();
+          }
           updateFocus();return;
         }
         const action=source.dataset.mobileFocus;
@@ -1171,6 +1183,7 @@
         if(action==='reset'){
           if(api.focusState?.().status==='running'&&!window.confirm(focusText('Reset the running focus phase?','¿Reiniciar la fase de enfoque en curso?')))return;
           api.resetFocus?.();
+          clearDurationDraft();
         }
         if(action==='custom'){
           const work=q('#mlv-android-focus-work')?.value;
@@ -1179,6 +1192,7 @@
           if(!origWork||!origBreak)return;
           origWork.value=work;origBreak.value=rest;
           q('#v30162FocusDock [data-v30162-focus="apply-custom"]')?.click();
+          clearDurationDraft();
         }
         if(action==='settings'){close();window.__mlvAndroidFastRoute?.('settings');setTimeout(()=>q('#tab-settings [data-v30171-setting="focus"]')?.click(),50);}
         updateFocus();
@@ -1386,8 +1400,11 @@
     const pct=duration>0?Math.min(100,Math.max(0,100*leftMs/duration)):100;
     q('#mlv-android-focus-progress-ring',root).style.setProperty('--mlv-focus-progress',pct.toFixed(2)+'%');
     const focused=document.activeElement;
-    if(focused?.id!=='mlv-android-focus-work')q('#mlv-android-focus-work',root).value=String(f.workMin);
-    if(focused?.id!=='mlv-android-focus-break')q('#mlv-android-focus-break',root).value=String(f.breakMin);
+    const workInput=q('#mlv-android-focus-work',root),breakInput=q('#mlv-android-focus-break',root);
+    if(focused?.id!=='mlv-android-focus-work'&&workInput?.dataset.mlvFocusDirty!=='1')
+      workInput.value=String(f.workMin);
+    if(focused?.id!=='mlv-android-focus-break'&&breakInput?.dataset.mlvFocusDirty!=='1')
+      breakInput.value=String(f.breakMin);
     // Read the authoritative state for mission labels and completed sessions;
     // no copy of mission/timer data is stored by the Android UI.
     let saved={};
