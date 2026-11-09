@@ -1,0 +1,23 @@
+name: GRANADA P0 transactional backup restore
+on:
+  pull_request:
+    paths:
+      - 'src/MichelsLife/frontend/index.html'
+      - 'tools/test_granada_transactional_cloud_restore.mjs'
+      - '.github/workflows/granada-transactional-cloud-restore.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  atomic-restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Execute exact production shared-storage restore under synthetic storage failures
+        run: |
+          node --check tools/test_granada_transactional_cloud_restore.mjs
+          node --test tools/test_granada_transactional_cloud_restore.mjs
