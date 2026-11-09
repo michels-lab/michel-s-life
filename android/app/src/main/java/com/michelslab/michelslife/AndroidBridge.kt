@@ -223,38 +223,31 @@ class AndroidBridge(
                 .put("version", DriveCloudEngine.ANDROID_VERSION)
                 .put("status", "ok"))
             "updateStatus" -> {
-                val channel = installChannel()
-                respondOk(requestId, JSONObject()
-                    .put("updateAvailable", false)
-                    .put("managedExternally", true)
-                    .put("channel", channel)
-                    .put("version", DriveCloudEngine.ANDROID_VERSION)
-                    .put(
-                        "status",
-                        if (channel == "google-play")
-                            "Updates are managed by Google Play."
-                        else
-                            "Test build. Production updates are delivered through Google Play."
-                    ))
+                // Read-only discovery uses the installed signing certificate,
+                // not a missing installer label, to recognize real Direct APKs.
+                // Network requests must never run on the Activity/UI thread.
+                when (AndroidDirectUpdateChecker.channel(activity)) {
+                    "android-direct" -> executor.execute {
+                        respondOk(requestId, AndroidDirectUpdateChecker.check(activity))
+                    }
+                    "google-play" -> respondOk(requestId, JSONObject()
+                        .put("updateAvailable", false)
+                        .put("checked", false)
+                        .put("managedExternally", true)
+                        .put("channel", "google-play")
+                        .put("version", DriveCloudEngine.ANDROID_VERSION)
+                        .put("status", "Updates for this installation are managed by Google Play."))
+                    else -> respondOk(requestId, JSONObject()
+                        .put("updateAvailable", false)
+                        .put("checked", false)
+                        .put("managedExternally", false)
+                        .put("channel", "test")
+                        .put("version", DriveCloudEngine.ANDROID_VERSION)
+                        .put("status", "Unrecognized or debug signer. No production update offered; protect local data."))
+                }
             }
             else -> respondError(requestId, "This Michel's Life desktop action is not available on Android yet: " + action)
         }
-    }
-
-    @Suppress("DEPRECATION")
-    private fun installChannel(): String {
-        val installer = try {
-            if (android.os.Build.VERSION.SDK_INT >= 30) {
-                activity.packageManager
-                    .getInstallSourceInfo(activity.packageName)
-                    .installingPackageName
-            } else {
-                activity.packageManager.getInstallerPackageName(activity.packageName)
-            }
-        } catch (_: Exception) {
-            null
-        }
-        return if (installer == "com.android.vending") "google-play" else "test"
     }
 
     private fun authorizeFor(
