@@ -46,7 +46,13 @@
   function setDrawer(open){
     document.body.classList.toggle('mlv-android-nav-open',!!open);
     const side=q('#v30171Sidebar');
-    if(side)side.style.setProperty('transform',open?'translateX(0)':'translateX(-105%)','important');
+    if(side){
+      // Opening is an immediate, touch-ready state. During a busy WebView
+      // frame the previous transition could stay at -105% even though the
+      // backdrop and aria-expanded already said open. Animate CLOSING only.
+      setImportantOnce(side,'transition',open?'none':'transform .16s ease');
+      setImportantOnce(side,'transform',open?'translateX(0)':'translateX(-105%)');
+    }
     const button=q('#mlv-android-menu-button');
     if(button)button.setAttribute('aria-expanded',open?'true':'false');
   }
@@ -511,7 +517,11 @@
       setImportantOnce(side,'margin','0');
       setImportantOnce(side,'z-index','2147482995');
       setImportantOnce(side,'background','rgba(var(--ui-panel-rgb,7,13,25),.985)');
-      setImportantOnce(side,'transform',document.body.classList.contains('mlv-android-nav-open')?'translateX(0)':'translateX(-105%)');
+      // Reassert the real drawer geometry after a canonical sidebar rerender;
+      // never reintroduce the stale closing transition while it is open.
+      const drawerOpen=document.body.classList.contains('mlv-android-nav-open');
+      setImportantOnce(side,'transition',drawerOpen?'none':'transform .16s ease');
+      setImportantOnce(side,'transform',drawerOpen?'translateX(0)':'translateX(-105%)');
 
       let hint=q('#mlv-android-drawer-hint',side);
       if(!hint){
