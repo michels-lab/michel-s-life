@@ -124,6 +124,13 @@
           const value=focusText(en,es);
           if(el.firstChild.nodeValue!==value)el.firstChild.nodeValue=value;
         }
+      }else if(selector==='.mlv-android-focus-eyebrow'){
+        // Keep the brand-dot element; replacing textContent would remove it.
+        const textNode=el&&Array.from(el.childNodes).find(node=>node.nodeType===3);
+        if(textNode){
+          const value=' '+focusText(en,es);
+          if(textNode.nodeValue!==value)textNode.nodeValue=value;
+        }
       }else writeText(el,focusText(en,es));
     }
     const aria=[
@@ -135,6 +142,8 @@
       const el=q(selector,root),value=focusText(en,es);
       if(el&&el.getAttribute('aria-label')!==value)el.setAttribute('aria-label',value);
     }
+    const todayTitle=q('#mlv-android-today-focus .mlv-focus-today-copy strong');
+    writeText(todayTitle,focusText('Focus session','Sesión de enfoque'));
     if(mini){
       const label=focusText('Active Focus timer','Temporizador Pomodoro activo');
       if(mini.getAttribute('aria-label')!==label)mini.setAttribute('aria-label',label);
