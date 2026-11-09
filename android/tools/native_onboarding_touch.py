@@ -84,12 +84,22 @@ def adb(serial, *arguments, timeout=35):
 
 
 def accessibility_xml(serial):
-    adb(serial, "shell", "uiautomator", "dump", "--compressed", UI_XML, timeout=40)
-    raw = adb(serial, "shell", "cat", UI_XML)
-    pos = raw.find("<?xml")
-    if pos < 0:
-        raise RuntimeError("native_accessibility_hierarchy_unavailable")
-    return raw[pos:]
+    # After emulator boot, UIAutomator may temporarily return nonzero while
+    # the system launcher is unresponsive. Do not treat that as app failure.
+    # Never proceed to a tap without a REAL current accessibility hierarchy.
+    for attempt in range(5):
+        try:
+            adb(serial, "shell", "uiautomator", "dump", "--compressed", UI_XML, timeout=40)
+            raw = adb(serial, "shell", "cat", UI_XML)
+            pos = raw.find("<?xml")
+            if pos >= 0:
+                xml_nodes(raw[pos:])  # Require well-formed real Android XML.
+                return raw[pos:]
+        except (RuntimeError, subprocess.TimeoutExpired):
+            pass
+        if attempt < 4:
+            time.sleep(3)
+    raise RuntimeError("native_accessibility_unavailable_after_bounded_retries")
 
 
 def dismiss_launcher(serial):
