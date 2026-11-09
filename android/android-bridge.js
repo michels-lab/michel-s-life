@@ -233,6 +233,24 @@
       // A new section begins at its own top, never at the preceding pane's
       // offscreen scroll position (the Windows->Android shell is shared).
       window.scrollTo(0,0);
+      if(id==='settings'){
+        // Settings uses the canonical desktop shell, which can start below
+        // Android's visible fold. Reveal its real content after building it,
+        // regardless of whether navigation came from the drawer, bottom bar,
+        // or the direct fast-route API used by touchscreen regression tests.
+        const content=q('#tab-settings.active .v30171-settings-content');
+        const scroll=document.scrollingElement;
+        if(content&&scroll){
+          const visual=window.visualViewport;
+          const viewTop=Number.isFinite(visual?.offsetTop)?visual.offsetTop:0;
+          const viewHeight=Number.isFinite(visual?.height)?visual.height:window.innerHeight;
+          const idealTop=viewTop+Math.min(320,Math.max(200,viewHeight*.35));
+          const distance=Math.max(0,content.getBoundingClientRect().top-idealTop);
+          if(distance>8&&scroll.scrollHeight>scroll.clientHeight)
+            window.scrollTo({top:Math.min(scroll.scrollHeight-scroll.clientHeight,
+              scroll.scrollTop+distance),behavior:'instant'});
+        }
+      }
     });
     persistNavLater();
     finishSectionSwitch(started,id,'android-render-main');
