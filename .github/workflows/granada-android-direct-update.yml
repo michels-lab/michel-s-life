@@ -1,0 +1,37 @@
+name: GRANADA Android Direct safe update discovery
+on:
+  pull_request:
+    paths:
+      - 'android/app/src/main/java/com/michelslab/michelslife/DirectUpdatePolicy.java'
+      - 'android/app/src/main/java/com/michelslab/michelslife/AndroidDirectUpdateChecker.kt'
+      - 'android/app/src/main/java/com/michelslab/michelslife/AndroidBridge.kt'
+      - 'tools/DirectUpdatePolicyTest.java'
+      - 'tools/test_android_direct_update_bridge.mjs'
+      - '.github/workflows/granada-android-direct-update.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  direct-update-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Compile actual pure production update policy and reject unsafe states
+        run: |
+          mkdir -p /tmp/mlv-direct-update-test
+          javac -encoding UTF-8 -d /tmp/mlv-direct-update-test \
+            android/app/src/main/java/com/michelslab/michelslife/DirectUpdatePolicy.java \
+            tools/DirectUpdatePolicyTest.java
+          java -cp /tmp/mlv-direct-update-test DirectUpdatePolicyTest
+      - name: Verify real bridge wiring and deny automatic installation
+        run: |
+          node --check tools/test_android_direct_update_bridge.mjs
+          node tools/test_android_direct_update_bridge.mjs
