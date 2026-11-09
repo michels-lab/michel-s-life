@@ -5,7 +5,7 @@ No file is auto-deleted or declared unused.
 
 ## Coverage
 
-Tracked: 337; classified: 333; readable documents: 91; above read cap: 0; findings: 5.
+Tracked: 344; classified: 340; readable documents: 92; above read cap: 0; findings: 6.
 
 ## File roles
 
@@ -17,16 +17,16 @@ Tracked: 337; classified: 333; readable documents: 91; above read cap: 0; findin
 | build_script | 6 |
 | config | 22 |
 | database_migration | 3 |
-| document | 84 |
+| document | 85 |
 | encoded_source | 2 |
 | index | 4 |
 | installer_metadata | 1 |
 | release_intent | 8 |
-| source | 112 |
-| test | 27 |
+| source | 115 |
+| test | 28 |
 | text_metadata | 1 |
 | web_ui | 3 |
-| workflow | 36 |
+| workflow | 38 |
 
 ## Findings (human review required)
 
@@ -34,7 +34,8 @@ Tracked: 337; classified: 333; readable documents: 91; above read cap: 0; findin
 - **CONFIRMED / BROKEN_RELATIVE_LINK** docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md: Missing: docs/AGENTS.md. Next: Fix link or restore target (ID 7a232f866547f4b1)
 - **CONFIRMED / BROKEN_RELATIVE_LINK** docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md: Missing: docs/tools/ui_android_section_design_smoke.mjs. Next: Fix link or restore target (ID c9b0ed37825bd396)
 - **CONFIRMED / BROKEN_RELATIVE_LINK** docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md: Missing: docs/android/audit/2026-10-12-ui-screenshot-gallery.md. Next: Fix link or restore target (ID 55915b207228a042)
-- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** GIT_AUDIT_LOG.md: 86 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-account-boundary.yml. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID a8eac5ec69aa24ed)
+- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** GIT_AUDIT_LOG.md: 95 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-account-boundary.yml. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID a173bbbde1effce1)
+- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** android/ANDROID_AUDIT_LOG.md: 4 implementation/config paths changed since this log's last commit; examples: .github/workflows/granada-android-drawer-atomic.yml, android/android-bridge.js, tools/test_android_drawer_atomic_open.mjs, tools/ui_android_mobile_smoke.mjs. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID 8df6d9a2edf4ac77)
 
 Complete path → purpose/role/certainty list lives in FILE_GOVERNANCE.json. SUMMARY.json has counts only for master polling.
 A dated file, duplicate, or suspicious name is an **investigation candidate**, not unwanted material.
