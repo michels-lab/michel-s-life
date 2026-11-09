@@ -104,6 +104,11 @@ adb shell dumpsys package "$PKG" >"$OUT/package-info.txt"
 grep -F "versionName=${ANDROID_VERSION}" "$OUT/package-info.txt"
 adb shell am start -W -n "$PKG/.MainActivity" | tee "$OUT/launch-result.txt"
 sleep 10
+# The hosted Pixel Launcher can show its OWN system "isn't responding" modal
+# over a perfectly running Michel's Life WebView. This was proven by the
+# genuine API35 same-run screenshots and Android UIAutomator hierarchy.
+# Close only the exact Pixel Launcher system ANR, never an app/WebView ANR.
+python3 android/tools/native_onboarding_touch.py dismiss --serial emulator-5554
 adb shell pidof "$PKG" | tee "$OUT/process-id.txt"
 # Do not override emulator WM size/density: physical native WebView surface may
 # go blank after a forced display configuration change on API 36.
@@ -145,8 +150,13 @@ if [[ "$DEVICE_SIZE" =~ ^([0-9]+)x([0-9]+)$ ]]; then
   H="${BASH_REMATCH[2]}"
   X="$((W * 83 / 100))"
   Y="$((H * 78 / 100))"
-  echo "Tapping installed WebView step-1 Continue at pixel $X,$Y on $DEVICE_SIZE"
-  adb shell input tap "$X" "$Y"
+  echo "Tapping installed WebView step-1 Continue on $DEVICE_SIZE"
+  if [[ "$NATIVE_STATE_TEST" -eq 1 ]]; then
+    python3 android/tools/native_onboarding_touch.py tap --stage 0 --serial emulator-5554
+  else
+    python3 android/tools/native_onboarding_touch.py dismiss --serial emulator-5554
+    adb shell input tap "$X" "$Y"
+  fi
   sleep 8
   capture_png "$OUT/step2-after-native-continue.png"
   # On the pinned 1080x2400 Pixel 6 emulator, the step 2 focus footer
@@ -155,8 +165,13 @@ if [[ "$DEVICE_SIZE" =~ ^([0-9]+)x([0-9]+)$ ]]; then
   # this a native Finish pass until the resulting screenshot is inspected.
   NEXT_X="$((W * 83 / 100))"
   NEXT_Y="$((H * 84 / 100))"
-  echo "Tapping installed WebView step-2 Continue at pixel $NEXT_X,$NEXT_Y on $DEVICE_SIZE"
-  adb shell input tap "$NEXT_X" "$NEXT_Y"
+  echo "Tapping installed WebView step-2 Continue on $DEVICE_SIZE"
+  if [[ "$NATIVE_STATE_TEST" -eq 1 ]]; then
+    python3 android/tools/native_onboarding_touch.py tap --stage 1 --serial emulator-5554
+  else
+    python3 android/tools/native_onboarding_touch.py dismiss --serial emulator-5554
+    adb shell input tap "$NEXT_X" "$NEXT_Y"
+  fi
   sleep 8
   capture_png "$OUT/step3-after-native-continue.png"
   # The step-3 Finish setup control is at ~81% width, 62% height on
@@ -164,8 +179,13 @@ if [[ "$DEVICE_SIZE" =~ ^([0-9]+)x([0-9]+)$ ]]; then
   # step-3 screenshot, not guessed from the browser-only fixture.
   FINISH_X="$((W * 81 / 100))"
   FINISH_Y="$((H * 62 / 100))"
-  echo "Tapping installed WebView Finish setup at pixel $FINISH_X,$FINISH_Y on $DEVICE_SIZE"
-  adb shell input tap "$FINISH_X" "$FINISH_Y"
+  echo "Tapping installed WebView Finish setup on $DEVICE_SIZE"
+  if [[ "$NATIVE_STATE_TEST" -eq 1 ]]; then
+    python3 android/tools/native_onboarding_touch.py tap --stage 2 --serial emulator-5554
+  else
+    python3 android/tools/native_onboarding_touch.py dismiss --serial emulator-5554
+    adb shell input tap "$FINISH_X" "$FINISH_Y"
+  fi
   sleep 12
   capture_png "$OUT/step4-after-native-finish.png"
   sleep 20
