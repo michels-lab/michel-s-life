@@ -27,6 +27,8 @@ on:
       - 'android/gradle.properties'
       - 'src/MichelsLife/frontend/**'
       - 'branding/**'
+      - 'tools/download_latest_michels_life_bundle.py'
+      - 'tools/test_michels_life_bootstrap.py'
       - 'tools/bump_frontend_version.py'
       - 'tools/enable_i18n.py'
       - 'tools/validate_generated_index.py'
@@ -46,6 +48,8 @@ on:
       - 'android/gradle.properties'
       - 'src/MichelsLife/frontend/**'
       - 'branding/**'
+      - 'tools/download_latest_michels_life_bundle.py'
+      - 'tools/test_michels_life_bootstrap.py'
       - 'tools/bump_frontend_version.py'
       - 'tools/enable_i18n.py'
       - 'tools/validate_generated_index.py'
@@ -127,6 +131,9 @@ jobs:
         run: |
           python3 -m pip install --disable-pip-version-check Pillow==11.3.0
           python3 android/tools/compare_signed_native_kpis.py --self-test
+
+      - name: Test resilient bootstrap download before packaging
+        run: python -m unittest discover -s tools -p 'test_michels_life_bootstrap.py' -v
 
       - name: Download current Michel's Life AppBundle
         env:
