@@ -33,11 +33,13 @@ function setup(data=seed()){
   const table=new Map(data);
   const calls=[];
   let sabotage=null;
+  let permanent=null;
   const storage={
     getItem:key=>table.has(String(key))?table.get(String(key)):null,
     setItem(key,val){
       key=String(key);val=String(val);
       calls.push(['set',key]);
+      if(permanent&&permanent(key,val))throw Error('synthetic disk permanently unavailable');
       if(sabotage&&sabotage(key,val)){sabotage=null;throw Error('synthetic disk quota');}
       table.set(key,val);
     },
@@ -50,6 +52,7 @@ function setup(data=seed()){
   return {
     table,calls,shared:ctx.shared,
     failOnce:(fn)=>{sabotage=fn;},
+    failAlways:(fn)=>{permanent=fn;},
     snapshot:()=>Object.fromEntries(table)
   };
 }
@@ -152,11 +155,10 @@ test('rollback failure fails closed without claiming the old progress was safely
   const t=setup();
   // Simulate a permanently unwritable volume only after first destructive
   // mutation; unlike a one-off quota error the rollback itself must fail.
-  let armed=true;
-  const ownSet=t.shared.restore; // unchanged production function used below
-  t.failOnce(key=>key===THEME&&armed);
-  assert.throws(()=>ownSet({[THEME]:'new',[JOURNAL]:'new'}));
-  // No credential mutations, and no successful-restore claim.
+  t.failAlways(key=>key===THEME);
+  assert.throws(()=>t.shared.restore({[THEME]:'new',[JOURNAL]:'new'}),
+    /rollback could not complete/);
+  // Device credentials remain isolated even if the disk cannot restore data.
   checkDevice(t);
 });
 test('all four production entrypoints use atomic shared board application',()=>{
