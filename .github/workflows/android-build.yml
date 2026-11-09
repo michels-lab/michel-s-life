@@ -164,9 +164,28 @@ jobs:
         with:
           gradle-version: '9.6.0'
 
+      - name: Verify Android Direct runtime signer matches distribution pin
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+          configured = os.environ.get("ANDROID_DIRECT_CERT_SHA256", "").lower()
+          source = Path("android/app/src/main/java/com/michelslab/michelslife/AndroidDirectCertificate.java").read_text()
+          pinned = re.search(r'EXPECTED_SHA256\s*=\s*"([0-9a-f]{64})"', source)
+          if not pinned or not re.fullmatch(r"[0-9a-f]{64}", configured) or pinned.group(1) != configured:
+              raise SystemExit("FAIL: runtime signer pin does not match configured official Android Direct certificate")
+          print("PASS: runtime signer pin matches configured official Android Direct certificate")
+          PY
+
       - name: Build debug APK
         working-directory: android
         run: gradle --no-daemon :app:assembleDebug
+
+      - name: Exercise real Kotlin Android Direct release parser with fake public metadata
+        working-directory: android
+        run: gradle --no-daemon :app:testDebugUnitTest --tests 'com.michelslab.michelslife.AndroidDirectUpdateCheckerTest'
 
       - name: Prepare optional Play upload keystore
         shell: bash
@@ -338,11 +357,16 @@ jobs:
           arch: x86_64
           profile: pixel_6
           avd-name: michels-life-candidate-android16
-          # API 36 + gfxstream Vulkan/legacy swiftshader_indirect crashed after the
-          # installed WebView rendered on two clean hosted Linux runners. Use
-          # current supported SwiftShader GLES and disable Vulkan explicitly;
-          # never weaken native screenshot assertions to mask black frames.
-          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu swiftshader -feature -Vulkan
+          # The exact same current candidate passed REAL Android15 Pixel6
+          # installation, first-run Finish, 2 force-stop relaunches, canonical
+          # XP/mission digests and lockscreen Focus on the lower-footprint
+          # software renderer: run #41569152291. Android16 previously lost
+          # emulator-5554 on the 30s real screenshot under SwiftShader in
+          # #41569152176. Test the proven host profile on API36, retaining ALL
+          # native pixel, stage, ADB and persisted-state requirements.
+          ram-size: 2048M
+          heap-size: 256M
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu software -feature -Vulkan
           disable-animations: true
           emulator-boot-timeout: 600
           script: bash android/tools/smoke_candidate_apk_install.sh

@@ -28,7 +28,7 @@ required_bridge = [
     "body:has(#mlv200Onboarding:not([hidden])) #mlv-android-topbar",
     "z-index:2147483500",
     "[data-mlv200-onboard=\"next\"]",
-    "max(42px,env(safe-area-inset-bottom,0px))",
+    "max(90px,calc(env(safe-area-inset-bottom,0px) + 56px))",
     "michelsLife.onboarding.v30200",
     "function fastRoute(id)",
     "window.__mlvAndroidFastRoute=fastRoute",

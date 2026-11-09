@@ -189,12 +189,57 @@ try{
     const rect=button.getBoundingClientRect(),barRect=bar.getBoundingClientRect();
     const cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
     const hit=document.elementFromPoint(cx,cy);
-    return {buttonBottom:rect.bottom,barTop:barRect.top,
-      centerIsButton:hit===button||button.contains(hit),inViewport:cy>0&&cy<innerHeight};
+    const mini=document.getElementById('mlv-android-mini-focus');
+    const miniVisible=!!mini&&!mini.hidden&&
+      getComputedStyle(mini).display!=='none'&&mini.getClientRects().length>0;
+    const miniTop=miniVisible?mini.getBoundingClientRect().top:null;
+    const style=getComputedStyle(button);
+    return {buttonBottom:rect.bottom,barTop:barRect.top,miniTop,
+      centerIsButton:hit===button||button.contains(hit),inViewport:cy>0&&cy<innerHeight,
+      hitOwner:hit?.id||hit?.closest('[id]')?.id||hit?.tagName||'',
+      computedPosition:style.position,computedBottom:style.bottom,
+      computedTransform:style.transform,inlineTransform:button.style.transform,
+      buttonType:button.getAttribute('type')||'implicit',
+      storyActive:!!button.closest('#tab-story.active'),insideMain:!!button.closest('#main')};
   });
   assert(touchTarget.buttonBottom<=touchTarget.barTop-5&&
-    touchTarget.centerIsButton&&touchTarget.inViewport,
+    (touchTarget.miniTop===null||touchTarget.buttonBottom<=touchTarget.miniTop-5)&&
+    touchTarget.centerIsButton&&touchTarget.inViewport&&
+    touchTarget.computedPosition==='fixed',
     'Story Start chapter submit is covered by mobile bar/overlay: '+JSON.stringify(touchTarget));
+  await page.screenshot({path:out+'/04a-chapter-cta-safe-412.png'});
+  // On smaller phones the same real button and persistent nav must remain
+  // physically separate, not merely both present in the DOM.
+  await page.setViewportSize({width:360,height:780});
+  await page.waitForTimeout(160);
+  const small=await start.evaluate(button=>{
+    const nav=document.getElementById('mlv-android-bottom-nav');
+    const b=button.getBoundingClientRect(),n=nav.getBoundingClientRect();
+    const x=b.left+b.width/2,y=b.top+b.height/2;
+    const hit=document.elementFromPoint(x,y);
+    const style=getComputedStyle(button);
+    const mini=document.getElementById('mlv-android-mini-focus');
+    const miniTop=mini&&!mini.hidden&&getComputedStyle(mini).display!=='none'&&
+      mini.getClientRects().length?mini.getBoundingClientRect().top:null;
+    return {buttonBottom:b.bottom,barTop:n.top,miniTop,height:b.height,
+      hitOwner:hit?.id||hit?.closest('[id]')?.id||hit?.tagName||'',
+      viewport:innerHeight,buttonReceivesTouch:hit===button||button.contains(hit),
+      horizontalOverflow:document.documentElement.scrollWidth>innerWidth+2,
+      computedPosition:style.position,computedBottom:style.bottom,
+      computedTransform:style.transform,
+      focusActive:document.body.classList.contains('mlv-android-timer-active'),
+      mobileMedia:matchMedia('(max-width:380px)').matches,
+      keyboardEditing:document.body.classList.contains('mlv-android-keyboard-editing'),
+      visualViewportHeight:window.visualViewport?.height||0};
+  });
+  assert(small.height>=44&&small.buttonBottom<=small.barTop-5&&
+    (small.miniTop===null||small.buttonBottom<=small.miniTop-5)&&
+    small.buttonReceivesTouch&&!small.horizontalOverflow&&
+    small.computedPosition==='fixed',
+    'Story Start chapter must be safely tappable at 360px: '+JSON.stringify(small));
+  await page.screenshot({path:out+'/04b-chapter-cta-safe-360.png'});
+  await page.setViewportSize({width:412,height:915});
+  await page.waitForTimeout(160);
   await start.tap({timeout:12000});
   await page.waitForFunction(name=>document.querySelector('#tab-story')
     ?.textContent?.includes(name),chapterName,{timeout:12000});
