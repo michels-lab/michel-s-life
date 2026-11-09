@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 334,
-  "classified_files_total": 330,
+  "tracked_files_total": 335,
+  "classified_files_total": 331,
   "docs_content_inspected": 91,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -18,7 +18,7 @@
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 8,
-    "source": 110,
+    "source": 111,
     "test": 26,
     "text_metadata": 1,
     "web_ui": 3,
@@ -29,8 +29,8 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "85209c339664753c61640f70e09237cdb870019c62545888e188fdd39222cc1a",
-  "evidence_fingerprint": "6fb9bf9299c4743f1ee583e17c27ad0efa988349c2516c637641f3f112ffa02e",
+  "inventory_fingerprint": "5ea9b1b8e31fdf95bcd50be8006243d5168a5e4951be53c49555e2c76e5bf540",
+  "evidence_fingerprint": "cc00fdd6a099306ab3e98155a5517273b653bdcb5ba6bd4772dc1c7d5b0c1dbf",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -100,7 +100,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "768826748c1f976635f1ca20690b8c408fe3e9ec"
+      "blob": "23b1a326ff7b2e150eafccb942bf368f611510fc"
     },
     {
       "path": ".github/workflows/build-store-msix.yml",
@@ -317,7 +317,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "74270ab8c8bebe7de2b18620327aedcdc1053d97"
+      "blob": "fd5eb13753516a20bf516af480d3918c86b07023"
     },
     {
       "path": ".gitignore",
@@ -555,7 +555,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "4a9004371484d16305c23b686f6858d5b6bf61f4"
+      "blob": "1fac4e4894d09317346391b97263c44bdf5c3131"
     },
     {
       "path": "android/app/build.gradle.kts",
@@ -968,14 +968,14 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "fc31a7610b36dec1a5201e12bf81c9cf2ae70d57"
+      "blob": "01461ef876676ac36fb53d2b744ada90f14ec72a"
     },
     {
       "path": "android/mobile-sections.js",
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "8428dd86e3677ed9de492bb57fa3ea50a4e85f80"
+      "blob": "45864eb244254e504ada43f5f9b48272bbb6b330"
     },
     {
       "path": "android/settings.gradle.kts",
@@ -989,7 +989,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "fe5b25dd2b2060df99bfbbd8d6e730789c3870e5"
+      "blob": "6d52a6ef0ccbb9be1b803fd0a3cbc3cba249359c"
     },
     {
       "path": "android/tools/compare_signed_native_kpis.py",
@@ -1832,6 +1832,13 @@
       "blob": "38a9d4daa1755a2aa4c68cf561df28e4d0a73ff7"
     },
     {
+      "path": "tools/story_focus_visual_viewport.test.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "be5e06b1f7441618664af41c2eff98c9f9324e19"
+    },
+    {
       "path": "tools/test_android_calendar_read_contract.py",
       "role": "test",
       "purpose": "code/test implementation",
@@ -2381,20 +2388,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "30d004963fb12b8e",
+      "id": "c067537bc64c5207",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "80 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-account-boundary.yml",
+      "observation": "82 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-account-boundary.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "1d4a5e242e24a13a",
+      "id": "4cc979e93f61f232",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "47 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/granada-account-boundary.yml, .github/workflows/granada-android-calendar-read.yml, .github/workflows/granada-story-focus-provenance.yml, .github/workflows/ui-smoke.yml, android/app/src/main/java/com/michelslab/michelslife/AndroidBridge.kt",
+      "observation": "50 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/granada-account-boundary.yml, .github/workflows/granada-android-calendar-read.yml, .github/workflows/granada-story-focus-provenance.yml, .github/workflows/ui-smoke.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
