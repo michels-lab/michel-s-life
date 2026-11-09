@@ -25,6 +25,10 @@
         <receiver
             android:name=".FocusAlarmReceiver"
             android:exported="false" />
+        <!-- Private OS notification action, never a second Focus timer. -->
+        <receiver
+            android:name=".FocusSnoozeReceiver"
+            android:exported="false" />
         <!-- System boot/package-replacement broadcasts restore a still-active
              Focus alarm without exporting app-specific alarm endpoints. -->
         <receiver

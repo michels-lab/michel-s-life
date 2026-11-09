@@ -26,6 +26,7 @@ internal object NativeFocusAlarm {
     private const val KEY_TOKEN = "token"
     private const val KEY_DEADLINE = "deadline"
     private const val KEY_MODE = "mode"
+    private const val KEY_LANGUAGE = "language"
     private const val CHANNEL_ID = "michelslife-focus-complete"
     private const val ACTIVE_CHANNEL_ID = "michelslife-focus-running-v1"
     private const val ACTIVE_NOTIFICATION_ID = 4707
@@ -61,7 +62,7 @@ internal object NativeFocusAlarm {
         return granted && manager.areNotificationsEnabled()
     }
 
-    private fun openPomodoro(context: Context): PendingIntent =
+    internal fun openPomodoro(context: Context): PendingIntent =
         PendingIntent.getActivity(
             context, REQUEST_CODE,
             Intent(context, MainActivity::class.java).apply {
@@ -73,15 +74,19 @@ internal object NativeFocusAlarm {
 
     /** The OS renders the countdown from the canonical deadline, even with
      * the display off or the WebView suspended. It is NOT a second timer. */
-    private fun showRunning(context: Context, mode: String, deadline: Long) {
+    private fun showRunning(context: Context, mode: String, deadline: Long, language: String) {
         if (!notificationPermissionGranted(context)) return
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         createChannel(context)
         val isBreak = mode == "break"
         val running = Notification.Builder(context, ACTIVE_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_michels_focus)
-            .setContentTitle(if (isBreak) "Pomodoro · Break" else "Pomodoro · Focus")
-            .setContentText(if (isBreak) "Recovery in progress · tap to open" else "Focus session in progress · tap to open")
+            .setContentTitle(if (isBreak) (if (language == "es") "Pomodoro · Descanso" else "Pomodoro · Break") else "Pomodoro · Focus")
+            .setContentText(if (language == "es") {
+                if (isBreak) "Descanso en curso · toca para abrir" else "Sesión de enfoque en curso · toca para abrir"
+            } else {
+                if (isBreak) "Recovery in progress · tap to open" else "Focus session in progress · tap to open"
+            })
             .setSubText("Michel's Life")
             .setContentIntent(openPomodoro(context))
             .setWhen(deadline)
@@ -149,11 +154,15 @@ internal object NativeFocusAlarm {
         val phaseStatus = state.optString("status")
         val deadline = state.optLong("deadlineAt", 0L)
         val mode = if (state.optString("mode") == "break") "break" else "work"
+        val language = if (state.optString("language") == "es") "es" else "en"
         val now = System.currentTimeMillis()
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
         // Idle, paused or invalid states must remove the previous notification.
         if (phaseStatus != "running" || deadline <= 0L || deadline > now + MAX_FUTURE_MS) {
+            // Explicit pause/reset cancels an old completion snooze; a normal
+            // ready-after-completion state preserves its user-facing action.
+            if (phaseStatus == "paused") FocusSnoozeReminder.clear(context)
             cancel(context)
             return status(context).put("scheduled", false)
         }
@@ -181,19 +190,25 @@ internal object NativeFocusAlarm {
         val token = "$mode:$deadline"
         if (prefs.getString(KEY_TOKEN, "") == token &&
             prefs.getLong(KEY_DEADLINE, 0L) == deadline) {
-            // Re-show quietly after a permission grant without touching the alarm.
-            showRunning(context, mode, deadline)
+            // Re-show quietly after a permission grant or language change without touching the alarm.
+            prefs.edit().putString(KEY_LANGUAGE, language).apply()
+            showRunning(context, mode, deadline, language)
             return status(context).put("scheduled", true)
         }
 
         cancel(context)
+        // The new canonical phase supersedes any previous completion snooze.
+        FocusSnoozeReminder.clear(context)
+        (context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
+            .cancel(NOTIFICATION_ID)
         val alarm = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         // setAndAllowWhileIdle does not require the special exact-alarm access.
         // It works with a locked screen, though Android may delay the delivery.
         alarm.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, deadline, intent(context, token))
         prefs.edit().putString(KEY_TOKEN, token)
-            .putLong(KEY_DEADLINE, deadline).putString(KEY_MODE, mode).apply()
-        showRunning(context, mode, deadline)
+            .putLong(KEY_DEADLINE, deadline).putString(KEY_MODE, mode)
+            .putString(KEY_LANGUAGE, language).apply()
+        showRunning(context, mode, deadline, language)
         return status(context).put("scheduled", true)
     }
 
@@ -209,18 +224,21 @@ internal object NativeFocusAlarm {
         val token = prefs.getString(KEY_TOKEN, "") ?: ""
         val deadline = prefs.getLong(KEY_DEADLINE, 0L)
         val mode = prefs.getString(KEY_MODE, "") ?: ""
+        val language = prefs.getString(KEY_LANGUAGE, "en") ?: "en"
         val now = System.currentTimeMillis()
         if ((mode != "work" && mode != "break") ||
             token != "$mode:$deadline" ||
             deadline <= now || deadline > now + MAX_FUTURE_MS) {
             cancel(context)
+            FocusSnoozeReminder.recoverAfterBoot(context)
             return
         }
         // Re-arming the same PendingIntent is idempotent if the package
         // replacement broadcast arrives while an alarm still exists.
         val alarm = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         alarm.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, deadline, intent(context, token))
-        showRunning(context, mode, deadline)
+        showRunning(context, mode, deadline, language)
+        FocusSnoozeReminder.clear(context) // Active canonical Focus takes precedence.
     }
 
     fun cancel(context: Context) {
@@ -230,7 +248,8 @@ internal object NativeFocusAlarm {
         // Does not construct a second alarm: cancels the matching request code.
         alarm.cancel(intent(context, token))
         hideRunning(context)
-        prefs.edit().remove(KEY_TOKEN).remove(KEY_DEADLINE).remove(KEY_MODE).apply()
+        prefs.edit().remove(KEY_TOKEN).remove(KEY_DEADLINE).remove(KEY_MODE)
+            .remove(KEY_LANGUAGE).apply()
     }
 
     fun deliverIfCurrent(context: Context, token: String) {
@@ -238,19 +257,28 @@ internal object NativeFocusAlarm {
         if (token.isBlank() || token != prefs.getString(KEY_TOKEN, "")) return
         val deadline = prefs.getLong(KEY_DEADLINE, 0L)
         if (deadline <= 0L || deadline > System.currentTimeMillis() + 5_000L) return
-        val mode = prefs.getString(KEY_MODE, "work")
+        val mode = prefs.getString(KEY_MODE, "work") ?: "work"
+        val language = prefs.getString(KEY_LANGUAGE, "en") ?: "en"
         // Clearing before notification means duplicate/stale receiver events
         // cannot double-send after reset or an overlapping phase transition.
-        prefs.edit().remove(KEY_TOKEN).remove(KEY_DEADLINE).remove(KEY_MODE).commit()
+        prefs.edit().remove(KEY_TOKEN).remove(KEY_DEADLINE).remove(KEY_MODE)
+            .remove(KEY_LANGUAGE).commit()
         hideRunning(context)
         if (!notificationPermissionGranted(context)) return
         createChannel(context)
+        FocusSnoozeReminder.prepare(context, token, mode, language)
         val open = openPomodoro(context)
         val isBreak = mode == "break"
         val notification = Notification.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_michels_focus)
-            .setContentTitle(if (isBreak) "Break complete" else "Focus session complete")
-            .setContentText(if (isBreak) "Ready for another focus session?" else "Time to take a break.")
+            .setContentTitle(if (isBreak) (if (language == "es") "Descanso terminado" else "Break complete") else (if (language == "es") "Sesión de enfoque terminada" else "Focus session complete"))
+            .setContentText(if (language == "es") {
+                if (isBreak) "¿Listo para otra sesión de enfoque?" else "Es hora de descansar."
+            } else {
+                if (isBreak) "Ready for another focus session?" else "Time to take a break."
+            })
+            .addAction(0, if (language == "es") "Avisar en 5 min" else "Remind in 5 min",
+                FocusSnoozeReminder.action(context, token))
             .setContentIntent(open)
             .setAutoCancel(true)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
@@ -259,6 +287,44 @@ internal object NativeFocusAlarm {
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.notify(NOTIFICATION_ID, notification)
     }
+    /** A delivered completion may be re-notified once, entirely outside the
+     * canonical Focus clock. This does not restart or prolong a session. */
+    internal fun notifySnoozed(
+        context: Context, mode: String, language: String, due: Long, reminder: Boolean
+    ) {
+        if (!notificationPermissionGranted(context)) return
+        createChannel(context)
+        val isBreak = mode == "break"
+        val es = language == "es"
+        val title = if (reminder) {
+            if (es) "Recordatorio de Pomodoro" else "Pomodoro reminder"
+        } else {
+            if (es) "Aviso pospuesto" else "Reminder snoozed"
+        }
+        val message = if (reminder) {
+            if (es) {
+                if (isBreak) "El descanso terminó · toca para abrir" else "Tu sesión terminó · toca para abrir"
+            } else {
+                if (isBreak) "Break ended · tap to open" else "Focus session finished · tap to open"
+            }
+        } else if (es) "Te avisaremos de nuevo en 5 minutos"
+        else "Another reminder in 5 minutes"
+        val notification = Notification.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_stat_michels_focus)
+            .setContentTitle(title)
+            .setContentText(message)
+            .setContentIntent(openPomodoro(context))
+            .setAutoCancel(true)
+            .setOnlyAlertOnce(!reminder)
+            .setWhen(due)
+            .setShowWhen(!reminder)
+            .setVisibility(Notification.VISIBILITY_PUBLIC)
+            .setCategory(Notification.CATEGORY_REMINDER)
+            .build()
+        (context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
+            .notify(NOTIFICATION_ID, notification)
+    }
+
 }
 
 class FocusAlarmReceiver : BroadcastReceiver() {

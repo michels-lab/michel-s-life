@@ -180,7 +180,7 @@ for token in (
     'setWhen(deadline)',
     'setOngoing(true)',
     'setVisibility(Notification.VISIBILITY_PUBLIC)',
-    'showRunning(context, mode, deadline)',
+    'showRunning(context, mode, deadline, language)',
     'hideRunning(context)',
 ):
     if token not in focus_alarm:

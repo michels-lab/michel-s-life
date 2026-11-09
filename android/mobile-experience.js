@@ -24,11 +24,12 @@
     const running=state.status==='running';
     const deadline=Number(state.deadlineAt)||0;
     const mode=state.mode==='break'?'break':'work';
-    const key=running?'running:'+mode+':'+deadline:'inactive';
+    const language=window.MichelsLifeI18n?.language==='es'?'es':'en';
+    const key=running?'running:'+mode+':'+deadline+':'+language:'inactive:'+state.status;
     if(key===lastNativeAlarmKey)return;
     try{
       const raw=native.syncFocusAlarm(JSON.stringify({
-        status:running?'running':'paused',deadlineAt:running?deadline:0,mode
+        status:running?'running':state.status,deadlineAt:running?deadline:0,mode,language
       }));
       const result=JSON.parse(raw||'{}');
       if(result.error)throw Error(result.error);
