@@ -44,6 +44,9 @@ jobs:
       - name: Audit shared backup restore and device isolation
         run: node tools/test_cloud_restore_storage.mjs
 
+      - name: Test resilient bootstrap download before browser packaging
+        run: python -m unittest discover -s tools -p 'test_michels_life_bootstrap.py' -v
+
       - name: Build browser-test bundle from canonical frontend
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
