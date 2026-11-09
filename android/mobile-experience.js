@@ -61,20 +61,21 @@
     };
     window.requestAnimationFrame(()=>window.requestAnimationFrame(settle));
   }
-  function focusNotificationPresentation(state){
+  function focusNotificationPresentation(state,language='en'){
     const allowed=state?.notificationsGranted===true;
     const countdown=state?.ongoingCountdownAvailable===true;
     const completion=state?.backgroundDelivery===true;
+    const es=language==='es';
     return {
       note:!allowed
-        ?'Allow Michel’s Life notifications to show Pomodoro with the screen locked.'
+        ?(es?'Permite las notificaciones de Michel’s Life para ver el Pomodoro con la pantalla bloqueada.':'Allow Michel’s Life notifications to show Pomodoro with the screen locked.')
         :!countdown
-          ?'The running Pomodoro notification channel is disabled in Android settings.'
+          ?(es?'El canal de cuenta regresiva del Pomodoro está desactivado en los ajustes de Android.':'The running Pomodoro notification channel is disabled in Android settings.')
           :!completion
-            ?'The Focus completion-alert channel is disabled in Android settings.'
-            :'Countdown available on the lock screen. Battery saving may delay completion alerts.',
+            ?(es?'El canal de aviso al terminar una sesión está desactivado en los ajustes de Android.':'The Focus completion-alert channel is disabled in Android settings.')
+            :(es?'La cuenta regresiva está disponible en la pantalla bloqueada. El ahorro de batería puede retrasar los avisos.':'Countdown available on the lock screen. Battery saving may delay completion alerts.'),
       showAction:!(allowed&&countdown&&completion),
-      actionLabel:allowed?'Settings':'Enable'
+      actionLabel:allowed?(es?'Ajustes':'Settings'):(es?'Activar':'Enable')
     };
   }
 
@@ -91,6 +92,55 @@
         native.openFocusNotificationSettings?.();
       else native?.requestFocusNotificationPermission?.();
     }catch(error){console.warn('Focus notification permission unavailable:',String(error));}
+  }
+  // Android-owned Focus copy only. The canonical timer, settings and mission
+  // model remain unchanged; locale changes update text in place without
+  // recreating the clock, input fields, or navigation.
+  function focusEs(){return window.MichelsLifeI18n?.language==='es';}
+  function focusText(en,es){return focusEs()?es:en;}
+  function localizeFocusSurface(){
+    if(!root)return;
+    const labels=[
+      ['.mlv-android-focus-eyebrow',"MICHEL'S LIFE / FOCUS","MICHEL'S LIFE / ENFOQUE"],
+      ['.mlv-android-focus-head p','One session at a time.','Una sesión a la vez.'],
+      ['.mlv-focus-controls-title','Session length','Duración de la sesión'],
+      ['[data-mobile-focus="skip"]','Skip phase','Saltar fase'],
+      ['[data-mobile-focus="reset"]','Reset','Reiniciar'],
+      ['[data-mobile-focus="settings"]','Focus settings','Ajustes de enfoque'],
+      ['details summary','Custom work / break duration','Duración personalizada de enfoque / descanso'],
+      ['.mlv-android-focus-compact label:first-child','Work minutes','Minutos de enfoque'],
+      ['.mlv-android-focus-compact label:nth-child(2)','Break minutes','Minutos de descanso'],
+      ['[data-mobile-focus="custom"]','Apply custom preset','Aplicar duración'],
+      ['.mlv-android-focus-stats>div:first-child span','Linked mission','Misión vinculada'],
+      ['.mlv-android-focus-stats>div:nth-child(2) span','Finished today','Completadas hoy'],
+      ['.mlv-focus-notification-copy strong','Lock-screen countdown','Cuenta regresiva en pantalla bloqueada']
+    ];
+    for(const [selector,en,es] of labels){
+      const el=q(selector,root);
+      // Input labels contain child controls: mutate only the label's first
+      // text node, not textContent, to preserve typed durations and focus.
+      if(selector.includes('compact label')){
+        if(el?.firstChild?.nodeType===3){
+          const value=focusText(en,es);
+          if(el.firstChild.nodeValue!==value)el.firstChild.nodeValue=value;
+        }
+      }else writeText(el,focusText(en,es));
+    }
+    const aria=[
+      ['#mlv-android-focus-dim','Close Focus','Cerrar Pomodoro'],
+      ['[data-mobile-focus="close"]','Close Focus','Cerrar Pomodoro'],
+      ['.mlv-android-focus-presets','Focus presets','Duraciones de enfoque']
+    ];
+    for(const [selector,en,es] of aria){
+      const el=q(selector,root),value=focusText(en,es);
+      if(el&&el.getAttribute('aria-label')!==value)el.setAttribute('aria-label',value);
+    }
+    if(mini){
+      const label=focusText('Active Focus timer','Temporizador Pomodoro activo');
+      if(mini.getAttribute('aria-label')!==label)mini.setAttribute('aria-label',label);
+      const open=q('.mlv-mini-open',mini),openLabel=focusText('Open Focus timer','Abrir Pomodoro');
+      if(open&&open.getAttribute('aria-label')!==openLabel)open.setAttribute('aria-label',openLabel);
+    }
   }
   const isFocusOpen=()=>!!(root&&!root.hidden);
   function fmt(ms){
@@ -1105,11 +1155,11 @@
           api.toggleFocus?.();
         }
         if(action==='skip'){
-          if(api.focusState?.().status==='running'&&!window.confirm('Skip the current focus phase?'))return;
+          if(api.focusState?.().status==='running'&&!window.confirm(focusText('Skip the current focus phase?','¿Saltar la fase de enfoque actual?')))return;
           api.skipFocus?.();
         }
         if(action==='reset'){
-          if(api.focusState?.().status==='running'&&!window.confirm('Reset the running focus phase?'))return;
+          if(api.focusState?.().status==='running'&&!window.confirm(focusText('Reset the running focus phase?','¿Reiniciar la fase de enfoque en curso?')))return;
           api.resetFocus?.();
         }
         if(action==='custom'){
@@ -1272,8 +1322,9 @@
     const api=focusApi(),f=api?.focusState?.();
     const tile=ensureTodayFocus();
     enforceFocusTextLayout(tile);
+    localizeFocusSurface();
     if(!f){
-      if(!root.hidden)writeText(q('#mlv-android-focus-status',root),'Focus is loading');
+      if(!root.hidden)writeText(q('#mlv-android-focus-status',root),focusText('Focus is loading','Cargando Pomodoro'));
       if(mini)mini.hidden=true;
       document.body.classList.remove('mlv-android-timer-active');
       return;
@@ -1281,41 +1332,42 @@
     syncNativeFocusAlarm(f);
     const active=f.status==='running'||f.status==='paused';
     const left=fmt(api.remaining?.(f));
-    const mode=f.mode==='break'?'Break':'Focus';
+    const mode=f.mode==='break'?focusText('Break','Descanso'):focusText('Focus','Enfoque');
     if(mini){
       mini.hidden=!active;
       if(active){
         writeText(q('#mlv-android-mini-time',mini),left);
-        writeText(q('#mlv-android-mini-state',mini),mode+' · '+(f.status==='running'?'In progress':'Paused'));
+        writeText(q('#mlv-android-mini-state',mini),mode+' · '+(f.status==='running'?focusText('In progress','En curso'):focusText('Paused','En pausa')));
         const control=q('.mlv-mini-toggle',mini);
-        writeText(control,f.status==='running'?'Pause':'Resume');
-        control.setAttribute('aria-label',control.textContent+' '+mode+' timer');
+        writeText(control,f.status==='running'?focusText('Pause','Pausar'):focusText('Resume','Reanudar'));
+        control.setAttribute('aria-label',focusText(control.textContent+' '+mode+' timer',
+          (f.status==='running'?'Pausar':'Reanudar')+' temporizador de '+mode.toLowerCase()));
       }
     }
     document.body.classList.toggle('mlv-android-timer-active',active);
     if(tile){
       const state=q('#mlv-android-today-focus-status',tile);
       const button=q('#mlv-android-today-focus-action',tile);
-      writeText(state,active?mode+' · '+left+(f.status==='paused'?' paused':' remaining'):
-        'Start a distraction-free session');
-      writeText(button,active?'Open':'Start');
+      writeText(state,active?mode+' · '+left+(f.status==='paused'?focusText(' paused',' en pausa'):focusText(' remaining',' restantes')):
+        focusText('Start a distraction-free session','Inicia una sesión sin distracciones'));
+      writeText(button,active?focusText('Open','Abrir'):focusText('Start','Iniciar'));
     }
     if(root.hidden)return;
     enforceFocusTouchTargets();
     writeText(q('#mlv-android-focus-time',root),left);
     writeText(q('#mlv-android-focus-phase',root),mode.toUpperCase());
     writeText(q('#mlv-android-focus-status',root),
-      f.status==='running'?'Session in progress':f.status==='paused'?'Session paused':'Ready to begin');
+      f.status==='running'?focusText('Session in progress','Sesión en curso'):f.status==='paused'?focusText('Session paused','Sesión en pausa'):focusText('Ready to begin','Listo para comenzar'));
     writeText(q('#mlv-focus-session-meta',root),
-      (f.mode==='break'?'BREAK':'WORK SESSION')+' · '+(f.mode==='break'?f.breakMin:f.workMin)+' MIN');
+      (f.mode==='break'?focusText('BREAK','DESCANSO'):focusText('WORK SESSION','SESIÓN DE ENFOQUE'))+' · '+(f.mode==='break'?f.breakMin:f.workMin)+' MIN');
     writeText(q('#mlv-focus-session-state',root),
-      f.status==='running'?'IN PROGRESS':f.status==='paused'?'PAUSED':'READY');
+      f.status==='running'?focusText('IN PROGRESS','EN CURSO'):f.status==='paused'?focusText('PAUSED','EN PAUSA'):focusText('READY','LISTO'));
     writeText(q('#mlv-focus-end-time',root),f.status==='running'?
-      'Ends at '+new Date(Number(f.deadlineAt)).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}):
-      f.status==='paused'?'Time saved. Resume when you are ready.':
-      'Choose a duration, then begin.');
+      focusText('Ends at ','Termina a las ')+new Date(Number(f.deadlineAt)).toLocaleTimeString(focusEs()?'es-MX':undefined,{hour:'numeric',minute:'2-digit'}):
+      f.status==='paused'?focusText('Time saved. Resume when you are ready.','Tiempo guardado. Reanuda cuando quieras.'):
+      focusText('Choose a duration, then begin.','Elige una duración y comienza.'));
     writeText(q('[data-mobile-focus="toggle"]',root),
-      f.status==='running'?'Pause session':f.status==='paused'?'Resume session':'Start focusing');
+      f.status==='running'?focusText('Pause session','Pausar sesión'):f.status==='paused'?focusText('Resume session','Reanudar sesión'):focusText('Start focusing','Comenzar enfoque'));
     root.querySelectorAll('[data-mobile-preset]').forEach(b=>
       b.setAttribute('aria-pressed',String(b.dataset.mobilePreset===f.preset))
     );
@@ -1331,17 +1383,17 @@
     let saved={};
     try{saved=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}')||{}}catch(_){}
     const linked=(saved.missions||[]).find(m=>String(m.id)===String(f.linkedMissionId||''));
-    writeText(q('#mlv-android-focus-linked',root),linked?linked.name:'None yet');
+    writeText(q('#mlv-android-focus-linked',root),linked?linked.name:focusText('None yet','Ninguna todavía'));
     const now=new Date();
     const day=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+
       '-'+String(now.getDate()).padStart(2,'0');
     const done=(api.focusSessions?.()||[]).filter(x=>x.status==='completed'&&x.date===day).length;
-    writeText(q('#mlv-android-focus-count',root),done+' session'+(done===1?'':'s'));
+    writeText(q('#mlv-android-focus-count',root),done+' '+(done===1?focusText('session','sesión'):focusText('sessions','sesiones')));
     const native=window.MichelsLifeAndroid;
     if(typeof native?.focusNotificationStatus==='function'){
       try{
         const state=JSON.parse(native.focusNotificationStatus());
-        const ui=focusNotificationPresentation(state);
+        const ui=focusNotificationPresentation(state,focusEs()?'es':'en');
         writeText(q('.mlv-android-focus-system-note',root),ui.note);
         const enable=q('#mlv-focus-enable-notifications',root);
         if(enable){
