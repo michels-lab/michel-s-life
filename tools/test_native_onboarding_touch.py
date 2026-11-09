@@ -2,6 +2,7 @@
 import importlib.util
 from pathlib import Path
 import unittest
+import tempfile
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -72,6 +73,61 @@ class NativeOnboardingTouchTests(unittest.TestCase):
                 mod.accessibility_xml(mod.SERIAL)
             self.assertEqual(command.call_count, 5)
             self.assertEqual(sleep.call_count, 4)
+
+    def test_verified_webview_geometry_survives_missing_stage_two_class(self):
+        xml = """<?xml version="1.0" ?><hierarchy>
+          <node class="android.webkit.WebView" package="com.michelslab.michelslife"
+          bounds="[0,78][1080,2335]" /></hierarchy>"""
+        with tempfile.TemporaryDirectory() as tmp:
+            cache = Path(tmp) / "bounds.json"
+            first = mod.verified_webview_bounds(xml, (1080,2400), "1234", 0, cache)
+            self.assertEqual(first,(0,78,1080,2335))
+            saved = cache.read_text()
+            self.assertIn("real_android_uiautomator_webview",saved)
+            second = mod.verified_webview_bounds("<hierarchy/>", (1080,2400), "1234", 1, cache)
+            self.assertEqual(second, first)
+
+    def test_cached_webview_geometry_rejects_pid_and_screen_changes(self):
+        xml = """<?xml version="1.0" ?><hierarchy>
+          <node class="android.webkit.WebView" package="com.michelslab.michelslife"
+          bounds="[0,78][1080,2335]" /></hierarchy>"""
+        with tempfile.TemporaryDirectory() as tmp:
+            cache = Path(tmp)/"bounds.json"
+            mod.verified_webview_bounds(xml,(1080,2400),"1234",0,cache)
+            for screen,pid in (((1080,2400),"5678"),((1200,2400),"1234"),((1080,2200),"1234")):
+                with self.subTest(screen=screen,pid=pid):
+                    with self.assertRaisesRegex(RuntimeError,"stale_or_invalid"):
+                        mod.verified_webview_bounds("<hierarchy/>",screen,pid,1,cache)
+
+    def test_never_use_geometry_cache_without_first_real_android_bounds(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cache = Path(tmp)/"bounds.json"
+            with self.assertRaisesRegex(RuntimeError,"expected_one_real_android_webview"):
+                mod.verified_webview_bounds("<hierarchy/>",(1080,2400),"1234",0,cache)
+            with self.assertRaisesRegex(RuntimeError,"native_prior_verified"):
+                mod.verified_webview_bounds("<hierarchy/>",(1080,2400),"1234",1,cache)
+
+    def test_reappearing_system_anr_blocks_cached_touch(self):
+        xml = """<?xml version="1.0" ?><hierarchy>
+          <node class="android.webkit.WebView" package="com.michelslab.michelslife"
+          bounds="[0,78][1080,2335]" /></hierarchy>"""
+        with tempfile.TemporaryDirectory() as tmp:
+            cache = Path(tmp)/"bounds.json"
+            mod.verified_webview_bounds(xml,(1080,2400),"1234",0,cache)
+            with self.assertRaisesRegex(RuntimeError,"launcher_anr_still"):
+                mod.verified_webview_bounds(hierarchy(),(1080,2400),"1234",1,cache)
+
+    def test_corrupted_geometry_cache_is_not_reused(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cache = Path(tmp)/"bounds.json"
+            cache.write_text('{"source":"real_android_uiautomator_webview","screen":[1080,2400],"pid":"1234","rect":[-40,78,1080,2400]}')
+            with self.assertRaisesRegex(RuntimeError,"stale_or_invalid"):
+                mod.verified_webview_bounds("<hierarchy/>",(1080,2400),"1234",1,cache)
+
+    @patch.object(mod,"adb",return_value="Physical size: 1080x2400\nOverride size: 1080x2300")
+    def test_native_display_detected_with_override(self, fake_adb):
+        self.assertEqual(mod.physical_display("emulator-5554"),(1080,2300))
+        fake_adb.assert_called_once_with("emulator-5554","shell","wm","size")
 
     def test_cdp_only_reads_dom_and_adb_delivers_real_touch(self):
         for step in (1, 2):
