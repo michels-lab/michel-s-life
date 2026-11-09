@@ -328,7 +328,7 @@ try{
     };
   });
   ok(drawerOpen.bodyOpen&&drawerOpen.left>=-2&&drawerOpen.expanded==='true'&&
-      drawerOpen.inlineTransform==='translateX(0)'&&drawerOpen.inlineTransition==='none',
+      /^translateX\(0(?:px)?\)$/.test(drawerOpen.inlineTransform)&&drawerOpen.inlineTransition==='none',
     'Drawer did not become immediately touch-ready: '+JSON.stringify(drawerOpen));
   if(drawerOpen.actionDock)ok(drawerOpen.actionDock.left>=-2&&drawerOpen.actionDock.right<=drawerOpen.right+2,'Quick actions are not contained inside the open Android drawer: '+JSON.stringify(drawerOpen));
 
