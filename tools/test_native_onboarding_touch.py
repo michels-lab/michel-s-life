@@ -2,6 +2,7 @@
 import importlib.util
 from pathlib import Path
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location(
@@ -54,6 +55,23 @@ class NativeOnboardingTouchTests(unittest.TestCase):
         self.assertEqual(mod.native_point((0,78,1080,2335), .8,.8),(864,1884))
         with self.assertRaisesRegex(RuntimeError, "expected_one_real_android_webview"):
             mod.webview_bounds("<hierarchy />")
+
+    def test_transient_accessibility_boot_error_retries_before_real_xml(self):
+        xml = '<?xml version="1.0"?><hierarchy />'
+        with patch.object(mod, "adb", side_effect=[
+            RuntimeError("native_adb_command_failed"), "UIA dump", xml
+        ]) as command, patch.object(mod.time, "sleep") as sleep:
+            self.assertEqual(mod.accessibility_xml(mod.SERIAL), xml)
+            self.assertEqual(command.call_count, 3)
+            sleep.assert_called_once_with(3)
+
+    def test_permanent_accessibility_failure_never_authorizes_touch(self):
+        with patch.object(mod, "adb", side_effect=RuntimeError("ADB offline")) as command, \
+                patch.object(mod.time, "sleep") as sleep:
+            with self.assertRaisesRegex(RuntimeError, "native_accessibility_unavailable"):
+                mod.accessibility_xml(mod.SERIAL)
+            self.assertEqual(command.call_count, 5)
+            self.assertEqual(sleep.call_count, 4)
 
     def test_cdp_only_reads_dom_and_adb_delivers_real_touch(self):
         for step in (1, 2):
