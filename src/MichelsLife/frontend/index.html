@@ -29650,24 +29650,43 @@ async function applyCloudRestore(res){
  if(!ls&&!incoming)throw new Error('Cloud save is not restorable.');
  runtime.restoring=true;clearTimeout(cloudSaveTimer);
  const previous=mlvSharedStorageSnapshot();
+ // The Drive response is asynchronous. Never roll back an A restore over B's
+ // board if the authenticated account changes while native ACK is pending.
+ const identity=()=>({
+   owner:localStorage.getItem('michelsLife.supabase.boardOwner.v30218')||'',
+   account:String(window.SupabaseSyncV30216?.session?.()?.user?.id||'')
+ });
+ const originalIdentity=identity();
+ const sameIdentity=()=>{
+   const current=identity();
+   return current.owner===originalIdentity.owner&&current.account===originalIdentity.account;
+ };
  try{
-   // A Google Drive download must not silently become a Supabase upload to
-   // whichever account is signed in on this device. Persist review BEFORE
-   // importing any data; only explicit owner upload/downloading can clear it.
+   // Google Drive download does not authorize overwriting Supabase data.
+   // Keep the restore-review marker durable BEFORE any imported board write.
    localStorage.setItem('michelsLife.restoreReview.v1',JSON.stringify({version:1,
-     ownerId:localStorage.getItem('michelsLife.supabase.boardOwner.v30218')||'',
+     ownerId:originalIdentity.owner,
      source:'google-drive-download',createdAt:new Date().toISOString()}));
    mlvRestoreSharedStorageKeys(ls||{},{incomingState:incoming,
      replace:!!ls&&backup.cloudPayloadVersion===2});
+   const applied=JSON.stringify(mlvSharedStorageSnapshot());
    try{
      await bridge('cloudAccept',{hash:res.remoteHash||res.localHash||'',remoteModifiedAt:res.remoteModifiedAt||null});
    }catch(error){
-     // Do not accept a partially applied Drive restore when metadata failed.
+     if(!sameIdentity())
+       throw new Error('Account changed during Drive restore acknowledgement. New account data was preserved.');
+     if(JSON.stringify(mlvSharedStorageSnapshot())!==applied)
+       throw new Error('Local progress changed during Drive restore acknowledgement. No unsafe rollback was performed.');
+     // ACK failure with unchanged account/board: restore exactly the local
+     // allowlisted data that existed before the Drive download.
      mlvRestoreSharedStorageKeys(previous,{replace:true,allowEmptyRollback:true});
      throw error;
    }
-   // Keep review active after Drive acceptance: this did not authorize a
-   // second, different provider (Supabase) to replace its cloud master.
+   if(!sameIdentity())
+     throw new Error('Account changed during Drive restore acknowledgement. Stale response ignored.');
+   if(JSON.stringify(mlvSharedStorageSnapshot())!==applied)
+     throw new Error('Local progress changed during Drive restore acknowledgement. Stale reload cancelled.');
+   // Keep review active; a Drive ACK is not owner consent to upload to Supabase.
    sessionStorage.setItem('mlv191CloudRestored','1');location.reload();
  }finally{runtime.restoring=false}
 }
