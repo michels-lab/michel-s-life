@@ -1273,6 +1273,13 @@
     .filter(v=>Number.isFinite(v)&&v>0).reduce((a,b)=>Math.min(a,b),viewportHeight);
    return Math.round(Math.max(MIN_PAD,Math.min(MAX_PAD,Math.max(0,viewportHeight-floor)+SPACE+46)));
   }
+  function visibleViewportBounds(win){
+   const fallback=Number.isFinite(win.innerHeight)&&win.innerHeight>0?win.innerHeight:0;
+   const visual=win.visualViewport;
+   const top=Number.isFinite(visual?.offsetTop)?Math.max(0,visual.offsetTop):0;
+   const height=Number.isFinite(visual?.height)&&visual.height>0?visual.height:fallback;
+   return {top,bottom:Math.min(fallback||top+height,top+height)};
+  }
   function calculateScrollCorrection({buttonTop,buttonBottom,availableTop,availableBottom}){
    if(![buttonTop,buttonBottom,availableTop,availableBottom].every(Number.isFinite)||
       buttonBottom<buttonTop||availableBottom<=availableTop)return 0;
@@ -1314,7 +1321,8 @@
     scheduled=false;if(disposed)return null;
     const active=!!doc.querySelector('#tab-story.active .v30162-story-form');
     const mini=bounds('mlv-android-mini-focus'),nav=bounds('mlv-android-bottom-nav');
-    const clearance=calculateStoryClearance({viewportHeight:win.innerHeight,miniTop:mini.rect?.top,
+    const viewport=visibleViewportBounds(win);
+    const clearance=calculateStoryClearance({viewportHeight:viewport.bottom,miniTop:mini.rect?.top,
       miniVisible:mini.visible,navTop:nav.rect?.top,navVisible:nav.visible});
     // The permanent Android bottom nav can cover Story's chapter submit
     // even when the Focus mini-player is hidden. Reserve the safe-area
@@ -1357,12 +1365,13 @@
     const btn=doc.querySelector('#tab-story.active .v30162-story-form button[type="submit"]');
     if(!btn)return false;
     const topbar=bounds('mlv-android-topbar'),rect=btn.getBoundingClientRect();
+    const viewport=visibleViewportBounds(win);
     const delta=calculateScrollCorrection({
       buttonTop:rect.top,buttonBottom:rect.bottom,
-      availableTop:topbar.visible?topbar.rect.bottom:0,
-      availableBottom:Math.min(win.innerHeight,
-       state.mini.visible?state.mini.rect.top:win.innerHeight,
-       state.nav.visible?state.nav.rect.top:win.innerHeight)
+      availableTop:Math.max(viewport.top,topbar.visible?topbar.rect.bottom:viewport.top),
+      availableBottom:Math.min(viewport.bottom,
+       state.mini.visible?state.mini.rect.top:viewport.bottom,
+       state.nav.visible?state.nav.rect.top:viewport.bottom)
     });
     if(!delta)return true;
     const scroller=scrollParent(btn);
@@ -1399,6 +1408,8 @@
    observer?.observe(doc.body,{attributes:true,childList:true,subtree:true,
      attributeFilter:['class','hidden','style','aria-hidden']});
    win.addEventListener('resize',schedule,{passive:true});
+   win.visualViewport?.addEventListener?.('resize',schedule,{passive:true});
+   win.visualViewport?.addEventListener?.('scroll',schedule,{passive:true});
    doc.addEventListener('scroll',onScroll,true);
    doc.addEventListener('focusout',onBlur,true);
    const first=refresh();
@@ -1406,6 +1417,8 @@
      ?String(first.mini.visible)+'/'+String(first.nav.visible):'inactive';
    return {installed:true,refresh,ensureSaveVisible,dispose(){
     disposed=true;observer?.disconnect();win.removeEventListener('resize',schedule);
+    win.visualViewport?.removeEventListener?.('resize',schedule);
+    win.visualViewport?.removeEventListener?.('scroll',schedule);
     doc.removeEventListener('scroll',onScroll,true);
     doc.removeEventListener('focusout',onBlur,true);
     doc.body.classList.remove('mlv-story-focus-clearance');
