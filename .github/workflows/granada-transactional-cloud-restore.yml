@@ -4,6 +4,8 @@ on:
     paths:
       - 'src/MichelsLife/frontend/index.html'
       - 'tools/test_granada_transactional_cloud_restore.mjs'
+      - 'tools/test_granada_cross_provider_restore_review.mjs'
+      - 'tools/test_granada_restore_review_gate.mjs'
       - '.github/workflows/granada-transactional-cloud-restore.yml'
   workflow_dispatch:
 permissions:
@@ -20,4 +22,5 @@ jobs:
       - name: Execute exact production shared-storage restore under synthetic storage failures
         run: |
           node --check tools/test_granada_transactional_cloud_restore.mjs
-          node --test tools/test_granada_transactional_cloud_restore.mjs
+          node --test tools/test_granada_transactional_cloud_restore.mjs tools/test_granada_cross_provider_restore_review.mjs
+          node tools/test_granada_restore_review_gate.mjs
