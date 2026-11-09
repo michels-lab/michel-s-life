@@ -117,8 +117,15 @@ internal object FocusSnoozeReminder {
     fun clear(context: Context) {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val source = prefs.getString(KEY_SOURCE, "") ?: ""
+        val hadScheduledReminder = prefs.getLong(KEY_DUE, 0L) > 0L
         val manager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         manager.cancel(alarm(context, source))
+        // Never leave a visible “reminder in 5 min” confirmation after its
+        // scheduled delivery has been revoked by pause, reset or new Focus.
+        if (hadScheduledReminder) {
+            (context.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager)
+                .cancel(4705)
+        }
         prefs.edit()
             .remove(KEY_SOURCE).remove(KEY_MODE).remove(KEY_LANGUAGE)
             .remove(KEY_COMPLETED).remove(KEY_DUE).commit()
