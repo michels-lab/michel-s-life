@@ -1,3 +1,8 @@
+## 2026-11-09 — Reconciliación con Focus Android (#193)
+- `#193` integrado a `main` en `22007b666fb75bfa1cc71251aa660bfe0b489eed` (solo fuente; sin APK/release).
+- `#194` traía una adición independiente al mismo workflow `.github/workflows/android-ui-smoke.yml`. Se fusionaron las ramas por un commit de dos padres `fe98c4a42eb0afaef38e98811e1ae92a2135eacb`, basado en el árbol de `main` y superponiendo exactamente los nueve archivos de #194. El workflow combinado conserva **dos pasos separados**: Focus lifecycle y backup rollback real en Android.
+- Primer intento CI sobre este merge commit: los doce workflows registraron `failure` con **cero jobs creados** según GitHub Actions API. No se interpreta como fallos de aplicación ni suites ejecutadas. Se crea un commit normal para re-disparar todos los controles exact-head, manteniendo abierta la aceptación nativa/Galaxy y pruebas reales de proveedor.
+
 # Michel's Life — P0 GRANADA transactional cloud restore (2026-11-09)
 
 ## Reproduced source failure path
