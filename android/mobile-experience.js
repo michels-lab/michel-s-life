@@ -10,6 +10,7 @@
   const actions=[
     {id:'dashboard',label:'Today',glyph:'⌂'},
     {id:'missions',label:'Missions',glyph:'✓'},
+    {id:'story',label:'Story',glyph:'◇'},
     {id:'focus',label:'Pomodoro',glyph:'◷'},
     {id:'calendar',label:'Calendar',glyph:'▦'},
     {id:'settings',label:'Settings',glyph:'⚙'}
@@ -106,7 +107,7 @@
       #mlv-android-bottom-nav,#mlv-android-focus-overlay{display:none}
       html[data-mlv-platform="android"] body.mlv-android-keyboard-editing #mlv-android-bottom-nav{display:none!important}
       html[data-mlv-platform="android"] #mlv-android-bottom-nav{
-        position:fixed;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+        position:fixed;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));
         left:0;right:0;bottom:0;z-index:2147482980;box-sizing:border-box;
         padding:7px 7px calc(8px + env(safe-area-inset-bottom,0px));
         gap:3px;border-top:1px solid rgba(255,255,255,.14);
@@ -1016,6 +1017,9 @@
         }
         updateActive();
         if(tab==='settings')revealMobileSettings();
+        // Story is the canonical chapter renderer, not an Android copy.
+        // It must be reachable directly even when the sidebar is closed,
+        // including while a Pomodoro session is running in the mini view.
       });
       document.body.appendChild(nav);
     }
