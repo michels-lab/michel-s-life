@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 335,
-  "classified_files_total": 331,
+  "tracked_files_total": 336,
+  "classified_files_total": 332,
   "docs_content_inspected": 91,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -19,7 +19,7 @@
     "installer_metadata": 1,
     "release_intent": 8,
     "source": 111,
-    "test": 26,
+    "test": 27,
     "text_metadata": 1,
     "web_ui": 3,
     "workflow": 36
@@ -29,8 +29,8 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "5ea9b1b8e31fdf95bcd50be8006243d5168a5e4951be53c49555e2c76e5bf540",
-  "evidence_fingerprint": "cc00fdd6a099306ab3e98155a5517273b653bdcb5ba6bd4772dc1c7d5b0c1dbf",
+  "inventory_fingerprint": "49083d20c8cb740e83b8111f2fcb28319646d6a2b143f16436fbc2635ff309f2",
+  "evidence_fingerprint": "5ccaa98fa193394eb4714a1b080931ff2661c23c9b25767db0ba8060f5e71935",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -72,7 +72,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "052e4102ebae2ee7e323f4a813eddc645f4e9948"
+      "blob": "1d282312b6a364701a95c3d4d38daf41a452dc7b"
     },
     {
       "path": ".github/workflows/android-direct-private-candidate-v026.yml",
@@ -100,7 +100,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "23b1a326ff7b2e150eafccb942bf368f611510fc"
+      "blob": "41685a23616b386f239e40c75623ac7b578dccb7"
     },
     {
       "path": ".github/workflows/build-store-msix.yml",
@@ -317,7 +317,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "fd5eb13753516a20bf516af480d3918c86b07023"
+      "blob": "deb8fc19ae87498cb58163d29f874bda827c9da1"
     },
     {
       "path": ".gitignore",
@@ -1682,7 +1682,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "3314a08afc741848c4e9329eed66273e749eec80"
+      "blob": "9764e1c1b83ed6cafdafbbcd57327b1f0559a3ce"
     },
     {
       "path": "tools/download_release_asset.py",
@@ -2012,6 +2012,13 @@
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "1096b13c7072bbd5324b99e871710af4a4b3dd64"
+    },
+    {
+      "path": "tools/test_michels_life_bootstrap.py",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "780f163f1240696edfc630d27f541c5a3e60bdde"
     },
     {
       "path": "tools/test_repository_file_auditor.py",
@@ -2388,20 +2395,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "c067537bc64c5207",
+      "id": "0525c266afc74943",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "82 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-account-boundary.yml",
+      "observation": "84 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-account-boundary.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "4cc979e93f61f232",
+      "id": "96a947d9995c7435",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "50 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/granada-account-boundary.yml, .github/workflows/granada-android-calendar-read.yml, .github/workflows/granada-story-focus-provenance.yml, .github/workflows/ui-smoke.yml",
+      "observation": "52 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/granada-account-boundary.yml, .github/workflows/granada-android-calendar-read.yml, .github/workflows/granada-story-focus-provenance.yml, .github/workflows/ui-smoke.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
