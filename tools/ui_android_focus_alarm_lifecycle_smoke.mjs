@@ -41,7 +41,7 @@ try{
       syncFocusAlarm(raw){
         const packet=JSON.parse(raw);
         const key=packet.status+':'+packet.mode+':'+packet.deadlineAt;
-        activity.push({status:packet.status,mode:packet.mode,
+        activity.push({status:packet.status,mode:packet.mode,language:packet.language,
           deadline:packet.deadlineAt,key,failed:failNext});
         if(failNext){failNext=false;return JSON.stringify({error:'synthetic alarm transport outage'});}
         return JSON.stringify({scheduled:packet.status==='running',
@@ -99,7 +99,7 @@ try{
   const assertPhase=(label,status,mode)=>{
     assert.equal(steps[label].state,status,label+' changed canonical state unexpectedly');
     assert.equal(steps[label].mode,mode,label+' changed Focus phase');
-    assert.equal(steps[label].recent.status,status==='running'?'running':'paused',
+    assert.equal(steps[label].recent.status,status,
       label+' mirrored wrong native alarm state');
     if(status==='running'){
       assert.ok(steps[label].recent.deadline>Date.now() && steps[label].recent.deadline<Date.now()+4*3600_000,
@@ -129,6 +129,8 @@ try{
   assert.equal(result.before.xp,result.after.xp,'Focus native bridge changed canonical XP');
   assert.deepEqual(result.before.missionIds,result.after.missionIds,
     'Focus native bridge changed canonical missions');
+  assert.ok(activity.every(x=>x.language==='en'||x.language==='es'),
+    'Native Focus alarm mirror lacks explicit notification language');
   assert.ok(activity.filter(x=>x.status==='running').every(x=>x.deadline>0),
     'Alarm bridge sent running with empty deadline');
   assert.ok(activity.filter(x=>x.status!=='running').every(x=>x.deadline===0),
