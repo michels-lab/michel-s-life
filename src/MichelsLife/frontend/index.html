@@ -29605,7 +29605,14 @@ function mlvRestoreSharedStorageKeys(raw,options={}){
       throw new Error('Cloud backup board is invalid.');
     staged.set('vida_rpg_personal_progress_v2',JSON.stringify(incoming));
   }
-  if(!staged.size)throw new Error('Backup has no shareable Michel’s Life data.');
+  if(staged.has('vida_rpg_personal_progress_v2')){
+    let board=null;
+    try{board=JSON.parse(staged.get('vida_rpg_personal_progress_v2'))}catch(_){}
+    if(!board||typeof board!=='object'||Array.isArray(board))
+      throw new Error('Backup contains an invalid Michel’s Life board.');
+  }
+  if(!staged.size&&!options.allowEmptyRollback)
+    throw new Error('Backup has no shareable Michel’s Life data.');
   // Verified modern full snapshots replace missing shared fields intentionally.
   // Legacy/partial portable archives only merge supplied fields: never erase
   // an unrelated Journal/theme simply because that archive omitted the key.
@@ -29650,7 +29657,7 @@ async function applyCloudRestore(res){
      await bridge('cloudAccept',{hash:res.remoteHash||res.localHash||'',remoteModifiedAt:res.remoteModifiedAt||null});
    }catch(error){
      // Do not accept a partially applied Drive restore when metadata failed.
-     mlvRestoreSharedStorageKeys(previous,{replace:true});
+     mlvRestoreSharedStorageKeys(previous,{replace:true,allowEmptyRollback:true});
      throw error;
    }
    localStorage.removeItem('michelsLife.restoreReview.v1');
