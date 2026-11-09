@@ -440,7 +440,7 @@
       /* Android native-feeling hierarchy: one bottom navigation and a truly
          independent Focus workspace. No Desktop theme/markup modifications. */
       html[data-mlv-platform="android"] #mlv-android-bottom-nav{
-        grid-template-columns:repeat(5,minmax(0,1fr));
+        grid-template-columns:repeat(6,minmax(0,1fr));
         padding:7px 9px calc(9px + env(safe-area-inset-bottom,0px));
         gap:4px;background:rgba(var(--ui-panel-rgb,7,13,25),.975);
         border-top:1px solid rgba(var(--ui-accent-rgb,117,228,255),.16)
