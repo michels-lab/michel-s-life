@@ -109,3 +109,58 @@ test('Portable foreign-only invalid backup refuses before writing review or data
   assert.equal(f.local.getItem(TOKEN),'SYNTHETIC_A_TOKEN');
   assert.deepEqual(f.events,[]);
 });
+
+const deferred=()=>{
+  let resolve,reject;
+  const promise=new Promise((yes,no)=>{resolve=yes;reject=no});
+  return {promise,resolve,reject};
+};
+test('Drive ACK from account A cannot roll back newer account C after a real session switch',async()=>{
+  const f=fixture(),request=deferred();
+  f.ctx.bridge=()=>request.promise;
+  const restore=f.actions.drive({backupJson:JSON.stringify({
+    cloudPayloadVersion:2,state:B,localStorage:{[BOARD]:JSON.stringify(B),[JOURNAL]:'B JOURNAL'}
+  })});
+  assert.equal(JSON.parse(f.local.getItem(BOARD)).xp,67,'Drive data was not applied before ACK');
+  f.local.setItem(OWNER,'account-C');
+  f.ctx.window.SupabaseSyncV30216={session:()=>({user:{id:'account-C'}})};
+  const C={version:2,xp:101,missions:[{id:'C PRIVATE'}],settings:{}};
+  f.local.setItem(BOARD,JSON.stringify(C));
+  f.local.setItem(JOURNAL,'C PRIVATE JOURNAL');
+  f.local.setItem(TOKEN,'SYNTHETIC_C_TOKEN');
+  request.reject(Error('synthetic account-A ACK failed'));
+  await assert.rejects(restore,/Account changed during Drive restore acknowledgement/);
+  assert.equal(f.local.getItem(BOARD),JSON.stringify(C),'A rollback overwrote C current board');
+  assert.equal(f.local.getItem(JOURNAL),'C PRIVATE JOURNAL');
+  assert.equal(f.local.getItem(TOKEN),'SYNTHETIC_C_TOKEN');
+  assert.deepEqual(f.events,[],'A callback navigated or reloaded C');
+  assert.equal(f.ctx.runtime.restoring,false);
+});
+test('Drive ACK success from previous user never reloads the newly active account',async()=>{
+  const f=fixture(),request=deferred();
+  f.ctx.bridge=()=>request.promise;
+  const restore=f.actions.drive({backupJson:JSON.stringify({
+    cloudPayloadVersion:2,state:B,localStorage:{[BOARD]:JSON.stringify(B)}
+  })});
+  f.local.setItem(OWNER,'account-C');
+  f.local.setItem(BOARD,JSON.stringify(A));
+  request.resolve({});
+  await assert.rejects(restore,/Stale response ignored/);
+  assert.equal(f.local.getItem(BOARD),JSON.stringify(A));
+  assert.equal(f.session.getItem('mlv191CloudRestored'),null);
+  assert.deepEqual(f.events,[]);
+});
+test('Drive ACK failure never reverts fresh edits made under the same account while waiting',async()=>{
+  const f=fixture(),request=deferred();
+  f.ctx.bridge=()=>request.promise;
+  const restore=f.actions.drive({backupJson:JSON.stringify({
+    cloudPayloadVersion:2,state:B,localStorage:{[BOARD]:JSON.stringify(B),[JOURNAL]:'B JOURNAL'}
+  })});
+  const revised={version:2,xp:70,missions:[{id:'new-user-edit'}],settings:{}};
+  f.local.setItem(BOARD,JSON.stringify(revised));
+  request.reject(Error('synthetic-timeout'));
+  await assert.rejects(restore,/Local progress changed during Drive restore acknowledgement/);
+  assert.equal(f.local.getItem(BOARD),JSON.stringify(revised),'Async rollback erased new work');
+  assert.equal(f.local.getItem(TOKEN),'SYNTHETIC_A_TOKEN');
+  assert.equal(f.ctx.runtime.restoring,false);
+});
