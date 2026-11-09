@@ -29616,7 +29616,7 @@ function mlvRestoreSharedStorageKeys(raw,options={}){
   // Verified modern full snapshots replace missing shared fields intentionally.
   // Legacy/partial portable archives only merge supplied fields: never erase
   // an unrelated Journal/theme simply because that archive omitted the key.
-  const replace=options.replace===true&&staged.has('vida_rpg_personal_progress_v2');
+  const replace=options.replace===true&&(staged.has('vida_rpg_personal_progress_v2')||options.allowEmptyRollback===true);
   const touched=replace?[...MLV_SHARED_STORAGE_KEYS]:[...staged.keys()];
   const previous=new Map(touched.map(key=>[key,localStorage.getItem(key)]));
   try{
