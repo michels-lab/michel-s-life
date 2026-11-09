@@ -29591,11 +29591,40 @@ function mlvSharedStorageSnapshot(){
   const out={};for(const k of MLV_SHARED_STORAGE_KEYS){const v=localStorage.getItem(k);if(v!=null)out[k]=v}
   return out;
 }
-function mlvRestoreSharedStorageKeys(raw){
-  if(!raw||typeof raw!=='object')return;
-  for(const k of MLV_SHARED_STORAGE_KEYS)localStorage.removeItem(k);
-  for(const [k,v] of Object.entries(raw)){
-    if(MLV_SHARED_STORAGE_KEYS.has(k)&&typeof v==='string')localStorage.setItem(k,v);
+function mlvRestoreSharedStorageKeys(raw,options={}){
+  // Preflight all shareable content BEFORE deleting any existing progress.
+  // Unknown/legacy device/auth/notification fields are ignored, never imported.
+  if(raw!=null&&(typeof raw!=='object'||Array.isArray(raw)))
+    throw new Error('Cloud backup localStorage payload is invalid.');
+  const source=raw||{},incoming=options.incomingState??null,staged=new Map();
+  for(const [key,value] of Object.entries(source)){
+    if(MLV_SHARED_STORAGE_KEYS.has(key)&&typeof value==='string')staged.set(key,value);
+  }
+  if(incoming!=null){
+    if(typeof incoming!=='object'||Array.isArray(incoming))
+      throw new Error('Cloud backup board is invalid.');
+    staged.set('vida_rpg_personal_progress_v2',JSON.stringify(incoming));
+  }
+  if(!staged.size)throw new Error('Backup has no shareable Michel’s Life data.');
+  // Verified modern full snapshots replace missing shared fields intentionally.
+  // Legacy/partial portable archives only merge supplied fields: never erase
+  // an unrelated Journal/theme simply because that archive omitted the key.
+  const replace=options.replace===true&&staged.has('vida_rpg_personal_progress_v2');
+  const touched=replace?[...MLV_SHARED_STORAGE_KEYS]:[...staged.keys()];
+  const previous=new Map(touched.map(key=>[key,localStorage.getItem(key)]));
+  try{
+    for(const key of touched)localStorage.removeItem(key);
+    for(const [key,value] of staged)localStorage.setItem(key,value);
+  }catch(error){
+    // localStorage writes can throw (quota, interrupted storage). Restore the
+    // original allowlisted state rather than leaving half-imported progress.
+    try{
+      for(const key of touched)localStorage.removeItem(key);
+      for(const [key,value] of previous)if(value!=null)localStorage.setItem(key,value);
+    }catch(_){
+      throw new Error('Backup restore failed and local rollback could not complete. Do not sync; keep the original backup.');
+    }
+    throw new Error('Backup restore failed; the previous local progress was restored.');
   }
 }
 window.MLVCloudSharedStorageV30216={
@@ -29607,7 +29636,27 @@ function captureCloudBackup(){
   return JSON.stringify({app:"Michel's Life",type:'cloud-sync',cloudPayloadVersion:2,
     version:BUILD,state:JSON.parse(JSON.stringify(state)),localStorage:mlvSharedStorageSnapshot()});
 }
-async function applyCloudRestore(res){if(!res?.backupJson)throw new Error('Google Drive returned no Michel’s Life cloud data.');const backup=JSON.parse(res.backupJson),ls=backup.localStorage&&typeof backup.localStorage==='object'?backup.localStorage:null,incoming=backup.state&&typeof backup.state==='object'?backup.state:null;if(!ls&&!incoming)throw new Error('Cloud save is not restorable.');runtime.restoring=true;clearTimeout(cloudSaveTimer);try{if(ls)mlvRestoreSharedStorageKeys(ls);if(incoming)localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(incoming));await bridge('cloudAccept',{hash:res.remoteHash||res.localHash||'',remoteModifiedAt:res.remoteModifiedAt||null});localStorage.removeItem('michelsLife.restoreReview.v1');sessionStorage.setItem('mlv191CloudRestored','1');location.reload()}finally{runtime.restoring=false}}
+async function applyCloudRestore(res){
+ if(!res?.backupJson)throw new Error('Google Drive returned no Michel’s Life cloud data.');
+ const backup=JSON.parse(res.backupJson),ls=backup.localStorage&&typeof backup.localStorage==='object'?backup.localStorage:null,
+   incoming=backup.state&&typeof backup.state==='object'?backup.state:null;
+ if(!ls&&!incoming)throw new Error('Cloud save is not restorable.');
+ runtime.restoring=true;clearTimeout(cloudSaveTimer);
+ const previous=mlvSharedStorageSnapshot();
+ try{
+   mlvRestoreSharedStorageKeys(ls||{},{incomingState:incoming,
+     replace:!!ls&&backup.cloudPayloadVersion===2});
+   try{
+     await bridge('cloudAccept',{hash:res.remoteHash||res.localHash||'',remoteModifiedAt:res.remoteModifiedAt||null});
+   }catch(error){
+     // Do not accept a partially applied Drive restore when metadata failed.
+     mlvRestoreSharedStorageKeys(previous,{replace:true});
+     throw error;
+   }
+   localStorage.removeItem('michelsLife.restoreReview.v1');
+   sessionStorage.setItem('mlv191CloudRestored','1');location.reload();
+ }finally{runtime.restoring=false}
+}
 function cloudActionLabel(a){return ({created:'Cloud save created',uploaded:'Uploaded',downloaded:'Restored from cloud',noop:'Up to date',conflict:'Conflict'})[a]||a||''}
 async function syncCloud(mode='auto',opts={}){if(localStorage.getItem('michelsLife.restoreReview.v1')&&!['upload','download'].includes(mode)){runtime.cloudError='Review the restored local backup before running Drive sync. Choose an explicit Upload or Download action.';mountGoogleSettings();return null;}if(mode==='auto'&&window.SupabaseSyncV30216?.runtime?.connected)return null;if(runtime.cloudBusy)return null;if(!runtime.connected){if(!opts.silent)toastSafe('Michel’s Life Cloud','Connect Google first.');return null}if(!runtime.cloudReady){runtime.cloudError='Reconnect Google once to grant Google Drive Cloud Sync permission.';mountGoogleSettings();if(!opts.silent)toastSafe('Michel’s Life Cloud',runtime.cloudError);return null}runtime.cloudBusy=true;runtime.cloudError='';mountGoogleSettings();try{const backupJson=captureCloudBackup();const res=await bridge('cloudSync',{backupJson,localChangedAt:runtime.lastDirtyAt,mode});runtime.cloudAction=cloudActionLabel(res?.action);runtime.cloudLastSync=new Date().toISOString();if(res?.conflict){runtime.cloudConflict=res;if(!opts.silent)toastSafe('Cloud conflict','Both this PC and Google Drive changed. Choose which copy to keep in Settings → Google.');mountGoogleSettings();return res}runtime.cloudConflict=null;if(res?.requiresRestore){await applyCloudRestore(res);return res}if(mode==='upload')localStorage.removeItem('michelsLife.restoreReview.v1');runtime.lastDirtyAt=null;if(!opts.silent)toastSafe('Michel’s Life Cloud',res?.message||runtime.cloudAction||'Synced.');return res}catch(err){runtime.cloudError=String(err?.message||err);if(!opts.silent)toastSafe('Michel’s Life Cloud',runtime.cloudError);return null}finally{runtime.cloudBusy=false;mountGoogleSettings()}}
 function scheduleCloudSave(){if(window.SupabaseSyncV30216?.runtime?.connected)return;if(!runtime.cloudInitialDone||runtime.restoring||!settings().cloudAutoSync||!runtime.connected||!runtime.cloudReady)return;clearTimeout(cloudSaveTimer);cloudSaveTimer=setTimeout(()=>{cloudSaveTimer=null;syncCloud('auto',{silent:true})},30000)}
@@ -30456,8 +30505,7 @@ function applyBackupJson(backupJson,cloudMeta=null,uploadAfter=false){
   localStorage.setItem('michelsLife.restoreReview.v1',JSON.stringify({version:1,
    ownerId:localStorage.getItem('michelsLife.supabase.boardOwner.v30218')||'',
    createdAt:new Date().toISOString(),source:'backup-timeline'}));
-  if(safeEntries.length)shared.restore(Object.fromEntries(safeEntries));
-  if(incoming)localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(incoming));
+  shared.restore(Object.fromEntries(safeEntries),{incomingState:incoming});
   sessionStorage.setItem('mlv201TimelineRestored','1');
   if(cloudMeta){
     return bridge('cloudAccept',{hash:cloudMeta.remoteHash||cloudMeta.localHash||'',remoteModifiedAt:cloudMeta.remoteModifiedAt||null})
@@ -30529,8 +30577,7 @@ function applyBackupJson(raw){
    shared.allowed(key)&&typeof val==='string'):[];
  if(!st&&!safeEntries.length)
    throw new Error('This file does not contain a restorable Michel’s Life state.');
- if(safeEntries.length)shared.restore(Object.fromEntries(safeEntries));
- if(st)localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(st));
+ shared.restore(Object.fromEntries(safeEntries),{incomingState:st});
  sessionStorage.setItem('mlv202Imported','1');
  location.reload();
 }
@@ -31077,8 +31124,9 @@ function applySnapshot(snapshot){
    const restoredState=incoming?(typeof migrate==='function'?migrate(JSON.parse(JSON.stringify(incoming))):JSON.parse(JSON.stringify(incoming))):null;
    // A legacy remote snapshot may contain auth/session or source-device keys:
    // ignore them. Never clear an Android/Windows device's own login context.
-   if(ls)window.MLVCloudSharedStorageV30216.restore(ls);
-   if(restoredState){state=restoredState;localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify(restoredState))}
+   window.MLVCloudSharedStorageV30216.restore(ls||{},
+     {incomingState:restoredState,replace:!!ls&&snapshot.cloudPayloadVersion===2});
+   if(restoredState)state=restoredState;
  }finally{applying=false}
 }
 async function pull({reload=true}={}){
