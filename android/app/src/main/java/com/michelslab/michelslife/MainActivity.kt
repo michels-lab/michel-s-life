@@ -57,7 +57,10 @@ class MainActivity : Activity() {
             .build()
 
         webView = WebView(this)
-        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        // AndroidManifest already enables hardware acceleration for this Activity.
+        // A forced hardware LAYER caches an entire WebView surface in addition to
+        // Chromium's own compositor; use its native layer policy instead.
+        // The large Story/Focus frontend still renders with GPU acceleration.
         webView.overScrollMode = View.OVER_SCROLL_NEVER
         webView.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_BOUND, true)
         setContentView(webView)
@@ -75,7 +78,10 @@ class MainActivity : Activity() {
             setSupportZoom(false)
             builtInZoomControls = false
             displayZoomControls = false
-            offscreenPreRaster = true
+            // Pre-rasterizing offscreen WebView regions allocates extra graphics
+            // memory during the heavy initial Story/Focus bootstrap. Render
+            // those regions on demand; never sacrifice visible WebView pixels.
+            offscreenPreRaster = false
         }
 
         webView.addJavascriptInterface(

@@ -117,6 +117,8 @@ jobs:
           node --check android/mobile-sections.js
           python android/tools/validate_android_mobile_ux.py
           bash -n android/tools/smoke_candidate_apk_install.sh
+          python3 -m py_compile android/tools/native_onboarding_touch.py
+          python3 -m unittest discover -s tools -p 'test_native_onboarding_touch.py' -v
           python android/tools/native_webview_state_probe.py self-test
           # Validate the release-version generated frontend, not the older raw template.
           python tools/bump_frontend_version.py --index src/MichelsLife/frontend/index.html
@@ -352,6 +354,62 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: MichelsLife-Android-InstallSmoke-v${{ env.ANDROID_VERSION }}
+          path: artifacts/candidate-install/
+          if-no-files-found: warn
+          retention-days: 30
+
+  # Independent installed-APK control arm: if API 36 loses the whole emulator,
+  # run the SAME workflow APK on API 35. This never overrides the API 36
+  # requirement and cannot authorize publication or Galaxy acceptance.
+  installed-candidate-smoke-api35:
+    name: Native Android 15 baseline - fresh install, onboarding and two force-stop relaunches
+    needs: android
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      ANDROID_VERSION: 0.2.9
+      MLV_REQUIRE_NATIVE_STATE_PROBE: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download candidate APK from SAME workflow run
+        uses: actions/download-artifact@v4
+        with:
+          name: MichelsLife-Android-TEST-v${{ env.ANDROID_VERSION }}
+          path: artifacts/candidate
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install pinned CI-only DevTools probe dependency
+        run: python3 -m pip install --disable-pip-version-check websocket-client==1.8.0
+
+      - name: Enable GitHub hosted emulator KVM
+        shell: bash
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
+
+      - name: Install and launch real candidate in isolated Android 15 device
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          avd-name: michels-life-candidate-android15
+          # Match Android 16's SwiftShader/GLES and no-Vulkan backend, changing
+          # only the guest API level. Keep actual native screenshot checks.
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu swiftshader -feature -Vulkan
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash android/tools/smoke_candidate_apk_install.sh
+
+      - name: Retain exact installed APK evidence and Android screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MichelsLife-Android-InstallSmoke-API35-v${{ env.ANDROID_VERSION }}
           path: artifacts/candidate-install/
           if-no-files-found: warn
           retention-days: 30
