@@ -10,6 +10,7 @@
   const actions=[
     {id:'dashboard',label:'Today',glyph:'⌂'},
     {id:'missions',label:'Missions',glyph:'✓'},
+    {id:'story',label:'Story',glyph:'◇'},
     {id:'focus',label:'Pomodoro',glyph:'◷'},
     {id:'calendar',label:'Calendar',glyph:'▦'},
     {id:'settings',label:'Settings',glyph:'⚙'}
@@ -106,7 +107,7 @@
       #mlv-android-bottom-nav,#mlv-android-focus-overlay{display:none}
       html[data-mlv-platform="android"] body.mlv-android-keyboard-editing #mlv-android-bottom-nav{display:none!important}
       html[data-mlv-platform="android"] #mlv-android-bottom-nav{
-        position:fixed;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+        position:fixed;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));
         left:0;right:0;bottom:0;z-index:2147482980;box-sizing:border-box;
         padding:7px 7px calc(8px + env(safe-area-inset-bottom,0px));
         gap:3px;border-top:1px solid rgba(255,255,255,.14);
@@ -439,7 +440,7 @@
       /* Android native-feeling hierarchy: one bottom navigation and a truly
          independent Focus workspace. No Desktop theme/markup modifications. */
       html[data-mlv-platform="android"] #mlv-android-bottom-nav{
-        grid-template-columns:repeat(5,minmax(0,1fr));
+        grid-template-columns:repeat(6,minmax(0,1fr));
         padding:7px 9px calc(9px + env(safe-area-inset-bottom,0px));
         gap:4px;background:rgba(var(--ui-panel-rgb,7,13,25),.975);
         border-top:1px solid rgba(var(--ui-accent-rgb,117,228,255),.16)
@@ -447,6 +448,13 @@
       html[data-mlv-platform="android"] #mlv-android-bottom-nav button{
         border-radius:15px;min-height:56px;padding:7px 2px;
         font-size:10px;letter-spacing:.005em
+      }
+      /* Longer translated labels such as Configuración and Calendario
+         must wrap INSIDE their own 44px+ button, never cover neighbors. */
+      html[data-mlv-platform="android"] #mlv-android-bottom-nav button > span:last-child{
+        display:block;max-width:100%;min-width:0;text-align:center;
+        white-space:normal;overflow-wrap:anywhere;line-height:1.08;
+        font-size:clamp(8px,2.45vw,10px)
       }
       html[data-mlv-platform="android"] #mlv-android-bottom-nav button[data-mobile-tab="focus"]{
         color:var(--text,#eff7ff);
@@ -1016,6 +1024,9 @@
         }
         updateActive();
         if(tab==='settings')revealMobileSettings();
+        // Story is the canonical chapter renderer, not an Android copy.
+        // It must be reachable directly even when the sidebar is closed,
+        // including while a Pomodoro session is running in the mini view.
       });
       document.body.appendChild(nav);
     }

@@ -647,10 +647,42 @@ try{
       geometry:bounds?{top:bounds.top,bottom:bounds.bottom,width:bounds.width,height:bounds.height}:null,
       tabs:[...(nav?.querySelectorAll('button[data-mobile-tab]')||[])].map(el=>el.dataset.mobileTab)};
   });
-  ok(mobileNav.count===5&&mobileNav.geometry&&mobileNav.geometry.bottom<=916&&mobileNav.geometry.top>780,
+  ok(mobileNav.count===6&&mobileNav.geometry&&mobileNav.geometry.bottom<=916&&mobileNav.geometry.top>780,
     'Mobile navigation is not touch-accessible above bottom system area: '+JSON.stringify(mobileNav));
-  ok(mobileNav.tabs.join(',')==='dashboard,missions,focus,calendar,settings',
+  ok(mobileNav.tabs.join(',')==='dashboard,missions,story,focus,calendar,settings',
     'Mobile primary destinations diverged from platform navigation contract: '+JSON.stringify(mobileNav));
+  // Story must be a ONE-TOUCH primary Android destination, not buried
+  // behind the drawer or duplicated in a separate Android chapter store.
+  // Check the actual rendered chapter UI and canonical progress invariants.
+  const canonicalBeforeStoryNav=await page.evaluate(()=>{
+    const value=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}');
+    return {xp:Number(value.xp||0),missionIds:(value.missions||[]).map(m=>String(m.id)).sort(),
+      goalIds:(value.goals||[]).map(g=>String(g.id)).sort()};
+  });
+  await page.locator('#mlv-android-bottom-nav [data-mobile-tab="story"]').click();
+  await page.waitForSelector('#tab-story.active',{state:'visible',timeout:16000});
+  const directStory=await page.evaluate(()=>{
+    const panel=document.querySelector('#tab-story.active');
+    const nav=document.querySelector('#mlv-android-bottom-nav [data-mobile-tab="story"]');
+    const form=panel?.querySelector('.v30162-story-form,#v30162ChapterForm');
+    const hero=panel?.querySelector('.v30162-story-hero');
+    const data=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}');
+    return {panelVisible:!!panel&&panel.getBoundingClientRect().height>50,
+      canonicalContent:!!(form||hero),
+      tabSelected:nav?.getAttribute('aria-current')==='page',
+      xp:Number(data.xp||0),missionIds:(data.missions||[]).map(m=>String(m.id)).sort(),
+      goalIds:(data.goals||[]).map(g=>String(g.id)).sort()};
+  });
+  ok(directStory.panelVisible&&directStory.canonicalContent&&directStory.tabSelected,
+    'One-tap Android Story bottom destination did not render the real chapter surface: '+
+    JSON.stringify(directStory));
+  ok(directStory.xp===canonicalBeforeStoryNav.xp&&
+    JSON.stringify(directStory.missionIds)===JSON.stringify(canonicalBeforeStoryNav.missionIds)&&
+    JSON.stringify(directStory.goalIds)===JSON.stringify(canonicalBeforeStoryNav.goalIds),
+    'One-tap Story navigation changed XP, missions or contracts');
+  await page.locator('#mlv-android-bottom-nav [data-mobile-tab="settings"]').click();
+  await page.waitForSelector('#tab-settings.active .v30171-settings-shell',{state:'visible',timeout:16000});
+
   // Browser-only harness for the Android native alarm bridge. Validate that
   // existing Focus mutations drive native alarm requests without a second
   // session store; the actual BroadcastReceiver is built in Android CI.
