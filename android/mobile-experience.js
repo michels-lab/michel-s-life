@@ -449,6 +449,13 @@
         border-radius:15px;min-height:56px;padding:7px 2px;
         font-size:10px;letter-spacing:.005em
       }
+      /* Longer translated labels such as Configuración and Calendario
+         must wrap INSIDE their own 44px+ button, never cover neighbors. */
+      html[data-mlv-platform="android"] #mlv-android-bottom-nav button > span:last-child{
+        display:block;max-width:100%;min-width:0;text-align:center;
+        white-space:normal;overflow-wrap:anywhere;line-height:1.08;
+        font-size:clamp(8px,2.45vw,10px)
+      }
       html[data-mlv-platform="android"] #mlv-android-bottom-nav button[data-mobile-tab="focus"]{
         color:var(--text,#eff7ff);
         background:linear-gradient(145deg,rgba(var(--ui-accent-rgb,117,228,255),.17),rgba(var(--ui-accent-rgb,117,228,255),.055));
