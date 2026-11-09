@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 336,
-  "classified_files_total": 332,
+  "tracked_files_total": 337,
+  "classified_files_total": 333,
   "docs_content_inspected": 91,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -18,7 +18,7 @@
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 8,
-    "source": 111,
+    "source": 112,
     "test": 27,
     "text_metadata": 1,
     "web_ui": 3,
@@ -26,11 +26,11 @@
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
-    "POTENTIAL_UNLOGGED_CHANGES": 2
+    "POTENTIAL_UNLOGGED_CHANGES": 1
   },
-  "finding_total": 6,
-  "inventory_fingerprint": "66ade39dd7ca76eef0536af24b4ff037afc18ffab34992d2dc899e9a9875ad8a",
-  "evidence_fingerprint": "6264aabdacf1c8f6cad996742ea4739a2d6b785215b3baed045b483f70420448",
+  "finding_total": 5,
+  "inventory_fingerprint": "5dac4f9308db4093c0ccc43f737d143a6ee335d89343758ce3c6f01046e66bd3",
+  "evidence_fingerprint": "4be0230e1cb4ccafa03777f32f006a852c3883194ba37e5f02e5644c3d0282c1",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -100,7 +100,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "41685a23616b386f239e40c75623ac7b578dccb7"
+      "blob": "2596fc4d829a3a1ab606b1682b8a58839cb45fcd"
     },
     {
       "path": ".github/workflows/build-store-msix.yml",
@@ -513,7 +513,7 @@
       "role": "bitacora",
       "purpose": "technical/audit change history",
       "certainty": "rule",
-      "blob": "42bd656c74ef99ec0f6f4da06dfcddae4c9de310"
+      "blob": "8f2e13fe5005532183c3166f67917d5866006e0b"
     },
     {
       "path": "android/DIRECT_DISTRIBUTION_SIGNING.md",
@@ -1563,7 +1563,7 @@
       "role": "web_ui",
       "purpose": "local HTML documentation or web interface",
       "certainty": "inferred",
-      "blob": "704243b37d79dcd987ceb92d09109127a1262db2"
+      "blob": "01d24bc33f4f67b55d8b51342dd95f4f2bcc01bd"
     },
     {
       "path": "store/AppxManifest.template.xml",
@@ -2098,6 +2098,13 @@
       "blob": "a093339321ad3687ed4382a929447f8f8fa3e3ee"
     },
     {
+      "path": "tools/ui_android_quest_chain_guard_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "fa8dda2b18d702414fe7bf5b1dad824539754025"
+    },
+    {
       "path": "tools/ui_android_quick_capture_keyboard_smoke.mjs",
       "role": "source",
       "purpose": "code/test implementation",
@@ -2395,20 +2402,11 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "13350563b0c03096",
+      "id": "a8eac5ec69aa24ed",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "85 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-account-boundary.yml",
-      "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "352e22f0a7b623e5",
-      "code": "POTENTIAL_UNLOGGED_CHANGES",
-      "severity": "review",
-      "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "53 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/granada-account-boundary.yml, .github/workflows/granada-android-calendar-read.yml, .github/workflows/granada-story-focus-provenance.yml, .github/workflows/ui-smoke.yml",
+      "observation": "86 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-account-boundary.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
