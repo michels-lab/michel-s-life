@@ -39,6 +39,26 @@
     }
   }
 
+  // The canonical desktop chrome can consume the first half of a phone
+  // viewport. On an explicit Settings navigation, reveal the existing
+  // Settings categories and pane rather than changing the desktop markup.
+  function revealMobileSettings(){
+    const settle=()=>{
+      const pane=q('#tab-settings.active .v30171-settings-content');
+      if(!pane||document.documentElement.dataset.mlvPlatform!=='android')return;
+      const visual=window.visualViewport;
+      const viewTop=Number.isFinite(visual?.offsetTop)?visual.offsetTop:0;
+      const viewHeight=Number.isFinite(visual?.height)?visual.height:window.innerHeight;
+      const targetTop=viewTop+Math.min(320,Math.max(200,viewHeight*.35));
+      const delta=pane.getBoundingClientRect().top-targetTop;
+      if(delta<=8)return;
+      const scroll=document.scrollingElement;
+      if(!scroll||scroll.scrollHeight<=scroll.clientHeight)return;
+      window.scrollTo({top:Math.min(scroll.scrollHeight-scroll.clientHeight,
+        Math.max(0,scroll.scrollTop+delta)),behavior:'instant'});
+    };
+    window.requestAnimationFrame(()=>window.requestAnimationFrame(settle));
+  }
   function focusNotificationPresentation(state){
     const allowed=state?.notificationsGranted===true;
     const countdown=state?.ongoingCountdownAvailable===true;
@@ -995,6 +1015,7 @@
           }
         }
         updateActive();
+        if(tab==='settings')revealMobileSettings();
       });
       document.body.appendChild(nav);
     }
