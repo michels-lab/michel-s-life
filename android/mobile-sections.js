@@ -821,24 +821,6 @@
         outline-offset:2px!important
       }
     }
-    /* Keep mobile Settings categories and their actual content above the fold.
-       The section heading stays visible; long explanatory copy belongs inside
-       the selected Settings panel rather than consuming the first screen. */
-    @media(max-width:720px){
-      html[data-mlv-platform="android"] #tab-settings > .section-title,
-      html[data-mlv-platform="android"] #tab-settings .v30171-settings-shell > .section-title{
-        margin:0 0 8px!important;padding:0!important;gap:4px!important;
-        min-height:0!important
-      }
-      html[data-mlv-platform="android"] #tab-settings > .section-title h2,
-      html[data-mlv-platform="android"] #tab-settings .v30171-settings-shell > .section-title h2{
-        font-size:19px!important;line-height:1.2!important
-      }
-      html[data-mlv-platform="android"] #tab-settings > .section-title p,
-      html[data-mlv-platform="android"] #tab-settings .v30171-settings-shell > .section-title p{
-        display:none!important
-      }
-    }
     /* Settings remains the original canonical pane system, not a second UI. */
     html[data-mlv-platform="android"] #tab-settings .v30171-settings-shell,
     html[data-mlv-platform="android"] #tab-settings .v30171-settings-content{
