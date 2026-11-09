@@ -29651,6 +29651,12 @@ async function applyCloudRestore(res){
  runtime.restoring=true;clearTimeout(cloudSaveTimer);
  const previous=mlvSharedStorageSnapshot();
  try{
+   // A Google Drive download must not silently become a Supabase upload to
+   // whichever account is signed in on this device. Persist review BEFORE
+   // importing any data; only explicit owner upload/downloading can clear it.
+   localStorage.setItem('michelsLife.restoreReview.v1',JSON.stringify({version:1,
+     ownerId:localStorage.getItem('michelsLife.supabase.boardOwner.v30218')||'',
+     source:'google-drive-download',createdAt:new Date().toISOString()}));
    mlvRestoreSharedStorageKeys(ls||{},{incomingState:incoming,
      replace:!!ls&&backup.cloudPayloadVersion===2});
    try{
@@ -29660,7 +29666,8 @@ async function applyCloudRestore(res){
      mlvRestoreSharedStorageKeys(previous,{replace:true,allowEmptyRollback:true});
      throw error;
    }
-   localStorage.removeItem('michelsLife.restoreReview.v1');
+   // Keep review active after Drive acceptance: this did not authorize a
+   // second, different provider (Supabase) to replace its cloud master.
    sessionStorage.setItem('mlv191CloudRestored','1');location.reload();
  }finally{runtime.restoring=false}
 }
@@ -30584,6 +30591,11 @@ function applyBackupJson(raw){
    shared.allowed(key)&&typeof val==='string'):[];
  if(!st&&!safeEntries.length)
    throw new Error('This file does not contain a restorable Michel’s Life state.');
+ // A manually selected portable file may belong to another account. Block
+ // auto-sync before changing any board or Journal values, even on failure.
+ localStorage.setItem('michelsLife.restoreReview.v1',JSON.stringify({version:1,
+   ownerId:localStorage.getItem('michelsLife.supabase.boardOwner.v30218')||'',
+   source:'portable-import',createdAt:new Date().toISOString()}));
  shared.restore(Object.fromEntries(safeEntries),{incomingState:st});
  sessionStorage.setItem('mlv202Imported','1');
  location.reload();
