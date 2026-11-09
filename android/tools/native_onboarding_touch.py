@@ -107,23 +107,23 @@ def dismiss_launcher(serial):
 
 
 def cdp_expression(stage):
-    # The script reports only current 1/3, 2/3, 3/3 and geometry.
-    # It never mutates state or triggers a click in JavaScript.
-    return r"""(() => {
+    # Read only: HTML button rectangle and stage; no synthetic JS click.
+    action = "finish" if stage == 3 else "next"
+    script = r"""(() => {
       const stage = Number((document.querySelector('#mlv200Onboarding .mlv200-step-pill')
         ?.textContent || '').match(/^\s*(\d+)\s*\//)?.[1] || 0);
       const done = localStorage.getItem('michelsLife.onboarding.v30200') === 'done';
-      const target = document.querySelector('#mlv200Onboarding [data-mlv200-onboard=""""
-      + ('finish' if stage == 3 else 'next') + r""""]');
+      const target = document.querySelector('#mlv200Onboarding [data-mlv200-onboard="__ACTION__"]');
       if (!target || !target.getClientRects().length)
         return {stage, done, visible: false};
       const box = target.getBoundingClientRect();
-      const x = (box.left + box.width / 2), y = (box.top + box.height / 2);
+      const x = box.left + box.width / 2, y = box.top + box.height / 2;
       const topmost = document.elementFromPoint(x, y);
       return {stage, done, visible: box.width >= 35 && box.height >= 35
         && !!topmost && (target === topmost || target.contains(topmost)),
         x: x / window.innerWidth, y: y / window.innerHeight};
     })()"""
+    return script.replace("__ACTION__", action)
 
 
 def read_native_webview(port, expression):
