@@ -104,11 +104,10 @@ adb shell dumpsys package "$PKG" >"$OUT/package-info.txt"
 grep -F "versionName=${ANDROID_VERSION}" "$OUT/package-info.txt"
 adb shell am start -W -n "$PKG/.MainActivity" | tee "$OUT/launch-result.txt"
 sleep 10
-# The hosted Pixel Launcher can show its OWN system "isn't responding" modal
-# over a perfectly running Michel's Life WebView. This was proven by the
-# genuine API35 same-run screenshots and Android UIAutomator hierarchy.
-# Close only the exact Pixel Launcher system ANR, never an app/WebView ANR.
-python3 android/tools/native_onboarding_touch.py dismiss --serial emulator-5554
+# Do not run UIAutomator during Android's first boot-animation settle phase.
+# UIA accessibility inspection runs immediately BEFORE each real touch after
+# we have captured the time-separated native screenshots. That check remains
+# mandatory, while early hardware screenshot retries remain independent.
 adb shell pidof "$PKG" | tee "$OUT/process-id.txt"
 # Do not override emulator WM size/density: physical native WebView surface may
 # go blank after a forced display configuration change on API 36.
