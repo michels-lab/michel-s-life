@@ -143,7 +143,7 @@ try{
   // Real canonical touch/browser UI: changing locale must update an existing
   // Focus workspace in place, preserving the clock, mission/XP and input node.
   const beforeLocale=await page.evaluate(()=>({
-    xp:window.state.xp,
+    xp:state.xp,
     focus:window.FocusStoryV30162.focusState()
   }));
   await page.evaluate(()=>{
@@ -166,7 +166,7 @@ try{
   await page.evaluate(()=>window.MichelsLifeMobileExperience.updateFocus());
   assert.equal(await workInput.inputValue(),'37','Spanish tick reset an unsaved work duration');
   const afterSpanish=await page.evaluate(()=>({
-    xp:window.state.xp,
+    xp:state.xp,
     focus:window.FocusStoryV30162.focusState()
   }));
   assert.equal(afterSpanish.xp,beforeLocale.xp,'Locale switch changed canonical XP');
