@@ -139,6 +139,48 @@ try{
       event.key!==activity[i-1].key||event.failed||activity[i-1].failed),
     'Focus native bridge sent duplicate consecutive alarm updates');
   console.log('PASS: Focus uses canonical deadline for native work/break, cancels on pause/skip/reset, de-duplicates ticks and retries transient failure');
+
+  // Real canonical touch/browser UI: changing locale must update an existing
+  // Focus workspace in place, preserving the clock, mission/XP and input node.
+  const beforeLocale=await page.evaluate(()=>({
+    xp:window.state.xp,
+    focus:window.FocusStoryV30162.focusState()
+  }));
+  await page.evaluate(()=>{
+    window.MichelsLifeI18n.setLanguage('es');
+    window.MichelsLifeMobileExperience.openFocus();
+    window.MichelsLifeMobileExperience.updateFocus();
+  });
+  await page.waitForFunction(()=>document.querySelector('[data-mobile-focus="reset"]')?.textContent==='Reiniciar',
+    null,{timeout:12000});
+  assert.equal(await page.locator('[data-mobile-focus="skip"]').textContent(),'Saltar fase');
+  assert.equal(await page.locator('.mlv-focus-controls-title').textContent(),'Duración de la sesión');
+  assert.equal(await page.locator('.mlv-focus-notification-copy strong').textContent(),
+    'Cuenta regresiva en pantalla bloqueada');
+  assert.equal(await page.locator('[data-mobile-focus="close"]').getAttribute('aria-label'),'Cerrar Pomodoro');
+  const brandDot=page.locator('.mlv-android-focus-eyebrow .mlv-focus-brand-dot');
+  assert.equal(await brandDot.count(),1,'Spanish copy removed the Focus brand dot');
+  await page.locator('#mlv-android-focus-sheet details summary').click();
+  const workInput=page.locator('#mlv-android-focus-work');
+  await workInput.fill('37');
+  await page.evaluate(()=>window.MichelsLifeMobileExperience.updateFocus());
+  assert.equal(await workInput.inputValue(),'37','Spanish tick reset an unsaved work duration');
+  const afterSpanish=await page.evaluate(()=>({
+    xp:window.state.xp,
+    focus:window.FocusStoryV30162.focusState()
+  }));
+  assert.equal(afterSpanish.xp,beforeLocale.xp,'Locale switch changed canonical XP');
+  assert.equal(afterSpanish.focus.deadlineAt,beforeLocale.focus.deadlineAt,
+    'Locale switch restarted the canonical Pomodoro');
+  await page.evaluate(()=>{
+    window.MichelsLifeI18n.setLanguage('en');
+    window.MichelsLifeMobileExperience.updateFocus();
+  });
+  await page.waitForFunction(()=>document.querySelector('[data-mobile-focus="reset"]')?.textContent==='Reset',
+    null,{timeout:12000});
+  assert.equal(await page.locator('[data-mobile-focus="skip"]').textContent(),'Skip phase');
+  assert.equal(await workInput.inputValue(),'37','Returning to English discarded typed duration');
+  console.log('PASS: real Android browser Focus ES/EN, preserved controls, brand mark, XP and timer');
   await context.close();
 }finally{
   await browser.close();
