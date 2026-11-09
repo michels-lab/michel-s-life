@@ -11,10 +11,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import time
 import xml.etree.ElementTree as ET
+from pathlib import Path
 from urllib.request import urlopen
 
 PKG = "com.michelslab.michelslife"
@@ -22,6 +24,7 @@ SERIAL = "emulator-5554"
 BOUNDS = re.compile(r"^\[(\d+),(\d+)\]\[(\d+),(\d+)\]$")
 PAGE_URL = "https://appassets.androidplatform.net/assets/app/index.html"
 UI_XML = "/sdcard/mlv-native-onboarding-accessibility.xml"
+GEOMETRY_CACHE = Path("artifacts/candidate-install/native-accessibility-webview-geometry.json")
 
 
 def bounds(text):
@@ -66,6 +69,70 @@ def webview_bounds(xml):
         raise RuntimeError("expected_one_real_android_webview_accessibility_bounds")
     return bounds(candidates[0].get("bounds"))
 
+
+
+def physical_display(serial):
+    """Read CURRENT physical/override Android display dimensions, not guesses."""
+    output = adb(serial, "shell", "wm", "size")
+    sizes = re.findall(r"(?:Physical|Override) size:\s*(\d+)x(\d+)", output)
+    if not sizes:
+        raise RuntimeError("native_display_dimensions_unavailable")
+    width, height = map(int, sizes[-1])
+    if not 320 <= width <= 10000 or not 320 <= height <= 10000:
+        raise RuntimeError("native_display_dimensions_invalid")
+    return width, height
+
+
+def verified_webview_bounds(xml, display, pid, stage, cache=GEOMETRY_CACHE):
+    """Re-use a prior REAL Android WebView rect only in the same live process.
+
+    UIAutomator occasionally returns a hierarchy containing no WebView class
+    after the first onboarding screen, despite a running PID, actual page and
+    real screenshots. Our source is the earlier stage's UIAutomator rectangle,
+    never a hardcoded coordinate or synthetic DOM click. Android screen
+    resolution and process identity must be unchanged.
+    """
+    if launcher_anr_button(xml) is not None:
+        raise RuntimeError("launcher_anr_still_occludes_onboarding")
+    width, height = display
+
+    def valid(rect):
+        return (len(rect) == 4 and 0 <= rect[0] < rect[2] <= width
+                and 0 <= rect[1] < rect[3] <= height
+                and rect[2] - rect[0] >= width * .6
+                and rect[3] - rect[1] >= height * .35)
+
+    try:
+        rect = webview_bounds(xml)
+        if not valid(rect):
+            raise RuntimeError("native_webview_rectangle_outside_display")
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        blob = {"source": "real_android_uiautomator_webview",
+                "rect": list(rect), "screen": list(display), "pid": pid}
+        temp = cache.with_name(cache.name + ".tmp")
+        temp.write_text(json.dumps(blob), encoding="utf-8")
+        os.replace(temp, cache)
+        return rect
+    except RuntimeError as error:
+        if str(error) != "expected_one_real_android_webview_accessibility_bounds":
+            raise
+        if stage == 0:
+            raise
+        try:
+            saved = json.loads(cache.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as failure:
+            raise RuntimeError("native_prior_verified_webview_geometry_missing") from failure
+        raw_rect = saved.get("rect")
+        if (saved.get("source") != "real_android_uiautomator_webview"
+                or saved.get("screen") != list(display)
+                or saved.get("pid") != pid
+                or not isinstance(raw_rect, list)
+                or len(raw_rect) != 4
+                or not all(type(n) is int for n in raw_rect)
+                or not valid(raw_rect)):
+            raise RuntimeError("native_previous_webview_geometry_stale_or_invalid")
+        print("Reused preceding stage's REAL UIAutomator WebView bounds: same live app PID and screen size")
+        return tuple(raw_rect)
 
 def native_point(rect, fraction_x, fraction_y):
     if any(not isinstance(f, (float, int)) or isinstance(f, bool) or
@@ -174,7 +241,10 @@ def actual_tap(serial, stage):
         current = read_native_webview(port, cdp_expression(stage+1))
         if current.get("stage") != stage+1 or not current.get("visible"):
             raise RuntimeError(f"native_onboarding_step_{stage+1}_not_ready_or_occluded")
-        rect = webview_bounds(accessibility_xml(serial))
+        # Read accessibility live each stage. When the class is omitted by
+        # UIAutomator, only a verified bound from THIS app process may be reused.
+        rect = verified_webview_bounds(accessibility_xml(serial), physical_display(serial),
+                                       pid, stage)
         x, y = native_point(rect, current.get("x"), current.get("y"))
         adb(serial, "shell", "input", "tap", str(x), str(y))
         # Check the actual installed WebView after a native touchscreen event.
