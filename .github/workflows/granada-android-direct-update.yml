@@ -6,6 +6,12 @@ on:
       - 'android/app/src/main/java/com/michelslab/michelslife/AndroidDirectUpdateChecker.kt'
       - 'android/app/src/main/java/com/michelslab/michelslife/AndroidBridge.kt'
       - 'tools/DirectUpdatePolicyTest.java'
+      - 'android/app/src/main/java/com/michelslab/michelslife/VerifiedDirectApk.kt'
+      - 'android/app/src/main/AndroidManifest.xml'
+      - 'android/app/src/directRelease/AndroidManifest.xml'
+      - 'android/app/src/main/res/xml/verified_direct_update_paths.xml'
+      - 'android/app/build.gradle.kts'
+      - 'tools/test_android_direct_apk_native.mjs'
       - 'android/android-bridge.js'
       - 'tools/test_android_direct_update_control.mjs'
       - 'tools/test_android_direct_update_bridge.mjs'
@@ -42,3 +48,7 @@ jobs:
           node --check android/android-bridge.js
           node --check tools/test_android_direct_update_control.mjs
           node tools/test_android_direct_update_control.mjs
+      - name: Verify downloaded APK has to pass signer and checksum before OS installer
+        run: |
+          node --check tools/test_android_direct_apk_native.mjs
+          node tools/test_android_direct_apk_native.mjs
