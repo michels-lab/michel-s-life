@@ -35,6 +35,18 @@ assert.match(checker,/android-v" \+ version \+ "-manifest\.json"/);
 assert.match(checker,/apkFile \+ "\.sha256"/);
 assert.match(checker,/\.put\("integrityNote",/);
 assert.match(policy,/DIRECT_SIGNER_SHA256/);
+assert.match(policy,/36a9f5144243d14ebade9d38559cfd7d4d9207c1edba01e6f0fbdd5f076a50fa/);
+assert.match(checker,/readOfficialAsset\(assetPrefix \+ manifestName, 16 \* 1024\)/);
+assert.match(checker,/readOfficialAsset\(assetPrefix \+ sidecarName, 256\)/);
+assert.match(checker,/manifest\.optString\("signerCertSha256"\)/);
+assert.match(checker,/manifest\.optString\("package"\)/);
+assert.match(checker,/manifest\.optLong\("versionCode", 0L\)/);
+assert.match(checker,/DirectUpdatePolicy\.manifestMatches\(/);
+assert.match(checker,/DirectUpdatePolicy\.checksumMatches\(/);
+assert.match(checker,/Duplicate official release asset name/);
+assert.match(checker,/resolved\.scheme != "https"/);
+assert.match(checker,/resolved\.host !in allowedHosts/);
+assert.match(checker,/Release notes and Android manifest disagree/);
 
 // An update check must not install APKs, grant untrusted-source permissions,
 // clear local progress, open arbitrary URLs or silently replace user files.
