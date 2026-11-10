@@ -13,6 +13,7 @@ import org.json.JSONObject
 import java.io.File
 import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Android Direct, user-consented staging and OS installer handoff.
@@ -27,6 +28,8 @@ internal object VerifiedDirectApk {
     private const val MARKER = "verified-direct.json"
     private const val MAX_APK_BYTES = 188_743_680L
     private const val MIN_APK_BYTES = 1_048_576L
+    // Prevent concurrent Downloads or cache deletion while a hash is being staged.
+    private val staging = AtomicBoolean(false)
     private val client = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(45, TimeUnit.SECONDS)
@@ -137,6 +140,14 @@ internal object VerifiedDirectApk {
 
     /** User explicitly taps Download: always re-query trustworthy metadata. */
     fun stage(activity: Activity): JSONObject {
+        if (!staging.compareAndSet(false, true))
+            return JSONObject().put("staged", false)
+                .put("busy", true)
+                .put("status", "A verified APK download is already in progress.")
+        return try { stageInternal(activity) } finally { staging.set(false) }
+    }
+
+    private fun stageInternal(activity: Activity): JSONObject {
         if (AndroidDirectUpdateChecker.channel(activity) != "android-direct")
             return JSONObject().put("staged", false)
                 .put("status", "Only a permanently signed Android Direct installation can download this update.")
@@ -223,18 +234,65 @@ internal object VerifiedDirectApk {
         } catch (_: Exception) { null }
     }
 
+    /**
+     * Local-only resume check, safe to use after Activity recreation or a
+     * WebView renderer refresh. No network, no installer and no state writes.
+     * The marker is untrusted and the actual on-disk bytes are rehashed.
+     */
     fun readiness(activity: Activity): JSONObject {
+        if (staging.get())
+            return JSONObject().put("ready", false).put("busy", true)
+                .put("status", "APK verification is still running.")
         val candidate = validatedCandidate(activity)
-            ?: return JSONObject().put("ready", false).put("status", "No verified APK ready to install.")
-        return JSONObject().put("ready", true).put("version", candidate.second.optString("version"))
+        if (candidate == null) {
+            val dir = folder(activity)
+            val cached = File(dir, PENDING_APK).exists() ||
+                File(dir, MARKER).exists() || File(dir, "download.part").exists()
+            return JSONObject().put("ready", false)
+                .put("hasCached", cached)
+                .put("status", if (cached)
+                    "A previous APK is incomplete, outdated or unverified. Remove it and download again."
+                    else "No verified APK ready to install.")
+        }
+        return JSONObject().put("ready", true).put("hasCached", true)
+            .put("version", candidate.second.optString("version"))
             .put("needsPermission", !activity.packageManager.canRequestPackageInstalls())
             .put("status", if (activity.packageManager.canRequestPackageInstalls())
-                "APK verified. Tap Install to open Android's confirmation screen."
-                else "Android requires permission to install APKs from this app. Open system settings, then tap Install again.")
+                "Previously downloaded APK reverified. Tap Install to open Android's confirmation screen."
+                else "Previously downloaded APK reverified. Android install permission may be required.")
+    }
+
+    /**
+     * Only an explicit user tap may discard the private updater cache.
+     * Never touch account data, external storage or a running download.
+     */
+    fun discard(activity: Activity): JSONObject {
+        if (AndroidDirectUpdateChecker.channel(activity) != "android-direct")
+            return JSONObject().put("discarded", false)
+                .put("status", "No Android Direct update cache is available.")
+        if (staging.get())
+            return JSONObject().put("discarded", false).put("busy", true)
+                .put("status", "Wait until the APK download finishes before removing it.")
+        val dir = folder(activity)
+        val targets = listOf(File(dir, MARKER), File(dir, PENDING_APK),
+            File(dir, "download.part"))
+        // Delete receipt first so no half-deleted file can ever be offered.
+        for (file in targets) {
+            if (file.exists() && !file.delete())
+                return JSONObject().put("discarded", false)
+                    .put("status", "Could not remove the staged APK completely.")
+        }
+        return JSONObject().put("discarded", true)
+            .put("status", "Downloaded update removed. Your missions and account data are unchanged.")
     }
 
     /** Explicit second user tap only, always subject to Android OS confirmation. */
     fun requestInstaller(activity: Activity, onResult: (JSONObject) -> Unit) {
+        if (staging.get()) {
+            onResult(JSONObject().put("opened", false).put("busy", true)
+                .put("status", "Download verification is still running."))
+            return
+        }
         val candidate = validatedCandidate(activity)
         if (candidate == null) {
             onResult(JSONObject().put("opened", false)
