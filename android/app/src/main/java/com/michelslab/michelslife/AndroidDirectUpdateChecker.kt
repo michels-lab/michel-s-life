@@ -155,6 +155,7 @@ internal object AndroidDirectUpdateChecker {
             var apkFile = ""
             var validApk = false
             var apkCount = 0
+            var apkBytes = 0L
             for (index in 0 until assets.length()) {
                 val asset = assets.optJSONObject(index) ?: continue
                 val name = asset.optString("name")
@@ -168,7 +169,8 @@ internal object AndroidDirectUpdateChecker {
                     apkCount++
                     apkFile = name
                     version = match.groupValues[1]
-                    validApk = asset.optLong("size") > 0L
+                    apkBytes = asset.optLong("size")
+                    validApk = apkBytes in 1_048_576L..188_743_680L
                 }
             }
             if (apkCount != 1)
@@ -211,6 +213,14 @@ internal object AndroidDirectUpdateChecker {
             if (decision == DirectUpdatePolicy.Status.UNVERIFIED)
                 return result.put("status",
                     "Official Android update metadata is incomplete or inconsistent; no APK was offered.")
+            if (decision == DirectUpdatePolicy.Status.NEWER) {
+                // This is metadata checked against a pinned manifest and
+                // checksum; staging must still verify actual downloaded bytes.
+                result.put("verifiedApkFilename", apkFile)
+                    .put("verifiedApkSha256", digest)
+                    .put("verifiedApkSize", apkBytes)
+                    .put("verifiedApkUrl", assetPrefix + apkFile)
+            }
             return result
                 .put("checked", true)
                 .put("updateAvailable", decision == DirectUpdatePolicy.Status.NEWER)
