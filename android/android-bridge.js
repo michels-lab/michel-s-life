@@ -1045,7 +1045,7 @@
       progress.value=0;
       progress.hidden=true;
       progress.setAttribute('aria-label','APK download progress');
-      progress.style.cssText='display:block;width:100%;height:12px;margin:10px 0;';
+      progress.style.cssText='width:100%;height:12px;margin:10px 0;';
       const cancel=document.createElement('button');
       cancel.id='mlv-android-cancel-update';
       cancel.type='button';
