@@ -982,6 +982,110 @@
     (document.body||document.head).appendChild(style);
   }
 
+  // Android Direct update discovery is user-triggered: no surprise downloads,
+  // installer permission prompts or APK navigation when Settings opens.
+  let updateRequestCounter=0;
+  function ensureAndroidUpdateControl(){
+    const tab=q('#tab-settings.active');
+    if(!tab)return;
+    const mount=q('.v30171-settings-content',tab)||q('.v30171-settings-shell',tab);
+    if(!mount)return;
+    const language=String(document.documentElement.lang||
+      localStorage.getItem('michelsLife.language.v1')||'en').toLowerCase();
+    const es=language.startsWith('es');
+    let panel=q('#mlv-android-direct-updates',tab);
+    if(!panel){
+      panel=document.createElement('section');
+      panel.id='mlv-android-direct-updates';
+      panel.setAttribute('role','region');
+      panel.style.cssText='padding:12px 14px;margin:10px 0 14px;border:1px solid var(--ui-border,rgba(180,195,221,.18));border-radius:12px;';
+      const title=document.createElement('h3');
+      title.id='mlv-android-updates-heading';
+      title.style.cssText='font-size:15px;margin:0 0 8px;';
+      const button=document.createElement('button');
+      button.id='mlv-android-check-updates';
+      button.type='button';
+      button.style.cssText='min-height:44px;padding:8px 12px;cursor:pointer;';
+      const status=document.createElement('p');
+      status.id='mlv-android-update-status';
+      status.setAttribute('role','status');
+      status.setAttribute('aria-live','polite');
+      status.style.cssText='font-size:12px;margin:8px 0;overflow-wrap:anywhere;';
+      const link=document.createElement('a');
+      link.id='mlv-android-update-release-link';
+      link.hidden=true;
+      link.rel='noopener noreferrer';
+      link.style.cssText='display:inline-block;margin-top:4px;min-height:36px;';
+      panel.append(title,button,status,link);
+      mount.prepend(panel);
+      button.addEventListener('click',()=>{
+        if(button.disabled)return;
+        const requestId='android-direct-check-'+(++updateRequestCounter);
+        const isEs=String(document.documentElement.lang||
+          localStorage.getItem('michelsLife.language.v1')||'en').toLowerCase().startsWith('es');
+        button.disabled=true;
+        const active=q('#mlv-android-update-status');
+        if(active)active.textContent=isEs?'Consultando release oficial…':'Checking official release…';
+        const open=q('#mlv-android-update-release-link');
+        if(open){open.hidden=true;open.removeAttribute('href');}
+        let completed=false;
+        const responseHandler=event=>{
+          const data=event?.data;
+          if(data?.channel!=='michels-life-google-calendar-response'||
+            data.requestId!==requestId||completed)return;
+          completed=true;
+          clearTimeout(timeout);
+          window.chrome.webview.removeEventListener('message',responseHandler);
+          button.disabled=false;
+          const result=data.ok?data.payload:null;
+          const displayed=q('#mlv-android-update-status');
+          if(displayed)displayed.textContent=data.ok
+            ? String(result?.status|| (isEs?'Sin resultado verificable.':'No verifiable result.'))
+            : (isEs?'No se pudo verificar la actualización.':'Update check could not be completed.');
+          const link=q('#mlv-android-update-release-link');
+          const url=String(result?.releaseUrl||'');
+          if(link && data.ok && result?.checked && result?.updateAvailable &&
+            /^https:\/\/github\.com\/michels-lab\/michel-s-life-releases\/releases\/tag\/v[0-9]+\.[0-9]+\.[0-9]+$/.test(url)){
+            link.href=url;
+            link.hidden=false;
+          }
+        };
+        const timeout=setTimeout(()=>{
+          if(completed)return;
+          completed=true;
+          window.chrome.webview.removeEventListener('message',responseHandler);
+          button.disabled=false;
+          const displayed=q('#mlv-android-update-status');
+          if(displayed)displayed.textContent=isEs
+            ?'Sin respuesta de Android. Intenta de nuevo.'
+            :'No Android response. Please retry.';
+        },18000);
+        window.chrome.webview.addEventListener('message',responseHandler);
+        try{
+          window.chrome.webview.postMessage({
+            channel:'michels-life-google-calendar',
+            requestId,
+            action:'updateStatus',
+            payload:{}
+          });
+        }catch(_){
+          responseHandler({data:{channel:'michels-life-google-calendar-response',
+            requestId,ok:false}});
+        }
+      });
+    }
+    const h=q('#mlv-android-updates-heading',panel);
+    const b=q('#mlv-android-check-updates',panel);
+    const l=q('#mlv-android-update-release-link',panel);
+    const p=q('#mlv-android-update-status',panel);
+    if(h)h.textContent=es?'Actualizaciones Android':'Android updates';
+    if(b)b.textContent=es?'Buscar actualizaciones':'Check for updates';
+    if(l)l.textContent=es?'Ver release oficial':'View official release';
+    if(p&&!p.textContent)p.textContent=es
+      ?'Consulta voluntaria de Android Direct. Nunca instala automáticamente.'
+      :'Optional Android Direct check. Never installs automatically.';
+  }
+
   function observeUi(){
     let navObserver=null;
     let navTarget=null;
@@ -1004,6 +1108,7 @@
       const active=activeTabId();
       if(active&&active!==lastActive){lastActive=active;updateTopbarTitle();}
       enforceMobileFlowGeometry();
+      if(active==='settings')ensureAndroidUpdateControl();
     };
 
     attachNavObserver();
