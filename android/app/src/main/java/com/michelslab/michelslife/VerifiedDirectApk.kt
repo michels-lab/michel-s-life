@@ -203,6 +203,8 @@ internal object VerifiedDirectApk {
                 throw java.util.concurrent.CancellationException("APK download cancelled.")
             if (!candidate.renameTo(ready))
                 throw IllegalStateException("Could not safely stage the verified APK.")
+            if (cancelRequested.get())
+                throw java.util.concurrent.CancellationException("APK download cancelled.")
             val receipt = JSONObject().put("version", version).put("versionCode", code)
                 .put("sha256", digest).put("bytes", bytes)
                 .put("filename", filename).put("source", metadata.optString("releaseUrl"))
