@@ -6,6 +6,8 @@ on:
       - 'android/app/src/main/java/com/michelslab/michelslife/AndroidDirectUpdateChecker.kt'
       - 'android/app/src/main/java/com/michelslab/michelslife/AndroidBridge.kt'
       - 'tools/DirectUpdatePolicyTest.java'
+      - 'android/android-bridge.js'
+      - 'tools/test_android_direct_update_control.mjs'
       - 'tools/test_android_direct_update_bridge.mjs'
       - '.github/workflows/granada-android-direct-update.yml'
   workflow_dispatch:
@@ -35,3 +37,8 @@ jobs:
         run: |
           node --check tools/test_android_direct_update_bridge.mjs
           node tools/test_android_direct_update_bridge.mjs
+      - name: Execute actual Android Settings update control with bilingual user interactions
+        run: |
+          node --check android/android-bridge.js
+          node --check tools/test_android_direct_update_control.mjs
+          node tools/test_android_direct_update_control.mjs
