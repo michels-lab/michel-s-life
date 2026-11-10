@@ -355,3 +355,62 @@ jobs:
           path: artifacts/candidate-install/
           if-no-files-found: warn
           retention-days: 30
+
+  # Separate fail-closed A/B test of the exact SAME compiled APK, not a
+  # replacement for the Android 16 release gate above. Public signed v0.2.9
+  # previously survived installation using swiftshader_indirect; compare it
+  # to modern GLES after porting PR #190's lower-memory WebView settings.
+  installed-candidate-alt-renderer:
+    name: Android 16 alternate GPU - same-run APK, full native relaunch evidence
+    needs: android
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      ANDROID_VERSION: 0.2.9
+      MLV_REQUIRE_NATIVE_STATE_PROBE: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download exact same-run TEST APK (never reuse public APK)
+        uses: actions/download-artifact@v4
+        with:
+          name: MichelsLife-Android-TEST-v${{ env.ANDROID_VERSION }}
+          path: artifacts/candidate
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install pinned read-only native WebView inspection dependency
+        run: python3 -m pip install --disable-pip-version-check websocket-client==1.8.0
+
+      - name: Require accelerated Android emulator host
+        shell: bash
+        run: |
+          test -e /dev/kvm || { echo "::error::No Android KVM host"; exit 1; }
+          sudo chmod 666 /dev/kvm
+
+      - name: A/B install, real screen pixels, onboarding and two force-stop relaunches
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          avd-name: michels-life-candidate-android16-alt-gpu
+          # A/B with the primary -gpu swiftshader -feature -Vulkan job.
+          # This candidate must pass every real APK install/pixel/retention
+          # check itself. It cannot turn a red primary job green.
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu swiftshader_indirect
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash android/tools/smoke_candidate_apk_install.sh
+
+      - name: Preserve actual alternative-renderer native evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MichelsLife-Android-AltGpu-RealInstall-v${{ env.ANDROID_VERSION }}
+          path: artifacts/candidate-install/
+          if-no-files-found: warn
+          retention-days: 30
