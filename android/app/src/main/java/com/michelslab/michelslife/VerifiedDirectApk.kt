@@ -286,6 +286,23 @@ internal object VerifiedDirectApk {
             .put("status", "Downloaded update removed. Your missions and account data are unchanged.")
     }
 
+    /**
+     * A signed file can become stale if its release is withdrawn. The cached
+     * receipt is not authority for a future install: require current official
+     * release metadata to agree with the already-rehashed on-disk APK.
+     */
+    private fun matchesCurrentOfficialRelease(activity: Activity, receipt: JSONObject): Boolean {
+        val latest = AndroidDirectUpdateChecker.check(activity)
+        return latest.optBoolean("checked") &&
+            latest.optBoolean("updateAvailable") &&
+            latest.optString("verifiedApkFilename") == receipt.optString("filename") &&
+            latest.optString("verifiedApkSha256") == receipt.optString("sha256") &&
+            latest.optLong("verifiedApkSize") == receipt.optLong("bytes") &&
+            latest.optLong("latestAndroidVersionCode") == receipt.optLong("versionCode") &&
+            latest.optString("latestAndroidVersion") == receipt.optString("version") &&
+            latest.optString("releaseUrl") == receipt.optString("source")
+    }
+
     /** Explicit second user tap only, always subject to Android OS confirmation. */
     fun requestInstaller(activity: Activity, onResult: (JSONObject) -> Unit) {
         if (staging.get()) {
@@ -297,6 +314,11 @@ internal object VerifiedDirectApk {
         if (candidate == null) {
             onResult(JSONObject().put("opened", false)
                 .put("status", "No verified signed APK is ready; download it again."))
+            return
+        }
+        if (!matchesCurrentOfficialRelease(activity, candidate.second)) {
+            onResult(JSONObject().put("opened", false).put("stale", true)
+                .put("status", "This staged APK is no longer the latest verified official release. Check updates and download again."))
             return
         }
         if (!activity.packageManager.canRequestPackageInstalls()) {
