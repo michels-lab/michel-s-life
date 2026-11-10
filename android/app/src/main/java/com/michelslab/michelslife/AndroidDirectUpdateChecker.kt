@@ -62,6 +62,53 @@ internal object AndroidDirectUpdateChecker {
         else info.versionCode.toLong()
     }
 
+    /**
+     * Follow only GitHub's HTTPS asset CDN redirects. A GitHub Release can
+     * legitimately redirect to release-assets.githubusercontent.com, but
+     * an unknown host never receives the request. Limit every body by bytes.
+     */
+    private fun readOfficialAsset(url: String, maxBytes: Int): String {
+        var current = url
+        val allowedHosts = setOf("github.com", "release-assets.githubusercontent.com",
+            "objects.githubusercontent.com")
+        for (hop in 0..3) {
+            val request = Request.Builder().url(current)
+                .header("User-Agent", "MichelsLife-Android-Direct-UpdateCheck")
+                .get().build()
+            client.newCall(request).execute().use { response ->
+                if (response.code in setOf(301, 302, 303, 307, 308)) {
+                    val location = response.header("Location")
+                        ?: throw IllegalStateException("GitHub asset redirect missing.")
+                    val resolved = response.request.url.resolve(location)
+                        ?: throw IllegalStateException("GitHub asset redirect invalid.")
+                    if (resolved.scheme != "https" || resolved.host !in allowedHosts)
+                        throw IllegalStateException("GitHub asset redirected outside trusted HTTPS.")
+                    current = resolved.toString()
+                } else {
+                    if (!response.isSuccessful)
+                        throw IllegalStateException("Official asset unavailable.")
+                    val body = response.body
+                        ?: throw IllegalStateException("Official asset has no body.")
+                    if (body.contentLength() > maxBytes)
+                        throw IllegalStateException("Official asset exceeded size limit.")
+                    val bytes = ByteArrayOutputStream()
+                    body.byteStream().use { stream ->
+                        val chunk = ByteArray(4096)
+                        while (true) {
+                            val n = stream.read(chunk)
+                            if (n < 0) break
+                            if (bytes.size() + n > maxBytes)
+                                throw IllegalStateException("Official asset exceeded size limit.")
+                            bytes.write(chunk, 0, n)
+                        }
+                    }
+                    return bytes.toString(Charsets.UTF_8.name())
+                }
+            }
+        }
+        throw IllegalStateException("GitHub asset redirect limit exceeded.")
+    }
+
     /** Call only from executor, never from Android's UI thread. */
     fun check(context: Context): JSONObject {
         val result = JSONObject()
@@ -114,7 +161,8 @@ internal object AndroidDirectUpdateChecker {
                 if (!DirectUpdatePolicy.officialAssetUrl(
                         asset.optString("browser_download_url"), tag, name))
                     throw IllegalStateException("Release contains an untrusted asset link.")
-                names.add(name)
+                if (!names.add(name))
+                    throw IllegalStateException("Duplicate official release asset name.")
                 val match = apkPattern.matchEntire(name)
                 if (match != null) {
                     apkCount++
@@ -125,17 +173,41 @@ internal object AndroidDirectUpdateChecker {
             }
             if (apkCount != 1)
                 throw IllegalStateException("Official Direct APK is missing or ambiguous.")
-            val complete = validApk &&
-                names.contains(apkFile + ".sha256") &&
-                names.contains("android-v" + version + "-manifest.json")
-            val codePattern = Regex(
+            val manifestName = "android-v" + version + "-manifest.json"
+            val sidecarName = apkFile + ".sha256"
+            val complete = validApk && names.contains(sidecarName) &&
+                names.contains(manifestName)
+            if (!stable || !official || !complete)
+                throw IllegalStateException("Stable official release assets are incomplete.")
+
+            val assetPrefix = "https://github.com/michels-lab/michel-s-life-releases/releases/download/" +
+                tag + "/"
+            // Actual bytes and fields, NOT merely the names of matching files.
+            val manifest = JSONObject(readOfficialAsset(assetPrefix + manifestName, 16 * 1024))
+            val sidecar = readOfficialAsset(assetPrefix + sidecarName, 256)
+            val remoteCode = manifest.optLong("versionCode", 0L)
+            val digest = manifest.optString("sha256")
+            val attested = DirectUpdatePolicy.manifestMatches(
+                manifest.optString("product"), manifest.optString("platform"),
+                manifest.optString("channel"), manifest.optString("distribution"),
+                manifest.optString("package"), manifest.optString("versionName"),
+                remoteCode, manifest.optString("apkFilename"), digest,
+                manifest.optString("signerCertSha256"), version, remoteCode, apkFile)
+                && DirectUpdatePolicy.checksumMatches(sidecar, apkFile, digest)
+            if (!attested)
+                throw IllegalStateException("Official manifest or checksum mismatch.")
+            // If human release notes also state the Android code, they must
+            // agree with the actual release manifest. No notes-only trust.
+            val notesCode = Regex(
                 "Android Direct\\s+" + Regex.escape(version) + "\\s*\\(versionCode\\s+([0-9]{1,6})\\)",
-                RegexOption.IGNORE_CASE)
-            val remoteCode = codePattern.find(release.optString("body"))
-                ?.groupValues?.get(1)?.toLongOrNull() ?: 0L
+                RegexOption.IGNORE_CASE).find(release.optString("body"))
+                ?.groupValues?.get(1)?.toLongOrNull()
+            if (notesCode != null && notesCode != remoteCode)
+                throw IllegalStateException("Release notes and Android manifest disagree.")
+
             val decision = DirectUpdatePolicy.compare(
                 DriveCloudEngine.ANDROID_VERSION, installedCode(context),
-                version, remoteCode, stable, complete, official)
+                version, remoteCode, stable, attested, official)
             if (decision == DirectUpdatePolicy.Status.UNVERIFIED)
                 return result.put("status",
                     "Official Android update metadata is incomplete or inconsistent; no APK was offered.")
