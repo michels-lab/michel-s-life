@@ -256,9 +256,21 @@ class AndroidBridge(
                 respondOk(requestId, VerifiedDirectApk.discard(activity))
             }
             "updateStage" -> executor.execute {
-                // The JS payload does not choose a URL, digest or APK. Native
-                // repeats official release verification on every user tap.
-                respondOk(requestId, VerifiedDirectApk.stage(activity))
+                // The JS payload cannot choose URLs/hashes. The owner-pinned
+                // release is rechecked, and progress exposes only byte counts.
+                respondOk(requestId, VerifiedDirectApk.stage(activity) { bytes, total ->
+                    send(JSONObject()
+                        .put("channel", RESPONSE)
+                        .put("requestId", requestId)
+                        .put("progress", true)
+                        .put("bytes", bytes)
+                        .put("total", total))
+                })
+            }
+            "updateCancel" -> {
+                // Must NOT queue on the serial downloader executor: the
+                // cancellation flag has to reach a running download.
+                respondOk(requestId, VerifiedDirectApk.cancel(activity))
             }
             "updateInstall" -> executor.execute {
                 // A SECOND explicit user action. The Android installer still
