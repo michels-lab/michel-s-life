@@ -42,19 +42,40 @@ for(const pattern of [
  /marker\.delete\(\)/
 ]) assert.match(native,pattern,'Missing fail-closed installer contract: '+pattern);
 
-for(const action of ['updateStage','updateInstall','updatePermissionSettings']) {
+for(const action of ['updateReady','updateDiscard','updateStage','updateInstall','updatePermissionSettings']) {
  assert.match(bridge,new RegExp('"'+action+'" -> executor\\.execute'),'Missing off-thread '+action);
  assert.match(ui,new RegExp("'"+action+"'"),'Missing Android UI action '+action);
 }
+assert.match(bridge,/VerifiedDirectApk\.readiness\(activity\)/);
+assert.match(bridge,/VerifiedDirectApk\.discard\(activity\)/);
 assert.match(bridge,/VerifiedDirectApk\.stage\(activity\)/);
 assert.match(bridge,/VerifiedDirectApk\.requestInstaller\(activity\)/);
 assert.match(bridge,/VerifiedDirectApk\.openPermissionSettings\(activity\)/);
+assert.match(ui,/mlv-android-discard-update/);
+assert.match(ui,/callNative\(button,'updateReady',40000/);
+assert.match(ui,/discard\.addEventListener\('click'/);
+assert.match(ui,/callNative\(discard,'updateDiscard',20000/);
 assert.match(ui,/mlv-android-stage-update/);
 assert.match(ui,/mlv-android-install-update/);
 assert.match(ui,/mlv-android-permission-update/);
 assert.match(ui,/stage\.addEventListener\('click'/);
 assert.match(ui,/install\.addEventListener\('click'/);
 assert.match(ui,/permission\.addEventListener\('click'/);
+// Previously staged APKs must be checked from DISK on app restart; a
+// withdrawn release must never reach the OS package installer.
+assert.match(native,/private val staging = AtomicBoolean\(false\)/);
+assert.match(native,/staging\.compareAndSet\(false, true\)/);
+assert.match(native,/fun readiness\(activity: Activity\): JSONObject/);
+assert.match(native,/fun discard\(activity: Activity\): JSONObject/);
+assert.match(native,/digestOf\(ready\) != expectedHash/);
+assert.match(native,/!archiveVerified\(activity, ready, version, code\)/);
+assert.match(native,/private fun matchesCurrentOfficialRelease\(/);
+assert.match(native,/AndroidDirectUpdateChecker\.check\(activity\)/);
+assert.match(native,/latest\.optString\("verifiedApkSha256"\) == receipt\.optString\("sha256"\)/);
+assert.match(native,/if \(!matchesCurrentOfficialRelease\(activity, candidate\.second\)\)/);
+assert.match(native,/\.put\("stale", true\)/);
+assert.match(native,/listOf\(File\(dir, MARKER\), File\(dir, PENDING_APK\),/);
+assert.match(native,/if \(staging\.get\(\)\)/);
 assert.match(checker,/verifiedApkSha256/);
 assert.match(checker,/verifiedApkUrl/);
 assert.match(checker,/verifiedApkSize/);
