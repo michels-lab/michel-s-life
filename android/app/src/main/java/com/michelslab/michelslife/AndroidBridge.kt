@@ -246,6 +246,25 @@ class AndroidBridge(
                         .put("status", "Unrecognized or debug signer. No production update offered; protect local data."))
                 }
             }
+            "updateStage" -> executor.execute {
+                // The JS payload does not choose a URL, digest or APK. Native
+                // repeats official release verification on every user tap.
+                respondOk(requestId, VerifiedDirectApk.stage(activity))
+            }
+            "updateInstall" -> executor.execute {
+                // A SECOND explicit user action. The Android installer still
+                // requires OS-level confirmation; never claim installed.
+                VerifiedDirectApk.requestInstaller(activity) {
+                    respondOk(requestId, it)
+                }
+            }
+            "updatePermissionSettings" -> executor.execute {
+                // A THIRD explicit action if the OS denies installation
+                // permission. Opening settings never proceeds to install.
+                VerifiedDirectApk.openPermissionSettings(activity) {
+                    respondOk(requestId, it)
+                }
+            }
             else -> respondError(requestId, "This Michel's Life desktop action is not available on Android yet: " + action)
         }
     }
