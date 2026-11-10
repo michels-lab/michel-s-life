@@ -62,6 +62,56 @@ public final class DirectUpdatePolicyTest {
         eq("natural numeric order .10 > .9",1,
             DirectUpdatePolicy.compareVersion("0.2.10","0.2.9"));
         eq("rollback exact pin not empty",64,pin.length());
+        String apk = "MichelsLife-Android-Direct-v0.2.9.apk";
+        String digest = "a".repeat(64);
+        eq("real manifest fields and signer required",true,
+            DirectUpdatePolicy.manifestMatches("Michel's Life","android","direct",
+                "production-signed","com.michelslab.michelslife","0.2.9",11,
+                apk,digest,pin,"0.2.9",11,apk));
+        eq("wrong APK signing certificate cannot be accepted",false,
+            DirectUpdatePolicy.manifestMatches("Michel's Life","android","direct",
+                "production-signed","com.michelslab.michelslife","0.2.9",11,
+                apk,digest,"b".repeat(64),"0.2.9",11,apk));
+        eq("debug distribution cannot be accepted",false,
+            DirectUpdatePolicy.manifestMatches("Michel's Life","android","direct",
+                "debug","com.michelslab.michelslife","0.2.9",11,
+                apk,digest,pin,"0.2.9",11,apk));
+        eq("foreign package name cannot be accepted",false,
+            DirectUpdatePolicy.manifestMatches("Michel's Life","android","direct",
+                "production-signed","com.foreign.malware","0.2.9",11,
+                apk,digest,pin,"0.2.9",11,apk));
+        eq("Play package cannot masquerade as Direct",false,
+            DirectUpdatePolicy.manifestMatches("Michel's Life","android","play",
+                "production-signed","com.michelslab.michelslife","0.2.9",11,
+                apk,digest,pin,"0.2.9",11,apk));
+        eq("manifest versionCode mismatch rejected",false,
+            DirectUpdatePolicy.manifestMatches("Michel's Life","android","direct",
+                "production-signed","com.michelslab.michelslife","0.2.9",10,
+                apk,digest,pin,"0.2.9",11,apk));
+        eq("manifest versionName mismatch rejected",false,
+            DirectUpdatePolicy.manifestMatches("Michel's Life","android","direct",
+                "production-signed","com.michelslab.michelslife","0.2.8",11,
+                apk,digest,pin,"0.2.9",11,apk));
+        eq("manifest APK filename mismatch rejected",false,
+            DirectUpdatePolicy.manifestMatches("Michel's Life","android","direct",
+                "production-signed","com.michelslab.michelslife","0.2.9",11,
+                "foreign.apk",digest,pin,"0.2.9",11,apk));
+        eq("malformed digest rejected",false,
+            DirectUpdatePolicy.manifestMatches("Michel's Life","android","direct",
+                "production-signed","com.michelslab.michelslife","0.2.9",11,
+                apk,"not-a-sha",pin,"0.2.9",11,apk));
+        eq("canonical sidecar digest is accepted",true,
+            DirectUpdatePolicy.checksumMatches(digest+"  "+apk+"\\n",apk,digest));
+        eq("digest-only text without filename rejected",false,
+            DirectUpdatePolicy.checksumMatches(digest,apk,digest));
+        eq("sidecar digest drift rejected",false,
+            DirectUpdatePolicy.checksumMatches("b".repeat(64)+"  "+apk+"\\n",apk,digest));
+        eq("sidecar foreign file rejected",false,
+            DirectUpdatePolicy.checksumMatches(digest+"  foreign.apk\\n",apk,digest));
+        eq("sidecar multiple lines rejected",false,
+            DirectUpdatePolicy.checksumMatches(digest+"  "+apk+"\\n"+digest+"  foreign.apk\\n",apk,digest));
+        eq("sidecar filename traversal rejected",false,
+            DirectUpdatePolicy.checksumMatches(digest+"  ../../"+apk+"\\n",apk,digest));
         System.out.println("PASS "+checks+"/"+checks+" Android Direct signer/channel/update policy regressions");
     }
 }
