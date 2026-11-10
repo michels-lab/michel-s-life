@@ -109,12 +109,57 @@ assert.match(status.textContent,/Hay una actualización oficial de Android Direc
 assert.equal(link.hidden,false,'verified newer release exposes manual link');
 assert.match(link.href,/github\.com\/michels-lab/);
 assert.match(link.textContent,/Ver release oficial/);
+const stage=get('mlv-android-stage-update');
+const install=get('mlv-android-install-update');
+const permission=get('mlv-android-permission-update');
+assert.equal(stage.hidden,false,'Verified newer release shows explicit Download button');
+assert.equal(install.hidden,true,'Never offer installer before actual byte/signature verification');
+assert.equal(permission.hidden,true,'Never prompt for install permission before user action');
+
+stage.fire('click');
+assert.equal(sent[2].action,'updateStage','download requires its own user click');
+assert.equal(install.hidden,true,'Download does not silently open installer');
+assert.equal(stage.disabled,true,'Prevent duplicate download');
+for(const cb of [...listeners])cb({data:{
+  channel:'michels-life-google-calendar-response',
+  requestId:sent[2].requestId,ok:true,payload:{staged:true,version:'0.2.10'}
+}});
+assert.equal(stage.disabled,false);
+assert.equal(install.hidden,false,'Verified APK enables a separate install button');
+assert.equal(permission.hidden,true);
+assert.match(status.textContent,/APK verificada/);
+
+install.fire('click');
+assert.equal(sent[3].action,'updateInstall');
+for(const cb of [...listeners])cb({data:{
+  channel:'michels-life-google-calendar-response',
+  requestId:sent[3].requestId,ok:true,payload:{opened:false,needsPermission:true}
+}});
+assert.equal(permission.hidden,false,'Permissions require a third explicit button');
+assert.match(status.textContent,/requiere permiso/);
+assert.equal(install.disabled,false);
+permission.fire('click');
+assert.equal(sent[4].action,'updatePermissionSettings');
+for(const cb of [...listeners])cb({data:{
+  channel:'michels-life-google-calendar-response',
+  requestId:sent[4].requestId,ok:true,payload:{opened:true}
+}});
+assert.match(status.textContent,/Ajustes de Android abiertos/);
+assert.equal(install.disabled,false,'Return from permission settings never auto-installs');
+
+install.fire('click');
+assert.equal(sent[5].action,'updateInstall','OS install intent requires a new tap');
+for(const cb of [...listeners])cb({data:{
+  channel:'michels-life-google-calendar-response',
+  requestId:sent[5].requestId,ok:true,payload:{opened:true}
+}});
+assert.match(status.textContent,/aún no está instalada/,'Opening Android installer is not a finished update');
 
 button.fire('click');
 assert.equal(link.hidden,true,'New attempt hides previous release link');
 for(const cb of [...listeners])cb({data:{
   channel:'michels-life-google-calendar-response',
-  requestId:sent[2].requestId,ok:true,payload:{checked:true,updateAvailable:true,
+  requestId:sent[6].requestId,ok:true,payload:{checked:true,updateAvailable:true,
     status:'Mismatched link',
     releaseUrl:'https://github.com.attacker.example/michels-lab/michel-s-life-releases/releases/tag/v3.0.223'}
 }});
@@ -125,10 +170,10 @@ button.fire('click');
 const pending=[...listeners][0];
 pending({data:{
   channel:'michels-life-google-calendar-response',
-  requestId:sent[3].requestId,ok:false,error:'offline'}});
+  requestId:sent[7].requestId,ok:false,error:'offline'}});
 assert.equal(link.hidden,true);
 assert.match(status.textContent,/No se pudo verificar/);
 assert.equal(button.disabled,false);
 assert.equal(listeners.size,0);
 
-console.log('PASS actual Android Settings control: idempotent, user-triggered, ES/EN, correlated response, current/available/offline/spoofed, no silent install');
+console.log('PASS actual Android Settings control: EN/ES, verified update, explicit download, signer-gated separate install, OS permission, stale/forged/offline, no silent install');
