@@ -100,18 +100,26 @@ public final class DirectUpdatePolicyTest {
             DirectUpdatePolicy.manifestMatches("Michel's Life","android","direct",
                 "production-signed","com.michelslab.michelslife","0.2.9",11,
                 apk,"not-a-sha",pin,"0.2.9",11,apk));
-        eq("canonical sidecar digest is accepted",true,
+        eq("real canonical sha256sum LF accepted",true,
+            DirectUpdatePolicy.checksumMatches(digest+"  "+apk+"\n",apk,digest));
+        eq("Windows CRLF sidecar accepted",true,
+            DirectUpdatePolicy.checksumMatches(digest+"  "+apk+"\r\n",apk,digest));
+        eq("single sha256sum entry without newline accepted",true,
+            DirectUpdatePolicy.checksumMatches(digest+"  "+apk,apk,digest));
+        eq("literal backslash-n is NOT a line ending",false,
             DirectUpdatePolicy.checksumMatches(digest+"  "+apk+"\\n",apk,digest));
         eq("digest-only text without filename rejected",false,
             DirectUpdatePolicy.checksumMatches(digest,apk,digest));
         eq("sidecar digest drift rejected",false,
-            DirectUpdatePolicy.checksumMatches("b".repeat(64)+"  "+apk+"\\n",apk,digest));
+            DirectUpdatePolicy.checksumMatches("b".repeat(64)+"  "+apk+"\n",apk,digest));
         eq("sidecar foreign file rejected",false,
-            DirectUpdatePolicy.checksumMatches(digest+"  foreign.apk\\n",apk,digest));
+            DirectUpdatePolicy.checksumMatches(digest+"  foreign.apk\n",apk,digest));
         eq("sidecar multiple lines rejected",false,
-            DirectUpdatePolicy.checksumMatches(digest+"  "+apk+"\\n"+digest+"  foreign.apk\\n",apk,digest));
+            DirectUpdatePolicy.checksumMatches(digest+"  "+apk+"\n"+digest+"  foreign.apk\n",apk,digest));
         eq("sidecar filename traversal rejected",false,
-            DirectUpdatePolicy.checksumMatches(digest+"  ../../"+apk+"\\n",apk,digest));
+            DirectUpdatePolicy.checksumMatches(digest+"  ../../"+apk+"\n",apk,digest));
+        eq("sidecar trailing blank line rejected",false,
+            DirectUpdatePolicy.checksumMatches(digest+"  "+apk+"\n\n",apk,digest));
         System.out.println("PASS "+checks+"/"+checks+" Android Direct signer/channel/update policy regressions");
     }
 }
