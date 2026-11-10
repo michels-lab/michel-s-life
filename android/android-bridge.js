@@ -1015,7 +1015,7 @@
       link.id='mlv-android-update-release-link';
       link.hidden=true;
       link.rel='noopener noreferrer';
-      link.style.cssText='display:inline-block;margin-top:4px;min-height:36px;';
+      link.style.cssText='margin-top:4px;min-height:36px;';
       panel.append(title,button,status,link);
       mount.prepend(panel);
       button.addEventListener('click',()=>{
