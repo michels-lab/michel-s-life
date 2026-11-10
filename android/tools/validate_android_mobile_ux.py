@@ -132,13 +132,16 @@ if "Story still uses desktop multi-column edit geometry" not in phone_test or \
     raise SystemExit("Android Story/About real viewport regression assertions missing")
 
 native_required = [
-    "setLayerType(View.LAYER_TYPE_HARDWARE",
     "setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_BOUND",
-    "offscreenPreRaster = true",
+    "offscreenPreRaster = false",
 ]
 missing_native = [needle for needle in native_required if needle not in main]
 if missing_native:
-    raise SystemExit("Android native performance contract missing: " + ", ".join(missing_native))
+    raise SystemExit("Android native startup memory contract missing: " + ", ".join(missing_native))
+if "setLayerType(View.LAYER_TYPE_HARDWARE" in main or "offscreenPreRaster = true" in main:
+    raise SystemExit("Android WebView must avoid forced GPU caching and offscreen pre-rasterization")
+if 'android:hardwareAccelerated="true"' not in manifest:
+    raise SystemExit("Android WebView must preserve hardware acceleration for visible UI")
 
 if "__mlvAndroidHandleBack" not in main:
     raise SystemExit("MainActivity does not delegate Android back handling to the web UI")
