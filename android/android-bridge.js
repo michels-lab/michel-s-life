@@ -1039,11 +1039,23 @@
       discard.type='button';
       discard.hidden=true;
       discard.style.cssText='min-height:44px;padding:8px 12px;margin:8px 0 0;';
-      panel.append(title,button,status,link,stage,install,permission,discard);
+      const progress=document.createElement('progress');
+      progress.id='mlv-android-update-progress';
+      progress.max=100;
+      progress.value=0;
+      progress.hidden=true;
+      progress.setAttribute('aria-label','APK download progress');
+      progress.style.cssText='display:block;width:100%;height:12px;margin:10px 0;';
+      const cancel=document.createElement('button');
+      cancel.id='mlv-android-cancel-update';
+      cancel.type='button';
+      cancel.hidden=true;
+      cancel.style.cssText='min-height:44px;padding:8px 12px;margin:8px 0 0;';
+      panel.append(title,button,status,link,stage,progress,cancel,install,permission,discard);
       // The native app revalidates official metadata on download, and verifies
       // actual APK bytes/signature again on EVERY explicit install tap.
       // Responses are correlated; late/stale replies never touch this control.
-      const callNative=(clicked,action,timeoutMs,done)=>{
+      const callNative=(clicked,action,timeoutMs,done,onProgress)=>{
         if(clicked.disabled)return;
         const requestId='android-direct-'+action+'-'+(++updateRequestCounter);
         clicked.disabled=true;
@@ -1052,6 +1064,15 @@
           const data=event?.data;
           if(data?.channel!=='michels-life-google-calendar-response'||
              data.requestId!==requestId||finished)return;
+          if(data.progress===true){
+            // Only bounded numeric counts from this exact native request may
+            // update the visual indicator. Progress never completes a call.
+            const bytes=Number(data.bytes),total=Number(data.total);
+            if(typeof onProgress==='function'&&Number.isFinite(bytes)&&
+              Number.isFinite(total)&&total>0&&bytes>=0&&bytes<=total)
+              onProgress(bytes,total);
+            return;
+          }
           finished=true;
           clearTimeout(timeout);
           window.chrome.webview.removeEventListener('message',responseHandler);
@@ -1080,19 +1101,49 @@
         stage.hidden=true;
         install.hidden=true;
         permission.hidden=true;
+        discard.hidden=true;
+        cancel.hidden=false;
+        progress.hidden=false;
+        progress.value=0;
         status.textContent=document.documentElement.lang?.startsWith('es')
           ?'Descargando y verificando firma, versión y SHA-256 de la APK…'
           :'Downloading and verifying APK signature, version and SHA-256…';
         callNative(stage,'updateStage',240000,(result,ok)=>{
           const es=String(document.documentElement.lang||'').startsWith('es');
+          cancel.hidden=true;
+          progress.hidden=true;
           status.textContent=ok&&result?.staged
             ?(es?'APK verificada. Toca Instalar para abrir la confirmación de Android.':
               'APK verified. Tap Install to open Android confirmation.')
-            :(es?'No se pudo verificar la APK; no se instaló nada.':
-              'APK verification failed; nothing was installed.');
+            :result?.cancelled
+              ?(es?'Descarga cancelada. Los archivos parciales se eliminaron; tus datos siguen intactos.':
+                'Download cancelled. Partial files were removed; your data is unchanged.')
+              :(es?'No se pudo verificar la APK; no se instaló nada.':
+                'APK verification failed; nothing was installed.');
           install.hidden=!(ok&&result?.staged);
           stage.hidden=false; // retry always requires another explicit tap
           if(ok&&result?.staged)discard.hidden=false;
+        },(bytes,total)=>{
+          const percent=Math.max(0,Math.min(100,Math.floor(100*bytes/total)));
+          progress.value=percent;
+          const es=String(document.documentElement.lang||'').startsWith('es');
+          status.textContent=es
+            ?'Descargando APK oficial: '+percent+' % ('+Math.floor(bytes/1048576)+' / '+Math.ceil(total/1048576)+' MiB). Verificación de firma al terminar.'
+            :'Downloading official APK: '+percent+'% ('+Math.floor(bytes/1048576)+' / '+Math.ceil(total/1048576)+' MiB). Signature checked afterward.';
+        });
+      });
+      cancel.addEventListener('click',()=>{
+        if(cancel.disabled)return;
+        callNative(cancel,'updateCancel',20000,(result,ok)=>{
+          const es=String(document.documentElement.lang||'').startsWith('es');
+          if(ok&&result?.requested)status.textContent=es
+            ?'Cancelando descarga. Se limpiará cualquier archivo parcial…'
+            :'Cancelling download. Any partial file will be removed…';
+          else status.textContent=es
+            ?'No hay descarga activa para cancelar.'
+            :'There is no active download to cancel.';
+          // The download worker's own completion callback, not this
+          // acknowledgement, hides the progress/cancel controls.
         });
       });
       install.addEventListener('click',()=>{
@@ -1259,11 +1310,13 @@
     const i=q('#mlv-android-install-update',panel);
     const r=q('#mlv-android-permission-update',panel);
     const remove=q('#mlv-android-discard-update',panel);
+    const cancelButton=q('#mlv-android-cancel-update',panel);
     const p=q('#mlv-android-update-status',panel);
     if(d)d.textContent=es?'Descargar y verificar APK':'Download and verify APK';
     if(i)i.textContent=es?'Instalar APK verificada':'Install verified APK';
     if(r)r.textContent=es?'Permitir instalación en Android':'Open Android install permission';
     if(remove)remove.textContent=es?'Eliminar APK descargada':'Remove downloaded APK';
+    if(cancelButton)cancelButton.textContent=es?'Cancelar descarga':'Cancel download';
     if(h)h.textContent=es?'Actualizaciones Android':'Android updates';
     if(b)b.textContent=es?'Buscar actualizaciones':'Check for updates';
     if(l)l.textContent=es?'Ver release oficial':'View official release';
