@@ -2,178 +2,194 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 
-// Exercise the ACTUAL Android Settings updater function, without native
-// permissions, network, installing packages, or changing user progress.
+// Execute the REAL production Android Settings function, not a reimplementation.
+// No actual network, file system writes, app install or account data mutation.
 const source=readFileSync('android/android-bridge.js','utf8');
 const start=source.indexOf('  let updateRequestCounter=0;');
 const end=source.indexOf('  function observeUi(){',start);
-assert.ok(start>=0 && end>start,'production Settings update control not found');
+assert.ok(start>=0 && end>start,'production Android Settings updater missing');
 
 class Element {
   constructor(tag='section'){
     this.tagName=tag;this.children=[];this.style={};this.attributes={};
-    this.textContent='';this.hidden=false;this.disabled=false;this.listeners={};
+    this.hidden=false;this.disabled=false;this.textContent='';this.listeners={};
   }
-  append(...children){this.children.push(...children);}
-  prepend(child){this.children.unshift(child);}
-  setAttribute(k,v){this.attributes[k]=v;}
-  removeAttribute(k){delete this.attributes[k];if(k==='href')delete this.href;}
-  addEventListener(type,callback){this.listeners[type]=callback;}
-  fire(type){assert.ok(this.listeners[type],type+' listener missing');this.listeners[type]();}
+  append(...items){this.children.push(...items);}
+  prepend(item){this.children.unshift(item);}
+  setAttribute(key,value){this.attributes[key]=value;}
+  removeAttribute(key){delete this.attributes[key];if(key==='href')delete this.href;}
+  addEventListener(type,cb){this.listeners[type]=cb;}
+  fire(type='click'){assert.ok(this.listeners[type],type+' listener missing');this.listeners[type]();}
 }
-const tab=new Element(),mount=new Element();
-mount.className='v30171-settings-content';
-tab.children.push(mount);
-const document={
-  documentElement:{lang:'en'},
-  createElement(tag){return new Element(tag);}
-};
+let tab,mount;
+function freshSettings(){
+  tab=new Element();mount=new Element();tab.children.push(mount);
+}
+freshSettings();
+const document={documentElement:{lang:'en'},createElement(tag){return new Element(tag);}};
 const localStorage={getItem(){return 'en';}};
-function findId(root,id){
-  if(root?.id===id)return root;
-  for(const c of root?.children||[]){const found=findId(c,id);if(found)return found;}
+function findId(el,id){
+  if(el?.id===id)return el;
+  for(const item of el?.children||[]){const found=findId(item,id);if(found)return found;}
   return null;
 }
-const q=(sel,root=document)=>{
-  if(sel==='#tab-settings.active')return tab;
-  if(sel==='.v30171-settings-content')return mount;
-  if(sel==='.v30171-settings-shell')return null;
-  if(sel.startsWith('#'))return findId(root===document?tab:root,sel.slice(1));
+const q=(selector,root=document)=>{
+  if(selector==='#tab-settings.active')return tab;
+  if(selector==='.v30171-settings-content')return mount;
+  if(selector==='.v30171-settings-shell')return null;
+  if(selector.startsWith('#'))return findId(root===document?tab:root,selector.slice(1));
   return null;
 };
-let sent=[],listeners=new Set(),timers=new Map(),timeSeq=0;
+let sent=[],listeners=new Set(),timers=new Map(),nextTimer=0;
 const chrome={webview:{
-  postMessage(message){sent.push(message);},
-  addEventListener(event,fn){if(event==='message')listeners.add(fn);},
-  removeEventListener(event,fn){if(event==='message')listeners.delete(fn);}
+  postMessage(payload){sent.push(payload);},
+  addEventListener(event,callback){if(event==='message')listeners.add(callback);},
+  removeEventListener(event,callback){if(event==='message')listeners.delete(callback);}
 }};
-const fakeWindow={chrome};
-const context=vm.createContext({
-  document,window:fakeWindow,localStorage,q,console,
-  setTimeout(fn){const id=++timeSeq;timers.set(id,fn);return id;},
+const context=vm.createContext({document,window:{chrome},localStorage,q,console,
+  setTimeout(fn){const id=++nextTimer;timers.set(id,fn);return id;},
   clearTimeout(id){timers.delete(id);}
 });
 vm.runInContext(source.slice(start,end)+
   '\nthis.renderUpdates=ensureAndroidUpdateControl;',context);
+const get=(name)=>findId(tab,'mlv-android-'+name);
+const latest=()=>sent.at(-1);
+function respond(payload,ok=true,request=latest()){
+  assert.ok(request,'Expected a native action to reply to');
+  for(const listener of [...listeners])listener({data:{
+    channel:'michels-life-google-calendar-response',
+    requestId:request.requestId,ok,payload
+  }});
+}
+function request(action){
+  assert.equal(latest().action,action,'Expected Android native command '+action);
+  return latest();
+}
 
-const get=id=>findId(tab,id);
 context.renderUpdates();
 context.renderUpdates();
-assert.equal(mount.children.length,1,'Settings control must be idempotent');
-const button=get('mlv-android-check-updates');
-const status=get('mlv-android-update-status');
-const link=get('mlv-android-update-release-link');
-assert.match(button.textContent,/Check for updates/);
+assert.equal(mount.children.length,1,'Settings panel must be unique');
+assert.equal(sent.length,1,'One local resume check per Settings mount');
+request('updateReady');
+const check=get('check-updates'),stage=get('stage-update'),
+  install=get('install-update'),permission=get('permission-update'),
+  discard=get('discard-update'),status=get('update-status'),
+  link=get('update-release-link');
+assert.ok(check.disabled,'Local APK rehash must disable duplicate concurrent check');
+assert.ok(install.hidden,'Never show installer before local APK verification');
+respond({ready:false,hasCached:false});
+assert.equal(check.disabled,false);
+assert.equal(install.hidden,true);
+assert.equal(discard.hidden,true);
+assert.match(check.textContent,/Check for updates/);
 assert.match(status.textContent,/Never installs automatically/);
-assert.equal(link.hidden,true,'No automatic release navigation');
+assert.equal(listeners.size,0);
+assert.equal(timers.size,0);
 
-button.fire('click');
-assert.equal(sent.length,1,'one native request per real button click');
-assert.equal(sent[0].action,'updateStatus');
-assert.equal(sent[0].channel,'michels-life-google-calendar');
-assert.equal(button.disabled,true);
-assert.equal(link.hidden,true,'Pending check hides release');
-assert.equal(listeners.size,1);
-for(const cb of listeners)cb({data:{
-  channel:'michels-life-google-calendar-response',
-  requestId:'stale-check',ok:true,payload:{checked:true,updateAvailable:true,
-    releaseUrl:'https://github.com/michels-lab/michel-s-life-releases/releases/tag/v9.0.0'}
-}});
-assert.equal(button.disabled,true,'stale response ignored');
+check.fire();request('updateStatus');
+assert.equal(check.disabled,true);
 assert.equal(link.hidden,true);
-
-const first=sent[0].requestId;
-for(const cb of [...listeners])cb({data:{
-  channel:'michels-life-google-calendar-response',
-  requestId:first,ok:true,payload:{
-    checked:true,updateAvailable:false,status:'This Android Direct version is up to date.'}
-}});
-assert.equal(button.disabled,false);
-assert.equal(status.textContent,'This Android Direct version is up to date.');
-assert.equal(link.hidden,true,'No release link for current version');
-assert.equal(listeners.size,0,'Remove one-shot native response listener');
-assert.equal(timers.size,0,'Clear response timeout');
+const oldRequest=latest();
+respond({checked:true,updateAvailable:true,
+  releaseUrl:'https://github.com/michels-lab/michel-s-life-releases/releases/tag/v9.0.0'},
+  true,{requestId:'stale-check'});
+assert.equal(check.disabled,true,'Stale request must not unlock controls');
+assert.equal(link.hidden,true);
+respond({checked:true,updateAvailable:false,
+  channel:'android-direct',status:'This Android Direct version is up to date.'},
+  true,oldRequest);
+assert.equal(check.disabled,false);
+assert.equal(link.hidden,true);
+assert.match(status.textContent,/up to date/);
 
 document.documentElement.lang='es';
 context.renderUpdates();
-assert.match(button.textContent,/Buscar actualizaciones/);
-button.fire('click');
-assert.equal(sent.length,2);
-for(const cb of [...listeners])cb({data:{
-  channel:'michels-life-google-calendar-response',
-  requestId:sent[1].requestId,ok:true,payload:{checked:true,updateAvailable:true,
-    status:'Hay una actualización oficial.',
-    releaseUrl:'https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.222'}
-}});
-assert.match(status.textContent,/Hay una actualización oficial de Android Direct/);
-assert.equal(link.hidden,false,'verified newer release exposes manual link');
-assert.match(link.href,/github\.com\/michels-lab/);
-assert.match(link.textContent,/Ver release oficial/);
-const stage=get('mlv-android-stage-update');
-const install=get('mlv-android-install-update');
-const permission=get('mlv-android-permission-update');
-assert.equal(stage.hidden,false,'Verified newer release shows explicit Download button');
-assert.equal(install.hidden,true,'Never offer installer before actual byte/signature verification');
-assert.equal(permission.hidden,true,'Never prompt for install permission before user action');
-
-stage.fire('click');
-assert.equal(sent[2].action,'updateStage','download requires its own user click');
-assert.equal(install.hidden,true,'Download does not silently open installer');
-assert.equal(stage.disabled,true,'Prevent duplicate download');
-for(const cb of [...listeners])cb({data:{
-  channel:'michels-life-google-calendar-response',
-  requestId:sent[2].requestId,ok:true,payload:{staged:true,version:'0.2.10'}
-}});
-assert.equal(stage.disabled,false);
-assert.equal(install.hidden,false,'Verified APK enables a separate install button');
+assert.match(check.textContent,/Buscar actualizaciones/);
+check.fire();request('updateStatus');
+respond({checked:true,updateAvailable:true,
+  releaseUrl:'https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.222'});
+assert.equal(stage.hidden,false);
+assert.equal(install.hidden,true);
 assert.equal(permission.hidden,true);
+assert.equal(link.hidden,false);
+assert.match(status.textContent,/Hay una actualización oficial/);
+
+stage.fire();request('updateStage');
+assert.equal(stage.disabled,true);
+assert.equal(install.hidden,true,'Download must not silently start installer');
+respond({staged:true,version:'0.2.10'});
+assert.equal(stage.disabled,false);
+assert.equal(install.hidden,false);
+assert.equal(discard.hidden,false);
 assert.match(status.textContent,/APK verificada/);
 
-install.fire('click');
-assert.equal(sent[3].action,'updateInstall');
-for(const cb of [...listeners])cb({data:{
-  channel:'michels-life-google-calendar-response',
-  requestId:sent[3].requestId,ok:true,payload:{opened:false,needsPermission:true}
-}});
-assert.equal(permission.hidden,false,'Permissions require a third explicit button');
+install.fire();request('updateInstall');
+respond({opened:false,needsPermission:true});
+assert.equal(permission.hidden,false);
 assert.match(status.textContent,/requiere permiso/);
-assert.equal(install.disabled,false);
-permission.fire('click');
-assert.equal(sent[4].action,'updatePermissionSettings');
-for(const cb of [...listeners])cb({data:{
-  channel:'michels-life-google-calendar-response',
-  requestId:sent[4].requestId,ok:true,payload:{opened:true}
-}});
+permission.fire();request('updatePermissionSettings');
+respond({opened:true});
 assert.match(status.textContent,/Ajustes de Android abiertos/);
-assert.equal(install.disabled,false,'Return from permission settings never auto-installs');
+assert.equal(install.disabled,false);
+install.fire();request('updateInstall');
+respond({opened:true});
+assert.match(status.textContent,/aún no está instalada/,
+  'Opening the OS installer is NOT proof of installation');
 
-install.fire('click');
-assert.equal(sent[5].action,'updateInstall','OS install intent requires a new tap');
-for(const cb of [...listeners])cb({data:{
-  channel:'michels-life-google-calendar-response',
-  requestId:sent[5].requestId,ok:true,payload:{opened:true}
-}});
-assert.match(status.textContent,/aún no está instalada/,'Opening Android installer is not a finished update');
-
-button.fire('click');
-assert.equal(link.hidden,true,'New attempt hides previous release link');
-for(const cb of [...listeners])cb({data:{
-  channel:'michels-life-google-calendar-response',
-  requestId:sent[6].requestId,ok:true,payload:{checked:true,updateAvailable:true,
-    status:'Mismatched link',
-    releaseUrl:'https://github.com.attacker.example/michels-lab/michel-s-life-releases/releases/tag/v3.0.223'}
-}});
-assert.equal(link.hidden,true,'Spoofed GitHub host must never be clickable');
-assert.match(status.textContent,/Hay una actualización oficial de Android Direct/);
-
-button.fire('click');
-const pending=[...listeners][0];
-pending({data:{
-  channel:'michels-life-google-calendar-response',
-  requestId:sent[7].requestId,ok:false,error:'offline'}});
-assert.equal(link.hidden,true);
-assert.match(status.textContent,/No se pudo verificar/);
-assert.equal(button.disabled,false);
+// When the app/WebView restarts, it must re-hash the cached APK without
+// downloading again or automatically opening the OS installer.
+freshSettings();
+context.renderUpdates();
+request('updateReady');
+assert.equal(get('install-update').hidden,true,'Never trust last session UI state');
+respond({ready:true,hasCached:true,version:'0.2.10'});
+assert.equal(get('install-update').hidden,false,'Verified local APK recovers after restart');
+assert.equal(get('discard-update').hidden,false);
+assert.equal(get('stage-update').hidden,true);
+assert.match(get('update-status').textContent,/APK guardada verificada/);
+assert.equal(latest().action,'updateReady','Reopen must not poll GitHub release');
 assert.equal(listeners.size,0);
 
-console.log('PASS actual Android Settings control: EN/ES, verified update, explicit download, signer-gated separate install, OS permission, stale/forged/offline, no silent install');
+// A previously signed package can be revoked: do NOT install if the current
+// official release does not match the cached receipt.
+get('install-update').fire();
+request('updateInstall');
+respond({opened:false,stale:true});
+assert.equal(get('install-update').hidden,true);
+assert.match(get('update-status').textContent,/ya no coincide/);
+assert.equal(get('discard-update').hidden,false);
+
+// User explicitly removes ONLY the updater cache.
+get('discard-update').fire();
+request('updateDiscard');
+respond({discarded:true});
+assert.equal(get('install-update').hidden,true);
+assert.equal(get('discard-update').hidden,true);
+assert.match(get('update-status').textContent,/misiones y datos personales siguen intactos/);
+
+// A broken or abandoned download must never be offered for installation.
+freshSettings();
+context.renderUpdates();
+request('updateReady');
+respond({ready:false,hasCached:true});
+assert.equal(get('install-update').hidden,true);
+assert.equal(get('discard-update').hidden,false);
+assert.match(get('update-status').textContent,/incompleta/);
+get('discard-update').fire();request('updateDiscard');
+respond({discarded:true});
+assert.equal(get('discard-update').hidden,true);
+
+// Spoofed GitHub hosts never produce a clickable release or an APK download.
+get('check-updates').fire();request('updateStatus');
+respond({checked:true,updateAvailable:true,
+  releaseUrl:'https://github.com.attacker.example/michels-lab/michel-s-life-releases/releases/tag/v3.0.223'});
+assert.equal(get('update-release-link').hidden,true);
+assert.equal(get('stage-update').hidden,true);
+get('check-updates').fire();request('updateStatus');
+respond({status:'offline'},false);
+assert.match(get('update-status').textContent,/No se pudo verificar/);
+assert.equal(get('check-updates').disabled,false);
+assert.equal(listeners.size,0);
+assert.equal(timers.size,0);
+
+console.log('PASS real Android update UI: ES/EN, cold/restart rehash, user consent, permission, withdrawn/stale/partial cache, safe discard, forged link, offline, no auto-installs');
