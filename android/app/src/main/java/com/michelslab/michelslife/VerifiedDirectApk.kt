@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import androidx.core.content.FileProvider
+import okhttp3.Call
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
@@ -14,6 +15,7 @@ import java.io.File
 import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Android Direct, user-consented staging and OS installer handoff.
@@ -31,6 +33,9 @@ internal object VerifiedDirectApk {
     // Prevent concurrent Downloads or cache deletion while a hash is being staged.
     private val staging = AtomicBoolean(false)
     private val cancelRequested = AtomicBoolean(false)
+    // Holds only this staging operation's currently active HTTP call.
+    // Cancel never needs to wait for socket readTimeout or the download executor.
+    private val activeCall = AtomicReference<Call?>(null)
     private val client = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(45, TimeUnit.SECONDS)
@@ -99,7 +104,12 @@ internal object VerifiedDirectApk {
             val request = Request.Builder().url(current)
                 .header("User-Agent", "MichelsLife-Android-Direct-Update")
                 .get().build()
-            client.newCall(request).execute().use { response ->
+            val call = client.newCall(request)
+            activeCall.set(call)
+            // Handles Cancel pressed between redirects or before execute().
+            if (cancelRequested.get()) call.cancel()
+            try {
+                call.execute().use { response ->
                 if (response.code in setOf(301, 302, 303, 307, 308)) {
                     val location = response.header("Location")
                         ?: throw IllegalStateException("Invalid APK redirect.")
@@ -146,6 +156,9 @@ internal object VerifiedDirectApk {
                         throw IllegalStateException("APK download integrity verification failed.")
                     return
                 }
+                }
+            } finally {
+                activeCall.compareAndSet(call, null)
             }
         }
         throw IllegalStateException("Too many APK CDN redirects.")
@@ -160,7 +173,11 @@ internal object VerifiedDirectApk {
                 .put("status", "A verified APK download is already in progress.")
         cancelRequested.set(false)
         return try { stageInternal(activity, onProgress) }
-            finally { staging.set(false); cancelRequested.set(false) }
+            finally {
+                activeCall.getAndSet(null)?.cancel()
+                staging.set(false)
+                cancelRequested.set(false)
+            }
     }
 
     private fun stageInternal(activity: Activity,
@@ -275,6 +292,9 @@ internal object VerifiedDirectApk {
             return JSONObject().put("requested", false)
                 .put("status", "No APK download is running.")
         cancelRequested.set(true)
+        // Abort a blocked DNS/connect/read immediately, instead of waiting
+        // up to OkHttp's read timeout. The worker still cleans partial files.
+        activeCall.get()?.cancel()
         return JSONObject().put("requested", true)
             .put("status", "Cancellation requested; partial APK will be deleted.")
     }
