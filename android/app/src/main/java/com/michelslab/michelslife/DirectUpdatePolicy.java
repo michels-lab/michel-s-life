@@ -58,6 +58,45 @@ public final class DirectUpdatePolicy {
         return 0;
     }
 
+
+    /**
+     * Cross-check the actual official release manifest with the APK name and
+     * pinned permanent certificate, rather than merely trusting the presence
+     * of a manifest asset or human-written release notes.
+     */
+    public static boolean manifestMatches(String product, String platform,
+            String channel, String distribution, String packageName,
+            String versionName, long versionCode, String apkFilename,
+            String sha256, String signerSha256, String expectedVersion,
+            long expectedCode, String expectedApkFilename) {
+        return "Michel's Life".equals(product)
+            && "android".equals(platform)
+            && "direct".equals(channel)
+            && "production-signed".equals(distribution)
+            && "com.michelslab.michelslife".equals(packageName)
+            && validVersion(versionName) && versionName.equals(expectedVersion)
+            && versionCode > 0 && versionCode == expectedCode
+            && expectedApkFilename != null && expectedApkFilename.equals(apkFilename)
+            && sha256 != null && sha256.matches("[0-9a-f]{64}")
+            && DIRECT_SIGNER_SHA256.equals(signerSha256);
+    }
+
+    /**
+     * The sidecar must be a single unambiguous sha256sum entry for this exact
+     * APK. No extra lines, replacement filenames, whitespace tricks or digest
+     * drift are accepted. This validates metadata, NOT the APK binary itself.
+     */
+    public static boolean checksumMatches(String sidecar,
+            String expectedApkFilename, String expectedDigest) {
+        if (sidecar == null || expectedDigest == null ||
+            !expectedDigest.matches("[0-9a-f]{64}") ||
+            expectedApkFilename == null ||
+            !expectedApkFilename.matches("MichelsLife-Android-Direct-v[0-9]+\\.[0-9]+\\.[0-9]+\\.apk"))
+            return false;
+        return (expectedDigest + "  " + expectedApkFilename + "\\n").equals(sidecar)
+            || (expectedDigest + "  " + expectedApkFilename).equals(sidecar);
+    }
+
     public static boolean officialReleaseUrl(String url, String tag) {
         return tag != null && tag.matches("v[0-9]+\\.[0-9]+\\.[0-9]+") &&
             (OFFICIAL_RELEASE_PREFIX + tag).equals(url);
