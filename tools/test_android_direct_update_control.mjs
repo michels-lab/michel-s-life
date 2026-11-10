@@ -105,6 +105,7 @@ for(const cb of [...listeners])cb({data:{
     status:'Hay una actualización oficial.',
     releaseUrl:'https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.222'}
 }});
+assert.match(status.textContent,/Hay una actualización oficial de Android Direct/);
 assert.equal(link.hidden,false,'verified newer release exposes manual link');
 assert.match(link.href,/github\.com\/michels-lab/);
 assert.match(link.textContent,/Ver release oficial/);
@@ -118,6 +119,7 @@ for(const cb of [...listeners])cb({data:{
     releaseUrl:'https://github.com.attacker.example/michels-lab/michel-s-life-releases/releases/tag/v3.0.223'}
 }});
 assert.equal(link.hidden,true,'Spoofed GitHub host must never be clickable');
+assert.match(status.textContent,/Hay una actualización oficial de Android Direct/);
 
 button.fire('click');
 const pending=[...listeners][0];
