@@ -233,7 +233,11 @@ internal object VerifiedDirectApk {
             // Never leave behind an unverified APK or a false-ready receipt.
             marker.delete()
             ready.delete()
-            val cancelled = error is java.util.concurrent.CancellationException
+            // OkHttp Call.cancel() interrupts execute/read with IOException,
+            // not CancellationException. Treat an explicit user-requested
+            // cancellation as cancelled even when it interrupts the socket.
+            val cancelled = cancelRequested.get() ||
+                error is java.util.concurrent.CancellationException
             return JSONObject().put("staged", false).put("cancelled", cancelled)
                 .put("status", if (cancelled)
                     "APK download cancelled. Partial files removed; your data is unchanged."
