@@ -93,8 +93,14 @@ public final class DirectUpdatePolicy {
             expectedApkFilename == null ||
             !expectedApkFilename.matches("MichelsLife-Android-Direct-v[0-9]+\\.[0-9]+\\.[0-9]+\\.apk"))
             return false;
-        return (expectedDigest + "  " + expectedApkFilename + "\\n").equals(sidecar)
-            || (expectedDigest + "  " + expectedApkFilename).equals(sidecar);
+        // A published sha256sum sidecar ends in a REAL line ending.
+        // The previous "\\n" Java literal compared backslash + letter n,
+        // so a valid release sidecar was rejected. Allow exact LF, CRLF
+        // or no final newline; never allow extra lines or literal "\\n".
+        final String entry = expectedDigest + "  " + expectedApkFilename;
+        return entry.equals(sidecar)
+            || (entry + "\n").equals(sidecar)
+            || (entry + "\r\n").equals(sidecar);
     }
 
     public static boolean officialReleaseUrl(String url, String tag) {
