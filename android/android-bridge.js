@@ -998,6 +998,7 @@
       // A local hash may take a moment on older phones. Do not disable the
       // visible Check updates button while the resumed APK is revalidated.
       let userRequestedUpdate=false;
+      let cancelPending=false;
       panel=document.createElement('section');
       panel.id='mlv-android-direct-updates';
       panel.setAttribute('role','region');
@@ -1119,7 +1120,7 @@
         permission.hidden=true;
         discard.hidden=true;
         cancel.hidden=false;
-        let cancelPending=false;
+        cancelPending=false;
         progress.hidden=false;
         progress.value=0;
         status.textContent=document.documentElement.lang?.startsWith('es')
