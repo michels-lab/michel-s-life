@@ -223,38 +223,71 @@ class AndroidBridge(
                 .put("version", DriveCloudEngine.ANDROID_VERSION)
                 .put("status", "ok"))
             "updateStatus" -> {
-                val channel = installChannel()
-                respondOk(requestId, JSONObject()
-                    .put("updateAvailable", false)
-                    .put("managedExternally", true)
-                    .put("channel", channel)
-                    .put("version", DriveCloudEngine.ANDROID_VERSION)
-                    .put(
-                        "status",
-                        if (channel == "google-play")
-                            "Updates are managed by Google Play."
-                        else
-                            "Test build. Production updates are delivered through Google Play."
-                    ))
+                // Read-only discovery uses the installed signing certificate,
+                // not a missing installer label, to recognize real Direct APKs.
+                // Network requests must never run on the Activity/UI thread.
+                when (AndroidDirectUpdateChecker.channel(activity)) {
+                    "android-direct" -> executor.execute {
+                        respondOk(requestId, AndroidDirectUpdateChecker.check(activity))
+                    }
+                    "google-play" -> respondOk(requestId, JSONObject()
+                        .put("updateAvailable", false)
+                        .put("checked", false)
+                        .put("managedExternally", true)
+                        .put("channel", "google-play")
+                        .put("version", DriveCloudEngine.ANDROID_VERSION)
+                        .put("status", "Updates for this installation are managed by Google Play."))
+                    else -> respondOk(requestId, JSONObject()
+                        .put("updateAvailable", false)
+                        .put("checked", false)
+                        .put("managedExternally", false)
+                        .put("channel", "test")
+                        .put("version", DriveCloudEngine.ANDROID_VERSION)
+                        .put("status", "Unrecognized or debug signer. No production update offered; protect local data."))
+                }
+            }
+            "updateReady" -> executor.execute {
+                // Resume verified local APK after Activity/WebView recreation,
+                // even offline. Re-hashes the package and checks pinned signer.
+                respondOk(requestId, VerifiedDirectApk.readiness(activity))
+            }
+            "updateDiscard" -> executor.execute {
+                // User explicitly removes ONLY the private updater cache.
+                respondOk(requestId, VerifiedDirectApk.discard(activity))
+            }
+            "updateStage" -> executor.execute {
+                // The JS payload cannot choose URLs/hashes. The owner-pinned
+                // release is rechecked, and progress exposes only byte counts.
+                respondOk(requestId, VerifiedDirectApk.stage(activity) { bytes, total ->
+                    send(JSONObject()
+                        .put("channel", RESPONSE)
+                        .put("requestId", requestId)
+                        .put("progress", true)
+                        .put("bytes", bytes)
+                        .put("total", total))
+                })
+            }
+            "updateCancel" -> {
+                // Must NOT queue on the serial downloader executor: the
+                // cancellation flag has to reach a running download.
+                respondOk(requestId, VerifiedDirectApk.cancel(activity))
+            }
+            "updateInstall" -> executor.execute {
+                // A SECOND explicit user action. The Android installer still
+                // requires OS-level confirmation; never claim installed.
+                VerifiedDirectApk.requestInstaller(activity) {
+                    respondOk(requestId, it)
+                }
+            }
+            "updatePermissionSettings" -> executor.execute {
+                // A THIRD explicit action if the OS denies installation
+                // permission. Opening settings never proceeds to install.
+                VerifiedDirectApk.openPermissionSettings(activity) {
+                    respondOk(requestId, it)
+                }
             }
             else -> respondError(requestId, "This Michel's Life desktop action is not available on Android yet: " + action)
         }
-    }
-
-    @Suppress("DEPRECATION")
-    private fun installChannel(): String {
-        val installer = try {
-            if (android.os.Build.VERSION.SDK_INT >= 30) {
-                activity.packageManager
-                    .getInstallSourceInfo(activity.packageName)
-                    .installingPackageName
-            } else {
-                activity.packageManager.getInstallerPackageName(activity.packageName)
-            }
-        } catch (_: Exception) {
-            null
-        }
-        return if (installer == "com.android.vending") "google-play" else "test"
     }
 
     private fun authorizeFor(
