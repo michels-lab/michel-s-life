@@ -1039,9 +1039,20 @@
           button.disabled=false;
           const result=data.ok?data.payload:null;
           const displayed=q('#mlv-android-update-status');
-          if(displayed)displayed.textContent=data.ok
-            ? String(result?.status|| (isEs?'Sin resultado verificable.':'No verifiable result.'))
-            : (isEs?'No se pudo verificar la actualización.':'Update check could not be completed.');
+          if(displayed){
+            if(!data.ok)displayed.textContent=isEs
+              ?'No se pudo verificar la actualización.'
+              :'Update check could not be completed.';
+            else if(isEs && result?.checked)displayed.textContent=result?.updateAvailable
+              ?'Hay una actualización oficial de Android Direct. Revisa la página antes de descargar; no se instalará automáticamente.'
+              :'Tu versión de Android Direct está actualizada.';
+            else if(isEs && result?.channel==='google-play')
+              displayed.textContent='Las actualizaciones de esta instalación se gestionan desde Google Play.';
+            else if(isEs && result?.channel==='test')
+              displayed.textContent='Instalación de prueba o firma desconocida. No se ofrece una actualización de producción.';
+            else if(isEs)displayed.textContent='No se pudo verificar el release oficial. Revisa tu conexión e inténtalo de nuevo.';
+            else displayed.textContent=String(result?.status||'No verifiable result.');
+          }
           const link=q('#mlv-android-update-release-link');
           const url=String(result?.releaseUrl||'');
           if(link && data.ok && result?.checked && result?.updateAvailable &&
