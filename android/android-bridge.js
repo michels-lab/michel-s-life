@@ -1060,32 +1060,47 @@
         const requestId='android-direct-'+action+'-'+(++updateRequestCounter);
         clicked.disabled=true;
         let finished=false;
+        let idleTimer=null;
+        let lastBytes=-1;
+        let expectedTotal=null;
+        const complete=(payload,ok)=>{
+          if(finished)return;
+          finished=true;
+          clearTimeout(idleTimer);
+          window.chrome.webview.removeEventListener('message',responseHandler);
+          clicked.disabled=false;
+          done(payload,ok);
+        };
+        // Download timeout means NO ACTIVITY for 4 minutes, not a fixed
+        // deadline regardless of verified progress. Native read timeouts and
+        // size limits still stop failed/stalled transfers. Cancel remains live.
+        const armIdleTimer=()=>{
+          clearTimeout(idleTimer);
+          idleTimer=setTimeout(()=>complete(null,false),timeoutMs);
+        };
         const responseHandler=event=>{
           const data=event?.data;
           if(data?.channel!=='michels-life-google-calendar-response'||
              data.requestId!==requestId||finished)return;
           if(data.progress===true){
-            // Only bounded numeric counts from this exact native request may
-            // update the visual indicator. Progress never completes a call.
-            const bytes=Number(data.bytes),total=Number(data.total);
-            if(typeof onProgress==='function'&&Number.isFinite(bytes)&&
-              Number.isFinite(total)&&total>0&&bytes>=0&&bytes<=total)
+            const bytes=data.bytes,total=data.total;
+            // Strictly increasing finite native byte counts only; repeated or
+            // stale progress may not extend the idle deadline forever.
+            if(typeof onProgress==='function'&&typeof bytes==='number'&&
+              typeof total==='number'&&Number.isFinite(bytes)&&
+              Number.isFinite(total)&&Number.isSafeInteger(bytes)&&
+              Number.isSafeInteger(total)&&total>0&&bytes>lastBytes&&
+              bytes<=total&&(expectedTotal===null||total===expectedTotal)){
+              expectedTotal=total;
+              lastBytes=bytes;
+              armIdleTimer();
               onProgress(bytes,total);
+            }
             return;
           }
-          finished=true;
-          clearTimeout(timeout);
-          window.chrome.webview.removeEventListener('message',responseHandler);
-          clicked.disabled=false;
-          done(data.ok?data.payload:null,!!data.ok);
+          complete(data.ok?data.payload:null,!!data.ok);
         };
-        const timeout=setTimeout(()=>{
-          if(finished)return;
-          finished=true;
-          window.chrome.webview.removeEventListener('message',responseHandler);
-          clicked.disabled=false;
-          done(null,false);
-        },timeoutMs);
+        armIdleTimer();
         window.chrome.webview.addEventListener('message',responseHandler);
         try{
           window.chrome.webview.postMessage({
@@ -1099,10 +1114,12 @@
       stage.addEventListener('click',()=>{
         if(stage.disabled)return;
         stage.hidden=true;
+        button.disabled=true; // no concurrent update check while APK downloads
         install.hidden=true;
         permission.hidden=true;
         discard.hidden=true;
         cancel.hidden=false;
+        let cancelPending=false;
         progress.hidden=false;
         progress.value=0;
         status.textContent=document.documentElement.lang?.startsWith('es')
@@ -1110,8 +1127,10 @@
           :'Downloading and verifying APK signature, version and SHA-256…';
         callNative(stage,'updateStage',240000,(result,ok)=>{
           const es=String(document.documentElement.lang||'').startsWith('es');
+          cancelPending=false;
           cancel.hidden=true;
           progress.hidden=true;
+          button.disabled=false;
           status.textContent=ok&&result?.staged
             ?(es?'APK verificada. Toca Instalar para abrir la confirmación de Android.':
               'APK verified. Tap Install to open Android confirmation.')
@@ -1124,6 +1143,7 @@
           stage.hidden=false; // retry always requires another explicit tap
           if(ok&&result?.staged)discard.hidden=false;
         },(bytes,total)=>{
+          if(cancelPending)return; // Preserve "Cancelling…" while worker exits
           const percent=Math.max(0,Math.min(100,Math.floor(100*bytes/total)));
           progress.value=percent;
           const es=String(document.documentElement.lang||'').startsWith('es');
@@ -1133,17 +1153,21 @@
         });
       });
       cancel.addEventListener('click',()=>{
-        if(cancel.disabled)return;
+        if(cancel.disabled||cancel.hidden)return;
+        cancelPending=true;
+        status.textContent=String(document.documentElement.lang||'').startsWith('es')
+          ?'Cancelando descarga. Se limpiará cualquier archivo parcial…'
+          :'Cancelling download. Any partial file will be removed…';
         callNative(cancel,'updateCancel',20000,(result,ok)=>{
+          if(cancel.hidden)return; // late cancellation acknowledgement
           const es=String(document.documentElement.lang||'').startsWith('es');
-          if(ok&&result?.requested)status.textContent=es
-            ?'Cancelando descarga. Se limpiará cualquier archivo parcial…'
-            :'Cancelling download. Any partial file will be removed…';
-          else status.textContent=es
-            ?'No hay descarga activa para cancelar.'
-            :'There is no active download to cancel.';
-          // The download worker's own completion callback, not this
-          // acknowledgement, hides the progress/cancel controls.
+          if(!ok||!result?.requested){
+            cancelPending=false;
+            status.textContent=es
+              ?'No se pudo confirmar la cancelación; la descarga sigue bajo verificación.'
+              :'Cancellation not confirmed; download verification remains active.';
+          }
+          // Only downloader completion hides Cancel or enables Install.
         });
       });
       install.addEventListener('click',()=>{
