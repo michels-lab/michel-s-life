@@ -1031,7 +1031,12 @@
       permission.type='button';
       permission.hidden=true;
       permission.style.cssText='min-height:44px;padding:8px 12px;margin:8px 0 0;';
-      panel.append(title,button,status,link,stage,install,permission);
+      const discard=document.createElement('button');
+      discard.id='mlv-android-discard-update';
+      discard.type='button';
+      discard.hidden=true;
+      discard.style.cssText='min-height:44px;padding:8px 12px;margin:8px 0 0;';
+      panel.append(title,button,status,link,stage,install,permission,discard);
       // The native app revalidates official metadata on download, and verifies
       // actual APK bytes/signature again on EVERY explicit install tap.
       // Responses are correlated; late/stale replies never touch this control.
@@ -1083,8 +1088,8 @@
             :(es?'No se pudo verificar la APK; no se instaló nada.':
               'APK verification failed; nothing was installed.');
           install.hidden=!(ok&&result?.staged);
-          stage.hidden=!(ok&&result?.staged);
-          if(stage.hidden)stage.hidden=false; // retry is always an explicit tap
+          stage.hidden=false; // retry always requires another explicit tap
+          if(ok&&result?.staged)discard.hidden=false;
         });
       });
       install.addEventListener('click',()=>{
@@ -1095,7 +1100,12 @@
           :'Checking APK again before opening Android…';
         callNative(install,'updateInstall',90000,(result,ok)=>{
           const es=String(document.documentElement.lang||'').startsWith('es');
-          if(ok&&result?.needsPermission){
+          if(ok&&result?.stale){
+            install.hidden=true;
+            status.textContent=es
+              ?'La APK guardada ya no coincide con el release oficial actual. Comprueba actualizaciones y descarga la versión nueva.'
+              :'The saved APK no longer matches the latest official release. Check updates and download again.';
+          }else if(ok&&result?.needsPermission){
             permission.hidden=false;
             status.textContent=es
               ?'Android requiere permiso para instalar desde esta app. Abre Ajustes y vuelve a tocar Instalar.'
@@ -1117,6 +1127,25 @@
               'Android Settings opened. If you grant permission, return and tap Install again.')
             :(es?'No se pudieron abrir los ajustes del dispositivo.':
               'Could not open device settings.');
+        });
+      });
+      discard.addEventListener('click',()=>{
+        if(discard.disabled)return;
+        status.textContent=String(document.documentElement.lang||'').startsWith('es')
+          ?'Eliminando solo la APK descargada…'
+          :'Removing only the downloaded APK…';
+        callNative(discard,'updateDiscard',20000,(result,ok)=>{
+          const es=String(document.documentElement.lang||'').startsWith('es');
+          if(ok&&result?.discarded){
+            discard.hidden=true;
+            install.hidden=true;
+            permission.hidden=true;
+            status.textContent=es
+              ?'APK descargada eliminada. Tus misiones y datos personales siguen intactos.'
+              :'Downloaded APK removed. Your missions and personal data are unchanged.';
+          }else status.textContent=es
+            ?'No se pudo eliminar todavía la APK; comprueba que no haya una descarga en curso.'
+            :'Could not remove the APK yet; check that no download is running.';
         });
       });
       mount.prepend(panel);
@@ -1193,6 +1222,27 @@
             requestId,ok:false}});
         }
       });
+      // Exactly one local-only check per newly mounted Settings panel. On app
+      // restart we rehash APK bytes, version and permanent signer before
+      // restoring Install. No GitHub polling, OS installer or permission popup.
+      callNative(button,'updateReady',40000,(result,ok)=>{
+        const es=String(document.documentElement.lang||
+          localStorage.getItem('michelsLife.language.v1')||'en').startsWith('es');
+        if(ok&&result?.ready){
+          install.hidden=false;
+          discard.hidden=false;
+          stage.hidden=true;
+          status.textContent=es
+            ?'APK guardada verificada de nuevo. Toca Instalar si deseas continuar; antes se consultará el release oficial.'
+            :'Saved APK reverified. Tap Install to continue; the official release will be checked again first.';
+        }else if(ok&&result?.hasCached){
+          install.hidden=true;
+          discard.hidden=false;
+          status.textContent=es
+            ?'La descarga anterior está incompleta, desactualizada o no verificada. Elimínala y vuelve a descargar.'
+            :'The previous download is incomplete, outdated or unverified. Remove it and download again.';
+        }
+      });
     }
     const h=q('#mlv-android-updates-heading',panel);
     const b=q('#mlv-android-check-updates',panel);
@@ -1200,10 +1250,12 @@
     const d=q('#mlv-android-stage-update',panel);
     const i=q('#mlv-android-install-update',panel);
     const r=q('#mlv-android-permission-update',panel);
+    const remove=q('#mlv-android-discard-update',panel);
     const p=q('#mlv-android-update-status',panel);
     if(d)d.textContent=es?'Descargar y verificar APK':'Download and verify APK';
     if(i)i.textContent=es?'Instalar APK verificada':'Install verified APK';
     if(r)r.textContent=es?'Permitir instalación en Android':'Open Android install permission';
+    if(remove)remove.textContent=es?'Eliminar APK descargada':'Remove downloaded APK';
     if(h)h.textContent=es?'Actualizaciones Android':'Android updates';
     if(b)b.textContent=es?'Buscar actualizaciones':'Check for updates';
     if(l)l.textContent=es?'Ver release oficial':'View official release';
