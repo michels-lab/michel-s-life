@@ -75,7 +75,7 @@ const check=get('check-updates'),stage=get('stage-update'),
   install=get('install-update'),permission=get('permission-update'),
   discard=get('discard-update'),status=get('update-status'),
   link=get('update-release-link');
-assert.ok(check.disabled,'Local APK rehash must disable duplicate concurrent check');
+assert.equal(check.disabled,false,'Local APK rehash must not block a user-initiated Check updates');
 assert.ok(install.hidden,'Never show installer before local APK verification');
 respond({ready:false,hasCached:false});
 assert.equal(check.disabled,false);
@@ -189,6 +189,24 @@ get('check-updates').fire();request('updateStatus');
 respond({status:'offline'},false);
 assert.match(get('update-status').textContent,/No se pudo verificar/);
 assert.equal(get('check-updates').disabled,false);
+assert.equal(listeners.size,0);
+assert.equal(timers.size,0);
+
+// Race: the user starts an official update check while local cache rehash is
+// still running. Its later response must not resurrect an obsolete Install.
+freshSettings();
+context.renderUpdates();
+const delayedResume=latest();
+request('updateReady');
+assert.equal(get('check-updates').disabled,false);
+get('check-updates').fire();
+request('updateStatus');
+respond({checked:true,updateAvailable:false,channel:'android-direct',
+  status:'This Android Direct version is up to date.'});
+respond({ready:true,hasCached:true,version:'0.2.10'},true,delayedResume);
+assert.equal(get('install-update').hidden,true,
+  'Late resume reply must never override a newer manual check');
+assert.equal(get('discard-update').hidden,true);
 assert.equal(listeners.size,0);
 assert.equal(timers.size,0);
 
