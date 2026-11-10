@@ -39,6 +39,15 @@ jobs:
             android/app/src/main/java/com/michelslab/michelslife/DirectUpdatePolicy.java \
             tools/DirectUpdatePolicyTest.java
           java -cp /tmp/mlv-direct-update-test DirectUpdatePolicyTest
+          # Cross-language integration with the production publisher's real
+          # Linux sha256sum output, including the final LF byte.
+          mkdir -p /tmp/mlv-direct-publisher-fixture
+          printf 'binary fixture for sha256sum verification\n'             > /tmp/mlv-direct-publisher-fixture/MichelsLife-Android-Direct-v0.2.9.apk
+          (
+            cd /tmp/mlv-direct-publisher-fixture
+            sha256sum MichelsLife-Android-Direct-v0.2.9.apk               > MichelsLife-Android-Direct-v0.2.9.apk.sha256
+          )
+          java -cp /tmp/mlv-direct-update-test DirectUpdatePolicyTest             /tmp/mlv-direct-publisher-fixture/MichelsLife-Android-Direct-v0.2.9.apk
       - name: Verify real bridge wiring and deny automatic installation
         run: |
           node --check tools/test_android_direct_update_bridge.mjs
