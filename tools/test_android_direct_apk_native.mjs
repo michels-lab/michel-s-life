@@ -56,6 +56,15 @@ assert.match(bridge,/\.put\("progress", true\)/);
 assert.match(bridge,/\.put\("bytes", bytes\)/);
 assert.match(bridge,/\.put\("total", total\)/);
 assert.match(native,/private val cancelRequested = AtomicBoolean\(false\)/);
+assert.match(native,/private val activeCall = AtomicReference<Call\?>\(null\)/);
+assert.match(native,/val call = client\.newCall\(request\)/);
+assert.match(native,/activeCall\.set\(call\)/);
+assert.match(native,/if \(cancelRequested\.get\(\)\) call\.cancel\(\)/);
+assert.match(native,/activeCall\.compareAndSet\(call, null\)/);
+assert.match(native,/activeCall\.get\(\)\?\.cancel\(\)/);
+assert.match(native,/activeCall\.getAndSet\(null\)\?\.cancel\(\)/);
+assert.match(native,/val cancelled = cancelRequested\.get\(\) \|\|/,
+  'OkHttp cancel causes IOException and must still be reported as Cancelled');
 assert.match(native,/cancelRequested\.set\(true\)/);
 assert.match(native,/java\.util\.concurrent\.CancellationException/);
 assert.match(native,/onProgress\(copied, expectedBytes\)/);
