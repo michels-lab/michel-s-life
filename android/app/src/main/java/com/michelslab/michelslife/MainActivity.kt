@@ -57,7 +57,9 @@ class MainActivity : Activity() {
             .build()
 
         webView = WebView(this)
-        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        // Same native memory policy validated on PR #190: the Activity is
+        // already GPU-accelerated by AndroidManifest. A forced hardware
+        // WebView layer duplicates Chromium's surface cache on Android 16.
         webView.overScrollMode = View.OVER_SCROLL_NEVER
         webView.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_BOUND, true)
         setContentView(webView)
@@ -75,7 +77,9 @@ class MainActivity : Activity() {
             setSupportZoom(false)
             builtInZoomControls = false
             displayZoomControls = false
-            offscreenPreRaster = true
+            // Render offscreen content on demand; no second startup backing
+            // store for the large canonical Story/Focus WebView document.
+            offscreenPreRaster = false
         }
 
         webView.addJavascriptInterface(
