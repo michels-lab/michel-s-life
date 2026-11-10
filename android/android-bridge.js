@@ -995,6 +995,9 @@
     const es=language.startsWith('es');
     let panel=q('#mlv-android-direct-updates',tab);
     if(!panel){
+      // A local hash may take a moment on older phones. Do not disable the
+      // visible Check updates button while the resumed APK is revalidated.
+      let userRequestedUpdate=false;
       panel=document.createElement('section');
       panel.id='mlv-android-direct-updates';
       panel.setAttribute('role','region');
@@ -1151,6 +1154,7 @@
       mount.prepend(panel);
       button.addEventListener('click',()=>{
         if(button.disabled)return;
+        userRequestedUpdate=true;
         const requestId='android-direct-check-'+(++updateRequestCounter);
         const isEs=String(document.documentElement.lang||
           localStorage.getItem('michelsLife.language.v1')||'en').toLowerCase().startsWith('es');
@@ -1225,7 +1229,11 @@
       // Exactly one local-only check per newly mounted Settings panel. On app
       // restart we rehash APK bytes, version and permanent signer before
       // restoring Install. No GitHub polling, OS installer or permission popup.
-      callNative(button,'updateReady',40000,(result,ok)=>{
+      const resumeRequest={disabled:false};
+      callNative(resumeRequest,'updateReady',20000,(result,ok)=>{
+        // An explicitly initiated check takes precedence over old local
+        // resume state; a delayed reply must not reveal stale Install.
+        if(userRequestedUpdate)return;
         const es=String(document.documentElement.lang||
           localStorage.getItem('michelsLife.language.v1')||'en').startsWith('es');
         if(ok&&result?.ready){
