@@ -270,9 +270,15 @@ internal object VerifiedDirectApk {
         if (AndroidDirectUpdateChecker.channel(activity) != "android-direct")
             return JSONObject().put("discarded", false)
                 .put("status", "No Android Direct update cache is available.")
-        if (staging.get())
+        // Acquire the SAME atomic gate as stage(): a racing download must
+        // never restore a cache file while the user is discarding it.
+        if (!staging.compareAndSet(false, true))
             return JSONObject().put("discarded", false).put("busy", true)
                 .put("status", "Wait until the APK download finishes before removing it.")
+        return try { discardInternal(activity) } finally { staging.set(false) }
+    }
+
+    private fun discardInternal(activity: Activity): JSONObject {
         val dir = folder(activity)
         val targets = listOf(File(dir, MARKER), File(dir, PENDING_APK),
             File(dir, "download.part"))
