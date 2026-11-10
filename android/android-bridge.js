@@ -1016,7 +1016,109 @@
       link.hidden=true;
       link.rel='noopener noreferrer';
       link.style.cssText='margin-top:4px;min-height:36px;';
-      panel.append(title,button,status,link);
+      const stage=document.createElement('button');
+      stage.id='mlv-android-stage-update';
+      stage.type='button';
+      stage.hidden=true;
+      stage.style.cssText='min-height:44px;padding:8px 12px;margin:8px 8px 0 0;';
+      const install=document.createElement('button');
+      install.id='mlv-android-install-update';
+      install.type='button';
+      install.hidden=true;
+      install.style.cssText='min-height:44px;padding:8px 12px;margin:8px 8px 0 0;';
+      const permission=document.createElement('button');
+      permission.id='mlv-android-permission-update';
+      permission.type='button';
+      permission.hidden=true;
+      permission.style.cssText='min-height:44px;padding:8px 12px;margin:8px 0 0;';
+      panel.append(title,button,status,link,stage,install,permission);
+      // The native app revalidates official metadata on download, and verifies
+      // actual APK bytes/signature again on EVERY explicit install tap.
+      // Responses are correlated; late/stale replies never touch this control.
+      const callNative=(clicked,action,timeoutMs,done)=>{
+        if(clicked.disabled)return;
+        const requestId='android-direct-'+action+'-'+(++updateRequestCounter);
+        clicked.disabled=true;
+        let finished=false;
+        const responseHandler=event=>{
+          const data=event?.data;
+          if(data?.channel!=='michels-life-google-calendar-response'||
+             data.requestId!==requestId||finished)return;
+          finished=true;
+          clearTimeout(timeout);
+          window.chrome.webview.removeEventListener('message',responseHandler);
+          clicked.disabled=false;
+          done(data.ok?data.payload:null,!!data.ok);
+        };
+        const timeout=setTimeout(()=>{
+          if(finished)return;
+          finished=true;
+          window.chrome.webview.removeEventListener('message',responseHandler);
+          clicked.disabled=false;
+          done(null,false);
+        },timeoutMs);
+        window.chrome.webview.addEventListener('message',responseHandler);
+        try{
+          window.chrome.webview.postMessage({
+            channel:'michels-life-google-calendar',requestId,action,payload:{}
+          });
+        }catch(_){
+          responseHandler({data:{channel:'michels-life-google-calendar-response',
+            requestId,ok:false}});
+        }
+      };
+      stage.addEventListener('click',()=>{
+        if(stage.disabled)return;
+        stage.hidden=true;
+        install.hidden=true;
+        permission.hidden=true;
+        status.textContent=document.documentElement.lang?.startsWith('es')
+          ?'Descargando y verificando firma, versión y SHA-256 de la APK…'
+          :'Downloading and verifying APK signature, version and SHA-256…';
+        callNative(stage,'updateStage',240000,(result,ok)=>{
+          const es=String(document.documentElement.lang||'').startsWith('es');
+          status.textContent=ok&&result?.staged
+            ?(es?'APK verificada. Toca Instalar para abrir la confirmación de Android.':
+              'APK verified. Tap Install to open Android confirmation.')
+            :(es?'No se pudo verificar la APK; no se instaló nada.':
+              'APK verification failed; nothing was installed.');
+          install.hidden=!(ok&&result?.staged);
+          stage.hidden=!(ok&&result?.staged);
+          if(stage.hidden)stage.hidden=false; // retry is always an explicit tap
+        });
+      });
+      install.addEventListener('click',()=>{
+        if(install.disabled)return;
+        permission.hidden=true;
+        status.textContent=document.documentElement.lang?.startsWith('es')
+          ?'Comprobando la APK de nuevo antes de abrir Android…'
+          :'Checking APK again before opening Android…';
+        callNative(install,'updateInstall',90000,(result,ok)=>{
+          const es=String(document.documentElement.lang||'').startsWith('es');
+          if(ok&&result?.needsPermission){
+            permission.hidden=false;
+            status.textContent=es
+              ?'Android requiere permiso para instalar desde esta app. Abre Ajustes y vuelve a tocar Instalar.'
+              :'Android needs installation permission for this app. Open Settings, then tap Install again.';
+          }else if(ok&&result?.opened)status.textContent=es
+            ?'Se abrió el instalador de Android. Confirma o cancela ahí; aún no está instalada.'
+            :'Android installer opened. Confirm or cancel there; the update is not yet installed.';
+          else status.textContent=es
+            ?'No se pudo abrir una APK verificada. Vuelve a descargarla.'
+            :'Could not open a verified APK. Download it again.';
+        });
+      });
+      permission.addEventListener('click',()=>{
+        if(permission.disabled)return;
+        callNative(permission,'updatePermissionSettings',90000,(result,ok)=>{
+          const es=String(document.documentElement.lang||'').startsWith('es');
+          status.textContent=ok&&result?.opened
+            ?(es?'Ajustes de Android abiertos. Si das permiso, regresa y toca Instalar de nuevo.':
+              'Android Settings opened. If you grant permission, return and tap Install again.')
+            :(es?'No se pudieron abrir los ajustes del dispositivo.':
+              'Could not open device settings.');
+        });
+      });
       mount.prepend(panel);
       button.addEventListener('click',()=>{
         if(button.disabled)return;
@@ -1028,6 +1130,11 @@
         if(active)active.textContent=isEs?'Consultando release oficial…':'Checking official release…';
         const open=q('#mlv-android-update-release-link');
         if(open){open.hidden=true;open.removeAttribute('href');}
+        for(const id of ['mlv-android-stage-update','mlv-android-install-update',
+          'mlv-android-permission-update']){
+          const el=q('#'+id);
+          if(el)el.hidden=true;
+        }
         let completed=false;
         const responseHandler=event=>{
           const data=event?.data;
@@ -1059,6 +1166,8 @@
             /^https:\/\/github\.com\/michels-lab\/michel-s-life-releases\/releases\/tag\/v[0-9]+\.[0-9]+\.[0-9]+$/.test(url)){
             link.href=url;
             link.hidden=false;
+            const download=q('#mlv-android-stage-update');
+            if(download)download.hidden=false;
           }
         };
         const timeout=setTimeout(()=>{
@@ -1088,7 +1197,13 @@
     const h=q('#mlv-android-updates-heading',panel);
     const b=q('#mlv-android-check-updates',panel);
     const l=q('#mlv-android-update-release-link',panel);
+    const d=q('#mlv-android-stage-update',panel);
+    const i=q('#mlv-android-install-update',panel);
+    const r=q('#mlv-android-permission-update',panel);
     const p=q('#mlv-android-update-status',panel);
+    if(d)d.textContent=es?'Descargar y verificar APK':'Download and verify APK';
+    if(i)i.textContent=es?'Instalar APK verificada':'Install verified APK';
+    if(r)r.textContent=es?'Permitir instalación en Android':'Open Android install permission';
     if(h)h.textContent=es?'Actualizaciones Android':'Android updates';
     if(b)b.textContent=es?'Buscar actualizaciones':'Check for updates';
     if(l)l.textContent=es?'Ver release oficial':'View official release';
