@@ -14,13 +14,13 @@ const ui=read('android/android-bridge.js');
 // Regression of the former discovery-only code: actual downloaded bytes and
 // PackageManager archive certificate must be checked BEFORE OS install.
 for(const pattern of [
- /fun stage\(activity: Activity\)/,
+ /fun stage\(activity: Activity,\s*onProgress:/,
  /AndroidDirectUpdateChecker\.check\(activity\)/,
  /if \(!metadata\.optBoolean\("checked"\) \|\| !metadata\.optBoolean\("updateAvailable"\)\)/,
  /DirectUpdatePolicy\.officialAssetUrl\(url, tag, filename\)/,
  /MessageDigest\.getInstance\("SHA-256"\)/,
  /if \(copied != expectedBytes \|\| hex\(sha\.digest\(\)\) != expectedSha\)/,
- /downloadVerified\(url, candidate, bytes, digest\)/,
+ /downloadVerified\(url, candidate, bytes, digest, onProgress\)/,
  /archiveVerified\(activity, candidate, version, code\)/,
  /info\.packageName != activity\.packageName/,
  /info\.versionName != expectedVersion/,
