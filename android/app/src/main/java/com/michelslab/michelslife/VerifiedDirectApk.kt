@@ -30,6 +30,7 @@ internal object VerifiedDirectApk {
     private const val MIN_APK_BYTES = 1_048_576L
     // Prevent concurrent Downloads or cache deletion while a hash is being staged.
     private val staging = AtomicBoolean(false)
+    private val cancelRequested = AtomicBoolean(false)
     private val client = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(45, TimeUnit.SECONDS)
@@ -85,7 +86,8 @@ internal object VerifiedDirectApk {
     }
 
     private fun downloadVerified(url: String, destination: File,
-            expectedBytes: Long, expectedSha: String) {
+            expectedBytes: Long, expectedSha: String,
+            onProgress: (Long, Long) -> Unit) {
         if (expectedBytes !in MIN_APK_BYTES..MAX_APK_BYTES ||
             !expectedSha.matches(Regex("[0-9a-f]{64}")))
             throw IllegalStateException("Official APK size or digest was invalid.")
@@ -115,20 +117,31 @@ internal object VerifiedDirectApk {
                         throw IllegalStateException("Official APK response size changed.")
                     val sha = MessageDigest.getInstance("SHA-256")
                     var copied = 0L
+                    var nextProgress = 0L
                     destination.outputStream().buffered().use { output ->
                         body.byteStream().use { input ->
                             val buffer = ByteArray(65536)
                             while (true) {
                                 val n = input.read(buffer)
                                 if (n < 0) break
+                                if (cancelRequested.get())
+                                    throw java.util.concurrent.CancellationException("APK download cancelled.")
                                 copied += n.toLong()
                                 if (copied > expectedBytes || copied > MAX_APK_BYTES)
                                     throw IllegalStateException("Downloaded APK exceeded declared size.")
                                 output.write(buffer, 0, n)
                                 sha.update(buffer, 0, n)
+                                // Throttle WebView events to 512 KiB. The
+                                // progress callback never receives APK data.
+                                if (copied >= nextProgress) {
+                                    onProgress(copied, expectedBytes)
+                                    nextProgress = copied + 524_288L
+                                }
                             }
                         }
                     }
+                    if (cancelRequested.get())
+                        throw java.util.concurrent.CancellationException("APK download cancelled.")
                     if (copied != expectedBytes || hex(sha.digest()) != expectedSha)
                         throw IllegalStateException("APK download integrity verification failed.")
                     return
@@ -139,15 +152,19 @@ internal object VerifiedDirectApk {
     }
 
     /** User explicitly taps Download: always re-query trustworthy metadata. */
-    fun stage(activity: Activity): JSONObject {
+    fun stage(activity: Activity,
+            onProgress: (Long, Long) -> Unit = { _, _ -> }): JSONObject {
         if (!staging.compareAndSet(false, true))
             return JSONObject().put("staged", false)
                 .put("busy", true)
                 .put("status", "A verified APK download is already in progress.")
-        return try { stageInternal(activity) } finally { staging.set(false) }
+        cancelRequested.set(false)
+        return try { stageInternal(activity, onProgress) }
+            finally { staging.set(false); cancelRequested.set(false) }
     }
 
-    private fun stageInternal(activity: Activity): JSONObject {
+    private fun stageInternal(activity: Activity,
+        onProgress: (Long, Long) -> Unit): JSONObject {
         if (AndroidDirectUpdateChecker.channel(activity) != "android-direct")
             return JSONObject().put("staged", false)
                 .put("status", "Only a permanently signed Android Direct installation can download this update.")
@@ -175,9 +192,15 @@ internal object VerifiedDirectApk {
                 !filename.equals("MichelsLife-Android-Direct-v" + version + ".apk") ||
                 code <= 0 || bytes !in MIN_APK_BYTES..MAX_APK_BYTES)
                 throw IllegalStateException("Official APK identity did not match the release.")
-            downloadVerified(url, candidate, bytes, digest)
+            if (cancelRequested.get())
+                throw java.util.concurrent.CancellationException("APK download cancelled.")
+            downloadVerified(url, candidate, bytes, digest, onProgress)
+            if (cancelRequested.get())
+                throw java.util.concurrent.CancellationException("APK download cancelled.")
             if (!archiveVerified(activity, candidate, version, code))
                 throw IllegalStateException("APK signature or package identity failed verification.")
+            if (cancelRequested.get())
+                throw java.util.concurrent.CancellationException("APK download cancelled.")
             if (!candidate.renameTo(ready))
                 throw IllegalStateException("Could not safely stage the verified APK.")
             val receipt = JSONObject().put("version", version).put("versionCode", code)
@@ -187,12 +210,15 @@ internal object VerifiedDirectApk {
             return JSONObject().put("staged", true).put("version", version)
                 .put("bytes", bytes)
                 .put("status", "APK downloaded, SHA-256 and permanent signing certificate verified. Tap Install to open the Android installer.")
-        } catch (_: Exception) {
+        } catch (error: Exception) {
             // Never leave behind an unverified APK or a false-ready receipt.
             marker.delete()
             ready.delete()
-            return JSONObject().put("staged", false)
-                .put("status", "Could not verify a signed APK. Nothing was installed; your app data is unchanged.")
+            val cancelled = error is java.util.concurrent.CancellationException
+            return JSONObject().put("staged", false).put("cancelled", cancelled)
+                .put("status", if (cancelled)
+                    "APK download cancelled. Partial files removed; your data is unchanged."
+                    else "Could not verify a signed APK. Nothing was installed; your app data is unchanged.")
         } finally {
             candidate.delete()
         }
@@ -232,6 +258,23 @@ internal object VerifiedDirectApk {
                 digestOf(ready) != expectedHash || !archiveVerified(activity, ready, version, code))
                 null else Pair(ready, receipt)
         } catch (_: Exception) { null }
+    }
+
+    /**
+     * An explicit Cancel tap only sets a flag. The download worker owns and
+     * removes its partial file; no other caller deletes it underneath a write.
+     * This action is safe to run immediately, not on the busy executor.
+     */
+    fun cancel(activity: Activity): JSONObject {
+        if (AndroidDirectUpdateChecker.channel(activity) != "android-direct")
+            return JSONObject().put("requested", false)
+                .put("status", "Only Android Direct downloads can be cancelled.")
+        if (!staging.get())
+            return JSONObject().put("requested", false)
+                .put("status", "No APK download is running.")
+        cancelRequested.set(true)
+        return JSONObject().put("requested", true)
+            .put("status", "Cancellation requested; partial APK will be deleted.")
     }
 
     /**
