@@ -246,6 +246,15 @@ class AndroidBridge(
                         .put("status", "Unrecognized or debug signer. No production update offered; protect local data."))
                 }
             }
+            "updateReady" -> executor.execute {
+                // Resume verified local APK after Activity/WebView recreation,
+                // even offline. Re-hashes the package and checks pinned signer.
+                respondOk(requestId, VerifiedDirectApk.readiness(activity))
+            }
+            "updateDiscard" -> executor.execute {
+                // User explicitly removes ONLY the private updater cache.
+                respondOk(requestId, VerifiedDirectApk.discard(activity))
+            }
             "updateStage" -> executor.execute {
                 // The JS payload does not choose a URL, digest or APK. Native
                 // repeats official release verification on every user tap.
