@@ -48,6 +48,27 @@ for(const action of ['updateReady','updateDiscard','updateStage','updateInstall'
 }
 assert.match(bridge,/VerifiedDirectApk\.readiness\(activity\)/);
 assert.match(bridge,/VerifiedDirectApk\.discard\(activity\)/);
+assert.match(bridge,/"updateCancel" -> \{/);
+assert.doesNotMatch(bridge,/"updateCancel" -> executor\.execute/,
+  'Cancel cannot share the busy downloader executor');
+assert.match(bridge,/VerifiedDirectApk\.cancel\(activity\)/);
+assert.match(bridge,/\.put\("progress", true\)/);
+assert.match(bridge,/\.put\("bytes", bytes\)/);
+assert.match(bridge,/\.put\("total", total\)/);
+assert.match(native,/private val cancelRequested = AtomicBoolean\(false\)/);
+assert.match(native,/cancelRequested\.set\(true\)/);
+assert.match(native,/java\.util\.concurrent\.CancellationException/);
+assert.match(native,/onProgress\(copied, expectedBytes\)/);
+assert.match(native,/nextProgress = copied \+ 524_288L/);
+assert.match(native,/fun cancel\(activity: Activity\): JSONObject/);
+assert.match(native,/\.put\("cancelled", cancelled\)/);
+assert.match(ui,/mlv-android-cancel-update/);
+assert.match(ui,/mlv-android-update-progress/);
+assert.match(ui,/callNative\(cancel,'updateCancel',20000/);
+assert.match(ui,/if\(data\.progress===true\)/);
+assert.match(ui,/Number\.isFinite\(bytes\)/);
+assert.match(ui,/bytes<=total/);
+assert.match(ui,/cancel\.addEventListener\('click'/);
 assert.match(bridge,/VerifiedDirectApk\.stage\(activity\)/);
 assert.match(bridge,/VerifiedDirectApk\.requestInstaller\(activity\)/);
 assert.match(bridge,/VerifiedDirectApk\.openPermissionSettings\(activity\)/);
