@@ -65,6 +65,12 @@ function request(action){
   assert.equal(latest().action,action,'Expected Android native command '+action);
   return latest();
 }
+function reportProgress(bytes,total,request=latest()){
+  for(const listener of [...listeners])listener({data:{
+    channel:'michels-life-google-calendar-response',
+    requestId:request.requestId,progress:true,bytes,total
+  }});
+}
 
 context.renderUpdates();
 context.renderUpdates();
@@ -114,11 +120,44 @@ assert.equal(permission.hidden,true);
 assert.equal(link.hidden,false);
 assert.match(status.textContent,/Hay una actualización oficial/);
 
-stage.fire();request('updateStage');
+const progress=get('update-progress'),cancel=get('cancel-update');
+assert.equal(progress.hidden,true);
+assert.equal(cancel.hidden,true);
+stage.fire();
+const firstDownload=request('updateStage');
 assert.equal(stage.disabled,true);
 assert.equal(install.hidden,true,'Download must not silently start installer');
-respond({staged:true,version:'0.2.10'});
+assert.equal(progress.hidden,false);
+assert.equal(cancel.hidden,false);
+reportProgress(20,100,firstDownload);
+assert.equal(progress.value,20,'Only real byte progress updates indicator');
+assert.match(status.textContent,/20 %/);
+reportProgress(200,100,firstDownload);
+assert.equal(progress.value,20,'Over-limit byte count must be rejected');
+reportProgress(30,100,{requestId:'stale-id'});
+assert.equal(progress.value,20,'Unrelated native request must not repaint progress');
+cancel.fire();request('updateCancel');
+respond({requested:true});
+assert.match(status.textContent,/Cancelando descarga/);
+assert.equal(stage.disabled,true,'Cancel acknowledgement cannot finish in-flight download');
+respond({staged:false,cancelled:true},true,firstDownload);
 assert.equal(stage.disabled,false);
+assert.equal(install.hidden,true,'Cancelled partial file is never installable');
+assert.equal(progress.hidden,true);
+assert.equal(cancel.hidden,true);
+assert.match(status.textContent,/Descarga cancelada/);
+
+// Explicit retry starts a fresh download, and its real progress event still
+// cannot be mistaken for completion.
+stage.fire();
+const retry=request('updateStage');
+reportProgress(75,100,retry);
+assert.equal(progress.value,75);
+assert.equal(stage.disabled,true);
+respond({staged:true,version:'0.2.10'},true,retry);
+assert.equal(stage.disabled,false);
+assert.equal(progress.hidden,true);
+assert.equal(cancel.hidden,true);
 assert.equal(install.hidden,false);
 assert.equal(discard.hidden,false);
 assert.match(status.textContent,/APK verificada/);
@@ -210,4 +249,4 @@ assert.equal(get('discard-update').hidden,true);
 assert.equal(listeners.size,0);
 assert.equal(timers.size,0);
 
-console.log('PASS real Android update UI: ES/EN, cold/restart rehash, user consent, permission, withdrawn/stale/partial cache, safe discard, forged link, offline, no auto-installs');
+console.log('PASS real Android updater UI: ES/EN, progress/cancel/cleanup, retry, restart, revocation, signed install, permission, forgery/offline, no auto-install');
