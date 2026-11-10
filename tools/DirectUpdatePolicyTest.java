@@ -20,7 +20,7 @@ public final class DirectUpdatePolicyTest {
         return DirectUpdatePolicy.compare(from,code,published,publishedCode,
             stable,assets,official);
     }
-    public static void main(String[] args){
+    public static void main(String[] args) throws Exception {
         String pin=DirectUpdatePolicy.DIRECT_SIGNER_SHA256;
         eq("Permanent signer -> Direct", "android-direct",
             DirectUpdatePolicy.channel(null,false,pin));
