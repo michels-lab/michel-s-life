@@ -764,6 +764,26 @@ try{
     polishedFocus.width<=polishedFocus.viewport+1,
     'Professional Pomodoro viewport/status/lock-screen controls regressed: '+
     JSON.stringify(polishedFocus));
+  // Immersive Focus must use a real existing app image. It may darken or
+  // blur it, but cannot replace the wallpaper with a generic opaque blue.
+  const existingWallpaper=await page.evaluate(()=>{
+    const overlay=document.getElementById('mlv-android-focus-overlay');
+    const previous=document.body.style.backgroundImage;
+    document.body.style.backgroundImage='url("assets/michels_life_app_icon.svg")';
+    window.MichelsLifeFocusImmersive?.applyWallpaper?.(overlay);
+    const result={
+      sharedModule:!!window.MichelsLifeFocusImmersive?.wallpaper,
+      value:overlay?.style.getPropertyValue('--mlv-focus-wallpaper'),
+      paint:getComputedStyle(overlay).backgroundImage,
+      fullscreen:overlay?.getBoundingClientRect().height>=window.innerHeight-2
+    };
+    document.body.style.backgroundImage=previous;
+    return result;
+  });
+  ok(existingWallpaper.sharedModule&&existingWallpaper.value?.includes('url(')&&
+    existingWallpaper.paint?.includes('url(')&&existingWallpaper.fullscreen,
+    'Android Focus must reveal an existing selected image in a fullscreen layer: '+
+    JSON.stringify(existingWallpaper));
   await page.screenshot({path:screenshot.endsWith('.png')?screenshot.slice(0,-4)+'-focus-mobile.png':screenshot+'-focus-mobile.png'});
   const focusStart=await page.evaluate(()=>({
     sharedReady:!!window.FocusStoryV30162?.focusState,
@@ -840,6 +860,21 @@ try{
   });
   ok(miniOnMissions.visible&&miniOnMissions.remaining.includes(':'),
     'Focus mini-timer disappeared after navigating to Missions: '+JSON.stringify(miniOnMissions));
+  // Regression from real Galaxy screenshots: an open drawer must not steal
+  // Today/Missions taps from the fixed bottom bar while Focus is minimized.
+  await page.locator('#mlv-android-menu-button').click();
+  await page.waitForFunction(()=>document.body.classList.contains('mlv-android-nav-open'));
+  await page.locator('#mlv-android-bottom-nav [data-mobile-tab="dashboard"]').click();
+  await page.waitForSelector('#tab-dashboard.active',{state:'visible',timeout:12000});
+  ok(await page.evaluate(()=>
+    window.state?.activeTab==='dashboard'&&
+    !document.body.classList.contains('mlv-android-nav-open')),
+    'Today is still blocked by the open sidebar after Pomodoro minimizes');
+  await page.locator('#mlv-android-bottom-nav [data-mobile-tab="missions"]').click();
+  await page.waitForSelector('#tab-missions.active',{state:'visible',timeout:12000});
+  ok(await page.evaluate(()=>window.state?.activeTab==='missions'),
+    'Missions did not open from the bottom bar after Today');
+
   const nativeAfterMini=await page.evaluate(()=>{
     const calls=window.__mlvFocusNativeCalls.slice();
     window.MichelsLifeAndroid=window.__mlvPreviousNativeBridge;
