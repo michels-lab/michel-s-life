@@ -1477,7 +1477,7 @@
     if(!root||root.hidden)return false;
     const state=focusApi()?.focusState?.();
     minimizedForPhase=state?.status==='running'?state.mode+':'+String(state.deadlineAt):null;
-    minimizedForMode=active(state)?state.mode:null;
+    minimizedForMode=(state?.status==='running'||state?.status==='paused')?state.mode:null;
     root.hidden=true;document.body.classList.remove('mlv-android-focus-open');
     updateActive();q('#mlv-android-bottom-nav [data-mobile-tab="focus"]')?.focus();
     return true;
