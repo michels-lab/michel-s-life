@@ -1453,30 +1453,52 @@
   // Story is rebuilt by the canonical renderer when Android changes tabs.
   // Keep only the unsaved input draft here; chapters themselves remain owned
   // by FocusStoryV30162 and the user's canonical data store.
-  const chapterDraftKey='michelsLife.android.chapterDraft.v1';
-  let chapterDraftLoaded=false,chapterDraft=null;
-  function loadChapterDraft(){
-    if(chapterDraftLoaded)return chapterDraft;
-    chapterDraftLoaded=true;
+  // A chapter title/motto is private user input. A global sessionStorage key
+  // leaked that draft to another signed-in account using the same WebView.
+  // Do not migrate the legacy unowned draft: its author cannot be proven.
+  const legacyChapterDraftKey='michelsLife.android.chapterDraft.v1';
+  const chapterDraftPrefix='michelsLife.android.chapterDraft.v2';
+  let chapterDraftLoadedFor=null,chapterDraft=null;
+  function chapterDraftStorageKey(){
     try{
-      const saved=JSON.parse(sessionStorage.getItem(chapterDraftKey)||'null');
-      if(saved&&typeof saved==='object')chapterDraft=saved;
+      const owner=localStorage.getItem('michelsLife.supabase.boardOwner.v30218');
+      const user=window.SupabaseSyncV30216?.session?.()?.user?.id||null;
+      // A partially initialized sign-in or sign-out must never appear as Guest.
+      if(owner===null&&user===null)return chapterDraftPrefix+'.guest';
+      if(typeof owner==='string'&&owner===user&&
+         /^[A-Za-z0-9_-]{6,128}$/.test(owner))
+        return chapterDraftPrefix+'.account.'+owner;
+    }catch(_){}
+    return null; // Identity mismatch: fail closed, never expose another draft.
+  }
+  function loadChapterDraft(){
+    try{sessionStorage.removeItem(legacyChapterDraftKey);}catch(_){}
+    const key=chapterDraftStorageKey();
+    if(chapterDraftLoadedFor===key)return chapterDraft;
+    chapterDraftLoadedFor=key;chapterDraft=null;
+    if(!key)return null;
+    try{
+      const saved=JSON.parse(sessionStorage.getItem(key)||'null');
+      if(saved&&typeof saved==='object'&&!Array.isArray(saved))chapterDraft=saved;
     }catch(_){}
     return chapterDraft;
   }
   function discardChapterDraft(){
-    chapterDraft=null;chapterDraftLoaded=true;
-    try{sessionStorage.removeItem(chapterDraftKey);}catch(_){}
+    const key=chapterDraftStorageKey();
+    chapterDraft=null;chapterDraftLoadedFor=key;
+    if(!key)return;
+    try{sessionStorage.removeItem(key);}catch(_){}
   }
   function rememberChapterDraft(form){
-    if(!form||form.id!=='v30162ChapterForm')return;
+    const key=chapterDraftStorageKey();
+    if(!key||!form||form.id!=='v30162ChapterForm')return;
     chapterDraft={
       name:String(form.elements.namedItem('name')?.value||''),
       motto:String(form.elements.namedItem('motto')?.value||''),
       start:String(form.elements.namedItem('start')?.value||'')
     };
-    chapterDraftLoaded=true;
-    try{sessionStorage.setItem(chapterDraftKey,JSON.stringify(chapterDraft));}catch(_){}
+    chapterDraftLoadedFor=key;
+    try{sessionStorage.setItem(key,JSON.stringify(chapterDraft));}catch(_){}
   }
   function restoreChapterDraft(){
     const story=q('#tab-story.active');
