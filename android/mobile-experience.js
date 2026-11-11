@@ -16,6 +16,7 @@
     {id:'settings',label:'Settings',glyph:'⚙'}
   ];
   let root=null,nav=null,mini=null,ticker=null;
+  let lastRunningPhase=null,minimizedForPhase=null;
   let lastNativeAlarmKey=null;
 
   function syncNativeFocusAlarm(state){
@@ -169,7 +170,7 @@
       html[data-mlv-platform="android"] body.mlv-android-keyboard-editing #mlv-android-bottom-nav{display:none!important}
       html[data-mlv-platform="android"] #mlv-android-bottom-nav{
         position:fixed;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));
-        left:0;right:0;bottom:0;z-index:2147482980;box-sizing:border-box;
+        left:0;right:0;bottom:0;z-index:2147483005;box-sizing:border-box;
         padding:7px 7px calc(8px + env(safe-area-inset-bottom,0px));
         gap:3px;border-top:1px solid rgba(255,255,255,.14);
         background:rgba(var(--ui-panel-rgb,7,13,25),.97);
@@ -935,11 +936,27 @@
       @media(max-height:750px){
         #mlv-android-focus-sheet{gap:11px!important}
         #mlv-android-focus-sheet .mlv-android-focus-clock{min-height:209px}
-        #mlv-android-focus-sheet #mlv-android-focus-progress-ring{
-          width:185px;height:185px
-        }
+        #mlv-android-focus-sheet #mlv-android-focus-progress-ring{width:185px;height:185px}
       }
-
+      /* Full-screen Work/Break MUST expose the user's active wallpaper. */
+      html[data-mlv-platform="android"] #mlv-android-focus-overlay:not([hidden]){
+        background-color:rgba(4,7,17,.52)!important;
+        background-image:
+          linear-gradient(155deg,rgba(4,7,17,.62),rgba(5,8,18,.32) 42%,rgba(3,6,14,.77)),
+          var(--mlv-focus-wallpaper,none)!important;
+        background-size:cover!important;background-position:center!important;
+        background-repeat:no-repeat!important
+      }
+      html[data-mlv-platform="android"] #mlv-android-focus-sheet{
+        background:rgba(6,10,22,.16)!important;
+        backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)
+      }
+      html[data-mlv-platform="android"] #v30171Sidebar [data-tab="focus"]{display:none!important}
+      html[data-mlv-platform="android"] #v30162FocusDock{
+        visibility:hidden!important;pointer-events:none!important
+      }
+      /* Keep bottom navigation above an inadvertently open drawer/backdrop. */
+      html[data-mlv-platform="android"] #mlv-android-bottom-nav{z-index:2147483005!important}
     `;
     document.head.appendChild(style);
   }
@@ -1066,6 +1083,8 @@
       nav.addEventListener('click',event=>{
         const target=event.target.closest('button[data-mobile-tab]');
         if(!target)return;
+        document.body.classList.remove('mlv-android-nav-open');
+        q('#mlv-android-menu-button')?.setAttribute('aria-expanded','false');
         const tab=target.dataset.mobileTab;
         if(tab==='focus'){
           // Pomodoro lives in the permanent bottom bar, never only in a
@@ -1369,6 +1388,14 @@
       }
     }
     document.body.classList.toggle('mlv-android-timer-active',active);
+    const runningPhase=f.status==='running'?f.mode+':'+String(f.deadlineAt):null;
+    if(runningPhase&&runningPhase!==lastRunningPhase){
+      lastRunningPhase=runningPhase;
+      if(runningPhase!==minimizedForPhase&&root.hidden&&
+         !q('#mlv200Onboarding:not([hidden])')&&!q('[data-mlv216-qc]:not([hidden])')){
+        open();return;
+      }
+    }else if(!runningPhase)lastRunningPhase=null;
     if(tile){
       const state=q('#mlv-android-today-focus-status',tile);
       const button=q('#mlv-android-today-focus-action',tile);
@@ -1439,6 +1466,10 @@
     const api=focusApi();
     if(!api?.focusState){return false;}
     root.hidden=false;document.body.classList.add('mlv-android-focus-open');
+    document.body.classList.remove('mlv-android-nav-open');
+    q('#mlv-android-menu-button')?.setAttribute('aria-expanded','false');
+    window.MichelsLifeFocusImmersive?.applyWallpaper?.(root);
+    minimizedForPhase=null;
     api.renderFocusDock?.();
     updateActive();updateFocus();
     q('[data-mobile-focus="close"]',root)?.focus();
@@ -1446,6 +1477,8 @@
   }
   function close(){
     if(!root||root.hidden)return false;
+    const state=focusApi()?.focusState?.();
+    minimizedForPhase=state?.status==='running'?state.mode+':'+String(state.deadlineAt):null;
     root.hidden=true;document.body.classList.remove('mlv-android-focus-open');
     updateActive();q('#mlv-android-bottom-nav [data-mobile-tab="focus"]')?.focus();
     return true;
