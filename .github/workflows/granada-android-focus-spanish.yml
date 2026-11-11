@@ -4,6 +4,7 @@ on:
     paths:
       - 'android/mobile-experience.js'
       - 'tools/test_android_focus_spanish.mjs'
+      - 'tools/test_android_story_draft_account_isolation.mjs'
       - 'tools/ui_android_focus_alarm_lifecycle_smoke.mjs'
       - '.github/workflows/granada-android-focus-spanish.yml'
   workflow_dispatch:
@@ -23,4 +24,5 @@ jobs:
           node --check android/mobile-experience.js
           node --check tools/test_android_focus_spanish.mjs
           node --check tools/ui_android_focus_alarm_lifecycle_smoke.mjs
-          node --test tools/test_android_focus_spanish.mjs
+          node --check tools/test_android_story_draft_account_isolation.mjs
+          node --test tools/test_android_focus_spanish.mjs tools/test_android_story_draft_account_isolation.mjs
