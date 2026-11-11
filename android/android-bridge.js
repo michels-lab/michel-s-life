@@ -57,6 +57,11 @@
     if(button)button.setAttribute('aria-expanded',open?'true':'false');
   }
 
+  // Single owner of drawer transform AND backdrop state. Mobile Focus and
+  // bottom navigation must dismiss the drawer through this API, not just
+  // remove a CSS class while an inline !important transform stays open.
+  window.__mlvAndroidSetDrawer=setDrawer;
+
   function activeTabId(){
     try{
       const id=String(window.state?.activeTab||'');
