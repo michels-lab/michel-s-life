@@ -952,8 +952,17 @@
         backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)
       }
       html[data-mlv-platform="android"] #v30171Sidebar [data-tab="focus"]{display:none!important}
+      /* The canonical Focus engine and presets stay in the DOM, but its
+         old floating desktop panel must not be visually interactive on
+         Android: it previously appeared over the mobile sidebar. */
       html[data-mlv-platform="android"] #v30162FocusDock{
-        visibility:hidden!important;pointer-events:none!important
+        display:none!important;visibility:hidden!important;pointer-events:none!important
+      }
+      /* The drawer must end ABOVE fixed bottom navigation; otherwise a
+         menu item scrolled to its bottom is covered by the tab bar. */
+      html[data-mlv-platform="android"] #v30171Sidebar{
+        bottom:calc(82px + env(safe-area-inset-bottom,0px))!important;
+        padding-bottom:20px!important
       }
       /* Keep bottom navigation above an inadvertently open drawer/backdrop. */
       html[data-mlv-platform="android"] #mlv-android-bottom-nav{z-index:2147483005!important}
