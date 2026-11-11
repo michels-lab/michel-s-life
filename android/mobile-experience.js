@@ -1083,8 +1083,7 @@
       nav.addEventListener('click',event=>{
         const target=event.target.closest('button[data-mobile-tab]');
         if(!target)return;
-        document.body.classList.remove('mlv-android-nav-open');
-        q('#mlv-android-menu-button')?.setAttribute('aria-expanded','false');
+        window.__mlvAndroidSetDrawer?.(false);
         const tab=target.dataset.mobileTab;
         if(tab==='focus'){
           // Pomodoro lives in the permanent bottom bar, never only in a
@@ -1466,8 +1465,7 @@
     const api=focusApi();
     if(!api?.focusState){return false;}
     root.hidden=false;document.body.classList.add('mlv-android-focus-open');
-    document.body.classList.remove('mlv-android-nav-open');
-    q('#mlv-android-menu-button')?.setAttribute('aria-expanded','false');
+    window.__mlvAndroidSetDrawer?.(false);
     window.MichelsLifeFocusImmersive?.applyWallpaper?.(root);
     minimizedForPhase=null;minimizedForMode=null;
     api.renderFocusDock?.();
