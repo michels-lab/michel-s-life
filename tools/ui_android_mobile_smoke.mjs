@@ -880,8 +880,17 @@ try{
     'Today is still blocked by the open sidebar after Pomodoro minimizes: '+JSON.stringify(todayNavState));
   await page.locator('#mlv-android-bottom-nav [data-mobile-tab="missions"]').click();
   await page.waitForSelector('#tab-missions.active',{state:'visible',timeout:12000});
-  ok(await page.evaluate(()=>window.state?.activeTab==='missions'),
-    'Missions did not open from the bottom bar after Today');
+  const missionsNavState=await page.evaluate(()=>({
+    section:document.querySelector('#tab-missions.active')?.id||'',
+    height:document.querySelector('#tab-missions.active')?.getBoundingClientRect().height||0,
+    nav:document.querySelector('#mlv-android-bottom-nav [data-mobile-tab="missions"]')?.getAttribute('aria-current'),
+    drawerOpen:document.body.classList.contains('mlv-android-nav-open'),
+    topbar:document.getElementById('mlv-android-section-title')?.textContent,
+    legacyState:window.state?.activeTab||null
+  }));
+  ok(missionsNavState.section==='tab-missions'&&missionsNavState.height>40&&
+     missionsNavState.nav==='page'&&!missionsNavState.drawerOpen,
+    'Missions did not open from the bottom bar after Today: '+JSON.stringify(missionsNavState));
 
   const nativeAfterMini=await page.evaluate(()=>{
     const calls=window.__mlvFocusNativeCalls.slice();
