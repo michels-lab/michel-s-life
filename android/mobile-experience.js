@@ -16,7 +16,7 @@
     {id:'settings',label:'Settings',glyph:'⚙'}
   ];
   let root=null,nav=null,mini=null,ticker=null;
-  let lastRunningPhase=null,minimizedForPhase=null;
+  let lastRunningPhase=null,minimizedForPhase=null,minimizedForMode=null;
   let lastNativeAlarmKey=null;
 
   function syncNativeFocusAlarm(state){
@@ -1391,7 +1391,7 @@
     const runningPhase=f.status==='running'?f.mode+':'+String(f.deadlineAt):null;
     if(runningPhase&&runningPhase!==lastRunningPhase){
       lastRunningPhase=runningPhase;
-      if(runningPhase!==minimizedForPhase&&root.hidden&&
+      if(runningPhase!==minimizedForPhase&&f.mode!==minimizedForMode&&root.hidden&&
          !q('#mlv200Onboarding:not([hidden])')&&!q('[data-mlv216-qc]:not([hidden])')){
         open();return;
       }
@@ -1469,7 +1469,7 @@
     document.body.classList.remove('mlv-android-nav-open');
     q('#mlv-android-menu-button')?.setAttribute('aria-expanded','false');
     window.MichelsLifeFocusImmersive?.applyWallpaper?.(root);
-    minimizedForPhase=null;
+    minimizedForPhase=null;minimizedForMode=null;
     api.renderFocusDock?.();
     updateActive();updateFocus();
     q('[data-mobile-focus="close"]',root)?.focus();
@@ -1479,6 +1479,7 @@
     if(!root||root.hidden)return false;
     const state=focusApi()?.focusState?.();
     minimizedForPhase=state?.status==='running'?state.mode+':'+String(state.deadlineAt):null;
+    minimizedForMode=active(state)?state.mode:null;
     root.hidden=true;document.body.classList.remove('mlv-android-focus-open');
     updateActive();q('#mlv-android-bottom-nav [data-mobile-tab="focus"]')?.focus();
     return true;
