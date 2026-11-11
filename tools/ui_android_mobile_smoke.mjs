@@ -866,10 +866,18 @@ try{
   await page.waitForFunction(()=>document.body.classList.contains('mlv-android-nav-open'));
   await page.locator('#mlv-android-bottom-nav [data-mobile-tab="dashboard"]').click();
   await page.waitForSelector('#tab-dashboard.active',{state:'visible',timeout:12000});
-  ok(await page.evaluate(()=>
-    window.state?.activeTab==='dashboard'&&
-    !document.body.classList.contains('mlv-android-nav-open')),
-    'Today is still blocked by the open sidebar after Pomodoro minimizes');
+  const todayNavState=await page.evaluate(()=>({
+    active:window.state?.activeTab||'',
+    section:document.querySelector('#tab-dashboard.active')?.id||'',
+    drawerOpen:document.body.classList.contains('mlv-android-nav-open'),
+    nav:document.querySelector('#mlv-android-bottom-nav [data-mobile-tab="dashboard"]')?.getAttribute('aria-current'),
+    overlay:document.querySelector('#mlv-android-focus-overlay')?.hidden,
+    visible:document.querySelector('#tab-dashboard.active')?.getBoundingClientRect().height||0,
+    panelTransform:document.querySelector('#v30171Sidebar')?.style.transform
+  }));
+  ok(todayNavState.section==='tab-dashboard'&&todayNavState.nav==='page'&&
+     !todayNavState.drawerOpen&&todayNavState.visible>40,
+    'Today is still blocked by the open sidebar after Pomodoro minimizes: '+JSON.stringify(todayNavState));
   await page.locator('#mlv-android-bottom-nav [data-mobile-tab="missions"]').click();
   await page.waitForSelector('#tab-missions.active',{state:'visible',timeout:12000});
   ok(await page.evaluate(()=>window.state?.activeTab==='missions'),
