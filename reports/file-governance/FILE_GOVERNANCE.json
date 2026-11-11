@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 344,
-  "classified_files_total": 340,
+  "tracked_files_total": 347,
+  "classified_files_total": 343,
   "docs_content_inspected": 92,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -19,18 +19,18 @@
     "installer_metadata": 1,
     "release_intent": 8,
     "source": 115,
-    "test": 28,
+    "test": 30,
     "text_metadata": 1,
     "web_ui": 3,
-    "workflow": 38
+    "workflow": 39
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
-    "POTENTIAL_UNLOGGED_CHANGES": 2
+    "POTENTIAL_UNLOGGED_CHANGES": 1
   },
-  "finding_total": 6,
-  "inventory_fingerprint": "47f120d555f4f8ff2b31314b41be19acd40480a5bf0a7dd5ac9ec7f0669605b6",
-  "evidence_fingerprint": "60caad6b6b834ac479f114208b79fbeb228837a3b149a45e8350e405bc9be689",
+  "finding_total": 5,
+  "inventory_fingerprint": "393ef805ee7f41cfc47f44b229b5fcbb396c70a14645a8e3f8180d56942b6f86",
+  "evidence_fingerprint": "4bba7e296b8a7e8b0c574e343f329052dcbe26a26909b7af21054f7966e75a6e",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -178,6 +178,13 @@
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
       "blob": "8a2feaf6b1d139f9ce211686fba476a57987a752"
+    },
+    {
+      "path": ".github/workflows/granada-android-focus-spanish.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "3b030f860a1730269c989bfa2034b8419fa30289"
     },
     {
       "path": ".github/workflows/granada-android-usability.yml",
@@ -527,7 +534,7 @@
       "role": "bitacora",
       "purpose": "technical/audit change history",
       "certainty": "rule",
-      "blob": "01be7bd92c48ffe1d31c9847a6f554b8dfd05019"
+      "blob": "f11cbaa93746c49d71d597c5846427396c78564a"
     },
     {
       "path": "android/DIRECT_DISTRIBUTION_SIGNING.md",
@@ -1003,7 +1010,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "c92beae9573d59fff32304f707e8e64039ddecbe"
+      "blob": "78fba6d620e0d44452e2592cd23beea2ea8a5730"
     },
     {
       "path": "android/mobile-sections.js",
@@ -1906,7 +1913,21 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "5b6598023e7b29bbc30ff4a4c7031492889eb8f6"
+      "blob": "e645189f8a9eadaccd5e7bd4a22e6648586f7d12"
+    },
+    {
+      "path": "tools/test_android_focus_spanish.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "a1aa79cff484535f1b6cd0f0e0bc927be8a51d65"
+    },
+    {
+      "path": "tools/test_android_story_draft_account_isolation.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "1c72213e88a1432a611309466405c9df29fdad79"
     },
     {
       "path": "tools/test_cloud_restore_storage.mjs",
@@ -2102,7 +2123,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "99da775ae81bf9939c7c24479c2070ed982dad93"
+      "blob": "8e27a031e259cc3339d2fc1e1d249befacc0a5a7"
     },
     {
       "path": "tools/ui_android_google_calendar_truth_smoke.mjs",
@@ -2451,20 +2472,11 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "a173bbbde1effce1",
+      "id": "1e70d4ac6db7aa55",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "95 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-account-boundary.yml",
-      "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "8df6d9a2edf4ac77",
-      "code": "POTENTIAL_UNLOGGED_CHANGES",
-      "severity": "review",
-      "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "4 implementation/config paths changed since this log's last commit; examples: .github/workflows/granada-android-drawer-atomic.yml, android/android-bridge.js, tools/test_android_drawer_atomic_open.mjs, tools/ui_android_mobile_smoke.mjs",
+      "observation": "98 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-account-boundary.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
