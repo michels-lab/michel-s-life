@@ -29,8 +29,8 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "22efdf7ae0d99e16bd260741fd7aaff2aac144bef0b6ed12c7d09e1eed415963",
-  "evidence_fingerprint": "714be4ca2dd1607beaed88958963185f16c2474bfc779d638c37de68f71f5c9e",
+  "inventory_fingerprint": "f4fab5084ef14edd12b6d53260260406477c262f21faf4837c8b18ad8cfe5ecc",
+  "evidence_fingerprint": "7b2b1a48d38b795871ff65c2f99b66fe62634cb535a0adbb82b1da27951e4199",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -1094,7 +1094,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "ce12f1c7f73b5c231a05c198409f4c43bd39501b"
+      "blob": "ce3390925cbe8d31e831ff672e110348932142db"
     },
     {
       "path": "android/tools/validate_android_version.py",
@@ -2502,11 +2502,11 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "78d15b29f9984393",
+      "id": "a1d01f3c4052d4c0",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "8 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/release-android-direct-v0210.yml, .github/workflows/ui-smoke.yml, .michelslab/release-intents/android-direct-v0210.txt, android/android-bridge.js",
+      "observation": "9 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/release-android-direct-v0210.yml, .github/workflows/ui-smoke.yml, .michelslab/release-intents/android-direct-v0210.txt, android/android-bridge.js",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
