@@ -5,11 +5,11 @@
   'use strict';
   if(window.MichelsLifeFocusImmersive)return;
   const q=(s,r=document)=>r.querySelector(s),api=()=>window.FocusStoryV30162;
-  const android=()=>document.documentElement.dataset.mlvPlatform==='android';
+  const android=()=>document.documentElement.dataset.mlvPlatform==='android'||window.__MICHELSLIFE_PLATFORM__==='android'||!!window.MichelsLifeAndroid;
   const lang=(en,es)=>window.MichelsLifeI18n?.language==='es'?es:en;
   const live=s=>s?.status==='running'||s?.status==='paused';
   const time=ms=>{const sec=Math.max(0,Math.ceil((Number(ms)||0)/1000));return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');};
-  let screen=null,mini=null,launcher=null,lastPhase=null,closedPhase=null;
+  let screen=null,mini=null,launcher=null,lastPhase=null,closedPhase=null,closedMode=null;
 
   function wallpaper(){
     const selectors=[
@@ -157,7 +157,7 @@
   function open(){
     if(android())return window.MichelsLifeMobileExperience?.openFocus?.()||false;
     create();if(!screen||!api()?.focusState)return false;
-    applyWallpaper(screen);screen.hidden=false;closedPhase=null;
+    applyWallpaper(screen);screen.hidden=false;closedPhase=null;closedMode=null;
     document.body.classList.add('mlv-desktop-focus-open');
     refresh();
     q('[data-focus-action="minimize"]',screen)?.focus();
@@ -169,6 +169,7 @@
     screen.hidden=true;document.body.classList.remove('mlv-desktop-focus-open');
     const state=api()?.focusState?.();
     closedPhase=state?.status==='running'?state.mode+':'+state.deadlineAt:null;
+    closedMode=live(state)?state.mode:null;
     refresh();launcher?.focus();return true;
   }
   function refresh(){
@@ -177,7 +178,7 @@
     const engine=api(),state=engine?.focusState?.();
     const running=state?.status==='running';
     const phase=running?state.mode+':'+state.deadlineAt:null;
-    if(running&&phase!==lastPhase&&phase!==closedPhase&&!q('#mlv200Onboarding:not([hidden])')){
+    if(running&&phase!==lastPhase&&phase!==closedPhase&&state.mode!==closedMode&&!q('#mlv200Onboarding:not([hidden])')){
       screen.hidden=false;document.body.classList.add('mlv-desktop-focus-open');applyWallpaper(screen);
     }
     lastPhase=phase;
