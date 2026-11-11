@@ -29,8 +29,8 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "e1867c14db0aaf1f739dd0b665286b540405e08f52a1543c5ff9a67e1762a86b",
-  "evidence_fingerprint": "56236fa99dec96b1f50094ad9d37ffdcf47c8a6fec6b627589741d3ec23fcc79",
+  "inventory_fingerprint": "87dcf47415e2ac31e3aec830f65a289ca790f6526a922a1a456ccb0cb277df77",
+  "evidence_fingerprint": "7f4bedcc533b5e05868daac10cc40696d704a0f6b4cd16ab0b8bf5753a1cd2d7",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -100,7 +100,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "ff5b07119ec42a9aef0cb856eb3d349f85ae185e"
+      "blob": "5cb4e6afa00d27acb1aa5592dc2198597fe0e2ea"
     },
     {
       "path": ".github/workflows/build-store-msix.yml",
@@ -345,7 +345,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "deb8fc19ae87498cb58163d29f874bda827c9da1"
+      "blob": "1aaa2067981a0bae878f70d4de35de6bf5178123"
     },
     {
       "path": ".gitignore",
@@ -2495,11 +2495,11 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "961869162a5fd84c",
+      "id": "f06b43db2e60773d",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "5 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/release-android-direct-v0210.yml, android/android-bridge.js, android/app/build.gradle.kts, android/app/src/main/java/com/michelslab/michelslife/CloudSync.kt",
+      "observation": "7 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/release-android-direct-v0210.yml, .github/workflows/ui-smoke.yml, android/android-bridge.js, android/app/build.gradle.kts",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
