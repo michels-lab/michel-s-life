@@ -36,7 +36,8 @@ test('both platforms keep one canonical timer and deliberate mini/navigation mod
   assert.match(desktop,/window\.MichelsLifeFocusImmersive\.open=open/);
   assert.match(desktop,/document\.body\.classList\.add\('mlv-desktop-focus-open'\)/);
   assert.match(android,/window\.MichelsLifeFocusImmersive\?\.applyWallpaper\?\.\(root\)/);
-  assert.match(android,/minimizedForMode=active\(state\)\?state\.mode:null/);
+  assert.ok(android.includes("minimizedForMode=(state?.status==='running'||state?.status==='paused')?state.mode:null"),
+    'Mobile mini must retain the running or paused phase owner');
   assert.match(android,/runningPhase!==minimizedForPhase&&f\.mode!==minimizedForMode/);
   assert.match(android,/z-index:2147483005!important/);
   assert.match(android,/#v30162FocusDock\{\s*visibility:hidden!important/);
