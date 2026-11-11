@@ -27,10 +27,18 @@
     if(document.documentElement)probes.push([document.documentElement,'::before']);
     for(const [node,pseudo] of probes){
       try{
-        const value=getComputedStyle(node,pseudo).backgroundImage;
-        if(value&&value!=='none'&&/url\(|image-set\(/i.test(value))return value;
+        const computed=getComputedStyle(node,pseudo).backgroundImage;
+        if(computed&&computed!=='none'&&/url\(|image-set\(/i.test(computed))return computed;
+        // The theme may own background-image with !important. Read the
+        // persisted inline scene as well instead of silently replacing it
+        // with an opaque gradient in the immersive workspace.
+        const inline=!pseudo?node.style?.backgroundImage:'';
+        if(inline&&/url\(|image-set\(/i.test(inline))return inline;
       }catch(_){}
     }
+    const cover=q('[data-mlv-active-wallpaper] img, img[data-mlv-wallpaper], #tab-story img[class*="background"], #tab-missions img[class*="background"]');
+    const src=cover?.getAttribute?.('src');
+    if(src&&!/["\\\n\r]/.test(src))return 'url("'+src+'")';
     return 'none';
   }
   function applyWallpaper(target){
