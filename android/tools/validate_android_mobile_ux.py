@@ -14,8 +14,12 @@ adaptive_round_icon = ROOT / "app/src/main/res/mipmap-anydpi-v26/ic_launcher_rou
 launcher_foreground = ROOT / "app/src/main/res/drawable/ic_launcher_foreground.xml"
 focus_alarm = (ROOT / "app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt").read_text(encoding="utf-8")
 
+gradle_version = (ROOT / "app/build.gradle.kts").read_text(encoding="utf-8")
+version_match = re.search(r'versionName\s*=\s*"([^"]+)"', gradle_version)
+if not version_match:
+    raise SystemExit("Android mobile UX contract cannot resolve Gradle version")
 required_bridge = [
-    "window.__MICHELSLIFE_ANDROID_BRIDGE__='0.2.9'",
+    f"window.__MICHELSLIFE_ANDROID_BRIDGE__='{version_match.group(1)}'",
     "const MOBILE_BREAKPOINT=4096;",
     "@media(min-width:900px) and (max-width:${MOBILE_BREAKPOINT}px)",
     "mlv-android-topbar",
