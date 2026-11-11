@@ -7,3 +7,5 @@ Require exact-intent SHA Source validation, Android UI smoke, UI smoke, signed A
 Unchanged Windows 3.0.221 Setup/Portable/legacy executable, original checksums and AppBundle must be fetched from public v3.0.221 and preserved in the same unified release, not rebuilt or deceptively renumbered.
 Target unified public stable tag v3.0.221-android-v0.2.10; report native Android16 and physical Galaxy update/data retention as not independently verified. A protected signed native screenshot test does not prove real-account persistence.
 No automatic Play Store or Microsoft Store publication. Do not overwrite prior v3.0.221 or another released tag.
+
+Retry 1 (2026-11-11): source validator previously hardcoded Android bridge 0.2.9. Corrected production QA at commit 82299bd6b4ff435428260b7a782e5fc6e4341164 to derive expected version from Gradle, keeping fail-closed version alignment. Re-run exact-intent SHA with the same signed-APK and native gates.
