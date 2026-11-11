@@ -57,11 +57,6 @@
     if(button)button.setAttribute('aria-expanded',open?'true':'false');
   }
 
-  // Single owner of drawer transform AND backdrop state. Mobile Focus and
-  // bottom navigation must dismiss the drawer through this API, not just
-  // remove a CSS class while an inline !important transform stays open.
-  window.__mlvAndroidSetDrawer=setDrawer;
-
   function activeTabId(){
     try{
       const id=String(window.state?.activeTab||'');
@@ -267,6 +262,9 @@
     finishSectionSwitch(started,id,'android-render-main');
     return true;
   }
+  // Expose the canonical drawer owner to the Android Pomodoro and bottom bar.
+  // Do not splice this declaration inside setDrawer's isolated unit-test source.
+  window.__mlvAndroidSetDrawer=setDrawer;
   window.__mlvAndroidFastRoute=fastRoute;
 
   function clickTab(id){
