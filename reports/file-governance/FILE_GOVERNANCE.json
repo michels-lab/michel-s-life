@@ -26,11 +26,11 @@
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
-    "POTENTIAL_UNLOGGED_CHANGES": 1
+    "POTENTIAL_UNLOGGED_CHANGES": 2
   },
-  "finding_total": 5,
-  "inventory_fingerprint": "393ef805ee7f41cfc47f44b229b5fcbb396c70a14645a8e3f8180d56942b6f86",
-  "evidence_fingerprint": "4bba7e296b8a7e8b0c574e343f329052dcbe26a26909b7af21054f7966e75a6e",
+  "finding_total": 6,
+  "inventory_fingerprint": "7a225af0613e83f1912f4d24b8da42e85d17b34dcc9320c942a7192aa08166c4",
+  "evidence_fingerprint": "9406f78be08afcd5fd21a6fef6f396a5bb7972db1874e4c35195d2f3f872fe61",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -72,7 +72,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "1d282312b6a364701a95c3d4d38daf41a452dc7b"
+      "blob": "ac1a8dbc8b2a377b10a93802bebec16d898326dc"
     },
     {
       "path": ".github/workflows/android-direct-private-candidate-v026.yml",
@@ -576,14 +576,14 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "1bb01e91880f152e87220427e443344eca4cd53a"
+      "blob": "a3bcd9ff65f97ce5a40b8f99051f4bc7fbd96c9f"
     },
     {
       "path": "android/app/build.gradle.kts",
       "role": "build_script",
       "purpose": "platform build/project/installer script",
       "certainty": "inferred",
-      "blob": "d9a34135ebef1616b6dec535aadacc824fccaf63"
+      "blob": "eb2961b2d8a87f6472d9482d8e0c284e0f61a149"
     },
     {
       "path": "android/app/src/main/AndroidManifest.xml",
@@ -625,7 +625,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "9ad158ca429634f115837426efcfc492bf7ae2a6"
+      "blob": "25e67b6ba0048a06a5d41eb2c9111e1cdb2b1bbd"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/FocusDeliveryPolicy.java",
@@ -2472,11 +2472,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "1e70d4ac6db7aa55",
+      "id": "d87a577f8ce9d738",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "98 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-account-boundary.yml",
+      "observation": "99 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-account-boundary.yml",
+      "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "52d64af9f02b3617",
+      "code": "POTENTIAL_UNLOGGED_CHANGES",
+      "severity": "review",
+      "path": "android/ANDROID_AUDIT_LOG.md",
+      "observation": "4 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, android/android-bridge.js, android/app/build.gradle.kts, android/app/src/main/java/com/michelslab/michelslife/CloudSync.kt",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
