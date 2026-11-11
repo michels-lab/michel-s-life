@@ -1,0 +1,32 @@
+name: GRANADA cross-platform immersive Focus
+on:
+  pull_request:
+    paths:
+      - 'src/MichelsLife/frontend/focus-immersive.js'
+      - 'android/mobile-experience.js'
+      - 'tools/test_focus_immersive_contract.mjs'
+      - 'tools/enable_i18n.py'
+      - 'tools/replace_bundle_index.py'
+      - 'android/tools/prepare_bundle.py'
+      - '.github/workflows/granada-focus-immersive.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  immersive-focus:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate shared desktop/Android immersive runtime
+        run: |
+          node --check src/MichelsLife/frontend/focus-immersive.js
+          node --check android/mobile-experience.js
+          node --test tools/test_focus_immersive_contract.mjs
+          python -m py_compile tools/enable_i18n.py tools/replace_bundle_index.py android/tools/prepare_bundle.py
