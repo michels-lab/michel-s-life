@@ -185,12 +185,22 @@ try{
   });
   await page.click('[data-v30171-setting="chapters"]');
   await page.waitForSelector('[data-v30171-pane="chapters"].active [data-mlv184-chapter]',{timeout:10000});
+  // Scene cards are populated asynchronously after the Chapters pane opens.
+  // Require a genuinely distinct, visible scene before clicking; do not
+  // classify an incomplete first render as a missing feature.
+  await page.waitForFunction(()=>{
+    const current=window.FocusStoryV30162?.activeChapter?.()?.scenePack||'dark_kingdom';
+    return [...document.querySelectorAll('[data-v30171-pane="chapters"].active [data-mlv184-chapter]')]
+      .some(el=>el.dataset.mlv184Chapter&&el.dataset.mlv184Chapter!==current&&
+        el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden');
+  },null,{timeout:15000});
   const chapterData=await page.evaluate(()=>({
     current:window.FocusStoryV30162?.activeChapter?.()?.scenePack||'dark_kingdom',
-    options:[...document.querySelectorAll('[data-v30171-pane="chapters"].active [data-mlv184-chapter]')].map(x=>x.dataset.mlv184Chapter)
+    options:[...document.querySelectorAll('[data-v30171-pane="chapters"].active [data-mlv184-chapter]')]
+      .filter(el=>el.getClientRects().length).map(el=>el.dataset.mlv184Chapter)
   }));
   const target=chapterData.options.find(x=>x&&x!==chapterData.current);
-  ok(!!target,'No alternate Chapter Scene option available for interaction test');
+  ok(!!target,'No distinct visible Chapter Scene option after waiting: '+JSON.stringify(chapterData));
   await page.click(`[data-v30171-pane="chapters"].active [data-mlv184-chapter="${target}"]`);
   await page.waitForFunction(t=>window.FocusStoryV30162?.activeChapter?.()?.scenePack===t,target,{timeout:10000});
   await page.waitForSelector(`[data-v30171-pane="chapters"].active [data-mlv184-chapter="${target}"].active`,{timeout:10000});
