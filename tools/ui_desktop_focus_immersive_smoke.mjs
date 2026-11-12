@@ -82,6 +82,22 @@ try{
   ok(await page.evaluate(()=>document.getElementById('mlv-desktop-focus-immersive').hidden &&
     !document.getElementById('mlv-desktop-mini-focus').hidden),
     'Desktop Break mini-timer is not available after intentional minimize');
+  // A deliberate minimize survives a document reload for the SAME running
+  // phase; automatic full-screen behavior returns with the NEXT phase.
+  const breakDeadline=await page.evaluate(()=>window.FocusStoryV30162.focusState().deadlineAt);
+  await page.reload({waitUntil:'domcontentloaded',timeout:60000});
+  await page.waitForFunction(()=>!!window.MichelsLifeFocusImmersive?.open&&
+    !!document.getElementById('mlv-desktop-mini-focus'),null,{timeout:60000});
+  await page.waitForTimeout(650);
+  const restored=await page.evaluate(()=>({
+    mode:window.FocusStoryV30162.focusState()?.mode,
+    deadline:window.FocusStoryV30162.focusState()?.deadlineAt,
+    full:!document.getElementById('mlv-desktop-focus-immersive').hidden,
+    mini:!document.getElementById('mlv-desktop-mini-focus').hidden
+  }));
+  ok(restored.mode==='break'&&restored.deadline===breakDeadline&&
+    !restored.full&&restored.mini,
+    'Desktop reload ignored intentional minimized Break: '+JSON.stringify(restored));
   await page.evaluate(()=>window.FocusStoryV30162?.resetFocus?.());
 
 
