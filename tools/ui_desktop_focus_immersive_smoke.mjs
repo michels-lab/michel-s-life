@@ -18,6 +18,26 @@ try{
     !!window.MichelsLifeFocusImmersive?.open&&
     !!document.querySelector('#mlv-desktop-focus-launcher'),null,{timeout:60000});
 
+  // The screenshot regression: the old Focus dock was fixed above the
+  // sidebar with a z-index higher than the new immersive workspace.
+  // Force it to expand and prove both old surfaces remain truly nonvisual.
+  const legacy=await page.evaluate(()=>{
+    window.FocusStoryV30162.setFocusPanelExpanded(true);
+    const old=document.getElementById('v30162FocusDock');
+    const proto=document.getElementById('v30106Focus');
+    const hidden=node=>!node||getComputedStyle(node).display==='none';
+    return {
+      oldExists:!!old,
+      legacyHidden:hidden(old),
+      oldEvents:old?getComputedStyle(old).pointerEvents:'none',
+      oldProtoHidden:hidden(proto),
+      retainedEngine:!!window.FocusStoryV30162.focusState
+    };
+  });
+  ok(legacy.oldExists&&legacy.legacyHidden&&legacy.oldProtoHidden&&
+    legacy.oldEvents==='none'&&legacy.retainedEngine,
+    'Old Windows Pomodoro panel or sidebar trigger is still visible: '+JSON.stringify(legacy));
+
   // A theme wallpaper already installed in the app must be used as the
   // full-screen background. The immersive layer may shade it, not erase it.
   const opened=await page.evaluate(()=>{
@@ -32,6 +52,13 @@ try{
   ok(opened.good&&opened.hidden===false&&opened.width>=1430&&opened.height>=895&&
      opened.selected?.includes('url(')&&opened.painted?.includes('url('),
     'Desktop Pomodoro did not cover app with its selected wallpaper: '+JSON.stringify(opened));
+  ok(await page.evaluate(()=>{
+    const focus=document.getElementById('mlv-desktop-focus-immersive');
+    const old=document.getElementById('v30162FocusDock');
+    return focus&&!focus.hidden&&getComputedStyle(focus).display!=='none'&&
+      getComputedStyle(old).display==='none'&&
+      Number(getComputedStyle(focus).zIndex)>1000000000;
+  }), 'Desktop immersive view is not the only visible active Focus workspace');
 
   await page.locator('#mlv-desktop-focus-immersive [data-focus-action="toggle"]').click();
   await page.waitForFunction(()=>window.FocusStoryV30162.focusState().status==='running');
