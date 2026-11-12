@@ -144,6 +144,15 @@
         color:inherit;background:#ffffff16;font:750 14px system-ui,sans-serif
       }
       html:not([data-mlv-platform="android"]) body.mlv-desktop-focus-open{overflow:hidden!important}
+      /* The pre-immersive Focus dock (v3.0.162/173) has a z-index of
+         2147483643 and is re-created during renderAll(). It must not be
+         painted or receive touches in Windows. Preserve its FocusStory
+         timer/state APIs; replace only the visual presentation. */
+      html:not([data-mlv-platform="android"]) #v30162FocusDock,
+      html:not([data-mlv-platform="android"]) #v30106Focus{
+        display:none!important;visibility:hidden!important;
+        pointer-events:none!important
+      }
       html:not([data-mlv-platform="android"]) #v30171Sidebar [data-tab="focus"]{display:none!important}
       @media(max-width:650px){.mlv-focus-stage .mlv-focus-clock{font-size:clamp(62px,17vw,110px)}}
       @media(prefers-reduced-motion:reduce){#mlv-desktop-focus-immersive *{animation:none!important;transition:none!important}}
@@ -258,7 +267,11 @@
   window.MichelsLifeFocusImmersive.refresh=refresh;
   const boot=()=>{
     if(android())return;
-    create();refresh();
+    create();
+    // A persisted pre-immersive popup may still be marked expanded.
+    // Collapse it once without resetting or replacing the canonical timer.
+    try{api()?.closeFocusPanel?.();}catch(_){}
+    refresh();
     window.setInterval(()=>{if(document.body?.isConnected)refresh();},650);
     document.addEventListener('keydown',event=>{
       if(event.key==='Escape'&&screen&&!screen.hidden){event.preventDefault();minimize();}
