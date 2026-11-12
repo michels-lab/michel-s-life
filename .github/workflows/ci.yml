@@ -65,6 +65,9 @@ jobs:
       - name: Reject ephemeral Android debug signing as stable direct distribution
         run: python android/tools/verify_direct_apk.py --self-test
 
+      - name: Verify Android 0.2.11 native release fallback is strictly fail-closed
+        run: python tools/test_signed_native_release_gate.py
+
       - name: Spanish source copy audit
         run: node tools/spanish_copy_source_audit.mjs
 
