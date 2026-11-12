@@ -63,6 +63,27 @@ try{
   await page.locator('#mlv-desktop-mini-focus [data-focus-action="open"]').click();
   ok(await page.evaluate(()=>!document.getElementById('mlv-desktop-focus-immersive').hidden),
     'Mini Focus failed to restore fullscreen desktop immersion');
+  // Work and Break both own the entire application. A newly started Break
+  // reopens immersion; deliberate minimization keeps the canonical session
+  // running while navigation stays accessible.
+  const breakStart=await page.evaluate(()=>{
+    const engine=window.FocusStoryV30162;
+    engine.skipFocus?.();
+    engine.startFocus?.();
+    window.MichelsLifeFocusImmersive?.refresh?.();
+    const state=engine.focusState?.(),screen=document.getElementById('mlv-desktop-focus-immersive');
+    return {mode:state?.mode,status:state?.status,fullscreen:!screen?.hidden,
+      phase:document.getElementById('mlv-desktop-focus-mode')?.textContent};
+  });
+  ok(breakStart.mode==='break'&&breakStart.status==='running'&&breakStart.fullscreen&&
+    /DESCANSO|BREAK/.test(breakStart.phase||''),
+    'Desktop Break phase did not take over the entire app: '+JSON.stringify(breakStart));
+  await page.locator('#mlv-desktop-focus-immersive [data-focus-action="minimize"]').first().click();
+  ok(await page.evaluate(()=>document.getElementById('mlv-desktop-focus-immersive').hidden &&
+    !document.getElementById('mlv-desktop-mini-focus').hidden),
+    'Desktop Break mini-timer is not available after intentional minimize');
+  await page.evaluate(()=>window.FocusStoryV30162?.resetFocus?.());
+
 
   console.log('PASS: desktop fullscreen selected wallpaper, canonical timer, intentional mini, Missions nav, pause/resume and restore');
 }finally{await browser.close();}
