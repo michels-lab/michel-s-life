@@ -10,6 +10,28 @@
   const live=s=>s?.status==='running'||s?.status==='paused';
   const time=ms=>{const sec=Math.max(0,Math.ceil((Number(ms)||0)/1000));return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');};
   let screen=null,mini=null,launcher=null,lastPhase=null,closedPhase=null,closedMode=null;
+  let minimizedLoaded=false;
+  const minimizedKey='michelsLife.desktop.minimizedFocus.v1';
+  function restoreMinimized(){
+    if(minimizedLoaded)return;
+    minimizedLoaded=true;
+    try{
+      const saved=JSON.parse(sessionStorage.getItem(minimizedKey)||'null');
+      if(!saved||!['work','break'].includes(saved.mode))return;
+      if(!Number.isFinite(saved.at)||saved.at>Date.now()||Date.now()-saved.at>12*3600000)return;
+      if(saved.phase!==null&&
+         (typeof saved.phase!=='string'||!new RegExp('^'+saved.mode+':[0-9]{10,15}$').test(saved.phase)))return;
+      closedPhase=saved.phase;closedMode=saved.mode;
+    }catch(_){}
+  }
+  function saveMinimized(){
+    try{
+      if(!closedMode){sessionStorage.removeItem(minimizedKey);return;}
+      sessionStorage.setItem(minimizedKey,JSON.stringify({
+        phase:closedPhase,mode:closedMode,at:Date.now()
+      }));
+    }catch(_){}
+  }
 
   function wallpaper(){
     const selectors=[
@@ -165,7 +187,7 @@
   function open(){
     if(android())return window.MichelsLifeMobileExperience?.openFocus?.()||false;
     create();if(!screen||!api()?.focusState)return false;
-    applyWallpaper(screen);screen.hidden=false;closedPhase=null;closedMode=null;
+    applyWallpaper(screen);screen.hidden=false;closedPhase=null;closedMode=null;saveMinimized();
     document.body.classList.add('mlv-desktop-focus-open');
     refresh();
     q('[data-focus-action="minimize"]',screen)?.focus();
@@ -178,12 +200,17 @@
     const state=api()?.focusState?.();
     closedPhase=state?.status==='running'?state.mode+':'+state.deadlineAt:null;
     closedMode=live(state)?state.mode:null;
+    saveMinimized();
     refresh();launcher?.focus();return true;
   }
   function refresh(){
     if(android())return;
     create();if(!screen)return;
     const engine=api(),state=engine?.focusState?.();
+    restoreMinimized();
+    if(state&&!live(state)&&(closedPhase||closedMode)){
+      closedPhase=null;closedMode=null;saveMinimized();
+    }
     const running=state?.status==='running';
     const phase=running?state.mode+':'+state.deadlineAt:null;
     if(running&&phase!==lastPhase&&phase!==closedPhase&&state.mode!==closedMode&&!q('#mlv200Onboarding:not([hidden])')){
