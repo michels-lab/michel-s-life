@@ -673,6 +673,19 @@ try{
     'Mobile navigation is not touch-accessible above bottom system area: '+JSON.stringify(mobileNav));
   ok(mobileNav.tabs.join(',')==='dashboard,missions,story,focus,calendar,settings',
     'Mobile primary destinations diverged from platform navigation contract: '+JSON.stringify(mobileNav));
+  // Owner's Galaxy screenshot showed TWO different Pomodoro surfaces:
+  // the obsolete sidebar card and the proper fullscreen workspace.
+  // The old dock must be neither painted nor touchable.
+  const duplicateFocus=await page.evaluate(()=>{
+    const dock=document.getElementById('v30162FocusDock');
+    const legacy=document.querySelector('#v30171Sidebar [data-tab="focus"]');
+    const hidden=el=>!el||getComputedStyle(el).display==='none';
+    return {dockGone:hidden(dock),sidebarGone:hidden(legacy),
+      dockPointer:dock?getComputedStyle(dock).pointerEvents:null};
+  });
+  ok(duplicateFocus.dockGone&&duplicateFocus.sidebarGone,
+    'Old Pomodoro remains visible inside Android sidebar or floating dock: '+
+    JSON.stringify(duplicateFocus));
   // Story must be a ONE-TOUCH primary Android destination, not buried
   // behind the drawer or duplicated in a separate Android chapter store.
   // Check the actual rendered chapter UI and canonical progress invariants.
