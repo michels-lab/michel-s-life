@@ -646,8 +646,21 @@ try{
     x.valueTop>=x.titleBottom-1),
     'Focus session labels overlap values: '+JSON.stringify(focusStats));
   await page.evaluate(()=>window.MichelsLifeMobileExperience.closeFocus());
-  const miniAndToast=await page.evaluate(()=>{
+  // User contract: a newly started Work/Break phase fills the application.
+  // The mini timer is only visible after EXPLICIT user minimization; older
+  // layout tests expected it to appear immediately on start.
+  const startImmersion=await page.evaluate(()=>{
     window.FocusStoryV30162?.toggleFocus?.();
+    window.MichelsLifeMobileExperience?.updateFocus?.();
+    return {
+      active:window.FocusStoryV30162?.focusState?.()?.status==='running',
+      overlayVisible:!document.getElementById('mlv-android-focus-overlay')?.hidden
+    };
+  });
+  assert(startImmersion.active&&startImmersion.overlayVisible,
+    'Android work/break no longer auto-expands fullscreen: '+JSON.stringify(startImmersion));
+  await page.evaluate(()=>window.MichelsLifeMobileExperience.closeFocus());
+  const miniAndToast=await page.evaluate(()=>{
     window.MichelsLifeMobileExperience?.updateFocus?.();
     window.toast?.('Layout smoke','Toast must not block navigation');
     const min=document.getElementById('mlv-android-mini-focus');

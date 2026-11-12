@@ -86,6 +86,11 @@ jobs:
           export MLV_UI_SCREENSHOTS=artifacts/ui-smoke
           node tools/ui_smoke_v303.mjs
 
+      - name: Verify real Windows-style immersive Pomodoro and minimized Missions navigation
+        run: |
+          export MLV_UI_URL=http://127.0.0.1:4173
+          node tools/ui_desktop_focus_immersive_smoke.mjs
+
       - name: Verify candidate-bound browser Home/About screenshots using studio visual gate
         run: |
           python -m pip install Pillow==11.3.0

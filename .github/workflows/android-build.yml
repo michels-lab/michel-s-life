@@ -355,3 +355,53 @@ jobs:
           path: artifacts/candidate-install/
           if-no-files-found: warn
           retention-days: 30
+
+  installed-candidate-android15-smoke:
+    name: Install + relaunch exact same-run candidate APK on Android 15
+    needs: android
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      ANDROID_VERSION: 0.2.10
+      MLV_REQUIRE_NATIVE_STATE_PROBE: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download candidate APK from SAME workflow run (not public v0.2.10)
+        uses: actions/download-artifact@v4
+        with:
+          name: MichelsLife-Android-TEST-v${{ env.ANDROID_VERSION }}
+          path: artifacts/candidate
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install pinned native WebView state probe
+        run: python3 -m pip install --disable-pip-version-check websocket-client==1.8.0
+
+      - name: Enable hosted hardware virtualization
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
+
+      - name: Fresh install, native screenshots, state probe and relaunch on Android 15
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          avd-name: michels-life-candidate-android15
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu software -feature -Vulkan
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash android/tools/smoke_candidate_apk_install.sh
+
+      - name: Retain native evidence (never substitute mock browser pixels)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MichelsLife-Android15-Candidate-InstallSmoke-v${{ env.ANDROID_VERSION }}
+          path: artifacts/candidate-install/
+          if-no-files-found: warn
+          retention-days: 30

@@ -262,6 +262,9 @@
     finishSectionSwitch(started,id,'android-render-main');
     return true;
   }
+  // Expose the canonical drawer owner to the Android Pomodoro and bottom bar.
+  // Do not splice this declaration inside setDrawer's isolated unit-test source.
+  window.__mlvAndroidSetDrawer=setDrawer;
   window.__mlvAndroidFastRoute=fastRoute;
 
   function clickTab(id){
