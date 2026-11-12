@@ -74,7 +74,7 @@
       for(const pseudo of [null,'::before']){
         try{
           const value=getComputedStyle(element,pseudo).backgroundImage;
-          if(value&&value!=='none'&&/gradient\\(/i.test(value))return value;
+          if(value&&value!=='none'&&/gradient\(/i.test(value))return value;
         }catch(_){}
       }
     }
@@ -86,7 +86,7 @@
     if(value==='none')target.style.removeProperty('--mlv-focus-wallpaper');
     else target.style.setProperty('--mlv-focus-wallpaper',value);
     target.dataset.mlvFocusWallpaper=value==='none'?'app-backdrop':
-      /url\\(|image-set\\(/i.test(value)?'selected-image':'selected-scene';
+      /url\(|image-set\(/i.test(value)?'selected-image':'selected-scene';
   }
   window.MichelsLifeFocusImmersive={applyWallpaper,wallpaper};
 
