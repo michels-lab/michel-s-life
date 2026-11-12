@@ -143,29 +143,41 @@ DEVICE_SIZE="$(adb shell wm size | tr -d '\r' | sed -n 's/^Physical size: //p' |
 if [[ "$DEVICE_SIZE" =~ ^([0-9]+)x([0-9]+)$ ]]; then
   W="${BASH_REMATCH[1]}"
   H="${BASH_REMATCH[2]}"
-  X="$((W * 83 / 100))"
-  Y="$((H * 78 / 100))"
-  echo "Tapping installed WebView step-1 Continue at pixel $X,$Y on $DEVICE_SIZE"
-  adb shell input tap "$X" "$Y"
+  if [[ "$NATIVE_STATE_TEST" -eq 1 ]]; then
+    python3 android/tools/native_onboarding_touch.py --step 1       --output "$OUT/onboarding-real-touch-step1.json"
+  else
+    X="$((W * 83 / 100))"
+    Y="$((H * 78 / 100))"
+    echo "Tapping protected installed WebView step-1 Continue at $X,$Y"
+    adb shell input tap "$X" "$Y"
+  fi
   sleep 8
   capture_png "$OUT/step2-after-native-continue.png"
   # On the pinned 1080x2400 Pixel 6 emulator, the step 2 focus footer
   # Continue is lower than the step 1 button (roughly 84% of display height).
   # Capture the next real packaged-WebView state separately. Do not call
   # this a native Finish pass until the resulting screenshot is inspected.
-  NEXT_X="$((W * 83 / 100))"
-  NEXT_Y="$((H * 84 / 100))"
-  echo "Tapping installed WebView step-2 Continue at pixel $NEXT_X,$NEXT_Y on $DEVICE_SIZE"
-  adb shell input tap "$NEXT_X" "$NEXT_Y"
+  if [[ "$NATIVE_STATE_TEST" -eq 1 ]]; then
+    python3 android/tools/native_onboarding_touch.py --step 2       --output "$OUT/onboarding-real-touch-step2.json"
+  else
+    NEXT_X="$((W * 83 / 100))"
+    NEXT_Y="$((H * 84 / 100))"
+    echo "Tapping protected installed WebView step-2 Continue at $NEXT_X,$NEXT_Y"
+    adb shell input tap "$NEXT_X" "$NEXT_Y"
+  fi
   sleep 8
   capture_png "$OUT/step3-after-native-continue.png"
   # The step-3 Finish setup control is at ~81% width, 62% height on
   # this pinned device. This coordinate is grounded in the same-run
   # step-3 screenshot, not guessed from the browser-only fixture.
-  FINISH_X="$((W * 81 / 100))"
-  FINISH_Y="$((H * 62 / 100))"
-  echo "Tapping installed WebView Finish setup at pixel $FINISH_X,$FINISH_Y on $DEVICE_SIZE"
-  adb shell input tap "$FINISH_X" "$FINISH_Y"
+  if [[ "$NATIVE_STATE_TEST" -eq 1 ]]; then
+    python3 android/tools/native_onboarding_touch.py --step 3       --output "$OUT/onboarding-real-touch-step3.json"
+  else
+    FINISH_X="$((W * 81 / 100))"
+    FINISH_Y="$((H * 62 / 100))"
+    echo "Tapping protected installed WebView Finish at $FINISH_X,$FINISH_Y"
+    adb shell input tap "$FINISH_X" "$FINISH_Y"
+  fi
   sleep 12
   capture_png "$OUT/step4-after-native-finish.png"
   sleep 20
