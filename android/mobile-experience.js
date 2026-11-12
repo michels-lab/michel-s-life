@@ -17,6 +17,30 @@
   ];
   let root=null,nav=null,mini=null,ticker=null;
   let lastRunningPhase=null,minimizedForPhase=null,minimizedForMode=null;
+  let minimizedStateLoaded=false;
+  const minimizedFocusStorageKey='michelsLife.android.minimizedFocus.v1';
+  // Only presentation state; never store missions, chapter text or identity.
+  function restoreMinimizedFocus(){
+    if(minimizedStateLoaded)return;
+    minimizedStateLoaded=true;
+    try{
+      const saved=JSON.parse(sessionStorage.getItem(minimizedFocusStorageKey)||'null');
+      if(!saved||!['work','break'].includes(saved.mode))return;
+      if(!Number.isFinite(saved.at)||saved.at>Date.now()||Date.now()-saved.at>12*3600000)return;
+      if(saved.phase!==null&&
+         (typeof saved.phase!=='string'||!new RegExp('^'+saved.mode+':[0-9]{10,15}$').test(saved.phase)))return;
+      minimizedForMode=saved.mode;
+      minimizedForPhase=saved.phase;
+    }catch(_){}
+  }
+  function saveMinimizedFocus(){
+    try{
+      if(!minimizedForMode){sessionStorage.removeItem(minimizedFocusStorageKey);return;}
+      sessionStorage.setItem(minimizedFocusStorageKey,JSON.stringify({
+        mode:minimizedForMode,phase:minimizedForPhase,at:Date.now()
+      }));
+    }catch(_){}
+  }
   let lastNativeAlarmKey=null;
 
   function syncNativeFocusAlarm(state){
@@ -1380,8 +1404,12 @@
       document.body.classList.remove('mlv-android-timer-active');
       return;
     }
+    restoreMinimizedFocus();
     syncNativeFocusAlarm(f);
     const active=f.status==='running'||f.status==='paused';
+    if(!active&&(minimizedForMode||minimizedForPhase)){
+      minimizedForMode=null;minimizedForPhase=null;saveMinimizedFocus();
+    }
     const left=fmt(api.remaining?.(f));
     const mode=f.mode==='break'?focusText('Break','Descanso'):focusText('Focus','Enfoque');
     if(mini){
@@ -1476,7 +1504,7 @@
     root.hidden=false;document.body.classList.add('mlv-android-focus-open');
     window.__mlvAndroidSetDrawer?.(false);
     window.MichelsLifeFocusImmersive?.applyWallpaper?.(root);
-    minimizedForPhase=null;minimizedForMode=null;
+    minimizedForPhase=null;minimizedForMode=null;saveMinimizedFocus();
     api.renderFocusDock?.();
     updateActive();updateFocus();
     q('[data-mobile-focus="close"]',root)?.focus();
@@ -1487,6 +1515,7 @@
     const state=focusApi()?.focusState?.();
     minimizedForPhase=state?.status==='running'?state.mode+':'+String(state.deadlineAt):null;
     minimizedForMode=(state?.status==='running'||state?.status==='paused')?state.mode:null;
+    saveMinimizedFocus();
     root.hidden=true;document.body.classList.remove('mlv-android-focus-open');
     updateActive();q('#mlv-android-bottom-nav [data-mobile-tab="focus"]')?.focus();
     return true;
