@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 350,
-  "classified_files_total": 346,
+  "tracked_files_total": 354,
+  "classified_files_total": 350,
   "docs_content_inspected": 93,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -18,19 +18,19 @@
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 9,
-    "source": 115,
-    "test": 30,
+    "source": 117,
+    "test": 31,
     "text_metadata": 1,
     "web_ui": 3,
-    "workflow": 40
+    "workflow": 41
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "abc536e06cf1d1b0981631c090c0e1d336c4ec0ff0ca01034113f98cbe43d702",
-  "evidence_fingerprint": "7b2b1a48d38b795871ff65c2f99b66fe62634cb535a0adbb82b1da27951e4199",
+  "inventory_fingerprint": "8b017f74f672ab28cf99cd712546bbb648b2141d3bfc2b7ef4cf775c5ccfa500",
+  "evidence_fingerprint": "5a4b72c005e280651cf6d6000cf64d4cbafc2ec0da8809ac74ebbf52cb345ed6",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -72,7 +72,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "ac1a8dbc8b2a377b10a93802bebec16d898326dc"
+      "blob": "91c4e815f6adea785d61fd869d1870241dd3ef24"
     },
     {
       "path": ".github/workflows/android-direct-private-candidate-v026.yml",
@@ -229,6 +229,13 @@
       "blob": "fe87bcb35f1be9729bf02ac5365103939822e9da"
     },
     {
+      "path": ".github/workflows/granada-focus-immersive.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "c405c38b8ff27f92a67bf301d7db5cfe97a95240"
+    },
+    {
       "path": ".github/workflows/granada-focus-lockscreen-snooze.yml",
       "role": "workflow",
       "purpose": "GitHub Actions automation",
@@ -345,7 +352,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "1aaa2067981a0bae878f70d4de35de6bf5178123"
+      "blob": "e7c24158414de84b6d314c62dc2ff48fb40a58a6"
     },
     {
       "path": ".gitignore",
@@ -590,7 +597,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "a3bcd9ff65f97ce5a40b8f99051f4bc7fbd96c9f"
+      "blob": "69944ffcd5d359ad1efa9976394b92126204b1e5"
     },
     {
       "path": "android/app/build.gradle.kts",
@@ -1024,7 +1031,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "78fba6d620e0d44452e2592cd23beea2ea8a5730"
+      "blob": "33b08a8645d81d0fa8e4069f0b193c46a50ba1e1"
     },
     {
       "path": "android/mobile-sections.js",
@@ -1073,7 +1080,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "3253d318ca39ab5c2dea8f1148a55ea3fe38fd9e"
+      "blob": "953e102203ae492588fc41939e8bfa65d833e1ca"
     },
     {
       "path": "android/tools/smoke_candidate_apk_install.sh",
@@ -1615,6 +1622,13 @@
       "blob": "b25fff46baca1e2584f88bb67ab238157a3b0cad"
     },
     {
+      "path": "src/MichelsLife/frontend/focus-immersive.js",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "c4374a429baf27a67a571ec8c6f5325c98878425"
+    },
+    {
       "path": "src/MichelsLife/frontend/i18n.js",
       "role": "source",
       "purpose": "code/test implementation",
@@ -1766,7 +1780,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "35042605dfc94ec24d110e05bbbdde6b61dda9e9"
+      "blob": "193da0e1e2a8aefdfe3b05352d4d7b5e3b86c468"
     },
     {
       "path": "tools/granada_android16_host_verdict.py",
@@ -1878,7 +1892,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "b2bb0f2e6fa5ee8d525fcd5b304258b05d583045"
+      "blob": "caf902018dd5f60fe3a90f7b90f0901235c2c015"
     },
     {
       "path": "tools/repository_file_auditor.py",
@@ -1963,6 +1977,13 @@
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "a4edf2c6e0277bd92afdae70f1fe44873ef7154b"
+    },
+    {
+      "path": "tools/test_focus_immersive_contract.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "136289893e492b51ff6a9e7b225b9ee1f17a659c"
     },
     {
       "path": "tools/test_granada_account_boundary.mjs",
@@ -2172,7 +2193,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "34aa10acda8c9c4d3410aa6137a812227f7bce5d"
+      "blob": "6b12f6377715f175a03c1db85436b2357cc439bb"
     },
     {
       "path": "tools/ui_android_onboarding_persistence_smoke.mjs",
@@ -2207,7 +2228,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "3a021eb6981cbd56d46e1d926e89e8c0dc925939"
+      "blob": "d8a9637e10df467bbdffcddde4363c34dc93353e"
     },
     {
       "path": "tools/ui_android_story_navigation_smoke.mjs",
@@ -2236,6 +2257,13 @@
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "b20a66756bec8aa4c55cbb3128349c04ad07a595"
+    },
+    {
+      "path": "tools/ui_desktop_focus_immersive_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "5e88f6e5b258d1dcc5c8eca81bb7005fbd6decfc"
     },
     {
       "path": "tools/ui_granada_account_boundary_crash_browser.mjs",
@@ -2277,7 +2305,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "5d17ce19434b1c54059728c21d32f2e8ad7f1a42"
+      "blob": "a0555d7d2d7bed190248ef7c6b834e4db82d0181"
     },
     {
       "path": "tools/ui_i18n_generated_corpus_smoke.mjs",
@@ -2493,20 +2521,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "36518bbe70bd660b",
+      "id": "c726696d85723985",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "101 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-account-boundary.yml",
+      "observation": "108 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-account-boundary.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "a1d01f3c4052d4c0",
+      "id": "ce33223d9a98a4c8",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "9 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/release-android-direct-v0210.yml, .github/workflows/ui-smoke.yml, .michelslab/release-intents/android-direct-v0210.txt, android/android-bridge.js",
+      "observation": "20 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/granada-focus-immersive.yml, .github/workflows/release-android-direct-v0210.yml, .github/workflows/ui-smoke.yml, .michelslab/release-intents/android-direct-v0210.txt",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
