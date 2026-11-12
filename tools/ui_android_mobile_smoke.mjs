@@ -900,6 +900,31 @@ try{
   ok(nativeAfterMini.filter(x=>x.kind==='sync'&&x.status==='running').length>=2,
     'Resuming from the persistent mini-timer did not re-arm Android native alarm: '+
     JSON.stringify(nativeAfterMini));
+  // New phase contract: a Break begins immersive even after Work was
+  // minimized, but minimizing Break must let Missions remain interactive.
+  const breakImmersion=await page.evaluate(()=>{
+    const api=window.FocusStoryV30162,mobile=window.MichelsLifeMobileExperience;
+    api.skipFocus?.(); // work paused -> ready break (canonical engine)
+    api.startFocus?.();
+    mobile.updateFocus?.();
+    const state=api.focusState?.();
+    return {mode:state?.mode,status:state?.status,
+      fullscreen:!document.getElementById('mlv-android-focus-overlay')?.hidden,
+      phase:document.getElementById('mlv-android-focus-phase')?.textContent};
+  });
+  ok(breakImmersion.mode==='break'&&breakImmersion.status==='running'&&
+    breakImmersion.fullscreen,
+    'New Break phase did not take over the mobile app: '+JSON.stringify(breakImmersion));
+  await page.locator('#mlv-android-focus-overlay [data-mobile-focus="close"]').click();
+  await page.waitForSelector('#mlv-android-focus-overlay:not([hidden])',{state:'hidden'});
+  await page.evaluate(()=>{
+    window.FocusStoryV30162?.pauseFocus?.();
+    window.MichelsLifeMobileExperience?.updateFocus?.();
+  });
+  ok(await page.evaluate(()=>document.getElementById('mlv-android-focus-overlay').hidden&&
+    !document.getElementById('mlv-android-mini-focus').hidden),
+    'Minimized Break did not preserve a navigable mini timer');
+
   // Real touch-first Quick Capture: the phone header action must work from
   // Missions and must reuse shared mission and Journal engines.
   await page.waitForSelector('#mlv-android-capture-button',{state:'visible'});
