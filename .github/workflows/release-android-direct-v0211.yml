@@ -152,7 +152,7 @@ jobs:
   signed-native-api35:
     needs: [build-signed-android]
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 55
     env:
       ANDROID_VERSION: '0.2.11'
       APK: artifacts/candidate/MichelsLife-Android-Direct-v0.2.11.apk
@@ -169,24 +169,74 @@ jobs:
       - name: Enable KVM
         run: |
           if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
-      - name: Actually install and relaunch protected signed APK on Android 15
+      - name: First independent native Android 15 signed install and relaunch
+        id: primary
+        continue-on-error: true
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
           target: google_apis
           arch: x86_64
           profile: pixel_6
-          avd-name: mlv-direct-0211
+          avd-name: mlv-direct-0211-primary
           emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu software -feature -Vulkan
           disable-animations: true
           emulator-boot-timeout: 600
           script: bash android/tools/smoke_candidate_apk_install.sh
-      - name: Retain native pixels, installed process and relaunch evidence
+      - name: Isolate primary failed evidence and reset ADB before alternate GPU
+        if: steps.primary.outcome != 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -d artifacts/candidate-install ]; then
+            mv artifacts/candidate-install artifacts/primary-native-failed
+          fi
+          adb kill-server || true
+          sleep 3
+          adb start-server
+      - name: Alternate native Android 15 signed install with independent AVD and SwiftShader
+        id: fallback
+        if: steps.primary.outcome != 'success'
+        continue-on-error: true
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          avd-name: mlv-direct-0211-alternate
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu swiftshader_indirect -feature -Vulkan
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash android/tools/smoke_candidate_apk_install.sh
+      - name: REQUIRE complete real signed-native success from at least one AVD
+        if: always()
+        env:
+          PRIMARY_OUTCOME: ${{ steps.primary.outcome }}
+          FALLBACK_OUTCOME: ${{ steps.fallback.outcome }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$PRIMARY_OUTCOME" != "success" ] && [ "$FALLBACK_OUTCOME" != "success" ]; then
+            echo "::error::Neither independently booted Android 15 AVD verified installed signed APK, real native screenshots and relaunch"
+            exit 1
+          fi
+          test -s "$APK"
+          for image in step0.png step4-after-native-finish.png step5-after-relaunch.png; do
+            test -s "artifacts/candidate-install/$image" || {
+              echo "::error::Passed native AVD did not retain actual $image"
+              exit 1
+            }
+          done
+          echo "SIGNED_NATIVE_API35_PASS: primary=$PRIMARY_OUTCOME alternate=$FALLBACK_OUTCOME"
+      - name: Retain real native evidence and failing-primary logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: MichelsLife-Direct-v0.2.11-Native-Android15
-          path: artifacts/candidate-install/
+          path: |
+            artifacts/candidate-install/
+            artifacts/primary-native-failed/
           if-no-files-found: warn
           retention-days: 30
 
