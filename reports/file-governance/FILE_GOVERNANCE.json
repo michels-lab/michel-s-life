@@ -29,7 +29,7 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "6f2667ca09ff0c6761d94b16af1e49fdf074016b8904f992fa14dc4b798fb4ea",
+  "inventory_fingerprint": "d4479c760f2b33cb497e9a9c454841110e36042bdc3861fbd0b9e3089087aa84",
   "evidence_fingerprint": "7507d1fc35fb1b6f2839ef9243d4722ab8a406d85800357618c30bb838420f82",
   "files": [
     {
@@ -1654,7 +1654,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "f379739f5da145847335b426e5e6c73fa15340cb"
+      "blob": "72a7871da8c0987804c13bddb1254ba4536a6204"
     },
     {
       "path": "src/MichelsLife/frontend/i18n.js",
@@ -2298,7 +2298,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "5e88f6e5b258d1dcc5c8eca81bb7005fbd6decfc"
+      "blob": "28a9b0947fe8db475289a212c4bbf240a6d7cf21"
     },
     {
       "path": "tools/ui_granada_account_boundary_crash_browser.mjs",
