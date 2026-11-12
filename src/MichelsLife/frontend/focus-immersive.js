@@ -61,6 +61,23 @@
     const cover=q('[data-mlv-active-wallpaper] img, img[data-mlv-wallpaper], #tab-story img[class*="background"], #tab-missions img[class*="background"]');
     const src=cover?.getAttribute?.('src');
     if(src&&!/["\\\n\r]/.test(src))return 'url("'+src+'")';
+    // Some Michel's Life eras render Missions/Story as layered CSS gradients
+    // rather than a file-backed image. Preserve THAT scene when no URL exists;
+    // otherwise a full-screen focus session becomes a featureless blue panel.
+    const fallbackSelectors=[
+      '#tab-missions [class*="hero"]','#tab-missions [class*="scene"]',
+      '#tab-missions','#tab-story [class*="hero"]','#tab-story'
+    ];
+    for(const selector of fallbackSelectors){
+      const element=q(selector);
+      if(!element)continue;
+      for(const pseudo of [null,'::before']){
+        try{
+          const value=getComputedStyle(element,pseudo).backgroundImage;
+          if(value&&value!=='none'&&/gradient\(/i.test(value))return value;
+        }catch(_){}
+      }
+    }
     return 'none';
   }
   function applyWallpaper(target){
@@ -68,7 +85,8 @@
     const value=wallpaper();
     if(value==='none')target.style.removeProperty('--mlv-focus-wallpaper');
     else target.style.setProperty('--mlv-focus-wallpaper',value);
-    target.dataset.mlvFocusWallpaper=value==='none'?'app-backdrop':'selected-image';
+    target.dataset.mlvFocusWallpaper=value==='none'?'app-backdrop':
+      /url\(|image-set\(/i.test(value)?'selected-image':'selected-scene';
   }
   window.MichelsLifeFocusImmersive={applyWallpaper,wallpaper};
 

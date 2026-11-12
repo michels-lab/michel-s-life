@@ -97,7 +97,7 @@ def sanitize(raw):
         "dashboardKpisDigest": digest(raw.get("kpis", []))
     }
 
-def read_webview(port):
+def read_webview(port, expression=PAGE_SCRIPT):
     # websocket-client is installed only in the isolated CI emulator job,
     # never in or packaged with the Android app.
     from websocket import create_connection
@@ -113,7 +113,7 @@ def read_webview(port):
     ws = create_connection(ws_url, timeout=15, suppress_origin=True)
     try:
         ws.send(json.dumps({"id": 1, "method": "Runtime.evaluate",
-                            "params": {"expression": PAGE_SCRIPT, "returnByValue": True}}))
+                            "params": {"expression": expression, "returnByValue": True}}))
         until = time.monotonic() + 15
         while time.monotonic() < until:
             msg = json.loads(ws.recv())

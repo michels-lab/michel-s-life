@@ -29,6 +29,26 @@ test('shared wallpaper derives from an existing app image, not a hardcoded scene
   assert.equal(window.MichelsLifeFocusImmersive.wallpaper(),'url("assets/current-missions-background.jpg")');
 });
 
+test('Missions gradient scene remains visible when no file wallpaper exists',()=>{
+  const scene={kind:'mission-gradient'};
+  const style={values:{},setProperty(k,v){this.values[k]=v;},removeProperty(k){delete this.values[k];}};
+  const doc={
+    readyState:'loading',body:{},
+    documentElement:{dataset:{mlvPlatform:'android'}},
+    querySelector(selector){return selector==='#tab-missions'?scene:null;},
+    addEventListener(){}
+  };
+  const window={__MICHELSLIFE_PLATFORM__:'android'};
+  const gradient='linear-gradient(120deg, rgba(21, 36, 56, 0.4), rgba(47, 58, 80, 0.8))';
+  vm.runInNewContext(desktop,{window,document:doc,getComputedStyle(node){
+    return {backgroundImage:node===scene?gradient:'none'};
+  }},{timeout:1000});
+  const target={style,dataset:{}};
+  window.MichelsLifeFocusImmersive.applyWallpaper(target);
+  assert.equal(target.dataset.mlvFocusWallpaper,'selected-scene');
+  assert.equal(style.values['--mlv-focus-wallpaper'],gradient);
+});
+
 test('both platforms keep one canonical timer and deliberate mini/navigation modes',()=>{
   assert.match(desktop,/window\.FocusStoryV30162/);
   assert.match(desktop,/closedMode=live\(state\)\?state\.mode:null/);
