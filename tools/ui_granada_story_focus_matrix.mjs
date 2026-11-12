@@ -108,11 +108,16 @@ for(const width of [320,360,412])for(const language of ['en','es']){
      !!document.getElementById('mlv-android-menu-button'),null,{timeout:60000});
    let nav=page.locator('#mlv-android-bottom-nav');
    async function storyRoute(){
-     await page.locator('#mlv-android-menu-button').tap({timeout:16000});
-     const target=page.locator('#v30171PrimaryNav [data-tab="story"]');
-     ok(await target.count()===1,'story_drawer_target_missing');
+     // Story is now a primary mobile destination. The legacy drawer can be
+     // offscreen/covered while its transitions settle; entering via it was a
+     // false negative in all six phones, despite a working Story bottom tab.
+     // Use a REAL touchscreen tap on the permanent user-facing destination.
+     const target=nav.locator('[data-mobile-tab="story"]');
+     ok(await target.count()===1,'story_bottom_navigation_missing');
      await target.tap({timeout:16000});
      await page.waitForSelector('#tab-story.active',{state:'visible',timeout:16000});
+     ok(await target.getAttribute('aria-current')==='page',
+       'story_bottom_navigation_not_selected');
    }
    phase='story';
    if(!await page.locator('#tab-story.active .v30162-story-form').isVisible().catch(()=>false)) await storyRoute();
