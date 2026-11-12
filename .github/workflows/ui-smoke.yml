@@ -20,6 +20,7 @@ on:
       - '.michelslab/release-intents/unified-v3221-a029.txt'
       - '.michelslab/release-intents/android-direct-v0210.txt'
       - '.michelslab/release-intents/android-direct-v0211.txt'
+      - '.michelslab/release-intents/windows-v3222-a0211.txt'
       - '.github/workflows/ui-smoke.yml'
   workflow_dispatch:
 
