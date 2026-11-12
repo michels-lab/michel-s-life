@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 355,
-  "classified_files_total": 351,
-  "docs_content_inspected": 93,
+  "tracked_files_total": 357,
+  "classified_files_total": 353,
+  "docs_content_inspected": 94,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
   "roles": {
@@ -13,7 +13,7 @@
     "build_script": 6,
     "config": 22,
     "database_migration": 3,
-    "document": 86,
+    "document": 87,
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
@@ -22,15 +22,15 @@
     "test": 31,
     "text_metadata": 1,
     "web_ui": 3,
-    "workflow": 41
+    "workflow": 42
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "5ae732a38fe29bf3e1fff32d339e864c49e832c1d8f9e34ffde423d76dff520d",
-  "evidence_fingerprint": "d1a6e281151991dce1af7c92f03a3cf38f7fad22922cac212e404deebb25fc60",
+  "inventory_fingerprint": "4744a68550ce46f51b897f0e4033773ed09bf65f0b59461789823a3adf71409d",
+  "evidence_fingerprint": "8610e5846d8700484af5b22fdea62e6d355286c05221d3c7a265050999a428ff",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -72,7 +72,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "0111f3ce6d1ad042c870b6dfdc4531b45c9c71e1"
+      "blob": "1fee225f0f7a170b9d1d6776588b8ca558e37173"
     },
     {
       "path": ".github/workflows/android-direct-private-candidate-v026.yml",
@@ -100,7 +100,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "5cb4e6afa00d27acb1aa5592dc2198597fe0e2ea"
+      "blob": "3b6b3fa76ec955a931167776379ab0357b0f322a"
     },
     {
       "path": ".github/workflows/build-store-msix.yml",
@@ -285,6 +285,13 @@
       "blob": "bc60cbad0da2c3a2b76fb298a72891ee0394ec9a"
     },
     {
+      "path": ".github/workflows/release-android-direct-v0211.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "9feb4bf0aaf6a7ce9c1f7715c1745fff9e2c700d"
+    },
+    {
       "path": ".github/workflows/release-unified-v3217-a025.yml",
       "role": "workflow",
       "purpose": "GitHub Actions automation",
@@ -352,7 +359,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "e7c24158414de84b6d314c62dc2ff48fb40a58a6"
+      "blob": "c552cde9d6a4cc7869f167ea84c53943304d7b8c"
     },
     {
       "path": ".gitignore",
@@ -597,14 +604,14 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "69944ffcd5d359ad1efa9976394b92126204b1e5"
+      "blob": "1bc548463ff1d2140632deb858e042de60950e47"
     },
     {
       "path": "android/app/build.gradle.kts",
       "role": "build_script",
       "purpose": "platform build/project/installer script",
       "certainty": "inferred",
-      "blob": "eb2961b2d8a87f6472d9482d8e0c284e0f61a149"
+      "blob": "51c7f57db17c3ee6dc927eaf8a9a1b6520922a5b"
     },
     {
       "path": "android/app/src/main/AndroidManifest.xml",
@@ -646,7 +653,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "25e67b6ba0048a06a5d41eb2c9111e1cdb2b1bbd"
+      "blob": "7fe362ad52e4a25689b5045cca9a30a56e5db34b"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/FocusDeliveryPolicy.java",
@@ -1501,6 +1508,13 @@
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
       "blob": "fc3483b188229b1966584eb7fecf0dece9079423"
+    },
+    {
+      "path": "docs/releases/android-v0.2.11.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "819914fb20a29562cf3f78f8688f887077b1a775"
     },
     {
       "path": "docs/releases/v3.0.216.md",
@@ -2361,7 +2375,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "4cda0e2eae4808478acb58cf5032828eaac6806d"
+      "blob": "677738934dd820ef830627007c5957174209593a"
     },
     {
       "path": "tools/ui_spanish_dashboard_smoke.mjs",
@@ -2528,20 +2542,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "e9ccbad20d6961be",
+      "id": "6cb80e5f423b92e5",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "111 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml",
+      "observation": "113 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "564b3fd3f9376473",
+      "id": "e4326ce0108dcb2c",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "24 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/granada-focus-immersive.yml, .github/workflows/release-android-direct-v0210.yml, .github/workflows/ui-smoke.yml",
+      "observation": "26 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/granada-focus-immersive.yml, .github/workflows/release-android-direct-v0210.yml, .github/workflows/release-android-direct-v0211.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
