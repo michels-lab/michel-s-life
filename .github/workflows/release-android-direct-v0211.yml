@@ -1,0 +1,268 @@
+name: Publish Michel's Life Android Direct 0.2.11 (retain Windows 3.0.221)
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.michelslab/release-intents/android-direct-v0211.txt'
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: michelslife-direct-0211
+  cancel-in-progress: false
+
+jobs:
+  exact-source-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Require isolated owner-authorized intent and exact source tests
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected='.michelslab/release-intents/android-direct-v0211.txt'
+          test "$(git diff --name-only HEAD^ HEAD)" = "$expected"
+          grep -q 'versionName = "0.2.11"' android/app/build.gradle.kts
+          grep -q 'versionCode = 13' android/app/build.gradle.kts
+          for attempt in $(seq 1 50); do
+            gh api -X GET "repos/$GITHUB_REPOSITORY/actions/runs" -f head_sha="$GITHUB_SHA" -f per_page=100 > /tmp/runs.json
+            if jq -e --arg sha "$GITHUB_SHA" '
+              .workflow_runs as $runs |
+              all(["Source validation", "Android UI smoke", "UI smoke"][];
+                . as $name |
+                any($runs[]; .head_sha==$sha and .name==$name and .conclusion=="success"))
+            ' /tmp/runs.json >/dev/null; then
+              echo "EXACT_SOURCE_CHECKS_PASS: $GITHUB_SHA"
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "::error::Exact commit source/Android UI/general UI checks did not all pass"
+          exit 1
+
+  build-signed-android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      ANDROID_VERSION: '0.2.11'
+      ANDROID_DIRECT_KEYSTORE_BASE64: ${{ secrets.ANDROID_DIRECT_KEYSTORE_BASE64 }}
+      ANDROID_DIRECT_STORE_PASSWORD: ${{ secrets.ANDROID_DIRECT_STORE_PASSWORD }}
+      ANDROID_DIRECT_KEY_ALIAS: ${{ secrets.ANDROID_DIRECT_KEY_ALIAS }}
+      ANDROID_DIRECT_KEY_PASSWORD: ${{ secrets.ANDROID_DIRECT_KEY_PASSWORD }}
+      ANDROID_DIRECT_CERT_SHA256: ${{ vars.ANDROID_DIRECT_CERT_SHA256 }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prepare Android 36 SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+      - name: Validate version, cloud restoration, UI source and signing policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          python android/tools/validate_android_version.py
+          python android/tools/validate_sync_contract.py
+          node tools/test_cloud_restore_storage.mjs
+          node --test tools/test_android_focus_spanish.mjs tools/test_android_story_draft_account_isolation.mjs
+          python android/tools/verify_direct_apk.py --self-test
+          node --check android/android-bridge.js
+          node --check android/mobile-experience.js
+          python android/tools/validate_android_mobile_ux.py
+      - name: Package canonical frontend and Android assets
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p android/build
+          python tools/download_latest_michels_life_bundle.py --repo michels-lab/michel-s-life-releases --output android/build/AppBundle.zip
+          python tools/bump_frontend_version.py --index src/MichelsLife/frontend/index.html
+          python tools/enable_i18n.py --index src/MichelsLife/frontend/index.html
+          python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
+          python tools/replace_bundle_index.py --bundle android/build/AppBundle.zip --index src/MichelsLife/frontend/index.html
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source src/MichelsLife/frontend/i18n.js --arcname i18n.js
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michel_duarte_avatar.jpg --arcname assets/michel_duarte_avatar.jpg
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_life_app_icon.svg --arcname assets/michels_life_app_icon.svg
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_life_mark.svg --arcname assets/michels_life_mark.svg
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_life_lockup.svg --arcname assets/michels_life_lockup.svg
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_lab_mark.png --arcname assets/michels_lab_mark.png
+          python tools/inject_bundle_asset.py --bundle android/build/AppBundle.zip --source branding/michels_lab_lockup.png --arcname assets/michels_lab_lockup.png
+          python android/tools/prepare_bundle.py --bundle android/build/AppBundle.zip --assets android/app/src/main/assets/app
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.6.0'
+      - name: Prepare permanent Direct signer (no Debug or Play fallback)
+        shell: bash
+        run: |
+          set -euo pipefail
+          for key in ANDROID_DIRECT_KEYSTORE_BASE64 ANDROID_DIRECT_STORE_PASSWORD ANDROID_DIRECT_KEY_ALIAS ANDROID_DIRECT_KEY_PASSWORD ANDROID_DIRECT_CERT_SHA256; do
+            test -n "$(printenv "$key")" || { echo "::error::Missing $key"; exit 1; }
+          done
+          umask 077
+          printf '%s' "$ANDROID_DIRECT_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/michelslife-direct.jks"
+          test -s "$RUNNER_TEMP/michelslife-direct.jks"
+          echo "ANDROID_DIRECT_KEYSTORE_PATH=$RUNNER_TEMP/michelslife-direct.jks" >> "$GITHUB_ENV"
+      - name: Compile permanently signed Direct APK
+        working-directory: android
+        shell: bash
+        run: gradle --no-daemon :app:assembleDirectRelease
+      - name: Verify actual APK certificate, code, version, checksum and source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/signed
+          cp android/app/build/outputs/apk/directRelease/app-directRelease.apk artifacts/signed/MichelsLife-Android-Direct-v0.2.11.apk
+          python android/tools/verify_direct_apk.py \
+            --apk artifacts/signed/MichelsLife-Android-Direct-v0.2.11.apk \
+            --apksigner "$ANDROID_HOME/build-tools/36.0.0/apksigner" \
+            --aapt "$ANDROID_HOME/build-tools/36.0.0/aapt" \
+            --expected-cert-sha256 "$ANDROID_DIRECT_CERT_SHA256" \
+            --version-name 0.2.11 --version-code 13 \
+            --manifest-output artifacts/signed/direct-release-manifest.json
+          (cd artifacts/signed && sha256sum MichelsLife-Android-Direct-v0.2.11.apk > MichelsLife-Android-Direct-v0.2.11.apk.sha256)
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs artifacts/signed/MichelsLife-Android-Direct-v0.2.11.apk > artifacts/signed/android-signing-certificate-v0.2.11.txt
+          jq -e --arg sha "$GITHUB_SHA" --arg cert "$ANDROID_DIRECT_CERT_SHA256" \
+            '.sourceSha==$sha and .versionName=="0.2.11" and .versionCode==13 and
+             .package=="com.michelslab.michelslife" and .signerCertSha256==$cert and
+             .distribution=="production-signed"' artifacts/signed/direct-release-manifest.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MichelsLife-Direct-v0.2.11-SIGNED
+          path: artifacts/signed/
+          if-no-files-found: error
+          retention-days: 30
+
+  signed-native-api35:
+    needs: [build-signed-android]
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      ANDROID_VERSION: '0.2.11'
+      APK: artifacts/candidate/MichelsLife-Android-Direct-v0.2.11.apk
+      MLV_REQUIRE_PROTECTED_SIGNED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: MichelsLife-Direct-v0.2.11-SIGNED
+          path: artifacts/candidate
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Enable KVM
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
+      - name: Actually install and relaunch protected signed APK on Android 15
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          avd-name: mlv-direct-0211
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu software -feature -Vulkan
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash android/tools/smoke_candidate_apk_install.sh
+      - name: Retain native pixels, installed process and relaunch evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MichelsLife-Direct-v0.2.11-Native-Android15
+          path: artifacts/candidate-install/
+          if-no-files-found: warn
+          retention-days: 30
+
+  publish-unified:
+    needs: [exact-source-gate, build-signed-android, signed-native-api35]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ secrets.RELEASES_REPO_TOKEN }}
+      REPO: michels-lab/michel-s-life-releases
+      TAG: v3.0.221-android-v0.2.11
+      ANDROID_DIRECT_CERT_SHA256: ${{ vars.ANDROID_DIRECT_CERT_SHA256 }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: MichelsLife-Direct-v0.2.11-SIGNED
+          path: new-android
+      - name: Verify all assets and retain unchanged Windows binaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$GH_TOKEN"
+          test -n "$ANDROID_DIRECT_CERT_SHA256"
+          mkdir -p windows dist
+          gh release download v3.0.221 --repo "$REPO" --dir windows \
+            --pattern 'MichelsLife-Setup-v3.0.221.exe*' \
+            --pattern 'MichelsLife-Portable-v3.0.221.exe*' \
+            --pattern 'MichelsLife-v3.0.221.exe*' \
+            --pattern 'AppBundle.zip' \
+            --pattern 'michels_life_icon.ico'
+          for f in MichelsLife-Setup-v3.0.221.exe MichelsLife-Portable-v3.0.221.exe MichelsLife-v3.0.221.exe; do
+            test -s "windows/$f"
+            (cd windows && sha256sum -c "$f.sha256")
+          done
+          (cd new-android && sha256sum -c MichelsLife-Android-Direct-v0.2.11.apk.sha256)
+          jq -e --arg sha "$GITHUB_SHA" --arg cert "$ANDROID_DIRECT_CERT_SHA256" '
+            .sourceSha==$sha and .versionName=="0.2.11" and .versionCode==13 and
+            .signerCertSha256==$cert and .distribution=="production-signed"
+          ' new-android/direct-release-manifest.json
+          cp windows/* dist/
+          cp new-android/MichelsLife-Android-Direct-v0.2.11.apk* dist/
+          cp new-android/android-signing-certificate-v0.2.11.txt dist/
+          cp new-android/direct-release-manifest.json dist/android-v0.2.11-manifest.json
+          python3 - <<'PY'
+          import hashlib,json,os
+          from pathlib import Path
+          folder=Path("dist")
+          assets={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in folder.iterdir() if p.is_file()}
+          out={"schema":1,"product":"Michel's Life","source_repo":os.environ["GITHUB_REPOSITORY"],
+               "source_sha":os.environ["GITHUB_SHA"],"windows_version":"3.0.221",
+               "windows_assets_from":"v3.0.221","android_version":"0.2.11",
+               "android_version_code":13,"android_certificate_sha256":os.environ["ANDROID_DIRECT_CERT_SHA256"],
+               "assets_sha256":assets}
+          (folder/"release-provenance.json").write_text(json.dumps(out,indent=2)+"\n")
+          PY
+          test "$(find dist -maxdepth 1 -type f | wc -l)" -eq 13
+          if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+            echo "::error::Release tag exists; do not replace existing assets"
+            exit 1
+          fi
+      - name: Create verified draft then publish stable unified release
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release create "$TAG" dist/* --repo "$REPO" --target main --draft \
+            --title "Michel's Life — Windows 3.0.221 + Android Direct 0.2.11" \
+            --notes-file docs/releases/android-v0.2.11.md
+          gh release view "$TAG" --repo "$REPO" --json isDraft,assets > release.json
+          jq -e '.isDraft==true and (.assets|length)==13' release.json
+          mkdir -p confirm
+          gh release download "$TAG" --repo "$REPO" --dir confirm \
+            --pattern 'MichelsLife-Android-Direct-v0.2.11.apk*' \
+            --pattern 'release-provenance.json'
+          (cd confirm && sha256sum -c MichelsLife-Android-Direct-v0.2.11.apk.sha256)
+          cmp -s dist/release-provenance.json confirm/release-provenance.json
+          gh release edit "$TAG" --repo "$REPO" --draft=false --latest
+          test "$(gh api "repos/$REPO/releases/latest" --jq '.tag_name')" = "$TAG"
+          echo "ANDROID_DIRECT_STABLE_RELEASE_VERIFIED: $TAG source=$GITHUB_SHA"
