@@ -139,6 +139,7 @@
         color:#fff;background:#091424ee;box-shadow:0 13px 35px #0006
       }
       #mlv-desktop-mini-focus{display:flex;gap:8px;align-items:center}
+      #mlv-desktop-focus-launcher{right:19px;bottom:94px;padding:10px 16px;min-height:46px}
       #mlv-desktop-mini-focus button,#mlv-desktop-focus-launcher{
         cursor:pointer;min-height:44px;padding:10px 14px;border:0;border-radius:11px;
         color:inherit;background:#ffffff16;font:750 14px system-ui,sans-serif
@@ -169,7 +170,8 @@
         <header>
           <div><span class="mlv-focus-eyebrow">MICHEL'S LIFE / FOCUS</span>
           <h2 id="mlv-desktop-focus-title">Pomodoro</h2></div>
-          <button type="button" data-focus-action="minimize" aria-label="Minimize Pomodoro">—</button>
+          <div class="mlv-focus-actions"><button type="button" data-focus-action="alarms">⏰ Alarmas</button>
+          <button type="button" data-focus-action="minimize" aria-label="Minimize Pomodoro">—</button></div>
         </header>
         <div class="mlv-focus-center">
           <span class="mlv-focus-mode" id="mlv-desktop-focus-mode">FOCUS</span>
@@ -188,13 +190,14 @@
     mini.innerHTML='<button type="button" data-focus-action="open">◷ 25:00</button><button type="button" data-focus-action="toggle">Pause</button>';
     launcher=document.createElement('button');
     launcher.id='mlv-desktop-focus-launcher';launcher.type='button';
-    launcher.textContent='◷';launcher.title='Pomodoro';launcher.setAttribute('aria-label','Open Pomodoro');
+    launcher.textContent='◷ Pomodoro';launcher.title='Pomodoro';launcher.setAttribute('aria-label','Open Pomodoro');
     launcher.addEventListener('click',()=>open());
     for(const node of [screen,mini]){
       node.addEventListener('click',event=>{
         const button=event.target.closest('[data-focus-action]');if(!button)return;
         const command=button.dataset.focusAction;
         if(command==='open'){open();return;}
+        if(command==='alarms'){minimize();window.MichelsLifeAlarms?.open?.();return;}
         if(command==='minimize'){minimize();return;}
         const engine=api(),state=engine?.focusState?.();if(!engine)return;
         if(command==='toggle')engine.toggleFocus?.();
@@ -260,6 +263,7 @@
     });
     q('[data-focus-action="skip"]',screen).textContent=lang('Skip phase','Saltar fase');
     q('[data-focus-action="reset"]',screen).textContent=lang('Reset','Reiniciar');
+    q('[data-focus-action="alarms"]',screen).textContent=lang('⏰ Alarms','⏰ Alarmas');
     if(!screen.hidden)applyWallpaper(screen);
   }
   window.MichelsLifeFocusImmersive.open=open;
