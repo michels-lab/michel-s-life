@@ -4,7 +4,7 @@
 if(window.MichelsLifeMotivation)return;
 const STORE='vida_rpg_personal_progress_v2';
 const OWNER='michelsLife.supabase.boardOwner.v30218';
-let lastNative='',nativeTick=0;
+let lastNative='',nativeTick=0,sceneMemo=new WeakMap();
 const tr=(en,es)=>window.MichelsLifeI18n?.language==='es'?es:en;
 function clean(x){return typeof x==='string'?x.replace(/[\u0000-\u001f\u007f]/g,' ').replace(/\s+/g,' ').trim().slice(0,180):'';}
 function unique(items,max){
@@ -76,6 +76,9 @@ function mount(parent){
 }
 function render(parent,key){
  const host=mount(parent);if(!host)return false;
+ const locale=window.MichelsLifeI18n?.language||'en';
+ const prior=sceneMemo.get(host);
+ if(prior?.key===key&&prior?.locale===locale&&Date.now()-prior.at<30000)return true;
  const result=select(key);
  for(const type of ['affirmation','phrase']){
   const line=host.querySelector('.mlv-motivation-'+type);if(!line)continue;
@@ -84,6 +87,7 @@ function render(parent,key){
   line.querySelector('.mlv-motivation-copy').textContent=value;
  }
  host.hidden=!result.affirmation&&!result.phrase;
+ sceneMemo.set(host,{key,locale,at:Date.now()});
  return true;
 }
 function syncNative(){
