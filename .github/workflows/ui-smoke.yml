@@ -21,6 +21,8 @@ on:
       - '.michelslab/release-intents/android-direct-v0210.txt'
       - '.michelslab/release-intents/android-direct-v0211.txt'
       - '.michelslab/release-intents/windows-v3222-a0211.txt'
+      # A release-intent commit changes no UI files but must re-run exact-SHA UI checks.
+      - '.michelslab/release-intents/unified-v3223-a0212.txt'
       - '.github/workflows/ui-smoke.yml'
   workflow_dispatch:
 
