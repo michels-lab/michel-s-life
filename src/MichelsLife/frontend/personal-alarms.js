@@ -209,7 +209,7 @@ function create(){
  <div class="scene" role="alertdialog" aria-modal="true" aria-labelledby="mlv-alarm-ring-title">
  <span class="bell" aria-hidden="true">⏰</span>
  <h2 id="mlv-alarm-ring-title"></h2><strong id="mlv-alarm-ring-clock"></strong>
- <p id="mlv-alarm-ring-label"></p><div class="actions">
+ <p id="mlv-alarm-ring-label"></p><div id="mlv-alarm-motivation"></div><div class="actions">
  <button type="button" class="primary" data-ring-dismiss>Dismiss alarm</button>
  <button type="button" data-ring-snooze>Snooze 5 minutes</button></div></div>`;
  launcher=document.createElement('button');launcher.type='button';launcher.id='mlv-alarm-launcher';
@@ -384,6 +384,7 @@ function ringAlarm(id){
  q('#mlv-alarm-ring-title',ring).textContent=tr('ALARM','ALARMA');
  q('#mlv-alarm-ring-clock',ring).textContent=item.time;
  q('#mlv-alarm-ring-label',ring).textContent=item.label||tr('Time to go','Es la hora');
+ window.MichelsLifeMotivation?.render?.(q('#mlv-alarm-motivation',ring),'alarm:'+id+':'+item.time);
  q('[data-ring-dismiss]',ring).textContent=tr('Dismiss','Descartar');
  q('[data-ring-snooze]',ring).textContent=tr('Snooze 5 min','Posponer 5 min');
  q('[data-ring-dismiss]',ring).focus();
