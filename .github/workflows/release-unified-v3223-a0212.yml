@@ -57,8 +57,114 @@ jobs:
       build_direct: true
     secrets: inherit
 
+  # The production-signed Direct artifact, not the debug APK, is the actual
+  # release candidate. Never let a debug-only ADB crash veto a signed test;
+  # require real signed installation + relaunch on at least one fresh API35 AVD.
+  signed-native-android15:
+    needs: [android]
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    env:
+      ANDROID_VERSION: '0.2.12'
+      APK: artifacts/candidate/MichelsLife-Android-Direct-v0.2.12.apk
+      MLV_REQUIRE_PROTECTED_SIGNED: '1'
+      MLV_REQUIRE_NATIVE_STATE_PROBE: '0'
+      DIRECT_CERT_SHA256: ${{ vars.ANDROID_DIRECT_CERT_SHA256 }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: MichelsLife-Android-Direct-v0.2.12
+          path: artifacts/candidate
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Require exact production signer, version and source before AVD
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "$APK"
+          (cd artifacts/candidate && sha256sum -c MichelsLife-Android-Direct-v0.2.12.apk.sha256)
+          test -n "$DIRECT_CERT_SHA256"
+          jq -e --arg cert "$DIRECT_CERT_SHA256" --arg sha "$GITHUB_SHA" '
+            .sourceSha==$sha and .signerCertSha256==$cert and
+            .versionName=="0.2.12" and .versionCode==14 and
+            .package=="com.michelslab.michelslife" and
+            .distribution=="production-signed"
+          ' artifacts/candidate/direct-release-manifest.json
+      - name: Enable hardware virtualization if available
+        run: if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
+      - name: Fresh Android 15 signed APK real install, onboarding, relaunch
+        id: primary
+        continue-on-error: true
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          avd-name: mlv-0212-signed-primary
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu software -feature -Vulkan
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash android/tools/smoke_candidate_apk_install.sh
+      - name: Isolate failed AVD evidence and reset the ADB transport
+        if: steps.primary.outcome != 'success'
+        shell: bash
+        run: |
+          if [ -d artifacts/candidate-install ]; then
+            mv artifacts/candidate-install artifacts/primary-native-failed
+          fi
+          adb kill-server || true
+          sleep 3
+          adb start-server || true
+      - name: Independent Android 15 signed APK retry with alternate GPU
+        id: fallback
+        if: steps.primary.outcome != 'success'
+        continue-on-error: true
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          avd-name: mlv-0212-signed-alternate
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu swiftshader -feature -Vulkan
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash android/tools/smoke_candidate_apk_install.sh
+      - name: REQUIRE native install and actual screen captures for signed APK
+        if: always()
+        env:
+          PRIMARY: ${{ steps.primary.outcome }}
+          FALLBACK: ${{ steps.fallback.outcome }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$PRIMARY" != success ] && [ "$FALLBACK" != success ]; then
+            echo "::error::Both independent signed Android15 native install/relaunch attempts failed"
+            exit 1
+          fi
+          for file in step0.png step4-after-native-finish.png step5-after-relaunch.png; do
+            test -s "artifacts/candidate-install/$file" || {
+              echo "::error::Signed native QA did not retain actual $file"
+              exit 1
+            }
+          done
+          echo "SIGNED_DIRECT_NATIVE_API35_PASS: primary=$PRIMARY fallback=$FALLBACK"
+      - name: Preserve actual device evidence, including failed first run
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MichelsLife-v0.2.12-Direct-signed-native-Android15
+          path: |
+            artifacts/candidate-install/
+            artifacts/primary-native-failed/
+          if-no-files-found: warn
+          retention-days: 30
+
   publish-unified:
-    needs: [exact-source, windows, android]
+    needs: [exact-source, windows, android, signed-native-android15]
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
