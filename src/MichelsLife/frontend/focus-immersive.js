@@ -11,6 +11,7 @@
   const time=ms=>{const sec=Math.max(0,Math.ceil((Number(ms)||0)/1000));return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');};
   let screen=null,mini=null,launcher=null,lastPhase=null,closedPhase=null,closedMode=null;
   let minimizedLoaded=false;
+  let focusSceneSequence=0;
   const minimizedKey='michelsLife.desktop.minimizedFocus.v1';
   function restoreMinimized(){
     if(minimizedLoaded)return;
@@ -177,6 +178,7 @@
           <span class="mlv-focus-mode" id="mlv-desktop-focus-mode">FOCUS</span>
           <strong class="mlv-focus-clock" role="timer" aria-live="off" id="mlv-desktop-focus-clock">25:00</strong>
           <p class="mlv-focus-status" id="mlv-desktop-focus-status">Ready to focus</p>
+          <div id="mlv-desktop-focus-motivation"></div>
         </div>
         <div class="mlv-focus-actions">
           <button type="button" class="primary" data-focus-action="toggle">Start</button>
@@ -218,6 +220,7 @@
     if(android())return window.MichelsLifeMobileExperience?.openFocus?.()||false;
     create();if(!screen||!api()?.focusState)return false;
     applyWallpaper(screen);screen.hidden=false;closedPhase=null;closedMode=null;saveMinimized();
+    focusSceneSequence++;
     document.body.classList.add('mlv-desktop-focus-open');
     refresh();
     q('[data-focus-action="minimize"]',screen)?.focus();
@@ -264,7 +267,13 @@
     q('[data-focus-action="skip"]',screen).textContent=lang('Skip phase','Saltar fase');
     q('[data-focus-action="reset"]',screen).textContent=lang('Reset','Reiniciar');
     q('[data-focus-action="alarms"]',screen).textContent=lang('⏰ Alarms','⏰ Alarmas');
-    if(!screen.hidden)applyWallpaper(screen);
+    if(!screen.hidden){
+      applyWallpaper(screen);
+      window.MichelsLifeMotivation?.render?.(
+        q('#mlv-desktop-focus-motivation',screen),
+        'desktop-focus:'+focusSceneSequence+':'+String(state.mode||'work')+':'+String(state.deadlineAt||'ready')
+      );
+    }
   }
   window.MichelsLifeFocusImmersive.open=open;
   window.MichelsLifeFocusImmersive.minimize=minimize;

@@ -53,6 +53,11 @@ class AndroidBridge(
     @JavascriptInterface
     fun personalAlarmStatus(): String = NativePersonalAlarms.status(activity).toString()
 
+    /** Only cached display text, not credentials, board data, or personal files. */
+    @JavascriptInterface
+    fun rememberAlarmMotivation(raw: String): Boolean =
+        NativePersonalAlarms.rememberMotivation(activity, raw)
+
     @JavascriptInterface
     fun rememberAlarmWallpaper(path: String): Boolean =
         NativePersonalAlarms.rememberWallpaper(activity, path)

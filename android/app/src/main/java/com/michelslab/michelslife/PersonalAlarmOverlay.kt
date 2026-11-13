@@ -97,6 +97,30 @@ internal object PersonalAlarmOverlay {
             content.addView(label("⏰", 70f))
             content.addView(label(time, 68f, true))
             content.addView(label(title.ifBlank { "Es la hora" }, 23f, true))
+            val (affirmation, phrase) = NativePersonalAlarms.motivationForAlarm(app, id)
+            if (affirmation.isNotEmpty()) {
+                content.addView(label("AFIRMACIÓN", 10f, true).apply {
+                    setPadding(0, dp(app, 15), 0, dp(app, 4))
+                    letterSpacing = 0.13f
+                })
+                content.addView(label(affirmation, 17f, true).apply {
+                    maxLines = 3
+                    ellipsize = android.text.TextUtils.TruncateAt.END
+                    setPadding(dp(app, 8), 0, dp(app, 8), 0)
+                })
+            }
+            if (phrase.isNotEmpty()) {
+                content.addView(label("FRASE", 10f, true).apply {
+                    setPadding(0, dp(app, 11), 0, dp(app, 4))
+                    letterSpacing = 0.13f
+                })
+                content.addView(label(phrase, 16f).apply {
+                    maxLines = 3
+                    ellipsize = android.text.TextUtils.TruncateAt.END
+                    setPadding(dp(app, 8), 0, dp(app, 8), 0)
+                })
+            }
+
             val buttons = LinearLayout(app).apply {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER

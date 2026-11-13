@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'src/MichelsLife/frontend/personal-alarms.js'
+      - 'src/MichelsLife/frontend/motivation-immersive.js'
       - 'src/MichelsLife/frontend/focus-immersive.js'
       - 'android/mobile-experience.js'
       - 'android/app/src/main/java/com/michelslab/michelslife/NativePersonalAlarms.kt'
@@ -12,6 +13,7 @@ on:
       - 'android/app/src/main/java/com/michelslab/michelslife/MainActivity.kt'
       - 'android/app/src/main/AndroidManifest.xml'
       - 'tools/test_personal_alarm_contract.mjs'
+      - 'tools/test_motivation_immersive_contract.mjs'
       - 'tools/enable_i18n.py'
       - 'tools/replace_bundle_index.py'
       - 'android/tools/prepare_bundle.py'
@@ -36,9 +38,10 @@ jobs:
       - name: Validate alarm and Pomodoro JavaScript
         run: |
           node --check src/MichelsLife/frontend/personal-alarms.js
+          node --check src/MichelsLife/frontend/motivation-immersive.js
           node --check src/MichelsLife/frontend/focus-immersive.js
           node --check android/mobile-experience.js
-          node --test tools/test_personal_alarm_contract.mjs tools/test_focus_immersive_contract.mjs
+          node --test tools/test_personal_alarm_contract.mjs tools/test_motivation_immersive_contract.mjs tools/test_focus_immersive_contract.mjs
       - name: Validate bundle loaders for both platforms
         run: |
           python -m py_compile tools/enable_i18n.py tools/replace_bundle_index.py android/tools/prepare_bundle.py

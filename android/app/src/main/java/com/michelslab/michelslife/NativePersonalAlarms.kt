@@ -35,6 +35,7 @@ internal object NativePersonalAlarms {
     private const val PREFS = "michelslife.personal-alarms.v1"
     private const val KEY_ALARMS = "alarms"
     private const val KEY_WALLPAPER = "wallpaper"
+    private const val KEY_MOTIVATION = "motivationalCopy.v1"
     private const val LAST_DELIVERED_PREFIX = "lastDelivered."
     private const val CHANNEL = "michelslife-personal-alarms-v1"
     private const val ACTION = "com.michelslab.michelslife.PERSONAL_ALARM"
@@ -54,6 +55,50 @@ internal object NativePersonalAlarms {
         if (!idPattern.matches(id)) return false
         val at = prefs(context).getLong(LAST_DELIVERED_PREFIX + id, 0L)
         return at > 0L && System.currentTimeMillis() - at in 0..15 * 60 * 1000L
+    }
+
+    /**
+     * A bounded, sanitized selection of the owner's NON-hidden affirmations and
+     * already-visible application phrases, available to AlarmManager if the
+     * WebView process is not alive. This never replaces the user's board.
+     * An empty payload erases old account-specific copy on sign-out.
+     */
+    fun rememberMotivation(context: Context, raw: String): Boolean {
+        if (raw.length > 10000) return false
+        return try {
+            val input = JSONObject(raw)
+            val output = JSONObject()
+            for ((field, limit) in listOf("affirmations" to 24, "phrases" to 20)) {
+                val values = input.optJSONArray(field) ?: JSONArray()
+                val cleaned = JSONArray()
+                val distinct = HashSet<String>()
+                for (i in 0 until minOf(values.length(), 100)) {
+                    val line = values.optString(i, "")
+                        .replace(Regex("[\\u0000-\\u001f\\u007f]"), " ")
+                        .replace(Regex("\\s+"), " ")
+                        .trim().take(180)
+                    if (line.isNotEmpty() && distinct.add(line.lowercase())) cleaned.put(line)
+                    if (cleaned.length() >= limit) break
+                }
+                output.put(field, cleaned)
+            }
+            prefs(context).edit().putString(KEY_MOTIVATION, output.toString()).commit()
+        } catch (_: Exception) { false }
+    }
+
+    fun motivationForAlarm(context: Context, id: String): Pair<String, String> {
+        val data = try {
+            JSONObject(prefs(context).getString(KEY_MOTIVATION, "{}") ?: "{}")
+        } catch (_: Exception) { JSONObject() }
+        fun choose(name: String): String {
+            val pool = data.optJSONArray(name) ?: return ""
+            if (pool.length() == 0) return ""
+            val key = id.hashCode().toLong() + LocalDate.now().toEpochDay() +
+                if (name == "phrases") 43L else 0L
+            return pool.optString(Math.floorMod(key, pool.length().toLong()).toInt(), "")
+                .take(180)
+        }
+        return Pair(choose("affirmations"), choose("phrases"))
     }
 
     fun wallpaper(context: Context): String =
