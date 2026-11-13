@@ -33,6 +33,7 @@ import java.time.format.DateTimeFormatter
 internal object NativePersonalAlarms {
     private const val PREFS = "michelslife.personal-alarms.v1"
     private const val KEY_ALARMS = "alarms"
+    private const val LAST_DELIVERED_PREFIX = "lastDelivered."
     private const val CHANNEL = "michelslife-personal-alarms-v1"
     private const val ACTION = "com.michelslab.michelslife.PERSONAL_ALARM"
     const val EXTRA_OPEN_ALARM = "com.michelslab.michelslife.OPEN_PERSONAL_ALARM"
@@ -46,6 +47,12 @@ internal object NativePersonalAlarms {
     fun list(context: Context): JSONArray =
         try { JSONArray(prefs(context).getString(KEY_ALARMS, "[]") ?: "[]") }
         catch (_: Exception) { JSONArray() }
+
+    fun wasDelivered(context: Context, id: String): Boolean {
+        if (!idPattern.matches(id)) return false
+        val at = prefs(context).getLong(LAST_DELIVERED_PREFIX + id, 0L)
+        return at > 0L && System.currentTimeMillis() - at in 0..15 * 60 * 1000L
+    }
 
     private fun notificationAllowed(context: Context): Boolean =
         Build.VERSION.SDK_INT < 33 ||
@@ -199,6 +206,7 @@ internal object NativePersonalAlarms {
         if (!idPattern.matches(id)) return
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.cancel(id.hashCode() and Int.MAX_VALUE)
+        prefs(context).edit().remove(LAST_DELIVERED_PREFIX + id).apply()
     }
 
     fun deliver(context: Context, id: String) {
@@ -219,7 +227,8 @@ internal object NativePersonalAlarms {
                 item.put("enabled", false)
             nextList.put(item)
         }
-        prefs(context).edit().putString(KEY_ALARMS, nextList.toString()).commit()
+        prefs(context).edit().putString(KEY_ALARMS, nextList.toString())
+            .putLong(LAST_DELIVERED_PREFIX + id, System.currentTimeMillis()).commit()
         // Next recurrence is always scheduled from now, so it never doubles on clock changes.
         if (target.optString("repeat") != "once") {
             schedule(context, target)
