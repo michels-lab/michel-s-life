@@ -1,0 +1,90 @@
+name: GRANADA Android16 RAM 3GiB A/B stability
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/granada-native-memory-profile.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose-api36:
+    name: "Idle vs public signed APK: Android 16 emulator transport"
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      MLV_HEALTH_APK: artifacts/emulator-health-release/MichelsLife-Android-Direct-v0.2.9.apk
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Syntax-check the fail-closed diagnostic without starting an emulator
+        shell: bash
+        run: |
+          python3 -m py_compile tools/android_emulator_evidence_manifest.py
+          python3 tools/android_emulator_evidence_manifest.py --self-test
+          bash -n tools/android_emulator_transport_probe.sh
+          test "$(grep -c '^probe_once()' tools/android_emulator_transport_probe.sh)" -eq 1
+          printf 'emulator-5554 device product:pixel_6\\n' | grep -Eq '^emulator-[0-9]+[[:space:]]+device([[:space:]]|$)'
+          if printf 'emulator-5554 offline\\n' | grep -Eq '^emulator-[0-9]+[[:space:]]+device([[:space:]]|$)'; then
+            echo "::error::Inactive device was incorrectly accepted"
+            exit 1
+          fi
+
+      - name: Retrieve official published APK and its independent SHA256 manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/emulator-health-release
+          gh release download v3.0.221 \
+            --repo michels-lab/michel-s-life-releases \
+            --pattern 'MichelsLife-Android-Direct-v0.2.9.apk' \
+            --pattern 'MichelsLife-Android-Direct-v0.2.9.apk.sha256' \
+            --dir artifacts/emulator-health-release
+          cd artifacts/emulator-health-release
+          test -s MichelsLife-Android-Direct-v0.2.9.apk
+          test -s MichelsLife-Android-Direct-v0.2.9.apk.sha256
+          sha256sum -c MichelsLife-Android-Direct-v0.2.9.apk.sha256
+          echo "Official release APK hash matches its published checksum"
+
+      - name: Enable emulator KVM
+        shell: bash
+        run: |
+          test -e /dev/kvm || { echo "::error::Hosted runner has no /dev/kvm"; exit 1; }
+          sudo chmod 666 /dev/kvm
+
+      - name: Compare emulator transport before and after installing official APK
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          avd-name: michels-life-granada-3gib-transport
+          ram-size: 3072M
+          heap-size: 512M
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu swiftshader -feature -Vulkan
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash tools/android_emulator_transport_probe.sh
+
+      - name: Manifest real Android16 screenshot digests and public APK/source identity
+        if: always()
+        shell: bash
+        run: |
+          python3 tools/android_emulator_evidence_manifest.py \
+            --root . \
+            --source-sha "$(git rev-parse HEAD)"
+
+      - name: Preserve real emulator, framebuffer and host-transport evidence even when red
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MichelsLife-Android16-GRANADA-3GiB-Health
+          path: |
+            artifacts/emulator-health/
+            artifacts/emulator-health-release/*.sha256
+          if-no-files-found: warn
+          retention-days: 14

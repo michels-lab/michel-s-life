@@ -1,0 +1,50 @@
+name: GRANADA native Android relaunch transport guard
+
+on:
+  pull_request:
+    paths:
+      - 'android/tools/granada_relaunch_transport_guard.py'
+      - 'android/tools/smoke_candidate_apk_install.sh'
+      - 'tools/test_granada_relaunch_transport_guard.py'
+      - 'android/tools/granada_emulator_host_watch.py'
+      - 'tools/test_granada_emulator_host_watch.py'
+      - '.github/workflows/granada-native-transport-recovery.yml'
+      - 'android/audit/2026-10-20-granada-native-transport-recovery.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-transport-guard-unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile and syntax-check native transport guard and existing candidate smoke
+        run: |
+          python3 -m py_compile android/tools/granada_relaunch_transport_guard.py
+          python3 -m py_compile tools/test_granada_relaunch_transport_guard.py
+          python3 -m py_compile android/tools/granada_emulator_host_watch.py
+          python3 -m py_compile tools/test_granada_emulator_host_watch.py
+          bash -n android/tools/smoke_candidate_apk_install.sh
+      - name: Run 25 synthetic transport recovery and host VM diagnosis regressions
+        run: |
+          python3 -m unittest -v tools/test_granada_relaunch_transport_guard.py tools/test_granada_emulator_host_watch.py
+      - name: Assert native persistence gate is still fail-closed
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          script=Path('android/tools/smoke_candidate_apk_install.sh').read_text()
+          assert 'if ! python3 android/tools/granada_relaunch_transport_guard.py' in script
+          assert '--serial emulator-5554' in script
+          assert 'native-canonical-persistence-comparison.json' in script
+          assert 'native-canonical-second-relaunch-comparison.json' in script
+          assert 'native-canonical-consecutive-relaunch-comparison.json' in script
+          assert 'Cannot verify native Android process after relaunch' in script
+          assert 'adb shell am force-stop "$PKG"' in script
+          print('PASS: exact process/boot gate, two relaunches and 3 separate canonical comparisons retained')
+          PY
