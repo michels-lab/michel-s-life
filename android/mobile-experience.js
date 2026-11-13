@@ -1164,6 +1164,7 @@
             <span id="mlv-android-focus-status">Ready · Work</span>
             <span class="mlv-focus-clock-caption" id="mlv-focus-end-time">Ready when you are</span>
           </div>
+          <div id="mlv-android-focus-motivation"></div>
           <div class="mlv-focus-controls-title">Session length</div>
           <div class="mlv-android-focus-presets" aria-label="Focus presets">
             <button type="button" data-mobile-preset="25/5">25 / 5</button>
@@ -1461,6 +1462,8 @@
     root.querySelectorAll('[data-mobile-preset]').forEach(b=>
       b.setAttribute('aria-pressed',String(b.dataset.mobilePreset===f.preset))
     );
+    window.MichelsLifeMotivation?.render?.(q('#mlv-android-focus-motivation',root),
+      'android-focus:'+String(f.mode||'work')+':'+String(f.deadlineAt||'ready'));
     const duration=(f.mode==='break'?Number(f.breakMin):Number(f.workMin))*60000;
     const leftMs=Number(api.remaining?.(f))||0;
     const pct=duration>0?Math.min(100,Math.max(0,100*leftMs/duration)):100;
