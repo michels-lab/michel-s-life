@@ -54,6 +54,43 @@ class AndroidBridge(
     fun personalAlarmStatus(): String = NativePersonalAlarms.status(activity).toString()
 
     @JavascriptInterface
+    fun rememberAlarmWallpaper(path: String): Boolean =
+        NativePersonalAlarms.rememberWallpaper(activity, path)
+
+    @JavascriptInterface
+    fun openPersonalAlarmPermissionSettings() {
+        activity.runOnUiThread {
+            val status = NativePersonalAlarms.status(activity)
+            try {
+                if (!status.optBoolean("notificationsGranted") ||
+                    !status.optBoolean("channelEnabled")) {
+                    activity.startActivity(
+                        Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                            putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, activity.packageName)
+                        }
+                    )
+                } else if (!status.optBoolean("overlayGranted")) {
+                    activity.startActivity(
+                        Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION).apply {
+                            data = android.net.Uri.parse("package:" + activity.packageName)
+                        }
+                    )
+                } else if (!status.optBoolean("fullScreen") &&
+                    android.os.Build.VERSION.SDK_INT >= 34) {
+                    activity.startActivity(
+                        Intent(android.provider.Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT).apply {
+                            data = android.net.Uri.parse("package:" + activity.packageName)
+                        }
+                    )
+                }
+            } catch (_: Exception) {
+                // UI re-checks real status when app resumes; never claim permission granted.
+            }
+        }
+    }
+
+
+    @JavascriptInterface
     fun dismissPersonalAlarm(id: String) {
         activity.runOnUiThread {
             NativePersonalAlarms.dismiss(activity, id)
