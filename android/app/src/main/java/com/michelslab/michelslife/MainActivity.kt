@@ -58,6 +58,7 @@ class MainActivity : Activity() {
 
     private fun beginAlarmAttention(id: String) {
         if (!id.matches(Regex("^[A-Za-z0-9_-]{1,64}$")) || !NativePersonalAlarms.wasDelivered(this, id)) return
+        if (PersonalAlarmOverlay.isRinging(id)) return
         stopAlarmAttention()
         // Wake and show an eligible alarm above the lock screen without unlocking it.
         if (Build.VERSION.SDK_INT >= 27) {
@@ -103,6 +104,13 @@ class MainActivity : Activity() {
         try { vibratingAlarm?.cancel() } catch (_: Exception) { }
         vibratingAlarm = null
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        if (Build.VERSION.SDK_INT >= 27) {
+            setShowWhenLocked(false)
+            setTurnScreenOn(false)
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
+        }
     }
 
     private fun openPersonalAlarmFromNotification() {
