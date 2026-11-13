@@ -5,6 +5,7 @@ import re
 
 LOADER_MARKER = '<script src="i18n.js" data-mlv-i18n="v1"></script>'
 FOCUS_LOADER_MARKER = '<script src="focus-immersive.js" data-mlv-focus-immersive="v1"></script>'
+ALARM_LOADER_MARKER = '<script src="personal-alarms.js" data-mlv-personal-alarms="v1"></script>'
 GUARD_ATTR = 'data-mlv-language-guard="v1"'
 GUARD_SCRIPT = r'''<script data-mlv-language-guard="v1">
 (function(){
@@ -71,6 +72,7 @@ def main():
     # Its Android entrypoint exports wallpaper selection, while mobile-experience.js
     # owns Android interactions. Keep one loader even across repeated packaging.
     text = text.replace(FOCUS_LOADER_MARKER, '')
+    text = text.replace(ALARM_LOADER_MARKER, '')
 
     # i18n must be available before inline UI renderers execute. Keep a
     # single synchronous loader in <head>; a body-end loader causes first-paint
@@ -81,7 +83,7 @@ def main():
     head_close = re.search(r'</head\s*>', text, flags=re.I)
     if not head_close:
         raise SystemExit('index.html has no </head> marker for i18n loader')
-    text = text[:head_close.start()] + LOADER_MARKER + '\n' + FOCUS_LOADER_MARKER + '\n' + text[head_close.start():]
+    text = text[:head_close.start()] + LOADER_MARKER + '\n' + FOCUS_LOADER_MARKER + '\n' + ALARM_LOADER_MARKER + '\n' + text[head_close.start():]
     changed = True
 
     if changed:

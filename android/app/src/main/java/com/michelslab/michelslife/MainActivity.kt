@@ -4,6 +4,13 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.media.AudioAttributes
+import android.media.MediaPlayer
+import android.media.RingtoneManager
+import android.view.WindowManager
 import android.view.View
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -25,6 +32,10 @@ class MainActivity : Activity() {
     private val executor = Executors.newSingleThreadExecutor()
     private var notificationOpenGeneration = 0
     private var pendingNotificationOpen: Runnable? = null
+    private var alarmOpenGeneration = 0
+    private var pendingAlarmOpen: Runnable? = null
+    private var playingAlarm: MediaPlayer? = null
+    private var vibratingAlarm: Vibrator? = null
 
     // The notification can cold-start this Activity before the canonical
     // Story/Focus JavaScript has finished booting. A page-finished event only
@@ -37,10 +48,106 @@ class MainActivity : Activity() {
         pendingNotificationOpen = null
     }
 
+    private fun stopPendingPersonalAlarm() {
+        alarmOpenGeneration++
+        if (::webView.isInitialized) {
+            pendingAlarmOpen?.let { webView.removeCallbacks(it) }
+        }
+        pendingAlarmOpen = null
+    }
+
+    private fun beginAlarmAttention(id: String) {
+        if (!id.matches(Regex("^[A-Za-z0-9_-]{1,64}$")) || !NativePersonalAlarms.wasDelivered(this, id)) return
+        if (PersonalAlarmOverlay.isRinging(id)) return
+        stopAlarmAttention()
+        // Wake and show an eligible alarm above the lock screen without unlocking it.
+        if (Build.VERSION.SDK_INT >= 27) {
+            setShowWhenLocked(true)
+            setTurnScreenOn(true)
+        } else {
+            window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
+        }
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        try {
+            val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            val player = MediaPlayer()
+            player.setAudioAttributes(AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_ALARM)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build())
+            player.setDataSource(this, uri)
+            player.isLooping = true
+            player.prepare()
+            player.start()
+            playingAlarm = player
+        } catch (_: Exception) {
+            playingAlarm?.release()
+            playingAlarm = null
+            // The notification channel still provides a system alarm sound.
+        }
+        try {
+            val vibrator = getSystemService(VIBRATOR_SERVICE) as Vibrator
+            if (vibrator.hasVibrator()) {
+                vibrator.vibrate(VibrationEffect.createWaveform(
+                    longArrayOf(0, 500, 240, 700, 300), 0
+                ))
+                vibratingAlarm = vibrator
+            }
+        } catch (_: Exception) { }
+    }
+
+    fun stopAlarmAttention() {
+        try { playingAlarm?.stop() } catch (_: Exception) { }
+        try { playingAlarm?.release() } catch (_: Exception) { }
+        playingAlarm = null
+        try { vibratingAlarm?.cancel() } catch (_: Exception) { }
+        vibratingAlarm = null
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        if (Build.VERSION.SDK_INT >= 27) {
+            setShowWhenLocked(false)
+            setTurnScreenOn(false)
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
+        }
+    }
+
+    private fun openPersonalAlarmFromNotification() {
+        stopPendingPersonalAlarm()
+        if (!::webView.isInitialized || isDestroyed) return
+        val id = intent.getStringExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM) ?: return
+        if (!id.matches(Regex("^[A-Za-z0-9_-]{1,64}$"))) return
+        beginAlarmAttention(id)
+        attemptPersonalAlarmOpen(alarmOpenGeneration, id, 0)
+    }
+
+    private fun attemptPersonalAlarmOpen(generation: Int, id: String, retries: Int) {
+        if (generation != alarmOpenGeneration || isDestroyed ||
+            intent.getStringExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM) != id) return
+        // Only acknowledge the OS alarm after the themed screen actually opened.
+        webView.evaluateJavascript(
+            "(function(){try{return window.MichelsLifeAlarms?.ringAlarm?.('" + id + "')===true;}" +
+                "catch(_){return false;}})();"
+        ) { opened ->
+            if (generation != alarmOpenGeneration || isDestroyed ||
+                intent.getStringExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM) != id) return@evaluateJavascript
+            if (opened == "true") {
+                intent.removeExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM)
+                pendingAlarmOpen = null
+            } else if (retries < 40) {
+                val retry = Runnable { attemptPersonalAlarmOpen(generation, id, retries + 1) }
+                pendingAlarmOpen = retry
+                webView.postDelayed(retry, 250L)
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         NativeFocusAlarm.createChannel(this)
+        NativePersonalAlarms.createChannel(this)
         val meta = CloudMetaStore(this)
         auth = GoogleAuthorizationCoordinator(this)
         calendarConsent = AndroidCalendarConsent(this)
@@ -87,6 +194,7 @@ class MainActivity : Activity() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 openPomodoroFromNotification()
+                openPersonalAlarmFromNotification()
             }
 
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
@@ -147,6 +255,7 @@ class MainActivity : Activity() {
         super.onNewIntent(newIntent)
         setIntent(newIntent)
         openPomodoroFromNotification()
+        openPersonalAlarmFromNotification()
     }
 
     override fun onRequestPermissionsResult(
@@ -168,6 +277,7 @@ class MainActivity : Activity() {
                 "window.dispatchEvent(new Event('focus'));", null
             )
             openPomodoroFromNotification()
+            openPersonalAlarmFromNotification()
         }
     }
 
@@ -187,6 +297,8 @@ class MainActivity : Activity() {
 
     override fun onDestroy() {
         stopPendingNotificationOpen()
+        stopPendingPersonalAlarm()
+        stopAlarmAttention()
         executor.shutdownNow()
         if (::webView.isInitialized) webView.destroy()
         super.onDestroy()

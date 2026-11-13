@@ -39,6 +39,72 @@ class AndroidBridge(
             .put("error", e.message ?: "Could not schedule Focus notification.").toString()
     }
 
+    /** Android alarm registry is authoritative after recurring/one-time delivery. */
+    @JavascriptInterface
+    fun getPersonalAlarms(): String = NativePersonalAlarms.list(activity).toString()
+
+    @JavascriptInterface
+    fun syncPersonalAlarms(raw: String): String = try {
+        NativePersonalAlarms.sync(activity, JSONArray(raw)).toString()
+    } catch (e: Exception) {
+        JSONObject().put("error", e.message ?: "Personal alarm scheduling failed").toString()
+    }
+
+    @JavascriptInterface
+    fun personalAlarmStatus(): String = NativePersonalAlarms.status(activity).toString()
+
+    @JavascriptInterface
+    fun rememberAlarmWallpaper(path: String): Boolean =
+        NativePersonalAlarms.rememberWallpaper(activity, path)
+
+    @JavascriptInterface
+    fun openPersonalAlarmPermissionSettings() {
+        activity.runOnUiThread {
+            val status = NativePersonalAlarms.status(activity)
+            try {
+                if (!status.optBoolean("notificationsGranted") ||
+                    !status.optBoolean("channelEnabled")) {
+                    activity.startActivity(
+                        Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                            putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, activity.packageName)
+                        }
+                    )
+                } else if (!status.optBoolean("overlayGranted")) {
+                    activity.startActivity(
+                        Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION).apply {
+                            data = android.net.Uri.parse("package:" + activity.packageName)
+                        }
+                    )
+                } else if (!status.optBoolean("exact") &&
+                    android.os.Build.VERSION.SDK_INT >= 31) {
+                    activity.startActivity(
+                        Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                            data = android.net.Uri.parse("package:" + activity.packageName)
+                        }
+                    )
+                } else if (!status.optBoolean("fullScreen") &&
+                    android.os.Build.VERSION.SDK_INT >= 34) {
+                    activity.startActivity(
+                        Intent(android.provider.Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT).apply {
+                            data = android.net.Uri.parse("package:" + activity.packageName)
+                        }
+                    )
+                }
+            } catch (_: Exception) {
+                // UI re-checks real status when app resumes; never claim permission granted.
+            }
+        }
+    }
+
+
+    @JavascriptInterface
+    fun dismissPersonalAlarm(id: String) {
+        activity.runOnUiThread {
+            NativePersonalAlarms.dismiss(activity, id)
+            activity.stopAlarmAttention()
+        }
+    }
+
     @JavascriptInterface
     fun focusNotificationStatus(): String =
         NativeFocusAlarm.status(activity).toString()

@@ -132,6 +132,7 @@
       ['[data-mobile-focus="skip"]','Skip phase','Saltar fase'],
       ['[data-mobile-focus="reset"]','Reset','Reiniciar'],
       ['[data-mobile-focus="settings"]','Focus settings','Ajustes de enfoque'],
+      ['[data-mobile-focus="alarms"]','⏰ Alarms','⏰ Alarmas'],
       ['details summary','Custom work / break duration','Duración personalizada de enfoque / descanso'],
       ['.mlv-android-focus-compact label:first-child','Work minutes','Minutos de enfoque'],
       ['.mlv-android-focus-compact label:nth-child(2)','Break minutes','Minutos de descanso'],
@@ -1173,6 +1174,7 @@
             <button type="button" data-mobile-focus="skip">Skip phase</button>
             <button type="button" data-mobile-focus="reset">Reset</button>
             <button type="button" data-mobile-focus="settings">Focus settings</button>
+          <button type="button" data-mobile-focus="alarms">⏰ Alarms</button>
           </div>
           <details><summary>Custom work / break duration</summary>
             <div class="mlv-android-focus-compact">
@@ -1222,6 +1224,7 @@
         const action=source.dataset.mobileFocus;
         if(action==='close'){close();return;}
         if(action==='enable-notifications'){requestNativeFocusPermission();updateFocus();return;}
+        if(action==='alarms'){close();window.MichelsLifeAlarms?.open?.();return;}
         if(!api){return;}
         if(action==='toggle'){
           if(api.focusState?.().status!=='running')requestNativeFocusPermission();
