@@ -100,12 +100,14 @@ jobs:
           from zipfile import ZipFile
           with ZipFile('windows/AppBundle.zip') as z:
               assert z.testzip() is None
-              for f in ('index.html','focus-immersive.js','personal-alarms.js'):
+              for f in ('index.html','focus-immersive.js','personal-alarms.js','motivation-immersive.js'):
                   assert f in z.namelist(), f
               html=z.read('index.html').decode('utf-8')
-              assert '3.0.223' in html and 'personal-alarms.js' in html
+              assert '3.0.223' in html and 'personal-alarms.js' in html and 'motivation-immersive.js' in html
               alarms=z.read('personal-alarms.js').decode()
               assert 'mlv-alarm-screen' in alarms and 'michelslife:languagechange' in alarms
+              motivation=z.read('motivation-immersive.js').decode()
+              assert 'mlv-motivation-copy' in motivation and 'state?.affirmations' in motivation
           print('PASS: installed-capable Windows package includes alarms and Pomodoro')
           PY
       - name: Stage immutable 13 asset official release with source identity
