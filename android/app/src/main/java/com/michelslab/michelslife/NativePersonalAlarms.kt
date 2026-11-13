@@ -13,6 +13,7 @@ import android.content.pm.PackageManager
 import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.net.Uri
+import android.provider.Settings
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -33,6 +34,7 @@ import java.time.format.DateTimeFormatter
 internal object NativePersonalAlarms {
     private const val PREFS = "michelslife.personal-alarms.v1"
     private const val KEY_ALARMS = "alarms"
+    private const val KEY_WALLPAPER = "wallpaper"
     private const val LAST_DELIVERED_PREFIX = "lastDelivered."
     private const val CHANNEL = "michelslife-personal-alarms-v1"
     private const val ACTION = "com.michelslab.michelslife.PERSONAL_ALARM"
@@ -52,6 +54,40 @@ internal object NativePersonalAlarms {
         if (!idPattern.matches(id)) return false
         val at = prefs(context).getLong(LAST_DELIVERED_PREFIX + id, 0L)
         return at > 0L && System.currentTimeMillis() - at in 0..15 * 60 * 1000L
+    }
+
+    fun wallpaper(context: Context): String =
+        prefs(context).getString(KEY_WALLPAPER, "") ?: ""
+
+    fun rememberWallpaper(context: Context, path: String): Boolean {
+        // Only bundled app images; never let user/HTML input read arbitrary files.
+        if (!Regex("^assets/[A-Za-z0-9_./-]{1,240}\\.(?i:jpg|jpeg|png|webp)$").matches(path) ||
+            path.contains("..")) return false
+        prefs(context).edit().putString(KEY_WALLPAPER, path).apply()
+        return true
+    }
+
+    fun snooze(context: Context, id: String) {
+        val original = list(context)
+        var selected: JSONObject? = null
+        for (index in 0 until original.length()) {
+            val entry = original.optJSONObject(index)
+            if (entry?.optString("id") == id) { selected = entry;break }
+        }
+        if (selected == null) return
+        // Round UP after five minutes so precision never places the new time in the past.
+        val next = LocalDateTime.now().plusMinutes(6).withSecond(0).withNano(0)
+        val replacement = JSONObject()
+            .put("id", "s" + System.currentTimeMillis().toString(36))
+            .put("label", selected.optString("label"))
+            .put("time", next.format(DateTimeFormatter.ofPattern("HH:mm")))
+            .put("date", next.toLocalDate().toString())
+            .put("repeat", "once")
+            .put("days", JSONArray())
+            .put("enabled", true)
+        if (original.length() >= 80) return
+        original.put(replacement)
+        sync(context, original)
     }
 
     private fun notificationAllowed(context: Context): Boolean =
@@ -167,6 +203,7 @@ internal object NativePersonalAlarms {
         val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channel = nm.getNotificationChannel(CHANNEL)
         return JSONObject().put("notificationsGranted", notificationAllowed(context))
+            .put("overlayGranted", Settings.canDrawOverlays(context))
             .put("channelEnabled", channel == null ||
                 channel.importance != NotificationManager.IMPORTANCE_NONE)
             .put("exact", Build.VERSION.SDK_INT < 31 || alarmManager.canScheduleExactAlarms())
@@ -206,6 +243,7 @@ internal object NativePersonalAlarms {
         if (!idPattern.matches(id)) return
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.cancel(id.hashCode() and Int.MAX_VALUE)
+        if (PersonalAlarmOverlay.isRinging(id)) PersonalAlarmOverlay.stop(context)
         prefs(context).edit().remove(LAST_DELIVERED_PREFIX + id).apply()
     }
 
@@ -233,6 +271,10 @@ internal object NativePersonalAlarms {
         if (target.optString("repeat") != "once") {
             schedule(context, target)
         }
+        // An explicitly authorized overlay is the only Android-supported route
+        // above other UNLOCKED apps; full-screen notifications show a heads-up
+        // while unlocked even when their permission is granted.
+        PersonalAlarmOverlay.show(context, id, target.optString("label"), target.optString("time"))
         if (!notificationAllowed(context)) return
         createChannel(context)
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
