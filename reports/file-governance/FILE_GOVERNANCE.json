@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 361,
-  "classified_files_total": 357,
+  "tracked_files_total": 362,
+  "classified_files_total": 358,
   "docs_content_inspected": 95,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -17,7 +17,7 @@
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
-    "release_intent": 10,
+    "release_intent": 11,
     "source": 118,
     "test": 32,
     "text_metadata": 1,
@@ -29,8 +29,8 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "e7d97f3556f1853e695c209977ea19c2a495e54a6030b8fbec09b686fc560265",
-  "evidence_fingerprint": "bdad3259d548c009e110b8b23004543350d30e365e8bd6a437db1c071d475bf3",
+  "inventory_fingerprint": "eaef95fa8f7c6e28159b741c164ecc6db8eee07cc33182c0b3edfb7d1d81021b",
+  "evidence_fingerprint": "fc0016b53b29c442c7ad37e3db73c848e2e3044198302bb59494a46ed6a6963a",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -500,6 +500,13 @@
       "purpose": "historical source-controlled release/candidate intent (preserve for traceability)",
       "certainty": "rule",
       "blob": "a59fe652b7e3e14d63b2520572c2cce355c9612b"
+    },
+    {
+      "path": ".michelslab/release-intents/windows-v3222-a0211.txt",
+      "role": "release_intent",
+      "purpose": "historical source-controlled release/candidate intent (preserve for traceability)",
+      "certainty": "rule",
+      "blob": "e3c6e3844c3bb58a893e23cb5946d3bb81a71797"
     },
     {
       "path": ".michelslab/release-requests/android-v0.2.2-unified-v3.0.216.json",
@@ -2570,20 +2577,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "9c2690b781a1cc62",
+      "id": "85b0af53c56111e8",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "122 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml",
+      "observation": "123 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "5e103821f9bff9df",
+      "id": "275072e4e6bf0ddb",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "36 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-focus-immersive.yml, .github/workflows/release-android-direct-v0210.yml",
+      "observation": "37 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-focus-immersive.yml, .github/workflows/release-android-direct-v0210.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
