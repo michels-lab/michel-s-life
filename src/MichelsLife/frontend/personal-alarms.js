@@ -163,7 +163,7 @@ function styles(){
 #mlv-alarm-ring p{font:600 clamp(18px,3vw,28px) system-ui,sans-serif;margin:0}
 #mlv-alarm-ring .actions{display:flex;gap:13px;justify-content:center;flex-wrap:wrap}
 #mlv-alarm-launcher{
- position:fixed;right:104px;bottom:22px;z-index:2147483200;border-radius:16px;
+ position:fixed;right:157px;bottom:94px;z-index:2147483200;border-radius:16px;
  padding:10px 13px;box-shadow:0 10px 35px #0008;background:#091424ee;white-space:nowrap
 }
 html[data-mlv-platform=android] #mlv-alarm-launcher{right:15px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:2147483000}
