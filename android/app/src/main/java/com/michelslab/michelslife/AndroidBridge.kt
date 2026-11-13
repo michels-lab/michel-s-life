@@ -55,7 +55,10 @@ class AndroidBridge(
 
     @JavascriptInterface
     fun dismissPersonalAlarm(id: String) {
-        activity.runOnUiThread { NativePersonalAlarms.dismiss(activity, id) }
+        activity.runOnUiThread {
+            NativePersonalAlarms.dismiss(activity, id)
+            activity.stopAlarmAttention()
+        }
     }
 
     @JavascriptInterface
