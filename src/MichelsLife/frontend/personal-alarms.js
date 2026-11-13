@@ -462,6 +462,10 @@ function boot(){
  // Android receives a system notification; the page timer is only a foreground mirror.
  window.setInterval(tick,900);
  window.addEventListener('focus',()=>{syncNative();renderList();});
+ window.addEventListener('michelslife:languagechange',()=>{localize();renderList();});
+ // If installer language is reconciled after a first paint, refresh accessibility copy.
+ const observer=new MutationObserver(()=>{if(screen)localize();});
+ observer.observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
  document.addEventListener('keydown',e=>{
   if(e.key!=='Escape')return;
   if(ring&&!ring.hidden){e.preventDefault();dismissRing(false);}
