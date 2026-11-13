@@ -12,6 +12,7 @@ const hhmm=x=>/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(x);
 const validDate=x=>/^\d{4}-\d{2}-\d{2}$/.test(x)&&!Number.isNaN(new Date(x+'T12:00:00').getTime());
 const days=['Su','Mo','Tu','We','Th','Fr','Sa'];
 let records=[],screen=null,ring=null,launcher=null,editing=null,lastTick=Date.now(),shown=new Set(),nativeError='',nativeCache='',ready=false;
+let windowsRingtone=null;
 function normal(item){
   if(!item||! /^[a-zA-Z0-9_-]{1,64}$/.test(item.id)||!hhmm(item.time))return null;
   const repeat=['once','daily','weekly'].includes(item.repeat)?item.repeat:'once';
@@ -387,19 +388,27 @@ function ringAlarm(id){
    if('Notification' in window&&Notification.permission==='granted'){
      try{new Notification('Michel’s Life · '+(item.label||tr('Alarm','Alarma')));}catch(_){}
    }
-   try{
-    const Audio=window.AudioContext||window.webkitAudioContext;
-    if(Audio){const ctx=new Audio(),osc=ctx.createOscillator(),gain=ctx.createGain();
-      osc.connect(gain);gain.connect(ctx.destination);osc.type='sine';osc.frequency.value=880;
-      gain.gain.setValueAtTime(.11,ctx.currentTime);osc.start();
-      osc.stop(ctx.currentTime+.55);osc.onended=()=>ctx.close();
-    }
-   }catch(_){}
+   // Keep audible reminder repeating until dismissed or snoozed. Windows
+   // cannot ring from a closed application; Android has native OS delivery.
+   if(windowsRingtone)window.clearInterval(windowsRingtone);
+   const tone=()=>{
+     if(ring.hidden){window.clearInterval(windowsRingtone);windowsRingtone=null;return;}
+     try{
+       const Audio=window.AudioContext||window.webkitAudioContext;
+       if(Audio){const ctx=new Audio(),osc=ctx.createOscillator(),gain=ctx.createGain();
+         osc.connect(gain);gain.connect(ctx.destination);osc.type='sine';osc.frequency.value=880;
+         gain.gain.setValueAtTime(.12,ctx.currentTime);osc.start();
+         osc.stop(ctx.currentTime+.65);osc.onended=()=>ctx.close();
+       }
+     }catch(_){}
+   };
+   tone();windowsRingtone=window.setInterval(tone,1700);
  }
  return true;
 }
 function dismissRing(snooze){
  if(!ring||ring.hidden)return;
+ if(windowsRingtone){window.clearInterval(windowsRingtone);windowsRingtone=null;}
  if(snooze&&ringingId){
   const item=records.find(x=>x.id===ringingId);
   if(item){
