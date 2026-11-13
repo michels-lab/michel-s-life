@@ -75,6 +75,13 @@ class AndroidBridge(
                             data = android.net.Uri.parse("package:" + activity.packageName)
                         }
                     )
+                } else if (!status.optBoolean("exact") &&
+                    android.os.Build.VERSION.SDK_INT >= 31) {
+                    activity.startActivity(
+                        Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                            data = android.net.Uri.parse("package:" + activity.packageName)
+                        }
+                    )
                 } else if (!status.optBoolean("fullScreen") &&
                     android.os.Build.VERSION.SDK_INT >= 34) {
                     activity.startActivity(
