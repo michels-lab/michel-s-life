@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 359,
-  "classified_files_total": 355,
-  "docs_content_inspected": 94,
+  "tracked_files_total": 361,
+  "classified_files_total": 357,
+  "docs_content_inspected": 95,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
   "roles": {
@@ -13,7 +13,7 @@
     "build_script": 6,
     "config": 22,
     "database_migration": 3,
-    "document": 87,
+    "document": 88,
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
@@ -22,15 +22,15 @@
     "test": 32,
     "text_metadata": 1,
     "web_ui": 3,
-    "workflow": 42
+    "workflow": 43
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "d4479c760f2b33cb497e9a9c454841110e36042bdc3861fbd0b9e3089087aa84",
-  "evidence_fingerprint": "7507d1fc35fb1b6f2839ef9243d4722ab8a406d85800357618c30bb838420f82",
+  "inventory_fingerprint": "e7d97f3556f1853e695c209977ea19c2a495e54a6030b8fbec09b686fc560265",
+  "evidence_fingerprint": "bdad3259d548c009e110b8b23004543350d30e365e8bd6a437db1c071d475bf3",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -100,7 +100,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "3b6b3fa76ec955a931167776379ab0357b0f322a"
+      "blob": "6f372bc479e48357ff03b244385030fd74816654"
     },
     {
       "path": ".github/workflows/build-store-msix.yml",
@@ -114,7 +114,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "1071dd00cb4f2b646eddd7258778cc638e409bc5"
+      "blob": "0c4fa7d08bb950247b731803cd7246890006e9dc"
     },
     {
       "path": ".github/workflows/ci.yml",
@@ -327,6 +327,13 @@
       "blob": "ea9cb2beb6daaf10ad568e3064a0a4ebb4746b6f"
     },
     {
+      "path": ".github/workflows/release-windows-v3222-a0211.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "818e8c20c58a312d8bae1e8d17b42223d7ef27ed"
+    },
+    {
       "path": ".github/workflows/release-windows.yml",
       "role": "workflow",
       "purpose": "GitHub Actions automation",
@@ -359,7 +366,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "c552cde9d6a4cc7869f167ea84c53943304d7b8c"
+      "blob": "0762f3cb4fc16531289853795ebeb2cacf0578b1"
     },
     {
       "path": ".gitignore",
@@ -1566,6 +1573,13 @@
       "blob": "3ebaa40d1f3688791c3f804b01e528e0e1e23168"
     },
     {
+      "path": "docs/releases/v3.0.222.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "a15f2b805f34e10afc3ebd096b5b4598a2c356e0"
+    },
+    {
       "path": "installer/MichelsLife.iss",
       "role": "build_script",
       "purpose": "platform build/project/installer script",
@@ -1619,7 +1633,7 @@
       "role": "build_script",
       "purpose": "platform build/project/installer script",
       "certainty": "inferred",
-      "blob": "806827c3524265be36bc7e51312fd6c063dcee02"
+      "blob": "ed69917b0578baac6850f60c464017d78e0d4a9d"
     },
     {
       "path": "src/MichelsLife/Program.cs.gz.b64",
@@ -1780,7 +1794,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "7989823e334afae70d83958d2faebaef8a82ed5e"
+      "blob": "132b04671ef9a5fa8dcec222376114308aeed444"
     },
     {
       "path": "tools/create_store_assets.ps1",
@@ -1899,14 +1913,14 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "3054bcd204a238f47d056ba44e6ec98661346ac0"
+      "blob": "c3034ab2a7257d579d4f0413a16e0f90a743676c"
     },
     {
       "path": "tools/release_smoke_test.py",
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "8e02a9fd7ac2a026ee3f0f6ac6b0473543ea0b2b"
+      "blob": "7c9ca33127029d760af27676ab1da88dc0e6cb3c"
     },
     {
       "path": "tools/render_store_manifest.py",
@@ -2389,7 +2403,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "677738934dd820ef830627007c5957174209593a"
+      "blob": "22c762cc16949eaa01ccff4a60be9afaba8129de"
     },
     {
       "path": "tools/ui_spanish_dashboard_smoke.mjs",
@@ -2473,7 +2487,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "a912046cf690a33e4284e6ae90088dc49bbe0e85"
+      "blob": "cb0735b7d9773b941cd94d2ec0fb44b82a45771a"
     },
     {
       "path": "tools/validate_external_ui_design.py",
@@ -2487,7 +2501,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "0e30f3a5520429187c75a03456b65a0d31b1f5c6"
+      "blob": "2319a40b499cbcfc8ce4345abe5bba37e083e054"
     },
     {
       "path": "tools/validate_granada_inline_scripts.mjs",
@@ -2556,20 +2570,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "dbf998378b39f5e3",
+      "id": "9c2690b781a1cc62",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "115 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml",
+      "observation": "122 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "f4fef699bc30939c",
+      "id": "5e103821f9bff9df",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "29 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-focus-immersive.yml, .github/workflows/release-android-direct-v0210.yml",
+      "observation": "36 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-focus-immersive.yml, .github/workflows/release-android-direct-v0210.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
