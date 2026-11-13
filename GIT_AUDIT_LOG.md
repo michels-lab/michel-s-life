@@ -1,3 +1,10 @@
+## 2026-11-12 — Granada: afirmaciones y frases en Pomodoro y Alarmas (ambas plataformas)
+
+- **Nuevo criterio funcional del propietario:** las afirmaciones y las frases ya disponibles en Michel's Life deben mostrarse en Pomodoro inmersivo (Windows y Android) y cuando suene una alarma. La superposición nativa Android también debe mostrar esos mensajes sobre otras aplicaciones.
+- **Implementación propuesta en release PR #205:** módulo compartido `motivation-immersive.js`, lectura de `vida_rpg_personal_progress_v2` sin modificarlo, respeto de afirmaciones ocultas y preferencia por favoritas, frases del motor de mensajes de la app, visualización sin HTML de usuario, control de caché por sesión y caché acotada en preferencias Android para alarmas con WebView cerrada. No se envían frases a servicios externos.
+- **Validación pendiente:** pruebas de contrato Node, empaquetado Windows/Android, compilación Kotlin, UI real y release oficial. No contar este bloque como instalado, integrado a `main` o publicado hasta observarlo.
+- **Developer Edition:** cancelada por instrucción del usuario en todas las aplicaciones; no es un requisito de release.
+
 ## 2026-10-21 — Correction: Perspective Council is for ChatGPT, not Copilot
 
 - Owner clarified these perspectives must help the assistant doing Michel's Lab development. The four mistakenly Copilot-specific perspective profiles are removed, replaced by four provider-neutral `.michelslab/agents/*.md` role instructions, readable through GitHub and usable with the master offline prompt pack.
