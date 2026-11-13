@@ -320,7 +320,7 @@ function localize(){
  if(android()){
   try{
    const status=JSON.parse(window.MichelsLifeAndroid?.personalAlarmStatus?.()||'{}');
-   permission.hidden=status.notificationsGranted!==false&&status.overlayGranted===true&&status.fullScreen!==false;
+   permission.hidden=status.notificationsGranted!==false&&status.overlayGranted===true&&status.fullScreen!==false&&status.exact!==false;
   }catch(_){}
  }
  q('#mlv-alarm-count',screen).textContent=tr('Alarms','Alarmas')+' · '+records.length;
