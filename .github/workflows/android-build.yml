@@ -303,6 +303,10 @@ jobs:
           retention-days: 7
 
   installed-candidate-smoke:
+    # Release uses the PRODUCTION-SIGNED APK in the unified signed-native gate.
+    # These three emulator probes install a separate debug APK and can fail independently
+    # due to hosted ADB; they remain mandatory on normal PR/push debug CI.
+    if: ${{ inputs.build_direct != true }}
     name: Fresh install + launch of same-run candidate Android APK on Android 16
     needs: android
     runs-on: ubuntu-latest
@@ -358,6 +362,10 @@ jobs:
           retention-days: 30
 
   installed-candidate-android15-smoke:
+    # Release uses the PRODUCTION-SIGNED APK in the unified signed-native gate.
+    # These three emulator probes install a separate debug APK and can fail independently
+    # due to hosted ADB; they remain mandatory on normal PR/push debug CI.
+    if: ${{ inputs.build_direct != true }}
     name: Install + relaunch exact same-run candidate APK on Android 15
     needs: android
     runs-on: ubuntu-latest
@@ -408,6 +416,10 @@ jobs:
           retention-days: 30
 
   installed-candidate-android14-smoke:
+    # Release uses the PRODUCTION-SIGNED APK in the unified signed-native gate.
+    # These three emulator probes install a separate debug APK and can fail independently
+    # due to hosted ADB; they remain mandatory on normal PR/push debug CI.
+    if: ${{ inputs.build_direct != true }}
     name: Native exact-candidate install + relaunch Android 14 (independent ADB/GPU)
     needs: android
     runs-on: ubuntu-latest
