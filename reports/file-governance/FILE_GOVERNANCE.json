@@ -29,7 +29,7 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "e15f318aaa7a60c1513b116a2efc16c4c54fffa4d943fcf22c01c88b0f562998",
+  "inventory_fingerprint": "a43261295545fd970ff3a412acdd0f28d3b9d8e79e0cca5611793078f1105e70",
   "evidence_fingerprint": "80fee192b930149999baa6c8947c978f6e156f523e2bc19cf3a8165ec3f517cb",
   "files": [
     {
@@ -520,7 +520,7 @@
       "role": "release_intent",
       "purpose": "historical source-controlled release/candidate intent (preserve for traceability)",
       "certainty": "rule",
-      "blob": "0a75f47824904d5fba343c34ad145b733b12cf49"
+      "blob": "a8be415d72650e4025f0657490b8bd928224ba2d"
     },
     {
       "path": ".michelslab/release-intents/windows-v3222-a0211.txt",
