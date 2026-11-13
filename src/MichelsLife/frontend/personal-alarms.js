@@ -326,6 +326,7 @@ function localize(){
  }
  q('#mlv-alarm-count',screen).textContent=tr('Alarms','Alarmas')+' · '+records.length;
  launcher.textContent=tr('⏰ Alarms','⏰ Alarmas');
+ launcher.setAttribute('aria-label',tr('Open alarms','Abrir alarmas'));
  q('#mlv-alarm-note',screen).textContent=(android()?
   tr('Android uses system sound and vibration, including when Michel’s Life is closed. Battery optimization or notification permissions may affect delivery.',
   'Android utiliza sonido y vibración del sistema, incluso con Michel’s Life cerrada. El ahorro de batería o los permisos pueden afectar el aviso.'):
@@ -354,6 +355,8 @@ function renderList(){
       {weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):
       tr('Needs a new date','Requiere otra fecha');
   q('input',card).checked=item.enabled;
+  q('input',card).setAttribute('aria-label',tr('Enable alarm','Activar alarma'));
+
   q('.edit',card).textContent=tr('Edit','Editar');
   q('.remove',card).textContent=tr('Delete','Eliminar');
   root.append(card);
