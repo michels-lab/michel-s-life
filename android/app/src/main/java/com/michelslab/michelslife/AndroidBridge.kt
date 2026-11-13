@@ -39,6 +39,25 @@ class AndroidBridge(
             .put("error", e.message ?: "Could not schedule Focus notification.").toString()
     }
 
+    /** Android alarm registry is authoritative after recurring/one-time delivery. */
+    @JavascriptInterface
+    fun getPersonalAlarms(): String = NativePersonalAlarms.list(activity).toString()
+
+    @JavascriptInterface
+    fun syncPersonalAlarms(raw: String): String = try {
+        NativePersonalAlarms.sync(activity, JSONArray(raw)).toString()
+    } catch (e: Exception) {
+        JSONObject().put("error", e.message ?: "Personal alarm scheduling failed").toString()
+    }
+
+    @JavascriptInterface
+    fun personalAlarmStatus(): String = NativePersonalAlarms.status(activity).toString()
+
+    @JavascriptInterface
+    fun dismissPersonalAlarm(id: String) {
+        activity.runOnUiThread { NativePersonalAlarms.dismiss(activity, id) }
+    }
+
     @JavascriptInterface
     fun focusNotificationStatus(): String =
         NativeFocusAlarm.status(activity).toString()
