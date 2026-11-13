@@ -77,8 +77,19 @@ function next(item,at=Date.now()){
   }
   return 0;
 }
+function rememberWallpaper(){
+  if(!android())return;
+  const raw=window.MichelsLifeFocusImmersive?.wallpaper?.()||'';
+  const match=raw.match(/url\(\s*["']?([^)"']+)/i);
+  if(!match)return;
+  const path=match[1].replace(/^\.?\//,'').replace(/^app\//,'');
+  if(/^assets\/[a-zA-Z0-9_./-]+\.(jpg|jpeg|png|webp)$/i.test(path)&&!path.includes('..')){
+    try{window.MichelsLifeAndroid?.rememberAlarmWallpaper?.(path);}catch(_){}
+  }
+}
 function useWallpaper(element){
   window.MichelsLifeFocusImmersive?.applyWallpaper?.(element);
+  rememberWallpaper();
 }
 function dateInput(){
   const d=new Date(),today=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -190,6 +201,7 @@ function create(){
  <button type="button" id="mlv-alarm-cancel-edit" hidden>Cancel edit</button></div></form>
  <div class="mlv-alarm-count" id="mlv-alarm-count"></div><div id="mlv-alarm-list" class="mlv-alarm-list"></div>
  <p id="mlv-alarm-note" class="mlv-alarm-note"></p>
+ <button type="button" id="mlv-alarm-permissions" hidden>Enable full-screen alarms over other apps</button>
  </div>`;
  ring=document.createElement('section');ring.id='mlv-alarm-ring';ring.hidden=true;
  ring.innerHTML=`
@@ -209,6 +221,9 @@ function create(){
   q('.mlv-alarm-days',screen).appendChild(label);
  }
  q('#mlv-alarm-repeat',screen).addEventListener('change',updateForm);
+ q('#mlv-alarm-permissions',screen).addEventListener('click',()=>{
+  try{window.MichelsLifeAndroid?.openPersonalAlarmPermissionSettings?.();}catch(_){}
+ });
  screen.addEventListener('click',e=>{
   const target=e.target.closest('button');if(!target)return;
   if(target.hasAttribute('data-alarm-close'))close();
@@ -299,6 +314,15 @@ function localize(){
  q('#mlv-alarm-close',screen).textContent=tr('Close','Cerrar');
  q('#mlv-alarm-save',screen).textContent=editing?tr('Save changes','Guardar cambios'):tr('Create alarm','Crear alarma');
  q('#mlv-alarm-cancel-edit',screen).textContent=tr('Cancel edit','Cancelar edición');
+ const permission=q('#mlv-alarm-permissions',screen);
+ permission.hidden=!android();
+ permission.textContent=tr('Allow alarms over other apps / screen lock','Permitir alarmas sobre otras apps / pantalla bloqueada');
+ if(android()){
+  try{
+   const status=JSON.parse(window.MichelsLifeAndroid?.personalAlarmStatus?.()||'{}');
+   permission.hidden=status.notificationsGranted!==false&&status.overlayGranted===true&&status.fullScreen!==false;
+  }catch(_){}
+ }
  q('#mlv-alarm-count',screen).textContent=tr('Alarms','Alarmas')+' · '+records.length;
  launcher.textContent=tr('⏰ Alarms','⏰ Alarmas');
  q('#mlv-alarm-note',screen).textContent=(android()?
@@ -396,7 +420,7 @@ function dismissRing(snooze){
  ring.hidden=true;ringingId=null;document.body.classList.remove('mlv-alarm-visible');
 }
 function tick(){
- if(!screen)return;
+ if(!screen||android())return;
  const now=Date.now();
  if(now<lastTick){lastTick=now;return;}
  if(now-lastTick>1000*65){lastTick=now;return;} // No flood after a sleeping laptop awakens.
@@ -422,6 +446,7 @@ function tick(){
 function boot(){
  if(ready)return;ready=true;
  read();create();
+ rememberWallpaper();window.addEventListener('load',rememberWallpaper,{once:true});
  // Android receives a system notification; the page timer is only a foreground mirror.
  window.setInterval(tick,900);
  window.addEventListener('focus',()=>{syncNative();renderList();});
