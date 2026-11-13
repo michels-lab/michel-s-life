@@ -1,0 +1,183 @@
+name: Publish Windows 3.0.222 + unchanged Android Direct 0.2.11
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.michelslab/release-intents/windows-v3222-a0211.txt'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: windows-v3222-android-v0211-unified
+  cancel-in-progress: false
+
+jobs:
+  exact-source-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Exact source CI and isolated release intent
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git diff --name-only HEAD^ HEAD)" = ".michelslab/release-intents/windows-v3222-a0211.txt"
+          grep -q '<Version>3.0.222</Version>' src/MichelsLife/MichelsLife.csproj
+          grep -q 'versionName = "0.2.11"' android/app/build.gradle.kts
+          for attempt in $(seq 1 80); do
+            gh api -X GET "repos/$GITHUB_REPOSITORY/actions/runs" -f head_sha="$GITHUB_SHA" -f per_page=100 > runs.json
+            ready=true
+            for name in "Source validation" "UI smoke" "Android UI smoke"; do
+              if ! jq -e --arg n "$name" --arg sha "$GITHUB_SHA" \
+                'any(.workflow_runs[]; .name==$n and .head_sha==$sha and .conclusion=="success")' runs.json >/dev/null; then
+                ready=false
+              fi
+            done
+            if [ "$ready" = true ]; then echo "EXACT_SOURCE_ALL_GREEN: $GITHUB_SHA"; exit 0; fi
+            sleep 15
+          done
+          echo "::error::Release-intent source checks incomplete"; exit 1
+
+  build-windows:
+    uses: ./.github/workflows/release-windows.yml
+    with:
+      publish: false
+    secrets: inherit
+
+  publish-unified:
+    needs: [exact-source-gate, build-windows]
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      GH_TOKEN: ${{ secrets.RELEASES_REPO_TOKEN }}
+      DESTINATION: michels-lab/michel-s-life-releases
+      TAG: v3.0.222-android-v0.2.11
+      PRIOR: v3.0.221-android-v0.2.11
+      ANDROID_CERT_PIN: ${{ vars.ANDROID_DIRECT_CERT_SHA256 }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download exact same-run Windows binaries and installer evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: MichelsLife-Windows-v3.0.222
+          path: windows
+      - name: Retrieve existing production Android 0.2.11, verify byte identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$GH_TOKEN" && test -n "$ANDROID_CERT_PIN"
+          mkdir -p android-old
+          gh release download "$PRIOR" --repo "$DESTINATION" --dir android-old \
+            --pattern 'MichelsLife-Android-Direct-v0.2.11.apk*' \
+            --pattern 'android-v0.2.11-manifest.json' \
+            --pattern 'android-signing-certificate-v0.2.11.txt' \
+            --pattern 'release-provenance.json'
+          (cd android-old && sha256sum -c MichelsLife-Android-Direct-v0.2.11.apk.sha256)
+          jq -e --arg cert "$ANDROID_CERT_PIN" \
+            '.versionName=="0.2.11" and .versionCode==13
+             and .package=="com.michelslab.michelslife"
+             and .distribution=="production-signed" and .signerCertSha256==$cert' \
+            android-old/android-v0.2.11-manifest.json
+          jq -e --arg cert "$ANDROID_CERT_PIN" \
+            '.windows_version=="3.0.221" and .android_version=="0.2.11"
+             and .android_certificate_sha256==$cert' android-old/release-provenance.json
+          test "$(sha256sum android-old/MichelsLife-Android-Direct-v0.2.11.apk | cut -d' ' -f1)" = \
+            "$(jq -r '.assets_sha256["MichelsLife-Android-Direct-v0.2.11.apk"]' android-old/release-provenance.json)"
+
+      - name: Verify Windows binaries, installer launch, application bundle and immersion
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '<Version>3.0.222</Version>' src/MichelsLife/MichelsLife.csproj
+          for name in MichelsLife-Setup-v3.0.222.exe MichelsLife-Portable-v3.0.222.exe MichelsLife-v3.0.222.exe; do
+            test -s "windows/$name"
+            (cd windows && sha256sum -c "$name.sha256")
+          done
+          cmp windows/MichelsLife-Portable-v3.0.222.exe windows/MichelsLife-v3.0.222.exe
+          grep -q 'LAUNCH PASS' windows/MichelsLife-Installed-launch.txt
+          grep -q 'LAUNCH PASS' windows/MichelsLife-Portable-launch.txt
+          test -s windows/AppBundle.zip
+          test -s windows/michels_life_icon.ico
+          python3 - <<'PY'
+          from zipfile import ZipFile
+          with ZipFile('windows/AppBundle.zip') as z:
+              assert z.testzip() is None
+              html=z.read('index.html').decode()
+              focus=z.read('focus-immersive.js').decode()
+              assert '3.0.222' in html
+              assert 'data-mlv-focus-immersive="v1"' in html
+              for marker in ('#v30162FocusDock', 'display:none!important;visibility:hidden!important',
+                             'pointer-events:none!important', 'mlv-desktop-focus-immersive',
+                             'mlv-desktop-mini-focus', 'FocusStoryV30162'):
+                  assert marker in focus, f'missing immersion fix: {marker}'
+          print('PASS: 3.0.222 packaged immersive Focus, legacy dock hidden')
+          PY
+
+      - name: Create complete immutable 13-asset release with original Android retained
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" --repo "$DESTINATION" >/dev/null 2>&1; then
+            echo "::error::Release tag exists - never overwrite stable binaries"; exit 1
+          fi
+          mkdir -p dist
+          cp windows/MichelsLife-{Setup,Portable}-v3.0.222.exe* dist/
+          cp windows/MichelsLife-v3.0.222.exe* dist/
+          cp windows/AppBundle.zip windows/michels_life_icon.ico dist/
+          cp android-old/MichelsLife-Android-Direct-v0.2.11.apk* dist/
+          cp android-old/android-v0.2.11-manifest.json dist/
+          cp android-old/android-signing-certificate-v0.2.11.txt dist/
+          python3 - <<'PY'
+          import hashlib,json,os
+          from pathlib import Path
+          files={p.name:hashlib.sha256(p.read_bytes()).hexdigest()
+                 for p in Path('dist').iterdir() if p.is_file()}
+          prior=json.loads(Path('android-old/release-provenance.json').read_text())
+          assert files['MichelsLife-Android-Direct-v0.2.11.apk']==prior['assets_sha256']['MichelsLife-Android-Direct-v0.2.11.apk']
+          data={'schema':1,'product':"Michel's Life",
+            'source_repo':os.environ['GITHUB_REPOSITORY'],'source_sha':os.environ['GITHUB_SHA'],
+            'windows_version':'3.0.222','android_version':'0.2.11',
+            'android_version_code':13,'android_certificate_sha256':os.environ['ANDROID_CERT_PIN'],
+            'android_retained_from_tag':os.environ['PRIOR'],
+            'android_retained_source_sha':prior['source_sha'],'assets_sha256':files}
+          Path('dist/release-provenance.json').write_text(json.dumps(data,indent=2)+'\n')
+          assert len(list(Path('dist').iterdir()))==13
+          PY
+      - name: Publish only after draft integrity and download checks pass
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release create "$TAG" dist/* --repo "$DESTINATION" --target main --draft \
+            --title "Michel's Life — Windows 3.0.222 + Android Direct 0.2.11" \
+            --notes-file docs/releases/v3.0.222.md
+          gh release view "$TAG" --repo "$DESTINATION" --json isDraft,assets,name > draft.json
+          jq -e '.isDraft==true and (.assets|length)==13' draft.json
+          for asset in \
+            MichelsLife-Setup-v3.0.222.exe MichelsLife-Setup-v3.0.222.exe.sha256 \
+            MichelsLife-Portable-v3.0.222.exe MichelsLife-Portable-v3.0.222.exe.sha256 \
+            MichelsLife-v3.0.222.exe MichelsLife-v3.0.222.exe.sha256 \
+            MichelsLife-Android-Direct-v0.2.11.apk MichelsLife-Android-Direct-v0.2.11.apk.sha256 \
+            android-v0.2.11-manifest.json android-signing-certificate-v0.2.11.txt \
+            AppBundle.zip michels_life_icon.ico release-provenance.json; do
+            jq -e --arg a "$asset" 'any(.assets[]; .name==$a)' draft.json >/dev/null
+          done
+          mkdir downloaded
+          gh release download "$TAG" --repo "$DESTINATION" --dir downloaded \
+            --pattern 'MichelsLife-Setup-v3.0.222.exe*' \
+            --pattern 'MichelsLife-Portable-v3.0.222.exe*' \
+            --pattern 'MichelsLife-Android-Direct-v0.2.11.apk*' \
+            --pattern 'release-provenance.json'
+          (cd downloaded && sha256sum -c MichelsLife-Setup-v3.0.222.exe.sha256)
+          (cd downloaded && sha256sum -c MichelsLife-Portable-v3.0.222.exe.sha256)
+          (cd downloaded && sha256sum -c MichelsLife-Android-Direct-v0.2.11.apk.sha256)
+          cmp downloaded/release-provenance.json dist/release-provenance.json
+          gh release edit "$TAG" --repo "$DESTINATION" --draft=false --latest
+          test "$(gh api "repos/$DESTINATION/releases/latest" --jq '.tag_name')" = "$TAG"
+          echo "WINDOWS_3222_STABLE_RELEASE_VERIFIED $GITHUB_SHA"
