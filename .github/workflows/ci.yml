@@ -51,6 +51,9 @@ jobs:
       - name: Shared release asset resolver tests
         run: python tools/test_download_release_asset.py
 
+      - name: Test exact-SHA UI triggers and real production-signed Android release gate
+        run: node --test tools/test_unified_release_gate_3223.mjs
+
       - name: Canonical frontend validation
         run: |
           python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
