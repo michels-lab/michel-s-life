@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 362,
-  "classified_files_total": 358,
+  "tracked_files_total": 367,
+  "classified_files_total": 363,
   "docs_content_inspected": 95,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -18,19 +18,19 @@
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 11,
-    "source": 118,
-    "test": 32,
+    "source": 121,
+    "test": 33,
     "text_metadata": 1,
     "web_ui": 3,
-    "workflow": 43
+    "workflow": 44
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "eaef95fa8f7c6e28159b741c164ecc6db8eee07cc33182c0b3edfb7d1d81021b",
-  "evidence_fingerprint": "fc0016b53b29c442c7ad37e3db73c848e2e3044198302bb59494a46ed6a6963a",
+  "inventory_fingerprint": "61809f9e8c7dc65f3e40320596c17bb34a259c463c598f8fc7720900a6bce4f5",
+  "evidence_fingerprint": "d4d96f3576c6019443e9508bd70908bc48cf6093245e1a303a062e69d30a78a9",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -248,6 +248,13 @@
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
       "blob": "b2342dc506b68ca027bb00a62966b32aca4770d6"
+    },
+    {
+      "path": ".github/workflows/granada-personal-alarms.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "535b07b9034b6c801d77c4aea10a0c3240f2a4a1"
     },
     {
       "path": ".github/workflows/granada-recovery-loss-triage.yml",
@@ -639,14 +646,14 @@
       "role": "config",
       "purpose": "machine-readable configuration",
       "certainty": "rule",
-      "blob": "3ce5eb1cac9c05e97a18173794765529325c025f"
+      "blob": "b20726d15272c9ba7d0c7dbbb8fe9505d5261492"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/AndroidBridge.kt",
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "a886cbbaddb1776483812eeba8c8c7ad473fb38d"
+      "blob": "ea4830937dfa70521d16b8ab758402f302b10aaf"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/AndroidCalendarConsent.kt",
@@ -709,14 +716,28 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "bcc52e6f64383b44c1c854bdf22e24da4aae8f02"
+      "blob": "b542e281c50aea667880becf5dd9cf8fcccf15e9"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt",
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "ae1e44b8209bc3b89dfa1808afffc1c0b3155205"
+      "blob": "6b3244c958ab210a3361dc0eae2dbecdb05b6592"
+    },
+    {
+      "path": "android/app/src/main/java/com/michelslab/michelslife/NativePersonalAlarms.kt",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "c7b53402b1dcef8aa079fd92fbf689eb672931bf"
+    },
+    {
+      "path": "android/app/src/main/java/com/michelslab/michelslife/PersonalAlarmOverlay.kt",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "aac1a2ecbb93be229075bf2238d4f2af03987e69"
     },
     {
       "path": "android/app/src/main/res/drawable-nodpi/michels_life_logo.jpg",
@@ -1059,7 +1080,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "33b08a8645d81d0fa8e4069f0b193c46a50ba1e1"
+      "blob": "b1488d8cb473cc0f379bf2e7b4e177d327ac692f"
     },
     {
       "path": "android/mobile-sections.js",
@@ -1115,7 +1136,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "953e102203ae492588fc41939e8bfa65d833e1ca"
+      "blob": "503965b7a41aa34984324ae152056203c588c7e4"
     },
     {
       "path": "android/tools/smoke_candidate_apk_install.sh",
@@ -1675,7 +1696,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "72a7871da8c0987804c13bddb1254ba4536a6204"
+      "blob": "14fff599f2039fbe49b9ed4cd997ad27ff25aebe"
     },
     {
       "path": "src/MichelsLife/frontend/i18n.js",
@@ -1690,6 +1711,13 @@
       "purpose": "local HTML documentation or web interface",
       "certainty": "inferred",
       "blob": "01d24bc33f4f67b55d8b51342dd95f4f2bcc01bd"
+    },
+    {
+      "path": "src/MichelsLife/frontend/personal-alarms.js",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "0bbbf51104b96f7a93922cd634ce6d485adbac19"
     },
     {
       "path": "store/AppxManifest.template.xml",
@@ -1829,7 +1857,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "193da0e1e2a8aefdfe3b05352d4d7b5e3b86c468"
+      "blob": "b5d0132e27915d618ecc3faf93083ae31ad2dca5"
     },
     {
       "path": "tools/granada_android16_host_verdict.py",
@@ -1941,7 +1969,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "caf902018dd5f60fe3a90f7b90f0901235c2c015"
+      "blob": "92655b990125e662bb09b6c677e90180f97a6531"
     },
     {
       "path": "tools/repository_file_auditor.py",
@@ -2180,6 +2208,13 @@
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "780f163f1240696edfc630d27f541c5a3e60bdde"
+    },
+    {
+      "path": "tools/test_personal_alarm_contract.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "32e611137a537b35e46373d874c27e56725c7b46"
     },
     {
       "path": "tools/test_repository_file_auditor.py",
@@ -2577,20 +2612,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "85b0af53c56111e8",
+      "id": "dbc02a0b4d8cf0cc",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "123 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml",
+      "observation": "128 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/external-ui-baseline-guard.yml, .github/workflows/file-steward-pr-validation.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "275072e4e6bf0ddb",
+      "id": "6ebaca11942b99de",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "37 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-focus-immersive.yml, .github/workflows/release-android-direct-v0210.yml",
+      "observation": "46 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-focus-immersive.yml, .github/workflows/granada-personal-alarms.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
