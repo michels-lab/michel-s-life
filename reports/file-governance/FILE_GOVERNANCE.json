@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 371,
-  "classified_files_total": 367,
+  "tracked_files_total": 373,
+  "classified_files_total": 369,
   "docs_content_inspected": 96,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -17,20 +17,20 @@
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
-    "release_intent": 11,
+    "release_intent": 12,
     "source": 122,
-    "test": 34,
+    "test": 35,
     "text_metadata": 1,
     "web_ui": 3,
     "workflow": 45
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
-    "POTENTIAL_UNLOGGED_CHANGES": 1
+    "POTENTIAL_UNLOGGED_CHANGES": 2
   },
-  "finding_total": 5,
-  "inventory_fingerprint": "ac04fa5199b3bd7f5639db5af084d4566e4ec6b451ef87796a02f475d44455fa",
-  "evidence_fingerprint": "fe00b56d9275fd9525affd3d44653943dd64873abf8bfc31ac88a49212225eca",
+  "finding_total": 6,
+  "inventory_fingerprint": "e15f318aaa7a60c1513b116a2efc16c4c54fffa4d943fcf22c01c88b0f562998",
+  "evidence_fingerprint": "80fee192b930149999baa6c8947c978f6e156f523e2bc19cf3a8165ec3f517cb",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -72,7 +72,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "7ba144f3474e91f244aeaa713f07ea43cdf2e7d2"
+      "blob": "88168984a78704ab7b029036ffc95b8ae463dc9e"
     },
     {
       "path": ".github/workflows/android-direct-private-candidate-v026.yml",
@@ -100,7 +100,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "6f372bc479e48357ff03b244385030fd74816654"
+      "blob": "7b6cfc2109dc9a393251de00c58229d67b1d446f"
     },
     {
       "path": ".github/workflows/build-store-msix.yml",
@@ -121,7 +121,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "c2d8c08b153908945e68e7e9b82e3963f21d3719"
+      "blob": "1cdd628a5011be7cc86148aaa59ad906d676efc2"
     },
     {
       "path": ".github/workflows/external-ui-baseline-guard.yml",
@@ -338,7 +338,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "379cba23961a9e8e127920240324f3304f5fbcb3"
+      "blob": "a367f3b10ca5a397279393f666580a1afe45a01b"
     },
     {
       "path": ".github/workflows/release-windows-v3222-a0211.yml",
@@ -380,7 +380,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "0762f3cb4fc16531289853795ebeb2cacf0578b1"
+      "blob": "5fc04f380f349600daca5b49ae6db6e56008cfb9"
     },
     {
       "path": ".gitignore",
@@ -514,6 +514,13 @@
       "purpose": "historical source-controlled release/candidate intent (preserve for traceability)",
       "certainty": "rule",
       "blob": "a59fe652b7e3e14d63b2520572c2cce355c9612b"
+    },
+    {
+      "path": ".michelslab/release-intents/unified-v3223-a0212.txt",
+      "role": "release_intent",
+      "purpose": "historical source-controlled release/candidate intent (preserve for traceability)",
+      "certainty": "rule",
+      "blob": "0a75f47824904d5fba343c34ad145b733b12cf49"
     },
     {
       "path": ".michelslab/release-intents/windows-v3222-a0211.txt",
@@ -2259,6 +2266,13 @@
       "blob": "d4a97e6dfcaed5be7f294de6b5ec2e80693dcabb"
     },
     {
+      "path": "tools/test_unified_release_gate_3223.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "94e9077f683d670c1d05382c065e9e80ea4aa488"
+    },
+    {
       "path": "tools/ui_android_calendar_read_smoke.mjs",
       "role": "source",
       "purpose": "code/test implementation",
@@ -2473,7 +2487,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "22c762cc16949eaa01ccff4a60be9afaba8129de"
+      "blob": "73798977b7c3dbe119a7b54e8202f7a788fd1ce8"
     },
     {
       "path": "tools/ui_spanish_dashboard_smoke.mjs",
@@ -2640,11 +2654,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "550984a15430c198",
+      "id": "a9c727fa5c6a32ab",
+      "code": "POTENTIAL_UNLOGGED_CHANGES",
+      "severity": "review",
+      "path": "GIT_AUDIT_LOG.md",
+      "observation": "8 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/release-unified-v3223-a0212.yml, .github/workflows/ui-smoke.yml, .michelslab/release-intents/unified-v3223-a0212.txt",
+      "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "3e9b69bf7fddc436",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "49 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-focus-immersive.yml, .github/workflows/granada-personal-alarms.yml",
+      "observation": "51 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-focus-immersive.yml, .github/workflows/granada-personal-alarms.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
