@@ -35,6 +35,14 @@
   }
 
   function wallpaper(){
+    // VisualSystemV30182 owns the actual selected background in a dedicated
+    // image layer, not on html/body CSS. Read the real loaded scene first.
+    const visual=q('#mlv184Background img');
+    const current=visual?.currentSrc||visual?.getAttribute?.('src')||'';
+    if(visual?.complete&&visual.naturalWidth>0&&
+       current&&!/["\\\n\r]/.test(current)&&!/^javascript:/i.test(current)){
+      return 'url("'+current+'")';
+    }
     const selectors=[
       '[data-mlv-active-wallpaper]','.mlv-theme-wallpaper',
       '[class*="wallpaper"]','#tab-missions .v131-hero',
