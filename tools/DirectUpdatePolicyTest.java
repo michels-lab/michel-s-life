@@ -78,7 +78,7 @@ public final class DirectUpdatePolicyTest {
         eq("natural numeric order .10 > .9",1,
             DirectUpdatePolicy.compareVersion("0.2.10","0.2.9"));
         eq("rollback exact pin not empty",64,pin.length());
-        String apk = "MichelsLife-Android-Direct-v0.2.12.apk";
+        String apk = "MichelsLife-Android-Direct-v0.2.9.apk";
         String digest = "a".repeat(64);
         eq("real manifest fields and signer required",true,
             DirectUpdatePolicy.manifestMatches("Michel's Life","android","direct",
