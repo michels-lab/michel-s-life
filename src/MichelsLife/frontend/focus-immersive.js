@@ -197,29 +197,59 @@
     for(const node of [screen,mini]){
       node.addEventListener('click',event=>{
         const button=event.target.closest('[data-focus-action]');if(!button)return;
-        const command=button.dataset.focusAction;
-        if(command==='open'){open();return;}
-        if(command==='alarms'){minimize();window.MichelsLifeAlarms?.open?.();return;}
-        if(command==='minimize'){minimize();return;}
-        const engine=api(),state=engine?.focusState?.();if(!engine)return;
-        if(command==='toggle')engine.toggleFocus?.();
-        if(command==='skip'){
-          if(state?.status==='running'&&!window.confirm(lang('Skip the current phase?','¿Saltar la fase actual?')))return;
-          engine.skipFocus?.();
-        }
-        if(command==='reset'){
-          if(state?.status==='running'&&!window.confirm(lang('Reset this session?','¿Reiniciar esta sesión?')))return;
-          engine.resetFocus?.();
-        }
-        refresh();
+        handleAction(button.dataset.focusAction);
       });
     }
     document.body.append(screen,mini,launcher);
   }
+  function handleAction(command){
+    if(command==='open'){open();return true;}
+    if(command==='alarms'){
+      minimize();
+      const opened=window.MichelsLifeAlarms?.open?.();
+      return opened===true;
+    }
+    if(command==='minimize'){minimize();return true;}
+    const engine=api(),state=engine?.focusState?.();
+    if(!engine?.focusState)return false;
+    if(command==='toggle')engine.toggleFocus?.();
+    else if(command==='skip'){
+      if(state?.status==='running'&&!window.confirm(lang('Skip the current phase?','¿Saltar la fase actual?')))return false;
+      engine.skipFocus?.();
+    }else if(command==='reset'){
+      if(state?.status==='running'&&!window.confirm(lang('Reset this session?','¿Reiniciar esta sesión?')))return false;
+      engine.resetFocus?.();
+    }else return false;
+    refresh();return true;
+  }
+  // The legacy 3.0.x navigation stack registers several capture listeners that
+  // can consume a click before launcher/button handlers see it. Own only our
+  // three surfaces from window capture (installed in <head> before legacy UI).
+  let lastInput=null;
+  function dispatchFocusInput(event){
+    if(android())return;
+    if(event.type==='keydown'&&!['Enter',' '].includes(event.key))return;
+    const t=event.target?.closest?.('#mlv-desktop-focus-launcher, #mlv-desktop-focus-immersive [data-focus-action], #mlv-desktop-mini-focus [data-focus-action]');
+    if(!t||t.disabled)return;
+    const action=t.id==='mlv-desktop-focus-launcher'?'launch':t.dataset.focusAction;
+    if(!action)return;
+    event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
+    const now=Date.now();
+    if(event.type==='click'&&lastInput&&lastInput.action===action&&now-lastInput.at<400)return;
+    lastInput={at:now,action};
+    if(action==='launch')open();else handleAction(action);
+  }
+  window.addEventListener('pointerdown',dispatchFocusInput,true);
+  window.addEventListener('click',dispatchFocusInput,true);
+  window.addEventListener('keydown',dispatchFocusInput,true);
   function open(){
     if(android())return window.MichelsLifeMobileExperience?.openFocus?.()||false;
-    create();if(!screen||!api()?.focusState)return false;
+    create();if(!screen)return false;
     applyWallpaper(screen);screen.hidden=false;closedPhase=null;closedMode=null;saveMinimized();
+    if(!api()?.focusState){
+      const status=q('#mlv-desktop-focus-status',screen);
+      if(status)status.textContent=lang('Starting the timer…','Iniciando el temporizador…');
+    }
     focusSceneSequence++;
     document.body.classList.add('mlv-desktop-focus-open');
     refresh();
