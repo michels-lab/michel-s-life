@@ -25,12 +25,11 @@
     "workflow": 48
   },
   "finding_counts": {
-    "BROKEN_RELATIVE_LINK": 4,
-    "POTENTIAL_UNLOGGED_CHANGES": 1
+    "BROKEN_RELATIVE_LINK": 4
   },
-  "finding_total": 5,
-  "inventory_fingerprint": "6dbb20d4f08688a8eb674793d0ca818700f593635079f1c83c43fbbd17e7a540",
-  "evidence_fingerprint": "b49c5fc3204e7f402634ac706f9ae07f16b51d6aecc08865d03b99bb58b6c64d",
+  "finding_total": 4,
+  "inventory_fingerprint": "9523343c70f5679a95f3a6aaadd1d7d2632d38d3388e261ce2b9180d765188c0",
+  "evidence_fingerprint": "1b533bb96254d4a85dcffac53fe3c6180cc4698881a1ee21ef601d2867659a17",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -604,7 +603,7 @@
       "role": "bitacora",
       "purpose": "technical/audit change history",
       "certainty": "rule",
-      "blob": "8ee27b1d09c427cc34a0e64e74a6192098504bec"
+      "blob": "1326a8193e9c417e949502e5b90c5634996ff3e2"
     },
     {
       "path": "LICENSE.txt",
@@ -632,7 +631,7 @@
       "role": "bitacora",
       "purpose": "technical/audit change history",
       "certainty": "rule",
-      "blob": "f11cbaa93746c49d71d597c5846427396c78564a"
+      "blob": "95d4b8f743d13aaff7e8c99085c81276d3151fce"
     },
     {
       "path": "android/DIRECT_DISTRIBUTION_SIGNING.md",
@@ -2777,15 +2776,6 @@
       "path": "docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md",
       "observation": "Missing: docs/android/audit/2026-10-12-ui-screenshot-gallery.md",
       "recommendation": "Fix link or restore target",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "8000cce1ebbf4d7c",
-      "code": "POTENTIAL_UNLOGGED_CHANGES",
-      "severity": "review",
-      "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "73 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml",
-      "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
   ],
