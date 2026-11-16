@@ -1,0 +1,63 @@
+name: GRANADA Android Direct safe update discovery
+on:
+  pull_request:
+    paths:
+      - 'android/app/src/main/java/com/michelslab/michelslife/DirectUpdatePolicy.java'
+      - 'android/app/src/main/java/com/michelslab/michelslife/AndroidDirectUpdateChecker.kt'
+      - 'android/app/src/main/java/com/michelslab/michelslife/AndroidBridge.kt'
+      - 'tools/DirectUpdatePolicyTest.java'
+      - 'android/app/src/main/java/com/michelslab/michelslife/VerifiedDirectApk.kt'
+      - 'android/app/src/main/AndroidManifest.xml'
+      - 'android/app/src/directRelease/AndroidManifest.xml'
+      - 'android/app/src/main/res/xml/verified_direct_update_paths.xml'
+      - 'android/app/build.gradle.kts'
+      - 'tools/test_android_direct_apk_native.mjs'
+      - 'android/android-bridge.js'
+      - 'tools/test_android_direct_update_control.mjs'
+      - 'tools/test_android_direct_update_bridge.mjs'
+      - '.github/workflows/granada-android-direct-update.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  direct-update-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Compile actual pure production update policy and reject unsafe states
+        run: |
+          mkdir -p /tmp/mlv-direct-update-test
+          javac -encoding UTF-8 -d /tmp/mlv-direct-update-test \
+            android/app/src/main/java/com/michelslab/michelslife/DirectUpdatePolicy.java \
+            tools/DirectUpdatePolicyTest.java
+          java -cp /tmp/mlv-direct-update-test DirectUpdatePolicyTest
+          # Cross-language integration with the production publisher's real
+          # Linux sha256sum output, including the final LF byte.
+          mkdir -p /tmp/mlv-direct-publisher-fixture
+          printf 'binary fixture for sha256sum verification\n'             > /tmp/mlv-direct-publisher-fixture/MichelsLife-Android-Direct-v0.2.9.apk
+          (
+            cd /tmp/mlv-direct-publisher-fixture
+            sha256sum MichelsLife-Android-Direct-v0.2.9.apk               > MichelsLife-Android-Direct-v0.2.9.apk.sha256
+          )
+          java -cp /tmp/mlv-direct-update-test DirectUpdatePolicyTest             /tmp/mlv-direct-publisher-fixture/MichelsLife-Android-Direct-v0.2.9.apk
+      - name: Verify real bridge wiring and deny automatic installation
+        run: |
+          node --check tools/test_android_direct_update_bridge.mjs
+          node tools/test_android_direct_update_bridge.mjs
+      - name: Execute actual Android Settings update control with bilingual user interactions
+        run: |
+          node --check android/android-bridge.js
+          node --check tools/test_android_direct_update_control.mjs
+          node tools/test_android_direct_update_control.mjs
+      - name: Verify downloaded APK has to pass signer and checksum before OS installer
+        run: |
+          node --check tools/test_android_direct_apk_native.mjs
+          node tools/test_android_direct_apk_native.mjs
