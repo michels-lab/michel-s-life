@@ -1,3 +1,5 @@
+### 2026-11-15 — RESULTADO FINAL DEL INSTALADO DEBUG EN CI: [run 43810112172](https://github.com/michels-lab/michel-s-life/actions/runs/43810112172) con build Android **PASS** y pruebas de APK debug instalado/reabierto Android 15 **PASS**. Los jobs de Android 14 y 16 fallaron; no se marca todo el workflow ni pruebas Galaxy como exitosas. Aún falta validar descarga/actualización de APK **firmada** en un dispositivo real antes de release futura.
+
 ## 2026-11-15 — Android Direct: comprobación y actualización oficial con consentimiento
 
 - [PR #208 integrada](https://github.com/michels-lab/michel-s-life/pull/208), commit `f4b94086e0a6d5c4bb40ad1f76476f13ea8fa533`. Implementación aislada a Android: Settings ofrece búsqueda manual de release estable, descarga en caché privada, progreso/cancelación, verificación del APK real con SHA-256, paquete, versionCode y certificado de firma permanente, segunda pulsación explícita para invocar el instalador de Android. Permiso `REQUEST_INSTALL_PACKAGES` solo en Android Direct; Google Play sigue gestionado por Play. No auto-install ni borrado de datos.
