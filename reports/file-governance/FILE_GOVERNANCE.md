@@ -5,7 +5,7 @@ No file is auto-deleted or declared unused.
 
 ## Coverage
 
-Tracked: 377; classified: 373; readable documents: 96; above read cap: 0; findings: 5.
+Tracked: 377; classified: 373; readable documents: 96; above read cap: 0; findings: 6.
 
 ## File roles
 
@@ -34,6 +34,7 @@ Tracked: 377; classified: 373; readable documents: 96; above read cap: 0; findin
 - **CONFIRMED / BROKEN_RELATIVE_LINK** docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md: Missing: docs/AGENTS.md. Next: Fix link or restore target (ID 7a232f866547f4b1)
 - **CONFIRMED / BROKEN_RELATIVE_LINK** docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md: Missing: docs/tools/ui_android_section_design_smoke.mjs. Next: Fix link or restore target (ID c9b0ed37825bd396)
 - **CONFIRMED / BROKEN_RELATIVE_LINK** docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md: Missing: docs/android/audit/2026-10-12-ui-screenshot-gallery.md. Next: Fix link or restore target (ID 55915b207228a042)
+- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** GIT_AUDIT_LOG.md: 3 implementation/config paths changed since this log's last commit; examples: src/MichelsLife/frontend/focus-immersive.js, src/MichelsLife/frontend/index.html, src/MichelsLife/frontend/personal-alarms.js. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID b498f22ec138b0c5)
 - **REVIEW / POTENTIAL_UNLOGGED_CHANGES** android/ANDROID_AUDIT_LOG.md: 58 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-focus-immersive.yml, .github/workflows/granada-personal-alarms.yml. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID 60aad9bd3008dc3b)
 
 Complete path → purpose/role/certainty list lives in FILE_GOVERNANCE.json. SUMMARY.json has counts only for master polling.

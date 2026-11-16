@@ -26,11 +26,11 @@
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
-    "POTENTIAL_UNLOGGED_CHANGES": 1
+    "POTENTIAL_UNLOGGED_CHANGES": 2
   },
-  "finding_total": 5,
-  "inventory_fingerprint": "4f1f8a3cf942a066fc270838034c52b72ea65bd25598b221088ff9f56291d462",
-  "evidence_fingerprint": "5a37039506c2cbc8d1f07325c997aa3da85decf56969e9172c856fb895412c0d",
+  "finding_total": 6,
+  "inventory_fingerprint": "7e6b048ab80374c222559aedb6682d1ab6e044c7370be44431f88242c51b5eaf",
+  "evidence_fingerprint": "0cb4c09608e7ed207a25cfda1e14c8fd0762b181be6924189f0ce8503706c9d4",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -1724,7 +1724,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "7c2768f18648f0cf39e880c3466357b52f1f1a71"
+      "blob": "59fe7ebadd2ce0433e8b2e5f7c0dd25203c970d1"
     },
     {
       "path": "src/MichelsLife/frontend/i18n.js",
@@ -1738,7 +1738,7 @@
       "role": "web_ui",
       "purpose": "local HTML documentation or web interface",
       "certainty": "inferred",
-      "blob": "38fb4294de0c7c429b90b7682d0f82a904025859"
+      "blob": "daa2dea1f73511891929a86e0c4528c8c85c87bc"
     },
     {
       "path": "src/MichelsLife/frontend/motivation-immersive.js",
@@ -1752,7 +1752,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "31696c236ee31783bff272949b666d8e65c6748f"
+      "blob": "f2f03367d4b68d1384d841de608fb8ade9b712e9"
     },
     {
       "path": "store/AppxManifest.template.xml",
@@ -2679,6 +2679,15 @@
       "path": "docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md",
       "observation": "Missing: docs/android/audit/2026-10-12-ui-screenshot-gallery.md",
       "recommendation": "Fix link or restore target",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "b498f22ec138b0c5",
+      "code": "POTENTIAL_UNLOGGED_CHANGES",
+      "severity": "review",
+      "path": "GIT_AUDIT_LOG.md",
+      "observation": "3 implementation/config paths changed since this log's last commit; examples: src/MichelsLife/frontend/focus-immersive.js, src/MichelsLife/frontend/index.html, src/MichelsLife/frontend/personal-alarms.js",
+      "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
