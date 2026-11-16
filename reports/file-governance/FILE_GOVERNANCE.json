@@ -26,11 +26,11 @@
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
-    "POTENTIAL_UNLOGGED_CHANGES": 2
+    "POTENTIAL_UNLOGGED_CHANGES": 1
   },
-  "finding_total": 6,
-  "inventory_fingerprint": "b94e909c0dda0a98100a1a001c88b36217708471d00d752f81ec67ef2f0af2de",
-  "evidence_fingerprint": "ba75f704ca5786cbf0f4f0d524fb8087d4c79586654ddb55dce043bfc798ea49",
+  "finding_total": 5,
+  "inventory_fingerprint": "4f1f8a3cf942a066fc270838034c52b72ea65bd25598b221088ff9f56291d462",
+  "evidence_fingerprint": "5a37039506c2cbc8d1f07325c997aa3da85decf56969e9172c856fb895412c0d",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -583,7 +583,7 @@
       "role": "bitacora",
       "purpose": "technical/audit change history",
       "certainty": "rule",
-      "blob": "be3b40258818df560f5feb556d20fb9cf36f95f9"
+      "blob": "61b5e8ad8725ce9fa2235770557bf6e1a7eaed5d"
     },
     {
       "path": "LICENSE.txt",
@@ -2679,15 +2679,6 @@
       "path": "docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md",
       "observation": "Missing: docs/android/audit/2026-10-12-ui-screenshot-gallery.md",
       "recommendation": "Fix link or restore target",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "62f273e55d322f3c",
-      "code": "POTENTIAL_UNLOGGED_CHANGES",
-      "severity": "review",
-      "path": "GIT_AUDIT_LOG.md",
-      "observation": "15 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-transactional-cloud-restore.yml, .github/workflows/release-unified-v3223-a0212.yml, .github/workflows/ui-smoke.yml",
-      "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
