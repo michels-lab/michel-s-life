@@ -235,8 +235,13 @@
     if(!action)return;
     event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
     const now=Date.now();
-    if(event.type==='click'&&lastInput&&lastInput.action===action&&now-lastInput.at<400)return;
-    lastInput={at:now,action};
+    // Never dedupe two physical clicks. Pausing then resuming rapidly is a
+    // legitimate action, especially in the minimized floating Pomodoro.
+    // Only suppress the browser's synthetic click after a handled keydown.
+    if(event.type==='click'&&lastInput?.kind==='keydown'&&
+       lastInput.action===action&&now-lastInput.at<350)return;
+    if(event.type==='keydown')lastInput={at:now,action,kind:'keydown'};
+    else lastInput=null;
     if(action==='launch')open();else handleAction(action);
   }
   // Handle the completed click: hiding/mounting a dialog on pointerdown
