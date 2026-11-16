@@ -477,7 +477,7 @@ function captureAlarmLauncher(event){
  if(event.type==='click'&&now-lastLauncherGesture<400)return;
  lastLauncherGesture=now;open();
 }
-window.addEventListener('pointerdown',captureAlarmLauncher,true);
+// Do not hide the launcher on pointerdown; the browser must finish its click.
 window.addEventListener('click',captureAlarmLauncher,true);
 window.addEventListener('keydown',captureAlarmLauncher,true);
 function boot(){
