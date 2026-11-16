@@ -59,6 +59,12 @@ jobs:
           python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
           node --check src/MichelsLife/frontend/i18n.js
 
+      - name: Verify Chapter artwork recovery, Pomodoro and Windows/Android alarm contracts
+        run: |
+          node --check src/MichelsLife/frontend/focus-immersive.js
+          node --check src/MichelsLife/frontend/personal-alarms.js
+          node --test tools/test_chapter_art_recovery_contract.mjs tools/test_focus_immersive_contract.mjs tools/test_personal_alarm_contract.mjs
+
       - name: Test fail-closed cloud and portable restore storage boundaries
         run: node tools/test_cloud_restore_storage.mjs
 
