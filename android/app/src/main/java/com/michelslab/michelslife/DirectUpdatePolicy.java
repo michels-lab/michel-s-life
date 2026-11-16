@@ -103,14 +103,37 @@ public final class DirectUpdatePolicy {
             || (entry + "\r\n").equals(sidecar);
     }
 
+    // Real Michel's Life releases pair a Windows version with a separate Android
+    // version: v3.0.223-android-v0.2.12. The earlier v3.0.223-only
+    // assumption silently prevented EVERY valid Android Direct update.
+    public static String androidVersionFromTag(String tag) {
+        if (tag == null) return null;
+        java.util.regex.Matcher matched = Pattern.compile(
+            "^v[0-9]{1,5}\\.[0-9]{1,5}\\.[0-9]{1,5}-android-v([0-9]{1,5}\\.[0-9]{1,5}\\.[0-9]{1,5})$"
+        ).matcher(tag);
+        return matched.matches() ? matched.group(1) : null;
+    }
+
+    public static boolean tagMatchesAndroidVersion(String tag, String version) {
+        return version != null && version.equals(androidVersionFromTag(tag));
+    }
+
     public static boolean officialReleaseUrl(String url, String tag) {
-        return tag != null && tag.matches("v[0-9]+\\.[0-9]+\\.[0-9]+") &&
+        return androidVersionFromTag(tag) != null &&
             (OFFICIAL_RELEASE_PREFIX + tag).equals(url);
     }
 
     public static boolean officialAssetUrl(String url, String tag, String filename) {
-        if (tag == null || filename == null || filename.isBlank() ||
+        String android = androidVersionFromTag(tag);
+        if (android == null || filename == null || filename.isBlank() ||
             !filename.matches("[A-Za-z0-9._-]+")) return false;
+        if (filename.startsWith("MichelsLife-Android-Direct-v") &&
+            !filename.equals("MichelsLife-Android-Direct-v" + android + ".apk") &&
+            !filename.equals("MichelsLife-Android-Direct-v" + android + ".apk.sha256"))
+            return false;
+        if (filename.startsWith("android-v") && filename.endsWith("-manifest.json") &&
+            !filename.equals("android-v" + android + "-manifest.json"))
+            return false;
         return ("https://github.com/michels-lab/michel-s-life-releases/releases/download/"
             + tag + "/" + filename).equals(url);
     }
