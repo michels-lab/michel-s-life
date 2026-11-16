@@ -29,7 +29,7 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "d586bf92bdae4ecc2c5582bf410888bf21967e83f38e995b3c8a2c768f2ae09c",
+  "inventory_fingerprint": "c03dd8a43ad345ddf4fb288db0d568688f63cd94050bb81c924e40bf204588eb",
   "evidence_fingerprint": "7a847c2741631f1f0060c32d470e377ff9b3984e1273b00dc3fb19ee72493751",
   "files": [
     {
@@ -1724,7 +1724,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "22ab6288359c889579920ae54882126480a5b199"
+      "blob": "8fd03356df3c08e704849b0033e5a5c87f85ffb6"
     },
     {
       "path": "src/MichelsLife/frontend/i18n.js",
@@ -1752,7 +1752,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "f2f03367d4b68d1384d841de608fb8ade9b712e9"
+      "blob": "a1d4a32dcb8df3dfdbb6eff0606b6417309b3c9f"
     },
     {
       "path": "store/AppxManifest.template.xml",
