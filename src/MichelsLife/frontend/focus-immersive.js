@@ -239,7 +239,8 @@
     lastInput={at:now,action};
     if(action==='launch')open();else handleAction(action);
   }
-  window.addEventListener('pointerdown',dispatchFocusInput,true);
+  // Handle the completed click: hiding/mounting a dialog on pointerdown
+  // makes its originating button vanish before pointerup (WebView/Chromium).
   window.addEventListener('click',dispatchFocusInput,true);
   window.addEventListener('keydown',dispatchFocusInput,true);
   function open(){
