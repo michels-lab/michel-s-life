@@ -241,8 +241,8 @@
   }
   // Handle the completed click: hiding/mounting a dialog on pointerdown
   // makes its originating button vanish before pointerup (WebView/Chromium).
-  window.addEventListener('click',dispatchFocusInput,true);
-  window.addEventListener('keydown',dispatchFocusInput,true);
+  window.addEventListener?.('click',dispatchFocusInput,true);
+  window.addEventListener?.('keydown',dispatchFocusInput,true);
   function open(){
     if(android())return window.MichelsLifeMobileExperience?.openFocus?.()||false;
     create();if(!screen)return false;
