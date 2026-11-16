@@ -13,6 +13,7 @@ const validDate=x=>/^\d{4}-\d{2}-\d{2}$/.test(x)&&!Number.isNaN(new Date(x+'T12:
 const days=['Su','Mo','Tu','We','Th','Fr','Sa'];
 let records=[],screen=null,ring=null,launcher=null,editing=null,lastTick=Date.now(),shown=new Set(),nativeError='',nativeCache='',ready=false;
 let windowsRingtone=null;
+const windowsNotifications=[];
 function normal(item){
   if(!item||! /^[a-zA-Z0-9_-]{1,64}$/.test(item.id)||!hhmm(item.time))return null;
   const repeat=['once','daily','weekly'].includes(item.repeat)?item.repeat:'once';
@@ -378,6 +379,7 @@ function ringAlarm(id){
  const item=records.find(x=>x.id===id);
  if(!item)return false;
  ringingId=id;
+ if(!android())windowsNotifications.push({id:item.id,label:item.label||tr('Alarm','Alarma'),time:item.time});
  if(item.repeat==='once'&&item.enabled){item.enabled=false;store();}
  screen.hidden=true;ring.hidden=false;useWallpaper(ring);
  document.body.classList.add('mlv-alarm-visible');
@@ -430,32 +432,54 @@ function dismissRing(snooze){
   }
  }
  try{window.MichelsLifeAndroid?.dismissPersonalAlarm?.(ringingId||'');}catch(_){}
+ if(ringingId){for(let i=windowsNotifications.length-1;i>=0;i--)if(windowsNotifications[i].id===ringingId)windowsNotifications.splice(i,1)}
  ring.hidden=true;ringingId=null;document.body.classList.remove('mlv-alarm-visible');
 }
 function tick(){
  if(!screen||android())return;
  const now=Date.now();
  if(now<lastTick){lastTick=now;return;}
- if(now-lastTick>1000*65){lastTick=now;return;} // No flood after a sleeping laptop awakens.
+ // Sleep or hidden WebView2 throttling: catch alarms within 15 minutes
+ // of their actual due time; never flood hours-old alarms on wake.
+ const start=Math.max(lastTick,now-15*60*1000);
  for(const item of records){
   if(!item.enabled)continue;
   let due=0;
   if(item.repeat==='once')due=localAt(item);
   else{
-   const [hh,mm]=item.time.split(':').map(Number);
-   const date=new Date(now);date.setHours(hh,mm,0,0);
-   if(date.getTime()<=lastTick)date.setDate(date.getDate()+1);
-   due=date.getTime();
-   if(item.repeat==='weekly'&&!item.days.includes(new Date(due).getDay()))continue;
+   const [hour,minute]=item.time.split(':').map(Number);
+   const occurrence=new Date(now);occurrence.setHours(hour,minute,0,0);
+   if(occurrence.getTime()>now)occurrence.setDate(occurrence.getDate()-1);
+   due=occurrence.getTime();
+   if(item.repeat==='weekly'&&!item.days.includes(occurrence.getDay()))continue;
   }
-  const unique=item.id+':'+due;
-  if(due>lastTick&&due<=now&&!shown.has(unique)){
-   shown.add(unique);ringAlarm(item.id);break;
+  const key=item.id+':'+due;
+  if(due>start&&due<=now&&!shown.has(key)){
+   shown.add(key);ringAlarm(item.id);break;
   }
  }
  lastTick=now;
- if(shown.size>100)shown.clear();
+ if(shown.size>256)shown.clear();
 }
+function takeWindowsNotification(){
+ // The native tray polls this even if the web timer was throttled.
+ if(android())return null;
+ tick();
+ return windowsNotifications.shift()||null;
+}
+let lastLauncherGesture=0;
+function captureAlarmLauncher(event){
+ if(event.type==='keydown'&&!['Enter',' '].includes(event.key))return;
+ const button=event.target?.closest?.('#mlv-alarm-launcher');
+ if(!button||button.disabled)return;
+ event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
+ const now=Date.now();
+ if(event.type==='click'&&now-lastLauncherGesture<400)return;
+ lastLauncherGesture=now;open();
+}
+window.addEventListener('pointerdown',captureAlarmLauncher,true);
+window.addEventListener('click',captureAlarmLauncher,true);
+window.addEventListener('keydown',captureAlarmLauncher,true);
 function boot(){
  if(ready)return;ready=true;
  read();create();
@@ -473,7 +497,7 @@ function boot(){
   else if(screen&&!screen.hidden){e.preventDefault();close();}
  });
 }
-window.MichelsLifeAlarms={open,close,ringAlarm,read,records:()=>records.slice(),next,localAt,dismissRing};
+window.MichelsLifeAlarms={open,close,ringAlarm,read,records:()=>records.slice(),next,localAt,dismissRing,pollWindows:tick,takeWindowsNotification};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
 else boot();
 })();
