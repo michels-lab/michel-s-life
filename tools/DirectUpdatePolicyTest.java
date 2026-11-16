@@ -34,18 +34,27 @@ public final class DirectUpdatePolicyTest {
             DirectUpdatePolicy.channel("com.android.vending",true,"other"));
         eq("unknown installer and signer", "test",
             DirectUpdatePolicy.channel("com.unknown.installer",false,""));
+        eq("paired Windows/Android tag matches Android asset", true,
+            DirectUpdatePolicy.tagMatchesAndroidVersion("v3.0.223-android-v0.2.12", "0.2.12"));
+        eq("Windows version is NOT Android version", false,
+            DirectUpdatePolicy.tagMatchesAndroidVersion("v3.0.223-android-v0.2.12", "3.0.223"));
+        eq("mismatched Android version in unified tag rejected", false,
+            DirectUpdatePolicy.tagMatchesAndroidVersion("v3.0.223-android-v0.2.11", "0.2.12"));
+        eq("legacy Windows-only tag rejected", false,
+            DirectUpdatePolicy.officialReleaseUrl(
+                "https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.223", "v3.0.223"));
         eq("canonical release URL", true, DirectUpdatePolicy.officialReleaseUrl(
-            "https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.221","v3.0.221"));
+            "https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.223-android-v0.2.12","v3.0.223-android-v0.2.12"));
         eq("cannot trust lookalike host", false, DirectUpdatePolicy.officialReleaseUrl(
-            "https://github.com.malicious.test/michels-lab/michel-s-life-releases/releases/tag/v3.0.221","v3.0.221"));
+            "https://github.com.malicious.test/michels-lab/michel-s-life-releases/releases/tag/v3.0.223-android-v0.2.12","v3.0.223-android-v0.2.12"));
         eq("cannot trust altered release URL", false, DirectUpdatePolicy.officialReleaseUrl(
-            "https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.221?download=1","v3.0.221"));
+            "https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.223-android-v0.2.12?download=1","v3.0.223-android-v0.2.12"));
         eq("exact official APK URL", true, DirectUpdatePolicy.officialAssetUrl(
-            "https://github.com/michels-lab/michel-s-life-releases/releases/download/v3.0.221/MichelsLife-Android-Direct-v0.2.9.apk",
-            "v3.0.221","MichelsLife-Android-Direct-v0.2.9.apk"));
+            "https://github.com/michels-lab/michel-s-life-releases/releases/download/v3.0.223-android-v0.2.12/MichelsLife-Android-Direct-v0.2.12.apk",
+            "v3.0.223-android-v0.2.12","MichelsLife-Android-Direct-v0.2.12.apk"));
         eq("reject foreign APK URL", false, DirectUpdatePolicy.officialAssetUrl(
-            "https://github.com/foreign/michel-s-life-releases/releases/download/v3.0.221/MichelsLife-Android-Direct-v0.2.9.apk",
-            "v3.0.221","MichelsLife-Android-Direct-v0.2.9.apk"));
+            "https://github.com/foreign/michel-s-life-releases/releases/download/v3.0.223-android-v0.2.12/MichelsLife-Android-Direct-v0.2.12.apk",
+            "v3.0.223-android-v0.2.12","MichelsLife-Android-Direct-v0.2.12.apk"));
         eq("installed current official stable",CURRENT,
             decide("0.2.9",11,"0.2.9",11,true,true,true));
         eq("future Android candidate code wins independent of Windows tag",NEWER,
@@ -69,7 +78,7 @@ public final class DirectUpdatePolicyTest {
         eq("natural numeric order .10 > .9",1,
             DirectUpdatePolicy.compareVersion("0.2.10","0.2.9"));
         eq("rollback exact pin not empty",64,pin.length());
-        String apk = "MichelsLife-Android-Direct-v0.2.9.apk";
+        String apk = "MichelsLife-Android-Direct-v0.2.12.apk";
         String digest = "a".repeat(64);
         eq("real manifest fields and signer required",true,
             DirectUpdatePolicy.manifestMatches("Michel's Life","android","direct",
