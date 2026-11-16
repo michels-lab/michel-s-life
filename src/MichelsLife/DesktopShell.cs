@@ -19,6 +19,7 @@ internal static class DesktopShell
     private static System.Windows.Forms.Timer? _taskbarTimer;
     private static TaskbarProgress? _taskbarProgress;
     private static bool _taskbarPollBusy;
+    private static bool _alarmPollBusy;
     private static bool _exitRequested;
     private static bool _attached;
 
@@ -90,6 +91,7 @@ internal static class DesktopShell
         _taskbarProgress = new TaskbarProgress(form.Handle);
         _taskbarTimer = new System.Windows.Forms.Timer { Interval = 1500 };
         _taskbarTimer.Tick += async (_, _) => await RefreshTaskbarMissionAsync();
+        _taskbarTimer.Tick += async (_, _) => await PollWindowsAlarmsAsync();
         _taskbarTimer.Start();
         _ = RefreshTaskbarMissionAsync();
 
@@ -198,6 +200,46 @@ internal static class DesktopShell
         finally
         {
             _taskbarPollBusy = false;
+        }
+    }
+
+    // The Windows tray timer stays active when the form is hidden. A background
+    // WebView2 can throttle JavaScript intervals, so explicitly poll the same
+    // alarm owner here; each due alarm is removed from its one-shot queue.
+    // No second persistent alarm registry is created in the native shell.
+    private static async Task PollWindowsAlarmsAsync()
+    {
+        if (_alarmPollBusy || _form is null || _form.IsDisposed || _webView?.CoreWebView2 is null) return;
+        _alarmPollBusy = true;
+        try
+        {
+            var raw = await _webView.CoreWebView2.ExecuteScriptAsync(
+                "(()=>{try{return window.MichelsLifeAlarms?.takeWindowsNotification?.()||null}catch(_){return null}})()"
+            );
+            using var json = System.Text.Json.JsonDocument.Parse(raw);
+            var info = json.RootElement;
+            if (info.ValueKind != System.Text.Json.JsonValueKind.Object) return;
+            var label = info.TryGetProperty("label", out var l) && l.ValueKind == System.Text.Json.JsonValueKind.String
+                ? l.GetString() ?? "Alarma" : "Alarma";
+            var time = info.TryGetProperty("time", out var t) && t.ValueKind == System.Text.Json.JsonValueKind.String
+                ? t.GetString() ?? string.Empty : string.Empty;
+            if (label.Length > 140) label = label[..140];
+            RestoreWindow(); // The immersive alarm is now visible even after minimizing to tray.
+            try { System.Media.SystemSounds.Exclamation.Play(); } catch { }
+            _trayIcon?.ShowBalloonTip(
+                12000, "Michel's Life · Alarma",
+                string.IsNullOrWhiteSpace(time) ? label : $"{time} · {label}",
+                ToolTipIcon.Info
+            );
+        }
+        catch
+        {
+            // A navigation/reload can temporarily remove the JS owner.
+            // Do not modify or re-create saved alarm schedules here.
+        }
+        finally
+        {
+            _alarmPollBusy = false;
         }
     }
 
