@@ -1,3 +1,10 @@
+## 2026-11-15 — Android Direct: comprobación y actualización oficial con consentimiento
+
+- [PR #208 integrada](https://github.com/michels-lab/michel-s-life/pull/208), commit `f4b94086e0a6d5c4bb40ad1f76476f13ea8fa533`. Implementación aislada a Android: Settings ofrece búsqueda manual de release estable, descarga en caché privada, progreso/cancelación, verificación del APK real con SHA-256, paquete, versionCode y certificado de firma permanente, segunda pulsación explícita para invocar el instalador de Android. Permiso `REQUEST_INSTALL_PACKAGES` solo en Android Direct; Google Play sigue gestionado por Play. No auto-install ni borrado de datos.
+- El parser de release acepta y compara tags unificados `v3.0.223-android-v0.2.12` y versionName Android, en lugar de asumir solo el tag de Windows (bloqueo histórico). Protege también el campo apkFilename vs versionName.
+- [Política #43810112369 PASS](https://github.com/michels-lab/michel-s-life/actions/runs/43810112369), 47/47; Android build PASS, UI Android/Desktop y fuente PASS. Las pruebas de dispositivo Android14/Android16 **no aprobaron** durante CI de este bloque; no confundir con la firma del APK oficial y no afirmar éxito físico de Galaxy.
+- PR #197 cerrada por supersedida; #109 sigue abierta por aceptación actualización firmada sobre instalación previa con preservación de misiones, XP, Journal y alarmas. Última release pública 0.2.12, sin estas nuevas funciones. Ninguna edición Developer y ningún RC.
+
 ## 2026-11-09 — GRANADA Android: Pomodoro bilingüe y borradores de duración (rama aislada)
 
 - **Causa en el producto:** la pantalla Android `android/mobile-experience.js` construía y actualizaba controles, fases, avisos y etiquetas de accesibilidad del Pomodoro exclusivamente en inglés, aunque `MichelsLifeI18n.language` fuese `es`; el actualizador de un segundo también sobrescribía los minutos personalizados tras perder el foco, incluso sin pulsar Aplicar.
