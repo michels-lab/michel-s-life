@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 381,
-  "classified_files_total": 377,
+  "tracked_files_total": 391,
+  "classified_files_total": 387,
   "docs_content_inspected": 96,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -11,26 +11,26 @@
     "asset": 12,
     "bitacora": 3,
     "build_script": 6,
-    "config": 22,
+    "config": 24,
     "database_migration": 3,
     "document": 89,
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 13,
-    "source": 124,
-    "test": 38,
+    "source": 128,
+    "test": 41,
     "text_metadata": 1,
     "web_ui": 3,
-    "workflow": 47
+    "workflow": 48
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "0e4d0d18243b5f97e5a05bb81e6921f3931842f65cbca669dc0fb3e54e843d45",
-  "evidence_fingerprint": "271b9d03c467eb3716f5d818c5d6e8051b453ea83fc35984d0c99db2f8872656",
+  "inventory_fingerprint": "7461260d90fe4d8c7f21fef844d1c98583d7f2ffb56b324bf58ab0cadbc48d8a",
+  "evidence_fingerprint": "58c60ee47efd119a87b54bc1ee19178ff2c6620d38d708970f803059d2e2fb6f",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -157,6 +157,13 @@
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
       "blob": "0537391db91f1122393bdb084564d9cdb42f1b2b"
+    },
+    {
+      "path": ".github/workflows/granada-android-direct-update.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "d97e78164f8624385425218d3314ee663fa51769"
     },
     {
       "path": ".github/workflows/granada-android-drawer-atomic.yml",
@@ -667,28 +674,35 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "b2b8b8d854e03d568f22cec31cd580dd74f0a735"
+      "blob": "73be903ba680924e64b843230813aa3e283ae9b2"
     },
     {
       "path": "android/app/build.gradle.kts",
       "role": "build_script",
       "purpose": "platform build/project/installer script",
       "certainty": "inferred",
-      "blob": "fa5af760f0d53deaee2217fc9467cf16a1bc899c"
+      "blob": "97d6c942363ef6bcbd0fc5b8a525df304d459a9a"
+    },
+    {
+      "path": "android/app/src/directRelease/AndroidManifest.xml",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "e79e6f2b2829447dab88f43cc28866f6df1d0b3e"
     },
     {
       "path": "android/app/src/main/AndroidManifest.xml",
       "role": "config",
       "purpose": "machine-readable configuration",
       "certainty": "rule",
-      "blob": "b20726d15272c9ba7d0c7dbbb8fe9505d5261492"
+      "blob": "6fb09d3036bc2eb1a9ae8f4fb08890f3af73bf18"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/AndroidBridge.kt",
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "282773a2fdf8c1dba9b2e35ab8c9cbc01ee20ca1"
+      "blob": "6bd9d952608fed9418123a5802ee9668a2e60115"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/AndroidCalendarConsent.kt",
@@ -705,6 +719,13 @@
       "blob": "6f54533d7474a3491d113e8e9464fbf6a77677cf"
     },
     {
+      "path": "android/app/src/main/java/com/michelslab/michelslife/AndroidDirectUpdateChecker.kt",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "2bac2c9fa6bf7e3bcac1b47c18f0c6007ba2f3b4"
+    },
+    {
       "path": "android/app/src/main/java/com/michelslab/michelslife/CalendarSyncRules.kt",
       "role": "source",
       "purpose": "code/test implementation",
@@ -717,6 +738,13 @@
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "d03632b1e719c17066eb96561c838a603a357dc4"
+    },
+    {
+      "path": "android/app/src/main/java/com/michelslab/michelslife/DirectUpdatePolicy.java",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "5ee278c237ac99172370a4b2f5cae8569d2a1108"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/FocusDeliveryPolicy.java",
@@ -773,6 +801,13 @@
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "31d83304a41319748ae38c23a1456ce5c8bb5fca"
+    },
+    {
+      "path": "android/app/src/main/java/com/michelslab/michelslife/VerifiedDirectApk.kt",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "b4121b70b05a30180d57bf622c1fb45f50f253a7"
     },
     {
       "path": "android/app/src/main/res/drawable-nodpi/michels_life_logo.jpg",
@@ -850,6 +885,13 @@
       "purpose": "machine-readable configuration",
       "certainty": "rule",
       "blob": "e50dd80705375c3db8b49f8d139e165d87cc8211"
+    },
+    {
+      "path": "android/app/src/main/res/xml/verified_direct_update_paths.xml",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "fb87417d8f38716ae95fbd0b35b033a707299d83"
     },
     {
       "path": "android/audit/2026-10-12-achievements-affirmations-actions.md",
@@ -1804,6 +1846,13 @@
       "blob": "9db6f2cdf31423824d5c178dfb6352983468acfb"
     },
     {
+      "path": "tools/DirectUpdatePolicyTest.java",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "b8f56b59788cd66fdda2828865874b4d2a6e45b7"
+    },
+    {
       "path": "tools/FocusDeliveryPolicyTest.java",
       "role": "source",
       "purpose": "code/test implementation",
@@ -2061,6 +2110,27 @@
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "33d9cab9cb5d80945767d04c464556dbd30afc6f"
+    },
+    {
+      "path": "tools/test_android_direct_apk_native.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "b1e942da9e04ce4fd32e11506a245c7c80b57c27"
+    },
+    {
+      "path": "tools/test_android_direct_update_bridge.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "617755ca5c4df551d0fed3c6a33c298d27ba68af"
+    },
+    {
+      "path": "tools/test_android_direct_update_control.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "cb0dee54b48e39225995f1de2a60017843efe819"
     },
     {
       "path": "tools/test_android_drawer_atomic_open.mjs",
@@ -2710,20 +2780,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "dc6a38cd6d6f079d",
+      "id": "4a00501eddd99491",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "13 implementation/config paths changed since this log's last commit; examples: .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/ui-smoke.yml, .michelslab/release-intents/windows-granada-focus-alarms-2026-11-15.txt, src/MichelsLife/DesktopShell.cs",
+      "observation": "27 implementation/config paths changed since this log's last commit; examples: .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/ui-smoke.yml, .michelslab/release-intents/windows-granada-focus-alarms-2026-11-15.txt",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "b71c528355553d68",
+      "id": "8000cce1ebbf4d7c",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "63 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/granada-focus-immersive.yml",
+      "observation": "73 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
