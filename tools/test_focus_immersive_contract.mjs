@@ -29,6 +29,20 @@ test('shared wallpaper derives from an existing app image, not a hardcoded scene
   assert.equal(window.MichelsLifeFocusImmersive.wallpaper(),'url("assets/current-missions-background.jpg")');
 });
 
+test('immersive Pomodoro selects the real loaded Michel’s Life background image',()=>{
+  const style={setProperty(k,v){this[k]=v;},removeProperty(k){delete this[k];}};
+  const picture={complete:true,naturalWidth:1400,currentSrc:'app://life/sky/background_sets/deep_ocean/night.jpg'};
+  const doc={readyState:'loading',body:{},documentElement:{dataset:{mlvPlatform:'android'}},
+    querySelector(s){return s==='#mlv184Background img'?picture:null;},
+    addEventListener(){}};
+  const window={__MICHELSLIFE_PLATFORM__:'android'};
+  vm.runInNewContext(desktop,{window,document:doc},{timeout:1000});
+  const target={style,dataset:{}};
+  window.MichelsLifeFocusImmersive.applyWallpaper(target);
+  assert.equal(target.dataset.mlvFocusWallpaper,'selected-image');
+  assert.equal(style['--mlv-focus-wallpaper'],'url("app://life/sky/background_sets/deep_ocean/night.jpg")');
+});
+
 test('Missions gradient scene remains visible when no file wallpaper exists',()=>{
   const scene={kind:'mission-gradient'};
   const style={values:{},setProperty(k,v){this.values[k]=v;},removeProperty(k){delete this.values[k];}};
