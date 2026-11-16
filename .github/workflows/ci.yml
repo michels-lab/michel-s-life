@@ -92,6 +92,28 @@ jobs:
         run: python tools/store_smoke_test.py
 
 
+  windows-alarm-shell:
+    # Compile the actual Windows tray/alarm shell on each source change.
+    # A stub AppBundle is sufficient for the resource type; this job does
+    # NOT claim installed-device acceptance or publish an installer.
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Materialize Windows host and check alarm tray integration
+        shell: pwsh
+        run: |
+          python tools/materialize_host_source.py
+          python -c "from zipfile import ZipFile; z=ZipFile('src/MichelsLife/AppBundle.zip','w'); z.writestr('index.html','<html><body>CI-only Windows source compile</body></html>'); z.close()"
+          dotnet build src/MichelsLife/MichelsLife.csproj -c Release
+          if ($LASTEXITCODE -ne 0) { throw 'Windows alarm/tray shell did not compile.' }
+
   windows-icon-smoke:
     # Owner 2026-10-19: do not construct native Windows executables,
     # portable packages or installers during Android-first development.
