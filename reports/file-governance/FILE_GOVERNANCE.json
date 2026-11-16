@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 373,
-  "classified_files_total": 369,
+  "tracked_files_total": 377,
+  "classified_files_total": 373,
   "docs_content_inspected": 96,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -18,19 +18,19 @@
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 12,
-    "source": 122,
-    "test": 35,
+    "source": 123,
+    "test": 37,
     "text_metadata": 1,
     "web_ui": 3,
-    "workflow": 45
+    "workflow": 46
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "a43261295545fd970ff3a412acdd0f28d3b9d8e79e0cca5611793078f1105e70",
-  "evidence_fingerprint": "80fee192b930149999baa6c8947c978f6e156f523e2bc19cf3a8165ec3f517cb",
+  "inventory_fingerprint": "b94e909c0dda0a98100a1a001c88b36217708471d00d752f81ec67ef2f0af2de",
+  "evidence_fingerprint": "ba75f704ca5786cbf0f4f0d524fb8087d4c79586654ddb55dce043bfc798ea49",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -100,7 +100,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "7b6cfc2109dc9a393251de00c58229d67b1d446f"
+      "blob": "9a5eb304a26d56847bc5dfefe731d7564a843d7f"
     },
     {
       "path": ".github/workflows/build-store-msix.yml",
@@ -121,7 +121,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "1cdd628a5011be7cc86148aaa59ad906d676efc2"
+      "blob": "6fd9ba061543334e14ed1c0fa952115ad61a75fa"
     },
     {
       "path": ".github/workflows/external-ui-baseline-guard.yml",
@@ -276,6 +276,13 @@
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
       "blob": "7c52d9b9b412d1541d784eb3e13168dbcf2f9cd7"
+    },
+    {
+      "path": ".github/workflows/granada-transactional-cloud-restore.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "4921052a6bad72270f45b605dd33b9b48758d855"
     },
     {
       "path": ".github/workflows/privacy-pages.yml",
@@ -1731,7 +1738,7 @@
       "role": "web_ui",
       "purpose": "local HTML documentation or web interface",
       "certainty": "inferred",
-      "blob": "01d24bc33f4f67b55d8b51342dd95f4f2bcc01bd"
+      "blob": "38fb4294de0c7c429b90b7682d0f82a904025859"
     },
     {
       "path": "src/MichelsLife/frontend/motivation-immersive.js",
@@ -2140,6 +2147,13 @@
       "blob": "3034481ea3aa50dac93e30ee781a73cedf514c26"
     },
     {
+      "path": "tools/test_granada_cross_provider_restore_review.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "12cf1f19238901b25c6613a47d6b5c62a2c1075d"
+    },
+    {
       "path": "tools/test_granada_data_health.mjs",
       "role": "test",
       "purpose": "code/test implementation",
@@ -2172,7 +2186,7 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "e79901c911c47f51fee039d716b9a37be2bdc554"
+      "blob": "054a8ee0d170a939c32c122ae4371088b3b042c3"
     },
     {
       "path": "tools/test_granada_safe_backup_converter.py",
@@ -2207,7 +2221,7 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "2302dff4e880cfbc789a7e1951a0c9eb5f5ce0b3"
+      "blob": "3b1f285df591be32f5a3afd5800ffad5bdb386bc"
     },
     {
       "path": "tools/test_granada_supabase_inflight_edits.mjs",
@@ -2229,6 +2243,13 @@
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "1096b13c7072bbd5324b99e871710af4a4b3dd64"
+    },
+    {
+      "path": "tools/test_granada_transactional_cloud_restore.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "22a7e07da7a3d324249ee08c3d79ee32679042f1"
     },
     {
       "path": "tools/test_michels_life_bootstrap.py",
@@ -2439,6 +2460,13 @@
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "a0555d7d2d7bed190248ef7c6b834e4db82d0181"
+    },
+    {
+      "path": "tools/ui_granada_transactional_restore_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "736a6e9becad857a473d09fc95504a0799d4f469"
     },
     {
       "path": "tools/ui_i18n_generated_corpus_smoke.mjs",
@@ -2654,20 +2682,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "a9c727fa5c6a32ab",
+      "id": "62f273e55d322f3c",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "8 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/release-unified-v3223-a0212.yml, .github/workflows/ui-smoke.yml, .michelslab/release-intents/unified-v3223-a0212.txt",
+      "observation": "15 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-transactional-cloud-restore.yml, .github/workflows/release-unified-v3223-a0212.yml, .github/workflows/ui-smoke.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "3e9b69bf7fddc436",
+      "id": "60aad9bd3008dc3b",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "51 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-focus-immersive.yml, .github/workflows/granada-personal-alarms.yml",
+      "observation": "58 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-focus-immersive.yml, .github/workflows/granada-personal-alarms.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
