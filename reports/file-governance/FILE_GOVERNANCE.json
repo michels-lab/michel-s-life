@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 380,
-  "classified_files_total": 376,
+  "tracked_files_total": 381,
+  "classified_files_total": 377,
   "docs_content_inspected": 96,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -17,7 +17,7 @@
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
-    "release_intent": 12,
+    "release_intent": 13,
     "source": 124,
     "test": 38,
     "text_metadata": 1,
@@ -29,8 +29,8 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "acfeea465adec657bd7a143ea1fdd47dbf5ff004f1be985a66bafbba7b0de193",
-  "evidence_fingerprint": "7872157499d2303e591b3ead64b14ef6d4b219b7daf1074a87a91d708c50e124",
+  "inventory_fingerprint": "0e4d0d18243b5f97e5a05bb81e6921f3931842f65cbca669dc0fb3e54e843d45",
+  "evidence_fingerprint": "271b9d03c467eb3716f5d818c5d6e8051b453ea83fc35984d0c99db2f8872656",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -535,6 +535,13 @@
       "purpose": "historical source-controlled release/candidate intent (preserve for traceability)",
       "certainty": "rule",
       "blob": "a8be415d72650e4025f0657490b8bd928224ba2d"
+    },
+    {
+      "path": ".michelslab/release-intents/windows-granada-focus-alarms-2026-11-15.txt",
+      "role": "release_intent",
+      "purpose": "historical source-controlled release/candidate intent (preserve for traceability)",
+      "certainty": "rule",
+      "blob": "732591f9d4fda253f2e5f530d43b0ee49c9bcb58"
     },
     {
       "path": ".michelslab/release-intents/windows-v3222-a0211.txt",
@@ -2703,20 +2710,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "5f3205593a97f02a",
+      "id": "dc6a38cd6d6f079d",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "12 implementation/config paths changed since this log's last commit; examples: .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/ui-smoke.yml, src/MichelsLife/DesktopShell.cs, src/MichelsLife/frontend/focus-immersive.js",
+      "observation": "13 implementation/config paths changed since this log's last commit; examples: .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/ui-smoke.yml, .michelslab/release-intents/windows-granada-focus-alarms-2026-11-15.txt, src/MichelsLife/DesktopShell.cs",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "e1e067ac161d1b3f",
+      "id": "b71c528355553d68",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "62 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/granada-focus-immersive.yml",
+      "observation": "63 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/granada-focus-immersive.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
