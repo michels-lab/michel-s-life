@@ -1,0 +1,80 @@
+name: GRANADA Chapter Pomodoro and Alarms regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/MichelsLife/frontend/index.html'
+      - 'src/MichelsLife/frontend/focus-immersive.js'
+      - 'src/MichelsLife/frontend/personal-alarms.js'
+      - 'src/MichelsLife/DesktopShell.cs'
+      - 'tools/test_chapter_art_recovery_contract.mjs'
+      - 'tools/test_focus_immersive_contract.mjs'
+      - 'tools/test_personal_alarm_contract.mjs'
+      - 'tools/ui_desktop_focus_immersive_smoke.mjs'
+      - 'tools/ui_desktop_chapter_pomodoro_alarm_regression.mjs'
+      - '.github/workflows/granada-chapter-focus-alarms-e2e.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check actual Focus and Alarms source
+        run: |
+          node --check src/MichelsLife/frontend/focus-immersive.js
+          node --check src/MichelsLife/frontend/personal-alarms.js
+          node --test tools/test_chapter_art_recovery_contract.mjs tools/test_focus_immersive_contract.mjs tools/test_personal_alarm_contract.mjs
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prepare exact-commit public-release artwork and patched frontend
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p artifacts/ui-bundle artifacts/ui-smoke
+          python tools/download_latest_michels_life_bundle.py --repo michels-lab/michel-s-life-releases --output artifacts/AppBundle.zip
+          python tools/bump_frontend_version.py --index src/MichelsLife/frontend/index.html
+          python tools/enable_i18n.py --index src/MichelsLife/frontend/index.html
+          python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
+          python tools/replace_bundle_index.py --bundle artifacts/AppBundle.zip --index src/MichelsLife/frontend/index.html
+          python - <<'PY'
+          from zipfile import ZipFile
+          with ZipFile('artifacts/AppBundle.zip') as bundle:
+              bundle.extractall('artifacts/ui-bundle')
+          PY
+      - name: Install Chromium
+        run: |
+          npm install --no-save --no-package-lock playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Exercise actual clicks, fullscreen/mini, Chapter artwork, and recurring alarm
+        run: |
+          python -m http.server 4173 --directory artifacts/ui-bundle >/tmp/granada-life.log 2>&1 &
+          export MLV_UI_URL=http://127.0.0.1:4173
+          node tools/ui_desktop_focus_immersive_smoke.mjs
+          node tools/ui_desktop_chapter_pomodoro_alarm_regression.mjs
+      - name: Keep diagnostic screenshots from the actual browser
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: granada-chapter-focus-alarms-${{ github.sha }}
+          path: |
+            artifacts/ui-smoke/desktop-focus-immersive.png
+            artifacts/ui-smoke/chapter-recovery-granada.png
+            artifacts/ui-smoke/alarms-saved-granada.png
+            /tmp/granada-life.log
+          retention-days: 7
+          if-no-files-found: warn
