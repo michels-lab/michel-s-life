@@ -90,8 +90,10 @@ const tick=async()=>{for(let j=0;j<6;j++)await Promise.resolve()};
 assert.ok(!timeline.includes("setTimeout(async()=>{try{const supa=window.SupabaseSyncV30216"),'No delayed forced cloud sync');
 assert.ok(html.includes("if(localStorage.getItem('michelsLife.restoreReview.v1')&&!['upload','download'].includes(mode))"),
  'Google Drive auto/ambiguous sync must stop after local restore');
-assert.ok(html.includes("localStorage.removeItem('michelsLife.restoreReview.v1');sessionStorage.setItem('mlv191CloudRestored'"),
- 'Explicit Drive download clears restore review after provider accepts');
+assert.ok(html.includes("source:'google-drive-download',createdAt:new Date().toISOString()"),
+ 'Drive download must arm persistent Supabase review before applying foreign cloud state');
+assert.ok(!html.includes("localStorage.removeItem('michelsLife.restoreReview.v1');sessionStorage.setItem('mlv191CloudRestored'"),
+ 'Drive acknowledgement must NOT authorize a separate Supabase upload');
 assert.ok(supa.includes("if(!confirm(es()?'¿Subir el respaldo restaurado"),
  'Restored Supabase upload requires explicit UI confirmation');
 
