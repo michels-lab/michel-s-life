@@ -29,7 +29,7 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "9b5bfdf7803f8550b200a36d35331ed385369a93bcde9f92d4d1e3ecfa1d6302",
+  "inventory_fingerprint": "52f116d46fd3e10e924e17358116d3e902bc43560d048a3b60e252309d8fd89b",
   "evidence_fingerprint": "91a0f03c7adfeced9ef3e09839a80d4127900d481fee93f90b742bbc9d76941f",
   "files": [
     {
@@ -1724,7 +1724,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "0294b3ae9e68f09c4f2494d0dfa20a6883ef4a3f"
+      "blob": "4c8f1151732187adbad1aae566f9e4a7935392c8"
     },
     {
       "path": "src/MichelsLife/frontend/i18n.js",
