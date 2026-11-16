@@ -36,7 +36,7 @@ jobs:
             gh api "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$GITHUB_SHA&per_page=100" > runs.json
             if jq -e --arg sha "$GITHUB_SHA" '
               .workflow_runs as $runs |
-              all(["Source validation", "UI smoke", "Android UI smoke"][];
+              all(["Source validation", "UI smoke", "Android UI smoke", "GRANADA Android Direct safe update discovery"][];
                 . as $name | any($runs[]; .head_sha==$sha and .name==$name and .conclusion=="success"))
               ' runs.json > /dev/null; then
               echo "EXACT_SHA_ALL_GREEN: $GITHUB_SHA"; exit 0
