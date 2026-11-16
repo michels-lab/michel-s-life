@@ -83,8 +83,8 @@ test('the next Android Direct updater is in the signed stable release and exact-
 });
 
 test('all Android debug-native validation arms consume the actual new APK, not a stale public version',()=>{
- assert.equal((android.match(/ANDROID_VERSION:\\s*'?0\\.2\\.13'?/g)||[]).length,4,
+ assert.equal((android.match(/ANDROID_VERSION:\s*'?0\.2\.13'?/g)||[]).length,4,
    'global Android build and all three native device jobs must use 0.2.13');
- assert.doesNotMatch(android,/ANDROID_VERSION:\\s*'?0\\.2\\.12'?/);
- assert.match(android,/name: MichelsLife-Android-TEST-v\\$\\{\\{ env\\.ANDROID_VERSION \\}\\}/);
+ assert.doesNotMatch(android,/ANDROID_VERSION:\s*'?0\.2\.12'?/);
+ assert.match(android,/name: MichelsLife-Android-TEST-v\$\{\{ env\.ANDROID_VERSION \}\}/);
 });
