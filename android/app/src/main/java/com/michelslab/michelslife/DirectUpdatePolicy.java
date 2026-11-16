@@ -77,6 +77,7 @@ public final class DirectUpdatePolicy {
             && validVersion(versionName) && versionName.equals(expectedVersion)
             && versionCode > 0 && versionCode == expectedCode
             && expectedApkFilename != null && expectedApkFilename.equals(apkFilename)
+            && ("MichelsLife-Android-Direct-v" + versionName + ".apk").equals(apkFilename)
             && sha256 != null && sha256.matches("[0-9a-f]{64}")
             && DIRECT_SIGNER_SHA256.equals(signerSha256);
     }
