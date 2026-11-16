@@ -95,6 +95,12 @@ jobs:
           export MLV_UI_URL=http://127.0.0.1:4173
           node tools/ui_desktop_focus_immersive_smoke.mjs
 
+      - name: Reproduce and verify Chapter artwork, actual Pomodoro and Alarms clicks
+        run: |
+          export MLV_UI_URL=http://127.0.0.1:4173
+          node --check tools/ui_desktop_chapter_pomodoro_alarm_regression.mjs
+          node tools/ui_desktop_chapter_pomodoro_alarm_regression.mjs
+
       - name: Verify candidate-bound browser Home/About screenshots using studio visual gate
         run: |
           python -m pip install Pillow==11.3.0
