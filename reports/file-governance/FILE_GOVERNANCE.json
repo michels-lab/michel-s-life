@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 378,
-  "classified_files_total": 374,
+  "tracked_files_total": 379,
+  "classified_files_total": 375,
   "docs_content_inspected": 96,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -19,7 +19,7 @@
     "installer_metadata": 1,
     "release_intent": 12,
     "source": 124,
-    "test": 37,
+    "test": 38,
     "text_metadata": 1,
     "web_ui": 3,
     "workflow": 46
@@ -29,8 +29,8 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "c03dd8a43ad345ddf4fb288db0d568688f63cd94050bb81c924e40bf204588eb",
-  "evidence_fingerprint": "7a847c2741631f1f0060c32d470e377ff9b3984e1273b00dc3fb19ee72493751",
+  "inventory_fingerprint": "0915a790a3f537ec93bcb6512229729af8491920c130176dec42d60411606e6c",
+  "evidence_fingerprint": "91a0f03c7adfeced9ef3e09839a80d4127900d481fee93f90b742bbc9d76941f",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -121,7 +121,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "6fd9ba061543334e14ed1c0fa952115ad61a75fa"
+      "blob": "3529ecd1ad5295fc69dcce6577a754c6890b760f"
     },
     {
       "path": ".github/workflows/external-ui-baseline-guard.yml",
@@ -1752,7 +1752,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "a1d4a32dcb8df3dfdbb6eff0606b6417309b3c9f"
+      "blob": "18806598ff19aedf8ff3ad5dcb0f3df78dec20b7"
     },
     {
       "path": "store/AppxManifest.template.xml",
@@ -2077,6 +2077,13 @@
       "blob": "1c72213e88a1432a611309466405c9df29fdad79"
     },
     {
+      "path": "tools/test_chapter_art_recovery_contract.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "4fe79b15d66ce3b2378d9a43d8268e78b187c367"
+    },
+    {
       "path": "tools/test_cloud_restore_storage.mjs",
       "role": "test",
       "purpose": "code/test implementation",
@@ -2270,7 +2277,7 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "32e611137a537b35e46373d874c27e56725c7b46"
+      "blob": "c8409f826563faa33330c00fdcdf14be9dd9e31c"
     },
     {
       "path": "tools/test_repository_file_auditor.py",
@@ -2689,20 +2696,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "0cb0689fc9ed8828",
+      "id": "b27fdc59f45631c0",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "6 implementation/config paths changed since this log's last commit; examples: .github/workflows/ui-smoke.yml, src/MichelsLife/DesktopShell.cs, src/MichelsLife/frontend/focus-immersive.js, src/MichelsLife/frontend/index.html, src/MichelsLife/frontend/personal-alarms.js, tools/ui_desktop_chapter_pomodoro_alarm_regression.mjs",
+      "observation": "9 implementation/config paths changed since this log's last commit; examples: .github/workflows/ci.yml, .github/workflows/ui-smoke.yml, src/MichelsLife/DesktopShell.cs, src/MichelsLife/frontend/focus-immersive.js, src/MichelsLife/frontend/index.html, src/MichelsLife/frontend/personal-alarms.js",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "94b16eb3530640cc",
+      "id": "d028f6468874b45a",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "60 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-focus-immersive.yml, .github/workflows/granada-personal-alarms.yml",
+      "observation": "61 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-focus-immersive.yml, .github/workflows/granada-personal-alarms.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
