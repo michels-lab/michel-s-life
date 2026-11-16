@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 379,
-  "classified_files_total": 375,
+  "tracked_files_total": 380,
+  "classified_files_total": 376,
   "docs_content_inspected": 96,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -22,15 +22,15 @@
     "test": 38,
     "text_metadata": 1,
     "web_ui": 3,
-    "workflow": 46
+    "workflow": 47
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "52f116d46fd3e10e924e17358116d3e902bc43560d048a3b60e252309d8fd89b",
-  "evidence_fingerprint": "91a0f03c7adfeced9ef3e09839a80d4127900d481fee93f90b742bbc9d76941f",
+  "inventory_fingerprint": "5c65d8f2108f4a54c4cbde44e0be3e249f5fbd7944bc9105b6b22bdfb452f0d7",
+  "evidence_fingerprint": "f4053667a8fd682855b876a681c47bdd0179fdfe218f49d05bada7b27d52e41f",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -206,6 +206,13 @@
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
       "blob": "440046bd2d87c8a48733f6698117575b5b455563"
+    },
+    {
+      "path": ".github/workflows/granada-chapter-focus-alarms-e2e.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "69ac83d0df1f18e81ab90bfbd2bec289a56c9090"
     },
     {
       "path": ".github/workflows/granada-daily-mission-ledger.yml",
@@ -576,7 +583,7 @@
       "role": "bitacora",
       "purpose": "technical/audit change history",
       "certainty": "rule",
-      "blob": "af2d609a461a73d71c7c8bb850359e8005f8b0f4"
+      "blob": "c8dd7e095e245b3698372e8e0ec82254df907bf9"
     },
     {
       "path": "GIT_AUDIT_LOG.md",
@@ -2102,7 +2109,7 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "3986c88defe23d345dd082adb09780257d2d5fd7"
+      "blob": "eeb05ece00db04eea788fe432c66df1960550291"
     },
     {
       "path": "tools/test_granada_account_boundary.mjs",
@@ -2696,20 +2703,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "b27fdc59f45631c0",
+      "id": "92120f5925d7496f",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "9 implementation/config paths changed since this log's last commit; examples: .github/workflows/ci.yml, .github/workflows/ui-smoke.yml, src/MichelsLife/DesktopShell.cs, src/MichelsLife/frontend/focus-immersive.js, src/MichelsLife/frontend/index.html, src/MichelsLife/frontend/personal-alarms.js",
+      "observation": "11 implementation/config paths changed since this log's last commit; examples: .github/workflows/ci.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/ui-smoke.yml, src/MichelsLife/DesktopShell.cs, src/MichelsLife/frontend/focus-immersive.js, src/MichelsLife/frontend/index.html",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "d028f6468874b45a",
+      "id": "e1e067ac161d1b3f",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "61 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-focus-immersive.yml, .github/workflows/granada-personal-alarms.yml",
+      "observation": "62 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/granada-focus-immersive.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }

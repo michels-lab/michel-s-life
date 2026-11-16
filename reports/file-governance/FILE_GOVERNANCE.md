@@ -5,7 +5,7 @@ No file is auto-deleted or declared unused.
 
 ## Coverage
 
-Tracked: 379; classified: 375; readable documents: 96; above read cap: 0; findings: 6.
+Tracked: 380; classified: 376; readable documents: 96; above read cap: 0; findings: 6.
 
 ## File roles
 
@@ -26,7 +26,7 @@ Tracked: 379; classified: 375; readable documents: 96; above read cap: 0; findin
 | test | 38 |
 | text_metadata | 1 |
 | web_ui | 3 |
-| workflow | 46 |
+| workflow | 47 |
 
 ## Findings (human review required)
 
@@ -34,8 +34,8 @@ Tracked: 379; classified: 375; readable documents: 96; above read cap: 0; findin
 - **CONFIRMED / BROKEN_RELATIVE_LINK** docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md: Missing: docs/AGENTS.md. Next: Fix link or restore target (ID 7a232f866547f4b1)
 - **CONFIRMED / BROKEN_RELATIVE_LINK** docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md: Missing: docs/tools/ui_android_section_design_smoke.mjs. Next: Fix link or restore target (ID c9b0ed37825bd396)
 - **CONFIRMED / BROKEN_RELATIVE_LINK** docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md: Missing: docs/android/audit/2026-10-12-ui-screenshot-gallery.md. Next: Fix link or restore target (ID 55915b207228a042)
-- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** GIT_AUDIT_LOG.md: 9 implementation/config paths changed since this log's last commit; examples: .github/workflows/ci.yml, .github/workflows/ui-smoke.yml, src/MichelsLife/DesktopShell.cs, src/MichelsLife/frontend/focus-immersive.js, src/MichelsLife/frontend/index.html, src/MichelsLife/frontend/personal-alarms.js. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID b27fdc59f45631c0)
-- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** android/ANDROID_AUDIT_LOG.md: 61 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-focus-immersive.yml, .github/workflows/granada-personal-alarms.yml. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID d028f6468874b45a)
+- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** GIT_AUDIT_LOG.md: 11 implementation/config paths changed since this log's last commit; examples: .github/workflows/ci.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/ui-smoke.yml, src/MichelsLife/DesktopShell.cs, src/MichelsLife/frontend/focus-immersive.js, src/MichelsLife/frontend/index.html. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID 92120f5925d7496f)
+- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** android/ANDROID_AUDIT_LOG.md: 62 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/granada-focus-immersive.yml. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID e1e067ac161d1b3f)
 
 Complete path → purpose/role/certainty list lives in FILE_GOVERNANCE.json. SUMMARY.json has counts only for master polling.
 A dated file, duplicate, or suspicious name is an **investigation candidate**, not unwanted material.
