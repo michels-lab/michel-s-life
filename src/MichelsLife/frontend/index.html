@@ -29285,6 +29285,19 @@ body.mlv184-background-owned #v25-sky-layer,body.mlv184-background-owned #v27-sk
 #v176StatusPanel>.v30165-rpg-chapter-hero.mlv184-chapter-root::before,#v176StatusPanel>.v30165-rpg-chapter-hero.mlv184-chapter-root::after{content:none!important;display:none!important}
 .v30171-settings-shell,.v30171-settings-content{background:transparent!important}
 #mlv184ChapterArt,#mlv184ChapterShade,#mlv184ChapterAtmosphere{position:absolute!important;inset:0!important;pointer-events:none!important;display:block!important;visibility:visible!important}
+
+/* Actual scene behind every chapter pack, including missing/late assets. */
+#v176StatusPanel>.mlv184-chapter-root #mlv184ChapterRecovery{
+  display:block!important;position:absolute!important;inset:0!important;z-index:0!important;
+  background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;
+  pointer-events:none!important;filter:saturate(1.08)!important;
+}
+#v176StatusPanel>.mlv184-chapter-root #mlv184ChapterArt{z-index:1!important}
+#v176StatusPanel>.mlv184-chapter-root #mlv184ChapterShade{z-index:2!important}
+#v176StatusPanel>.mlv184-chapter-root #mlv184ChapterAtmosphere{z-index:3!important}
+#v176StatusPanel>.mlv184-chapter-root>*:not(#mlv184ChapterArt):not(#mlv184ChapterShade):not(#mlv184ChapterAtmosphere):not(#mlv184ChapterRecovery){z-index:4!important;position:relative!important}
+#v176StatusPanel>.mlv184-chapter-root[data-mlv189-art="recovery"] #mlv184ChapterArt{visibility:hidden!important}
+
 #mlv184ChapterArt{z-index:0!important;left:-5%!important;top:-5%!important;right:auto!important;bottom:auto!important;width:110%!important;height:110%!important;max-width:none!important;object-fit:cover!important;object-position:center!important;opacity:1!important;transform-origin:50% 50%!important;animation:mlv189ChapterCamera 12s cubic-bezier(.42,0,.58,1) infinite alternate!important;animation-play-state:running!important;will-change:transform!important}
 #mlv184ChapterShade{z-index:1!important;transition:background .18s linear!important}
 #mlv184ChapterAtmosphere{z-index:2!important;overflow:hidden!important;opacity:1!important}
@@ -29426,11 +29439,83 @@ function captureComputedPalette(preset){const cs=getComputedStyle(document.docum
 function activeChapter(){try{return window.FocusStoryV30162?.activeChapter?.()||null}catch(_){return null}}
 function chapter(){const ch=activeChapter();return ch&&CHAPTERS[ch.scenePack]?ch.scenePack:'dark_kingdom'}
 function setChapter(id){const ch=activeChapter();if(!ch||!CHAPTERS[id])return false;ch.scenePack=id;saveSafe();chapterSig='';applyChapter(true);renderSettingsOwned();return true}
-function heroLayers(){const hero=document.querySelector('#v176StatusPanel>.v30165-rpg-chapter-hero');if(!hero)return null;hero.classList.add('mlv184-chapter-root','mlv186-chapter-motion');hero.classList.remove('mlv183-chapter-art','v30167-adventure','v30166-adventure-ready');hero.style.removeProperty('background-image');hero.querySelectorAll('#v30166ChapterCanvas,#v30168AdventureLayer,#v30169ChapterAmbience').forEach(x=>x.remove());let art=hero.querySelector('#mlv184ChapterArt'),shade=hero.querySelector('#mlv184ChapterShade'),atm=hero.querySelector('#mlv184ChapterAtmosphere');if(!art||art.tagName!=='IMG'){const old=art;art=document.createElement('img');art.id='mlv184ChapterArt';art.alt='';art.draggable=false;art.decoding='sync';art.setAttribute('aria-hidden','true');if(old)old.replaceWith(art);else hero.prepend(art)}if(!shade){shade=document.createElement('div');shade.id='mlv184ChapterShade';art.after(shade)}if(!atm){atm=document.createElement('div');atm.id='mlv184ChapterAtmosphere';shade.after(atm)}if(!atm.querySelector('#mlv184FogA'))atm.insertAdjacentHTML('beforeend','<i id="mlv184FogA"></i><i id="mlv184FogB"></i><i id="mlv184Beam"></i>');atm.querySelector('#mlv184Dust')?.remove();if(!art.dataset.mlv189Bound){art.dataset.mlv189Bound='1';art.addEventListener('load',()=>{art.dataset.mlv189Loaded=String(art.naturalWidth||0);delete art.dataset.mlv189Error});art.addEventListener('error',()=>{art.dataset.mlv189Error='1';const fb=art.dataset.mlv189Fallback;if(fb&&art.src!==fb)art.src=fb})}return {hero,art,shade,atm}}
+function heroLayers(){
+  const hero=document.querySelector('#v176StatusPanel>.v30165-rpg-chapter-hero');
+  if(!hero)return null;
+  hero.classList.add('mlv184-chapter-root','mlv186-chapter-motion');
+  hero.classList.remove('mlv183-chapter-art','v30167-adventure','v30166-adventure-ready');
+  hero.querySelectorAll('#v30166ChapterCanvas,#v30168AdventureLayer,#v30169ChapterAmbience').forEach(x=>x.remove());
+  // Keep an actual visible scene behind the canonical chapter pack image.
+  // Missing assets must never turn Master's Arc into a featureless black card.
+  let recovery=hero.querySelector('#mlv184ChapterRecovery');
+  if(!recovery){
+    recovery=document.createElement('div');recovery.id='mlv184ChapterRecovery';
+    recovery.setAttribute('aria-hidden','true');hero.prepend(recovery);
+  }
+  const backdrop=document.querySelector('#mlv184Background img');
+  const image=backdrop?.complete&&backdrop.naturalWidth>0?backdrop.currentSrc||backdrop.src:'';
+  if(image&&/^(blob:|https?:|file:|app:)/i.test(image)){
+    recovery.style.backgroundImage='linear-gradient(110deg,rgba(5,10,22,.33),rgba(5,10,22,.04)),url("'+image.replace(/["\\\r\n]/g,'')+'")';
+    recovery.dataset.scene='theme-image';
+  }else{
+    recovery.style.backgroundImage='radial-gradient(ellipse at 70% 35%,rgba(102,191,204,.40),transparent 55%),radial-gradient(ellipse at 22% 82%,rgba(127,72,190,.42),transparent 58%),linear-gradient(125deg,#12233a,#17182f 60%,#102d31)';
+    recovery.dataset.scene='ambient-fallback';
+  }
+  let art=hero.querySelector('#mlv184ChapterArt'),shade=hero.querySelector('#mlv184ChapterShade'),atm=hero.querySelector('#mlv184ChapterAtmosphere');
+  if(!art||art.tagName!=='IMG'){
+    const previous=art;art=document.createElement('img');art.id='mlv184ChapterArt';
+    art.alt='';art.draggable=false;art.decoding='sync';art.setAttribute('aria-hidden','true');
+    if(previous)previous.replaceWith(art);else recovery.after(art);
+  }
+  if(!shade){shade=document.createElement('div');shade.id='mlv184ChapterShade';art.after(shade)}
+  if(!atm){atm=document.createElement('div');atm.id='mlv184ChapterAtmosphere';shade.after(atm)}
+  if(!atm.querySelector('#mlv184FogA'))atm.insertAdjacentHTML('beforeend','<i id="mlv184FogA"></i><i id="mlv184FogB"></i><i id="mlv184Beam"></i>');
+  atm.querySelector('#mlv184Dust')?.remove();
+  if(!art.dataset.mlv189Bound){
+    art.dataset.mlv189Bound='1';
+    art.addEventListener('load',()=>{
+      if(!art.naturalWidth)return;
+      art.dataset.mlv189Loaded=String(art.naturalWidth);
+      delete art.dataset.mlv189Error;
+      hero.dataset.mlv189Art='loaded';
+    });
+    art.addEventListener('error',()=>{
+      const fallback=art.dataset.mlv189Fallback;
+      if(fallback&&art.src!==fallback&&!art.dataset.mlv189TriedPreview){
+        art.dataset.mlv189TriedPreview='1';art.src=fallback;return;
+      }
+      art.dataset.mlv189Error='1';
+      hero.dataset.mlv189Art='recovery';
+      // Keep text, controls, animated ambience and the real theme visible.
+      art.style.visibility='hidden';
+    });
+  }
+  return {hero,recovery,art,shade,atm};
+}
 function restartChapterMotion(L){if(!L)return false;for(const el of [L.art,L.atm?.querySelector('#mlv184FogA'),L.atm?.querySelector('#mlv184FogB'),L.atm?.querySelector('#mlv184Beam')].filter(Boolean)){el.style.setProperty('animation-play-state','running','important')}L.hero.dataset.mlv189Motion='running';return true}
 function transparency(){let raw={};try{raw=JSON.parse(localStorage.getItem(TR_KEY)||'{}')||{}}catch(_){}raw=Object.assign({},raw,S().panelTransparencyV3060||{});const v=Object.assign({},DEFAULT_TR,raw);for(const k of ['header','panel','card','sidebar','settingsnav','dock'])v[k]=clamp(v[k]);v.enabled=!!v.enabled;return v}
 function setTransparency(v){v=Object.assign({},DEFAULT_TR,v||{});for(const k of ['header','panel','card','sidebar','settingsnav','dock'])v[k]=clamp(v[k]);v.enabled=!!v.enabled;S().panelTransparencyV3060={...v};try{localStorage.setItem(TR_KEY,JSON.stringify(v))}catch(_){}saveSafe();applyTransparency(v);return v}
-let chapterSig='';function applyChapter(force){const L=heroLayers();if(!L)return false;const id=chapter(),st=phase(),src=assetUrl(chapterAsset(id,st)),fallback=assetUrl(chapterPreviewAsset(id)),v=transparency(),a=v.enabled?v.header/100:.74,sig=[id,st,a].join('|');const sceneChanged=L.art.dataset.mlv189Scene!==src||!L.art.getAttribute('src');if(force||sig!==chapterSig||sceneChanged){L.art.dataset.mlv189Fallback=fallback;L.art.dataset.mlv189Scene=src;if(L.art.src!==src)L.art.src=src;L.art.style.setProperty('object-position',CHAPTERS[id].pos,'important');const alpha=Math.max(0,Math.min(1,a)).toFixed(3);L.shade.style.setProperty('background',`linear-gradient(90deg,rgba(var(--ui-panel-rgb,8,16,26),${alpha}),rgba(var(--ui-panel-rgb,8,16,26),${alpha}))`,'important');L.hero.dataset.mlv184Chapter=id;chapterSig=sig}restartChapterMotion(L);return true}
+let chapterSig='';function applyChapter(force){
+  const L=heroLayers();if(!L)return false;
+  const id=chapter(),st=phase(),src=assetUrl(chapterAsset(id,st)),fallback=assetUrl(chapterPreviewAsset(id)),v=transparency();
+  // Chapter scene opacity is independent of panel transparency: previously a
+  // flat 74-100% opaque dark panel completely hid the chapter illustration.
+  const requested=v.enabled?v.header/100:.58;
+  const left=Math.max(.23,Math.min(.51,requested*.58));
+  const right=Math.max(.09,Math.min(.26,requested*.23));
+  const sig=[id,st,left,right].join('|');
+  const sceneChanged=L.art.dataset.mlv189Scene!==src||!L.art.getAttribute('src');
+  if(force||sig!==chapterSig||sceneChanged){
+    L.art.dataset.mlv189Fallback=fallback;
+    if(sceneChanged){delete L.art.dataset.mlv189TriedPreview;delete L.art.dataset.mlv189Error;L.art.style.removeProperty('visibility');L.hero.dataset.mlv189Art='loading'}
+    L.art.dataset.mlv189Scene=src;
+    if(sceneChanged&&L.art.src!==src)L.art.src=src;
+    L.art.style.setProperty('object-position',CHAPTERS[id].pos,'important');
+    L.shade.style.setProperty('background',`linear-gradient(90deg,rgba(var(--ui-panel-rgb,8,16,26),${left.toFixed(3)}) 0%,rgba(var(--ui-panel-rgb,8,16,26),${right.toFixed(3)}) 100%)`,'important');
+    L.hero.dataset.mlv184Chapter=id;chapterSig=sig;
+  }
+  restartChapterMotion(L);return true;
+}
 
 function clearSurface(el){if(!el)return;for(const p of ['background','background-image','box-shadow','backdrop-filter','-webkit-backdrop-filter'])el.style.removeProperty(p);delete el.dataset.mlv184Surface}
 function paint(el,a,kind){if(!el)return;const alpha=Math.max(0,Math.min(1,a/100));el.dataset.mlv184Surface=kind;if(alpha===0){el.style.setProperty('background','transparent','important');el.style.setProperty('background-image','none','important');el.style.setProperty('box-shadow','none','important');el.style.setProperty('backdrop-filter','none','important');el.style.setProperty('-webkit-backdrop-filter','none','important');return}const base=kind==='card'?'--ui-card-rgb':'--ui-panel-rgb';const low=Math.max(0,alpha*.62).toFixed(3);el.style.setProperty('background',`linear-gradient(180deg,rgba(var(${base},10,18,28),${alpha.toFixed(3)}),rgba(var(--ui-card-rgb,10,18,28),${low}))`,'important');el.style.setProperty('box-shadow','0 14px 34px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.028)','important');el.style.setProperty('backdrop-filter','none','important');el.style.setProperty('-webkit-backdrop-filter','none','important')}
