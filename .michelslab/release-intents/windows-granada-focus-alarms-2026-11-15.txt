@@ -1,0 +1,8 @@
+OWNER-DIRECTED WINDOWS TEST BUILD — Chapter, Pomodoro, and Alarms
+Requested on November 15, 2026 by the owner in response to a broken installed Windows 3.0.223 screenshot.
+Scope: private GitHub Actions TEST ZIP from this exact source only; no public release, no RC/Developer edition.
+Source changes: Chapter art fallback/layering, fullscreen Pomodoro real click and quick pause/resume, actual theme wallpaper, persistent personal alarms with Windows tray wake-up delivery.
+Exact source browser validation (14 source cases and real mouse-click journeys): https://github.com/michels-lab/michel-s-life/actions/runs/43801288565 SUCCESS.
+Windows C# DesktopShell alarm native compile: https://github.com/michels-lab/michel-s-life/actions/runs/43800694585 SUCCESS.
+Requires the regular independent Windows candidate build and app launch smoke; don't mark owner device accepted.
+Published Windows 3.0.223 release does not contain these fixes and must not be advertised as corrected.
