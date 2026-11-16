@@ -22,8 +22,8 @@ android {
         applicationId = "com.michelslab.michelslife"
         minSdk = 26
         targetSdk = 36
-        versionCode = 14
-        versionName = "0.2.12"
+        versionCode = 15
+        versionName = "0.2.13"
     }
 
     signingConfigs {
