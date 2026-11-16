@@ -89,3 +89,18 @@ test('scripts reach both platform packages with no missing asset',()=>{
   assert.match(bundle,/dst\.writestr\("personal-alarms\.js", personal_alarms\.read_bytes\(\)\)/);
   assert.match(androidBundle,/shutil\.copy2\(PERSONAL_ALARMS, assets \/ 'personal-alarms\.js'\)/);
 });
+
+
+test('Windows alarm delivery stays connected to the tray while minimized',()=>{
+  const shell=readFileSync('src/MichelsLife/DesktopShell.cs','utf8');
+  assert.match(shell,/Tick \+= async \(_, _\) => await PollWindowsAlarmsAsync\(\)/);
+  assert.match(shell,/window\.MichelsLifeAlarms\?\.takeWindowsNotification\?\.\(\)/);
+  assert.match(shell,/RestoreWindow\(\)/);
+  assert.match(shell,/System\.Media\.SystemSounds\.Exclamation\.Play\(\)/);
+  assert.match(alarms,/const windowsNotifications=\[\]/);
+  assert.match(alarms,/windowsNotifications\.push\(\{/);
+  assert.match(alarms,/return windowsNotifications\.shift\(\)\|\|null/);
+  assert.match(alarms,/now-15\*60\*1000/);
+  assert.match(alarms,/window\.addEventListener\?\.\('click',captureAlarmLauncher,true\)/);
+  assert.doesNotMatch(alarms,/window\.addEventListener\?\.\('pointerdown',captureAlarmLauncher,true\)/);
+});
