@@ -1,3 +1,5 @@
+### 2026-11-15 — CIERRE DE MATRIX DEBUG APK #43810112172: Compilación Kotlin/APK/AAB **SUCCESS** y prueba nativa de instalación+reapertura en Android 15 **SUCCESS**. Pruebas API 14 y API 16 **FAILURE** en emuladores, con evidencia retenida; no ocultarlas ni equiparar el Android15 debug a un Galaxy o a la APK firmada de una futura release. La integración del actualizador Direct (`f4b94086`) continúa válida a nivel código/UI. Issue #109 permanece abierto por actualización firmada real, datos persistentes y nuevos artefactos estables.
+
 ## 2026-11-15 — GRANADA Android Direct OTA segura, integrada en main
 
 - [PR #208 MERGED](https://github.com/michels-lab/michel-s-life/pull/208), squash commit `f4b94086e0a6d5c4bb40ad1f76476f13ea8fa533`. Reutilizada funcionalidad comprobada del antiguo trabajo #197 sobre el source actual. No se sobrescribieron alarmas personales, Focus/Pomodoro, backup transaction #207 ni versionado 0.2.12.
