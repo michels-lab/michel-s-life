@@ -175,6 +175,8 @@ internal object AndroidDirectUpdateChecker {
             }
             if (apkCount != 1)
                 throw IllegalStateException("Official Direct APK is missing or ambiguous.")
+            if (!DirectUpdatePolicy.tagMatchesAndroidVersion(tag, version))
+                throw IllegalStateException("Unified release Android tag and APK disagree.")
             val manifestName = "android-v" + version + "-manifest.json"
             val sidecarName = apkFile + ".sha256"
             val complete = validApk && names.contains(sidecarName) &&
