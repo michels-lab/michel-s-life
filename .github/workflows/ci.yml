@@ -62,6 +62,11 @@ jobs:
       - name: Test fail-closed cloud and portable restore storage boundaries
         run: node tools/test_cloud_restore_storage.mjs
 
+      - name: Transactional backup rollback and cross-provider account isolation tests
+        run: |
+          node --test tools/test_granada_transactional_cloud_restore.mjs tools/test_granada_cross_provider_restore_review.mjs
+          node tools/test_granada_restore_review_gate.mjs
+
       - name: Validate Android Supabase sync contract
         run: python android/tools/validate_sync_contract.py
 
