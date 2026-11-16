@@ -312,7 +312,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      ANDROID_VERSION: 0.2.12
+      ANDROID_VERSION: 0.2.13
       MLV_REQUIRE_NATIVE_STATE_PROBE: "1"
     steps:
       - uses: actions/checkout@v4
@@ -371,7 +371,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      ANDROID_VERSION: 0.2.12
+      ANDROID_VERSION: 0.2.13
       MLV_REQUIRE_NATIVE_STATE_PROBE: "1"
     steps:
       - uses: actions/checkout@v4
@@ -425,7 +425,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
-      ANDROID_VERSION: '0.2.12'
+      ANDROID_VERSION: '0.2.13'
       MLV_REQUIRE_NATIVE_STATE_PROBE: '1'
     steps:
       - uses: actions/checkout@v4
