@@ -1,3 +1,11 @@
+## Unreleased — Granada 2026-11-15/16: Chapter, Pomodoro, and personal Alarms restored
+
+- **Chapter / Master’s Arc:** reduced the opaque full-width shade; restored a visible themed artwork recovery layer beneath selected Chapter packs and previews. Broken images now show the actual loaded app theme or a dimensional ambient fallback instead of a black rectangle.
+- **Windows Pomodoro:** the launcher and full-screen/minimized controls now own finished click events ahead of legacy app capture handlers. Fixed the rapid Pause→Resume suppression and selected the canonical loaded theme wallpaper for the immersive work/break view. Canonical FocusStory persistence/XP/phase ownership is unchanged.
+- **Personal Alarms:** the launcher owns real click events; repeat/once schedules remain persisted. The Windows tray polls the same web alarm owner while the application is minimized and restores the immersive alert with a native Windows bell/balloon. A 15-minute wake-up grace period prevents a short suspension from discarding due reminders. Android retains its independent OS alarm scheduling.
+- **Evidence:** [dedicated exact-source Chapter/Pomodoro/Alarms regression](https://github.com/michels-lab/michel-s-life/actions/runs/43801288565) **SUCCESS**, 14/14 isolated source cases, actual Chromium clicks, fullscreen/mini focus pause/resume, Chapter scene failure recovery, alarm daily create/reopen/ring/dismiss and once-only native notification queue. [Source validation + Windows C# alarm shell compile](https://github.com/michels-lab/michel-s-life/actions/runs/43800694585) **SUCCESS**.
+- **Distribution status:** code merged to `main` but **not included in published Windows 3.0.223 / Android Direct 0.2.12**. A new official build and installed device acceptance are required before calling the user's installed app fixed; no RC or Developer edition and no claim of an alarm firing with Windows app completely exited.
+
 ## 3.0.216 — Supabase primary sync migration (pre-release)
 
 ### Windows portable naming transition — 2026-10-06
