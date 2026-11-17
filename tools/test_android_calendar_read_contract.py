@@ -20,7 +20,7 @@ checks={
     "if (!interactive)" in consent,
  "overlapping consent guarded":"if (busy || pending != null)" in consent,
  "OAuth result routed":"calendarConsent.onActivityResult(requestCode, resultCode, data)" in activity,
- "independent from Drive":"AndroidBridge(this, webView, auth, calendarConsent, cloud, meta, executor)" in activity,
+ "independent from Drive":"AndroidBridge(this, webView, auth, calendarConsent, calendarWriteConsent, cloud, meta, executor)" in activity,
  "real Calendar GET":"https://www.googleapis.com/calendar/v3" in gateway and
     '"GET", pageUrl' in gateway,
  "bounded provider read":"pages > maxPages" in gateway and
