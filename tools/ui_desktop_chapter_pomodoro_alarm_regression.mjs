@@ -35,6 +35,13 @@ try{
    chapter.position==='absolute'&&chapter.background!=='none'&&chapter.background.length>30,
    'Chapter art recovery absent / black: '+JSON.stringify(chapter));
 
+ // Reject real image requests during this failure scenario. Otherwise the
+ // normal chapter refresh can replace the deliberately broken preview with
+ // a previously cached successful image, making the test nondeterministic.
+ // Routing disables HTTP caching, so both original art and fallback fail.
+ const failImages=route=>route.request().resourceType()==='image'
+   ?route.abort('failed'):route.continue();
+ await page.route('**/*',failImages);
  // Force the exact regression (both pack image and preview fail) and require
  // the app's actual theme/ambient fallback to remain visible, not black.
  await page.evaluate(()=>{
@@ -54,6 +61,7 @@ try{
      getComputedStyle(fallback).backgroundImage!=='none'&&
      getComputedStyle(fallback).position==='absolute';
  }), 'Broken chapter image should retain immersive fallback.');
+ await page.unroute('**/*',failImages);
  await mkdir('artifacts/ui-smoke',{recursive:true});
  await page.screenshot({path:'artifacts/ui-smoke/chapter-recovery-granada.png'});
 
