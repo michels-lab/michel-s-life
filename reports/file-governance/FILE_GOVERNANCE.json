@@ -29,7 +29,7 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "df6935c111f983ea2eaf30247272d851d86612d0af90bf1fd93c64282074b2db",
+  "inventory_fingerprint": "369300a3da947844462f0824b5f19500b2fa257268cd7611573bc5d7c64ce297",
   "evidence_fingerprint": "a3290a37cb024b65dd4ef80f6a0ad344f9db9f39ab2c72f470a50325759fe9c7",
   "files": [
     {
@@ -660,7 +660,7 @@
       "role": "index",
       "purpose": "navigation/onboarding",
       "certainty": "rule",
-      "blob": "7e33f6b7b858e6c6fc305520645af2299a859af9"
+      "blob": "00ec0e82716496c6298585bb0b455a4261fd266e"
     },
     {
       "path": "android/ANDROID_AUDIT_LOG.md",
