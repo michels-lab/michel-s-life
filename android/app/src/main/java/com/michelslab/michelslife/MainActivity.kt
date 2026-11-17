@@ -72,7 +72,7 @@ class MainActivity : Activity() {
         }
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         try {
-            val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+            val uri = NativePersonalAlarms.alarmSoundUri(this, id)
                 ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
             val player = MediaPlayer()
             player.setAudioAttributes(AudioAttributes.Builder()
