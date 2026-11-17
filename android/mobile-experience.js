@@ -982,6 +982,11 @@
       html[data-mlv-platform="android"] #v30171Sidebar #v30162FocusDock,
       html[data-mlv-platform="android"] #v30171Sidebar [data-v30162-focus],
       html[data-mlv-platform="android"] #v30171Sidebar [data-v30165-focus]{display:none!important;pointer-events:none!important}
+      #mlv-android-focus-sheet #mlv-android-focus-time{
+        display:block!important;font-size:clamp(54px,14vw,82px)!important;
+        font-weight:900!important;line-height:1.06!important;
+        min-height:58px!important;color:#fff!important;letter-spacing:-.05em!important
+      }
       #mlv-android-focus-sheet .mlv-focus-motivation-details{order:50;max-height:23vh;overflow:auto;flex:0 0 auto;border:1px solid #ffffff23;border-radius:12px;padding:8px 11px}
       #mlv-android-focus-sheet .mlv-focus-motivation-details summary{min-height:34px;cursor:pointer;font-size:12px;font-weight:700}
       #mlv-android-focus-sheet .mlv-focus-motivation-details:not([open]){max-height:50px}
