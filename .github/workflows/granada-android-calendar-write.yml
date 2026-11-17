@@ -38,6 +38,7 @@ jobs:
         run: |
           node --check tools/test_android_calendar_mission_write_ui.mjs
           node tools/test_android_calendar_mission_write_ui.mjs
+          node tools/test_google_calendar_capture_stability.mjs
       - name: Validate native separate write OAuth scope, account boundaries and provider-owned event contract
         run: |
           python3 tools/test_android_calendar_mission_write_contract.py
