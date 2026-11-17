@@ -128,6 +128,35 @@
       .mlv-focus-stage .mlv-focus-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center}
       .mlv-focus-stage .mlv-focus-mode{font:800 13px system-ui,sans-serif;letter-spacing:.23em}
       .mlv-focus-stage .mlv-focus-clock{font:850 clamp(82px,15vw,175px)/1 system-ui,sans-serif;letter-spacing:-.065em;font-variant-numeric:tabular-nums;text-shadow:0 5px 35px #0008}
+
+      /* Real Playwright caught legacy strong/timer rules shrinking 25:00 to 16px. */
+      #mlv-desktop-focus-immersive .mlv-focus-stage{
+        min-height:0!important;max-height:calc(100dvh - 24px)!important;
+        overflow-y:auto!important;gap:clamp(8px,1.8vh,20px)!important;
+        padding:clamp(16px,2.4vw,36px)!important
+      }
+      #mlv-desktop-focus-immersive #mlv-desktop-focus-clock{
+        display:block!important;width:auto!important;min-width:0!important;
+        min-height:70px!important;font-family:system-ui,sans-serif!important;
+        font-size:clamp(66px,10vw,150px)!important;font-weight:900!important;
+        line-height:1.03!important;letter-spacing:-.055em!important;
+        color:#fff!important;text-align:center!important
+      }
+      #mlv-desktop-focus-immersive .mlv-focus-center{min-height:0!important;flex:1 1 auto!important;gap:6px!important}
+      #mlv-desktop-focus-immersive .mlv-focus-stage>header,
+      #mlv-desktop-focus-immersive .mlv-focus-stage>.mlv-focus-actions{flex-shrink:0!important}
+      #mlv-desktop-focus-immersive .mlv-focus-motivation-details{
+        max-height:22vh;overflow-y:auto;min-height:0;flex:0 1 auto;
+        border:1px solid #ffffff24;border-radius:12px;padding:7px 12px
+      }
+      #mlv-desktop-focus-immersive .mlv-focus-motivation-details summary{cursor:pointer;font:700 12px system-ui,sans-serif}
+      #mlv-desktop-focus-immersive .mlv-focus-motivation-details:not([open]){max-height:40px}
+      #mlv-desktop-focus-immersive .mlv-focus-motivation-details .mlv-motivation{gap:5px;margin:6px auto 0}
+      #mlv-desktop-focus-immersive .mlv-focus-motivation-details .mlv-motivation-copy{font-size:clamp(12px,1.3vw,15px);line-height:1.25}
+      @media(max-height:550px){
+        #mlv-desktop-focus-immersive .mlv-focus-stage{gap:5px!important;padding:10px!important}
+        #mlv-desktop-focus-immersive #mlv-desktop-focus-clock{font-size:clamp(43px,13vh,82px)!important}
+      }
       .mlv-focus-stage .mlv-focus-status{margin:0;font:550 16px system-ui,sans-serif;color:#e2ecf6}
       .mlv-focus-stage .mlv-focus-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
       #mlv-desktop-focus-immersive button{
