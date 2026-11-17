@@ -508,12 +508,12 @@ function ringAlarm(id){
  const item=records.find(x=>x.id===id);
  if(!item)return false;
  ringingId=id;
- if(!android())windowsNotifications.push({id:item.id,label:item.label||tr('Alarm','Alarma'),time:item.time});
+ if(!android())windowsNotifications.push({id:item.id,label:item.label||tr('Alarm','Alarma'),time:item.time,sound:item.sound});
  if(item.repeat==='once'&&item.enabled){item.enabled=false;store();}
  screen.hidden=true;ring.hidden=false;useWallpaper(ring);
  document.body.classList.add('mlv-alarm-visible');
  q('#mlv-alarm-ring-title',ring).textContent=tr('ALARM','ALARMA');
- q('#mlv-alarm-ring-clock',ring).textContent=item.time;
+ q('#mlv-alarm-ring-clock',ring).textContent=item.dueAt?localDateTime(item.dueAt).time:item.time;
  q('#mlv-alarm-ring-label',ring).textContent=item.label||tr('Time to go','Es la hora');
  window.MichelsLifeMotivation?.render?.(q('#mlv-alarm-motivation',ring),'alarm:'+id+':'+item.time);
  q('[data-ring-dismiss]',ring).textContent=tr('Dismiss','Descartar');
@@ -526,16 +526,12 @@ function ringAlarm(id){
    // Keep audible reminder repeating until dismissed or snoozed. Windows
    // cannot ring from a closed application; Android has native OS delivery.
    if(windowsRingtone)window.clearInterval(windowsRingtone);
+   if(customAudio){customAudio.pause();customAudio=null;}
+   const selectedSound=item.sound||'system';
+   if(selectedSound==='custom')playCustom(false).then(ok=>{if(!ok)playPresetSound('system');});
    const tone=()=>{
      if(ring.hidden){window.clearInterval(windowsRingtone);windowsRingtone=null;return;}
-     try{
-       const Audio=window.AudioContext||window.webkitAudioContext;
-       if(Audio){const ctx=new Audio(),osc=ctx.createOscillator(),gain=ctx.createGain();
-         osc.connect(gain);gain.connect(ctx.destination);osc.type='sine';osc.frequency.value=880;
-         gain.gain.setValueAtTime(.12,ctx.currentTime);osc.start();
-         osc.stop(ctx.currentTime+.65);osc.onended=()=>ctx.close();
-       }
-     }catch(_){}
+     try{if(selectedSound!=='custom')playPresetSound(selectedSound);}catch(_){}
    };
    tone();windowsRingtone=window.setInterval(tone,1700);
  }
@@ -544,6 +540,7 @@ function ringAlarm(id){
 function dismissRing(snooze){
  if(!ring||ring.hidden)return;
  if(windowsRingtone){window.clearInterval(windowsRingtone);windowsRingtone=null;}
+ if(customAudio){customAudio.pause();customAudio=null;}
  if(snooze&&ringingId){
   const item=records.find(x=>x.id===ringingId);
   if(item){
@@ -551,7 +548,7 @@ function dismissRing(snooze){
    const date=when.getFullYear()+'-'+String(when.getMonth()+1).padStart(2,'0')+'-'+String(when.getDate()).padStart(2,'0');
    const time=String(when.getHours()).padStart(2,'0')+':'+String(when.getMinutes()).padStart(2,'0');
    const snoozed={id:'s'+Date.now().toString(36),label:item.label||tr('Snoozed alarm','Alarma pospuesta'),
-     date,time,repeat:'once',days:[],enabled:true};
+     date,time,repeat:'once',days:[],sound:item.sound||'system',enabled:true};
    // Round the native due forward to the next minute so it cannot already be past.
    if(when.getSeconds()>0){const next=new Date(when);next.setMinutes(next.getMinutes()+1,0,0);
      snoozed.date=next.getFullYear()+'-'+String(next.getMonth()+1).padStart(2,'0')+'-'+String(next.getDate()).padStart(2,'0');
