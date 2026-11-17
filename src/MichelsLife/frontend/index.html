@@ -29811,6 +29811,11 @@ window.MLVCloudSharedStorageV30216={
   restore:mlvRestoreSharedStorageKeys
 };
 function captureCloudBackup(){
+  // A background Settings render can lazily initialize missing Google Calendar
+  // defaults while a Supabase history POST is awaiting its response. Initialize
+  // them BEFORE capturing the protected board: any actual user edits during
+  // the POST still change capture() and correctly block an unsafe restore.
+  settings();
   return JSON.stringify({app:"Michel's Life",type:'cloud-sync',cloudPayloadVersion:2,
     version:BUILD,state:JSON.parse(JSON.stringify(state)),localStorage:mlvSharedStorageSnapshot()});
 }
