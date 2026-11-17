@@ -16,6 +16,8 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
+import android.webkit.WebChromeClient
+import android.webkit.ValueCallback
 import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewClientCompat
 import java.util.concurrent.Executors
@@ -36,6 +38,7 @@ class MainActivity : Activity() {
     private var pendingNotificationOpen: Runnable? = null
     private var alarmOpenGeneration = 0
     private var pendingAlarmOpen: Runnable? = null
+    private var pendingAlarmAudioPicker: ValueCallback<Array<Uri>>? = null
     private var playingAlarm: MediaPlayer? = null
     private var vibratingAlarm: Vibrator? = null
 
@@ -179,7 +182,9 @@ class MainActivity : Activity() {
             databaseEnabled = true
             cacheMode = WebSettings.LOAD_DEFAULT
             allowFileAccess = false
-            allowContentAccess = false
+            // A user-selected audio URI from the system picker must be readable.
+            // Arbitrary file URLs remain disabled; native import validates bytes.
+            allowContentAccess = true
             mediaPlaybackRequiresUserGesture = false
             javaScriptCanOpenWindowsAutomatically = false
             setSupportMultipleWindows(false)
@@ -188,6 +193,32 @@ class MainActivity : Activity() {
             displayZoomControls = false
             // Large Story/Focus scenes are rendered as needed, not precached.
             offscreenPreRaster = false
+        }
+
+        webView.webChromeClient = object : WebChromeClient() {
+            override fun onShowFileChooser(
+                webView: WebView?,
+                filePathCallback: ValueCallback<Array<Uri>>?,
+                fileChooserParams: FileChooserParams?
+            ): Boolean {
+                if (filePathCallback == null) return false
+                pendingAlarmAudioPicker?.onReceiveValue(null)
+                pendingAlarmAudioPicker = filePathCallback
+                return try {
+                    val picker = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                        type = "audio/*"
+                        putExtra(Intent.EXTRA_MIME_TYPES,
+                            arrayOf("audio/mpeg", "audio/wav", "audio/x-wav", "audio/ogg"))
+                    }
+                    startActivityForResult(picker, 7942)
+                    true
+                } catch (_: Exception) {
+                    pendingAlarmAudioPicker?.onReceiveValue(null)
+                    pendingAlarmAudioPicker = null
+                    false
+                }
+            }
         }
 
         webView.addJavascriptInterface(
@@ -294,6 +325,12 @@ class MainActivity : Activity() {
 
     @Deprecated("Deprecated in Android; retained for Google authorization resolution compatibility.")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == 7942) {
+            val chosen = if (resultCode == Activity.RESULT_OK) data?.data else null
+            pendingAlarmAudioPicker?.onReceiveValue(chosen?.let { arrayOf(it) })
+            pendingAlarmAudioPicker = null
+            return
+        }
         if (::calendarConsent.isInitialized &&
             calendarConsent.onActivityResult(requestCode, resultCode, data)) return
         if (::calendarWriteConsent.isInitialized &&
@@ -303,6 +340,8 @@ class MainActivity : Activity() {
     }
 
     override fun onDestroy() {
+        pendingAlarmAudioPicker?.onReceiveValue(null)
+        pendingAlarmAudioPicker = null
         stopPendingNotificationOpen()
         stopPendingPersonalAlarm()
         stopAlarmAttention()
