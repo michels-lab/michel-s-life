@@ -26,11 +26,11 @@
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
-    "POTENTIAL_UNLOGGED_CHANGES": 1
+    "POTENTIAL_UNLOGGED_CHANGES": 2
   },
-  "finding_total": 5,
-  "inventory_fingerprint": "ae9ee9940999a90e91fa7fe1d87dc62bbf5442f4d133ab455b06987c7ae4d2e5",
-  "evidence_fingerprint": "f45a8276dd0cbcb79c4e6e90c8038f47606a205fbb715c7cce254a641f2e5755",
+  "finding_total": 6,
+  "inventory_fingerprint": "8b0ccb738bf9a0b67ccdb56d44439ae8b9088edd1d5e9ca13eed18d45874ab6c",
+  "evidence_fingerprint": "50fc38050a0ea96fc7f834adb18ee6caa9ee0162da96a923541916ebc22738d2",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -653,7 +653,7 @@
       "role": "bitacora",
       "purpose": "technical/audit change history",
       "certainty": "rule",
-      "blob": "49e3b4c9e2200f8d6633ab655914c4f60a7bbacd"
+      "blob": "acf66382a5dada16622ea95f2b26982532d7ca7b"
     },
     {
       "path": "android/DIRECT_DISTRIBUTION_SIGNING.md",
@@ -807,7 +807,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "f60e0268117513f3c78f7d289f988f1ccd96c601"
+      "blob": "b7bb8b8a118bcf77399e93aeda9f4eb66569639e"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt",
@@ -1262,7 +1262,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "ce3390925cbe8d31e831ff672e110348932142db"
+      "blob": "7a3a249fdefa8beeac8e3acbb6356a3f35d6a399"
     },
     {
       "path": "android/tools/validate_android_version.py",
@@ -2564,7 +2564,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "098458626b9707aeb3e70a910ccab267208a8d6d"
+      "blob": "22c59ed1db2a1072129bc31fa03c0218337bd737"
     },
     {
       "path": "tools/ui_desktop_experience_smoke.mjs",
@@ -2739,7 +2739,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "df8f0fc9e4ff0a6c6f90d62bfee29620f68f1ae7"
+      "blob": "2325d63b2d8c718922ec80d31584dd3bb6aaeb2b"
     },
     {
       "path": "tools/ui_supabase_sync_smoke.mjs",
@@ -2843,11 +2843,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "84f42a2662b795b5",
+      "id": "1489299ec38a2d68",
+      "code": "POTENTIAL_UNLOGGED_CHANGES",
+      "severity": "review",
+      "path": "GIT_AUDIT_LOG.md",
+      "observation": "4 implementation/config paths changed since this log's last commit; examples: android/app/src/main/java/com/michelslab/michelslife/MainActivity.kt, android/tools/validate_android_mobile_ux.py, tools/ui_desktop_chapter_pomodoro_alarm_regression.mjs, tools/ui_supabase_cross_device_smoke.mjs",
+      "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "d74dd78308103997",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "31 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-calendar-write.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-data-health.yml",
+      "observation": "4 implementation/config paths changed since this log's last commit; examples: android/app/src/main/java/com/michelslab/michelslife/MainActivity.kt, android/tools/validate_android_mobile_ux.py, tools/ui_desktop_chapter_pomodoro_alarm_regression.mjs, tools/ui_supabase_cross_device_smoke.mjs",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
