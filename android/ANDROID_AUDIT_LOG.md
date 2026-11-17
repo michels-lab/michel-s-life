@@ -1,3 +1,9 @@
+## 2026-11-17 — WebView memoria GPU reducida, CI de verdad preservado
+
+- [PR #211 MERGED](https://github.com/michels-lab/michel-s-life/pull/211), commit `9634b01bedf743ec7850b97ec20c2cf1d0891601`: Android deja que el manifiesto maneje la GPU (sin `setLayerType(HARDWARE)` adicional), desactiva precarga `offscreenPreRaster`, conserva controles de Story/Pomodoro y Calendar misión write de PR #210.
+- Source validation, Android UI smoke, UI desktop y compilación Android del PR head PASS. Reparado caso de UI de imágenes faltantes con abort de red real para no confundir caché de Chapter; la prueba de Supabase mantiene rechazo ante ediciones concurrentes y documenta reintento seguro. Jobs debug Android14/15/16 se evalúan por separado; no prometer que ADB/Galaxy estén arreglados sin pruebas firmadas.
+- Estas mejoras no están distribuidas aún: la última versión oficial Android Direct sigue 0.2.13, Windows 3.0.224; usuario nunca autorizó RC ni Developer Edition.
+
 ## 2026-11-17 — Granada: Calendar write explícito y arranque GPU de WebView
 
 - [PR #210 integrada](https://github.com/michels-lab/michel-s-life/pull/210), SHA `928c711434942b324c2387585fce638ae030904c`. En Android se agregaron acciones nativas Google Calendar para **una misión con fecha**, con selección y confirmación explícita, scopes de lectura y escritura separados, identidad/propiedad de evento verificada y ETag. Sin sincronización masiva silenciosa, no muta XP/Journal/Supabase. Suite de integración Calendar, UI y build PASS; cuenta Google/Galaxy real no comprobados, issue #110 abierta.
