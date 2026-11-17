@@ -167,7 +167,8 @@ class MainActivity : Activity() {
             .build()
 
         webView = WebView(this)
-        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        // Activity manifest already enables hardware acceleration. A forced
+        // WebView layer adds a second graphics buffer during startup.
         webView.overScrollMode = View.OVER_SCROLL_NEVER
         webView.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_BOUND, true)
         setContentView(webView)
@@ -185,7 +186,8 @@ class MainActivity : Activity() {
             setSupportZoom(false)
             builtInZoomControls = false
             displayZoomControls = false
-            offscreenPreRaster = true
+            // Large Story/Focus scenes are rendered as needed, not precached.
+            offscreenPreRaster = false
         }
 
         webView.addJavascriptInterface(
