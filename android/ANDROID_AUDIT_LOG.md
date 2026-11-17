@@ -1,3 +1,9 @@
+## 2026-11-17 — Granada: Calendar write explícito y arranque GPU de WebView
+
+- [PR #210 integrada](https://github.com/michels-lab/michel-s-life/pull/210), SHA `928c711434942b324c2387585fce638ae030904c`. En Android se agregaron acciones nativas Google Calendar para **una misión con fecha**, con selección y confirmación explícita, scopes de lectura y escritura separados, identidad/propiedad de evento verificada y ETag. Sin sincronización masiva silenciosa, no muta XP/Journal/Supabase. Suite de integración Calendar, UI y build PASS; cuenta Google/Galaxy real no comprobados, issue #110 abierta.
+- [PR #211 bajo validación](https://github.com/michels-lab/michel-s-life/pull/211): WebView sin capa GPU duplicada y sin `offscreenPreRaster`, manteniendo aceleración del manifiesto. Los fallos de ADB/AVD son un problema aún abierto, no declarar resuelto. No nueva APK publicada para estas funciones.
+- Última distribución pública es Android Direct 0.2.13, [Windows 3.0.224](https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.224-android-v0.2.13). No Developer Edition, no RC.
+
 ### 2026-11-15 — RESULTADO FINAL DEL INSTALADO DEBUG EN CI: [run 43810112172](https://github.com/michels-lab/michel-s-life/actions/runs/43810112172) con build Android **PASS** y pruebas de APK debug instalado/reabierto Android 15 **PASS**. Los jobs de Android 14 y 16 fallaron; no se marca todo el workflow ni pruebas Galaxy como exitosas. Aún falta validar descarga/actualización de APK **firmada** en un dispositivo real antes de release futura.
 
 ## 2026-11-15 — Android Direct: comprobación y actualización oficial con consentimiento
