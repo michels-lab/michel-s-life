@@ -40,6 +40,11 @@ class AndroidBridge(
             .put("error", e.message ?: "Could not schedule Focus notification.").toString()
     }
 
+    /** Copies validated user audio into private files, not WebView storage only. */
+    @JavascriptInterface
+    fun installCustomAlarmSound(dataUrl: String): String =
+        NativePersonalAlarms.installCustomSound(activity, dataUrl).toString()
+
     /** Android alarm registry is authoritative after recurring/one-time delivery. */
     @JavascriptInterface
     fun getPersonalAlarms(): String = NativePersonalAlarms.list(activity).toString()
