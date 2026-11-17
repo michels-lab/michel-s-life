@@ -38,7 +38,7 @@ class MainActivity : Activity() {
     private var pendingNotificationOpen: Runnable? = null
     private var alarmOpenGeneration = 0
     private var pendingAlarmOpen: Runnable? = null
-    private var pendingAlarmAudioPicker: ValueCallback<Array<Uri>>? = null
+    private var pendingWebFilePicker: ValueCallback<Array<Uri>>? = null
     private var playingAlarm: MediaPlayer? = null
     private var vibratingAlarm: Vibrator? = null
 
@@ -202,20 +202,34 @@ class MainActivity : Activity() {
                 fileChooserParams: FileChooserParams?
             ): Boolean {
                 if (filePathCallback == null) return false
-                pendingAlarmAudioPicker?.onReceiveValue(null)
-                pendingAlarmAudioPicker = filePathCallback
+                pendingWebFilePicker?.onReceiveValue(null)
+                pendingWebFilePicker = filePathCallback
                 return try {
-                    val picker = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                        addCategory(Intent.CATEGORY_OPENABLE)
-                        type = "audio/*"
-                        putExtra(Intent.EXTRA_MIME_TYPES,
-                            arrayOf("audio/mpeg", "audio/wav", "audio/x-wav", "audio/ogg"))
+                    val acceptsAudio = fileChooserParams?.acceptTypes?.any {
+                        it.startsWith("audio/", ignoreCase = true) ||
+                        it.endsWith(".mp3", ignoreCase = true) ||
+                        it.endsWith(".wav", ignoreCase = true) ||
+                        it.endsWith(".ogg", ignoreCase = true)
+                    } == true
+                    val picker = if (acceptsAudio) {
+                        Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                            addCategory(Intent.CATEGORY_OPENABLE)
+                            type = "audio/*"
+                            putExtra(Intent.EXTRA_MIME_TYPES,
+                                arrayOf("audio/mpeg", "audio/wav", "audio/x-wav", "audio/ogg"))
+                        }
+                    } else {
+                        // Preserve the user's JSON/ZIP/backup file imports.
+                        fileChooserParams?.createIntent() ?: Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                            addCategory(Intent.CATEGORY_OPENABLE)
+                            type = "*/*"
+                        }
                     }
                     startActivityForResult(picker, 7942)
                     true
                 } catch (_: Exception) {
-                    pendingAlarmAudioPicker?.onReceiveValue(null)
-                    pendingAlarmAudioPicker = null
+                    pendingWebFilePicker?.onReceiveValue(null)
+                    pendingWebFilePicker = null
                     false
                 }
             }
@@ -327,8 +341,8 @@ class MainActivity : Activity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == 7942) {
             val chosen = if (resultCode == Activity.RESULT_OK) data?.data else null
-            pendingAlarmAudioPicker?.onReceiveValue(chosen?.let { arrayOf(it) })
-            pendingAlarmAudioPicker = null
+            pendingWebFilePicker?.onReceiveValue(chosen?.let { arrayOf(it) })
+            pendingWebFilePicker = null
             return
         }
         if (::calendarConsent.isInitialized &&
@@ -340,8 +354,8 @@ class MainActivity : Activity() {
     }
 
     override fun onDestroy() {
-        pendingAlarmAudioPicker?.onReceiveValue(null)
-        pendingAlarmAudioPicker = null
+        pendingWebFilePicker?.onReceiveValue(null)
+        pendingWebFilePicker = null
         stopPendingNotificationOpen()
         stopPendingPersonalAlarm()
         stopAlarmAttention()
