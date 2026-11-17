@@ -1,3 +1,12 @@
+## 3.0.225 / Android Direct 0.2.14 — final stable release (2026-11-17)
+
+- **Published and verified:** [unified public stable release](https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.225-android-v0.2.14), 13 assets, Windows Setup/Portable and Android Direct APK `versionCode 16` with permanent production signer. [Destination-owned publisher run 44177651306](https://github.com/michels-lab/michel-s-life-releases/actions/runs/44177651306) **SUCCESS**, with downloaded asset/hash and provenance verification. Source intent `fd6f9aa6`, packaged source version change `e2a8cc93`.
+- **Android Calendar:** manual opt-in create/update/remove of one dated mission's linked event, scoped `calendar.events` consent, account binding and explicit confirmation; bulk automatic sync remains disabled.
+- **Android WebView and Chapter:** remove redundant forced GPU layer and offscreen pre-raster to reduce startup overhead; Chapter real artwork recovery is covered by deterministic failure regression. Preserve immersive Pomodoro/alarms, backgrounds and affirmations.
+- **Cloud/account integrity:** preserve fail-closed check on local edits during Supabase download, account A/B/C isolation, backups and bounded retry; CI browser tests for Windows/Android and Chapter/Focus/Alarm passed on release source SHA.
+- **Native release evidence:** Windows Setup and Portable executed in CI; Android Direct permanently signed APK installed, onboarding and relaunched on Android 15 emulator (independent alternate GPU attempt green). The source publisher's final step failed HTTP 401 on the old cross-repository token, so the destination-owned workflow performed verified public publication with its own token; this is not a binary build failure.
+- **Still open:** intermittent Story/Pomodoro browser runtime JS syntax issue [#168](https://github.com/michels-lab/michel-s-life/issues/168), physical Galaxy acceptance, real Google/Supabase provider, lock-screen/Doze delivery, and actual in-place upgrade/data persistence. No RC or Developer Edition.
+
 ## Unreleased — Granada 2026-11-15/16: Chapter, Pomodoro, and personal Alarms restored
 
 - **Chapter / Master’s Arc:** reduced the opaque full-width shade; restored a visible themed artwork recovery layer beneath selected Chapter packs and previews. Broken images now show the actual loaded app theme or a dimensional ambient fallback instead of a black rectangle.
