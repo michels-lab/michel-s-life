@@ -373,3 +373,7 @@ Automatic evidence deltas, pending human triage. No deletion authority.
 ## 2026-11-17 10:45 UTC
 
 - All tracked 400; findings 5; inventory 199eb41bcafc; evidence 7a04106e2c2c. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.
+
+## 2026-11-17 17:35 UTC
+
+- All tracked 400; findings 4; inventory 86873896ad1b; evidence 1b533bb96254. Full local report in reports/file-governance/. Status REVIEW_REQUIRED.

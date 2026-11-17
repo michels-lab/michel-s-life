@@ -25,12 +25,11 @@
     "workflow": 50
   },
   "finding_counts": {
-    "BROKEN_RELATIVE_LINK": 4,
-    "POTENTIAL_UNLOGGED_CHANGES": 1
+    "BROKEN_RELATIVE_LINK": 4
   },
-  "finding_total": 5,
-  "inventory_fingerprint": "199eb41bcafc1e82e532504f88570a03ae7c6dc3e94ff805820e6daa25c1a366",
-  "evidence_fingerprint": "7a04106e2c2cfd3dbf7bbbb5f5ac05f9ed3c80a3374069ce28d1d2a5ece53ee7",
+  "finding_total": 4,
+  "inventory_fingerprint": "86873896ad1b9662bda4bf732183b3d977673714beb5e84ce689369615051262",
+  "evidence_fingerprint": "1b533bb96254d4a85dcffac53fe3c6180cc4698881a1ee21ef601d2867659a17",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -653,7 +652,7 @@
       "role": "bitacora",
       "purpose": "technical/audit change history",
       "certainty": "rule",
-      "blob": "acf66382a5dada16622ea95f2b26982532d7ca7b"
+      "blob": "04e69698b260335067e04555f25fb94ae5610ae0"
     },
     {
       "path": "android/DIRECT_DISTRIBUTION_SIGNING.md",
@@ -2840,15 +2839,6 @@
       "path": "docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md",
       "observation": "Missing: docs/android/audit/2026-10-12-ui-screenshot-gallery.md",
       "recommendation": "Fix link or restore target",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "d74dd78308103997",
-      "code": "POTENTIAL_UNLOGGED_CHANGES",
-      "severity": "review",
-      "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "4 implementation/config paths changed since this log's last commit; examples: android/app/src/main/java/com/michelslab/michelslife/MainActivity.kt, android/tools/validate_android_mobile_ux.py, tools/ui_desktop_chapter_pomodoro_alarm_regression.mjs, tools/ui_supabase_cross_device_smoke.mjs",
-      "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
   ],
