@@ -205,7 +205,27 @@ try{
   };
 
 
-  await android.page.evaluate(async()=>window.SupabaseSyncV30216.pull({reload:false}));
+  // The production P0 account guard legitimately refuses a cloud download
+  // when local user data changes during its network request. Simulate the
+  // published retry guidance without weakening that guard: every rejected
+  // attempt MUST leave the Android local revision untouched.
+  let adopted=false;
+  for(let attempt=0;attempt<3;attempt++){
+    try{
+      await android.page.evaluate(async()=>window.SupabaseSyncV30216.pull({reload:false}));
+      adopted=true;
+      break;
+    }catch(error){
+      if(!String(error).includes('Local data changed during cloud download'))throw error;
+      const safe=await sessionSnapshot(android.page);
+      ok(Number(safe.meta.revision||0)===0,
+        'Rejected download changed the Android account revision before owner approval');
+      ok(Number(backend.remote?.revision)===desktopRevision,
+        'Rejected download changed the existing Windows master');
+      await android.page.waitForTimeout(300*(attempt+1));
+    }
+  }
+  ok(adopted,'Android did not adopt after explicit retry when local save settled');
   const androidStoredBeforeReload=await sessionSnapshot(android.page);
   const androidIdentityAfterPull=await android.page.evaluate(()=>({
     deviceId:window.SupabaseSyncV30216.deviceId(),
