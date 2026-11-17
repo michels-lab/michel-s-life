@@ -244,6 +244,14 @@ function styles(){
  background:#ffffff16;cursor:pointer}
 .mlv-alarm-days input{min-height:18px;height:18px;width:18px;accent-color:#87dbff}
 .mlv-alarm-form .mlv-alarm-buttons{display:flex;gap:9px;flex-wrap:wrap}
+.mlv-alarm-quick{display:flex;gap:7px;flex-wrap:wrap;padding:13px 0 8px;align-items:center}
+.mlv-alarm-quick strong{flex-basis:100%;font:800 13px system-ui,sans-serif;color:#cde9f9}
+.mlv-alarm-quick button{min-width:65px;flex:1 0 auto}
+.mlv-alarm-sound-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.mlv-alarm-sound-row select{flex:1;min-width:120px}
+.mlv-alarm-sound-row button{flex:0 0 auto}
+#mlv-alarm-custom-file{display:block;min-height:0;padding:9px;max-width:100%;font-size:13px}
+#mlv-alarm-custom-name{font:500 12px system-ui,sans-serif;opacity:.84;overflow-wrap:anywhere}
 .mlv-alarm-count{font:750 14px system-ui,sans-serif;margin:18px 0 11px}
 .mlv-alarm-list{display:grid;gap:10px}
 .mlv-alarm-item{display:flex;gap:10px;align-items:center;padding:12px;border:1px solid #ffffff2f;
@@ -288,6 +296,10 @@ function create(){
  <header class="mlv-alarm-heading"><div><span class="mlv-alarm-eyebrow">MICHEL'S LIFE / ALARMS</span>
  <h2 id="mlv-alarm-title">Alarms</h2><p id="mlv-alarm-subtitle"></p></div>
  <button type="button" id="mlv-alarm-close" data-alarm-close>×</button></header>
+ <div class="mlv-alarm-quick" id="mlv-alarm-quick"><strong id="mlv-alarm-quick-title">Quick Alarm · ring in</strong>
+  <button type="button" data-quick-minutes="5">5 min</button><button type="button" data-quick-minutes="10">10 min</button>
+  <button type="button" data-quick-minutes="15">15 min</button><button type="button" data-quick-minutes="30">30 min</button>
+  <button type="button" data-quick-minutes="60">1 h</button><button type="button" data-quick-minutes="120">2 h</button></div>
  <form id="mlv-alarm-form" class="mlv-alarm-form">
  <label class="full"><span data-alarm-t="name">Name</span><input id="mlv-alarm-name" maxlength="60" autocomplete="off" /></label>
  <label><span data-alarm-t="time">Time</span><input id="mlv-alarm-time" type="time" required /></label>
@@ -297,6 +309,11 @@ function create(){
  <label id="mlv-alarm-date-wrap"><span data-alarm-t="date">Date</span><input id="mlv-alarm-date" type="date" required /></label>
  <fieldset id="mlv-alarm-days-wrap" class="full" hidden><legend data-alarm-t="days">Days of the week</legend>
  <div class="mlv-alarm-days"></div></fieldset>
+ <label class="full"><span data-alarm-t="sound">Alarm sound</span>
+  <span class="mlv-alarm-sound-row"><select id="mlv-alarm-sound"></select><button type="button" id="mlv-alarm-preview">▶ Preview</button></span></label>
+ <label class="full"><span data-alarm-t="upload">Upload your MP3 / audio</span>
+  <input id="mlv-alarm-custom-file" type="file" accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg" />
+  <small id="mlv-alarm-custom-name">MP3, WAV or OGG · max 6 MB</small></label>
  <div class="mlv-alarm-buttons full"><button type="submit" class="primary" id="mlv-alarm-save">Create alarm</button>
  <button type="button" id="mlv-alarm-cancel-edit" hidden>Cancel edit</button></div></form>
  <div class="mlv-alarm-count" id="mlv-alarm-count"></div><div id="mlv-alarm-list" class="mlv-alarm-list"></div>
@@ -320,12 +337,21 @@ function create(){
   span.dataset.alarmWeekday=String(i);span.textContent=days[i];label.append(check,span);
   q('.mlv-alarm-days',screen).appendChild(label);
  }
+ const soundSelect=q('#mlv-alarm-sound',screen);
+ for(const sound of SOUNDS){const option=document.createElement('option');option.value=sound;option.textContent=soundName(sound);soundSelect.appendChild(option);}
+ soundSelect.value='system';
+ q('#mlv-alarm-preview',screen).addEventListener('click',()=>previewSound(soundSelect.value));
+ q('#mlv-alarm-custom-file',screen).addEventListener('change',async e=>{
+  const file=e.target.files?.[0];if(file)await importSound(file);
+  e.target.value='';
+ });
  q('#mlv-alarm-repeat',screen).addEventListener('change',updateForm);
  q('#mlv-alarm-permissions',screen).addEventListener('click',()=>{
   try{window.MichelsLifeAndroid?.openPersonalAlarmPermissionSettings?.();}catch(_){}
  });
  screen.addEventListener('click',e=>{
   const target=e.target.closest('button');if(!target)return;
+  if(target.hasAttribute('data-quick-minutes')){createQuickAlarm(Number(target.dataset.quickMinutes));return;}
   if(target.hasAttribute('data-alarm-close'))close();
   if(target.id==='mlv-alarm-cancel-edit')resetForm();
   const id=target.closest('[data-alarm-id]')?.dataset.alarmId;
@@ -356,7 +382,7 @@ function create(){
   }
   const base=editing?records.find(a=>a.id===editing):null;
   const item=normal({id:base?.id||'a'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),
-   label:q('#mlv-alarm-name',screen).value,time,date,repeat,days:selected,enabled:true});
+   label:q('#mlv-alarm-name',screen).value,time,date,repeat,days:selected,sound:q('#mlv-alarm-sound',screen).value,enabled:true});
   if(!item)return;
   if(item.repeat==='once'&&localAt(item)<=Date.now()){
     window.alert(tr('Choose a future date and time.','Selecciona una fecha y hora futuras.'));return;
@@ -382,6 +408,7 @@ function resetForm(){
  editing=null;q('#mlv-alarm-form',screen).reset();
  const d=initialTime();
  q('#mlv-alarm-date',screen).value=d.date;q('#mlv-alarm-time',screen).value=d.time;
+ q('#mlv-alarm-sound',screen).value='system';
  q('#mlv-alarm-cancel-edit',screen).hidden=true;
  updateForm();localize();
 }
@@ -389,6 +416,7 @@ function fillForm(item){
  editing=item.id;
  q('#mlv-alarm-name',screen).value=item.label;
  q('#mlv-alarm-time',screen).value=item.time;
+ q('#mlv-alarm-sound',screen).value=item.sound||'system';
  q('#mlv-alarm-repeat',screen).value=item.repeat;
  q('#mlv-alarm-date',screen).value=item.date||dateInput();
  screen.querySelectorAll('.mlv-alarm-days input').forEach(c=>c.checked=item.days.includes(Number(c.value)));
@@ -398,7 +426,7 @@ function fillForm(item){
 }
 function localize(){
  if(!screen)return;
- const labels={name:['Name (optional)','Nombre (opcional)'],time:['Time','Hora'],repeat:['Repeat','Repetir'],date:['Date','Fecha'],days:['Days of the week','Días de la semana']};
+ const labels={name:['Name (optional)','Nombre (opcional)'],time:['Time','Hora'],repeat:['Repeat','Repetir'],date:['Date','Fecha'],days:['Days of the week','Días de la semana'],sound:['Alarm sound','Sonido de alarma'],upload:['Upload your MP3 / audio','Cargar mi MP3 / audio']};
  for(const [key,translation] of Object.entries(labels)){
   const node=q('[data-alarm-t="'+key+'"]',screen);if(node)node.textContent=tr(...translation);
  }
@@ -406,6 +434,9 @@ function localize(){
  options[0].textContent=tr('Once','Una sola vez');
  options[1].textContent=tr('Daily','Todos los días');
  options[2].textContent=tr('Weekly / selected days','Semanal / elegir días');
+ q('#mlv-alarm-sound',screen).querySelectorAll('option').forEach(option=>option.textContent=soundName(option.value));
+ q('#mlv-alarm-preview',screen).textContent=tr('▶ Preview','▶ Escuchar');
+ q('#mlv-alarm-quick-title',screen).textContent=tr('Quick Alarm · ring in','Alarma rápida · sonar en');
  const esDays=['Do','Lu','Ma','Mi','Ju','Vi','Sá'];
  screen.querySelectorAll('[data-alarm-weekday]').forEach(el=>el.textContent=
    window.MichelsLifeI18n?.language==='es'?esDays[Number(el.dataset.alarmWeekday)]:days[Number(el.dataset.alarmWeekday)]);
@@ -449,10 +480,10 @@ function renderList(){
     item.repeat==='daily'?tr('Every day','Todos los días'):
     tr('Weekly','Semanal')+' · '+item.days.map(d=>tr(days[d],['Do','Lu','Ma','Mi','Ju','Vi','Sá'][d])).join(' ');
   const due=next(item);
-  q('small',card).textContent=!item.enabled?tr('Off','Desactivada'):
+  q('small',card).textContent=(!item.enabled?tr('Off','Desactivada'):
     due?new Date(due).toLocaleString(window.MichelsLifeI18n?.language==='es'?'es-MX':'en-US',
       {weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):
-      tr('Needs a new date','Requiere otra fecha');
+      tr('Needs a new date','Requiere otra fecha'))+' · '+soundName(item.sound);
   q('input',card).checked=item.enabled;
   q('input',card).setAttribute('aria-label',tr('Enable alarm','Activar alarma'));
 
@@ -595,7 +626,7 @@ function boot(){
   else if(screen&&!screen.hidden){e.preventDefault();close();}
  });
 }
-window.MichelsLifeAlarms={open,close,ringAlarm,read,records:()=>records.slice(),next,localAt,dismissRing,pollWindows:tick,takeWindowsNotification};
+window.MichelsLifeAlarms={open,close,ringAlarm,read,records:()=>records.slice(),next,localAt,dismissRing,quickAlarm:createQuickAlarm,pollWindows:tick,takeWindowsNotification};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
 else boot();
 })();
