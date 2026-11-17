@@ -18,7 +18,7 @@ permissions:
   contents: read
 jobs:
   source:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 6
     steps:
       - uses: actions/checkout@v4
@@ -31,7 +31,7 @@ jobs:
           node --check src/MichelsLife/frontend/personal-alarms.js
           node --test tools/test_chapter_art_recovery_contract.mjs tools/test_focus_immersive_contract.mjs tools/test_personal_alarm_contract.mjs
   browser:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 14
     steps:
       - uses: actions/checkout@v4
@@ -56,7 +56,7 @@ jobs:
           with ZipFile('artifacts/AppBundle.zip') as bundle:
               bundle.extractall('artifacts/ui-bundle')
           PY
-      - name: Install Chromium
+      - name: Install Chromium on pinned supported Ubuntu 24.04
         run: |
           npm install --no-save --no-package-lock playwright@1.58.2
           npx playwright install --with-deps chromium
