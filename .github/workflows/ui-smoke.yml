@@ -35,7 +35,7 @@ env:
 
 jobs:
   ui-smoke:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -48,7 +48,9 @@ jobs:
           node-version: '22'
 
       - name: Audit shared backup restore and device isolation
-        run: node tools/test_cloud_restore_storage.mjs
+        run: |
+          node tools/test_cloud_restore_storage.mjs
+          node tools/test_google_calendar_capture_stability.mjs
 
       - name: Test resilient bootstrap download before browser packaging
         run: python -m unittest discover -s tools -p 'test_michels_life_bootstrap.py' -v

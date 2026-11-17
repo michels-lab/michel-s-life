@@ -7,9 +7,9 @@ import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
 
 /**
- * Pure, device-independent safety rules for an eventual opt-in Google Calendar
- * adapter. This file has no Android, Google account, storage, or UI side effects.
- * It does not grant permission or enable calendar sync in the shipped bridge.
+ * Pure, device-independent safety rules for opt-in Google Calendar mission
+ * publishing. No Android, Google account, storage or UI side effects.
+ * The read-only and user-confirmed write routes have separate permissions.
  */
 internal object CalendarSyncRules {
     const val EVENTS_SCOPE = "https://www.googleapis.com/auth/calendar.events"

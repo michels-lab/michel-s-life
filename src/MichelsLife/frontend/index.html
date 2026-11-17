@@ -29629,7 +29629,7 @@ if(window.GoogleCalendarV30190)return;
 const BUILD='3.0.209';
 const CHANNEL='michels-life-google-calendar';
 const RESPONSE='michels-life-google-calendar-response';
-const runtime={hasCredentials:false,connected:false,cloudReady:false,account:'',credentialProject:'',storageFolder:'',busy:false,cloudBusy:false,error:'',cloudError:'',cloudAction:'',cloudLastSync:'',cloudConflict:null,cloudInitialDone:false,lastDirtyAt:null,restoring:false,lastResult:null,notice:'',confirmAction:'',bridgeAvailable:!!window.chrome?.webview,calendarEvents:[],calendarAccount:'',calendarOwnerId:'',calendarLastSync:''};
+const runtime={hasCredentials:false,connected:false,cloudReady:false,account:'',credentialProject:'',storageFolder:'',busy:false,cloudBusy:false,error:'',cloudError:'',cloudAction:'',cloudLastSync:'',cloudConflict:null,cloudInitialDone:false,lastDirtyAt:null,restoring:false,lastResult:null,notice:'',confirmAction:'',bridgeAvailable:!!window.chrome?.webview,calendarEvents:[],calendarAccount:'',calendarOwnerId:'',calendarLastSync:'',calendarSelectedMissionId:'',calendarPublishPreview:null};
 let seq=0, autoTimer=null, cloudPollTimer=null, cloudSaveTimer=null, decorateTimer=null, mounting=false, storageWatchInstalled=false;
 const pending=new Map();
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -29643,6 +29643,91 @@ function statusLabel(){if(runtime.busy||runtime.cloudBusy)return ['busy','Connec
 function lastSyncText(){const s=settings(),raw=s.lastSync;if(!raw)return 'Never';const d=new Date(raw);return Number.isNaN(d.getTime())?String(raw):d.toLocaleString()}
 function cloudLastSyncText(){const raw=runtime.cloudLastSync;if(!raw)return 'Never';const d=new Date(raw);return Number.isNaN(d.getTime())?String(raw):d.toLocaleString()}
 function googleConfirmCopy(){const a=runtime.confirmAction;if(a==='disconnect')return ['Disconnect Google?','Your cloud save and Google Calendar events will not be deleted.'];if(a==='cloud-upload'||a==='cloud-conflict-local')return ['Overwrite the cloud copy?','This PC will become the master copy and replace the Michel’s Life save in Google Drive.'];if(a==='cloud-download'||a==='cloud-conflict-cloud')return ['Replace this PC with the cloud copy?','A local safety backup will be created first, then Google Drive will replace this PC’s Michel’s Life data.'];return null}
+
+/** Single-mission Android Calendar write: explicit review + separate provider OAuth.
+ * Never persists tokens, provider results or confirmation into synced state. */
+function androidMissionSelection(){
+ const missions=localMissions().filter(m=>m.missionId && m.missionId.length<=180 &&
+  m.title && m.title.length<=500);
+ const selected=missions.find(m=>m.missionId===runtime.calendarSelectedMissionId)||missions[0];
+ if(!selected)throw new Error('Choose a dated mission before publishing to Calendar.');
+ const start=selected.date;
+ const day=new Date(start+'T00:00:00.000Z');
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(start)||!Number.isFinite(day.getTime())||
+   day.toISOString().slice(0,10)!==start)throw new Error('Mission date is invalid.');
+ const end=new Date(day.getTime()+86400000).toISOString().slice(0,10);
+ return {missionId:selected.missionId,summary:selected.title,start,end,allDay:true,
+  ownerId:String(window.SupabaseSyncV30216?.session?.()?.user?.id||'')};
+}
+function androidMissionWriterHtml(){
+ if(window.__MICHELSLIFE_PLATFORM__!=='android')return '';
+ const es=String(document.documentElement.lang||'').startsWith('es');
+ const enabled=typeof window.MichelsLifeAndroid?.calendarMissionWriteAvailable==='function';
+ const missions=localMissions().filter(m=>m.missionId&&m.missionId.length<=180&&m.title&&m.title.length<=500);
+ const id=missions.some(m=>m.missionId===runtime.calendarSelectedMissionId)
+  ?runtime.calendarSelectedMissionId:(missions[0]?.missionId||'');
+ const choices=missions.map(m=>'<option value="'+esc(m.missionId)+'"'+
+  (m.missionId===id?' selected':'')+'>'+esc(m.title+' · '+m.date)+'</option>').join('');
+ const p=runtime.calendarPublishPreview;
+ const ready=enabled&&missions.length>0&&!runtime.busy;
+ const textReview=es?'Revisar antes de enviar':'Review before publishing';
+ const textRemove=es?'Revisar eliminación':'Review removal';
+ const writeNote=es
+  ?'Solo una misión con fecha por acción. Google solicitará un permiso de escritura independiente; no altera XP, Diario ni el estado sincronizado.'
+  :'One dated mission per action. Google requests separate write permission; XP, Journal and synced state stay unchanged.';
+ return '<div class="mlv190-google-note" data-mlv190-calendar-write role="region" aria-label="'+
+  (es?'Publicar una misión en Google Calendar':'Publish one mission to Google Calendar')+'">'+
+  '<h3 style="margin:0 0 6px">'+(es?'Google Calendar · Misiones':'Google Calendar · Missions')+'</h3>'+
+  '<p>'+writeNote+'</p>'+
+  (enabled?'<label for="mlv190-calendar-mission">'+(es?'Misión con fecha':'Dated mission')+'</label>'+
+    '<select id="mlv190-calendar-mission" data-mlv190-calendar-mission-select style="width:100%;min-height:44px" '+
+    (runtime.busy?'disabled':'')+'>'+choices+'</select>':
+    '<p role="status">'+(es?'Esta versión no admite escritura en Calendar.':'This build does not support Calendar publishing.')+'</p>')+
+  (!missions.length?'<p role="status">'+(es?'Agrega una fecha a una misión para publicarla.':'Add a date to a mission before publishing.')+'</p>':'')+
+  '<div class="mlv190-google-actions"><button class="btn" type="button" data-mlv190-google="calendar-review-publish" '+
+  (ready?'':'disabled')+'>'+textReview+'</button>'+
+  '<button class="btn ghost" type="button" data-mlv190-google="calendar-review-remove" '+
+  (ready?'':'disabled')+'>'+textRemove+'</button></div>'+
+  (p?'<div class="mlv191-cloud-conflict" role="alert"><b>'+
+   (p.remove?(es?'Eliminar evento gestionado':'Remove managed event'):(es?'Publicar misión':'Publish mission'))+
+   '</b><p>'+esc(p.summary)+' · '+esc(p.start)+
+   (p.remove?(es?' · Solo elimina eventos creados por Michel’s Life.':' · Only Michel’s Life managed events can be removed.'):'')+
+   '</p><div class="mlv191-cloud-actions"><button class="btn" type="button" data-mlv190-google="calendar-confirm-mission">'+
+   (es?'Confirmar en Google':'Confirm in Google')+
+   '</button><button class="btn ghost" type="button" data-mlv190-google="calendar-cancel-mission">'+
+   (es?'Cancelar':'Cancel')+'</button></div></div>':'')+
+  '</div>';
+}
+async function androidMissionWriteFromReview(){
+ const p=runtime.calendarPublishPreview;
+ if(!p||runtime.busy)throw new Error('Review one Calendar mission before confirming.');
+ const now=androidMissionSelection();
+ if(p.ownerId!==now.ownerId||p.missionId!==now.missionId||
+    p.summary!==now.summary||p.start!==now.start||p.end!==now.end)
+  throw new Error('Mission or account changed since review. Nothing was requested; review again.');
+ runtime.busy=true;runtime.error='';runtime.notice='Google Calendar: awaiting explicit write permission…';
+ mountGoogleSettings();
+ try{
+  const action=p.remove?'calendarMissionRemove':'calendarMissionUpsert';
+  const response=await bridge(action,{confirmed:true,missionId:p.missionId,
+    summary:p.summary,start:p.start,end:p.end,allDay:true});
+  runtime.calendarPublishPreview=null;
+  if(now.ownerId!==String(window.SupabaseSyncV30216?.session?.()?.user?.id||'')){
+   runtime.notice='Calendar returned a result after the Michel’s Life account changed. Review the original Google account before retrying.';
+   return null;
+  }
+  if(response?.provider!=='google-calendar'||response?.missionId!==p.missionId||
+     !['created','updated','removed','already-absent'].includes(response?.action))
+    throw new Error('Calendar did not confirm the expected mission action.');
+  runtime.notice='Google Calendar confirmed '+response.action+' for '+p.summary+
+    '. Tap Read Google Calendar to refresh the event view.';
+  return response;
+ }catch(err){
+  runtime.calendarPublishPreview=null;
+  runtime.error='Calendar could not confirm that action. Check Google Calendar before retrying.';
+  return null;
+ }finally{runtime.busy=false;mountGoogleSettings()}
+}
 function googlePaneHTML(){const s=settings(),[cls,label]=statusLabel(),account=runtime.account||'—',project=runtime.credentialProject||'—',supaActive=!!window.SupabaseSyncV30216?.runtime?.connected,cloudState=!runtime.connected?'Disconnected':runtime.cloudReady?(supaActive?'Fallback ready':'Ready'):'Needs reconnect',confirmCopy=googleConfirmCopy(),androidCalendar=window.__MICHELSLIFE_PLATFORM__==='android',androidCalendarUnavailable=androidCalendar&&typeof window.MichelsLifeAndroid?.calendarReadAvailable!=='function';return `<section class="card mlv190-google-card" data-mlv190-google-card>
 <div class="mlv190-google-head"><div class="mlv190-google-brand"><span class="mlv190-google-logo">G</span><div><h2 style="margin:0">Google</h2><p class="muted" style="margin:3px 0 0">Google Calendar integration. Drive remains available only as a manual migration and recovery fallback while Supabase is the primary sync backend.</p></div></div><span class="mlv190-google-badge ${cls}">${label}</span></div>
 ${runtime.busy?`<div class="mlv204-google-state busy"><b>Connecting to Google…</b><br>Finish sign-in in your browser. This panel will update automatically.</div>`:''}
@@ -29663,11 +29748,12 @@ ${runtime.cloudError?`<div class="mlv190-google-error">${esc(runtime.cloudError)
 <label class="mlv190-google-option"><input type="checkbox" data-mlv190-google-option="pushMissions" ${s.pushMissions?'checked':''} ${androidCalendar||androidCalendarUnavailable?'disabled':''}><span><b>Send dated Michel’s Life missions to Google Calendar</b><small>Optional. Only missions with a concrete date are sent and tagged to avoid duplicates.</small></span></label>
 <label class="mlv190-google-option"><input type="checkbox" data-mlv190-google-option="autoSync" ${s.autoSync?'checked':''} ${androidCalendar||androidCalendarUnavailable?'disabled':''}><span><b>Auto-sync Calendar every 15 minutes</b><small>Only affects Google Calendar events. Your Michel’s Life data uses Cloud Sync above.</small></span></label>
 </div>
-${androidCalendarUnavailable?'<div class="mlv190-google-error" role="status">This Android build cannot access Google Calendar.</div>':androidCalendar?`<div class="mlv190-google-note" role="status"><b>Android Calendar · Read-only.</b> Tap Read Google Calendar to grant separate permission. Account: ${esc(runtime.calendarAccount||'Not selected')}. Events stay only in this device session; missions are not published or changed.</div>`:''}\n<div class="mlv190-google-actions"><button class="btn" type="button" data-mlv190-google="sync" ${!runtime.busy&&!androidCalendarUnavailable&&(runtime.connected||androidCalendar)?'':'disabled'}>${androidCalendarUnavailable?'Calendar sync unavailable':androidCalendar?'Read Google Calendar':'Sync Calendar now'}</button><button class="btn ghost" type="button" data-mlv190-google="open">Open Google Calendar</button></div>
+${androidCalendarUnavailable?'<div class="mlv190-google-error" role="status">This Android build cannot access Google Calendar.</div>':androidCalendar?`<div class="mlv190-google-note" role="status"><b>Android Calendar · Read with separate permission.</b> Tap Read Google Calendar to see events. Account: ${esc(runtime.calendarAccount||'Not selected')}. Reading does not change missions.</div>`:''}
+${androidMissionWriterHtml()}\n<div class="mlv190-google-actions"><button class="btn" type="button" data-mlv190-google="sync" ${!runtime.busy&&!androidCalendarUnavailable&&(runtime.connected||androidCalendar)?'':'disabled'}>${androidCalendarUnavailable?'Calendar sync unavailable':androidCalendar?'Read Google Calendar':'Sync Calendar now'}</button><button class="btn ghost" type="button" data-mlv190-google="open">Open Google Calendar</button></div>
 ${runtime.error?`<div class="mlv190-google-error">${esc(runtime.error)}</div>`:''}
 <div class="mlv190-google-note"><strong>Google sign-in:</strong> press <b>Connect Google</b>, finish authorization in your browser, then return to Michel’s Life. Status and errors stay in this panel.</div>
 </section>`}
-function mountGoogleSettings(){if(mounting)return;mounting=true;try{calendarViewEvents();if(String(state?.activeTab||'')!=='settings')return;const pane=document.querySelector('[data-v30171-pane="google"]');if(!pane)return;const s=settings(),sig=JSON.stringify([runtime.hasCredentials,runtime.connected,runtime.cloudReady,runtime.account,runtime.busy,runtime.cloudBusy,runtime.error,runtime.cloudError,runtime.cloudAction,runtime.cloudLastSync,runtime.cloudConflict?.message||'',runtime.notice,runtime.confirmAction,runtime.calendarAccount,runtime.calendarLastSync,runtime.calendarEvents.length,s.showEvents,s.pushMissions,s.autoSync,s.cloudAutoSync,s.lastSync||'']);let card=pane.querySelector('[data-mlv190-google-card]');if(card&&card.dataset.mlv190Sig===sig)return;const html=googlePaneHTML(),t=document.createElement('template');t.innerHTML=html;const next=t.content.firstElementChild;if(!next)return;next.dataset.mlv190Sig=sig;if(!card)pane.appendChild(next);else card.replaceWith(next)}finally{mounting=false}}
+function mountGoogleSettings(){if(mounting)return;mounting=true;try{calendarViewEvents();if(String(state?.activeTab||'')!=='settings')return;const pane=document.querySelector('[data-v30171-pane="google"]');if(!pane)return;const s=settings(),sig=JSON.stringify([runtime.hasCredentials,runtime.connected,runtime.cloudReady,runtime.account,runtime.busy,runtime.cloudBusy,runtime.error,runtime.cloudError,runtime.cloudAction,runtime.cloudLastSync,runtime.cloudConflict?.message||'',runtime.notice,runtime.confirmAction,runtime.calendarAccount,runtime.calendarLastSync,runtime.calendarEvents.length,runtime.calendarSelectedMissionId,JSON.stringify(runtime.calendarPublishPreview),s.showEvents,s.pushMissions,s.autoSync,s.cloudAutoSync,s.lastSync||'']);let card=pane.querySelector('[data-mlv190-google-card]');if(card&&card.dataset.mlv190Sig===sig)return;const html=googlePaneHTML(),t=document.createElement('template');t.innerHTML=html;const next=t.content.firstElementChild;if(!next)return;next.dataset.mlv190Sig=sig;if(!card)pane.appendChild(next);else card.replaceWith(next)}finally{mounting=false}}
 /* Cloud identity boundary: user preferences belong in backups, but local
    Supabase/Google login, tokens, device IDs, permissions and future unknown
    storage keys MUST NOT cross account devices. */
@@ -29725,6 +29811,11 @@ window.MLVCloudSharedStorageV30216={
   restore:mlvRestoreSharedStorageKeys
 };
 function captureCloudBackup(){
+  // A background Settings render can lazily initialize missing Google Calendar
+  // defaults while a Supabase history POST is awaiting its response. Initialize
+  // them BEFORE capturing the protected board: any actual user edits during
+  // the POST still change capture() and correctly block an unsafe restore.
+  settings();
   return JSON.stringify({app:"Michel's Life",type:'cloud-sync',cloudPayloadVersion:2,
     version:BUILD,state:JSON.parse(JSON.stringify(state)),localStorage:mlvSharedStorageSnapshot()});
 }
@@ -29826,7 +29917,7 @@ function calendarViewEvents(){
   // A successful read belongs to the session under which it was made.
   // Purge it immediately after logout or an A->B switch, even if no new
   // Calendar request has been started. The provider list is view-only.
-  runtime.calendarEvents=[];runtime.calendarAccount='';runtime.calendarOwnerId=current;runtime.lastResult=null;
+  runtime.calendarEvents=[];runtime.calendarAccount='';runtime.calendarOwnerId=current;runtime.lastResult=null;runtime.calendarPublishPreview=null;
  }
  return runtime.calendarEvents
 }
@@ -29847,9 +29938,20 @@ if(a==='disconnect'){if(!confirmed){runtime.confirmAction='disconnect';runtime.n
 if(a==='cloud-sync'){await syncCloud('auto');return}
 if(a==='cloud-upload'||a==='cloud-conflict-local'){if(!confirmed){runtime.confirmAction=a;runtime.notice='';mountGoogleSettings();return}runtime.confirmAction='';await syncCloud('upload');return}
 if(a==='cloud-download'||a==='cloud-conflict-cloud'){if(!confirmed){runtime.confirmAction=a;runtime.notice='';mountGoogleSettings();return}runtime.confirmAction='';await syncCloud('download');return}
+if(a==='calendar-cancel-mission'){runtime.calendarPublishPreview=null;mountGoogleSettings();return}
+if(a==='calendar-review-publish'||a==='calendar-review-remove'){
+ if(window.__MICHELSLIFE_PLATFORM__!=='android'||runtime.busy)return;
+ runtime.calendarPublishPreview={...androidMissionSelection(),
+  remove:a==='calendar-review-remove'};
+ runtime.error='';mountGoogleSettings();return
+}
+if(a==='calendar-confirm-mission'){
+ if(window.__MICHELSLIFE_PLATFORM__!=='android')return;
+ await androidMissionWriteFromReview();return
+}
 if(a==='sync'){await syncNow();return}if(a==='open'){await bridge('openCalendar');return}
 }catch(err){runtime.busy=false;runtime.cloudBusy=false;runtime.confirmAction='';runtime.notice='';runtime.error=String(err?.message||err);mountGoogleSettings()}return}const cs=e.target.closest?.('[data-mlv190-calendar-sync]');if(cs){e.preventDefault();e.stopPropagation();await syncNow();return}if(e.target.closest?.('[data-tab="settings"],[data-v30171-setting="google"]'))[0,40,120,260].forEach(ms=>setTimeout(mountGoogleSettings,ms));if(e.target.closest?.('[data-tab="calendar"],[data-v30135-cal],[data-v30137-calendar-action]'))setTimeout(decorateCalendar,100)},true);
-document.addEventListener('change',e=>{const key=e.target?.dataset?.mlv190GoogleOption;if(!key)return;const s=settings();s[key]=!!e.target.checked;saveSafe();if(key==='showEvents')decorateCalendar();if(key==='autoSync')scheduleAutoSync();if(key==='cloudAutoSync'){scheduleCloudPoll();if(s[key]&&runtime.cloudReady)syncCloud('auto',{silent:true})}if(key==='pushMissions'&&s[key]&&runtime.connected)syncNow({silent:true});mountGoogleSettings()},true);
+document.addEventListener('change',e=>{if(e.target?.matches?.('[data-mlv190-calendar-mission-select]')){runtime.calendarSelectedMissionId=String(e.target.value||'');runtime.calendarPublishPreview=null;mountGoogleSettings();return;}const key=e.target?.dataset?.mlv190GoogleOption;if(!key)return;const s=settings();s[key]=!!e.target.checked;saveSafe();if(key==='showEvents')decorateCalendar();if(key==='autoSync')scheduleAutoSync();if(key==='cloudAutoSync'){scheduleCloudPoll();if(s[key]&&runtime.cloudReady)syncCloud('auto',{silent:true})}if(key==='pushMissions'&&s[key]&&runtime.connected)syncNow({silent:true});mountGoogleSettings()},true);
 window.addEventListener('focus',()=>{mountGoogleSettings();refreshStatus({sync:false,cloud:false});if(window.SupabaseSyncV30216?.runtime?.connected)return;if(runtime.cloudInitialDone&&runtime.connected&&runtime.cloudReady&&settings().cloudAutoSync){const t=Date.parse(runtime.cloudLastSync||'');if(!Number.isFinite(t)||Date.now()-t>2*60*1000)syncCloud('auto',{silent:true})}});
 
 let googlePanePinned=false;

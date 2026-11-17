@@ -16,6 +16,7 @@ class AndroidBridge(
     private val webView: WebView,
     private val auth: GoogleAuthorizationCoordinator,
     private val calendarConsent: AndroidCalendarConsent,
+    private val calendarWriteConsent: AndroidCalendarWriteConsent,
     private val cloud: DriveCloudEngine,
     private val meta: CloudMetaStore,
     private val executor: ExecutorService
@@ -153,6 +154,9 @@ class AndroidBridge(
     fun calendarReadAvailable(): Boolean = true
 
     @JavascriptInterface
+    fun calendarMissionWriteAvailable(): Boolean = true
+
+    @JavascriptInterface
     fun postMessage(raw: String) {
         try {
             val msg = JSONObject(raw)
@@ -278,6 +282,67 @@ class AndroidBridge(
                                 // Never echo provider JSON, bearer credentials
                                 // or account identifiers into errors/logs.
                                 respondError(requestId, "Google Calendar could not be read. Check the connection and permissions.")
+                            }
+                        }
+                    }
+                }
+            }
+            // A calendar write is a distinct user-confirmed operation.
+            // Never reuse the read-only or Drive credentials, and never allow
+            // bulk publishing via the old desktop 'sync' action.
+            "calendarMissionUpsert", "calendarMissionRemove" -> {
+                if (!payload.optBoolean("confirmed", false)) {
+                    respondError(requestId, "Review and confirm the individual Calendar mission first.")
+                    return
+                }
+                val mission = payload.optString("missionId")
+                val remove = action == "calendarMissionRemove"
+                val summary = payload.optString("summary")
+                val start = payload.optString("start")
+                val end = payload.optString("end")
+                val allDay = payload.optBoolean("allDay", false)
+                try {
+                    CalendarSyncRules.missionId(mission)
+                    if (!remove) {
+                        CalendarSyncRules.title(summary)
+                        CalendarSyncRules.validateTiming(start, end, allDay)
+                    }
+                } catch (_: Exception) {
+                    respondError(requestId, "The selected Calendar mission or schedule is invalid.")
+                    return
+                }
+                activity.runOnUiThread {
+                    calendarWriteConsent.authorize(true) { result ->
+                        result.onFailure {
+                            respondError(requestId, "Google Calendar write permission was declined or unavailable.")
+                        }
+                        result.onSuccess { authorized ->
+                            if (authorized == null ||
+                                !authorized.grantedScopes.contains(CalendarSyncRules.EVENTS_SCOPE)) {
+                                respondError(requestId, "Google Calendar write permission is required.")
+                                return@onSuccess
+                            }
+                            executor.execute {
+                                try {
+                                    // User-visible account identity is returned, but never its token.
+                                    val email = cloud.fetchUserEmail(authorized.accessToken)
+                                    if (email.isBlank()) throw SecurityException("No Google account identity.")
+                                    val resultBody = if (remove) {
+                                        calendarGateway.removeMission(authorized.accessToken, mission)
+                                    } else {
+                                        calendarGateway.upsertMission(authorized.accessToken,
+                                            mission, summary, start, end, allDay)
+                                    }
+                                    respondOk(requestId, resultBody
+                                        .put("account", email)
+                                        .put("provider", "google-calendar")
+                                        .put("missionId", mission))
+                                } catch (_: Exception) {
+                                    // An error response must not contain provider body, token,
+                                    // private event details or account credentials.
+                                    respondError(requestId,
+                                        "Google Calendar did not confirm the mission change. Check Calendar before retrying.")
+                                }
                             }
                         }
                     }
