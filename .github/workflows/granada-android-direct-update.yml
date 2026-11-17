@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - '.michelslab/release-intents/unified-v3224-a0213.txt'
+      - '.michelslab/release-intents/unified-v3225-a0214.txt'
   pull_request:
     paths:
       - 'android/app/src/main/java/com/michelslab/michelslife/DirectUpdatePolicy.java'
