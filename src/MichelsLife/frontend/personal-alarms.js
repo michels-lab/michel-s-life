@@ -82,6 +82,7 @@ function playPresetSound(id){
 }
 async function playCustom(isPreview){
  const saved=await storedCustomBlob().catch(()=>null);if(!saved?.blob)return false;
+ if(!isPreview&&(!ring||ring.hidden))return false;
  const url=URL.createObjectURL(saved.blob),audio=new Audio(url);audio.loop=!isPreview;
  audio.addEventListener('ended',()=>URL.revokeObjectURL(url),{once:true});
  try{await audio.play();}catch(_){URL.revokeObjectURL(url);return false;}
@@ -103,7 +104,7 @@ function createQuickAlarm(minutes){
  const dueAt=Date.now()+minutes*60000,dt=localDateTime(dueAt);
  const item=normal({id:'q'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
   label:tr('Quick alarm','Alarma rápida')+' · '+(minutes>=60?minutes/60+'h':minutes+'min'),
-  ...dt,dueAt,repeat:'once',days:[],sound:q('#mlv-alarm-sound',screen)?.value||'system',enabled:true});
+  ...dt,dueAt,repeat:'once',days:[],sound:screen?.querySelector('#mlv-alarm-sound')?.value||'system',enabled:true});
  if(!item)return false;records.push(item);store();return true;
 }
 
