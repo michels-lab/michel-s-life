@@ -208,21 +208,21 @@ internal object NativePersonalAlarms {
             val time=i.toDouble()/rate
             val seconds=time%2.0
             val hz=when(preset){
-                "soft" -> if(seconds<.33)523.0 else 659.0
-                "digital" -> if(seconds<.18)1046.0 else 1318.0
-                "gentle" -> if(seconds<.55)392.0 else 523.0
+                "soft" -> if(seconds<0.33)523.0 else 659.0
+                "digital" -> if(seconds<0.18)1046.0 else 1318.0
+                "gentle" -> if(seconds<0.55)392.0 else 523.0
                 "pulse" -> 740.0
-                else -> if(seconds<.36)880.0 else 660.0
+                else -> if(seconds<0.36)880.0 else 660.0
             }
             val active=when(preset){
-                "soft" -> seconds<.65
-                "digital" -> seconds<.12 || seconds in 0.25..0.37 || seconds in 0.50..0.62
-                "gentle" -> seconds<.9
-                "pulse" -> seconds<.15 || seconds in 0.25..0.4 || seconds in 0.52..0.67
-                else -> seconds<.24 || seconds in 0.35..0.59
+                "soft" -> seconds<0.65
+                "digital" -> seconds<0.12 || seconds in 0.25..0.37 || seconds in 0.50..0.62
+                "gentle" -> seconds<0.9
+                "pulse" -> seconds<0.15 || seconds in 0.25..0.4 || seconds in 0.52..0.67
+                else -> seconds<0.24 || seconds in 0.35..0.59
             }
             val phase=seconds*hz*2.0*PI
-            val envelope=if(active) .22*(1.0 - (seconds%0.35)*.5) else 0.0
+            val envelope=if(active) 0.22*(1.0 - (seconds%0.35)*.5) else 0.0
             buffer.putShort((sin(phase)*envelope*Short.MAX_VALUE).toInt().toShort())
         }
         file.writeBytes(buffer.array())
