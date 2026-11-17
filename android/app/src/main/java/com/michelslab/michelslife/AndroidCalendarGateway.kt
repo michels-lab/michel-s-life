@@ -231,9 +231,12 @@ internal class AndroidCalendarGateway(
         requireOwned(managedEvent, mission)
         val id = managedEvent.optString("id")
         require(id.isNotBlank()) { "Calendar event is missing an identifier." }
+        // Never modify a previously read event without its optimistic lock:
+        // omission of an ETag must fail closed instead of overwriting concurrent edits.
+        val etag = managedEvent.optString("etag")
+        if (etag.isBlank()) throw IOException("Calendar event has no ETag; refresh before editing.")
         val updated = request(accessToken, "PATCH",
-            endpoint("calendars", "primary", "events", id), body,
-            managedEvent.optString("etag"))
+            endpoint("calendars", "primary", "events", id), body, etag)
         return JSONObject().put("action", "updated").put("eventId", updated.optString("id"))
     }
 
@@ -251,9 +254,11 @@ internal class AndroidCalendarGateway(
         val remote = detail(accessToken, plan.second)
             ?: return JSONObject().put("action", "already-absent").put("removed", false)
         requireOwned(remote, mission)
+        val etag = remote.optString("etag")
+        if (etag.isBlank()) throw IOException("Calendar event has no ETag; refresh before removal.")
         request(accessToken, "DELETE",
             endpoint("calendars", "primary", "events", plan.second),
-            ifMatch = remote.optString("etag"))
+            ifMatch = etag)
         return JSONObject().put("action", "removed").put("removed", true)
     }
 }
