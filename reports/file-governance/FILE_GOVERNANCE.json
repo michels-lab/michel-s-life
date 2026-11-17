@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 407,
-  "classified_files_total": 403,
+  "tracked_files_total": 408,
+  "classified_files_total": 404,
   "docs_content_inspected": 99,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -17,7 +17,7 @@
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
-    "release_intent": 15,
+    "release_intent": 16,
     "source": 129,
     "test": 47,
     "text_metadata": 1,
@@ -29,8 +29,8 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "3b704055e1d47934e710e5a9c5626178c4266999e7b62823dd16f0e148d066f5",
-  "evidence_fingerprint": "e2fe8c2a4923fc3ee9afd6e3fa8a0831f70b726b28dd26f39ace7906587b8e66",
+  "inventory_fingerprint": "4aec8861ba4d033f1554651042e50d2d373e9be2719c2a6c4fd72b4babf6a6be",
+  "evidence_fingerprint": "765a5d09beca30b885a32645db5733f7839f07a2d1aceddc863cf8c7b9119b21",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -584,6 +584,13 @@
       "purpose": "historical source-controlled release/candidate intent (preserve for traceability)",
       "certainty": "rule",
       "blob": "0b866c9e89960690c87c6c9e5f958c636b552cd5"
+    },
+    {
+      "path": ".michelslab/release-intents/unified-v3226-a0215.txt",
+      "role": "release_intent",
+      "purpose": "historical source-controlled release/candidate intent (preserve for traceability)",
+      "certainty": "rule",
+      "blob": "c2f38b2bc0cecb83a4a39e27c6b7d0d4b9751977"
     },
     {
       "path": ".michelslab/release-intents/windows-granada-focus-alarms-2026-11-15.txt",
@@ -2892,20 +2899,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "cbfeae9dd3679f6e",
+      "id": "a6c071f1dc3e86c2",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "32 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/release-unified-v3225-a0214.yml",
+      "observation": "33 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/release-unified-v3225-a0214.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "0bd44d2b38f7439a",
+      "id": "429ad3c5a7f4a5c7",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "32 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/release-unified-v3225-a0214.yml",
+      "observation": "33 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/release-unified-v3225-a0214.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
