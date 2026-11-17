@@ -216,13 +216,13 @@ internal object NativePersonalAlarms {
             }
             val active=when(preset){
                 "soft" -> seconds<.65
-                "digital" -> seconds<.12 || seconds in .25.. .37 || seconds in .50.. .62
+                "digital" -> seconds<.12 || seconds in 0.25..0.37 || seconds in 0.50..0.62
                 "gentle" -> seconds<.9
-                "pulse" -> seconds<.15 || seconds in .25.. .4 || seconds in .52.. .67
-                else -> seconds<.24 || seconds in .35.. .59
+                "pulse" -> seconds<.15 || seconds in 0.25..0.4 || seconds in 0.52..0.67
+                else -> seconds<.24 || seconds in 0.35..0.59
             }
             val phase=seconds*hz*2.0*PI
-            val envelope=if(active) .22*(1.0 - (seconds% .35)*.5) else 0.0
+            val envelope=if(active) .22*(1.0 - (seconds%0.35)*.5) else 0.0
             buffer.putShort((sin(phase)*envelope*Short.MAX_VALUE).toInt().toShort())
         }
         file.writeBytes(buffer.array())
