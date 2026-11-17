@@ -11,6 +11,102 @@ const tr=(en,es)=>window.MichelsLifeI18n?.language==='es'?es:en;
 const hhmm=x=>/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(x);
 const validDate=x=>/^\d{4}-\d{2}-\d{2}$/.test(x)&&!Number.isNaN(new Date(x+'T12:00:00').getTime());
 const days=['Su','Mo','Tu','We','Th','Fr','Sa'];
+const SOUNDS=['system','classic','soft','digital','gentle','pulse','custom'];
+const SOUND_NAMES={system:['System default','Sistema'],classic:['Classic bell','Campana clásica'],
+ soft:['Soft chime','Campanillas suaves'],digital:['Digital','Digital'],gentle:['Gentle sunrise','Amanecer suave'],
+ pulse:['Pulse','Pulso'],custom:['My MP3 / audio','Mi MP3 / audio']};
+const soundName=id=>tr(...(SOUND_NAMES[id]||SOUND_NAMES.system));
+let customAudio=null,previewAudio=null;
+function localDateTime(at){
+ const d=new Date(at);
+ return {date:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'),
+  time:String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+}
+function customDatabase(){
+ return new Promise((resolve,reject)=>{
+  if(!window.indexedDB){reject(Error('IndexedDB unavailable'));return;}
+  const req=window.indexedDB.open('michelsLife.personalAlarmAudio.v1',1);
+  req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains('audio'))req.result.createObjectStore('audio');};
+  req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||Error('Audio storage unavailable'));
+ });
+}
+async function saveCustomBlob(blob,name){
+ const db=await customDatabase();
+ try{await new Promise((resolve,reject)=>{const tx=db.transaction('audio','readwrite');
+  tx.objectStore('audio').put({blob,name},'selected');tx.oncomplete=resolve;
+  tx.onerror=()=>reject(tx.error||Error('Audio save failed'));tx.onabort=()=>reject(tx.error||Error('Audio save aborted'));});}
+ finally{db.close();}
+}
+async function storedCustomBlob(){
+ const db=await customDatabase();
+ try{return await new Promise((resolve,reject)=>{const req=db.transaction('audio','readonly').objectStore('audio').get('selected');
+  req.onsuccess=()=>resolve(req.result||null);req.onerror=()=>reject(req.error||Error('Audio load failed'));});}
+ finally{db.close();}
+}
+function readDataURL(file){return new Promise((resolve,reject)=>{
+ const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(reader.error||Error('Could not read audio'));reader.readAsDataURL(file);
+});}
+async function importSound(file){
+ if(!file)return false;
+ if(file.size<128||file.size>6*1024*1024||!/\.(mp3|wav|ogg)$/i.test(file.name)){
+  window.alert(tr('Choose an MP3, WAV or OGG file up to 6 MB.','Elige MP3, WAV u OGG de hasta 6 MB.'));return false;
+ }
+ try{
+  if(android()){
+   const native=window.MichelsLifeAndroid;
+   if(typeof native?.installCustomAlarmSound!=='function')throw Error('Android must support persistent alarm audio.');
+   const result=JSON.parse(native.installCustomAlarmSound(await readDataURL(file))||'{}');
+   if(!result.ok)throw Error(result.error||'Native audio storage failed');
+  }
+  await saveCustomBlob(file,file.name.slice(0,100));
+  const select=q('#mlv-alarm-sound',screen);if(select)select.value='custom';
+  const label=q('#mlv-alarm-custom-name',screen);if(label)label.textContent=file.name.slice(0,100);
+  return true;
+ }catch(e){window.alert(tr('Could not save the ringtone: ','No se pudo guardar el tono: ')+String(e.message||e));return false;}
+}
+function playPresetSound(id){
+ const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;
+ const ctx=new Audio();
+ const patterns={classic:[[0,880,.20],[.3,660,.20]],soft:[[0,523,.3],[.35,659,.28]],
+  digital:[[0,1046,.12],[.2,1318,.12],[.4,1046,.12]],gentle:[[0,392,.35],[.44,523,.42]],
+  pulse:[[0,740,.14],[.24,740,.14],[.48,880,.15]],system:[[0,880,.5]]};
+ for(const [offset,freq,duration] of patterns[id]||patterns.system){
+  const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type=id==='digital'?'square':'sine';
+  osc.frequency.value=freq;osc.connect(gain);gain.connect(ctx.destination);
+  const at=ctx.currentTime+offset;gain.gain.setValueAtTime(.0001,at);
+  gain.gain.exponentialRampToValueAtTime(id==='digital'?.04:.12,at+.018);
+  gain.gain.exponentialRampToValueAtTime(.0001,at+duration);
+  osc.start(at);osc.stop(at+duration+.02);
+ }
+ window.setTimeout(()=>ctx.close().catch(()=>{}),1900);
+}
+async function playCustom(isPreview){
+ const saved=await storedCustomBlob().catch(()=>null);if(!saved?.blob)return false;
+ const url=URL.createObjectURL(saved.blob),audio=new Audio(url);audio.loop=!isPreview;
+ audio.addEventListener('ended',()=>URL.revokeObjectURL(url),{once:true});
+ try{await audio.play();}catch(_){URL.revokeObjectURL(url);return false;}
+ if(isPreview){previewAudio=audio;window.setTimeout(()=>{audio.pause();URL.revokeObjectURL(url);if(previewAudio===audio)previewAudio=null;},5000);}
+ else customAudio=audio;
+ return true;
+}
+async function previewSound(id){
+ try{previewAudio?.pause();}catch(_){}previewAudio=null;
+ if(id==='custom'){
+  if(await playCustom(true))return;
+  const native=window.MichelsLifeAndroid;
+  if(typeof native?.previewPersonalAlarmSound==='function'&&native.previewPersonalAlarmSound('custom'))return;
+  window.alert(tr('Import an MP3 first.','Primero importa un MP3.'));
+ }else playPresetSound(id);
+}
+function createQuickAlarm(minutes){
+ if(![5,10,15,30,60,120].includes(minutes)||records.length>=80)return false;
+ const dueAt=Date.now()+minutes*60000,dt=localDateTime(dueAt);
+ const item=normal({id:'q'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+  label:tr('Quick alarm','Alarma rápida')+' · '+(minutes>=60?minutes/60+'h':minutes+'min'),
+  ...dt,dueAt,repeat:'once',days:[],sound:q('#mlv-alarm-sound',screen)?.value||'system',enabled:true});
+ if(!item)return false;records.push(item);store();return true;
+}
+
 let records=[],screen=null,ring=null,launcher=null,editing=null,lastTick=Date.now(),shown=new Set(),nativeError='',nativeCache='',ready=false;
 let windowsRingtone=null;
 const windowsNotifications=[];
@@ -21,7 +117,9 @@ function normal(item){
   const selected=Array.isArray(item.days)?[...new Set(item.days.map(Number).filter(x=>Number.isInteger(x)&&x>=0&&x<=6))].sort():[];
   if(repeat==='weekly'&&!selected.length)return null;
   if(repeat==='once'&&!date)return null;
-  return {id:item.id,label:String(item.label||'').slice(0,60),time:item.time,repeat,date,days:selected,enabled:!!item.enabled};
+  const sound=SOUNDS.includes(item.sound)?item.sound:'system';
+  const dueAt=repeat==='once'&&Number.isSafeInteger(Number(item.dueAt))&&Number(item.dueAt)>0?Number(item.dueAt):0;
+  return {id:item.id,label:String(item.label||'').slice(0,60),time:item.time,repeat,date,days:selected,sound,dueAt,enabled:!!item.enabled};
 }
 function localRead(){
   try{const data=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(data)?data.slice(0,80).map(normal).filter(Boolean):[];}catch(_){return [];}
@@ -63,7 +161,7 @@ function syncNative(){
   }catch(e){nativeError=String(e);nativeCache='';console.warn('Android alarms unavailable',e);}
 }
 function localAt(item){
-  const due=new Date(item.date+'T'+item.time+':00').getTime();
+  const due=item.dueAt||new Date(item.date+'T'+item.time+':00').getTime();
   return Number.isFinite(due)?due:0;
 }
 function next(item,at=Date.now()){
