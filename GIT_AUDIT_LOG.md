@@ -1,3 +1,10 @@
+## 2026-11-17 — Granada: Calendar Android misión individual publicada en código, memoria WebView en QA
+
+- **Versión pública actual:** [Windows 3.0.224 / Android Direct 0.2.13](https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.224-android-v0.2.13), [publicador #43824768223 SUCCESS](https://github.com/michels-lab/michel-s-life/actions/runs/43824768223), 13 assets. Esta publicación es ANTERIOR a la función Calendar en Android.
+- **[PR #210 MERGED](https://github.com/michels-lab/michel-s-life/pull/210)**, commit `928c711434942b324c2387585fce638ae030904c`: Android Google Calendar acepta publicar/actualizar/eliminar **una misión fechada por vez**, selección y confirmación explícita con datos revisados, OAuth `calendar.events` separado del consentimento readonly/Drive, cuenta verificada, evento con propiedad/idempotencia/ETag, sin tocar misiones/XP/Supabase/Drive. El sync masivo continúa fail-closed. Validación Source, Android UI, Windows UI, compilación Android y Calendar write contract PASS; trabajos nativos debug emulador Android14/15/16 FAIL, no equivale a ensayo con Galaxy. Issue #110 permanece abierta hasta proveedor real.
+- **[PR #211 ABIERTA](https://github.com/michels-lab/michel-s-life/pull/211)**: no fuerza una segunda capa hardware WebView y desactiva rasterización fuera de pantalla para reducir presión gráfica del arranque Story/Pomodoro, conservando aceleración manifest. **No afirmar merge/solución hasta CI**.
+- La versión 3.0.224 / Direct 0.2.13 publicada permanece inmutable. Ninguna Developer Edition ni RC.
+
 ### 2026-11-15 — CIERRE DE MATRIX DEBUG APK #43810112172: Compilación Kotlin/APK/AAB **SUCCESS** y prueba nativa de instalación+reapertura en Android 15 **SUCCESS**. Pruebas API 14 y API 16 **FAILURE** en emuladores, con evidencia retenida; no ocultarlas ni equiparar el Android15 debug a un Galaxy o a la APK firmada de una futura release. La integración del actualizador Direct (`f4b94086`) continúa válida a nivel código/UI. Issue #109 permanece abierto por actualización firmada real, datos persistentes y nuevos artefactos estables.
 
 ## 2026-11-15 — GRANADA Android Direct OTA segura, integrada en main
