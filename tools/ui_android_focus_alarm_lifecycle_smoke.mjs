@@ -160,7 +160,7 @@ try{
   assert.equal(await page.locator('[data-mobile-focus="close"]').getAttribute('aria-label'),'Cerrar Pomodoro');
   const brandDot=page.locator('.mlv-android-focus-eyebrow .mlv-focus-brand-dot');
   assert.equal(await brandDot.count(),1,'Spanish copy removed the Focus brand dot');
-  await page.locator('#mlv-android-focus-sheet details summary').click();
+  await page.locator('#mlv-android-focus-sheet details:not(.mlv-focus-motivation-details) summary').click();
   const workInput=page.locator('#mlv-android-focus-work');
   await workInput.fill('37');
   await page.evaluate(()=>window.MichelsLifeMobileExperience.updateFocus());

@@ -104,3 +104,74 @@ test('Windows alarm delivery stays connected to the tray while minimized',()=>{
   assert.match(alarms,/window\.addEventListener\?\.\('click',captureAlarmLauncher,true\)/);
   assert.doesNotMatch(alarms,/window\.addEventListener\?\.\('pointerdown',captureAlarmLauncher,true\)/);
 });
+
+
+test('Quick Alarm stores an exact 5-minute deadline rather than rounding to a later minute',()=>{
+  const saved=new Map();
+  const window={};
+  const document={readyState:'loading',addEventListener(){}};
+  const storage={getItem:key=>saved.get(key)||null,setItem:(key,value)=>saved.set(key,value)};
+  vm.runInNewContext(alarms,{window,document,localStorage:storage,console},{timeout:1000});
+  const ui=window.MichelsLifeAlarms;
+  const started=Date.now();
+  assert.equal(ui.quickAlarm(5),true);
+  const item=ui.records()[0];
+  assert.equal(item.repeat,'once');
+  assert.equal(item.sound,'system');
+  assert.ok(item.dueAt-started>=5*60000&&item.dueAt-started<5*60000+2000,'precise five-minute deadline');
+  assert.equal(ui.localAt(item),item.dueAt);
+  assert.equal(ui.next(item,item.dueAt-1),item.dueAt);
+  assert.equal(ui.next(item,item.dueAt),0);
+  assert.equal(ui.quickAlarm(60),true);
+  assert.equal(ui.quickAlarm(7),false);
+  const savedRecords=JSON.parse(saved.get('michelsLife.alarms.v1'));
+  assert.equal(savedRecords.length,2);
+  assert.ok(savedRecords[1].dueAt-started>=3600000,'one-hour quick deadline');
+});
+
+test('the selector offers preview, imported MP3/WAV/OGG and bounded private native storage',()=>{
+  for(const id of ['classic','soft','digital','gentle','pulse','custom'])
+    assert.ok(alarms.includes(id),id);
+  for(const duration of ['5','10','15','30','60','120'])
+    assert.match(alarms,new RegExp('data-quick-minutes="'+duration+'"'));
+  for(const feature of ['mlv-alarm-sound','mlv-alarm-preview','mlv-alarm-custom-file',
+    'customDatabase','saveCustomBlob','indexedDB','installCustomAlarmSound','playPresetSound'])
+    assert.ok(alarms.includes(feature),feature);
+  assert.match(alarms,/file.size>6\*1024\*1024/);
+  assert.match(native,/fun installCustomSound\(context: Context, dataUrl: String\)/);
+  assert.match(native,/Base64\.decode/);
+  assert.match(native,/File\(context\.filesDir, "personal-alarm-audio"\)/);
+  assert.match(native,/\.put\("sound", sound\)/);
+  assert.match(native,/\.put\("dueAt", dueAt\)/);
+  assert.match(native,/if \(precise > 0L\) return precise/);
+  assert.match(native,/fun alarmSoundUri\(context: Context, alarmId: String\)/);
+  const bridge=readFileSync('android/app/src/main/java/com/michelslab/michelslife/AndroidBridge.kt','utf8');
+  const activity=readFileSync('android/app/src/main/java/com/michelslab/michelslife/MainActivity.kt','utf8');
+  assert.match(bridge,/fun installCustomAlarmSound\(dataUrl: String\)/);
+  assert.match(activity,/override fun onShowFileChooser/);
+  assert.match(activity,/ACTION_OPEN_DOCUMENT/);
+  assert.match(activity,/pendingWebFilePicker\?\.onReceiveValue/);
+  assert.match(activity,/NativePersonalAlarms\.alarmSoundUri\(this, id\)/);
+  assert.match(overlay,/NativePersonalAlarms\.alarmSoundUri\(context, id\)/);
+});
+
+test('desktop login startup is enabled once and respects later user opt-out',()=>{
+  const shell=readFileSync('src/MichelsLife/DesktopShell.cs','utf8');
+  assert.match(shell,/EnsureStartupPreferenceOnce\(\)/);
+  assert.match(shell,/StartupPreferenceConfigured/);
+  assert.match(shell,/MarkStartupPreferenceConfigured\(\)/);
+  assert.match(shell,/SetStartWithWindows\(true\)/);
+  assert.match(shell,/Manual opt-out remains off/);
+  assert.match(shell,/CheckOnClick = true/);
+});
+
+test('optional motivational quotes cannot cover Pomodoro timer or primary buttons',()=>{
+  assert.match(focus,/<details class="mlv-focus-motivation-details">/);
+  assert.match(android,/<details class="mlv-focus-motivation-details">/);
+  assert.ok(focus.indexOf('<details class="mlv-focus-motivation-details">')>
+    focus.indexOf('data-focus-action="toggle"'),'desktop quotes appear below controls');
+  assert.ok(android.indexOf('<details class="mlv-focus-motivation-details">')>
+    android.indexOf('data-mobile-focus="toggle"'),'Android quotes appear below controls');
+  assert.match(focus,/oldDock\.style\.setProperty\('display','none','important'\)/);
+  assert.match(android,/#v30171Sidebar #v30162FocusDock/);
+});

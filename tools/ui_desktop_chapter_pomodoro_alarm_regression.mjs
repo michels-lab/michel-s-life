@@ -69,6 +69,16 @@ try{
  // handlers previously swallowed this action leaving a dead-looking button.
  await page.locator('#mlv-desktop-focus-launcher').click({timeout:12000});
  await page.waitForFunction(()=>!document.getElementById('mlv-desktop-focus-immersive')?.hidden);
+ const focusLayout=await page.evaluate(()=>{
+   const details=document.querySelector('#mlv-desktop-focus-immersive .mlv-focus-motivation-details');
+   const clock=document.getElementById('mlv-desktop-focus-clock')?.getBoundingClientRect();
+   const start=document.querySelector('#mlv-desktop-focus-immersive [data-focus-action="toggle"]')?.getBoundingClientRect();
+   return {closed:!!details&&!details.open,clock:clock?.toJSON(),start:start?.toJSON(),height:innerHeight,
+     inertSidebar:!!document.querySelector('#v30171Sidebar #v30162FocusDock:not([hidden])')};
+ });
+ assert(focusLayout.closed&&focusLayout.clock?.height>40&&focusLayout.start?.height>35&&
+   focusLayout.start.y+focusLayout.start.height<=focusLayout.height+2&&!focusLayout.inertSidebar,
+   'Pomodoro clock or buttons obscured by motivational quotes/legacy sidebar: '+JSON.stringify(focusLayout));
  await page.locator('#mlv-desktop-focus-immersive [data-focus-action="toggle"]').click();
  await page.waitForFunction(()=>window.FocusStoryV30162.focusState().status==='running');
  assert(await page.locator('#mlv-desktop-focus-clock').innerText()!=='25:00'||
@@ -86,6 +96,22 @@ try{
  // Open the ALARM UI with a real pointer click and save a recurring alarm.
  await page.locator('#mlv-alarm-launcher').click({timeout:12000});
  await page.waitForFunction(()=>!document.getElementById('mlv-alarm-screen')?.hidden);
+ await page.locator('#mlv-alarm-sound').selectOption('soft');
+ const beforeQuick=Date.now();
+ await page.locator('[data-quick-minutes="5"]').click();
+ const quick=await page.evaluate(()=>{
+   const r=window.MichelsLifeAlarms.records();
+   return r.find(x=>x.id.startsWith('q'));
+ });
+ assert(quick?.repeat==='once'&&quick?.sound==='soft'&&
+   quick.dueAt-beforeQuick>=5*60000&&quick.dueAt-beforeQuick<5*60000+5000,
+   'Quick Alarm did not persist accurate five minute reminder and selected tone: '+JSON.stringify(quick));
+ const wav=Buffer.alloc(1024);wav.write('RIFF',0);wav.writeUInt32LE(wav.length-8,4);
+ wav.write('WAVE',8);wav.write('fmt ',12);
+ await page.locator('#mlv-alarm-custom-file').setInputFiles({name:'granada-sound.wav',mimeType:'audio/wav',buffer:wav});
+ await page.waitForFunction(()=>document.querySelector('#mlv-alarm-sound')?.value==='custom');
+ assert(await page.locator('#mlv-alarm-custom-name').innerText()==='granada-sound.wav',
+   'Custom audio import not visible in UI');
  await page.locator('#mlv-alarm-name').fill('Granada: prueba de alarma');
  await page.locator('#mlv-alarm-repeat').selectOption('daily');
  await page.locator('#mlv-alarm-time').fill('22:15');
@@ -94,7 +120,7 @@ try{
    const r=window.MichelsLifeAlarms.records();
    return {count:r.length,alarm:r.find(x=>x.label==='Granada: prueba de alarma')};
  });
- assert(saved.alarm?.repeat==='daily'&&saved.alarm.enabled,
+ assert(saved.alarm?.repeat==='daily'&&saved.alarm.sound==='custom'&&saved.alarm.enabled,
   'Alarm button did not save a daily recurring alarm: '+JSON.stringify(saved));
  await page.screenshot({path:'artifacts/ui-smoke/alarms-saved-granada.png'});
  await page.locator('#mlv-alarm-close').click();
@@ -117,5 +143,5 @@ try{
  await page.evaluate(()=>window.FocusStoryV30162.resetFocus?.());
  assert(!errors.some(e=>/Uncaught|SyntaxError|TypeError/i.test(e)),
   'Browser runtime exception: '+errors.join('; '));
- console.log('PASS: chapter art survives missing scenes; actual click launches Pomodoro and alarms; timer runs/minimizes; daily alarm persists/rings/dismisses and native notification is exactly once');
+ console.log('PASS: Chapter art, Pomodoro clock and buttons above collapsed quotes, dead sidebar hidden, exact Quick Alarm 5min, persistent WAV picker, native-friendly per-alarm tone, daily alarm & single notification');
 }finally{await browser.close();}

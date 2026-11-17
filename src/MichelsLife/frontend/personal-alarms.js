@@ -11,6 +11,103 @@ const tr=(en,es)=>window.MichelsLifeI18n?.language==='es'?es:en;
 const hhmm=x=>/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(x);
 const validDate=x=>/^\d{4}-\d{2}-\d{2}$/.test(x)&&!Number.isNaN(new Date(x+'T12:00:00').getTime());
 const days=['Su','Mo','Tu','We','Th','Fr','Sa'];
+const SOUNDS=['system','classic','soft','digital','gentle','pulse','custom'];
+const SOUND_NAMES={system:['System default','Sistema'],classic:['Classic bell','Campana clásica'],
+ soft:['Soft chime','Campanillas suaves'],digital:['Digital','Digital'],gentle:['Gentle sunrise','Amanecer suave'],
+ pulse:['Pulse','Pulso'],custom:['My MP3 / audio','Mi MP3 / audio']};
+const soundName=id=>tr(...(SOUND_NAMES[id]||SOUND_NAMES.system));
+let customAudio=null,previewAudio=null;
+function localDateTime(at){
+ const d=new Date(at);
+ return {date:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'),
+  time:String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+}
+function customDatabase(){
+ return new Promise((resolve,reject)=>{
+  if(!window.indexedDB){reject(Error('IndexedDB unavailable'));return;}
+  const req=window.indexedDB.open('michelsLife.personalAlarmAudio.v1',1);
+  req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains('audio'))req.result.createObjectStore('audio');};
+  req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||Error('Audio storage unavailable'));
+ });
+}
+async function saveCustomBlob(blob,name){
+ const db=await customDatabase();
+ try{await new Promise((resolve,reject)=>{const tx=db.transaction('audio','readwrite');
+  tx.objectStore('audio').put({blob,name},'selected');tx.oncomplete=resolve;
+  tx.onerror=()=>reject(tx.error||Error('Audio save failed'));tx.onabort=()=>reject(tx.error||Error('Audio save aborted'));});}
+ finally{db.close();}
+}
+async function storedCustomBlob(){
+ const db=await customDatabase();
+ try{return await new Promise((resolve,reject)=>{const req=db.transaction('audio','readonly').objectStore('audio').get('selected');
+  req.onsuccess=()=>resolve(req.result||null);req.onerror=()=>reject(req.error||Error('Audio load failed'));});}
+ finally{db.close();}
+}
+function readDataURL(file){return new Promise((resolve,reject)=>{
+ const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(reader.error||Error('Could not read audio'));reader.readAsDataURL(file);
+});}
+async function importSound(file){
+ if(!file)return false;
+ if(file.size<128||file.size>6*1024*1024||!/\.(mp3|wav|ogg)$/i.test(file.name)){
+  window.alert(tr('Choose an MP3, WAV or OGG file up to 6 MB.','Elige MP3, WAV u OGG de hasta 6 MB.'));return false;
+ }
+ try{
+  if(android()){
+   const native=window.MichelsLifeAndroid;
+   if(typeof native?.installCustomAlarmSound!=='function')throw Error('Android must support persistent alarm audio.');
+   const result=JSON.parse(native.installCustomAlarmSound(await readDataURL(file))||'{}');
+   if(!result.ok)throw Error(result.error||'Native audio storage failed');
+  }
+  await saveCustomBlob(file,file.name.slice(0,100));
+  const select=q('#mlv-alarm-sound',screen);if(select)select.value='custom';
+  const label=q('#mlv-alarm-custom-name',screen);if(label)label.textContent=file.name.slice(0,100);
+  return true;
+ }catch(e){window.alert(tr('Could not save the ringtone: ','No se pudo guardar el tono: ')+String(e.message||e));return false;}
+}
+function playPresetSound(id){
+ const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;
+ const ctx=new Audio();
+ const patterns={classic:[[0,880,.20],[.3,660,.20]],soft:[[0,523,.3],[.35,659,.28]],
+  digital:[[0,1046,.12],[.2,1318,.12],[.4,1046,.12]],gentle:[[0,392,.35],[.44,523,.42]],
+  pulse:[[0,740,.14],[.24,740,.14],[.48,880,.15]],system:[[0,880,.5]]};
+ for(const [offset,freq,duration] of patterns[id]||patterns.system){
+  const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type=id==='digital'?'square':'sine';
+  osc.frequency.value=freq;osc.connect(gain);gain.connect(ctx.destination);
+  const at=ctx.currentTime+offset;gain.gain.setValueAtTime(.0001,at);
+  gain.gain.exponentialRampToValueAtTime(id==='digital'?.04:.12,at+.018);
+  gain.gain.exponentialRampToValueAtTime(.0001,at+duration);
+  osc.start(at);osc.stop(at+duration+.02);
+ }
+ window.setTimeout(()=>ctx.close().catch(()=>{}),1900);
+}
+async function playCustom(isPreview){
+ const saved=await storedCustomBlob().catch(()=>null);if(!saved?.blob)return false;
+ if(!isPreview&&(!ring||ring.hidden))return false;
+ const url=URL.createObjectURL(saved.blob),audio=new Audio(url);audio.loop=!isPreview;
+ audio.addEventListener('ended',()=>URL.revokeObjectURL(url),{once:true});
+ try{await audio.play();}catch(_){URL.revokeObjectURL(url);return false;}
+ if(isPreview){previewAudio=audio;window.setTimeout(()=>{audio.pause();URL.revokeObjectURL(url);if(previewAudio===audio)previewAudio=null;},5000);}
+ else customAudio=audio;
+ return true;
+}
+async function previewSound(id){
+ try{previewAudio?.pause();}catch(_){}previewAudio=null;
+ if(id==='custom'){
+  if(await playCustom(true))return;
+  const native=window.MichelsLifeAndroid;
+  if(typeof native?.previewPersonalAlarmSound==='function'&&native.previewPersonalAlarmSound('custom'))return;
+  window.alert(tr('Import an MP3 first.','Primero importa un MP3.'));
+ }else playPresetSound(id);
+}
+function createQuickAlarm(minutes){
+ if(![5,10,15,30,60,120].includes(minutes)||records.length>=80)return false;
+ const dueAt=Date.now()+minutes*60000,dt=localDateTime(dueAt);
+ const item=normal({id:'q'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+  label:tr('Quick alarm','Alarma rápida')+' · '+(minutes>=60?minutes/60+'h':minutes+'min'),
+  ...dt,dueAt,repeat:'once',days:[],sound:screen?.querySelector('#mlv-alarm-sound')?.value||'system',enabled:true});
+ if(!item)return false;records.push(item);store();return true;
+}
+
 let records=[],screen=null,ring=null,launcher=null,editing=null,lastTick=Date.now(),shown=new Set(),nativeError='',nativeCache='',ready=false;
 let windowsRingtone=null;
 const windowsNotifications=[];
@@ -21,7 +118,9 @@ function normal(item){
   const selected=Array.isArray(item.days)?[...new Set(item.days.map(Number).filter(x=>Number.isInteger(x)&&x>=0&&x<=6))].sort():[];
   if(repeat==='weekly'&&!selected.length)return null;
   if(repeat==='once'&&!date)return null;
-  return {id:item.id,label:String(item.label||'').slice(0,60),time:item.time,repeat,date,days:selected,enabled:!!item.enabled};
+  const sound=SOUNDS.includes(item.sound)?item.sound:'system';
+  const dueAt=repeat==='once'&&Number.isSafeInteger(Number(item.dueAt))&&Number(item.dueAt)>0?Number(item.dueAt):0;
+  return {id:item.id,label:String(item.label||'').slice(0,60),time:item.time,repeat,date,days:selected,sound,dueAt,enabled:!!item.enabled};
 }
 function localRead(){
   try{const data=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(data)?data.slice(0,80).map(normal).filter(Boolean):[];}catch(_){return [];}
@@ -63,7 +162,7 @@ function syncNative(){
   }catch(e){nativeError=String(e);nativeCache='';console.warn('Android alarms unavailable',e);}
 }
 function localAt(item){
-  const due=new Date(item.date+'T'+item.time+':00').getTime();
+  const due=item.dueAt||new Date(item.date+'T'+item.time+':00').getTime();
   return Number.isFinite(due)?due:0;
 }
 function next(item,at=Date.now()){
@@ -146,6 +245,14 @@ function styles(){
  background:#ffffff16;cursor:pointer}
 .mlv-alarm-days input{min-height:18px;height:18px;width:18px;accent-color:#87dbff}
 .mlv-alarm-form .mlv-alarm-buttons{display:flex;gap:9px;flex-wrap:wrap}
+.mlv-alarm-quick{display:flex;gap:7px;flex-wrap:wrap;padding:13px 0 8px;align-items:center}
+.mlv-alarm-quick strong{flex-basis:100%;font:800 13px system-ui,sans-serif;color:#cde9f9}
+.mlv-alarm-quick button{min-width:65px;flex:1 0 auto}
+.mlv-alarm-sound-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.mlv-alarm-sound-row select{flex:1;min-width:120px}
+.mlv-alarm-sound-row button{flex:0 0 auto}
+#mlv-alarm-custom-file{display:block;min-height:0;padding:9px;max-width:100%;font-size:13px}
+#mlv-alarm-custom-name{font:500 12px system-ui,sans-serif;opacity:.84;overflow-wrap:anywhere}
 .mlv-alarm-count{font:750 14px system-ui,sans-serif;margin:18px 0 11px}
 .mlv-alarm-list{display:grid;gap:10px}
 .mlv-alarm-item{display:flex;gap:10px;align-items:center;padding:12px;border:1px solid #ffffff2f;
@@ -190,6 +297,10 @@ function create(){
  <header class="mlv-alarm-heading"><div><span class="mlv-alarm-eyebrow">MICHEL'S LIFE / ALARMS</span>
  <h2 id="mlv-alarm-title">Alarms</h2><p id="mlv-alarm-subtitle"></p></div>
  <button type="button" id="mlv-alarm-close" data-alarm-close>×</button></header>
+ <div class="mlv-alarm-quick" id="mlv-alarm-quick"><strong id="mlv-alarm-quick-title">Quick Alarm · ring in</strong>
+  <button type="button" data-quick-minutes="5">5 min</button><button type="button" data-quick-minutes="10">10 min</button>
+  <button type="button" data-quick-minutes="15">15 min</button><button type="button" data-quick-minutes="30">30 min</button>
+  <button type="button" data-quick-minutes="60">1 h</button><button type="button" data-quick-minutes="120">2 h</button></div>
  <form id="mlv-alarm-form" class="mlv-alarm-form">
  <label class="full"><span data-alarm-t="name">Name</span><input id="mlv-alarm-name" maxlength="60" autocomplete="off" /></label>
  <label><span data-alarm-t="time">Time</span><input id="mlv-alarm-time" type="time" required /></label>
@@ -199,6 +310,11 @@ function create(){
  <label id="mlv-alarm-date-wrap"><span data-alarm-t="date">Date</span><input id="mlv-alarm-date" type="date" required /></label>
  <fieldset id="mlv-alarm-days-wrap" class="full" hidden><legend data-alarm-t="days">Days of the week</legend>
  <div class="mlv-alarm-days"></div></fieldset>
+ <label class="full"><span data-alarm-t="sound">Alarm sound</span>
+  <span class="mlv-alarm-sound-row"><select id="mlv-alarm-sound"></select><button type="button" id="mlv-alarm-preview">▶ Preview</button></span></label>
+ <label class="full"><span data-alarm-t="upload">Upload your MP3 / audio</span>
+  <input id="mlv-alarm-custom-file" type="file" accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg" />
+  <small id="mlv-alarm-custom-name">MP3, WAV or OGG · max 6 MB</small></label>
  <div class="mlv-alarm-buttons full"><button type="submit" class="primary" id="mlv-alarm-save">Create alarm</button>
  <button type="button" id="mlv-alarm-cancel-edit" hidden>Cancel edit</button></div></form>
  <div class="mlv-alarm-count" id="mlv-alarm-count"></div><div id="mlv-alarm-list" class="mlv-alarm-list"></div>
@@ -222,12 +338,21 @@ function create(){
   span.dataset.alarmWeekday=String(i);span.textContent=days[i];label.append(check,span);
   q('.mlv-alarm-days',screen).appendChild(label);
  }
+ const soundSelect=q('#mlv-alarm-sound',screen);
+ for(const sound of SOUNDS){const option=document.createElement('option');option.value=sound;option.textContent=soundName(sound);soundSelect.appendChild(option);}
+ soundSelect.value='system';
+ q('#mlv-alarm-preview',screen).addEventListener('click',()=>previewSound(soundSelect.value));
+ q('#mlv-alarm-custom-file',screen).addEventListener('change',async e=>{
+  const file=e.target.files?.[0];if(file)await importSound(file);
+  e.target.value='';
+ });
  q('#mlv-alarm-repeat',screen).addEventListener('change',updateForm);
  q('#mlv-alarm-permissions',screen).addEventListener('click',()=>{
   try{window.MichelsLifeAndroid?.openPersonalAlarmPermissionSettings?.();}catch(_){}
  });
  screen.addEventListener('click',e=>{
   const target=e.target.closest('button');if(!target)return;
+  if(target.hasAttribute('data-quick-minutes')){createQuickAlarm(Number(target.dataset.quickMinutes));return;}
   if(target.hasAttribute('data-alarm-close'))close();
   if(target.id==='mlv-alarm-cancel-edit')resetForm();
   const id=target.closest('[data-alarm-id]')?.dataset.alarmId;
@@ -258,7 +383,7 @@ function create(){
   }
   const base=editing?records.find(a=>a.id===editing):null;
   const item=normal({id:base?.id||'a'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),
-   label:q('#mlv-alarm-name',screen).value,time,date,repeat,days:selected,enabled:true});
+   label:q('#mlv-alarm-name',screen).value,time,date,repeat,days:selected,sound:q('#mlv-alarm-sound',screen).value,enabled:true});
   if(!item)return;
   if(item.repeat==='once'&&localAt(item)<=Date.now()){
     window.alert(tr('Choose a future date and time.','Selecciona una fecha y hora futuras.'));return;
@@ -284,6 +409,7 @@ function resetForm(){
  editing=null;q('#mlv-alarm-form',screen).reset();
  const d=initialTime();
  q('#mlv-alarm-date',screen).value=d.date;q('#mlv-alarm-time',screen).value=d.time;
+ q('#mlv-alarm-sound',screen).value='system';
  q('#mlv-alarm-cancel-edit',screen).hidden=true;
  updateForm();localize();
 }
@@ -291,6 +417,7 @@ function fillForm(item){
  editing=item.id;
  q('#mlv-alarm-name',screen).value=item.label;
  q('#mlv-alarm-time',screen).value=item.time;
+ q('#mlv-alarm-sound',screen).value=item.sound||'system';
  q('#mlv-alarm-repeat',screen).value=item.repeat;
  q('#mlv-alarm-date',screen).value=item.date||dateInput();
  screen.querySelectorAll('.mlv-alarm-days input').forEach(c=>c.checked=item.days.includes(Number(c.value)));
@@ -300,7 +427,7 @@ function fillForm(item){
 }
 function localize(){
  if(!screen)return;
- const labels={name:['Name (optional)','Nombre (opcional)'],time:['Time','Hora'],repeat:['Repeat','Repetir'],date:['Date','Fecha'],days:['Days of the week','Días de la semana']};
+ const labels={name:['Name (optional)','Nombre (opcional)'],time:['Time','Hora'],repeat:['Repeat','Repetir'],date:['Date','Fecha'],days:['Days of the week','Días de la semana'],sound:['Alarm sound','Sonido de alarma'],upload:['Upload your MP3 / audio','Cargar mi MP3 / audio']};
  for(const [key,translation] of Object.entries(labels)){
   const node=q('[data-alarm-t="'+key+'"]',screen);if(node)node.textContent=tr(...translation);
  }
@@ -308,6 +435,9 @@ function localize(){
  options[0].textContent=tr('Once','Una sola vez');
  options[1].textContent=tr('Daily','Todos los días');
  options[2].textContent=tr('Weekly / selected days','Semanal / elegir días');
+ q('#mlv-alarm-sound',screen).querySelectorAll('option').forEach(option=>option.textContent=soundName(option.value));
+ q('#mlv-alarm-preview',screen).textContent=tr('▶ Preview','▶ Escuchar');
+ q('#mlv-alarm-quick-title',screen).textContent=tr('Quick Alarm · ring in','Alarma rápida · sonar en');
  const esDays=['Do','Lu','Ma','Mi','Ju','Vi','Sá'];
  screen.querySelectorAll('[data-alarm-weekday]').forEach(el=>el.textContent=
    window.MichelsLifeI18n?.language==='es'?esDays[Number(el.dataset.alarmWeekday)]:days[Number(el.dataset.alarmWeekday)]);
@@ -351,10 +481,10 @@ function renderList(){
     item.repeat==='daily'?tr('Every day','Todos los días'):
     tr('Weekly','Semanal')+' · '+item.days.map(d=>tr(days[d],['Do','Lu','Ma','Mi','Ju','Vi','Sá'][d])).join(' ');
   const due=next(item);
-  q('small',card).textContent=!item.enabled?tr('Off','Desactivada'):
+  q('small',card).textContent=(!item.enabled?tr('Off','Desactivada'):
     due?new Date(due).toLocaleString(window.MichelsLifeI18n?.language==='es'?'es-MX':'en-US',
       {weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):
-      tr('Needs a new date','Requiere otra fecha');
+      tr('Needs a new date','Requiere otra fecha'))+' · '+soundName(item.sound);
   q('input',card).checked=item.enabled;
   q('input',card).setAttribute('aria-label',tr('Enable alarm','Activar alarma'));
 
@@ -379,12 +509,12 @@ function ringAlarm(id){
  const item=records.find(x=>x.id===id);
  if(!item)return false;
  ringingId=id;
- if(!android())windowsNotifications.push({id:item.id,label:item.label||tr('Alarm','Alarma'),time:item.time});
+ if(!android())windowsNotifications.push({id:item.id,label:item.label||tr('Alarm','Alarma'),time:item.time,sound:item.sound});
  if(item.repeat==='once'&&item.enabled){item.enabled=false;store();}
  screen.hidden=true;ring.hidden=false;useWallpaper(ring);
  document.body.classList.add('mlv-alarm-visible');
  q('#mlv-alarm-ring-title',ring).textContent=tr('ALARM','ALARMA');
- q('#mlv-alarm-ring-clock',ring).textContent=item.time;
+ q('#mlv-alarm-ring-clock',ring).textContent=item.dueAt?localDateTime(item.dueAt).time:item.time;
  q('#mlv-alarm-ring-label',ring).textContent=item.label||tr('Time to go','Es la hora');
  window.MichelsLifeMotivation?.render?.(q('#mlv-alarm-motivation',ring),'alarm:'+id+':'+item.time);
  q('[data-ring-dismiss]',ring).textContent=tr('Dismiss','Descartar');
@@ -397,16 +527,12 @@ function ringAlarm(id){
    // Keep audible reminder repeating until dismissed or snoozed. Windows
    // cannot ring from a closed application; Android has native OS delivery.
    if(windowsRingtone)window.clearInterval(windowsRingtone);
+   if(customAudio){customAudio.pause();customAudio=null;}
+   const selectedSound=item.sound||'system';
+   if(selectedSound==='custom')playCustom(false).then(ok=>{if(!ok)playPresetSound('system');});
    const tone=()=>{
      if(ring.hidden){window.clearInterval(windowsRingtone);windowsRingtone=null;return;}
-     try{
-       const Audio=window.AudioContext||window.webkitAudioContext;
-       if(Audio){const ctx=new Audio(),osc=ctx.createOscillator(),gain=ctx.createGain();
-         osc.connect(gain);gain.connect(ctx.destination);osc.type='sine';osc.frequency.value=880;
-         gain.gain.setValueAtTime(.12,ctx.currentTime);osc.start();
-         osc.stop(ctx.currentTime+.65);osc.onended=()=>ctx.close();
-       }
-     }catch(_){}
+     try{if(selectedSound!=='custom')playPresetSound(selectedSound);}catch(_){}
    };
    tone();windowsRingtone=window.setInterval(tone,1700);
  }
@@ -415,6 +541,7 @@ function ringAlarm(id){
 function dismissRing(snooze){
  if(!ring||ring.hidden)return;
  if(windowsRingtone){window.clearInterval(windowsRingtone);windowsRingtone=null;}
+ if(customAudio){customAudio.pause();customAudio=null;}
  if(snooze&&ringingId){
   const item=records.find(x=>x.id===ringingId);
   if(item){
@@ -422,7 +549,7 @@ function dismissRing(snooze){
    const date=when.getFullYear()+'-'+String(when.getMonth()+1).padStart(2,'0')+'-'+String(when.getDate()).padStart(2,'0');
    const time=String(when.getHours()).padStart(2,'0')+':'+String(when.getMinutes()).padStart(2,'0');
    const snoozed={id:'s'+Date.now().toString(36),label:item.label||tr('Snoozed alarm','Alarma pospuesta'),
-     date,time,repeat:'once',days:[],enabled:true};
+     date,time,repeat:'once',days:[],sound:item.sound||'system',enabled:true};
    // Round the native due forward to the next minute so it cannot already be past.
    if(when.getSeconds()>0){const next=new Date(when);next.setMinutes(next.getMinutes()+1,0,0);
      snoozed.date=next.getFullYear()+'-'+String(next.getMonth()+1).padStart(2,'0')+'-'+String(next.getDate()).padStart(2,'0');
@@ -497,7 +624,7 @@ function boot(){
   else if(screen&&!screen.hidden){e.preventDefault();close();}
  });
 }
-window.MichelsLifeAlarms={open,close,ringAlarm,read,records:()=>records.slice(),next,localAt,dismissRing,pollWindows:tick,takeWindowsNotification};
+window.MichelsLifeAlarms={open,close,ringAlarm,read,records:()=>records.slice(),next,localAt,dismissRing,quickAlarm:createQuickAlarm,pollWindows:tick,takeWindowsNotification};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
 else boot();
 })();

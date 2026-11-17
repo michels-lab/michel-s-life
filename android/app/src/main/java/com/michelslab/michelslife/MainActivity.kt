@@ -16,6 +16,8 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
+import android.webkit.WebChromeClient
+import android.webkit.ValueCallback
 import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewClientCompat
 import java.util.concurrent.Executors
@@ -36,6 +38,7 @@ class MainActivity : Activity() {
     private var pendingNotificationOpen: Runnable? = null
     private var alarmOpenGeneration = 0
     private var pendingAlarmOpen: Runnable? = null
+    private var pendingWebFilePicker: ValueCallback<Array<Uri>>? = null
     private var playingAlarm: MediaPlayer? = null
     private var vibratingAlarm: Vibrator? = null
 
@@ -72,7 +75,7 @@ class MainActivity : Activity() {
         }
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         try {
-            val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+            val uri = NativePersonalAlarms.alarmSoundUri(this, id)
                 ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
             val player = MediaPlayer()
             player.setAudioAttributes(AudioAttributes.Builder()
@@ -179,7 +182,9 @@ class MainActivity : Activity() {
             databaseEnabled = true
             cacheMode = WebSettings.LOAD_DEFAULT
             allowFileAccess = false
-            allowContentAccess = false
+            // A user-selected audio URI from the system picker must be readable.
+            // Arbitrary file URLs remain disabled; native import validates bytes.
+            allowContentAccess = true
             mediaPlaybackRequiresUserGesture = false
             javaScriptCanOpenWindowsAutomatically = false
             setSupportMultipleWindows(false)
@@ -188,6 +193,46 @@ class MainActivity : Activity() {
             displayZoomControls = false
             // Large Story/Focus scenes are rendered as needed, not precached.
             offscreenPreRaster = false
+        }
+
+        webView.webChromeClient = object : WebChromeClient() {
+            override fun onShowFileChooser(
+                webView: WebView?,
+                filePathCallback: ValueCallback<Array<Uri>>?,
+                fileChooserParams: FileChooserParams?
+            ): Boolean {
+                if (filePathCallback == null) return false
+                pendingWebFilePicker?.onReceiveValue(null)
+                pendingWebFilePicker = filePathCallback
+                return try {
+                    val acceptsAudio = fileChooserParams?.acceptTypes?.any {
+                        it.startsWith("audio/", ignoreCase = true) ||
+                        it.endsWith(".mp3", ignoreCase = true) ||
+                        it.endsWith(".wav", ignoreCase = true) ||
+                        it.endsWith(".ogg", ignoreCase = true)
+                    } == true
+                    val picker = if (acceptsAudio) {
+                        Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                            addCategory(Intent.CATEGORY_OPENABLE)
+                            type = "audio/*"
+                            putExtra(Intent.EXTRA_MIME_TYPES,
+                                arrayOf("audio/mpeg", "audio/wav", "audio/x-wav", "audio/ogg"))
+                        }
+                    } else {
+                        // Preserve the user's JSON/ZIP/backup file imports.
+                        fileChooserParams?.createIntent() ?: Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                            addCategory(Intent.CATEGORY_OPENABLE)
+                            type = "*/*"
+                        }
+                    }
+                    startActivityForResult(picker, 7942)
+                    true
+                } catch (_: Exception) {
+                    pendingWebFilePicker?.onReceiveValue(null)
+                    pendingWebFilePicker = null
+                    false
+                }
+            }
         }
 
         webView.addJavascriptInterface(
@@ -294,6 +339,12 @@ class MainActivity : Activity() {
 
     @Deprecated("Deprecated in Android; retained for Google authorization resolution compatibility.")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == 7942) {
+            val chosen = if (resultCode == Activity.RESULT_OK) data?.data else null
+            pendingWebFilePicker?.onReceiveValue(chosen?.let { arrayOf(it) })
+            pendingWebFilePicker = null
+            return
+        }
         if (::calendarConsent.isInitialized &&
             calendarConsent.onActivityResult(requestCode, resultCode, data)) return
         if (::calendarWriteConsent.isInitialized &&
@@ -303,6 +354,8 @@ class MainActivity : Activity() {
     }
 
     override fun onDestroy() {
+        pendingWebFilePicker?.onReceiveValue(null)
+        pendingWebFilePicker = null
         stopPendingNotificationOpen()
         stopPendingPersonalAlarm()
         stopAlarmAttention()

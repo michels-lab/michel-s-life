@@ -133,7 +133,8 @@
       ['[data-mobile-focus="reset"]','Reset','Reiniciar'],
       ['[data-mobile-focus="settings"]','Focus settings','Ajustes de enfoque'],
       ['[data-mobile-focus="alarms"]','⏰ Alarms','⏰ Alarmas'],
-      ['details summary','Custom work / break duration','Duración personalizada de enfoque / descanso'],
+      ['details:not(.mlv-focus-motivation-details) summary','Custom work / break duration','Duración personalizada de enfoque / descanso'],
+      ['.mlv-focus-motivation-details summary','Messages & affirmations','Frases y afirmaciones'],
       ['.mlv-android-focus-compact label:first-child','Work minutes','Minutos de enfoque'],
       ['.mlv-android-focus-compact label:nth-child(2)','Break minutes','Minutos de descanso'],
       ['[data-mobile-focus="custom"]','Apply custom preset','Aplicar duración'],
@@ -977,6 +978,24 @@
         backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)
       }
       html[data-mlv-platform="android"] #v30171Sidebar [data-tab="focus"]{display:none!important}
+      /* Retirement of dead legacy Focus/Alarm sidebar controls, regardless of
+         late canonical rerenders. The working launchers remain outside nav. */
+      html[data-mlv-platform="android"] #v30171Sidebar #v30162FocusDock,
+      html[data-mlv-platform="android"] #v30171Sidebar [data-v30162-focus],
+      html[data-mlv-platform="android"] #v30171Sidebar [data-v30165-focus]{display:none!important;pointer-events:none!important}
+      #mlv-android-focus-sheet #mlv-android-focus-time{
+        display:block!important;font-size:clamp(54px,14vw,82px)!important;
+        font-weight:900!important;line-height:1.06!important;
+        min-height:58px!important;color:#fff!important;letter-spacing:-.05em!important
+      }
+      #mlv-android-focus-sheet .mlv-focus-motivation-details{order:50;max-height:23vh;overflow:auto;flex:0 0 auto;border:1px solid #ffffff23;border-radius:12px;padding:8px 11px}
+      #mlv-android-focus-sheet .mlv-focus-motivation-details summary{min-height:34px;cursor:pointer;font-size:12px;font-weight:700}
+      #mlv-android-focus-sheet .mlv-focus-motivation-details:not([open]){max-height:50px}
+      #mlv-android-focus-sheet .mlv-focus-motivation-details .mlv-motivation{gap:5px;margin:2px auto}
+      #mlv-android-focus-sheet .mlv-focus-motivation-details .mlv-motivation-copy{font-size:12px;line-height:1.3}
+      #mlv-android-focus-sheet .mlv-android-focus-clock,
+      #mlv-android-focus-sheet .mlv-android-focus-main-actions{flex-shrink:0}
+      @media(max-height:700px){#mlv-android-focus-sheet .mlv-focus-motivation-details{max-height:16vh}}
       /* The canonical Focus engine and presets stay in the DOM, but its
          old floating desktop panel must not be visually interactive on
          Android: it previously appeared over the mobile sidebar. */
@@ -1164,7 +1183,6 @@
             <span id="mlv-android-focus-status">Ready · Work</span>
             <span class="mlv-focus-clock-caption" id="mlv-focus-end-time">Ready when you are</span>
           </div>
-          <div id="mlv-android-focus-motivation"></div>
           <div class="mlv-focus-controls-title">Session length</div>
           <div class="mlv-android-focus-presets" aria-label="Focus presets">
             <button type="button" data-mobile-preset="25/5">25 / 5</button>
@@ -1177,6 +1195,7 @@
             <button type="button" data-mobile-focus="settings">Focus settings</button>
           <button type="button" data-mobile-focus="alarms">⏰ Alarms</button>
           </div>
+          <details class="mlv-focus-motivation-details"><summary>Frases y afirmaciones / Messages</summary><div id="mlv-android-focus-motivation"></div></details>
           <details><summary>Custom work / break duration</summary>
             <div class="mlv-android-focus-compact">
               <label>Work minutes<input type="number" min="1" max="180" id="mlv-android-focus-work" value="25" /></label>
