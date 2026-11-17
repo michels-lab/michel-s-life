@@ -13,6 +13,18 @@ on:
       - 'tools/ui_desktop_focus_immersive_smoke.mjs'
       - 'tools/ui_desktop_chapter_pomodoro_alarm_regression.mjs'
       - '.github/workflows/granada-chapter-focus-alarms-e2e.yml'
+  pull_request:
+    paths:
+      - 'src/MichelsLife/frontend/index.html'
+      - 'src/MichelsLife/frontend/focus-immersive.js'
+      - 'src/MichelsLife/frontend/personal-alarms.js'
+      - 'src/MichelsLife/DesktopShell.cs'
+      - 'tools/test_chapter_art_recovery_contract.mjs'
+      - 'tools/test_focus_immersive_contract.mjs'
+      - 'tools/test_personal_alarm_contract.mjs'
+      - 'tools/ui_desktop_focus_immersive_smoke.mjs'
+      - 'tools/ui_desktop_chapter_pomodoro_alarm_regression.mjs'
+      - '.github/workflows/granada-chapter-focus-alarms-e2e.yml'
   workflow_dispatch:
 permissions:
   contents: read
