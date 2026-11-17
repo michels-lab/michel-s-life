@@ -11,6 +11,8 @@ internal static class DesktopShell
     private const uint VkSpace = 0x20;
     private const string StartupRegistryPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
     private const string StartupValueName = "MichelsLife";
+    private const string PreferencesRegistryPath = @"Software\MichelsLab\MichelsLife";
+    private const string StartupChoiceValue = "StartupPreferenceConfigured";
 
     private static Form? _form;
     private static WebView2? _webView;
@@ -29,6 +31,9 @@ internal static class DesktopShell
         _attached = true;
         _form = form;
         _webView = webView;
+        // This release opts into opening with Windows on first native launch;
+        // subsequent manual opt-out persists. Never re-enable after opt-out.
+        EnsureStartupPreferenceOnce();
 
         var menu = new ContextMenuStrip();
         var spanish = IsInstalledLanguageSpanish();
@@ -45,6 +50,8 @@ internal static class DesktopShell
         {
             if (!SetStartWithWindows(startupItem.Checked))
                 startupItem.Checked = IsStartWithWindowsEnabled();
+            else
+                MarkStartupPreferenceConfigured();
         };
         menu.Items.Add(startupItem);
         menu.Items.Add(new ToolStripSeparator());
@@ -312,6 +319,39 @@ internal static class DesktopShell
         syncItem.Text = spanish ? "Sincronizar ahora" : "Sync Now";
         startupItem.Text = spanish ? "Iniciar con Windows" : "Start with Windows";
         exitItem.Text = spanish ? "Salir" : "Exit";
+    }
+
+    private static void MarkStartupPreferenceConfigured()
+    {
+        try
+        {
+            using var settings = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(PreferencesRegistryPath, writable: true);
+            settings?.SetValue(StartupChoiceValue, 1, Microsoft.Win32.RegistryValueKind.DWord);
+        }
+        catch { /* Registry can be restricted by enterprise policy. */ }
+    }
+
+    private static void EnsureStartupPreferenceOnce()
+    {
+        try
+        {
+            // Do not silently register transient build/test hosts as login apps.
+            if (!string.Equals(Path.GetFileNameWithoutExtension(Application.ExecutablePath),
+                    "MichelsLife", StringComparison.OrdinalIgnoreCase)) return;
+            using var settings = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(PreferencesRegistryPath, writable: true);
+            if (settings?.GetValue(StartupChoiceValue) is not null)
+            {
+                // Keep the opted-in startup target fresh after installer updates.
+                if (IsStartWithWindowsEnabled()) return;
+                return; // Manual opt-out remains off; never override it.
+            }
+            // Existing startup is an earlier explicit opt-in; leave it unchanged.
+            using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(StartupRegistryPath, writable: false);
+            if (key?.GetValue(StartupValueName) is string) return;
+            if (SetStartWithWindows(true))
+                settings?.SetValue(StartupChoiceValue, 1, Microsoft.Win32.RegistryValueKind.DWord);
+        }
+        catch { /* No startup access must never prevent Michel's Life boot. */ }
     }
 
     private static bool IsStartWithWindowsEnabled()
