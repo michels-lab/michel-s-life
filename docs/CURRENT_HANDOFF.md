@@ -1,4 +1,16 @@
-# Michel's Life — verified stable release checkpoint (2026-11-17)
+# Michel's Life — verified latest stable checkpoint (2026-11-17; v3.0.226)
+
+**Current public latest:** [Windows 3.0.226 / Android Direct 0.2.15 (code17)](https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.226-android-v0.2.15), 13 assets, published 2026-11-17 23:37:02 UTC, `draft=false`, `prerelease=false`. Latest confirmed through GitHub Releases API, not merely a source commit or draft.
+
+**Source/publisher chain:** user-facing feature [PR #214](https://github.com/michels-lab/michel-s-life/pull/214) `171ce86b`; packaging [PR #215](https://github.com/michels-lab/michel-s-life/pull/215) `1edb8579`; isolated owner source release-intent `071ae2e9`; [source Actions #44199216709](https://github.com/michels-lab/michel-s-life/actions/runs/44199216709) validated exact-SHA source, desktop and Android UI, safe updater, Windows Setup/Portable build and execution, Android Direct permanent signing and **signed APK installed and relaunched Android15 with physical AVD PNG captures**. Origin `publish-unified` failed HTTP 401 from historic cross-repo secret but created no public tag. Destination-owned publisher [PR #19](https://github.com/michels-lab/michel-s-life-releases/pull/19) `20a4ebd6`, isolated intent `e0c87b95`, [workflow #44200803116](https://github.com/michels-lab/michel-s-life-releases/actions/runs/44200803116) **SUCCESS** verified original source-run artifacts, SHA-256, signer pin and 13 public assets, publishing the same code without replacing 3.0.225.
+
+**Functions to QA:** Windows autostart once and opt-out in system tray; Quick Alarms +5/+10/+15/+30/+60/+120 min with precise epoch deadline; ringtone menu System/Classic/Soft/Digital/Sunrise/Pulse and user MP3/WAV/OGG <=6MiB with preview, local persisted audio; real Android alarm overlay/lockscreen native audio; Pomodoro full-size clock/buttons, collapsed motivation below, removal of dead legacy sidebar trigger. Do not regress Chapter artworks, data/account recovery or FocusStory engine.
+
+**Still open:** Story/Focus intermittent JavaScript parse error [#168](https://github.com/michels-lab/michel-s-life/issues/168), Android 14/16 native emulator ADB stability, Galaxy physical exact-alarm permission/Doze/custom sound, owner in-place upgrade retention and live provider accounts. Never claim browser or emulator green equals physical Galaxy certification. Future releases require fresh authorization and exact-source signed gates.
+
+---
+
+# Michel's Life — archived previous stable 3.0.225 checkpoint (2026-11-17)
 
 **Current verified public latest:** [Windows 3.0.225 + Android Direct 0.2.14](https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.225-android-v0.2.14) (`versionCode 16`), published 2026-11-17 at 21:14:48 UTC with 13 assets, `draft=false`, `prerelease=false`. Distinguish this live checkpoint from historical records below.
 
