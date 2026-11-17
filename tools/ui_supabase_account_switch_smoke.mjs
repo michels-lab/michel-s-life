@@ -241,7 +241,43 @@ try{
   ok(c.owner===ids.c&&c.xp!==777,'C sees A data');
   ok(remote.get(ids.c).revision===5&&remote.get(ids.c).snapshot.state.xp===88,'Sign-in to existing C overwrote cloud');
   ok(!writes.get(ids.c),'C must not auto-upload');
-  await page.evaluate(async()=>window.SupabaseSyncV30216.pull({reload:false}));
+  // When an actual local edit lands while the provider writes the recovery
+  // history, the production pull MUST reject instead of deleting that edit.
+  // Verify that fail-closed path, then retry once after the local snapshot is
+  // stable. Never retry account changes, provider faults or malformed backups.
+  const cRemoteBeforePull=JSON.stringify(remote.get(ids.c));
+  const cHistoryBeforePull=history.filter(item=>item.user_id===ids.c).length;
+  const pullC=()=>page.evaluate(async()=>window.SupabaseSyncV30216.pull({reload:false}));
+  try{
+    await pullC();
+  }catch(error){
+    ok(String(error).includes('Local data changed during cloud download'),
+      'Existing C master pull failed for a reason other than guarded local edit: '+String(error));
+    const preserved=await local();
+    ok(preserved.owner===ids.c&&preserved.session===ids.c&&
+      !preserved.missionIds.includes(A_MISSION)&&!preserved.missionIds.includes(B_MISSION)&&
+      preserved.xp!==88&&preserved.journal!==JOURNAL.c,
+      'Cloud pull modified C local state despite detecting an in-flight edit');
+    ok(JSON.stringify(remote.get(ids.c))===cRemoteBeforePull,
+      'Failed cloud download unexpectedly changed existing C master');
+    ok(history.filter(item=>item.user_id===ids.c&&
+      item.reason==='before_download_local').length>cHistoryBeforePull,
+      'Failed cloud download did not preserve a recovery history copy');
+    // Do not turn real data conflicts into a blind unlimited retry loop.
+    await page.waitForFunction(()=>{
+      const value=window.GoogleCloudV30192?.capture?.()||
+        window.GoogleCloudV30191?.capture?.();
+      if(!value)return false;
+      const sample=window.__granadaCStableCapture;
+      if(!sample||sample.value!==value){
+        window.__granadaCStableCapture={value,at:Date.now()};
+        return false;
+      }
+      return Date.now()-sample.at>=350;
+    },null,{polling:75,timeout:12000});
+    await pullC();
+    console.log('PASS: guarded concurrent C download preserved local edits before stable retry');
+  }
   const cAfterPull=await local();
   ok(cAfterPull.xp===88&&cAfterPull.stored===88&&
     !cAfterPull.missionIds.includes(A_MISSION)&&
