@@ -25,11 +25,12 @@
     "workflow": 50
   },
   "finding_counts": {
-    "BROKEN_RELATIVE_LINK": 4
+    "BROKEN_RELATIVE_LINK": 4,
+    "POTENTIAL_UNLOGGED_CHANGES": 2
   },
-  "finding_total": 4,
-  "inventory_fingerprint": "86873896ad1b9662bda4bf732183b3d977673714beb5e84ce689369615051262",
-  "evidence_fingerprint": "1b533bb96254d4a85dcffac53fe3c6180cc4698881a1ee21ef601d2867659a17",
+  "finding_total": 6,
+  "inventory_fingerprint": "0c3aa138c3f0e75a6a2f65d971a186c6a7afa7a65066af5ca5bf013bf5352b7a",
+  "evidence_fingerprint": "c6738dee2a0f8d8bdba9776b366a1ab2b69b65473a9364d322ee7dd92f0dd5b2",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -225,7 +226,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "69ac83d0df1f18e81ab90bfbd2bec289a56c9090"
+      "blob": "4eaf25091a6301d5a950f826fb169de8e368163c"
     },
     {
       "path": ".github/workflows/granada-daily-mission-ledger.yml",
@@ -2724,7 +2725,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "e1f2bb76b818f8a27236f0dd5a12f8efaeb8e6ce"
+      "blob": "ba32a029fb4d9f4ae8f86b15b9b204cdcf9c43eb"
     },
     {
       "path": "tools/ui_supabase_android_sync_smoke.mjs",
@@ -2839,6 +2840,24 @@
       "path": "docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md",
       "observation": "Missing: docs/android/audit/2026-10-12-ui-screenshot-gallery.md",
       "recommendation": "Fix link or restore target",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "33ea54ac7806eebe",
+      "code": "POTENTIAL_UNLOGGED_CHANGES",
+      "severity": "review",
+      "path": "GIT_AUDIT_LOG.md",
+      "observation": "2 implementation/config paths changed since this log's last commit; examples: .github/workflows/granada-chapter-focus-alarms-e2e.yml, tools/ui_supabase_account_switch_smoke.mjs",
+      "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "a82111d99bc8da47",
+      "code": "POTENTIAL_UNLOGGED_CHANGES",
+      "severity": "review",
+      "path": "android/ANDROID_AUDIT_LOG.md",
+      "observation": "2 implementation/config paths changed since this log's last commit; examples: .github/workflows/granada-chapter-focus-alarms-e2e.yml, tools/ui_supabase_account_switch_smoke.mjs",
+      "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
   ],
