@@ -282,6 +282,12 @@
   }
   function refresh(){
     if(android())return;
+    // Late legacy renderers keep placing an inert Focus dock inside the
+    // permanent sidebar. Hide it without mutating the canonical timer engine.
+    const sidebar=document.getElementById('v30171Sidebar');
+    const oldDock=sidebar?.querySelector('#v30162FocusDock');
+    if(oldDock){oldDock.hidden=true;oldDock.style.setProperty('display','none','important');
+      oldDock.style.setProperty('pointer-events','none','important');}
     create();if(!screen)return;
     const engine=api(),state=engine?.focusState?.();
     restoreMinimized();
