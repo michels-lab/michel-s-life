@@ -51,7 +51,7 @@ checks={
     'remote.optString("etag")' in gateway,
  'only one selected mission in UI':'function androidMissionSelection(){' in ui and
     'function androidMissionWriterHtml(){' in ui and
-    'function androidMissionWriteFromReview(){' in ui.replace('async function androidMissionWriteFromReview(){','function androidMissionWriteFromReview(){') if False else True,
+    'async function androidMissionWriteFromReview(){' in ui,
 }
 # Explicitly inspect actual production code for two-tap and A/B safeguards.
 checks.update({
