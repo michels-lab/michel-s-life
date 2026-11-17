@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 395,
-  "classified_files_total": 391,
+  "tracked_files_total": 400,
+  "classified_files_total": 396,
   "docs_content_inspected": 97,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -18,19 +18,19 @@
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 14,
-    "source": 128,
-    "test": 42,
+    "source": 129,
+    "test": 45,
     "text_metadata": 1,
     "web_ui": 3,
-    "workflow": 49
+    "workflow": 50
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "5fc6b307d72240ab09a6522074585973418ca93a840a5e68ead0a7313481f559",
-  "evidence_fingerprint": "6624d05b2a2f9fff1f1662fe1d90b70434095d18a4f663683e1a4376a7322219",
+  "inventory_fingerprint": "7601b34c90f077a8bb764c8f14bfb5a4b6227d4a8a217011b7b7d21a0c12b7bb",
+  "evidence_fingerprint": "066ee5e9d980e916865a877ccc5c703191c0f5660822ff7642a471976cce760a",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -100,7 +100,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "0a53a6f06ae4a651ba7b68c668b8d5db96003107"
+      "blob": "89a8ccc7df5d245592da0978f0894be3e11cdf1a"
     },
     {
       "path": ".github/workflows/build-store-msix.yml",
@@ -121,7 +121,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "6a0b5a258fb7da198ef051b7eed06c76c9533f55"
+      "blob": "02ecc3c8fffae4e03f6846f7543ed46ec51334c1"
     },
     {
       "path": ".github/workflows/external-ui-baseline-guard.yml",
@@ -157,6 +157,13 @@
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
       "blob": "0537391db91f1122393bdb084564d9cdb42f1b2b"
+    },
+    {
+      "path": ".github/workflows/granada-android-calendar-write.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "c061b02e3a1ea1421f2bbb3210aa8f1b915c01a6"
     },
     {
       "path": ".github/workflows/granada-android-direct-update.yml",
@@ -233,7 +240,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "22795799ad42c54b45d2f916b2c034d4c5264c0b"
+      "blob": "621a4e63bc04f6bdfa09b2a4c4db9abfdc3096cf"
     },
     {
       "path": ".github/workflows/granada-focus-evidence.yml",
@@ -261,7 +268,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "b2342dc506b68ca027bb00a62966b32aca4770d6"
+      "blob": "386e9cd0256dc68feb3ac43f829d450e8d3a8826"
     },
     {
       "path": ".github/workflows/granada-personal-alarms.yml",
@@ -289,7 +296,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "7c52d9b9b412d1541d784eb3e13168dbcf2f9cd7"
+      "blob": "b5c299b93b3d4b0d9deb4a98fed58879c3147f74"
     },
     {
       "path": ".github/workflows/granada-transactional-cloud-restore.yml",
@@ -408,7 +415,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "99b5fee3ce831fd74e63add9a57808845a694aa4"
+      "blob": "a94bb85a54e3e8bd88d866993557bbe3dd7bcd01"
     },
     {
       "path": ".gitignore",
@@ -716,7 +723,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "6bd9d952608fed9418123a5802ee9668a2e60115"
+      "blob": "42a32528b8ac87ea5bc4452613b9712a49d492cb"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/AndroidCalendarConsent.kt",
@@ -730,7 +737,14 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "6f54533d7474a3491d113e8e9464fbf6a77677cf"
+      "blob": "14fcd00569050e2c557a508c5d11ee9812c20a18"
+    },
+    {
+      "path": "android/app/src/main/java/com/michelslab/michelslife/AndroidCalendarWriteConsent.kt",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "e305d60be51690b0eccf20b45a58bfedeb5a8960"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/AndroidDirectUpdateChecker.kt",
@@ -744,7 +758,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "74ef0d7fbec4823f6a60c0f259ed0b883ad1b6ff"
+      "blob": "1a3a8d5f0da87a7e245461d0e1b05cbde9d620e0"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/CloudSync.kt",
@@ -793,7 +807,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "b542e281c50aea667880becf5dd9cf8fcccf15e9"
+      "blob": "f60e0268117513f3c78f7d289f988f1ccd96c601"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt",
@@ -1815,7 +1829,7 @@
       "role": "web_ui",
       "purpose": "local HTML documentation or web interface",
       "certainty": "inferred",
-      "blob": "4c870da77fdc3a82d84e159c17f499b7aef26985"
+      "blob": "50dcd8db7f2eb21b1035c600ebba6214a17ef772"
     },
     {
       "path": "src/MichelsLife/frontend/motivation-immersive.js",
@@ -2119,11 +2133,25 @@
       "blob": "be5e06b1f7441618664af41c2eff98c9f9324e19"
     },
     {
+      "path": "tools/test_android_calendar_mission_write_contract.py",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "56357c5c37ef5f2f3d9ca1b2ca52a56a437e4824"
+    },
+    {
+      "path": "tools/test_android_calendar_mission_write_ui.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "32c7ec39ec721888aca9496ca86d9cb25c819442"
+    },
+    {
       "path": "tools/test_android_calendar_read_contract.py",
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "c44d21e76868fe44bdc6a73fb37dcd772f7f5454"
+      "blob": "954c9eec1a03ad0c2434d7dd1f382ec918785c33"
     },
     {
       "path": "tools/test_android_calendar_read_ui.mjs",
@@ -2208,6 +2236,13 @@
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "eeb05ece00db04eea788fe432c66df1960550291"
+    },
+    {
+      "path": "tools/test_google_calendar_capture_stability.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "00b10c5e3989e3506a35b8d26451c268e819e396"
     },
     {
       "path": "tools/test_granada_account_boundary.mjs",
@@ -2808,20 +2843,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "64cc465eb1c05220",
+      "id": "598f10e182b86cb1",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "17 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/release-unified-v3224-a0213.yml, .github/workflows/ui-smoke.yml",
+      "observation": "31 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-calendar-write.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-data-health.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "817cc8075e571277",
+      "id": "84f42a2662b795b5",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "17 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/release-unified-v3224-a0213.yml, .github/workflows/ui-smoke.yml",
+      "observation": "31 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-calendar-write.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-data-health.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
