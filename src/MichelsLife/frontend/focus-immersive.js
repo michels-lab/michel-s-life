@@ -186,7 +186,6 @@
           <span class="mlv-focus-mode" id="mlv-desktop-focus-mode">FOCUS</span>
           <strong class="mlv-focus-clock" role="timer" aria-live="off" id="mlv-desktop-focus-clock">25:00</strong>
           <p class="mlv-focus-status" id="mlv-desktop-focus-status">Ready to focus</p>
-          <div id="mlv-desktop-focus-motivation"></div>
         </div>
         <div class="mlv-focus-actions">
           <button type="button" class="primary" data-focus-action="toggle">Start</button>
@@ -194,6 +193,7 @@
           <button type="button" data-focus-action="reset">Reset</button>
           <button type="button" data-focus-action="minimize">Navigate the app</button>
         </div>
+        <details class="mlv-focus-motivation-details"><summary>Frases y afirmaciones / Messages</summary><div id="mlv-desktop-focus-motivation"></div></details>
       </section>`;
     mini=document.createElement('aside');
     mini.id='mlv-desktop-mini-focus';mini.hidden=true;
