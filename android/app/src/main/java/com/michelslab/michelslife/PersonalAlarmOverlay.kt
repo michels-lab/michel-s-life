@@ -156,7 +156,7 @@ internal object PersonalAlarmOverlay {
             )
             window.addView(root, params)
             owner = app;manager = window;view = root;activeId = id
-            startAttention(app)
+            startAttention(app, id)
             // User sees the app wallpaper + alarm UI over ANY foreground app.
             return true
         } catch (e: Exception) {
@@ -168,9 +168,9 @@ internal object PersonalAlarmOverlay {
     private fun dp(context: Context, value: Int): Int =
         (value * context.resources.displayMetrics.density).toInt()
 
-    private fun startAttention(context: Context) {
+    private fun startAttention(context: Context, id: String) {
         try {
-            val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+            val uri = NativePersonalAlarms.alarmSoundUri(context, id)
                 ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
             val sound = MediaPlayer()
             sound.setAudioAttributes(AudioAttributes.Builder()
