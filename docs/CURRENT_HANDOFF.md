@@ -1,3 +1,15 @@
+# Michel's Life — verified stable release checkpoint (2026-11-17)
+
+**Current verified public latest:** [Windows 3.0.225 + Android Direct 0.2.14](https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.225-android-v0.2.14) (`versionCode 16`), published 2026-11-17 at 21:14:48 UTC with 13 assets, `draft=false`, `prerelease=false`. Distinguish this live checkpoint from historical records below.
+
+**Source and publisher chain:** source version PR [#213](https://github.com/michels-lab/michel-s-life/pull/213) merged as `e2a8cc93`; release intent `fd6f9aa6` triggered source workflow [44174550177](https://github.com/michels-lab/michel-s-life/actions/runs/44174550177). Source exact-SHA, Windows UI, Android UI, updater, Windows Setup/Portable launch, signed Android Direct APK and real Android15 signed install/relaunch all passed. Its final cross-repo publishing step was blocked by an expired secret (HTTP 401). Destination-owned PR [#18](https://github.com/michels-lab/michel-s-life-releases/pull/18), intent `1f341ab4`, and [workflow 44177651306](https://github.com/michels-lab/michel-s-life-releases/actions/runs/44177651306) **SUCCESS** verified artifacts, signer, hashes, provenance, 13 downloaded assets and released them publicly as stable latest. No existing release was overwritten.
+
+**Functional integration since previous stable:** Android Google Calendar single-mission opt-in write/remove (#210); native WebView/Chapter artwork recovery (#211); stable Chapter/Focus/Alarm regression and Supabase account A/B/C guarded download QA (#212). No Developer or RC releases.
+
+**Open owners and reentry:** [#168](https://github.com/michels-lab/michel-s-life/issues/168) intermittent Story/Pomodoro JavaScript `Unexpected token ':'` / `Unexpected end of input` appeared during some CI and passed on separate reruns, not fixed. Physical Galaxy native lock-screen alarm delivery, Doze, signed in-place update retaining data, Google Calendar real OAuth and Supabase real Windows↔Android provider sync remain unverified. Maintain the current release unchanged and fix #168 with source/script/stack evidence; do not treat simulator green as Galaxy acceptance.
+
+---
+
 # Michel's Life — GRANADA current integration checkpoint (2026-10-20)
 
 **This checkpoint overrides older branch/PR snapshots below; historical handoff is retained for traceability.** Verified main after three independent exact-head green PRs: `58e2fb7a2972d65a51be959d02ac432ecd87683a`.
