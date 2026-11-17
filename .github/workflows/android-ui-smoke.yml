@@ -49,6 +49,7 @@ on:
       - '.michelslab/release-intents/unified-v3223-a0212.txt'
       - '.michelslab/release-intents/unified-v3224-a0213.txt'
       - '.michelslab/release-intents/unified-v3225-a0214.txt'
+      - '.michelslab/release-intents/unified-v3226-a0215.txt'
       - '.github/workflows/android-ui-smoke.yml'
 
 permissions:
