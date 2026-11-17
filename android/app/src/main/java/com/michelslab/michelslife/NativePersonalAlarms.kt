@@ -12,6 +12,12 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.AudioAttributes
 import android.media.RingtoneManager
+import android.util.Base64
+import java.io.File
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import kotlin.math.PI
+import kotlin.math.sin
 import android.net.Uri
 import android.provider.Settings
 import android.os.Build
@@ -34,6 +40,7 @@ import java.time.format.DateTimeFormatter
 internal object NativePersonalAlarms {
     private const val PREFS = "michelslife.personal-alarms.v1"
     private const val KEY_ALARMS = "alarms"
+    private const val KEY_CUSTOM_FILE = "customAudioFile"
     private const val KEY_WALLPAPER = "wallpaper"
     private const val KEY_MOTIVATION = "motivationalCopy.v1"
     private const val LAST_DELIVERED_PREFIX = "lastDelivered."
@@ -112,6 +119,115 @@ internal object NativePersonalAlarms {
         return true
     }
 
+    /** The web file picker never grants arbitrary filesystem access to JavaScript.
+     * We validate MIME, bound the file to 6 MiB, and copy it to private app storage
+     * so OS alarm delivery can read it after WebView closes. */
+    fun installCustomSound(context: Context, dataUrl: String): JSONObject {
+        try {
+            if (dataUrl.length > 8_500_000) return JSONObject().put("error", "Audio exceeds 6 MB")
+            val delimiter = dataUrl.indexOf(";base64,")
+            if (!dataUrl.startsWith("data:audio/") || delimiter < 6) return JSONObject().put("error", "Unsupported audio")
+            val mime = dataUrl.substring(5, delimiter).lowercase()
+            val ext = when (mime) {
+                "audio/mpeg", "audio/mp3", "audio/x-mpeg" -> "mp3"
+                "audio/wav", "audio/x-wav", "audio/wave" -> "wav"
+                "audio/ogg" -> "ogg"
+                else -> return JSONObject().put("error", "Only MP3, WAV and OGG allowed")
+            }
+            val bytes = Base64.decode(dataUrl.substring(delimiter + 8), Base64.DEFAULT)
+            if (bytes.size !in 128..(6 * 1024 * 1024)) return JSONObject().put("error", "Invalid audio size")
+            val validHeader = when(ext){
+                "mp3" -> (bytes.size >= 3 && String(bytes, 0, 3, Charsets.US_ASCII) == "ID3") ||
+                    (bytes.size >= 2 && bytes[0] == 0xFF.toByte() && (bytes[1].toInt() and 0xE0) == 0xE0)
+                "wav" -> bytes.size > 12 && String(bytes, 0, 4, Charsets.US_ASCII) == "RIFF" &&
+                    String(bytes, 8, 4, Charsets.US_ASCII) == "WAVE"
+                else -> bytes.size > 4 && String(bytes, 0, 4, Charsets.US_ASCII) == "OggS"
+            }
+            if (!validHeader) return JSONObject().put("error", "Audio header does not match file type")
+            val dir = File(context.filesDir, "personal-alarm-audio").apply { mkdirs() }
+            val output = File(dir, "custom.$ext")
+            val staging = File(dir, "custom.staging")
+            staging.writeBytes(bytes)
+            if (!staging.renameTo(output)) { staging.delete(); return JSONObject().put("error", "Could not save audio") }
+            // Preserve the previous audio until replacement is verified.
+            if (!prefs(context).edit().putString(KEY_CUSTOM_FILE, output.name).commit())
+                return JSONObject().put("error", "Could not persist audio selection")
+            dir.listFiles()?.filter { it.name.startsWith("custom.") && it.name != output.name }
+                ?.forEach { it.delete() }
+            return JSONObject().put("ok", true).put("bytes", bytes.size)
+        } catch (_: Exception) { return JSONObject().put("error", "Audio import failed") }
+    }
+
+    /** Per-alarm sound used by the native overlay and the lock-screen Activity.
+     * The notification channel remains the OS-safe fallback when not authorized. */
+    fun alarmSoundUri(context: Context, alarmId: String): Uri? {
+        val items = list(context)
+        for (i in 0 until items.length()) {
+            val item = items.optJSONObject(i) ?: continue
+            if (item.optString("id") == alarmId)
+                return soundUri(context, item.optString("sound", "system"))
+        }
+        return soundUri(context, "system")
+    }
+
+    fun soundUri(context: Context, selected: String): Uri? {
+        val dir = File(context.filesDir, "personal-alarm-audio")
+        if (selected == "custom") {
+            val name = prefs(context).getString(KEY_CUSTOM_FILE, "") ?: ""
+            if (!Regex("^custom\\.(mp3|wav|ogg)$").matches(name)) return defaultSound()
+            val file = File(dir, name)
+            return if (file.isFile && file.length() > 128L) Uri.fromFile(file) else defaultSound()
+        }
+        if (selected in setOf("classic","soft","digital","gentle","pulse")) {
+            return try {
+                dir.mkdirs()
+                val file = File(dir, "preset-$selected.wav")
+                if (!file.isFile || file.length() < 1000L) generatePreset(file, selected)
+                Uri.fromFile(file)
+            } catch (_: Exception) { defaultSound() }
+        }
+        return defaultSound()
+    }
+
+    private fun defaultSound(): Uri? =
+        RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+            ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+
+    private fun generatePreset(file: File, preset: String) {
+        val rate=16000
+        val samples=rate*2
+        val buffer=ByteBuffer.allocate(44+samples*2).order(ByteOrder.LITTLE_ENDIAN)
+        buffer.put("RIFF".toByteArray(Charsets.US_ASCII))
+        buffer.putInt(36+samples*2)
+        buffer.put("WAVE".toByteArray(Charsets.US_ASCII))
+        buffer.put("fmt ".toByteArray(Charsets.US_ASCII))
+        buffer.putInt(16);buffer.putShort(1.toShort());buffer.putShort(1.toShort())
+        buffer.putInt(rate);buffer.putInt(rate*2);buffer.putShort(2.toShort());buffer.putShort(16.toShort())
+        buffer.put("data".toByteArray(Charsets.US_ASCII));buffer.putInt(samples*2)
+        for(i in 0 until samples){
+            val time=i.toDouble()/rate
+            val seconds=time%2.0
+            val hz=when(preset){
+                "soft" -> if(seconds<.33)523.0 else 659.0
+                "digital" -> if(seconds<.18)1046.0 else 1318.0
+                "gentle" -> if(seconds<.55)392.0 else 523.0
+                "pulse" -> 740.0
+                else -> if(seconds<.36)880.0 else 660.0
+            }
+            val active=when(preset){
+                "soft" -> seconds<.65
+                "digital" -> seconds<.12 || seconds in .25.. .37 || seconds in .50.. .62
+                "gentle" -> seconds<.9
+                "pulse" -> seconds<.15 || seconds in .25.. .4 || seconds in .52.. .67
+                else -> seconds<.24 || seconds in .35.. .59
+            }
+            val phase=seconds*hz*2.0*PI
+            val envelope=if(active) .22*(1.0 - (seconds% .35)*.5) else 0.0
+            buffer.putShort((sin(phase)*envelope*Short.MAX_VALUE).toInt().toShort())
+        }
+        file.writeBytes(buffer.array())
+    }
+
     fun snooze(context: Context, id: String) {
         val original = list(context)
         var selected: JSONObject? = null
@@ -128,6 +244,7 @@ internal object NativePersonalAlarms {
             .put("time", next.format(DateTimeFormatter.ofPattern("HH:mm")))
             .put("date", next.toLocalDate().toString())
             .put("repeat", "once")
+            .put("sound", selected.optString("sound", "system"))
             .put("days", JSONArray())
             .put("enabled", true)
         if (original.length() >= 80) return
@@ -176,7 +293,14 @@ internal object NativePersonalAlarms {
             if (day in 0..6 && seen.add(day)) days.put(day)
         }
         if (repeat == "weekly" && seen.isEmpty()) return null
+        val sound = input.optString("sound", "system").takeIf {
+            it in setOf("system","classic","soft","digital","gentle","pulse","custom")
+        } ?: "system"
+        val dueAt = input.optLong("dueAt",0L).takeIf {
+            repeat == "once" && it > 0L && it < System.currentTimeMillis()+366L*86400000L
+        } ?: 0L
         return JSONObject().put("id", id)
+            .put("sound", sound).put("dueAt", dueAt)
             .put("label", input.optString("label").take(60))
             .put("time", time).put("date", date).put("repeat", repeat)
             .put("days", days).put("enabled", input.optBoolean("enabled", false))
@@ -203,6 +327,8 @@ internal object NativePersonalAlarms {
         val time = try { LocalTime.parse(item.getString("time")) } catch (_: Exception) { return 0L }
         val zone = ZoneId.systemDefault()
         if (item.optString("repeat") == "once") {
+            val precise = item.optLong("dueAt", 0L)
+            if (precise > 0L) return precise.takeIf { it > after } ?: 0L
             val date = try { LocalDate.parse(item.getString("date"), formatter) } catch (_: Exception) { return 0L }
             return date.atTime(time).atZone(zone).toInstant().toEpochMilli().takeIf { it > after } ?: 0L
         }
