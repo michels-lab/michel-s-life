@@ -48,6 +48,7 @@ on:
       # Required native/mobile UI evidence must run for the actual release-intent SHA.
       - '.michelslab/release-intents/unified-v3223-a0212.txt'
       - '.michelslab/release-intents/unified-v3224-a0213.txt'
+      - '.michelslab/release-intents/unified-v3225-a0214.txt'
       - '.github/workflows/android-ui-smoke.yml'
 
 permissions:

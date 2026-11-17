@@ -24,6 +24,7 @@ on:
       # A release-intent commit changes no UI files but must re-run exact-SHA UI checks.
       - '.michelslab/release-intents/unified-v3223-a0212.txt'
       - '.michelslab/release-intents/unified-v3224-a0213.txt'
+      - '.michelslab/release-intents/unified-v3225-a0214.txt'
       - '.github/workflows/ui-smoke.yml'
   workflow_dispatch:
 
