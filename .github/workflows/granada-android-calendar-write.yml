@@ -1,0 +1,53 @@
+name: GRANADA Android Calendar mission write
+
+on:
+  pull_request:
+    paths:
+      - 'android/app/src/main/java/com/michelslab/michelslife/AndroidCalendarWriteConsent.kt'
+      - 'android/app/src/main/java/com/michelslab/michelslife/AndroidCalendarConsent.kt'
+      - 'android/app/src/main/java/com/michelslab/michelslife/AndroidBridge.kt'
+      - 'android/app/src/main/java/com/michelslab/michelslife/MainActivity.kt'
+      - 'android/app/src/main/java/com/michelslab/michelslife/AndroidCalendarGateway.kt'
+      - 'android/app/src/main/java/com/michelslab/michelslife/CalendarSyncRules.kt'
+      - 'src/MichelsLife/frontend/index.html'
+      - 'tools/test_android_calendar_mission_write_ui.mjs'
+      - 'tools/test_android_calendar_mission_write_contract.py'
+      - '.github/workflows/granada-android-calendar-write.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  calendar-mission-write:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Real Android Calendar mission UI — explicit preview and per-action native publish/remove
+        run: |
+          node --check tools/test_android_calendar_mission_write_ui.mjs
+          node tools/test_android_calendar_mission_write_ui.mjs
+      - name: Validate native separate write OAuth scope, account boundaries and provider-owned event contract
+        run: |
+          python3 tools/test_android_calendar_mission_write_contract.py
+          python3 tools/test_android_calendar_read_contract.py
+      - name: Validate Kotlin idempotent mission event ownership and all-day UTC
+        shell: bash
+        run: |
+          set -euo pipefail
+          command -v kotlinc || { echo "::error::Kotlin compiler unavailable"; exit 1; }
+          mkdir -p /tmp/mlv-calendar-write
+          kotlinc android/app/src/main/java/com/michelslab/michelslife/CalendarSyncRules.kt \
+            tools/kotlin/CalendarSyncRulesSpec.kt -include-runtime -d /tmp/mlv-calendar-write/calendar-rules.jar
+          java -jar /tmp/mlv-calendar-write/calendar-rules.jar
