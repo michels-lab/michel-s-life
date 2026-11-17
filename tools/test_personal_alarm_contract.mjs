@@ -150,7 +150,7 @@ test('the selector offers preview, imported MP3/WAV/OGG and bounded private nati
   assert.match(bridge,/fun installCustomAlarmSound\(dataUrl: String\)/);
   assert.match(activity,/override fun onShowFileChooser/);
   assert.match(activity,/ACTION_OPEN_DOCUMENT/);
-  assert.match(activity,/pendingAlarmAudioPicker\?\.onReceiveValue/);
+  assert.match(activity,/pendingWebFilePicker\?\.onReceiveValue/);
   assert.match(activity,/NativePersonalAlarms\.alarmSoundUri\(this, id\)/);
   assert.match(overlay,/NativePersonalAlarms\.alarmSoundUri\(context, id\)/);
 });
