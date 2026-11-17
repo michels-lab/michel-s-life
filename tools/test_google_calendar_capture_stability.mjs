@@ -31,6 +31,7 @@ c.state.xp=89;
 assert.notEqual(c.capture(),before,'a genuine mission/XP edit must still abort concurrent cloud download');
 passed++;
 
+c.state.xp=88; // Isolate a real preference edit from the preceding XP mutation.
 c.state.settings.v30190Google.showEvents=false;
 assert.notEqual(c.capture(),before,'a genuine user Google Calendar preference edit must still abort unsafe restore');
 passed++;
