@@ -29,7 +29,7 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "369300a3da947844462f0824b5f19500b2fa257268cd7611573bc5d7c64ce297",
+  "inventory_fingerprint": "5ef2e50922326886ac8787f68d22341e955edcce2751a9c476c08a41d8570958",
   "evidence_fingerprint": "a3290a37cb024b65dd4ef80f6a0ad344f9db9f39ab2c72f470a50325759fe9c7",
   "files": [
     {
@@ -632,7 +632,7 @@
       "role": "bitacora",
       "purpose": "technical/audit change history",
       "certainty": "rule",
-      "blob": "c8dd7e095e245b3698372e8e0ec82254df907bf9"
+      "blob": "97ea6d92833a9bfa98d108d517b38f60b630f849"
     },
     {
       "path": "GIT_AUDIT_LOG.md",
