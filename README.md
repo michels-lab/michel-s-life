@@ -1,5 +1,9 @@
 # Michel's Life
 
+## Verified stable release — November 17, 2026
+
+**Windows 3.0.225 + Android Direct 0.2.14 (versionCode 16)** is the current public stable release with 13 assets: [official unified download](https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.225-android-v0.2.14). The [destination-owned publisher](https://github.com/michels-lab/michel-s-life-releases/actions/runs/44177651306) passed after the previous source-to-destination publisher reported HTTP 401 due to an expired cross-repository credential; official production-signed artifacts from source run [44174550177](https://github.com/michels-lab/michel-s-life/actions/runs/44174550177) were validated and distributed without replacing earlier releases. Includes per-mission opt-in Android Google Calendar write/remove, WebView rendering startup adjustment, Chapter artwork recovery and strengthened Focus/Alarm/cloud regression coverage. **Known limits:** intermittent Story/Pomodoro JS issue [#168](https://github.com/michels-lab/michel-s-life/issues/168) remains open; Android 15 emulator tests do not prove physical Galaxy/Doze alarms, live provider authorization, or in-place update data retention. No RC or Developer Edition.
+
 ## Referencias visuales reales para Figma/Lovable (Operación Granada, 2026-10-23)
 
 [Cómo consultar y comparar las capturas oficiales de la app actual](docs/audit/2026-10-23-granada-canonical-design-reference.md). La CI de escritorio y Android genera `design-baseline.html` y `design-baseline.json` junto a sus capturas reales; las referencias están ligadas al SHA del código, paquete y tamaño de pantalla. **No son una aprobación de un rediseño ni sustituyen pruebas del APK/Windows instalado**. Diseños nuevos deben preservar las características aprobadas y compararse antes de consumir más créditos externos.
@@ -16,10 +20,10 @@ Michel's Life is an RPG-inspired productivity and life-management application fo
 
 ## Current development and release lines
 
-- **Latest public unified release: Windows v3.0.221 + Android Direct v0.2.9 (versionCode 11).** Published 2026-10-19 on the official unified release page: https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.221. GitHub verified 13 public assets including Windows Setup/Portable, SHA-256 sidecars, source provenance, and the permanently signed `MichelsLife-Android-Direct-v0.2.9.apk`. A published binary is **not** physical-Galaxy or live-account acceptance.
+- **Latest public unified release: Windows v3.0.225 + Android Direct v0.2.14 (versionCode 16).** Published 2026-11-17 on the official unified release page: https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.225-android-v0.2.14. GitHub verified 13 public assets including Windows Setup/Portable, SHA-256 sidecars, source provenance, and the permanently signed `MichelsLife-Android-Direct-v0.2.9.apk`. A published binary is **not** physical-Galaxy or live-account acceptance.
 - **Previous unified releases:** Windows v3.0.220 + Android Direct v0.2.8, https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.220; Windows v3.0.219 + Android Direct v0.2.7, https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.219. Older releases remain historical, not the current installer.
-- **Android distribution:** Direct v0.2.9 is the publicly released, separately signed sideload APK; it is **not** a Google Play publication. The old v0.2.2 TEST APK used a different debug signing certificate: back up data before changing signing channels or uninstalling. Never infer data retention or same-account sync solely from CI.
-- **Development priority (2026-10-19):** Android remains active. Owner paused Windows/Desktop implementation and all automatic Windows installer, Store/MSIX, and Desktop Developer Edition builds until a final Windows version. The existing Windows v3.0.221 binary stays publicly available; source/browser-only parity checks are permitted.
+- **Android distribution:** Direct v0.2.14 is the publicly released, permanently signed sideload APK; it is **not** a Google Play publication. The old v0.2.2 TEST APK used a different debug signing certificate: back up data before changing signing channels or uninstalling. Never infer data retention or same-account sync solely from CI.
+- **Development priority (2026-10-19):** Android remains active. Owner paused Windows/Desktop implementation and all automatic Windows installer, Store/MSIX, and Desktop Developer Edition builds until a final Windows version. Older Windows binaries stay publicly available; source/browser-only parity checks are permitted.
 - **GRANADA:** while any PR/issue is incomplete or in parallel, work on a separate non-overlapping block with its own validation and handoff. See `.michelslab/GRANADA.md`, `docs/CURRENT_HANDOFF.md` and the current open PRs rather than treating a queued change as published.
 - Google Play and Microsoft Store distribution have separate provider, signing and validation states; a generated APK/AAB/MSIX does not mean provider publication.
 
@@ -32,7 +36,7 @@ The Windows v3.0.216-and-later line includes a native Windows tray, Quick Captur
 ## Code, releases and validation
 
 - Source: `michels-lab/michel-s-life`.
-- **One customer-facing release for both platforms:** https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.221. Windows v3.0.221 and Android Direct v0.2.9 have independent version numbers and live on the **same page**. Further Windows releases remain paused; new release publication requires explicit authorization.
+- **One customer-facing release for both platforms:** https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.225-android-v0.2.14. Windows v3.0.225 and Android Direct v0.2.14 have independent version numbers and live on the **same page**. Further Windows releases remain paused; new release publication requires explicit authorization.
 - Canonical public binaries and AppBundle bootstrap: `michels-lab/michel-s-life-releases`.
 - Recommended Windows installer: `MichelsLife-Setup-vX.Y.Z.exe`. Optional portable binary: `MichelsLife-Portable-vX.Y.Z.exe`; transitional older updater aliases are documented in `docs/RELEASE_CHANNEL.md`.
 - Canonical frontend: `src/MichelsLife/frontend/`. CI reconstructs the visual bundle using previously published bootstrap assets and overlays the source-controlled frontend and official branding.
