@@ -12,12 +12,12 @@ import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 /**
- * Google Calendar REST boundary for a future explicitly consented Android
- * Calendar sync. Intentionally NOT connected to AndroidBridge until the
- * active Developer Twin PR releases ownership of its bridge/UI files.
- *
- * No tokens are persisted or logged. No arbitrary user events are written.
- * The caller must obtain a calendar.events token via user-driven OAuth.
+ * Google Calendar REST boundary for explicit Android per-mission operations.
+ * Read views use calendar.events.readonly; individual create/update/removal
+ * uses a separate calendar.events OAuth grant after two-tap UI confirmation.
+ * No tokens are persisted or logged. Existing foreign events are never
+ * modified or deleted; only events with Michel's Life private owner tags.
+ * Background/bulk publication is intentionally unavailable on Android.
  */
 internal class AndroidCalendarGateway(
     private val http: OkHttpClient = OkHttpClient.Builder()
