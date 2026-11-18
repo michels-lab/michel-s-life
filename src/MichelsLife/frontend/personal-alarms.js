@@ -16,7 +16,8 @@ const SOUND_NAMES={system:['System default','Sistema'],classic:['Michel’s Bell
  soft:['Michel’s Chimes','Michel’s Campanillas'],digital:['Michel’s Signal','Michel’s Señal'],gentle:['Michel’s Sunrise','Michel’s Amanecer'],
  pulse:['Michel’s Pulse','Michel’s Pulso'],radar:['Michel’s Radar','Michel’s Radar'],custom:['My MP3 / audio','Mi MP3 / audio']};
 const soundName=id=>tr(...(SOUND_NAMES[id]||SOUND_NAMES.system));
-let customAudio=null,previewAudio=null;
+let customAudio=null,previewAudio=null,customAudioUrl=null,previewAudioUrl=null;
+let previewGeneration=0;
 function localDateTime(at){
  const d=new Date(at);
  return {date:d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'),
@@ -114,21 +115,37 @@ function playPresetSound(id,preview=false){
    ctx.close().catch(()=>{});
  },(length+.20)*1000);
 }
-async function playCustom(isPreview){
+function stopCustomAudio(isPreview=false){
+ const audio=isPreview?previewAudio:customAudio;
+ const url=isPreview?previewAudioUrl:customAudioUrl;
+ if(isPreview){previewAudio=null;previewAudioUrl=null;}
+ else{customAudio=null;customAudioUrl=null;}
+ try{audio?.pause();}catch(_){}
+ if(url)URL.revokeObjectURL(url);
+}
+async function playCustom(isPreview,requestGeneration=null){
  const saved=await storedCustomBlob().catch(()=>null);if(!saved?.blob)return false;
+ if(isPreview&&requestGeneration!==null&&requestGeneration!==previewGeneration)return false;
  if(!isPreview&&(!ring||ring.hidden))return false;
  const url=URL.createObjectURL(saved.blob),audio=new Audio(url);audio.loop=!isPreview;
- audio.addEventListener('ended',()=>URL.revokeObjectURL(url),{once:true});
- try{await audio.play();}catch(_){URL.revokeObjectURL(url);return false;}
- if(isPreview){previewAudio=audio;window.setTimeout(()=>{audio.pause();URL.revokeObjectURL(url);if(previewAudio===audio)previewAudio=null;},5000);}
- else customAudio=audio;
+ stopCustomAudio(isPreview);
+ if(isPreview){previewAudio=audio;previewAudioUrl=url;}
+ else{customAudio=audio;customAudioUrl=url;}
+ try{await audio.play();}
+ catch(_){if((isPreview?previewAudio:customAudio)===audio)stopCustomAudio(isPreview);return false;}
+ // Playback may settle after a preview is replaced or an alarm dismissed.
+ if((isPreview?previewAudio:customAudio)!==audio)return false;
+ if(!isPreview&&(!ring||ring.hidden||ringingId===null)){stopCustomAudio(false);return false;}
+ if(isPreview)window.setTimeout(()=>{if(previewAudio===audio)stopCustomAudio(true);},5000);
  return true;
 }
 async function previewSound(id){
- try{previewAudio?.pause();}catch(_){}previewAudio=null;
+ const generation=++previewGeneration;
+ stopCustomAudio(true);
  if(previewPresetContext){previewPresetContext.close().catch(()=>{});previewPresetContext=null;}
  if(id==='custom'){
-  if(await playCustom(true))return;
+  if(await playCustom(true,generation))return;
+  if(generation!==previewGeneration)return;
   const native=window.MichelsLifeAndroid;
   if(typeof native?.previewPersonalAlarmSound==='function'&&native.previewPersonalAlarmSound('custom'))return;
   window.alert(tr('Import an MP3 first.','Primero importa un MP3.'));
@@ -563,7 +580,7 @@ function ringAlarm(id,{notify=true}={}){
    // cannot ring from a closed application; Android has native OS delivery.
    if(windowsRingtone)window.clearInterval(windowsRingtone);
    stopPresetAudio();
-   if(customAudio){customAudio.pause();customAudio=null;}
+   stopCustomAudio(false);
    const selectedSound=item.sound||'system';
    let useSystemFallback=false;
    if(selectedSound==='custom')playCustom(false).then(ok=>{
@@ -585,7 +602,7 @@ function dismissRing(snooze){
  if(!ring||ring.hidden)return;
  if(windowsRingtone){window.clearInterval(windowsRingtone);windowsRingtone=null;}
  stopPresetAudio();
- if(customAudio){customAudio.pause();customAudio=null;}
+ stopCustomAudio(false);
  if(snooze&&ringingId){
   const item=records.find(x=>x.id===ringingId);
   if(item){
