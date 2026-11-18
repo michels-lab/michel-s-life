@@ -88,6 +88,7 @@ try{
     ok(button.right<compact.stage.right+2&&button.x>=compact.stage.x-2&&button.h>=40,
       'Primary action clipped at owner viewport: '+JSON.stringify({button,compact}));
   }
+  await mkdir('artifacts/ui-smoke',{recursive:true});
   await page.screenshot({path:'artifacts/ui-smoke/desktop-focus-976x737-owner-viewport.png'});
   await page.setViewportSize({width:1440,height:900});
 
