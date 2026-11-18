@@ -990,12 +990,6 @@
       #mlv-android-focus-sheet .mlv-android-focus-clock,
       #mlv-android-focus-sheet .mlv-android-focus-main-actions{flex-shrink:0}
       @media(max-height:700px){#mlv-android-focus-sheet .mlv-focus-motivation-details{max-height:16vh}}
-      /* The canonical Focus engine and presets stay in the DOM, but its
-         old floating desktop panel must not be visually interactive on
-         Android: it previously appeared over the mobile sidebar. */
-      html[data-mlv-platform="android"] #v30162FocusDock{
-        display:none!important;visibility:hidden!important;pointer-events:none!important
-      }
       /* The drawer must end ABOVE fixed bottom navigation; otherwise a
          menu item scrolled to its bottom is covered by the tab bar. */
       html[data-mlv-platform="android"] #v30171Sidebar{
@@ -1181,6 +1175,7 @@
           <div class="mlv-android-focus-presets" aria-label="Focus presets">
             <button type="button" data-mobile-preset="25/5">25 / 5</button>
             <button type="button" data-mobile-preset="50/10">50 / 10</button>
+            <button type="button" data-mobile-preset="90/15">90 / 15</button>
           </div>
           <div class="mlv-android-focus-main-actions">
             <button type="button" class="primary" data-mobile-focus="toggle">Start</button>
@@ -1226,14 +1221,13 @@
         const api=focusApi();
         const preset=source.dataset.mobilePreset;
         if(preset){
-          // Delegate to the authoritative desktop Focus implementation; it
-          // owns confirmation, session persistence and linked mission state.
-          const original=q('#v30162FocusDock [data-v30162-preset="'+preset+'"]');
-          if(original){
-            original.click();
-            clearDurationDraft();
-          }
-          updateFocus();return;
+          // Set the shared persisted timer state directly. The old dock does
+          // not exist; clicking ghost controls silently lost user input.
+          const durations={'25/5':[25,5],'50/10':[50,10],'90/15':[90,15]};
+          const selected=durations[preset];
+          if(!selected||typeof api?.applyPreset!=='function')return;
+          api.applyPreset(preset,selected[0],selected[1]);
+          clearDurationDraft();updateFocus();return;
         }
         const action=source.dataset.mobileFocus;
         if(action==='close'){close();return;}
@@ -1256,10 +1250,8 @@
         if(action==='custom'){
           const work=q('#mlv-android-focus-work')?.value;
           const rest=q('#mlv-android-focus-break')?.value;
-          const origWork=q('#v30162WorkMin'),origBreak=q('#v30162BreakMin');
-          if(!origWork||!origBreak)return;
-          origWork.value=work;origBreak.value=rest;
-          q('#v30162FocusDock [data-v30162-focus="apply-custom"]')?.click();
+          if(typeof api.applyPreset!=='function')return;
+          api.applyPreset('custom',work,rest);
           clearDurationDraft();
         }
         if(action==='settings'){close();window.__mlvAndroidFastRoute?.('settings');setTimeout(()=>q('#tab-settings [data-v30171-setting="focus"]')?.click(),50);}
@@ -1524,7 +1516,6 @@
     window.__mlvAndroidSetDrawer?.(false);
     window.MichelsLifeFocusImmersive?.applyWallpaper?.(root);
     minimizedForPhase=null;minimizedForMode=null;saveMinimizedFocus();
-    api.renderFocusDock?.();
     updateActive();updateFocus();
     q('[data-mobile-focus="close"]',root)?.focus();
     return true;
