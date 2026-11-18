@@ -447,6 +447,18 @@
         </div></details>
         <details class="mlv-focus-motivation-details"><summary>Messages & affirmations</summary><div id="mlv-desktop-focus-motivation"></div></details>
       </section>`;
+    // This is the one canonical desktop Focus stage. Historical global theme
+    // selectors with !important were overriding its width, flex layout and
+    // min-height at 976x737. Own the geometry on the actual stage element,
+    // not another late CSS patch stylesheet or a second overlay.
+    const stage=screen.firstElementChild;
+    for(const [key,value] of [
+      ['display','flex'],['flex-direction','column'],
+      ['width','min(800px, calc(100vw - 48px))'],['max-width','800px'],
+      ['height','clamp(460px, 72dvh, 555px)'],['min-height','0px'],
+      ['max-height','calc(100dvh - 24px)'],
+      ['box-sizing','border-box'],['overflow-x','hidden'],['overflow-y','auto']
+    ]) stage?.style.setProperty(key,value,'important');
     mini=document.createElement('aside');
     mini.id='mlv-desktop-mini-focus';mini.hidden=true;
     mini.innerHTML='<button type="button" data-focus-action="open">◷ 25:00</button><button type="button" data-focus-action="toggle">Pause</button>';
