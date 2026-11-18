@@ -27435,53 +27435,7 @@ window.__MICHELS_LIFE_BUILD__=VERSION;
 
 <!-- v3.0.162: global Pomodoro Focus Timer + Story Chapters -->
 <style id="v30162-focus-story-style">
-/* =========================
-   Global Focus Timer dock
-   ========================= */
-#v30162FocusDock{
-  position:fixed!important;left:18px!important;bottom:calc(18px + var(--v3099-dock-space,0px))!important;z-index:2147483643!important;
-  width:min(368px,calc(100vw - 36px))!important;color:var(--text,#eef6ff)!important;
-  font-family:inherit!important;isolation:isolate!important;pointer-events:auto!important;
-}
-#v30162FocusDock *{box-sizing:border-box}
-.v30162-focus-shell{
-  border:1px solid rgba(var(--ui-accent-rgb,117,228,255),.24)!important;
-  border-radius:20px!important;background:linear-gradient(165deg,rgba(7,13,25,.96),rgba(10,17,31,.91))!important;
-  box-shadow:0 20px 58px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.06)!important;
-  overflow:hidden!important;backdrop-filter:blur(16px)!important;
-}
-.v30162-focus-compact{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto auto!important;align-items:center!important;gap:9px!important;padding:10px 11px!important}
-.v30162-focus-orb{width:10px!important;height:10px!important;border-radius:99px!important;background:var(--ui-accent,#75e4ff)!important;box-shadow:0 0 15px rgba(var(--ui-accent-rgb,117,228,255),.45)!important}
-.v30162-focus-shell[data-mode="break"] .v30162-focus-orb{background:var(--green,#74f2a7)!important;box-shadow:0 0 15px rgba(116,242,167,.36)!important}
-.v30162-focus-copy{min-width:0!important;display:grid!important;grid-template-columns:auto 1fr!important;column-gap:8px!important;align-items:baseline!important}
-.v30162-focus-copy small{font-size:9.5px!important;font-weight:950!important;letter-spacing:.12em!important;color:var(--muted,#b8c5d8)!important;text-transform:uppercase!important}
-.v30162-focus-time{font-variant-numeric:tabular-nums!important;font-size:20px!important;line-height:1!important;font-weight:950!important;letter-spacing:-.035em!important}
-.v30162-focus-link{grid-column:1/-1!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;color:var(--muted,#b8c5d8)!important;font-size:10px!important;margin-top:2px!important}
-.v30162-focus-mini-btn{width:34px!important;height:34px!important;display:grid!important;place-items:center!important;border-radius:11px!important;border:1px solid rgba(255,255,255,.11)!important;background:rgba(255,255,255,.055)!important;color:var(--text,#eef6ff)!important;font-weight:950!important;cursor:pointer!important}
-.v30162-focus-mini-btn.primary{border-color:rgba(var(--ui-accent-rgb,117,228,255),.32)!important;background:rgba(var(--ui-accent-rgb,117,228,255),.13)!important}
-.v30162-focus-panel{display:none!important;border-top:1px solid rgba(255,255,255,.07)!important;padding:12px!important}
-#v30162FocusDock[data-expanded="1"] .v30162-focus-panel{display:block!important}
-.v30162-focus-panel.v30162-open{display:block!important}
-.v30162-focus-section+.v30162-focus-section{margin-top:12px!important;padding-top:12px!important;border-top:1px solid rgba(255,255,255,.065)!important}
-.v30162-focus-row{display:flex!important;gap:7px!important;align-items:center!important;flex-wrap:wrap!important}
-.v30162-focus-row.between{justify-content:space-between!important}
-.v30162-focus-preset{min-height:31px!important;padding:0 10px!important;border-radius:10px!important;border:1px solid rgba(255,255,255,.10)!important;background:rgba(255,255,255,.04)!important;color:var(--muted,#b8c5d8)!important;font-size:10.5px!important;font-weight:850!important;cursor:pointer!important}
-.v30162-focus-preset.active{color:var(--text,#eef6ff)!important;border-color:rgba(var(--ui-accent-rgb,117,228,255),.40)!important;background:rgba(var(--ui-accent-rgb,117,228,255),.12)!important}
-.v30162-focus-actions{display:grid!important;grid-template-columns:1.25fr repeat(3,minmax(0,.75fr))!important;gap:7px!important;margin-top:10px!important}
-.v30162-focus-actions button{min-height:36px!important;border-radius:11px!important;border:1px solid rgba(255,255,255,.11)!important;background:rgba(255,255,255,.05)!important;color:var(--text,#eef6ff)!important;font-size:10.5px!important;font-weight:900!important;cursor:pointer!important}
-.v30162-focus-actions button.primary{border-color:rgba(var(--ui-accent-rgb,117,228,255),.40)!important;background:linear-gradient(135deg,rgba(var(--ui-accent-rgb,117,228,255),.22),rgba(var(--ui-accent2-rgb,167,121,255),.12))!important}
-.v30162-focus-stats{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:7px!important}
-.v30162-focus-stat{padding:8px!important;border-radius:11px!important;background:rgba(255,255,255,.035)!important;border:1px solid rgba(255,255,255,.065)!important;min-width:0!important}
-.v30162-focus-stat small{display:block!important;color:var(--muted,#b8c5d8)!important;font-size:9px!important;margin-bottom:3px!important}
-.v30162-focus-stat b{font-size:12px!important;font-weight:950!important}
-.v30162-focus-custom{display:grid!important;grid-template-columns:1fr 1fr auto!important;gap:7px!important;margin-top:8px!important}
-.v30162-focus-custom label{font-size:9px!important;color:var(--muted,#b8c5d8)!important}
-.v30162-focus-custom input{width:100%!important;min-height:32px!important;margin-top:3px!important;border-radius:9px!important;border:1px solid rgba(255,255,255,.11)!important;background:rgba(0,0,0,.18)!important;color:var(--text,#eef6ff)!important;padding:5px 8px!important}
-.v30162-focus-custom button{align-self:end!important;min-height:32px!important;border-radius:9px!important;border:1px solid rgba(var(--ui-accent-rgb,117,228,255),.28)!important;background:rgba(var(--ui-accent-rgb,117,228,255),.10)!important;color:var(--text,#eef6ff)!important;font-weight:850!important}
-.v30162-focus-history{display:grid!important;gap:5px!important;max-height:132px!important;overflow:auto!important}
-.v30162-focus-history-row{display:flex!important;justify-content:space-between!important;gap:8px!important;padding:6px 7px!important;border-radius:9px!important;background:rgba(255,255,255,.025)!important;font-size:9.5px!important}
-.v30162-focus-history-row span{min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;color:var(--muted,#b8c5d8)!important}
-.v30162-focus-history-row b{white-space:nowrap!important}
+/* Legacy sidebar Pomodoro presentation removed; FocusStoryV30162 owns only state and sessions. */
 
 /* =========================
    Story Chapters
@@ -27614,37 +27568,8 @@ function applyPreset(name,w,b){const f=focusState();if(f.status==='running'&&!co
 function todayFocusStats(){const arr=focusSessions().filter(s=>String(s.date||'').slice(0,10)===today()),ms=arr.reduce((a,s)=>a+Number(s.elapsedMs||0),0),blocks=arr.filter(s=>s.status==='completed').length;return {ms,blocks,sessions:arr.length}}
 function chimeSoft(){try{if(focusState().v30165Sound===false)return;const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const c=new C(),o=c.createOscillator(),g=c.createGain();o.frequency.value=620;g.gain.setValueAtTime(.025,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.08);o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.09);setTimeout(()=>c.close(),150)}catch(_){}}
 function chime(){try{if(focusState().v30165Sound===false)return;const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const c=new C();[0,0.14].forEach((d,i)=>{const o=c.createOscillator(),g=c.createGain();o.frequency.value=i?880:660;g.gain.setValueAtTime(.045,c.currentTime+d);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d+.18);o.connect(g);g.connect(c.destination);o.start(c.currentTime+d);o.stop(c.currentTime+d+.2)});setTimeout(()=>c.close(),500)}catch(_){}}
-function focusHistoryHtml(){const rows=focusSessions().slice(0,5);return rows.length?rows.map(s=>`<div class="v30162-focus-history-row"><span>${esc(s.missionName||'Unassigned Focus')}</span><b>${fmtDuration(s.elapsedMs)}</b></div>`).join(''):'<div class="v30162-focus-history-row"><span>No Focus blocks saved yet</span><b>—</b></div>'}
-function ensureFocusDock(){let root=document.getElementById('v30162FocusDock');if(!root){root=document.createElement('div');root.id='v30162FocusDock';document.body.appendChild(root)}return root}
-function renderFocusDock(){
-  const f=focusState(),root=ensureFocusDock(),r=remaining(f),m=linkedMission(f),cur=currentInfo(),stats=todayFocusStats();
-  /* v3.0.174: icon-only Focus trigger stacked above Quick Capture; full controls deploy outside the sidebar. */
-  f.dockMode='compact';
-  root.dataset.expanded=f.expanded?'1':'0';
-  root.dataset.dockMode='button';
-  const sidebar=document.getElementById('v30171Sidebar');
-  if(sidebar&&root.parentElement!==sidebar)sidebar.appendChild(root);
-  const context=f.mode==='work'?(m?m.name:(cur.m?'Ready to link · '+cur.m.name:'Unassigned Focus')):'Recovery block';
-  root.innerHTML=`<div class="v30173-focus-wrap" data-mode="${f.mode}">
-    <button type="button" class="v30173-focus-trigger" data-v30162-focus="expand" aria-expanded="${f.expanded?'true':'false'}" aria-label="${f.expanded?'Close':'Open'} Focus controls" title="${f.expanded?'Close Focus controls':'Focus · '+fmtTimer(r)}">
-      <span class="v30173-focus-trigger-icon">⏱</span>
-      <b data-v30162-time>${fmtTimer(r)}</b>
-      <span class="v30173-focus-trigger-chevron">${f.expanded?'⌄':'⌃'}</span>
-    </button>
-    <div class="v30162-focus-panel v30173-focus-panel ${f.expanded?'v30162-open':''}">
-      <div class="v30173-focus-head">
-        <div class="v30173-focus-head-copy"><small>${f.mode==='work'?'FOCUS · WORK':'FOCUS · BREAK'}</small><b data-v30162-link>${esc(context)}</b><span>${esc(activeChapterLabel())}</span></div>
-        <button type="button" class="v30173-focus-close" data-v30162-focus="expand" title="Close Focus controls" aria-label="Close Focus controls">×</button>
-      </div>
-      <div class="v30173-focus-clock"><b data-v30162-time>${fmtTimer(r)}</b><span>${f.status==='running'?'Running':f.status==='paused'?'Paused':'Ready'}</span></div>
-      <div class="v30162-focus-row v30173-focus-presets"><button type="button" class="v30162-focus-preset ${f.preset==='25/5'?'active':''}" data-v30162-preset="25/5">25 / 5</button><button type="button" class="v30162-focus-preset ${f.preset==='50/10'?'active':''}" data-v30162-preset="50/10">50 / 10</button><button type="button" class="v30162-focus-preset ${f.preset==='custom'?'active':''}" data-v30162-preset="custom">Custom</button></div>
-      <div class="v30162-focus-actions v30173-focus-actions"><button type="button" class="primary" data-v30162-focus="toggle">${f.status==='running'?'Pause':f.status==='paused'?'Resume':'Start'} ${f.mode==='work'?'Work':'Break'}</button><button type="button" data-v30162-focus="skip">Skip</button><button type="button" data-v30162-focus="reset">Reset</button><button type="button" data-v30162-focus="switch">${f.mode==='work'?'Break':'Work'}</button></div>
-      <div class="v30162-focus-custom v30173-focus-custom"><label>Work min<input id="v30162WorkMin" type="number" min="1" max="180" value="${f.workMin}"></label><label>Break min<input id="v30162BreakMin" type="number" min="1" max="60" value="${f.breakMin}"></label><button type="button" data-v30162-focus="apply-custom">Apply</button></div>
-      <div class="v30162-focus-stats v30173-focus-stats"><div class="v30162-focus-stat"><small>Today</small><b>${fmtDuration(stats.ms)}</b></div><div class="v30162-focus-stat"><small>Completed</small><b>${stats.blocks} blocks</b></div><div class="v30162-focus-stat"><small>Linked</small><b>${esc(m?m.name:'None')}</b></div></div>
-      <div class="v30173-focus-history-title">Recent Focus</div><div class="v30162-focus-history">${focusHistoryHtml()}</div>
-    </div>
-  </div>`;
-}
+// The legacy sidebar Focus dock has been deleted at source; the engine remains for all clients.
+function renderFocusDock(){return focusState();}
 function setFocusPanelExpanded(open){
   const f=focusState();
   f.dockMode='compact';
@@ -27656,7 +27581,7 @@ function setFocusPanelExpanded(open){
 }
 function toggleFocusPanel(){return setFocusPanelExpanded(!focusState().expanded)}
 function closeFocusPanel(){return setFocusPanelExpanded(false)}
-function updateFocusClock(){const f=focusState(),sec=Math.ceil(remaining(f)/1000);if(sec===lastSecond)return;lastSecond=sec;document.querySelectorAll('#v30162FocusDock [data-v30162-time]').forEach(el=>el.textContent=fmtTimer(remaining(f)));if(f.status==='running'&&remaining(f)<=0)finishPhase();if(f.status==='running'&&f.mode==='work'&&!f.linkedMissionId){const {cur,m}=currentInfo();if(cur&&m){f.linkedMissionId=String(cur.id);persist();document.querySelectorAll('#v30162FocusDock [data-v30162-link]').forEach(link=>link.textContent=m.name);}}}
+function updateFocusClock(){const f=focusState(),sec=Math.ceil(remaining(f)/1000);if(sec===lastSecond)return;lastSecond=sec;if(f.status==='running'&&remaining(f)<=0)finishPhase();if(f.status==='running'&&f.mode==='work'&&!f.linkedMissionId){const {cur,m}=currentInfo();if(cur&&m){f.linkedMissionId=String(cur.id);persist();}}}
 function enhanceFocusButtons(root=document){root.querySelectorAll&&root.querySelectorAll('[data-v30106-action="focus"]').forEach(b=>{b.removeAttribute('data-v30106-action');b.setAttribute('data-v30162-focus','open');b.textContent=/focus/i.test(b.textContent||'')?'Pomodoro':b.textContent;b.title='Open Pomodoro Focus Timer'});}
 
 /* ---------- Integration ---------- */
@@ -27667,7 +27592,7 @@ window.renderMain=function(){if(state.activeTab==='story'){const main=document.g
 const prevRenderAll=window.renderAll;
 if(typeof prevRenderAll==='function'){window.renderAll=function(){const out=prevRenderAll.apply(this,arguments);setTimeout(()=>{enhanceFocusButtons(document);renderFocusDock()},0);return out};try{renderAll=window.renderAll}catch(_){}}
 
-document.addEventListener('click',function(e){const b=e.target&&e.target.closest&&e.target.closest('[data-v30162-focus]');if(b){const a=b.dataset.v30162Focus;e.preventDefault();e.stopPropagation();if(a==='toggle')toggleFocus();else if(a==='expand'||a==='open'){const f=focusState();f.dockMode='compact';f.expanded=a==='open'?true:!f.expanded;persist();document.getElementById('v30106Focus')?.setAttribute('hidden','');renderFocusDock();}else if(a==='minimize'){const f=focusState();f.expanded=false;f.dockMode='mini';persist();renderFocusDock();}else if(a==='restore'){const f=focusState();f.dockMode='compact';f.expanded=false;persist();renderFocusDock();}else if(a==='skip')skipFocus();else if(a==='reset')resetFocus();else if(a==='switch')setPhase(focusState().mode==='work'?'break':'work');else if(a==='apply-custom'){const w=document.getElementById('v30162WorkMin')?.value,br=document.getElementById('v30162BreakMin')?.value;applyPreset('custom',w,br)}return;}const p=e.target&&e.target.closest&&e.target.closest('[data-v30162-preset]');if(p){e.preventDefault();if(p.dataset.v30162Preset==='25/5')applyPreset('25/5',25,5);else if(p.dataset.v30162Preset==='50/10')applyPreset('50/10',50,10);else{const f=focusState();f.preset='custom';persist();renderFocusDock();}return;}const s=e.target&&e.target.closest&&e.target.closest('[data-v30162-story]');if(!s)return;const a=s.dataset.v30162Story,id=s.dataset.id;e.preventDefault();if(a==='close'){const ch=chapters().find(x=>String(x.id)===String(id));if(ch&&confirm('Close Chapter '+roman(chapterNumber(ch))+' · '+ch.name+' today? Its summary will be frozen.')){closeChapter(id);renderAll();}}else if(a==='edit'){const ch=chapters().find(x=>String(x.id)===String(id));if(ch){const name=prompt('Chapter name',ch.name);if(name&&name.trim()){ch.name=name.trim();const motto=prompt('Motto / subtitle',ch.motto||'');if(motto!=null)ch.motto=motto.trim();persist();renderAll();}}}else if(a==='delete-chapter'){const ch=chapters().find(x=>String(x.id)===String(id));if(ch&&confirm('Delete archived chapter “'+ch.name+'”? The missions themselves will not be deleted.')){deleteChapter(id);renderAll();}}else if(a==='delete-moment'){if(confirm('Delete this Story Moment?')){deleteMoment(s.dataset.chapter,s.dataset.moment);renderAll();}}},true);
+document.addEventListener('click',function(e){const b=e.target&&e.target.closest&&e.target.closest('[data-v30162-focus]');if(b){const a=b.dataset.v30162Focus;e.preventDefault();e.stopPropagation();if(a==='toggle')toggleFocus();else if(a==='expand'||a==='open'){window.MichelsLifeFocusImmersive?.open?.()||window.MichelsLifeMobileExperience?.openFocus?.();}else if(a==='minimize'){const f=focusState();f.expanded=false;f.dockMode='mini';persist();renderFocusDock();}else if(a==='restore'){const f=focusState();f.dockMode='compact';f.expanded=false;persist();renderFocusDock();}else if(a==='skip')skipFocus();else if(a==='reset')resetFocus();else if(a==='switch')setPhase(focusState().mode==='work'?'break':'work');else if(a==='apply-custom'){const w=document.getElementById('v30162WorkMin')?.value,br=document.getElementById('v30162BreakMin')?.value;applyPreset('custom',w,br)}return;}const p=e.target&&e.target.closest&&e.target.closest('[data-v30162-preset]');if(p){e.preventDefault();if(p.dataset.v30162Preset==='25/5')applyPreset('25/5',25,5);else if(p.dataset.v30162Preset==='50/10')applyPreset('50/10',50,10);else{const f=focusState();f.preset='custom';persist();renderFocusDock();}return;}const s=e.target&&e.target.closest&&e.target.closest('[data-v30162-story]');if(!s)return;const a=s.dataset.v30162Story,id=s.dataset.id;e.preventDefault();if(a==='close'){const ch=chapters().find(x=>String(x.id)===String(id));if(ch&&confirm('Close Chapter '+roman(chapterNumber(ch))+' · '+ch.name+' today? Its summary will be frozen.')){closeChapter(id);renderAll();}}else if(a==='edit'){const ch=chapters().find(x=>String(x.id)===String(id));if(ch){const name=prompt('Chapter name',ch.name);if(name&&name.trim()){ch.name=name.trim();const motto=prompt('Motto / subtitle',ch.motto||'');if(motto!=null)ch.motto=motto.trim();persist();renderAll();}}}else if(a==='delete-chapter'){const ch=chapters().find(x=>String(x.id)===String(id));if(ch&&confirm('Delete archived chapter “'+ch.name+'”? The missions themselves will not be deleted.')){deleteChapter(id);renderAll();}}else if(a==='delete-moment'){if(confirm('Delete this Story Moment?')){deleteMoment(s.dataset.chapter,s.dataset.moment);renderAll();}}},true);
 
 document.addEventListener('submit',function(e){if(e.target&&e.target.id==='v30162ChapterForm'){e.preventDefault();const fd=new FormData(e.target),r=createChapter(fd.get('name'),fd.get('motto'),fd.get('start'));if(!r.ok)notify('Chapter not started',r.msg);else{notify('New chapter started',r.ch.name);renderAll();}}else if(e.target&&e.target.id==='v30162MomentForm'){e.preventDefault();const fd=new FormData(e.target);if(addMoment(e.target.dataset.chapter,fd.get('title'),fd.get('detail'),fd.get('date'))){notify('Story Moment added',String(fd.get('title')||''));renderAll();}}},true);
 
@@ -28893,29 +28818,9 @@ console.info("Michel's Life build "+VERSION+' — permanent left navigation + Se
 
 
 
-<!-- v3.0.174: equal-size Focus launcher stacked above Quick Capture -->
-<style id="v30173-one-button-focus-style">
-@media(min-width:961px){
-  #v30171Sidebar{overflow:visible!important}
-  #v30171PrimaryNav{flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;padding-bottom:76px!important;scrollbar-width:thin!important}
-  #v30162FocusDock{position:absolute!important;left:14px!important;right:14px!important;bottom:14px!important;top:auto!important;width:auto!important;height:42px!important;z-index:525!important;pointer-events:none!important}
-  #v30162FocusDock .v30173-focus-wrap{position:relative!important;width:100%!important;height:42px!important;overflow:visible!important;pointer-events:none!important}
-  #v30162FocusDock .v30173-focus-trigger{pointer-events:auto!important;width:104px!important;height:42px!important;padding:0 10px!important;display:grid!important;grid-template-columns:18px 1fr 14px!important;align-items:center!important;gap:6px!important;border-radius:13px!important;border:1px solid rgba(var(--ui-gold-rgb,255,209,102),.30)!important;background:linear-gradient(165deg,rgba(var(--ui-panel-rgb,7,13,25),.985),rgba(var(--ui-bg-rgb,7,13,22),.97))!important;color:var(--text)!important;box-shadow:0 10px 28px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.06)!important;backdrop-filter:blur(18px)!important;cursor:pointer!important}
-  #v30162FocusDock .v30173-focus-trigger:hover{transform:translateY(-1px)!important;border-color:rgba(var(--ui-gold-rgb,255,209,102),.55)!important}
-  #v30162FocusDock .v30173-focus-trigger-icon{font-size:15px!important;line-height:1!important}
-  #v30162FocusDock .v30173-focus-trigger b{font:900 12px/1 var(--mlv-ui-font)!important;font-variant-numeric:tabular-nums!important;letter-spacing:.01em!important;white-space:nowrap!important}
-  #v30162FocusDock .v30173-focus-trigger-chevron{font-size:12px!important;color:var(--muted)!important}
-  #v30162FocusDock[data-expanded="1"] .v30173-focus-trigger{border-color:rgba(var(--ui-gold-rgb,255,209,102),.58)!important;box-shadow:0 0 0 1px rgba(var(--ui-gold-rgb,255,209,102),.08),0 12px 32px rgba(0,0,0,.38)!important}
-  #v30162FocusDock .v30173-focus-panel{pointer-events:auto!important;position:absolute!important;left:calc(100% + 14px)!important;right:auto!important;bottom:0!important;width:354px!important;max-height:calc(100vh - 34px)!important;overflow:auto!important;padding:14px!important;border:1px solid rgba(var(--ui-gold-rgb,255,209,102),.26)!important;border-radius:18px!important;background:linear-gradient(165deg,rgba(var(--ui-panel-rgb,7,13,25),.992),rgba(var(--ui-bg-rgb,8,15,26),.985))!important;box-shadow:0 24px 70px rgba(0,0,0,.50),inset 0 1px 0 rgba(255,255,255,.065)!important;backdrop-filter:blur(22px)!important;display:none!important}
-  #v30162FocusDock[data-expanded="1"] .v30173-focus-panel{display:block!important}
-}
-.v30173-focus-head{display:flex!important;align-items:flex-start!important;justify-content:space-between!important;gap:12px!important;margin-bottom:10px!important}.v30173-focus-head-copy{display:flex!important;flex-direction:column!important;min-width:0!important;gap:2px!important}.v30173-focus-head-copy small{font-size:8px!important;font-weight:950!important;letter-spacing:.15em!important;color:var(--ui-gold,var(--gold,#ffd166))!important}.v30173-focus-head-copy b{font-size:13px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}.v30173-focus-head-copy span{font-size:9.5px!important;color:var(--muted)!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}.v30173-focus-close{width:28px!important;height:28px!important;flex:0 0 28px!important;display:grid!important;place-items:center!important;padding:0!important;border-radius:9px!important;border:1px solid rgba(255,255,255,.10)!important;background:rgba(255,255,255,.04)!important;color:var(--muted)!important;font-size:17px!important;cursor:pointer!important}.v30173-focus-clock{display:flex!important;align-items:baseline!important;justify-content:space-between!important;gap:10px!important;padding:10px 12px!important;margin-bottom:10px!important;border-radius:13px!important;background:rgba(255,255,255,.035)!important;border:1px solid rgba(255,255,255,.075)!important}.v30173-focus-clock b{font-size:30px!important;line-height:1!important;font-weight:950!important;font-variant-numeric:tabular-nums!important;letter-spacing:-.04em!important}.v30173-focus-clock span{font-size:9px!important;font-weight:850!important;color:var(--muted)!important;text-transform:uppercase!important;letter-spacing:.08em!important}.v30173-focus-presets{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:6px!important;margin-bottom:8px!important}.v30173-focus-actions{grid-template-columns:2fr 1fr 1fr 1fr!important;margin-top:0!important}.v30173-focus-custom{margin-top:8px!important}.v30173-focus-stats{margin-top:10px!important}.v30173-focus-history-title{margin:12px 0 7px!important;font-size:9px!important;font-weight:900!important;letter-spacing:.10em!important;text-transform:uppercase!important;color:var(--muted)!important}
-@media(max-width:960px){
-  #v30162FocusDock{position:fixed!important;left:12px!important;right:auto!important;bottom:12px!important;width:104px!important;height:42px!important;z-index:525!important;pointer-events:none!important}
-  #v30162FocusDock .v30173-focus-trigger{pointer-events:auto!important;width:104px!important;height:42px!important;padding:0 10px!important;display:grid!important;grid-template-columns:18px 1fr 14px!important;align-items:center!important;gap:6px!important;border-radius:13px!important;border:1px solid rgba(var(--ui-gold-rgb,255,209,102),.30)!important;background:rgba(var(--ui-panel-rgb,7,13,25),.98)!important;color:var(--text)!important}
-  #v30162FocusDock .v30173-focus-panel{pointer-events:auto!important;position:fixed!important;left:12px!important;right:12px!important;bottom:62px!important;width:auto!important;max-height:calc(100vh - 82px)!important;overflow:auto!important;padding:14px!important;border-radius:18px!important;background:rgba(var(--ui-panel-rgb,7,13,25),.99)!important;border:1px solid rgba(var(--ui-gold-rgb,255,209,102),.25)!important;display:none!important}
-  #v30162FocusDock[data-expanded="1"] .v30173-focus-panel{display:block!important}
-}
+<!-- v3.0.174 sidebar scroll layout (old Focus dock styles removed) -->
+<style id="mlv-sidebar-scroll-style">
+@media(min-width:961px){#v30171Sidebar{overflow:visible!important}#v30171PrimaryNav{flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;padding-bottom:20px!important;scrollbar-width:thin!important}}
 </style>
 <script id="v30173-focus-runtime">
 (function(){
