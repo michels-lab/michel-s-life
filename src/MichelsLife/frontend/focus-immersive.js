@@ -256,8 +256,10 @@
       }
       #mlv-desktop-focus-immersive .mlv-focus-stage{
         position:relative;display:flex;flex-direction:column;box-sizing:border-box;
-        width:min(800px,calc(100vw - 48px))!important;max-width:100%!important;
-        justify-self:center!important;min-height:min(555px,calc(100dvh - 46px))!important;
+        /* No percentage max-width: grid's intrinsic track was capping this at 467px. */
+        width:min(800px,calc(100vw - 48px))!important;max-width:800px!important;
+        justify-self:center!important;
+        height:clamp(460px,72dvh,555px)!important;min-height:0!important;
         max-height:calc(100dvh - 24px)!important;
         overflow-y:auto!important;overflow-x:hidden!important;
         gap:clamp(10px,1.9vh,19px)!important;padding:clamp(20px,3vw,34px)!important;
@@ -389,7 +391,7 @@
       }
       @media(max-height:550px){
         #mlv-desktop-focus-immersive .mlv-focus-stage{
-          min-height:0!important;gap:7px!important;padding:12px!important
+          height:auto!important;min-height:0!important;gap:7px!important;padding:12px!important
         }
         #mlv-desktop-focus-immersive .mlv-focus-stage .mlv-focus-center{
           min-height:100px!important;padding:0!important
