@@ -7,6 +7,9 @@ on:
       - 'src/MichelsLife/frontend/index.html'
       - 'src/MichelsLife/frontend/focus-immersive.js'
       - 'android/mobile-experience.js'
+      - 'android/app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt'
+      - 'android/app/src/main/res/raw/mlv_focus_*.wav'
+      - 'tools/test_android_focus_completion_native_audio.mjs'
       - 'tools/test_granada_focus_audio_quickmission.mjs'
       - '.github/workflows/granada-focus-audio-quickmission.yml'
   pull_request:
@@ -14,6 +17,9 @@ on:
       - 'src/MichelsLife/frontend/index.html'
       - 'src/MichelsLife/frontend/focus-immersive.js'
       - 'android/mobile-experience.js'
+      - 'android/app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt'
+      - 'android/app/src/main/res/raw/mlv_focus_*.wav'
+      - 'tools/test_android_focus_completion_native_audio.mjs'
       - 'tools/test_granada_focus_audio_quickmission.mjs'
       - '.github/workflows/granada-focus-audio-quickmission.yml'
   workflow_dispatch:
@@ -37,3 +43,5 @@ jobs:
           node --check tools/test_granada_focus_audio_quickmission.mjs
       - name: Execute real Web Audio stubs, saved preferences and adversarial Quick Mission gesture fixtures
         run: node --test tools/test_granada_focus_audio_quickmission.mjs
+      - name: Verify native Android selected end chimes and six authentic original WAV resources
+        run: node --test tools/test_android_focus_completion_native_audio.mjs

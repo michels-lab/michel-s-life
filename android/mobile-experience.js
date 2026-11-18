@@ -50,11 +50,13 @@
     const deadline=Number(state.deadlineAt)||0;
     const mode=state.mode==='break'?'break':'work';
     const language=window.MichelsLifeI18n?.language==='es'?'es':'en';
-    const key=running?'running:'+mode+':'+deadline+':'+language:'inactive:'+state.status;
+    const completionSound=String(state.v30165CompletionSound||'soft');
+    const key=running?'running:'+mode+':'+deadline+':'+language+':'+completionSound:
+      'inactive:'+state.status+':'+completionSound;
     if(key===lastNativeAlarmKey)return;
     try{
       const raw=native.syncFocusAlarm(JSON.stringify({
-        status:running?'running':state.status,deadlineAt:running?deadline:0,mode,language
+        status:running?'running':state.status,deadlineAt:running?deadline:0,mode,language,completionSound
       }));
       const result=JSON.parse(raw||'{}');
       if(result.error)throw Error(result.error);
