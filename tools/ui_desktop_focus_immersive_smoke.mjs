@@ -60,6 +60,37 @@ try{
       Number(getComputedStyle(focus).zIndex)>1000000000;
   }), 'Desktop immersive view is not the only visible active Focus workspace');
 
+  // Owner screenshot was 976×737: Focus must be an intentionally composed
+  // workspace, not an oversized clock + cramped/overflowing button strip.
+  await page.setViewportSize({width:976,height:737});
+  const compact=await page.evaluate(()=>{
+    const stage=document.querySelector('#mlv-desktop-focus-immersive .mlv-focus-stage');
+    const clock=document.querySelector('#mlv-desktop-focus-clock');
+    const buttons=[...stage.querySelectorAll(':scope > .mlv-focus-actions button')];
+    const rect=r=>({x:r.x,y:r.y,w:r.width,h:r.height,right:r.right,bottom:r.bottom});
+    const bounds=stage.getBoundingClientRect();
+    return {stage:rect(bounds),clock:rect(clock.getBoundingClientRect()),
+      buttonRects:buttons.map(b=>rect(b.getBoundingClientRect())),
+      stageWidth:stage.scrollWidth,clientWidth:stage.clientWidth,
+      clockFont:parseFloat(getComputedStyle(clock).fontSize),
+      audioCollapsed:!stage.querySelector('.mlv-focus-sound-details').open,
+      affirmationsCollapsed:!stage.querySelector('.mlv-focus-motivation-details').open};
+  });
+  ok(compact.stage.w<=840&&compact.stage.w>610&&compact.stage.h<=713&&
+     compact.clientWidth>610, 'Focus stage does not fit owner screenshot: '+JSON.stringify(compact));
+  ok(compact.clockFont>=65&&compact.clockFont<=115&&
+     compact.clock.right<compact.stage.right-15&&compact.clock.x>compact.stage.x+15,
+     'Clock too big or clipped at owner viewport: '+JSON.stringify(compact));
+  ok(compact.stageWidth<=compact.clientWidth+3&&compact.audioCollapsed&&compact.affirmationsCollapsed,
+     'Visual controls introduce overflow or cover timer: '+JSON.stringify(compact));
+  for(let i=0;i<compact.buttonRects.length;i++){
+    const button=compact.buttonRects[i];
+    ok(button.right<compact.stage.right+2&&button.x>=compact.stage.x-2&&button.h>=40,
+      'Primary action clipped at owner viewport: '+JSON.stringify({button,compact}));
+  }
+  await page.screenshot({path:'artifacts/ui-smoke/desktop-focus-976x737-owner-viewport.png'});
+  await page.setViewportSize({width:1440,height:900});
+
   // Real browser interaction, not a static API test: open the collapsed audio
   // panel, choose an end chime, preview it, and play/stop the A+C atmosphere.
   await page.locator('.mlv-focus-sound-details summary').click();
