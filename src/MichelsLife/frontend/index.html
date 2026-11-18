@@ -27965,7 +27965,7 @@ document.addEventListener('change',function(e){const f=focusState();if(!f)return
 
 let q=0;const mo=new MutationObserver(()=>{clearTimeout(q);q=setTimeout(()=>{ensureDayTabs();augmentProjects();ensureFocusPreferences()},45)});try{mo.observe(document.body,{childList:true,subtree:true})}catch(_){}
 syncAllChains();checkBossDefeats();setTimeout(refreshRpg,0);setTimeout(refreshRpg,220);setTimeout(refreshRpg,800);
-window.RPGSystemsV30165={version:VERSION,ensureDayTabs,homeSnapshot,lifeBuildHtml,openLifeBuild,projects,bossState,activeBoss,chainLocked,syncAllChains,checkBossDefeats,augmentProjects,augmentFocus,openProjectSetup};
+window.RPGSystemsV30165={version:VERSION,ensureDayTabs,homeSnapshot,lifeBuildHtml,openLifeBuild,projects,bossState,activeBoss,chainLocked,syncAllChains,checkBossDefeats,augmentProjects,augmentFocus:ensureFocusPreferences,ensureFocusPreferences,openProjectSetup};
 window.__MICHELS_LIFE_BUILD__=VERSION;
 console.info("Michel's Life build "+VERSION+' — restored Yesterday/Tomorrow + Boss Battles + Skill Tree + Quest Chains + Pomodoro 2.0 + RPG Chapter hero loaded');
 })();
