@@ -106,12 +106,39 @@ try{
  assert(quick?.repeat==='once'&&quick?.sound==='soft'&&
    quick.dueAt-beforeQuick>=5*60000&&quick.dueAt-beforeQuick<5*60000+5000,
    'Quick Alarm did not persist accurate five minute reminder and selected tone: '+JSON.stringify(quick));
- const wav=Buffer.alloc(1024);wav.write('RIFF',0);wav.writeUInt32LE(wav.length-8,4);
- wav.write('WAVE',8);wav.write('fmt ',12);
+ // Real, original 1-second PCM WAV so playback/cleanup is exercised,
+ // rather than accepting an invalid RIFF header with no audio frames.
+ const rate=8000,frames=8000,wav=Buffer.alloc(44+frames*2);
+ wav.write('RIFF',0);wav.writeUInt32LE(wav.length-8,4);
+ wav.write('WAVE',8);wav.write('fmt ',12);wav.writeUInt32LE(16,16);
+ wav.writeUInt16LE(1,20);wav.writeUInt16LE(1,22);
+ wav.writeUInt32LE(rate,24);wav.writeUInt32LE(rate*2,28);
+ wav.writeUInt16LE(2,32);wav.writeUInt16LE(16,34);
+ wav.write('data',36);wav.writeUInt32LE(frames*2,40);
+ for(let i=0;i<frames;i++)wav.writeInt16LE(Math.round(Math.sin(2*Math.PI*440*i/rate)*5000),44+i*2);
  await page.locator('#mlv-alarm-custom-file').setInputFiles({name:'granada-sound.wav',mimeType:'audio/wav',buffer:wav});
  await page.waitForFunction(()=>document.querySelector('#mlv-alarm-sound')?.value==='custom');
  assert(await page.locator('#mlv-alarm-custom-name').innerText()==='granada-sound.wav',
    'Custom audio import not visible in UI');
+ await page.evaluate(()=>{
+   const oldCreate=URL.createObjectURL.bind(URL),oldRevoke=URL.revokeObjectURL.bind(URL);
+   window.__granadaAlarmUrls={created:[],revoked:[]};
+   URL.createObjectURL=blob=>{
+     const url=oldCreate(blob);window.__granadaAlarmUrls.created.push(url);return url;
+   };
+   URL.revokeObjectURL=url=>{
+     window.__granadaAlarmUrls.revoked.push(url);oldRevoke(url);
+   };
+ });
+ await page.locator('#mlv-alarm-preview').click();
+ await page.waitForFunction(()=>window.__granadaAlarmUrls.created.length>0,null,{timeout:7000});
+ await page.locator('#mlv-alarm-sound').selectOption('soft');
+ await page.locator('#mlv-alarm-preview').click();
+ assert(await page.evaluate(()=>{
+   const {created,revoked}=window.__granadaAlarmUrls;
+   return created.every(url=>revoked.includes(url));
+ }), 'Replacing custom preview leaked its object URL');
+ await page.locator('#mlv-alarm-sound').selectOption('custom');
  await page.locator('#mlv-alarm-name').fill('Granada: prueba de alarma');
  await page.locator('#mlv-alarm-repeat').selectOption('daily');
  await page.locator('#mlv-alarm-time').fill('22:15');
@@ -140,8 +167,60 @@ try{
  await page.locator('[data-ring-dismiss]').click();
  assert(await page.evaluate(()=>document.getElementById('mlv-alarm-ring').hidden),
   'Dismiss failed to close ringing alarm.');
+
+ // Regression: old tick() used break after the first alarm, then advanced
+ // lastTick, irretrievably losing the second alarm due in the same second.
+ const paired=await page.evaluate(()=>{
+   const dueAt=Date.now()+1700,dateTime=new Date(dueAt);
+   const date=dateTime.getFullYear()+'-'+String(dateTime.getMonth()+1).padStart(2,'0')+'-'+
+     String(dateTime.getDate()).padStart(2,'0');
+   const time=String(dateTime.getHours()).padStart(2,'0')+':'+
+     String(dateTime.getMinutes()).padStart(2,'0');
+   const pair=['Parallel A','Parallel B'].map((label,i)=>({
+     id:'granada-parallel-'+i,label,time,date,dueAt,
+     repeat:'once',days:[],sound:'soft',enabled:true
+   }));
+   localStorage.setItem('michelsLife.alarms.v1',JSON.stringify(pair));
+   window.MichelsLifeAlarms.read();
+   return {dueAt,ids:pair.map(x=>x.id)};
+ });
+ await page.waitForTimeout(2650);
+ const dispatched=await page.evaluate(()=>{
+   const first=window.MichelsLifeAlarms.takeWindowsNotification();
+   const second=window.MichelsLifeAlarms.takeWindowsNotification();
+   const third=window.MichelsLifeAlarms.takeWindowsNotification();
+   return {first:first?.label,second:second?.label,third:third?.label,
+     active:document.querySelector('#mlv-alarm-ring-label')?.textContent,
+     visible:!document.getElementById('mlv-alarm-ring').hidden};
+ });
+ assert(dispatched.visible&&dispatched.active==='Parallel A'&&
+   dispatched.first==='Parallel A'&&dispatched.second==='Parallel B'&&!dispatched.third,
+   'Simultaneous reminders must both reach Windows notifications, even while first rings: '+
+   JSON.stringify({paired,dispatched}));
+ await page.locator('[data-ring-dismiss]').click();
+ assert(await page.evaluate(()=>!document.getElementById('mlv-alarm-ring').hidden&&
+   document.querySelector('#mlv-alarm-ring-label')?.textContent==='Parallel B'),
+   'Dismiss of first simultaneous alarm did not open the second ring');
+ const snoozeStart=Date.now();
+ await page.locator('[data-ring-snooze]').click();
+ const snoozed=await page.evaluate(()=>{
+   const r=window.MichelsLifeAlarms.records();
+   const item=r.find(x=>x.id.startsWith('s'));
+   return {item,ringHidden:document.getElementById('mlv-alarm-ring').hidden,
+     third:window.MichelsLifeAlarms.takeWindowsNotification()};
+ });
+ assert(snoozed.ringHidden&&snoozed.item?.label==='Parallel B'&&
+   snoozed.item.dueAt-snoozeStart>=300000&&snoozed.item.dueAt-snoozeStart<305000&&
+   !snoozed.third,
+   'Snooze must retain the exact five-minute dueAt without rounding or duplicate alerts: '+
+   JSON.stringify(snoozed));
+ assert(await page.evaluate(()=>{
+   const {created,revoked}=window.__granadaAlarmUrls;
+   return created.every(url=>revoked.includes(url));
+ }), 'Custom alarm playback or preview retained an unreleased object URL');
+
  await page.evaluate(()=>window.FocusStoryV30162.resetFocus?.());
  assert(!errors.some(e=>/Uncaught|SyntaxError|TypeError/i.test(e)),
   'Browser runtime exception: '+errors.join('; '));
- console.log('PASS: Chapter art, Pomodoro clock and buttons above collapsed quotes, dead sidebar hidden, exact Quick Alarm 5min, persistent WAV picker, native-friendly per-alarm tone, daily alarm & single notification');
+ console.log('PASS: Chapter/Focus, 5min Quick Alarm, valid WAV preview cleanup, recurring alarm, two simultaneous Windows notifications/rings and exact 5min snooze');
 }finally{await browser.close();}
