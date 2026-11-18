@@ -178,10 +178,10 @@ internal object NativePersonalAlarms {
             val file = File(dir, name)
             return if (file.isFile && file.length() > 128L) Uri.fromFile(file) else defaultSound()
         }
-        if (selected in setOf("classic","soft","digital","gentle","pulse")) {
+        if (selected in setOf("classic","soft","digital","gentle","pulse","radar")) {
             return try {
                 dir.mkdirs()
-                val file = File(dir, "preset-$selected.wav")
+                val file = File(dir, "preset-v2-$selected.wav")
                 if (!file.isFile || file.length() < 1000L) generatePreset(file, selected)
                 Uri.fromFile(file)
             } catch (_: Exception) { defaultSound() }
@@ -193,37 +193,76 @@ internal object NativePersonalAlarms {
         RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
             ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
+    /** Michel's Life original 24-second suite. Synthesized locally, never
+     * downloaded from a third party; loops natively until dismiss or snooze.
+     * All notes are synthesized into one PCM WAV per preset and cached in app
+     * private storage. Version v2 invalidates obsolete 2-second snippets. */
+    private data class AlarmNote(
+        val start: Double, val hz: Double, val length: Double,
+        val gain: Double, val endHz: Double = 0.0
+    )
+
     private fun generatePreset(file: File, preset: String) {
-        val rate=16000
-        val samples=rate*2
-        val buffer=ByteBuffer.allocate(44+samples*2).order(ByteOrder.LITTLE_ENDIAN)
+        val sampleRate = 16000
+        val durationSeconds = 24
+        val samples = sampleRate * durationSeconds
+        val (period, notes) = when (preset) {
+            "classic" -> Pair(2.8, listOf(
+                AlarmNote(0.0,880.0,.45,.23),AlarmNote(.53,659.0,.48,.21),
+                AlarmNote(1.26,880.0,.33,.19),AlarmNote(1.70,988.0,.56,.22)))
+            "soft" -> Pair(3.65, listOf(
+                AlarmNote(0.0,523.0,.55,.17),AlarmNote(.66,659.0,.58,.19),
+                AlarmNote(1.35,784.0,.68,.20),AlarmNote(2.20,659.0,.75,.20)))
+            "digital" -> Pair(2.65, listOf(
+                AlarmNote(0.0,1108.0,.16,.16),AlarmNote(.27,1397.0,.16,.16),
+                AlarmNote(.54,1568.0,.19,.17),AlarmNote(1.10,1108.0,.25,.16),
+                AlarmNote(1.48,1397.0,.25,.17)))
+            "gentle" -> Pair(4.1, listOf(
+                AlarmNote(0.0,392.0,.80,.10),AlarmNote(.95,523.0,.75,.13),
+                AlarmNote(1.83,659.0,.83,.17),AlarmNote(2.80,784.0,.97,.19)))
+            "pulse" -> Pair(2.6, listOf(
+                AlarmNote(0.0,740.0,.22,.22),AlarmNote(.36,740.0,.22,.22),
+                AlarmNote(.75,880.0,.40,.24),AlarmNote(1.35,988.0,.28,.21),
+                AlarmNote(1.77,880.0,.34,.22)))
+            "radar" -> Pair(2.75, listOf(
+                AlarmNote(0.0,940.0,.78,.24,520.0),
+                AlarmNote(1.10,820.0,.60,.23,560.0),
+                AlarmNote(2.05,760.0,.37,.20,620.0)))
+            else -> Pair(2.6, listOf(
+                AlarmNote(0.0,880.0,.36,.21),AlarmNote(.55,660.0,.36,.21)))
+        }
+        val buffer = ByteBuffer.allocate(44 + samples * 2).order(ByteOrder.LITTLE_ENDIAN)
         buffer.put("RIFF".toByteArray(Charsets.US_ASCII))
-        buffer.putInt(36+samples*2)
+        buffer.putInt(36 + samples * 2)
         buffer.put("WAVE".toByteArray(Charsets.US_ASCII))
         buffer.put("fmt ".toByteArray(Charsets.US_ASCII))
-        buffer.putInt(16);buffer.putShort(1.toShort());buffer.putShort(1.toShort())
-        buffer.putInt(rate);buffer.putInt(rate*2);buffer.putShort(2.toShort());buffer.putShort(16.toShort())
-        buffer.put("data".toByteArray(Charsets.US_ASCII));buffer.putInt(samples*2)
-        for(i in 0 until samples){
-            val time=i.toDouble()/rate
-            val seconds=time%2.0
-            val hz=when(preset){
-                "soft" -> if(seconds<0.33)523.0 else 659.0
-                "digital" -> if(seconds<0.18)1046.0 else 1318.0
-                "gentle" -> if(seconds<0.55)392.0 else 523.0
-                "pulse" -> 740.0
-                else -> if(seconds<0.36)880.0 else 660.0
+        buffer.putInt(16)
+        buffer.putShort(1.toShort())
+        buffer.putShort(1.toShort())
+        buffer.putInt(sampleRate)
+        buffer.putInt(sampleRate * 2)
+        buffer.putShort(2.toShort())
+        buffer.putShort(16.toShort())
+        buffer.put("data".toByteArray(Charsets.US_ASCII))
+        buffer.putInt(samples * 2)
+        for (sample in 0 until samples) {
+            val time = sample.toDouble() / sampleRate
+            val within = time % period
+            var mix = 0.0
+            for (note in notes) {
+                val local = within - note.start
+                if (local < 0.0 || local >= note.length) continue
+                val attack = (local / .035).coerceIn(0.0, 1.0)
+                val release = ((note.length - local) / .12).coerceIn(0.0, 1.0)
+                val crescendo = if (preset == "gentle") .43 + .57 * (time / durationSeconds) else 1.0
+                val frequency = if (note.endHz > 0.0) {
+                    note.hz * Math.pow(note.endHz / note.hz, local / note.length)
+                } else note.hz
+                val harmonic = sin(2.0 * PI * frequency * local)
+                val shimmer = .18 * sin(4.0 * PI * frequency * local)
+                mix += (harmonic + shimmer) * note.gain * crescendo * attack * release
             }
-            val active=when(preset){
-                "soft" -> seconds<0.65
-                "digital" -> seconds<0.12 || seconds in 0.25..0.37 || seconds in 0.50..0.62
-                "gentle" -> seconds<0.9
-                "pulse" -> seconds<0.15 || seconds in 0.25..0.4 || seconds in 0.52..0.67
-                else -> seconds<0.24 || seconds in 0.35..0.59
-            }
-            val phase=seconds*hz*2.0*PI
-            val envelope=if(active) 0.22*(1.0 - (seconds%0.35)*.5) else 0.0
-            buffer.putShort((sin(phase)*envelope*Short.MAX_VALUE).toInt().toShort())
+            buffer.putShort((mix.coerceIn(-.75,.75) * Short.MAX_VALUE).toInt().toShort())
         }
         file.writeBytes(buffer.array())
     }
@@ -294,7 +333,7 @@ internal object NativePersonalAlarms {
         }
         if (repeat == "weekly" && seen.isEmpty()) return null
         val sound = input.optString("sound", "system").takeIf {
-            it in setOf("system","classic","soft","digital","gentle","pulse","custom")
+            it in setOf("system","classic","soft","digital","gentle","pulse","radar","custom")
         } ?: "system"
         val dueAt = input.optLong("dueAt",0L).takeIf {
             repeat == "once" && it > 0L && it < System.currentTimeMillis()+366L*86400000L
