@@ -1,3 +1,10 @@
+## Operación Granada completa — estable 3.0.227 / Android Direct 0.2.16 (2026-11-18)
+
+- **Release público confirmado:** [Windows 3.0.227 + Android Direct 0.2.16](https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.227-android-v0.2.16), 13 assets, `draft=false`, `prerelease=false`; [fuente #44377747872](https://github.com/michels-lab/michel-s-life/actions/runs/44377747872) **SUCCESS** y [publicador destino #44379633157](https://github.com/michels-lab/michel-s-life-releases/actions/runs/44379633157) **SUCCESS**, SHA exacto `773dd064e4c54cd68ac464d60d55d2d957b73e36`, certificado permanente Android, SHA-256 y binarios Windows validados.
+- **Funcionalidad integrada:** [PR #217](https://github.com/michels-lab/michel-s-life/pull/217) merge `bb287f489330171462608dd134c7eb93a98c7c06`. Antiguo FocusDock, FocusFab y panel lateral eliminados en la fuente, no solo ocultados; Pomodoro nítido e inmersivo y fondos Chapter preservados; alarmas originales de 24 segundos, Radar, Quick Alarm, tonos propios, notificaciones nativas; PR #216 duplicada cerrada.
+- **Pruebas:** código y UI en Windows/Android, protección de actualización, construcción Windows Setup/Portable, firma Android Direct code18 e instalación/reapertura de Android 15 emulado aprobados. No equivale a verificación en Galaxy físico o cuentas reales.
+- **Pendientes de aceptación:** Doze, alerta bajo bloqueo, ringtone MP3 en teléfono Samsung real, actualización in-place sin pérdida de datos y Google/Supabase reales; **[#168](https://github.com/michels-lab/michel-s-life/issues/168)** error sintáctico esporádico sigue abierto, aunque los ensayos exact-SHA del release hayan pasado. No Play/Store/RC/Developer Edition.
+
 ## 2026-11-17 — WebView memoria GPU reducida, CI de verdad preservado
 
 - [PR #211 MERGED](https://github.com/michels-lab/michel-s-life/pull/211), commit `9634b01bedf743ec7850b97ec20c2cf1d0891601`: Android deja que el manifiesto maneje la GPU (sin `setLayerType(HARDWARE)` adicional), desactiva precarga `offscreenPreRaster`, conserva controles de Story/Pomodoro y Calendar misión write de PR #210.
