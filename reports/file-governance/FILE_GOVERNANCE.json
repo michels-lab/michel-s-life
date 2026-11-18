@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 411,
-  "classified_files_total": 407,
-  "docs_content_inspected": 99,
+  "tracked_files_total": 413,
+  "classified_files_total": 409,
+  "docs_content_inspected": 100,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
   "roles": {
@@ -13,7 +13,7 @@
     "build_script": 6,
     "config": 24,
     "database_migration": 3,
-    "document": 92,
+    "document": 93,
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
@@ -22,15 +22,15 @@
     "test": 49,
     "text_metadata": 1,
     "web_ui": 3,
-    "workflow": 52
+    "workflow": 53
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "ce2cd8ce649a13da5d7be5d7c75fcd7a767673c0720f59181f3ff6252f6dd00c",
-  "evidence_fingerprint": "2f0520fa77d8a7568cb7bfc3284ee5c6f65d2be8e691c381b99cdcef0bfe7fac",
+  "inventory_fingerprint": "fd1d88a84a15d9847421caa7c31122d408b3174e0805039158fad0effd6b4fd4",
+  "evidence_fingerprint": "9de07246b24435b83f3ba3f1f38f2d92eb8f9cf3b2dab745a0215971801a9715",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -390,6 +390,13 @@
       "blob": "1a91fe3b95d613555013829143c77c1cbab178af"
     },
     {
+      "path": ".github/workflows/release-unified-v3227-a0216.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "dcbf321031306e744d48bd8378c9c7f1cd0b312c"
+    },
+    {
       "path": ".github/workflows/release-windows-v3222-a0211.yml",
       "role": "workflow",
       "purpose": "GitHub Actions automation",
@@ -730,7 +737,7 @@
       "role": "build_script",
       "purpose": "platform build/project/installer script",
       "certainty": "inferred",
-      "blob": "28f3491fb6b15e76b28a20da8caa8e6208de51c0"
+      "blob": "612cca1a5b0f53e5420632afcc973b341c8409ad"
     },
     {
       "path": "android/app/src/directRelease/AndroidManifest.xml",
@@ -1769,6 +1776,13 @@
       "blob": "0c172f241cb544409c9c4343c95adb5f7b1be130"
     },
     {
+      "path": "docs/releases/v3.0.227.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "34453526e19afd71ad3682cc132cbe7be41e7c2b"
+    },
+    {
       "path": "installer/MichelsLife.iss",
       "role": "build_script",
       "purpose": "platform build/project/installer script",
@@ -1822,7 +1836,7 @@
       "role": "build_script",
       "purpose": "platform build/project/installer script",
       "certainty": "inferred",
-      "blob": "4af449a581a249be7dd1cac6cffe9dd28e98f654"
+      "blob": "514da5ce63c6dfce12a04a3034068a8cf620a380"
     },
     {
       "path": "src/MichelsLife/Program.cs.gz.b64",
@@ -2920,20 +2934,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "446d4222e3c10552",
+      "id": "b0139347ea36c921",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "47 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/granada-large-project-story-cloud.yml",
+      "observation": "48 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/granada-large-project-story-cloud.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "b1b1dd4b6f29b56f",
+      "id": "0b56640743e01a39",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "47 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/granada-large-project-story-cloud.yml",
+      "observation": "48 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/granada-large-project-story-cloud.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
