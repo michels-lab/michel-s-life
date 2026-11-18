@@ -78,7 +78,7 @@ test('both platforms keep one canonical timer and deliberate mini/navigation mod
   assert.doesNotMatch(desktop,/v30162FocusDock|oldDock|Legacy Focus dock/);
   assert.match(android,/api\.applyPreset\?\.\('custom',work,rest\)/);
   assert.match(desktop,/backdrop-filter:none!important/);
-  assert.match(desktop,/z-index:1;isolation:isolate;filter:none!important/);
+  assert.match(desktop,/z-index:1!important;isolation:isolate!important;filter:none!important/);
   assert.match(android,/background-image:\s*linear-gradient\(/);
   assert.doesNotMatch(desktop,/localStorage\.setItem\(/);
 });
