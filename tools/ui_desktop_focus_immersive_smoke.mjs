@@ -85,7 +85,23 @@ try{
           boxSizing:computed.boxSizing,inline:stage.getAttribute('style')||'',
           parentWidth:stage.parentElement.getBoundingClientRect().width,
           parentDisplay:parent.display,gridColumns:parent.gridTemplateColumns,
-          viewport:window.innerWidth};
+          viewport:window.innerWidth,
+          styleLoaded:!!document.getElementById('mlv-desktop-focus-css')?.sheet,
+          styleRules:(()=>{
+            const target=document.getElementById('mlv-desktop-focus-css');
+            try{return [...(target?.sheet?.cssRules||[])].filter(rule=>rule.cssText.includes('.mlv-focus-stage')).slice(0,4).map(rule=>({selector:rule.selectorText||'',css:rule.cssText.slice(0,500)}));}
+            catch(error){return [String(error)];}
+          })(),
+          winningCandidates:[...document.styleSheets].flatMap((sheet,index)=>{
+            try{return [...sheet.cssRules].filter(rule=>rule.selectorText&&rule.selectorText.includes('mlv-focus-stage')&&
+              (()=>{try{return stage.matches(rule.selectorText);}catch{return false;}})()).map(rule=>({
+                sheet:index,selector:rule.selectorText,display:rule.style?.getPropertyValue('display'),
+                width:rule.style?.getPropertyValue('width'),height:rule.style?.getPropertyValue('height'),
+                maxWidth:rule.style?.getPropertyValue('max-width')
+              })).slice(-8);}
+            catch{return [];}
+          }).slice(-16)
+        };
       })()};
   });
   await mkdir('artifacts/ui-smoke',{recursive:true});
