@@ -29,7 +29,7 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "70e92c675e514c0bd5183204a87fae8508cee39bcffee008df87d09b8e44664a",
+  "inventory_fingerprint": "ea11e2124a975f5dc5e06330013d07dbc44f168f4a429a51825d1149ec771009",
   "evidence_fingerprint": "9de07246b24435b83f3ba3f1f38f2d92eb8f9cf3b2dab745a0215971801a9715",
   "files": [
     {
@@ -100,7 +100,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "ce72c452157985c9eee64410ee1c94b9896d3025"
+      "blob": "2365a64de2e0545b79c2f4d9e89bb29364bfae25"
     },
     {
       "path": ".github/workflows/build-store-msix.yml",
@@ -170,7 +170,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "056bc6a225d2e037e40c82d5433af75c74da8c39"
+      "blob": "caaaf4d6c59b373ba078e279f78b8b7ac467eb80"
     },
     {
       "path": ".github/workflows/granada-android-drawer-atomic.yml",
@@ -436,7 +436,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "363faa6f242ec1cb23ea77a57032abed73658d4d"
+      "blob": "48d9d8c9b73ba70943e4c6aa307885039b38b028"
     },
     {
       "path": ".gitignore",
