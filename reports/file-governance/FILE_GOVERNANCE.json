@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 413,
-  "classified_files_total": 409,
+  "tracked_files_total": 415,
+  "classified_files_total": 411,
   "docs_content_inspected": 100,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -17,9 +17,9 @@
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
-    "release_intent": 16,
+    "release_intent": 17,
     "source": 130,
-    "test": 49,
+    "test": 50,
     "text_metadata": 1,
     "web_ui": 3,
     "workflow": 53
@@ -29,8 +29,8 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "ea11e2124a975f5dc5e06330013d07dbc44f168f4a429a51825d1149ec771009",
-  "evidence_fingerprint": "9de07246b24435b83f3ba3f1f38f2d92eb8f9cf3b2dab745a0215971801a9715",
+  "inventory_fingerprint": "b4cc58ba93d58a10b83c40c7b5c33b483cca21437a5039e45c7c62471148f507",
+  "evidence_fingerprint": "5c7bcb269bc41d3cf3aacc61b47b6e74843fd15eb5e3f96fd69657cbc523cc9e",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -121,7 +121,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "39897a99dfa30948fb4791580658a61796843047"
+      "blob": "ba2d5cc34bc381d74a4d1c91889741bba4fb2266"
     },
     {
       "path": ".github/workflows/external-ui-baseline-guard.yml",
@@ -598,6 +598,13 @@
       "purpose": "historical source-controlled release/candidate intent (preserve for traceability)",
       "certainty": "rule",
       "blob": "c2f38b2bc0cecb83a4a39e27c6b7d0d4b9751977"
+    },
+    {
+      "path": ".michelslab/release-intents/unified-v3227-a0216.txt",
+      "role": "release_intent",
+      "purpose": "historical source-controlled release/candidate intent (preserve for traceability)",
+      "certainty": "rule",
+      "blob": "fb1d0bf2ed6b4ad051c727f071dcfa15450074f2"
     },
     {
       "path": ".michelslab/release-intents/windows-granada-focus-alarms-2026-11-15.txt",
@@ -2025,7 +2032,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "061dc6e4fab6d0cbb5b0c72bf43d040561a828a6"
+      "blob": "a96a5d3cb797fd9434b8ae694e0547f2cd60b9f4"
     },
     {
       "path": "tools/create_store_assets.ps1",
@@ -2144,7 +2151,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "b34902e3388c0d21fbfded63cf0d1b1166292615"
+      "blob": "673e24c01028366b1f5134ef30d9962c152e50a3"
     },
     {
       "path": "tools/release_smoke_test.py",
@@ -2537,6 +2544,13 @@
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "58e3f02c9b0bce48f02b438a0d100cc8339c02c6"
+    },
+    {
+      "path": "tools/test_unified_release_gate_3227.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "56a7cf510e0997d1bd6f69d9ccebd6a40e37093a"
     },
     {
       "path": "tools/ui_android_calendar_read_smoke.mjs",
@@ -2934,20 +2948,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "b0139347ea36c921",
+      "id": "fe40955a0e74d721",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "48 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/granada-large-project-story-cloud.yml",
+      "observation": "50 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/granada-large-project-story-cloud.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "0b56640743e01a39",
+      "id": "084732945f350a16",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "48 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/granada-large-project-story-cloud.yml",
+      "observation": "50 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/granada-large-project-story-cloud.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
