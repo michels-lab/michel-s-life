@@ -25,12 +25,11 @@
     "workflow": 53
   },
   "finding_counts": {
-    "BROKEN_RELATIVE_LINK": 4,
-    "POTENTIAL_UNLOGGED_CHANGES": 2
+    "BROKEN_RELATIVE_LINK": 4
   },
-  "finding_total": 6,
-  "inventory_fingerprint": "c885f7602383e9b1505d4a856d6c2cce2b6540eb131cfeb1bd2a20a2404bb79e",
-  "evidence_fingerprint": "5c7bcb269bc41d3cf3aacc61b47b6e74843fd15eb5e3f96fd69657cbc523cc9e",
+  "finding_total": 4,
+  "inventory_fingerprint": "564adf87b47b752e6eccb911d15b83a289b73fe3c50eb29fd2923dbb2f5654dd",
+  "evidence_fingerprint": "1b533bb96254d4a85dcffac53fe3c6180cc4698881a1ee21ef601d2867659a17",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -660,14 +659,14 @@
       "role": "bitacora",
       "purpose": "technical/audit change history",
       "certainty": "rule",
-      "blob": "2022ec1df024b824440050baf8e925b27d11c49d"
+      "blob": "59cdca7413e8382dbd052397837591877e47365c"
     },
     {
       "path": "GIT_AUDIT_LOG.md",
       "role": "bitacora",
       "purpose": "technical/audit change history",
       "certainty": "rule",
-      "blob": "d060eb2c2ba2c87dd7a88f7564b74df00f955b66"
+      "blob": "8f02b5f606e7972204d3950120bbce35d05296a4"
     },
     {
       "path": "LICENSE.txt",
@@ -688,14 +687,14 @@
       "role": "index",
       "purpose": "navigation/onboarding",
       "certainty": "rule",
-      "blob": "7fa280579240efbed5bb39f4cff966d76f9a6fc7"
+      "blob": "b1e27ec747838d28e446f41fdfe6355ee0a01a61"
     },
     {
       "path": "android/ANDROID_AUDIT_LOG.md",
       "role": "bitacora",
       "purpose": "technical/audit change history",
       "certainty": "rule",
-      "blob": "04e69698b260335067e04555f25fb94ae5610ae0"
+      "blob": "4c94a3a47929bca5e98a598f9864470297f4c69c"
     },
     {
       "path": "android/DIRECT_DISTRIBUTION_SIGNING.md",
@@ -1451,7 +1450,7 @@
       "role": "document",
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
-      "blob": "da45038cf146be611b9e264393310352c99d4589"
+      "blob": "47e024824f6e24185b06f55f113d6611bd1b0677"
     },
     {
       "path": "docs/DEVELOPER_BRANDING.md",
@@ -2945,24 +2944,6 @@
       "path": "docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md",
       "observation": "Missing: docs/android/audit/2026-10-12-ui-screenshot-gallery.md",
       "recommendation": "Fix link or restore target",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "fe40955a0e74d721",
-      "code": "POTENTIAL_UNLOGGED_CHANGES",
-      "severity": "review",
-      "path": "GIT_AUDIT_LOG.md",
-      "observation": "50 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/granada-large-project-story-cloud.yml",
-      "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "084732945f350a16",
-      "code": "POTENTIAL_UNLOGGED_CHANGES",
-      "severity": "review",
-      "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "50 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/granada-large-project-story-cloud.yml",
-      "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
   ],
