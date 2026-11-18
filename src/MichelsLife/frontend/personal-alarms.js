@@ -64,21 +64,32 @@ async function importSound(file){
   return true;
  }catch(e){window.alert(tr('Could not save the ringtone: ','No se pudo guardar el tono: ')+String(e.message||e));return false;}
 }
+// Original synthesised alarm signals (no third-party audio samples or licensing).
+// Each motif lasts several seconds, followed by a brief pause before repeating.
 function playPresetSound(id){
- const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;
+ const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return false;
  const ctx=new Audio();
- const patterns={classic:[[0,880,.20],[.3,660,.20]],soft:[[0,523,.3],[.35,659,.28]],
-  digital:[[0,1046,.12],[.2,1318,.12],[.4,1046,.12]],gentle:[[0,392,.35],[.44,523,.42]],
-  pulse:[[0,740,.14],[.24,740,.14],[.48,880,.15]],system:[[0,880,.5]]};
- for(const [offset,freq,duration] of patterns[id]||patterns.system){
-  const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type=id==='digital'?'square':'sine';
+ const patterns={
+  classic:[[0,880,.36],[.50,660,.36],[1.16,880,.50],[1.88,660,.50],[2.66,880,.52],[3.34,660,.38]],
+  soft:[[0,523,.48],[.65,659,.52],[1.39,784,.46],[2.15,659,.52],[3.03,523,.52]],
+  digital:[[0,1046,.20],[.29,1318,.20],[.58,1046,.20],[1.18,1046,.21],[1.48,1318,.21],[1.78,1046,.21],[2.44,1318,.34],[3.23,1046,.23]],
+  gentle:[[0,392,.60],[.78,523,.63],[1.62,659,.59],[2.46,523,.57],[3.18,392,.54]],
+  pulse:[[0,740,.24],[.34,740,.24],[.69,880,.28],[1.28,740,.24],[1.62,740,.24],[1.97,880,.30],[2.62,988,.36],[3.26,880,.29]],
+  system:[[0,880,.42],[.59,740,.42],[1.38,880,.44],[2.12,740,.44],[3.05,880,.43]]
+ };
+ const notes=patterns[id]||patterns.system;
+ for(const [offset,freq,duration] of notes){
+  const osc=ctx.createOscillator(),gain=ctx.createGain();
+  osc.type=id==='digital'?'square':id==='pulse'?'triangle':'sine';
   osc.frequency.value=freq;osc.connect(gain);gain.connect(ctx.destination);
-  const at=ctx.currentTime+offset;gain.gain.setValueAtTime(.0001,at);
-  gain.gain.exponentialRampToValueAtTime(id==='digital'?.04:.12,at+.018);
+  const at=ctx.currentTime+offset;
+  gain.gain.setValueAtTime(.0001,at);
+  gain.gain.exponentialRampToValueAtTime(id==='digital'?.055:id==='soft'||id==='gentle'?.10:.20,at+.025);
   gain.gain.exponentialRampToValueAtTime(.0001,at+duration);
-  osc.start(at);osc.stop(at+duration+.02);
+  osc.start(at);osc.stop(at+duration+.03);
  }
- window.setTimeout(()=>ctx.close().catch(()=>{}),1900);
+ window.setTimeout(()=>ctx.close().catch(()=>{}),4400);
+ return true;
 }
 async function playCustom(isPreview){
  const saved=await storedCustomBlob().catch(()=>null);if(!saved?.blob)return false;
@@ -529,12 +540,19 @@ function ringAlarm(id){
    if(windowsRingtone)window.clearInterval(windowsRingtone);
    if(customAudio){customAudio.pause();customAudio=null;}
    const selectedSound=item.sound||'system';
-   if(selectedSound==='custom')playCustom(false).then(ok=>{if(!ok)playPresetSound('system');});
+   let useSystemFallback=false;
+   if(selectedSound==='custom')playCustom(false).then(ok=>{
+     if(!ok&&ringingId===id&&!ring.hidden){
+       useSystemFallback=true;
+       playPresetSound('system');
+     }
+   });
    const tone=()=>{
      if(ring.hidden){window.clearInterval(windowsRingtone);windowsRingtone=null;return;}
-     try{if(selectedSound!=='custom')playPresetSound(selectedSound);}catch(_){}
+     try{if(selectedSound!=='custom'||useSystemFallback)
+       playPresetSound(useSystemFallback?'system':selectedSound);}catch(_){}
    };
-   tone();windowsRingtone=window.setInterval(tone,1700);
+   tone();windowsRingtone=window.setInterval(tone,4500);
  }
  return true;
 }
