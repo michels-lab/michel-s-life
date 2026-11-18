@@ -275,13 +275,17 @@ internal object NativePersonalAlarms {
             if (entry?.optString("id") == id) { selected = entry;break }
         }
         if (selected == null) return
-        // Round UP after five minutes so precision never places the new time in the past.
-        val next = LocalDateTime.now().plusMinutes(6).withSecond(0).withNano(0)
+        // A five-minute snooze is an exact epoch deadline. HH:mm is only a
+        // display field; rounding it forward used to delay alarms by ~6 min.
+        val dueAt = System.currentTimeMillis() + 5L * 60_000L
+        val next = LocalDateTime.ofInstant(
+            java.time.Instant.ofEpochMilli(dueAt), ZoneId.systemDefault())
         val replacement = JSONObject()
             .put("id", "s" + System.currentTimeMillis().toString(36))
             .put("label", selected.optString("label"))
             .put("time", next.format(DateTimeFormatter.ofPattern("HH:mm")))
             .put("date", next.toLocalDate().toString())
+            .put("dueAt", dueAt)
             .put("repeat", "once")
             .put("sound", selected.optString("sound", "system"))
             .put("days", JSONArray())
