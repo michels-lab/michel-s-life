@@ -55,7 +55,7 @@ test('selected weekdays skip unselected days without duplicating the same due ti
 test('Windows and Android both expose alarms beside immersive Pomodoro',()=>{
   assert.match(alarms,/mlv-alarm-ring/);
   assert.match(alarms,/useWallpaper\(ring\)/);
-  assert.match(alarms,/setInterval\(tone,1700\)/);
+  assert.match(alarms,/setInterval\(tone,4500\)/);
   assert.match(alarms,/mlv-alarm-launcher/);
   assert.match(focus,/data-focus-action="alarms"/);
   assert.match(android,/data-mobile-focus="alarms"/);
@@ -172,6 +172,28 @@ test('optional motivational quotes cannot cover Pomodoro timer or primary button
     focus.indexOf('data-focus-action="toggle"'),'desktop quotes appear below controls');
   assert.ok(android.indexOf('<details class="mlv-focus-motivation-details">')>
     android.indexOf('data-mobile-focus="toggle"'),'Android quotes appear below controls');
-  assert.match(focus,/oldDock\.style\.setProperty\('display','none','important'\)/);
-  assert.match(android,/#v30171Sidebar #v30162FocusDock/);
+  assert.doesNotMatch(focus,/oldDock/);
+  assert.doesNotMatch(focus,/backdrop-filter:blur/);
+  assert.doesNotMatch(android,/#v30171Sidebar #v30162FocusDock/);
+  assert.equal(android.includes('backdrop-filter:blur(3px)'),false);
+
+});
+
+test('legacy sidebar Pomodoro presentation is deleted at source',()=>{
+  const core=readFileSync(root+'index.html','utf8');
+  assert.equal(core.includes('function ensureFocusDock('),false);
+  assert.equal(core.includes('v30173-focus-wrap" data-mode='),false);
+  assert.equal(core.includes('Global Focus Timer dock'),false);
+  assert.ok(core.includes('function renderFocusDock(){return focusState();}'));
+  assert.ok(core.includes('MichelsLifeFocusImmersive?.open?.()'));
+});
+
+test('multi-second original preset alarms repeat until dismissed',()=>{
+  assert.ok(alarms.includes('Original synthesised alarm signals'));
+  assert.ok(alarms.includes('3.34,660,.38'));
+  assert.ok(alarms.includes('setInterval(tone,4500)'));
+  assert.ok(alarms.includes('useSystemFallback=true'));
+  assert.ok(native.includes('val samples = rate * 4'));
+  assert.ok(native.includes('preset-v2-$selected.wav'));
+  assert.ok(overlay.includes('sound.isLooping = true'));
 });
