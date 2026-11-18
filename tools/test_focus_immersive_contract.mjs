@@ -74,7 +74,11 @@ test('both platforms keep one canonical timer and deliberate mini/navigation mod
     'Mobile mini must retain the running or paused phase owner');
   assert.match(android,/runningPhase!==minimizedForPhase&&f\.mode!==minimizedForMode/);
   assert.match(android,/z-index:2147483005!important/);
-  assert.match(android,/#v30162FocusDock\{\s*display:none!important;visibility:hidden!important/);
+  assert.doesNotMatch(android,/v30162FocusDock|data-v30162-focus/);
+  assert.doesNotMatch(desktop,/v30162FocusDock|oldDock|Legacy Focus dock/);
+  assert.match(android,/api\.applyPreset\?\.\('custom',work,rest\)/);
+  assert.match(desktop,/backdrop-filter:none!important/);
+  assert.match(desktop,/z-index:1;isolation:isolate;filter:none!important/);
   assert.match(android,/background-image:\s*linear-gradient\(/);
   assert.doesNotMatch(desktop,/localStorage\.setItem\(/);
 });
