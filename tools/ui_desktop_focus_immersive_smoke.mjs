@@ -45,20 +45,27 @@ try{
   ok(opened.good&&opened.hidden===false&&opened.width>=1430&&opened.height>=895&&
      opened.selected?.includes('url(')&&opened.painted?.includes('url('),
     'Desktop Pomodoro did not cover app with its selected wallpaper: '+JSON.stringify(opened));
-  ok(await page.evaluate(()=>{
+  const viewMetrics=await page.evaluate(()=>{
     const focus=document.getElementById('mlv-desktop-focus-immersive');
     const stage=focus?.querySelector('.mlv-focus-stage');
     const clock=focus?.querySelector('#mlv-desktop-focus-clock');
-    const background=getComputedStyle(focus,'::before');
     const rect=clock?.getBoundingClientRect();
-    return focus&&!focus.hidden&&getComputedStyle(focus).display!=='none'&&
-      !document.getElementById('v30162FocusDock')&&
-      !document.getElementById('v30175FocusFab')&&
-      getComputedStyle(stage).filter==='none'&&
-      getComputedStyle(stage).backdropFilter==='none'&&
-      Number(getComputedStyle(stage).zIndex)>=1&&rect.height>60&&
-      Number(getComputedStyle(focus).zIndex)>1000000000;
-  }), 'Fullscreen Pomodoro must be sharp, clickable and not contain any old sidebar launcher');
+    return {
+      open:!!focus&&!focus.hidden,
+      display:focus&&getComputedStyle(focus).display,
+      oldDock:!!document.getElementById('v30162FocusDock'),
+      oldFab:!!document.getElementById('v30175FocusFab'),
+      stageFilter:stage&&getComputedStyle(stage).filter,
+      stageBackdrop:stage&&getComputedStyle(stage).backdropFilter,
+      stageZ:stage&&getComputedStyle(stage).zIndex,
+      clockHeight:rect?.height,
+      focusZ:focus&&getComputedStyle(focus).zIndex
+    };
+  });
+  ok(viewMetrics.open&&viewMetrics.display!=='none'&&!viewMetrics.oldDock&&!viewMetrics.oldFab&&
+     viewMetrics.stageFilter==='none'&&viewMetrics.stageBackdrop==='none'&&
+     Number(viewMetrics.stageZ)>=1&&viewMetrics.clockHeight>60&&Number(viewMetrics.focusZ)>1000000000,
+     'Fullscreen Pomodoro must be sharp, clickable and without old controls: '+JSON.stringify(viewMetrics));
 
   await page.locator('#mlv-desktop-focus-immersive [data-focus-action="toggle"]').click();
   await page.waitForFunction(()=>window.FocusStoryV30162.focusState().status==='running');
