@@ -248,7 +248,7 @@
       #mlv-desktop-focus-launcher[hidden]{display:none!important}
       html:not([data-mlv-platform="android"]) #mlv-desktop-focus-immersive{
         position:fixed;inset:0;z-index:2147483500;
-        display:grid;place-items:center;box-sizing:border-box;
+        display:grid;grid-template-columns:minmax(0,1fr);place-items:center;box-sizing:border-box;
         padding:clamp(12px,3.2vw,42px);overflow:auto;
         color:#f8fbff;background-color:rgba(4,9,16,.5);
         background-image:linear-gradient(152deg,rgba(3,9,18,.5),rgba(5,13,22,.29) 54%,rgba(2,8,14,.57)),var(--mlv-focus-wallpaper,none);
@@ -256,7 +256,8 @@
       }
       #mlv-desktop-focus-immersive .mlv-focus-stage{
         position:relative;display:flex;flex-direction:column;box-sizing:border-box;
-        width:min(100%,800px);min-height:min(555px,calc(100dvh - 46px))!important;
+        width:min(800px,calc(100vw - 48px))!important;max-width:100%!important;
+        justify-self:center!important;min-height:min(555px,calc(100dvh - 46px))!important;
         max-height:calc(100dvh - 24px)!important;
         overflow-y:auto!important;overflow-x:hidden!important;
         gap:clamp(10px,1.9vh,19px)!important;padding:clamp(20px,3vw,34px)!important;
