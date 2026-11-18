@@ -181,7 +181,7 @@ internal object NativePersonalAlarms {
         if (selected in setOf("classic","soft","digital","gentle","pulse")) {
             return try {
                 dir.mkdirs()
-                val file = File(dir, "preset-$selected.wav")
+                val file = File(dir, "preset-v2-$selected.wav")
                 if (!file.isFile || file.length() < 1000L) generatePreset(file, selected)
                 Uri.fromFile(file)
             } catch (_: Exception) { defaultSound() }
@@ -193,37 +193,50 @@ internal object NativePersonalAlarms {
         RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
             ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
+    /** Original four-second bell patterns; no bundled third-party/licensed sound files.
+     * Android's MediaPlayer loops the complete motif until dismiss/snooze. */
     private fun generatePreset(file: File, preset: String) {
-        val rate=16000
-        val samples=rate*2
-        val buffer=ByteBuffer.allocate(44+samples*2).order(ByteOrder.LITTLE_ENDIAN)
+        val rate = 16000
+        val samples = rate * 4
+        val notes = when (preset) {
+            "soft" -> listOf(Triple(0.0,.48,523.0), Triple(.65,.52,659.0),
+                Triple(1.39,.46,784.0), Triple(2.15,.52,659.0), Triple(3.03,.52,523.0))
+            "digital" -> listOf(Triple(0.0,.20,1046.0), Triple(.29,.20,1318.0),
+                Triple(.58,.20,1046.0), Triple(1.18,.21,1046.0), Triple(1.48,.21,1318.0),
+                Triple(1.78,.21,1046.0), Triple(2.44,.34,1318.0), Triple(3.23,.23,1046.0))
+            "gentle" -> listOf(Triple(0.0,.60,392.0), Triple(.78,.63,523.0),
+                Triple(1.62,.59,659.0), Triple(2.46,.57,523.0), Triple(3.18,.54,392.0))
+            "pulse" -> listOf(Triple(0.0,.24,740.0), Triple(.34,.24,740.0),
+                Triple(.69,.28,880.0), Triple(1.28,.24,740.0), Triple(1.62,.24,740.0),
+                Triple(1.97,.30,880.0), Triple(2.62,.36,988.0), Triple(3.26,.29,880.0))
+            else -> listOf(Triple(0.0,.36,880.0), Triple(.50,.36,660.0),
+                Triple(1.16,.50,880.0), Triple(1.88,.50,660.0),
+                Triple(2.66,.52,880.0), Triple(3.34,.38,660.0))
+        }
+        val buffer = ByteBuffer.allocate(44 + samples * 2).order(ByteOrder.LITTLE_ENDIAN)
         buffer.put("RIFF".toByteArray(Charsets.US_ASCII))
-        buffer.putInt(36+samples*2)
+        buffer.putInt(36 + samples * 2)
         buffer.put("WAVE".toByteArray(Charsets.US_ASCII))
         buffer.put("fmt ".toByteArray(Charsets.US_ASCII))
         buffer.putInt(16);buffer.putShort(1.toShort());buffer.putShort(1.toShort())
-        buffer.putInt(rate);buffer.putInt(rate*2);buffer.putShort(2.toShort());buffer.putShort(16.toShort())
-        buffer.put("data".toByteArray(Charsets.US_ASCII));buffer.putInt(samples*2)
-        for(i in 0 until samples){
-            val time=i.toDouble()/rate
-            val seconds=time%2.0
-            val hz=when(preset){
-                "soft" -> if(seconds<0.33)523.0 else 659.0
-                "digital" -> if(seconds<0.18)1046.0 else 1318.0
-                "gentle" -> if(seconds<0.55)392.0 else 523.0
-                "pulse" -> 740.0
-                else -> if(seconds<0.36)880.0 else 660.0
+        buffer.putInt(rate);buffer.putInt(rate * 2);buffer.putShort(2.toShort());buffer.putShort(16.toShort())
+        buffer.put("data".toByteArray(Charsets.US_ASCII));buffer.putInt(samples * 2)
+        for (i in 0 until samples) {
+            val time = i.toDouble() / rate
+            val note = notes.firstOrNull { time >= it.first && time < it.first + it.second }
+            val sample = if (note == null) 0.0 else {
+                val elapsed = time - note.first
+                val attack = (elapsed / .025).coerceIn(0.0, 1.0)
+                val release = ((note.second - elapsed) / .11).coerceIn(0.0, 1.0)
+                val phase = time * note.third * 2.0 * PI
+                val wave = if (preset == "digital") {
+                    if (sin(phase) >= 0) .60 else -.60
+                } else {
+                    sin(phase)
+                }
+                wave * .24 * attack * release
             }
-            val active=when(preset){
-                "soft" -> seconds<0.65
-                "digital" -> seconds<0.12 || seconds in 0.25..0.37 || seconds in 0.50..0.62
-                "gentle" -> seconds<0.9
-                "pulse" -> seconds<0.15 || seconds in 0.25..0.4 || seconds in 0.52..0.67
-                else -> seconds<0.24 || seconds in 0.35..0.59
-            }
-            val phase=seconds*hz*2.0*PI
-            val envelope=if(active) 0.22*(1.0 - (seconds%0.35)*.5) else 0.0
-            buffer.putShort((sin(phase)*envelope*Short.MAX_VALUE).toInt().toShort())
+            buffer.putShort((sample * Short.MAX_VALUE).toInt().toShort())
         }
         file.writeBytes(buffer.array())
     }
