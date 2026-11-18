@@ -13,6 +13,28 @@ try{
   await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
   await page.waitForFunction(()=>window.MLV216QuickCapture&&typeof state!=='undefined'&&window.JournalV30189,null,{timeout:60000});
 
+  // User-reported dead + tile: exercise an actual pointer gesture and the
+  // real canonical mission form. No force click, API call or DOM shortcut.
+  await page.locator('#v30106QuickFab').waitFor({state:'visible',timeout:12000});
+  const beforeDock=await page.evaluate(()=>state.missions.length);
+  await page.locator('#v30106QuickFab').click();
+  await page.locator('#v30106QuickForm').waitFor({state:'visible',timeout:8000});
+  ok(await page.locator('#v30106QuickForm h2').count()===0||
+    await page.locator('#v30106QuickForm input[name="text"]').count()===1,
+    'Quick Mission did not mount a usable editor');
+  await page.locator('#v30106QuickForm input[name="text"]').fill('Dock Quick Mission smoke');
+  await page.locator('#v30106QuickForm button[type="submit"]').click();
+  await page.waitForFunction(()=>state.missions.some(m=>m.name==='Dock Quick Mission smoke'),
+    null,{timeout:8000});
+  await page.waitForTimeout(250);
+  const dock=await page.evaluate(()=>({
+    count:state.missions.filter(m=>m.name==='Dock Quick Mission smoke').length,
+    total:state.missions.length,
+    dialogOpen:!!document.querySelector('#v30106QuickForm')
+  }));
+  ok(dock.count===1&&dock.total===beforeDock+1&&!dock.dialogOpen,
+    'Floating Quick Mission created duplicates, failed to save or left a ghost form: '+JSON.stringify(dock));
+
   const before=await page.evaluate(k=>({
     missions:Array.isArray(state?.missions)?state.missions.length:0,
     journal:window.JournalV30189?.entry?.(k)?.body||''
