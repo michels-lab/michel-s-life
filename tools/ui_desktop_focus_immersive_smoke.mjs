@@ -25,10 +25,13 @@ try{
     return {
       oldExists:!!document.getElementById('v30162FocusDock'),
       prototypeExists:!!document.getElementById('v30106Focus'),
+      deadActionExists:!!document.getElementById('v30175FocusFab'),
+      quickCaptureExists:!!document.getElementById('v30106QuickFab'),
       retainedEngine:!!window.FocusStoryV30162.focusState
     };
   });
-  ok(!legacy.oldExists&&!legacy.prototypeExists&&legacy.retainedEngine,
+  ok(!legacy.oldExists&&!legacy.prototypeExists&&!legacy.deadActionExists&&
+    legacy.quickCaptureExists&&legacy.retainedEngine,
     'Legacy Focus UI must be absent, not hidden: '+JSON.stringify(legacy));
 
   // A theme wallpaper already installed in the app must be used as the
