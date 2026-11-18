@@ -117,7 +117,7 @@
         z-index:0;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)
       }
       #mlv-desktop-focus-immersive .mlv-focus-stage{
-        position:relative;z-index:1;isolation:isolate;filter:none!important;
+        position:relative!important;z-index:1!important;isolation:isolate!important;filter:none!important;
         box-sizing:border-box;width:min(100%,880px);min-height:min(690px,85vh);
         display:flex;flex-direction:column;gap:24px;padding:clamp(25px,4vw,52px);
         border:1px solid rgba(255,255,255,.25);border-radius:25px;
