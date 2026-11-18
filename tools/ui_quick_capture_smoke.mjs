@@ -35,6 +35,24 @@ try{
   ok(dock.count===1&&dock.total===beforeDock+1&&!dock.dialogOpen,
     'Floating Quick Mission created duplicates, failed to save or left a ghost form: '+JSON.stringify(dock));
 
+  // Regression: user-facing Quick Mission title and editor must be complete
+  // Spanish sentences, not the old mixed "Quick misión · Add a misión for hoy".
+  await page.evaluate(()=>window.MichelsLifeI18n?.setLanguage?.('es',{userInitiated:true}));
+  await page.waitForFunction(()=>
+    document.getElementById('v30106QuickFab')?.title==='Misión rápida · Agrega una misión para hoy',
+    null,{timeout:9000});
+  await page.locator('#v30106QuickFab').click();
+  await page.locator('#v30106QuickForm').waitFor({state:'visible',timeout:9000});
+  await page.waitForFunction(()=>{
+    const head=document.querySelector('#modalRoot .modal-head h2')?.textContent||'';
+    const desc=document.querySelector('#modalRoot .modal-head p')?.textContent||'';
+    return head.trim()==='Misión rápida'&&
+      desc.includes('Agrega una misión para hoy sin interrumpir lo que estás haciendo.');
+  },null,{timeout:9000});
+  await page.locator('#modalRoot .modal-head [data-action="close-modal"]').click();
+  await page.locator('#v30106QuickForm').waitFor({state:'detached',timeout:9000});
+  await page.evaluate(()=>window.MichelsLifeI18n?.setLanguage?.('en',{userInitiated:true}));
+
   const before=await page.evaluate(k=>({
     missions:Array.isArray(state?.missions)?state.missions.length:0,
     journal:window.JournalV30189?.entry?.(k)?.body||''
