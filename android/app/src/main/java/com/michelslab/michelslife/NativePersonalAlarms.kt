@@ -199,19 +199,19 @@ internal object NativePersonalAlarms {
         val rate = 16000
         val samples = rate * 4
         val notes = when (preset) {
-            "soft" -> listOf(Triple(0.0,.48,523.0), Triple(.65,.52,659.0),
-                Triple(1.39,.46,784.0), Triple(2.15,.52,659.0), Triple(3.03,.52,523.0))
-            "digital" -> listOf(Triple(0.0,.20,1046.0), Triple(.29,.20,1318.0),
-                Triple(.58,.20,1046.0), Triple(1.18,.21,1046.0), Triple(1.48,.21,1318.0),
-                Triple(1.78,.21,1046.0), Triple(2.44,.34,1318.0), Triple(3.23,.23,1046.0))
-            "gentle" -> listOf(Triple(0.0,.60,392.0), Triple(.78,.63,523.0),
-                Triple(1.62,.59,659.0), Triple(2.46,.57,523.0), Triple(3.18,.54,392.0))
-            "pulse" -> listOf(Triple(0.0,.24,740.0), Triple(.34,.24,740.0),
-                Triple(.69,.28,880.0), Triple(1.28,.24,740.0), Triple(1.62,.24,740.0),
-                Triple(1.97,.30,880.0), Triple(2.62,.36,988.0), Triple(3.26,.29,880.0))
-            else -> listOf(Triple(0.0,.36,880.0), Triple(.50,.36,660.0),
-                Triple(1.16,.50,880.0), Triple(1.88,.50,660.0),
-                Triple(2.66,.52,880.0), Triple(3.34,.38,660.0))
+            "soft" -> listOf(Triple(0.0,0.48,523.0), Triple(0.65,0.52,659.0),
+                Triple(1.39,0.46,784.0), Triple(2.15,0.52,659.0), Triple(3.03,0.52,523.0))
+            "digital" -> listOf(Triple(0.0,0.20,1046.0), Triple(0.29,0.20,1318.0),
+                Triple(0.58,0.20,1046.0), Triple(1.18,0.21,1046.0), Triple(1.48,0.21,1318.0),
+                Triple(1.78,0.21,1046.0), Triple(2.44,0.34,1318.0), Triple(3.23,0.23,1046.0))
+            "gentle" -> listOf(Triple(0.0,0.60,392.0), Triple(0.78,0.63,523.0),
+                Triple(1.62,0.59,659.0), Triple(2.46,0.57,523.0), Triple(3.18,0.54,392.0))
+            "pulse" -> listOf(Triple(0.0,0.24,740.0), Triple(0.34,0.24,740.0),
+                Triple(0.69,0.28,880.0), Triple(1.28,0.24,740.0), Triple(1.62,0.24,740.0),
+                Triple(1.97,0.30,880.0), Triple(2.62,0.36,988.0), Triple(3.26,0.29,880.0))
+            else -> listOf(Triple(0.0,0.36,880.0), Triple(0.50,0.36,660.0),
+                Triple(1.16,0.50,880.0), Triple(1.88,0.50,660.0),
+                Triple(2.66,0.52,880.0), Triple(3.34,0.38,660.0))
         }
         val buffer = ByteBuffer.allocate(44 + samples * 2).order(ByteOrder.LITTLE_ENDIAN)
         buffer.put("RIFF".toByteArray(Charsets.US_ASCII))
@@ -226,15 +226,15 @@ internal object NativePersonalAlarms {
             val note = notes.firstOrNull { time >= it.first && time < it.first + it.second }
             val sample = if (note == null) 0.0 else {
                 val elapsed = time - note.first
-                val attack = (elapsed / .025).coerceIn(0.0, 1.0)
-                val release = ((note.second - elapsed) / .11).coerceIn(0.0, 1.0)
+                val attack = (elapsed / 0.025).coerceIn(0.0, 1.0)
+                val release = ((note.second - elapsed) / 0.11).coerceIn(0.0, 1.0)
                 val phase = time * note.third * 2.0 * PI
                 val wave = if (preset == "digital") {
-                    if (sin(phase) >= 0) .60 else -.60
+                    if (sin(phase) >= 0) 0.60 else -0.60
                 } else {
                     sin(phase)
                 }
-                wave * .24 * attack * release
+                wave * 0.24 * attack * release
             }
             buffer.putShort((sample * Short.MAX_VALUE).toInt().toShort())
         }
