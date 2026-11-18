@@ -718,6 +718,7 @@
       }
       #mlv-android-focus-sheet .mlv-android-focus-clock{
         display:flex;flex-direction:column;align-items:center;justify-content:center;
+        width:100%!important;align-self:stretch!important;box-sizing:border-box;
         flex:0 0 auto;min-height:260px;padding:5px 0;
         border:0!important;border-radius:0!important;background:transparent!important
       }
@@ -750,7 +751,8 @@
         letter-spacing:.01em
       }
       #mlv-android-focus-sheet .mlv-android-focus-presets{
-        grid-template-columns:repeat(2,minmax(0,1fr));gap:10px
+        grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px;
+        width:100%!important;min-width:0
       }
       #mlv-android-focus-sheet .mlv-android-focus-presets button{
         min-height:56px!important;height:auto!important;padding:14px 12px!important;
