@@ -22,6 +22,7 @@ internal static class DesktopShell
     private static TaskbarProgress? _taskbarProgress;
     private static bool _taskbarPollBusy;
     private static bool _alarmPollBusy;
+    private static bool _focusNotificationPollBusy;
     private static bool _exitRequested;
     private static bool _attached;
 
@@ -73,6 +74,7 @@ internal static class DesktopShell
             Visible = true
         };
         _trayIcon.DoubleClick += (_, _) => RestoreWindow();
+        _trayIcon.BalloonTipClicked += (_, _) => RestoreWindow();
 
         form.FormClosing += OnFormClosing;
         form.Resize += (_, _) =>
@@ -99,6 +101,7 @@ internal static class DesktopShell
         _taskbarTimer = new System.Windows.Forms.Timer { Interval = 1500 };
         _taskbarTimer.Tick += async (_, _) => await RefreshTaskbarMissionAsync();
         _taskbarTimer.Tick += async (_, _) => await PollWindowsAlarmsAsync();
+        _taskbarTimer.Tick += async (_, _) => await PollWindowsFocusAsync();
         _taskbarTimer.Start();
         _ = RefreshTaskbarMissionAsync();
 
@@ -248,6 +251,49 @@ internal static class DesktopShell
         {
             _alarmPollBusy = false;
         }
+    }
+
+    // Windows desktop notifications: native tray balloon messages remain
+    // available while Michel's Life is minimized to its background tray.
+    // FocusStory is the single timer owner; native polling drains only events
+    // and asks the JS clock to reconcile expiry after WebView2 throttling.
+    private static async Task PollWindowsFocusAsync()
+    {
+        if (_focusNotificationPollBusy || _form is null || _form.IsDisposed ||
+            _webView?.CoreWebView2 is null) return;
+        _focusNotificationPollBusy = true;
+        try
+        {
+            var raw = await _webView.CoreWebView2.ExecuteScriptAsync(
+                "(()=>{try{return window.FocusStoryV30162?.takeWindowsNotification?.()||null}catch(_){return null}})()"
+            );
+            using var json = System.Text.Json.JsonDocument.Parse(raw);
+            var root = json.RootElement;
+            if (root.ValueKind != System.Text.Json.JsonValueKind.Object) return;
+            var type = root.TryGetProperty("type", out var t) &&
+                t.ValueKind == System.Text.Json.JsonValueKind.String
+                ? t.GetString() ?? string.Empty : string.Empty;
+            var detail = root.TryGetProperty("detail", out var d) &&
+                d.ValueKind == System.Text.Json.JsonValueKind.String
+                ? d.GetString() ?? string.Empty : string.Empty;
+            var spanish = IsInstalledLanguageSpanish();
+            var title = type switch
+            {
+                "started" => spanish ? "Michel's Life · Pomodoro iniciado" : "Michel's Life · Focus started",
+                "paused" => spanish ? "Michel's Life · Pomodoro pausado" : "Michel's Life · Focus paused",
+                "completed" => spanish ? "Michel's Life · Tiempo cumplido" : "Michel's Life · Focus complete",
+                _ => spanish ? "Michel's Life · Pomodoro" : "Michel's Life · Focus timer"
+            };
+            if (detail.Length > 140) detail = detail[..140];
+            _trayIcon?.ShowBalloonTip(type == "completed" ? 12000 : 5500,
+                title, detail, ToolTipIcon.Info);
+        }
+        catch
+        {
+            // A navigation may temporarily make the JS timer unavailable;
+            // never create a duplicate native timer or erase session data.
+        }
+        finally { _focusNotificationPollBusy = false; }
     }
 
     private static void ClearTaskbarMission()
