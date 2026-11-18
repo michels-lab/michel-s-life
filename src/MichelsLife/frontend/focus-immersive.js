@@ -26,14 +26,14 @@
   };
   // All sequences are newly composed harmonic pads, not licensed recordings.
   const ambientScenes={
-    moonlight:{en:'Moonlight Study',es:'Estudio lunar',group:'A',notes:[220,329.63,440,493.88]},
-    celestial:{en:'Celestial Focus',es:'Enfoque celestial',group:'A',notes:[196,293.66,392,587.33]},
-    orbit:{en:'Quiet Orbit',es:'Órbita tranquila',group:'A',notes:[174.61,261.63,349.23,523.25]},
-    aurora:{en:'Aurora',es:'Aurora',group:'C',notes:[164.81,246.94,329.63,493.88]},
-    observatory:{en:'Observatory',es:'Observatorio',group:'C',notes:[146.83,220,293.66,440]},
-    library:{en:'Midnight Library',es:'Biblioteca nocturna',group:'C',notes:[130.81,196,261.63,392]},
-    afterglow:{en:'Afterglow',es:'Resplandor',group:'C',notes:[174.61,220,349.23,440]},
-    silver:{en:'Silver Room',es:'Sala plateada',group:'C',notes:[196,246.94,392,493.88]}
+    moonlight:{en:'Moonlight Study',es:'Estudio lunar',group:'A',notes:[220,329.63,440,493.88],pattern:[0,2,1,3,2],beat:1.12},
+    celestial:{en:'Celestial Focus',es:'Enfoque celestial',group:'A',notes:[196,293.66,392,587.33],pattern:[0,3,2,1,3],beat:.91},
+    orbit:{en:'Quiet Orbit',es:'Órbita tranquila',group:'A',notes:[174.61,261.63,349.23,523.25],pattern:[1,2,0,2,3,2],beat:.76},
+    aurora:{en:'Aurora',es:'Aurora',group:'C',notes:[164.81,246.94,329.63,493.88],pattern:[3,2,1,0,1],beat:1.13},
+    observatory:{en:'Observatory',es:'Observatorio',group:'C',notes:[146.83,220,293.66,440],pattern:[0,1,3,2,0],beat:1.18},
+    library:{en:'Midnight Library',es:'Biblioteca nocturna',group:'C',notes:[130.81,196,261.63,392],pattern:[0,2,1,0,3,1],beat:.84},
+    afterglow:{en:'Afterglow',es:'Resplandor',group:'C',notes:[174.61,220,349.23,440],pattern:[2,3,1,0,2],beat:1.02},
+    silver:{en:'Silver Room',es:'Sala plateada',group:'C',notes:[196,246.94,392,493.88],pattern:[3,1,2,0,3,2],beat:.78}
   };
   let effectContext=null,ambientContext=null,ambientInterval=null,ambientScene=null,ambientStep=0;
   function soundContext(){
@@ -103,6 +103,19 @@
       osc.connect(env);env.connect(ctx.destination);
       osc.start(start+.22*i);osc.stop(start+8.55+.22*i);
     }
+    // Each soundscape has its own original melodic motif (not eight copies
+    // of the same pad), with quiet plucks above the sustained harmony.
+    scene.pattern.forEach((pitch,i)=>{
+      const at=start+.35+i*scene.beat;
+      const osc=ctx.createOscillator(),env=ctx.createGain();
+      osc.type=ambientScene==='observatory'||ambientScene==='library'?'triangle':'sine';
+      osc.frequency.setValueAtTime(notes[pitch],at);
+      env.gain.setValueAtTime(.0001,at);
+      env.gain.exponentialRampToValueAtTime(.008,at+.055);
+      env.gain.exponentialRampToValueAtTime(.0001,at+.67);
+      osc.connect(env);env.connect(ctx.destination);
+      osc.start(at);osc.stop(at+.7);
+    });
     ambientStep=(ambientStep+1)%scene.notes.length;
   }
   function startAmbient(){
