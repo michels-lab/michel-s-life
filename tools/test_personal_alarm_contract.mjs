@@ -55,7 +55,7 @@ test('selected weekdays skip unselected days without duplicating the same due ti
 test('Windows and Android both expose alarms beside immersive Pomodoro',()=>{
   assert.match(alarms,/mlv-alarm-ring/);
   assert.match(alarms,/useWallpaper\(ring\)/);
-  assert.match(alarms,/setInterval\(tone,4500\)/);
+  assert.match(alarms,/setInterval\(tone,24000\)/);
   assert.match(alarms,/mlv-alarm-launcher/);
   assert.match(focus,/data-focus-action="alarms"/);
   assert.match(android,/data-mobile-focus="alarms"/);
@@ -130,7 +130,7 @@ test('Quick Alarm stores an exact 5-minute deadline rather than rounding to a la
 });
 
 test('the selector offers preview, imported MP3/WAV/OGG and bounded private native storage',()=>{
-  for(const id of ['classic','soft','digital','gentle','pulse','custom'])
+  for(const id of ['classic','soft','digital','gentle','pulse','radar','custom'])
     assert.ok(alarms.includes(id),id);
   for(const duration of ['5','10','15','30','60','120'])
     assert.match(alarms,new RegExp('data-quick-minutes="'+duration+'"'));
@@ -207,12 +207,16 @@ test('legacy sidebar Pomodoro presentation is deleted at source',()=>{
   assert.ok(core.includes('MichelsLifeFocusImmersive?.open?.()'));
 });
 
-test('multi-second original preset alarms repeat until dismissed',()=>{
-  assert.ok(alarms.includes('Original synthesised alarm signals'));
-  assert.ok(alarms.includes('3.34,660,.38'));
-  assert.ok(alarms.includes('setInterval(tone,4500)'));
+test('six original 24-second ringtone arrangements repeat until dismissed',()=>{
+  assert.ok(alarms.includes("Michel's Life exclusive alarm suite"));
+  assert.ok(alarms.includes('MICHEL_ALARM_SCORE'));
+  assert.ok(alarms.includes('const length=preview?7:24'));
+  assert.ok(alarms.includes('stopPresetAudio()'));
+  assert.ok(alarms.includes('setInterval(tone,24000)'));
+  assert.ok(native.includes('"radar"'));
+  assert.ok(native.includes('AlarmNote('));
   assert.ok(alarms.includes('useSystemFallback=true'));
-  assert.ok(native.includes('val samples = rate * 4'));
+  assert.ok(native.includes('val durationSeconds = 24'));
   assert.ok(native.includes('preset-v2-$selected.wav'));
   assert.ok(overlay.includes('sound.isLooping = true'));
 });
