@@ -169,7 +169,11 @@ try{
   });
   assert.ok(scene.alpha>0&&scene.alpha<0.65&&scene.backdrop==='none',
     'Android sheet obscures the selected wallpaper or blurs timer: '+JSON.stringify(scene));
-  await page.locator('#mlv-android-focus-sheet details:not(.mlv-focus-motivation-details) summary').click();
+  assert.match(await page.locator('.mlv-android-focus-sounds summary').innerText(),
+     /Audio de enfoque/,'Spanish locale must not label audio as custom work duration');
+   assert.match(await page.locator('.mlv-android-focus-audio-grid label:first-of-type').innerText(),
+     /Sonido al terminar/,'Completion preference label must be localized');
+   await page.locator('#mlv-android-focus-sheet details:has(#mlv-android-focus-work) summary').click();
   const workInput=page.locator('#mlv-android-focus-work');
   await workInput.fill('37');
   await page.evaluate(()=>window.MichelsLifeMobileExperience.updateFocus());
