@@ -579,6 +579,11 @@ function ringAlarm(id,{notify=true}={}){
    // Keep audible reminder repeating until dismissed or snoozed. Windows
    // cannot ring from a closed application; Android has native OS delivery.
    if(windowsRingtone)window.clearInterval(windowsRingtone);
+   // An alarm takes priority over the ringtone preview, including a slow
+   // IndexedDB read that may still complete after the alarm begins.
+   previewGeneration++;
+   stopCustomAudio(true);
+   if(previewPresetContext){previewPresetContext.close().catch(()=>{});previewPresetContext=null;}
    stopPresetAudio();
    stopCustomAudio(false);
    const selectedSound=item.sound||'system';
