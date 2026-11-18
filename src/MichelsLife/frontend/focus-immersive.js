@@ -323,6 +323,14 @@
       #mlv-desktop-focus-immersive .mlv-focus-motivation-details{
         border:0!important;background:rgba(3,16,25,.25)!important;padding:4px 10px!important
       }
+      #mlv-desktop-focus-immersive .mlv-focus-sound-details{
+        border:1px solid rgba(210,245,250,.14);border-radius:14px;
+        background:rgba(3,15,26,.28);padding:7px 12px
+      }
+      #mlv-desktop-focus-immersive .mlv-focus-sound-details summary{
+        font:700 12px/1.5 system-ui,sans-serif;cursor:pointer;color:#e1f2f3
+      }
+      #mlv-desktop-focus-immersive .mlv-focus-sound-details:not([open]){max-height:36px}
       #mlv-desktop-focus-immersive .mlv-focus-audio-panel{
         display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
         padding:12px;border:1px solid rgba(220,241,255,.15);
@@ -371,6 +379,7 @@
           <button type="button" data-focus-action="reset">Reset</button>
           <button type="button" data-focus-action="minimize">Navigate the app</button>
         </div>
+        <details class="mlv-focus-sound-details"><summary>Audio · Completion tone & ambience</summary>
         <div class="mlv-focus-audio-panel" aria-label="Pomodoro audio">
           <div class="mlv-focus-audio-group">
             <label for="mlv-focus-completion-select">Completion sound
@@ -384,7 +393,7 @@
             </label>
             <button type="button" data-mlv-audio="toggle-ambient">Play</button>
           </div>
-        </div>
+        </div></details>
         <details class="mlv-focus-motivation-details"><summary>Messages & affirmations</summary><div id="mlv-desktop-focus-motivation"></div></details>
       </section>`;
     mini=document.createElement('aside');
