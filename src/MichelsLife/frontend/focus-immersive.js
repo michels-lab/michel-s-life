@@ -254,7 +254,7 @@
         background-image:linear-gradient(152deg,rgba(3,9,18,.5),rgba(5,13,22,.29) 54%,rgba(2,8,14,.57)),var(--mlv-focus-wallpaper,none);
         background-position:center;background-size:cover;background-repeat:no-repeat
       }
-      #mlv-desktop-focus-immersive .mlv-focus-stage{
+      #mlv-desktop-focus-stage{
         position:relative;display:flex;flex-direction:column;box-sizing:border-box;
         /* No percentage max-width: grid's intrinsic track was capping this at 467px. */
         width:min(800px,calc(100vw - 48px))!important;max-width:800px!important;
@@ -269,28 +269,28 @@
         box-shadow:0 25px 70px rgba(0,0,0,.24)!important;
         backdrop-filter:none!important;-webkit-backdrop-filter:none!important
       }
-      #mlv-desktop-focus-immersive .mlv-focus-stage header{
+      #mlv-desktop-focus-stage>header{
         display:flex;justify-content:space-between;align-items:flex-start;
         gap:12px;flex-shrink:0;min-width:0
       }
-      #mlv-desktop-focus-immersive .mlv-focus-eyebrow{
+      .mlv-focus-eyebrow{
         display:block;font:750 10px/1.4 system-ui,sans-serif;
         letter-spacing:.18em;text-transform:uppercase;color:#c5e9f2
       }
-      #mlv-desktop-focus-immersive .mlv-focus-stage h2{
+      #mlv-desktop-focus-title{
         margin:8px 0 0!important;color:#fff;
         font:780 clamp(31px,3.9vw,43px)/1.04 system-ui,sans-serif!important;
         letter-spacing:-.045em!important
       }
-      #mlv-desktop-focus-immersive .mlv-focus-stage .mlv-focus-center{
+      #mlv-desktop-focus-stage>.mlv-focus-center{
         display:flex;flex:1 0 auto!important;min-height:165px!important;
         flex-direction:column;align-items:center;justify-content:center;
         gap:6px!important;padding:7px 0!important;text-align:center
       }
-      #mlv-desktop-focus-immersive .mlv-focus-mode{
+      .mlv-focus-mode{
         font:750 11px/1.35 system-ui,sans-serif;letter-spacing:.2em;color:#b5e8e8
       }
-      #mlv-desktop-focus-immersive #mlv-desktop-focus-clock{
+      #mlv-desktop-focus-clock{
         display:block!important;width:auto!important;height:auto!important;
         min-height:0!important;min-width:0!important;
         padding:0!important;margin:0!important;text-align:center!important;
@@ -300,70 +300,70 @@
         font-variant-numeric:tabular-nums!important;
         text-shadow:0 8px 32px rgba(0,0,0,.18)
       }
-      #mlv-desktop-focus-immersive .mlv-focus-status{
+      .mlv-focus-status{
         margin:2px 0 0;color:#dcebf2;font:520 13px/1.4 system-ui,sans-serif
       }
-      #mlv-desktop-focus-immersive .mlv-focus-actions{
+      .mlv-focus-actions{
         display:flex;justify-content:center;align-items:center;
         flex-wrap:wrap;gap:8px;flex-shrink:0!important
       }
-      #mlv-desktop-focus-immersive .mlv-focus-stage>header .mlv-focus-actions{
+      #mlv-desktop-focus-stage>header>.mlv-focus-actions{
         flex-wrap:nowrap;justify-content:flex-end
       }
-      #mlv-desktop-focus-immersive button{
+      .mlv-focus-btn{
         cursor:pointer;touch-action:manipulation;box-sizing:border-box;
         min-height:44px;min-width:44px;padding:9px 13px;
         border:1px solid rgba(202,231,244,.28);border-radius:11px;
         background:rgba(4,22,32,.75);color:#f5fcff;
         font:700 12px/1.25 system-ui,sans-serif
       }
-      #mlv-desktop-focus-immersive button.primary{
+      .mlv-focus-btn.primary{
         min-width:150px;color:#09222a!important;border-color:transparent!important;
         background:linear-gradient(110deg,#82ebc5,#83dce9)!important;
         font-weight:800!important
       }
-      #mlv-desktop-focus-immersive button:focus-visible,
-      #mlv-desktop-mini-focus button:focus-visible,#mlv-desktop-focus-launcher:focus-visible{
+      .mlv-focus-btn:focus-visible,
+      #mlv-desktop-mini-focus>button:focus-visible,#mlv-desktop-focus-launcher:focus-visible{
         outline:3px solid var(--ui-accent,#88dbff);outline-offset:3px
       }
-      #mlv-desktop-focus-immersive .mlv-focus-sound-details,
-      #mlv-desktop-focus-immersive .mlv-focus-motivation-details{
+      .mlv-focus-sound-details,
+      .mlv-focus-motivation-details{
         flex:0 0 auto!important;min-height:0!important;max-height:26vh;
         overflow-y:auto;box-sizing:border-box;padding:8px 12px;
         border:1px solid rgba(199,239,245,.14);border-radius:12px;
         background:rgba(3,14,23,.28)
       }
-      #mlv-desktop-focus-immersive .mlv-focus-sound-details:not([open]),
-      #mlv-desktop-focus-immersive .mlv-focus-motivation-details:not([open]){
+      .mlv-focus-sound-details:not([open]),
+      .mlv-focus-motivation-details:not([open]){
         max-height:40px!important;overflow:hidden
       }
-      #mlv-desktop-focus-immersive .mlv-focus-sound-details summary,
-      #mlv-desktop-focus-immersive .mlv-focus-motivation-details summary{
+      .mlv-focus-sound-details>summary,
+      .mlv-focus-motivation-details>summary{
         cursor:pointer;font:700 12px/1.45 system-ui,sans-serif;
         color:#d9f0f2;padding:2px 0
       }
-      #mlv-desktop-focus-immersive .mlv-focus-motivation{gap:6px;margin:8px auto 0}
-      #mlv-desktop-focus-immersive .mlv-focus-motivation-copy{
+      .mlv-focus-motivation{gap:6px;margin:8px auto 0}
+      .mlv-focus-motivation-copy{
         font-size:clamp(12px,1.35vw,15px);line-height:1.4
       }
-      #mlv-desktop-focus-immersive .mlv-focus-audio-panel{
+      .mlv-focus-audio-panel{
         display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
         margin-top:8px;padding:10px;border:1px solid rgba(205,239,250,.12);
         border-radius:12px;background:rgba(3,15,26,.4)
       }
-      #mlv-desktop-focus-immersive .mlv-focus-audio-group{
+      .mlv-focus-audio-group{
         display:flex;align-items:end;gap:7px;min-width:0
       }
-      #mlv-desktop-focus-immersive .mlv-focus-audio-group label{
+      .mlv-focus-audio-group>label{
         flex:1;min-width:0;color:#dceef4;font:650 12px/1.4 system-ui,sans-serif
       }
-      #mlv-desktop-focus-immersive .mlv-focus-audio-group select{
+      .mlv-focus-audio-group>label>select{
         display:block;width:100%;min-height:42px;box-sizing:border-box;
         margin-top:5px;padding:8px 9px;border-radius:9px;color:#f5fbff;
         background:#102c35;border:1px solid rgba(146,202,212,.35);
         font:600 12px system-ui,sans-serif
       }
-      #mlv-desktop-focus-immersive .mlv-focus-audio-group button{
+      .mlv-focus-audio-group>button{
         min-height:42px;min-width:68px;padding:8px 10px;font-size:12px
       }
       #mlv-desktop-mini-focus,#mlv-desktop-focus-launcher{
@@ -374,34 +374,34 @@
       }
       #mlv-desktop-mini-focus{display:flex;gap:8px;align-items:center}
       #mlv-desktop-focus-launcher{right:19px;bottom:94px;padding:10px 16px;min-height:46px}
-      #mlv-desktop-mini-focus button,#mlv-desktop-focus-launcher{
+      #mlv-desktop-mini-focus>button,#mlv-desktop-focus-launcher{
         cursor:pointer;min-height:44px;padding:10px 14px;border:0;
         border-radius:11px;color:inherit;background:rgba(255,255,255,.09);
         font:750 13px system-ui,sans-serif
       }
       html:not([data-mlv-platform="android"]) body.mlv-desktop-focus-open{overflow:hidden!important}
       @media(max-width:670px){
-        #mlv-desktop-focus-immersive .mlv-focus-stage{
+        #mlv-desktop-focus-stage{
           width:100%;padding:16px!important;border-radius:20px
         }
-        #mlv-desktop-focus-immersive .mlv-focus-audio-panel{grid-template-columns:1fr}
-        #mlv-desktop-focus-immersive #mlv-desktop-focus-clock{
+        .mlv-focus-audio-panel{grid-template-columns:1fr}
+        #mlv-desktop-focus-clock{
           font-size:clamp(60px,14vw,86px)!important
         }
       }
       @media(max-height:550px){
-        #mlv-desktop-focus-immersive .mlv-focus-stage{
+        #mlv-desktop-focus-stage{
           height:auto!important;min-height:0!important;gap:7px!important;padding:12px!important
         }
-        #mlv-desktop-focus-immersive .mlv-focus-stage .mlv-focus-center{
+        #mlv-desktop-focus-stage>.mlv-focus-center{
           min-height:100px!important;padding:0!important
         }
-        #mlv-desktop-focus-immersive #mlv-desktop-focus-clock{
+        #mlv-desktop-focus-clock{
           font-size:clamp(50px,12vh,78px)!important
         }
       }
       @media(prefers-reduced-motion:reduce){
-        #mlv-desktop-focus-immersive *{animation:none!important;transition:none!important}
+        #mlv-desktop-focus-stage>*{animation:none!important;transition:none!important}
       }
     `;
     document.head.appendChild(el);
@@ -412,12 +412,12 @@
     screen=document.createElement('div');
     screen.id='mlv-desktop-focus-immersive';screen.hidden=true;
     screen.innerHTML=`
-      <section class="mlv-focus-stage" role="dialog" aria-modal="true" aria-labelledby="mlv-desktop-focus-title">
+      <section id="mlv-desktop-focus-stage" class="mlv-focus-stage" role="dialog" aria-modal="true" aria-labelledby="mlv-desktop-focus-title">
         <header>
           <div><span class="mlv-focus-eyebrow">MICHEL'S LIFE / FOCUS</span>
           <h2 id="mlv-desktop-focus-title">Pomodoro</h2></div>
-          <div class="mlv-focus-actions"><button type="button" data-focus-action="alarms">⏰ Alarmas</button>
-          <button type="button" data-focus-action="minimize" aria-label="Minimize Pomodoro">—</button></div>
+          <div class="mlv-focus-actions"><button type="button" class="mlv-focus-btn" data-focus-action="alarms">⏰ Alarmas</button>
+          <button type="button" class="mlv-focus-btn" data-focus-action="minimize" aria-label="Minimize Pomodoro">—</button></div>
         </header>
         <div class="mlv-focus-center">
           <span class="mlv-focus-mode" id="mlv-desktop-focus-mode">FOCUS</span>
@@ -425,10 +425,10 @@
           <p class="mlv-focus-status" id="mlv-desktop-focus-status">Ready to focus</p>
         </div>
         <div class="mlv-focus-actions">
-          <button type="button" class="primary" data-focus-action="toggle">Start</button>
-          <button type="button" data-focus-action="skip">Skip phase</button>
-          <button type="button" data-focus-action="reset">Reset</button>
-          <button type="button" data-focus-action="minimize">Navigate the app</button>
+          <button type="button" class="mlv-focus-btn primary" data-focus-action="toggle">Start</button>
+          <button type="button" class="mlv-focus-btn" data-focus-action="skip">Skip phase</button>
+          <button type="button" class="mlv-focus-btn" data-focus-action="reset">Reset</button>
+          <button type="button" class="mlv-focus-btn" data-focus-action="minimize">Navigate the app</button>
         </div>
         <details class="mlv-focus-sound-details"><summary>Audio · Completion tone & ambience</summary>
         <div class="mlv-focus-audio-panel" aria-label="Pomodoro audio">
@@ -436,29 +436,20 @@
             <label for="mlv-focus-completion-select">Completion sound
               <select id="mlv-focus-completion-select" data-mlv-completion-sound></select>
             </label>
-            <button type="button" data-mlv-audio="preview-completion">Preview</button>
+            <button type="button" class="mlv-focus-btn" data-mlv-audio="preview-completion">Preview</button>
           </div>
           <div class="mlv-focus-audio-group">
             <label for="mlv-focus-scene-select">Ambient soundscapes · Dreamy + Cinematic
               <select id="mlv-focus-scene-select" data-mlv-scene-select></select>
             </label>
-            <button type="button" data-mlv-audio="toggle-ambient">Play</button>
+            <button type="button" class="mlv-focus-btn" data-mlv-audio="toggle-ambient">Play</button>
           </div>
         </div></details>
         <details class="mlv-focus-motivation-details"><summary>Messages & affirmations</summary><div id="mlv-desktop-focus-motivation"></div></details>
       </section>`;
-    // This is the one canonical desktop Focus stage. Historical global theme
-    // selectors with !important were overriding its width, flex layout and
-    // min-height at 976x737. Own the geometry on the actual stage element,
-    // not another late CSS patch stylesheet or a second overlay.
-    const stage=screen.firstElementChild;
-    for(const [key,value] of [
-      ['display','flex'],['flex-direction','column'],
-      ['width','min(800px, calc(100vw - 48px))'],['max-width','800px'],
-      ['height','clamp(460px, 72dvh, 555px)'],['min-height','0px'],
-      ['max-height','calc(100dvh - 24px)'],
-      ['box-sizing','border-box'],['overflow-x','hidden'],['overflow-y','auto']
-    ]) stage?.style.setProperty(key,value,'important');
+    // Scope layout directly to the canonical stage and use explicit child
+    // selectors: a production CSS sanitizer collapsed descendant whitespace,
+    // turning "#id .class" into the incorrect "#id.class".
     mini=document.createElement('aside');
     mini.id='mlv-desktop-mini-focus';mini.hidden=true;
     mini.innerHTML='<button type="button" data-focus-action="open">◷ 25:00</button><button type="button" data-focus-action="toggle">Pause</button>';
