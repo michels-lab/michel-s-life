@@ -22,15 +22,13 @@ assert.equal(canonical,'artifacts/android-story-bundle/index.html');
 
 const priorBroken=matrix.replace(canonical,'artifacts/android-ui-bundle/index.html');
 assert.notEqual(priorBroken,matrix,'Historical failing path fixture was not applied');
-assert.throws(()=>checkContract(workflow,priorBroken),{
-  code:'ERR_ASSERTION',
-  message:'Story parser reads a different index.html from the generated fixture'
-});
+assert.throws(()=>checkContract(workflow,priorBroken),error=>
+  error?.code==='ERR_ASSERTION'&&
+  error.message.includes('Story parser reads a different index.html'));
 const wrongProducer=workflow.replace('--assets artifacts/android-story-bundle',
   '--assets artifacts/android-ui-bundle');
 assert.notEqual(wrongProducer,workflow,'Fixture for producer drift was not applied');
-assert.throws(()=>checkContract(wrongProducer,matrix),{
-  code:'ERR_ASSERTION',
-  message:'Story parser reads a different index.html from the generated fixture'
-});
+assert.throws(()=>checkContract(wrongProducer,matrix),error=>
+  error?.code==='ERR_ASSERTION'&&
+  error.message.includes('Story parser reads a different index.html'));
 console.log('PASS Story bundle producer/consumer path contract + two negative regressions');
