@@ -96,6 +96,36 @@ test('Android real presets call the canonical engine and persist without ghost D
   assert.doesNotMatch(core,/v30162FocusDock/);
 });
 
+test('Settings is a client of the ONE Focus timer and respects cancelled changes',()=>{
+  const core=readFileSync('src/MichelsLife/frontend/index.html','utf8');
+  const start=core.indexOf('function applyFocusSettings(preset,workValue,breakValue){');
+  const end=core.indexOf('function mlvAboutSocialIcon(',start);
+  assert.ok(start>=0&&end>start,'Focus Settings source function must be present');
+  const fn=core.slice(start,end);
+  assert.match(fn,/timer\.applyPreset\(chosen,work,rest\)!==true/);
+  assert.doesNotMatch(fn,/\bf\.(?:workMin|breakMin|preset|deadlineAt|remainingMs|phaseTotalMs|status)\s*=/,
+    'Settings must not mutate canonical Focus state separately');
+  const applied=[],repaint=[];
+  let allowed=true;
+  const ctx={
+    window:{
+      FocusStoryV30162:{applyPreset(...values){applied.push(values);return allowed;}},
+      MichelsLifeFocusImmersive:{refresh(){repaint.push('desktop');}},
+      MichelsLifeMobileExperience:{updateFocus(){repaint.push('android');}}
+    },
+    refreshFocusPane(){repaint.push('settings');}
+  };
+  vm.runInNewContext(fn,ctx,{timeout:1000});
+  assert.equal(ctx.applyFocusSettings('90/15',2,4),true);
+  assert.deepEqual(applied[0],['90/15',90,15]);
+  assert.deepEqual(repaint,['desktop','android','settings']);
+  allowed=false;repaint.length=0;
+  assert.equal(ctx.applyFocusSettings('custom',37,8),false);
+  assert.deepEqual(applied[1],['custom',37,8]);
+  assert.deepEqual(repaint,[],'A cancelled running timer preset must not repaint or reset state');
+  assert.doesNotMatch(core,/Configure the same Focus timer used from the action dock/);
+});
+
 test('Windows notifications consume the one canonical Focus timer',()=>{
   const core=readFileSync('src/MichelsLife/frontend/index.html','utf8');
   const shell=readFileSync('src/MichelsLife/DesktopShell.cs','utf8');
