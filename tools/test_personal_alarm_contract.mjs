@@ -196,6 +196,8 @@ test('legacy sidebar Pomodoro presentation is deleted at source',()=>{
   assert.ok(core.includes('data-v30165-focus-toggle="sound"'));
   assert.ok(core.includes('data-v30165-focus-toggle="autobreak"'));
   assert.equal(core.includes('function applyDeep()'),false);
+  assert.ok(core.includes('augmentFocus:ensureFocusPreferences'));
+  assert.equal(core.includes('augmentProjects,augmentFocus,openProjectSetup'),false);
   assert.equal(core.includes('.v30165-focus-extra{'),false);
   assert.equal(core.includes("root.id='v30106Focus'"),false);
   assert.equal(core.includes('v30175FocusFab'),false);
