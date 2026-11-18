@@ -242,133 +242,164 @@
     if(q('#mlv-desktop-focus-css'))return;
     const el=document.createElement('style');el.id='mlv-desktop-focus-css';
     el.textContent=`
-      #mlv-desktop-focus-immersive[hidden],#mlv-desktop-mini-focus[hidden],#mlv-desktop-focus-launcher[hidden]{display:none!important}
-      html:not([data-mlv-platform="android"]) #mlv-desktop-focus-immersive{
-        position:fixed;inset:0;z-index:2147483500;display:grid;place-items:center;
-        padding:clamp(18px,4vw,58px);overflow:auto;box-sizing:border-box;
-        background-color:rgba(7,11,20,.62);
-        background-image:linear-gradient(140deg,rgba(3,6,15,.72),rgba(8,11,24,.46),rgba(4,7,17,.8)),var(--mlv-focus-wallpaper,none);
-        background-position:center;background-size:cover;background-repeat:no-repeat;color:#f8fbff
-      }
-      #mlv-desktop-focus-immersive .mlv-focus-stage{
-        position:relative;box-sizing:border-box;width:min(100%,880px);min-height:min(690px,85vh);
-        display:flex;flex-direction:column;gap:24px;padding:clamp(25px,4vw,52px);
-        border:1px solid rgba(255,255,255,.25);border-radius:25px;
-        background:rgba(7,13,23,.56);
-        box-shadow:0 25px 85px rgba(0,0,0,.45)
-      }
-      .mlv-focus-stage header{display:flex;justify-content:space-between;align-items:start;gap:15px}
-      .mlv-focus-stage .mlv-focus-eyebrow{font:800 11px system-ui,sans-serif;letter-spacing:.22em;color:#bbe7ff}
-      .mlv-focus-stage h2{margin:9px 0 0;font:850 clamp(28px,4vw,52px) system-ui,sans-serif;color:white}
-      .mlv-focus-stage .mlv-focus-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center}
-      .mlv-focus-stage .mlv-focus-mode{font:800 13px system-ui,sans-serif;letter-spacing:.23em}
-      .mlv-focus-stage .mlv-focus-clock{font:850 clamp(82px,15vw,175px)/1 system-ui,sans-serif;letter-spacing:-.065em;font-variant-numeric:tabular-nums;text-shadow:0 5px 35px #0008}
 
-      /* Real Playwright caught legacy strong/timer rules shrinking 25:00 to 16px. */
+      /* A single Focus layout authority, not stacked visual-era overrides. */
+      #mlv-desktop-focus-immersive[hidden],#mlv-desktop-mini-focus[hidden],
+      #mlv-desktop-focus-launcher[hidden]{display:none!important}
+      html:not([data-mlv-platform="android"]) #mlv-desktop-focus-immersive{
+        position:fixed;inset:0;z-index:2147483500;
+        display:grid;place-items:center;box-sizing:border-box;
+        padding:clamp(12px,3.2vw,42px);overflow:auto;
+        color:#f8fbff;background-color:rgba(4,9,16,.5);
+        background-image:linear-gradient(152deg,rgba(3,9,18,.5),rgba(5,13,22,.29) 54%,rgba(2,8,14,.57)),var(--mlv-focus-wallpaper,none);
+        background-position:center;background-size:cover;background-repeat:no-repeat
+      }
       #mlv-desktop-focus-immersive .mlv-focus-stage{
-        min-height:0!important;max-height:calc(100dvh - 24px)!important;
-        overflow-y:auto!important;gap:clamp(8px,1.8vh,20px)!important;
-        padding:clamp(16px,2.4vw,36px)!important
+        position:relative;display:flex;flex-direction:column;box-sizing:border-box;
+        width:min(100%,800px);min-height:min(555px,calc(100dvh - 46px))!important;
+        max-height:calc(100dvh - 24px)!important;
+        overflow-y:auto!important;overflow-x:hidden!important;
+        gap:clamp(10px,1.9vh,19px)!important;padding:clamp(20px,3vw,34px)!important;
+        border:1px solid rgba(213,237,245,.26);border-radius:26px;
+        background-color:rgba(7,17,27,.47)!important;
+        background-image:linear-gradient(145deg,rgba(9,27,36,.16),rgba(6,16,27,.06))!important;
+        box-shadow:0 25px 70px rgba(0,0,0,.24)!important;
+        backdrop-filter:none!important;-webkit-backdrop-filter:none!important
+      }
+      #mlv-desktop-focus-immersive .mlv-focus-stage header{
+        display:flex;justify-content:space-between;align-items:flex-start;
+        gap:12px;flex-shrink:0;min-width:0
+      }
+      #mlv-desktop-focus-immersive .mlv-focus-eyebrow{
+        display:block;font:750 10px/1.4 system-ui,sans-serif;
+        letter-spacing:.18em;text-transform:uppercase;color:#c5e9f2
+      }
+      #mlv-desktop-focus-immersive .mlv-focus-stage h2{
+        margin:8px 0 0!important;color:#fff;
+        font:780 clamp(31px,3.9vw,43px)/1.04 system-ui,sans-serif!important;
+        letter-spacing:-.045em!important
+      }
+      #mlv-desktop-focus-immersive .mlv-focus-stage .mlv-focus-center{
+        display:flex;flex:1 0 auto!important;min-height:165px!important;
+        flex-direction:column;align-items:center;justify-content:center;
+        gap:6px!important;padding:7px 0!important;text-align:center
+      }
+      #mlv-desktop-focus-immersive .mlv-focus-mode{
+        font:750 11px/1.35 system-ui,sans-serif;letter-spacing:.2em;color:#b5e8e8
       }
       #mlv-desktop-focus-immersive #mlv-desktop-focus-clock{
-        display:block!important;width:auto!important;min-width:0!important;
-        min-height:70px!important;font-family:system-ui,sans-serif!important;
-        font-size:clamp(66px,10vw,150px)!important;font-weight:900!important;
-        line-height:1.03!important;letter-spacing:-.055em!important;
-        color:#fff!important;text-align:center!important
+        display:block!important;width:auto!important;height:auto!important;
+        min-height:0!important;min-width:0!important;
+        padding:0!important;margin:0!important;text-align:center!important;
+        color:#fff!important;font-family:system-ui,sans-serif!important;
+        font-size:clamp(70px,9vw,112px)!important;font-weight:820!important;
+        line-height:1.02!important;letter-spacing:-.045em!important;
+        font-variant-numeric:tabular-nums!important;
+        text-shadow:0 8px 32px rgba(0,0,0,.18)
       }
-      #mlv-desktop-focus-immersive .mlv-focus-center{min-height:0!important;flex:1 1 auto!important;gap:6px!important}
-      #mlv-desktop-focus-immersive .mlv-focus-stage>header,
-      #mlv-desktop-focus-immersive .mlv-focus-stage>.mlv-focus-actions{flex-shrink:0!important}
-      #mlv-desktop-focus-immersive .mlv-focus-motivation-details{
-        max-height:22vh;overflow-y:auto;min-height:0;flex:0 1 auto;
-        border:1px solid #ffffff24;border-radius:12px;padding:7px 12px
+      #mlv-desktop-focus-immersive .mlv-focus-status{
+        margin:2px 0 0;color:#dcebf2;font:520 13px/1.4 system-ui,sans-serif
       }
-      #mlv-desktop-focus-immersive .mlv-focus-motivation-details summary{cursor:pointer;font:700 12px system-ui,sans-serif}
-      #mlv-desktop-focus-immersive .mlv-focus-motivation-details:not([open]){max-height:40px}
-      #mlv-desktop-focus-immersive .mlv-focus-motivation-details .mlv-motivation{gap:5px;margin:6px auto 0}
-      #mlv-desktop-focus-immersive .mlv-focus-motivation-details .mlv-motivation-copy{font-size:clamp(12px,1.3vw,15px);line-height:1.25}
-      @media(max-height:550px){
-        #mlv-desktop-focus-immersive .mlv-focus-stage{gap:5px!important;padding:10px!important}
-        #mlv-desktop-focus-immersive #mlv-desktop-focus-clock{font-size:clamp(43px,13vh,82px)!important}
+      #mlv-desktop-focus-immersive .mlv-focus-actions{
+        display:flex;justify-content:center;align-items:center;
+        flex-wrap:wrap;gap:8px;flex-shrink:0!important
       }
-      .mlv-focus-stage .mlv-focus-status{margin:0;font:550 16px system-ui,sans-serif;color:#e2ecf6}
-      .mlv-focus-stage .mlv-focus-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
+      #mlv-desktop-focus-immersive .mlv-focus-stage>header .mlv-focus-actions{
+        flex-wrap:nowrap;justify-content:flex-end
+      }
       #mlv-desktop-focus-immersive button{
-        cursor:pointer;touch-action:manipulation;min-height:46px;min-width:46px;padding:11px 17px;
-        border:1px solid #ffffff55;border-radius:14px;background:#091526b8;color:#fff;
-        font:750 14px system-ui,sans-serif
+        cursor:pointer;touch-action:manipulation;box-sizing:border-box;
+        min-height:44px;min-width:44px;padding:9px 13px;
+        border:1px solid rgba(202,231,244,.28);border-radius:11px;
+        background:rgba(4,22,32,.75);color:#f5fcff;
+        font:700 12px/1.25 system-ui,sans-serif
       }
       #mlv-desktop-focus-immersive button.primary{
-        color:#06101f;border-color:transparent;background:linear-gradient(120deg,#76dfff,#ad90ff);min-width:165px
+        min-width:150px;color:#09222a!important;border-color:transparent!important;
+        background:linear-gradient(110deg,#82ebc5,#83dce9)!important;
+        font-weight:800!important
       }
       #mlv-desktop-focus-immersive button:focus-visible,
       #mlv-desktop-mini-focus button:focus-visible,#mlv-desktop-focus-launcher:focus-visible{
         outline:3px solid var(--ui-accent,#88dbff);outline-offset:3px
       }
+      #mlv-desktop-focus-immersive .mlv-focus-sound-details,
+      #mlv-desktop-focus-immersive .mlv-focus-motivation-details{
+        flex:0 0 auto!important;min-height:0!important;max-height:26vh;
+        overflow-y:auto;box-sizing:border-box;padding:8px 12px;
+        border:1px solid rgba(199,239,245,.14);border-radius:12px;
+        background:rgba(3,14,23,.28)
+      }
+      #mlv-desktop-focus-immersive .mlv-focus-sound-details:not([open]),
+      #mlv-desktop-focus-immersive .mlv-focus-motivation-details:not([open]){
+        max-height:40px!important;overflow:hidden
+      }
+      #mlv-desktop-focus-immersive .mlv-focus-sound-details summary,
+      #mlv-desktop-focus-immersive .mlv-focus-motivation-details summary{
+        cursor:pointer;font:700 12px/1.45 system-ui,sans-serif;
+        color:#d9f0f2;padding:2px 0
+      }
+      #mlv-desktop-focus-immersive .mlv-focus-motivation{gap:6px;margin:8px auto 0}
+      #mlv-desktop-focus-immersive .mlv-focus-motivation-copy{
+        font-size:clamp(12px,1.35vw,15px);line-height:1.4
+      }
+      #mlv-desktop-focus-immersive .mlv-focus-audio-panel{
+        display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
+        margin-top:8px;padding:10px;border:1px solid rgba(205,239,250,.12);
+        border-radius:12px;background:rgba(3,15,26,.4)
+      }
+      #mlv-desktop-focus-immersive .mlv-focus-audio-group{
+        display:flex;align-items:end;gap:7px;min-width:0
+      }
+      #mlv-desktop-focus-immersive .mlv-focus-audio-group label{
+        flex:1;min-width:0;color:#dceef4;font:650 12px/1.4 system-ui,sans-serif
+      }
+      #mlv-desktop-focus-immersive .mlv-focus-audio-group select{
+        display:block;width:100%;min-height:42px;box-sizing:border-box;
+        margin-top:5px;padding:8px 9px;border-radius:9px;color:#f5fbff;
+        background:#102c35;border:1px solid rgba(146,202,212,.35);
+        font:600 12px system-ui,sans-serif
+      }
+      #mlv-desktop-focus-immersive .mlv-focus-audio-group button{
+        min-height:42px;min-width:68px;padding:8px 10px;font-size:12px
+      }
       #mlv-desktop-mini-focus,#mlv-desktop-focus-launcher{
         position:fixed;right:22px;bottom:22px;z-index:2147483200;
-        padding:8px;border-radius:16px;border:1px solid #ffffff44;
-        color:#fff;background:#091424ee;box-shadow:0 13px 35px #0006
+        box-sizing:border-box;padding:8px;border-radius:16px;
+        border:1px solid rgba(220,247,255,.27);color:#fff;
+        background:rgba(8,27,40,.93);box-shadow:0 13px 35px rgba(0,0,0,.34)
       }
       #mlv-desktop-mini-focus{display:flex;gap:8px;align-items:center}
       #mlv-desktop-focus-launcher{right:19px;bottom:94px;padding:10px 16px;min-height:46px}
       #mlv-desktop-mini-focus button,#mlv-desktop-focus-launcher{
-        cursor:pointer;min-height:44px;padding:10px 14px;border:0;border-radius:11px;
-        color:inherit;background:#ffffff16;font:750 14px system-ui,sans-serif
+        cursor:pointer;min-height:44px;padding:10px 14px;border:0;
+        border-radius:11px;color:inherit;background:rgba(255,255,255,.09);
+        font:750 13px system-ui,sans-serif
       }
       html:not([data-mlv-platform="android"]) body.mlv-desktop-focus-open{overflow:hidden!important}
-      @media(max-width:650px){.mlv-focus-stage .mlv-focus-clock{font-size:clamp(62px,17vw,110px)}}
-
-      #mlv-desktop-focus-immersive .mlv-focus-stage{
-        width:min(100%,920px)!important;
-        background-color:rgba(7,15,24,.43)!important;
-        background-image:linear-gradient(155deg,rgba(5,12,21,.18),rgba(8,17,27,.11))!important;
-        border:1px solid rgba(220,241,255,.22)!important;
-        box-shadow:0 24px 70px rgba(0,0,0,.16)!important;
-        backdrop-filter:none!important;
-      }
-      #mlv-desktop-focus-immersive .mlv-focus-stage h2{letter-spacing:-.035em!important;font-weight:780!important}
-      #mlv-desktop-focus-immersive .mlv-focus-actions{gap:8px!important;flex-wrap:wrap!important}
-      #mlv-desktop-focus-immersive .mlv-focus-actions button{
-        border-radius:12px!important;border-color:rgba(204,236,255,.28)!important;
-        background:rgba(5,19,27,.75)!important;
-      }
-      #mlv-desktop-focus-immersive .mlv-focus-actions button.primary{
-        background:linear-gradient(120deg,#71eed1,#7cddff)!important;color:#09202a!important;
-      }
-      #mlv-desktop-focus-immersive .mlv-focus-motivation-details{
-        border:0!important;background:rgba(3,16,25,.25)!important;padding:4px 10px!important
-      }
-      #mlv-desktop-focus-immersive .mlv-focus-sound-details{
-        border:1px solid rgba(210,245,250,.14);border-radius:14px;
-        background:rgba(3,15,26,.28);padding:7px 12px
-      }
-      #mlv-desktop-focus-immersive .mlv-focus-sound-details summary{
-        font:700 12px/1.5 system-ui,sans-serif;cursor:pointer;color:#e1f2f3
-      }
-      #mlv-desktop-focus-immersive .mlv-focus-sound-details:not([open]){max-height:36px}
-      #mlv-desktop-focus-immersive .mlv-focus-audio-panel{
-        display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
-        padding:12px;border:1px solid rgba(220,241,255,.15);
-        border-radius:16px;background:rgba(3,15,26,.48)
-      }
-      #mlv-desktop-focus-immersive .mlv-focus-audio-group{display:flex;gap:7px;align-items:end;min-width:0}
-      #mlv-desktop-focus-immersive .mlv-focus-audio-group label{
-        flex:1;min-width:0;color:#dbeff3;font:650 12px/1.4 system-ui,sans-serif
-      }
-      #mlv-desktop-focus-immersive .mlv-focus-audio-group select{
-        display:block;width:100%;min-height:40px;margin-top:4px;padding:8px;
-        color:#f5fbff;background:#102a33;border:1px solid #7cb1b555;border-radius:9px;font:600 12px system-ui
-      }
-      #mlv-desktop-focus-immersive .mlv-focus-audio-group button{
-        min-height:40px;min-width:70px;padding:7px 10px;font-size:12px
-      }
       @media(max-width:670px){
+        #mlv-desktop-focus-immersive .mlv-focus-stage{
+          width:100%;padding:16px!important;border-radius:20px
+        }
         #mlv-desktop-focus-immersive .mlv-focus-audio-panel{grid-template-columns:1fr}
+        #mlv-desktop-focus-immersive #mlv-desktop-focus-clock{
+          font-size:clamp(60px,14vw,86px)!important
+        }
       }
-
-      @media(prefers-reduced-motion:reduce){#mlv-desktop-focus-immersive *{animation:none!important;transition:none!important}}
+      @media(max-height:550px){
+        #mlv-desktop-focus-immersive .mlv-focus-stage{
+          min-height:0!important;gap:7px!important;padding:12px!important
+        }
+        #mlv-desktop-focus-immersive .mlv-focus-stage .mlv-focus-center{
+          min-height:100px!important;padding:0!important
+        }
+        #mlv-desktop-focus-immersive #mlv-desktop-focus-clock{
+          font-size:clamp(50px,12vh,78px)!important
+        }
+      }
+      @media(prefers-reduced-motion:reduce){
+        #mlv-desktop-focus-immersive *{animation:none!important;transition:none!important}
+      }
     `;
     document.head.appendChild(el);
   }
