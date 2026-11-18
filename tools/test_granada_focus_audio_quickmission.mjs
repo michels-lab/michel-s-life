@@ -8,7 +8,8 @@ const html=readFileSync('src/MichelsLife/frontend/index.html','utf8');
 const android=readFileSync('android/mobile-experience.js','utf8');
 
 function audioSandbox(){
-  const values=new Map(),timers=new Map(),created=[];
+  const state={v30165CompletionSound:'soft',v30165Soundscape:'moonlight'};
+  const timers=new Map(),created=[];
   let oscCount=0,intervalId=0;
   class AudioContext {
     constructor(){this.currentTime=0;this.state='running';this.destination={};this.closed=false;created.push(this);}
@@ -25,7 +26,15 @@ function audioSandbox(){
   const sandbox={
     document:{readyState:'loading',documentElement:{dataset:{mlvPlatform:'android'}},
       querySelector(){return null;},addEventListener(){}},
-    localStorage:{getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,String(v))},
+    FocusStoryV30162:{
+      focusState(){return state;},
+      setAudioPreference(kind,id){
+        if(kind==='completion')state.v30165CompletionSound=id;
+        else if(kind==='scene')state.v30165Soundscape=id;
+        else return false;
+        return true;
+      }
+    },
     AudioContext,console,
     setTimeout(){return 1;},
     setInterval(fn){const id=++intervalId;timers.set(id,fn);return id;},
@@ -34,7 +43,7 @@ function audioSandbox(){
   };
   sandbox.window=sandbox;
   vm.runInNewContext(focus,sandbox,{filename:'focus-immersive.js'});
-  return {api:sandbox.MichelsLifeFocusAudio,values,timers,created,osc:()=>oscCount,sandbox};
+  return {api:sandbox.MichelsLifeFocusAudio,state,timers,created,osc:()=>oscCount,sandbox};
 }
 
 test('real audio controls expose eight original A+C scenes and seven end tones',()=>{
@@ -50,9 +59,9 @@ test('real audio controls expose eight original A+C scenes and seven end tones',
 });
 
 test('selected completion tone persists and performs real oscillator playback; off is silent',()=>{
-  const {api,values,osc}=audioSandbox();
+  const {api,state,osc}=audioSandbox();
   assert.equal(api.selectCompletion('observatory'),'observatory');
-  assert.equal(values.get('michelsLife.focus.completionSound.v1'),'observatory');
+  assert.equal(state.v30165CompletionSound,'observatory');
   const before=osc();
   assert.equal(api.playCompletion(true),true);
   assert.ok(osc()>before,'preview must schedule real Web Audio oscillators');
@@ -64,10 +73,10 @@ test('selected completion tone persists and performs real oscillator playback; o
 });
 
 test('ambient playback starts on demand and stops cleanly on selection change and dismiss',()=>{
-  const {api,values,osc,timers,created}=audioSandbox();
+  const {api,state,osc,timers,created}=audioSandbox();
   assert.equal(api.playing(),false,'ambient must never autoplay');
   api.selectScene('aurora');
-  assert.equal(values.get('michelsLife.focus.soundscape.v1'),'aurora');
+  assert.equal(state.v30165Soundscape,'aurora');
   assert.equal(api.startAmbient(),true);
   assert.equal(api.playing(),true);
   assert.ok(osc()>=4,'a real original harmonic pad must be generated');
@@ -94,6 +103,9 @@ test('Spanish option labels are genuine and both platform controls are wired',()
     assert.ok(android.includes(selector),'Android missing '+selector);
   assert.match(html,/window\.MichelsLifeFocusAudio\?\.playCompletion\?\.\(\)===true/);
   assert.match(html,/window\.MichelsLifeFocusAudio\?\.unlock\?\.\(\)/);
+  assert.doesNotMatch(focus,/localStorage\.setItem\(/,'UI must not own a second store');
+  assert.match(html,/function setAudioPreference\(kind,value\)/);
+  assert.match(html,/focusSessions,setAudioPreference,chapters/);
 });
 
 test('Quick Mission floating button catches a real pointerup and single synthetic click',()=>{
