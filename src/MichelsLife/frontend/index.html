@@ -27436,54 +27436,6 @@ window.__MICHELS_LIFE_BUILD__=VERSION;
 <!-- v3.0.162: global Pomodoro Focus Timer + Story Chapters -->
 <style id="v30162-focus-story-style">
 /* =========================
-   Global Focus Timer dock
-   ========================= */
-#v30162FocusDock{
-  position:fixed!important;left:18px!important;bottom:calc(18px + var(--v3099-dock-space,0px))!important;z-index:2147483643!important;
-  width:min(368px,calc(100vw - 36px))!important;color:var(--text,#eef6ff)!important;
-  font-family:inherit!important;isolation:isolate!important;pointer-events:auto!important;
-}
-#v30162FocusDock *{box-sizing:border-box}
-.v30162-focus-shell{
-  border:1px solid rgba(var(--ui-accent-rgb,117,228,255),.24)!important;
-  border-radius:20px!important;background:linear-gradient(165deg,rgba(7,13,25,.96),rgba(10,17,31,.91))!important;
-  box-shadow:0 20px 58px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.06)!important;
-  overflow:hidden!important;backdrop-filter:blur(16px)!important;
-}
-.v30162-focus-compact{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto auto!important;align-items:center!important;gap:9px!important;padding:10px 11px!important}
-.v30162-focus-orb{width:10px!important;height:10px!important;border-radius:99px!important;background:var(--ui-accent,#75e4ff)!important;box-shadow:0 0 15px rgba(var(--ui-accent-rgb,117,228,255),.45)!important}
-.v30162-focus-shell[data-mode="break"] .v30162-focus-orb{background:var(--green,#74f2a7)!important;box-shadow:0 0 15px rgba(116,242,167,.36)!important}
-.v30162-focus-copy{min-width:0!important;display:grid!important;grid-template-columns:auto 1fr!important;column-gap:8px!important;align-items:baseline!important}
-.v30162-focus-copy small{font-size:9.5px!important;font-weight:950!important;letter-spacing:.12em!important;color:var(--muted,#b8c5d8)!important;text-transform:uppercase!important}
-.v30162-focus-time{font-variant-numeric:tabular-nums!important;font-size:20px!important;line-height:1!important;font-weight:950!important;letter-spacing:-.035em!important}
-.v30162-focus-link{grid-column:1/-1!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;color:var(--muted,#b8c5d8)!important;font-size:10px!important;margin-top:2px!important}
-.v30162-focus-mini-btn{width:34px!important;height:34px!important;display:grid!important;place-items:center!important;border-radius:11px!important;border:1px solid rgba(255,255,255,.11)!important;background:rgba(255,255,255,.055)!important;color:var(--text,#eef6ff)!important;font-weight:950!important;cursor:pointer!important}
-.v30162-focus-mini-btn.primary{border-color:rgba(var(--ui-accent-rgb,117,228,255),.32)!important;background:rgba(var(--ui-accent-rgb,117,228,255),.13)!important}
-.v30162-focus-panel{display:none!important;border-top:1px solid rgba(255,255,255,.07)!important;padding:12px!important}
-#v30162FocusDock[data-expanded="1"] .v30162-focus-panel{display:block!important}
-.v30162-focus-panel.v30162-open{display:block!important}
-.v30162-focus-section+.v30162-focus-section{margin-top:12px!important;padding-top:12px!important;border-top:1px solid rgba(255,255,255,.065)!important}
-.v30162-focus-row{display:flex!important;gap:7px!important;align-items:center!important;flex-wrap:wrap!important}
-.v30162-focus-row.between{justify-content:space-between!important}
-.v30162-focus-preset{min-height:31px!important;padding:0 10px!important;border-radius:10px!important;border:1px solid rgba(255,255,255,.10)!important;background:rgba(255,255,255,.04)!important;color:var(--muted,#b8c5d8)!important;font-size:10.5px!important;font-weight:850!important;cursor:pointer!important}
-.v30162-focus-preset.active{color:var(--text,#eef6ff)!important;border-color:rgba(var(--ui-accent-rgb,117,228,255),.40)!important;background:rgba(var(--ui-accent-rgb,117,228,255),.12)!important}
-.v30162-focus-actions{display:grid!important;grid-template-columns:1.25fr repeat(3,minmax(0,.75fr))!important;gap:7px!important;margin-top:10px!important}
-.v30162-focus-actions button{min-height:36px!important;border-radius:11px!important;border:1px solid rgba(255,255,255,.11)!important;background:rgba(255,255,255,.05)!important;color:var(--text,#eef6ff)!important;font-size:10.5px!important;font-weight:900!important;cursor:pointer!important}
-.v30162-focus-actions button.primary{border-color:rgba(var(--ui-accent-rgb,117,228,255),.40)!important;background:linear-gradient(135deg,rgba(var(--ui-accent-rgb,117,228,255),.22),rgba(var(--ui-accent2-rgb,167,121,255),.12))!important}
-.v30162-focus-stats{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:7px!important}
-.v30162-focus-stat{padding:8px!important;border-radius:11px!important;background:rgba(255,255,255,.035)!important;border:1px solid rgba(255,255,255,.065)!important;min-width:0!important}
-.v30162-focus-stat small{display:block!important;color:var(--muted,#b8c5d8)!important;font-size:9px!important;margin-bottom:3px!important}
-.v30162-focus-stat b{font-size:12px!important;font-weight:950!important}
-.v30162-focus-custom{display:grid!important;grid-template-columns:1fr 1fr auto!important;gap:7px!important;margin-top:8px!important}
-.v30162-focus-custom label{font-size:9px!important;color:var(--muted,#b8c5d8)!important}
-.v30162-focus-custom input{width:100%!important;min-height:32px!important;margin-top:3px!important;border-radius:9px!important;border:1px solid rgba(255,255,255,.11)!important;background:rgba(0,0,0,.18)!important;color:var(--text,#eef6ff)!important;padding:5px 8px!important}
-.v30162-focus-custom button{align-self:end!important;min-height:32px!important;border-radius:9px!important;border:1px solid rgba(var(--ui-accent-rgb,117,228,255),.28)!important;background:rgba(var(--ui-accent-rgb,117,228,255),.10)!important;color:var(--text,#eef6ff)!important;font-weight:850!important}
-.v30162-focus-history{display:grid!important;gap:5px!important;max-height:132px!important;overflow:auto!important}
-.v30162-focus-history-row{display:flex!important;justify-content:space-between!important;gap:8px!important;padding:6px 7px!important;border-radius:9px!important;background:rgba(255,255,255,.025)!important;font-size:9.5px!important}
-.v30162-focus-history-row span{min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;color:var(--muted,#b8c5d8)!important}
-.v30162-focus-history-row b{white-space:nowrap!important}
-
-/* =========================
    Story Chapters
    ========================= */
 .v30162-story{display:grid!important;gap:14px!important}
@@ -27516,6 +27468,14 @@ if(window.FocusStoryV30162)return;
 const VERSION='3.0.162';
 const FOCUS_KEY='v30162FocusTimer',FOCUS_HISTORY='v30162FocusSessions',CHAPTERS_KEY='v30162StoryChapters';
 let tickTimer=0,finishing=false,lastSecond=-1;
+const focusDesktopEvents=[];
+function queueFocusDesktop(type,detail){
+ if(document.documentElement?.dataset.mlvPlatform==='android')return;
+ if(focusDesktopEvents.length>24)focusDesktopEvents.shift();
+ focusDesktopEvents.push({type,detail,at:Date.now()});
+}
+function takeWindowsNotification(){updateFocusClock();return focusDesktopEvents.shift()||null;}
+
 
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function today(){try{return typeof dateKey==='function'?dateKey():new Date().toISOString().slice(0,10)}catch(_){return new Date().toISOString().slice(0,10)}}
@@ -27589,9 +27549,9 @@ function renderStory(){
 /* ---------- Focus Timer ---------- */
 function focusState(){
   let f=state[FOCUS_KEY];
-  if(!f||typeof f!=='object')f=state[FOCUS_KEY]={preset:'25/5',workMin:25,breakMin:5,mode:'work',status:'ready',remainingMs:25*60000,phaseTotalMs:25*60000,deadlineAt:null,linkedMissionId:'',expanded:false,dockMode:'compact'};
+  if(!f||typeof f!=='object')f=state[FOCUS_KEY]={preset:'25/5',workMin:25,breakMin:5,mode:'work',status:'ready',remainingMs:25*60000,phaseTotalMs:25*60000,deadlineAt:null,linkedMissionId:''};
   f.workMin=clamp(f.workMin,1,180,25);f.breakMin=clamp(f.breakMin,1,60,5);f.mode=f.mode==='break'?'break':'work';
-  if(!['ready','running','paused'].includes(f.status))f.status='ready';if(!['compact','mini'].includes(f.dockMode))f.dockMode='compact';if(f.dockMode==='mini')f.expanded=false;
+  if(!['ready','running','paused'].includes(f.status))f.status='ready';
   const total=(f.mode==='work'?f.workMin:f.breakMin)*60000;f.phaseTotalMs=clamp(f.phaseTotalMs,1000,180*60000,total);f.remainingMs=clamp(f.remainingMs,0,f.phaseTotalMs,f.phaseTotalMs);
   if(f.status==='running'&&!Number.isFinite(Number(f.deadlineAt)))f.deadlineAt=Date.now()+f.remainingMs;
   return f;
@@ -27603,81 +27563,43 @@ function ensureCurrentPaused(id){const {cur}=currentInfo();if(!cur||String(cur.i
 function linkedMission(f=focusState()){return (state.missions||[]).find(m=>String(m.id)===String(f.linkedMissionId))||null}
 function activeChapterLabel(){const ch=activeChapter();return ch?'Chapter '+roman(chapterNumber(ch))+' · '+ch.name:'No active chapter'}
 function recordFocus(elapsedMs,status){elapsedMs=Math.max(0,Math.round(Number(elapsedMs||0)));if(elapsedMs<1000)return null;const f=focusState(),m=linkedMission(f),end=Date.now();const rec={id:uid('focus'),date:today(),startedAt:new Date(end-elapsedMs).toISOString(),endedAt:new Date(end).toISOString(),elapsedMs,status:status||'completed',missionId:m?String(m.id):'',missionName:m?String(m.name):'Unassigned Focus',category:m?m.category:'',chapterId:activeChapter()?.id||'',preset:f.preset||'custom'};focusSessions().unshift(rec);state[FOCUS_HISTORY]=focusSessions().slice(0,2000);storyLog('focus_block',(status==='completed'?'Focus block completed: ':'Focus block saved: ')+rec.missionName,{focusId:rec.id,chapterId:rec.chapterId,elapsedMs:rec.elapsedMs,missionId:rec.missionId});persist();return rec}
-function setPhase(mode){const f=focusState(),next=mode==='break'?'break':'work';if(f.mode==='work'&&next==='break'&&f.linkedMissionId)ensureCurrentPaused(f.linkedMissionId);f.mode=next;f.status='ready';f.deadlineAt=null;f.phaseTotalMs=(f.mode==='work'?f.workMin:f.breakMin)*60000;f.remainingMs=f.phaseTotalMs;if(f.mode==='work')f.linkedMissionId='';persist();renderFocusDock()}
-function startFocus(){const f=focusState();if(f.status==='running')return;const r=remaining(f);if(r<=0){f.remainingMs=f.phaseTotalMs}if(f.mode==='work'){const manual=String(f.v30165ManualMissionId||'');const mm=manual?(state.missions||[]).find(x=>String(x.id)===manual):null;const {cur,m}=currentInfo();f.linkedMissionId=mm?String(mm.id):(cur&&m?String(cur.id):'');if(f.linkedMissionId)ensureCurrentRunning(f.linkedMissionId)}else if(f.linkedMissionId)ensureCurrentPaused(f.linkedMissionId);f.remainingMs=remaining(f)||f.phaseTotalMs;f.deadlineAt=Date.now()+f.remainingMs;f.status='running';persist();renderFocusDock();chimeSoft()}
-function pauseFocus(){const f=focusState();if(f.status!=='running')return;f.remainingMs=remaining(f);f.deadlineAt=null;f.status='paused';if(f.mode==='work'&&f.linkedMissionId)ensureCurrentPaused(f.linkedMissionId);persist();renderFocusDock()}
+function setPhase(mode){const f=focusState(),next=mode==='break'?'break':'work';if(f.mode==='work'&&next==='break'&&f.linkedMissionId)ensureCurrentPaused(f.linkedMissionId);f.mode=next;f.status='ready';f.deadlineAt=null;f.phaseTotalMs=(f.mode==='work'?f.workMin:f.breakMin)*60000;f.remainingMs=f.phaseTotalMs;if(f.mode==='work')f.linkedMissionId='';persist();refreshFocusViews()}
+function startFocus(){const f=focusState();if(f.status==='running')return;const r=remaining(f);if(r<=0){f.remainingMs=f.phaseTotalMs}if(f.mode==='work'){const manual=String(f.v30165ManualMissionId||'');const mm=manual?(state.missions||[]).find(x=>String(x.id)===manual):null;const {cur,m}=currentInfo();f.linkedMissionId=mm?String(mm.id):(cur&&m?String(cur.id):'');if(f.linkedMissionId)ensureCurrentRunning(f.linkedMissionId)}else if(f.linkedMissionId)ensureCurrentPaused(f.linkedMissionId);f.remainingMs=remaining(f)||f.phaseTotalMs;f.deadlineAt=Date.now()+f.remainingMs;f.status='running';persist();refreshFocusViews();queueFocusDesktop('started',f.mode==='break'?'Descanso':'Enfoque');chimeSoft()}
+function pauseFocus(){const f=focusState();if(f.status!=='running')return;f.remainingMs=remaining(f);f.deadlineAt=null;f.status='paused';if(f.mode==='work'&&f.linkedMissionId)ensureCurrentPaused(f.linkedMissionId);persist();refreshFocusViews();queueFocusDesktop('paused','Sesión pausada')}
 function toggleFocus(){const f=focusState();if(f.status==='running')pauseFocus();else startFocus()}
-function resetFocus(){const f=focusState();if(f.mode==='work'&&f.linkedMissionId)ensureCurrentPaused(f.linkedMissionId);f.status='ready';f.deadlineAt=null;f.phaseTotalMs=(f.mode==='work'?f.workMin:f.breakMin)*60000;f.remainingMs=f.phaseTotalMs;persist();renderFocusDock()}
+function resetFocus(){const f=focusState();if(f.mode==='work'&&f.linkedMissionId)ensureCurrentPaused(f.linkedMissionId);f.status='ready';f.deadlineAt=null;f.phaseTotalMs=(f.mode==='work'?f.workMin:f.breakMin)*60000;f.remainingMs=f.phaseTotalMs;persist();refreshFocusViews()}
 function skipFocus(){const f=focusState(),elapsed=Math.max(0,Number(f.phaseTotalMs||0)-remaining(f));if(f.mode==='work'){if(f.linkedMissionId)ensureCurrentPaused(f.linkedMissionId);if(elapsed>=1000)recordFocus(elapsed,'skipped');setPhase('break');notify('Break ready',fmtDuration(f.breakMin*60000));}else{setPhase('work');notify('Work block ready',fmtDuration(f.workMin*60000));}chimeSoft()}
-function finishPhase(){if(finishing)return;finishing=true;try{const f=focusState();if(f.status!=='running'||remaining(f)>0)return;if(f.mode==='work'){if(f.linkedMissionId)ensureCurrentPaused(f.linkedMissionId);recordFocus(f.phaseTotalMs,'completed');const mins=f.breakMin,autoBreak=f.v30165AutoBreak===true;setPhase('break');notify('Focus block complete','Break ready · '+mins+' min');if(autoBreak)setTimeout(startFocus,120);}else{setPhase('work');notify('Break complete','Next work block is ready.');}chime();}finally{finishing=false}}
-function applyPreset(name,w,b){const f=focusState();if(f.status==='running'&&!confirm('Reset the running Focus block and change preset?'))return;if(f.mode==='work'&&f.linkedMissionId)ensureCurrentPaused(f.linkedMissionId);f.preset=name;f.workMin=clamp(w,1,180,25);f.breakMin=clamp(b,1,60,5);f.mode='work';f.status='ready';f.deadlineAt=null;f.phaseTotalMs=f.workMin*60000;f.remainingMs=f.phaseTotalMs;f.linkedMissionId='';persist();renderFocusDock()}
+function finishPhase(){if(finishing)return;finishing=true;try{const f=focusState();if(f.status!=='running'||remaining(f)>0)return;if(f.mode==='work'){if(f.linkedMissionId)ensureCurrentPaused(f.linkedMissionId);recordFocus(f.phaseTotalMs,'completed');const mins=f.breakMin,autoBreak=f.v30165AutoBreak===true;setPhase('break');queueFocusDesktop('completed','Sesión terminada: descanso listo');notify('Focus block complete','Break ready · '+mins+' min');if(autoBreak)setTimeout(startFocus,120);}else{setPhase('work');queueFocusDesktop('completed','Descanso terminado: nuevo bloque listo');notify('Break complete','Next work block is ready.');}chime();}finally{finishing=false}}
+function applyPreset(name,w,b){const f=focusState();if(f.status==='running'&&!confirm('Reset the running Focus block and change preset?'))return;if(f.mode==='work'&&f.linkedMissionId)ensureCurrentPaused(f.linkedMissionId);f.preset=name;f.workMin=clamp(w,1,180,25);f.breakMin=clamp(b,1,60,5);f.mode='work';f.status='ready';f.deadlineAt=null;f.phaseTotalMs=f.workMin*60000;f.remainingMs=f.phaseTotalMs;f.linkedMissionId='';persist();refreshFocusViews()}
 function todayFocusStats(){const arr=focusSessions().filter(s=>String(s.date||'').slice(0,10)===today()),ms=arr.reduce((a,s)=>a+Number(s.elapsedMs||0),0),blocks=arr.filter(s=>s.status==='completed').length;return {ms,blocks,sessions:arr.length}}
 function chimeSoft(){try{if(focusState().v30165Sound===false)return;const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const c=new C(),o=c.createOscillator(),g=c.createGain();o.frequency.value=620;g.gain.setValueAtTime(.025,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.08);o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.09);setTimeout(()=>c.close(),150)}catch(_){}}
 function chime(){try{if(focusState().v30165Sound===false)return;const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const c=new C();[0,0.14].forEach((d,i)=>{const o=c.createOscillator(),g=c.createGain();o.frequency.value=i?880:660;g.gain.setValueAtTime(.045,c.currentTime+d);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d+.18);o.connect(g);g.connect(c.destination);o.start(c.currentTime+d);o.stop(c.currentTime+d+.2)});setTimeout(()=>c.close(),500)}catch(_){}}
 function focusHistoryHtml(){const rows=focusSessions().slice(0,5);return rows.length?rows.map(s=>`<div class="v30162-focus-history-row"><span>${esc(s.missionName||'Unassigned Focus')}</span><b>${fmtDuration(s.elapsedMs)}</b></div>`).join(''):'<div class="v30162-focus-history-row"><span>No Focus blocks saved yet</span><b>—</b></div>'}
-function ensureFocusDock(){let root=document.getElementById('v30162FocusDock');if(!root){root=document.createElement('div');root.id='v30162FocusDock';document.body.appendChild(root)}return root}
-function renderFocusDock(){
-  const f=focusState(),root=ensureFocusDock(),r=remaining(f),m=linkedMission(f),cur=currentInfo(),stats=todayFocusStats();
-  /* v3.0.174: icon-only Focus trigger stacked above Quick Capture; full controls deploy outside the sidebar. */
-  f.dockMode='compact';
-  root.dataset.expanded=f.expanded?'1':'0';
-  root.dataset.dockMode='button';
-  const sidebar=document.getElementById('v30171Sidebar');
-  if(sidebar&&root.parentElement!==sidebar)sidebar.appendChild(root);
-  const context=f.mode==='work'?(m?m.name:(cur.m?'Ready to link · '+cur.m.name:'Unassigned Focus')):'Recovery block';
-  root.innerHTML=`<div class="v30173-focus-wrap" data-mode="${f.mode}">
-    <button type="button" class="v30173-focus-trigger" data-v30162-focus="expand" aria-expanded="${f.expanded?'true':'false'}" aria-label="${f.expanded?'Close':'Open'} Focus controls" title="${f.expanded?'Close Focus controls':'Focus · '+fmtTimer(r)}">
-      <span class="v30173-focus-trigger-icon">⏱</span>
-      <b data-v30162-time>${fmtTimer(r)}</b>
-      <span class="v30173-focus-trigger-chevron">${f.expanded?'⌄':'⌃'}</span>
-    </button>
-    <div class="v30162-focus-panel v30173-focus-panel ${f.expanded?'v30162-open':''}">
-      <div class="v30173-focus-head">
-        <div class="v30173-focus-head-copy"><small>${f.mode==='work'?'FOCUS · WORK':'FOCUS · BREAK'}</small><b data-v30162-link>${esc(context)}</b><span>${esc(activeChapterLabel())}</span></div>
-        <button type="button" class="v30173-focus-close" data-v30162-focus="expand" title="Close Focus controls" aria-label="Close Focus controls">×</button>
-      </div>
-      <div class="v30173-focus-clock"><b data-v30162-time>${fmtTimer(r)}</b><span>${f.status==='running'?'Running':f.status==='paused'?'Paused':'Ready'}</span></div>
-      <div class="v30162-focus-row v30173-focus-presets"><button type="button" class="v30162-focus-preset ${f.preset==='25/5'?'active':''}" data-v30162-preset="25/5">25 / 5</button><button type="button" class="v30162-focus-preset ${f.preset==='50/10'?'active':''}" data-v30162-preset="50/10">50 / 10</button><button type="button" class="v30162-focus-preset ${f.preset==='custom'?'active':''}" data-v30162-preset="custom">Custom</button></div>
-      <div class="v30162-focus-actions v30173-focus-actions"><button type="button" class="primary" data-v30162-focus="toggle">${f.status==='running'?'Pause':f.status==='paused'?'Resume':'Start'} ${f.mode==='work'?'Work':'Break'}</button><button type="button" data-v30162-focus="skip">Skip</button><button type="button" data-v30162-focus="reset">Reset</button><button type="button" data-v30162-focus="switch">${f.mode==='work'?'Break':'Work'}</button></div>
-      <div class="v30162-focus-custom v30173-focus-custom"><label>Work min<input id="v30162WorkMin" type="number" min="1" max="180" value="${f.workMin}"></label><label>Break min<input id="v30162BreakMin" type="number" min="1" max="60" value="${f.breakMin}"></label><button type="button" data-v30162-focus="apply-custom">Apply</button></div>
-      <div class="v30162-focus-stats v30173-focus-stats"><div class="v30162-focus-stat"><small>Today</small><b>${fmtDuration(stats.ms)}</b></div><div class="v30162-focus-stat"><small>Completed</small><b>${stats.blocks} blocks</b></div><div class="v30162-focus-stat"><small>Linked</small><b>${esc(m?m.name:'None')}</b></div></div>
-      <div class="v30173-focus-history-title">Recent Focus</div><div class="v30162-focus-history">${focusHistoryHtml()}</div>
-    </div>
-  </div>`;
+function refreshFocusViews(){
+ try{window.MichelsLifeFocusImmersive?.refresh?.()}catch(_){}
+ try{window.MichelsLifeMobileExperience?.updateFocus?.()}catch(_){}
 }
-function setFocusPanelExpanded(open){
-  const f=focusState();
-  f.dockMode='compact';
-  f.expanded=!!open;
-  persist();
-  document.getElementById('v30106Focus')?.setAttribute('hidden','');
-  renderFocusDock();
-  return f.expanded;
+function updateFocusClock(){
+ const f=focusState(),sec=Math.ceil(remaining(f)/1000);if(sec===lastSecond)return;
+ lastSecond=sec;if(f.status==='running'&&remaining(f)<=0)finishPhase();
+ if(f.status==='running'&&f.mode==='work'&&!f.linkedMissionId){
+ const {cur,m}=currentInfo();if(cur&&m){f.linkedMissionId=String(cur.id);persist();refreshFocusViews()}}
 }
-function toggleFocusPanel(){return setFocusPanelExpanded(!focusState().expanded)}
-function closeFocusPanel(){return setFocusPanelExpanded(false)}
-function updateFocusClock(){const f=focusState(),sec=Math.ceil(remaining(f)/1000);if(sec===lastSecond)return;lastSecond=sec;document.querySelectorAll('#v30162FocusDock [data-v30162-time]').forEach(el=>el.textContent=fmtTimer(remaining(f)));if(f.status==='running'&&remaining(f)<=0)finishPhase();if(f.status==='running'&&f.mode==='work'&&!f.linkedMissionId){const {cur,m}=currentInfo();if(cur&&m){f.linkedMissionId=String(cur.id);persist();document.querySelectorAll('#v30162FocusDock [data-v30162-link]').forEach(link=>link.textContent=m.name);}}}
-function enhanceFocusButtons(root=document){root.querySelectorAll&&root.querySelectorAll('[data-v30106-action="focus"]').forEach(b=>{b.removeAttribute('data-v30106-action');b.setAttribute('data-v30162-focus','open');b.textContent=/focus/i.test(b.textContent||'')?'Pomodoro':b.textContent;b.title='Open Pomodoro Focus Timer'});}
-
 /* ---------- Integration ---------- */
 const prevTabs=window.renderTabs;
 window.renderTabs=function(){const out=typeof prevTabs==='function'?prevTabs.apply(this,arguments):undefined;const wrap=document.getElementById('tabs');if(wrap&&!wrap.querySelector('[data-tab="story"]')){const b=document.createElement('button');b.className='tab-btn'+(state.activeTab==='story'?' active':'');b.dataset.tab='story';b.textContent='Story';const more=wrap.querySelector('#v131More,.v131-more');if(more)wrap.insertBefore(b,more);else wrap.appendChild(b);}wrap&&wrap.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===state.activeTab));return out};try{renderTabs=window.renderTabs}catch(_){}
 const prevMain=window.renderMain;
 window.renderMain=function(){if(state.activeTab==='story'){const main=document.getElementById('main');if(main){main.innerHTML='<section class="tab active" id="tab-story">'+renderStory()+'</section>';return}}return typeof prevMain==='function'?prevMain.apply(this,arguments):undefined};try{renderMain=window.renderMain}catch(_){}
-const prevRenderAll=window.renderAll;
-if(typeof prevRenderAll==='function'){window.renderAll=function(){const out=prevRenderAll.apply(this,arguments);setTimeout(()=>{enhanceFocusButtons(document);renderFocusDock()},0);return out};try{renderAll=window.renderAll}catch(_){}}
-
-document.addEventListener('click',function(e){const b=e.target&&e.target.closest&&e.target.closest('[data-v30162-focus]');if(b){const a=b.dataset.v30162Focus;e.preventDefault();e.stopPropagation();if(a==='toggle')toggleFocus();else if(a==='expand'||a==='open'){const f=focusState();f.dockMode='compact';f.expanded=a==='open'?true:!f.expanded;persist();document.getElementById('v30106Focus')?.setAttribute('hidden','');renderFocusDock();}else if(a==='minimize'){const f=focusState();f.expanded=false;f.dockMode='mini';persist();renderFocusDock();}else if(a==='restore'){const f=focusState();f.dockMode='compact';f.expanded=false;persist();renderFocusDock();}else if(a==='skip')skipFocus();else if(a==='reset')resetFocus();else if(a==='switch')setPhase(focusState().mode==='work'?'break':'work');else if(a==='apply-custom'){const w=document.getElementById('v30162WorkMin')?.value,br=document.getElementById('v30162BreakMin')?.value;applyPreset('custom',w,br)}return;}const p=e.target&&e.target.closest&&e.target.closest('[data-v30162-preset]');if(p){e.preventDefault();if(p.dataset.v30162Preset==='25/5')applyPreset('25/5',25,5);else if(p.dataset.v30162Preset==='50/10')applyPreset('50/10',50,10);else{const f=focusState();f.preset='custom';persist();renderFocusDock();}return;}const s=e.target&&e.target.closest&&e.target.closest('[data-v30162-story]');if(!s)return;const a=s.dataset.v30162Story,id=s.dataset.id;e.preventDefault();if(a==='close'){const ch=chapters().find(x=>String(x.id)===String(id));if(ch&&confirm('Close Chapter '+roman(chapterNumber(ch))+' · '+ch.name+' today? Its summary will be frozen.')){closeChapter(id);renderAll();}}else if(a==='edit'){const ch=chapters().find(x=>String(x.id)===String(id));if(ch){const name=prompt('Chapter name',ch.name);if(name&&name.trim()){ch.name=name.trim();const motto=prompt('Motto / subtitle',ch.motto||'');if(motto!=null)ch.motto=motto.trim();persist();renderAll();}}}else if(a==='delete-chapter'){const ch=chapters().find(x=>String(x.id)===String(id));if(ch&&confirm('Delete archived chapter “'+ch.name+'”? The missions themselves will not be deleted.')){deleteChapter(id);renderAll();}}else if(a==='delete-moment'){if(confirm('Delete this Story Moment?')){deleteMoment(s.dataset.chapter,s.dataset.moment);renderAll();}}},true);
+document.addEventListener('click',function(e){const s=e.target&&e.target.closest&&e.target.closest('[data-v30162-story]');if(!s)return;const a=s.dataset.v30162Story,id=s.dataset.id;e.preventDefault();if(a==='close'){const ch=chapters().find(x=>String(x.id)===String(id));if(ch&&confirm('Close Chapter '+roman(chapterNumber(ch))+' · '+ch.name+' today? Its summary will be frozen.')){closeChapter(id);renderAll();}}else if(a==='edit'){const ch=chapters().find(x=>String(x.id)===String(id));if(ch){const name=prompt('Chapter name',ch.name);if(name&&name.trim()){ch.name=name.trim();const motto=prompt('Motto / subtitle',ch.motto||'');if(motto!=null)ch.motto=motto.trim();persist();renderAll();}}}else if(a==='delete-chapter'){const ch=chapters().find(x=>String(x.id)===String(id));if(ch&&confirm('Delete archived chapter “'+ch.name+'”? The missions themselves will not be deleted.')){deleteChapter(id);renderAll();}}else if(a==='delete-moment'){if(confirm('Delete this Story Moment?')){deleteMoment(s.dataset.chapter,s.dataset.moment);renderAll();}}},true);
 
 document.addEventListener('submit',function(e){if(e.target&&e.target.id==='v30162ChapterForm'){e.preventDefault();const fd=new FormData(e.target),r=createChapter(fd.get('name'),fd.get('motto'),fd.get('start'));if(!r.ok)notify('Chapter not started',r.msg);else{notify('New chapter started',r.ch.name);renderAll();}}else if(e.target&&e.target.id==='v30162MomentForm'){e.preventDefault();const fd=new FormData(e.target);if(addMoment(e.target.dataset.chapter,fd.get('title'),fd.get('detail'),fd.get('date'))){notify('Story Moment added',String(fd.get('title')||''));renderAll();}}},true);
 
-let enhanceTimer=0;const mo=new MutationObserver(()=>{clearTimeout(enhanceTimer);enhanceTimer=setTimeout(()=>enhanceFocusButtons(document),40)});try{mo.observe(document.body,{childList:true,subtree:true})}catch(_){}
 window.addEventListener('beforeunload',()=>{persist()});
 
 /* Restore a running timer from persisted absolute deadline. */
 focusState();if(focusState().status==='running'){if(remaining(focusState())<=0)setTimeout(finishPhase,0);else if(focusState().mode==='work'&&focusState().linkedMissionId)ensureCurrentRunning(focusState().linkedMissionId);else if(focusState().mode==='break'&&focusState().linkedMissionId)ensureCurrentPaused(focusState().linkedMissionId);}
-enhanceFocusButtons(document);renderFocusDock();tickTimer=setInterval(updateFocusClock,250);updateFocusClock();
-window.FocusStoryV30162={version:VERSION,focusState,remaining,startFocus,pauseFocus,toggleFocus,resetFocus,skipFocus,focusSessions,chapters,activeChapter,chapterStats,createChapter,closeChapter,addMoment,renderStory,renderFocusDock,setFocusPanelExpanded,toggleFocusPanel,closeFocusPanel};
+refreshFocusViews();tickTimer=setInterval(updateFocusClock,250);updateFocusClock();
+window.FocusStoryV30162={version:VERSION,focusState,remaining,startFocus,pauseFocus,toggleFocus,resetFocus,skipFocus,focusSessions,chapters,activeChapter,chapterStats,createChapter,closeChapter,addMoment,renderStory,applyPreset,refreshFocusViews,takeWindowsNotification};
 window.__MICHELS_LIFE_BUILD__=VERSION;
 console.info("Michel's Life build "+VERSION+' — Pomodoro + Story Chapters loaded');
 })();
@@ -28001,10 +27923,7 @@ function todayMissionsSafe(){try{return typeof todayMissions==='function'?todayM
 function doneToday(m){const k=todayKey();return !!(m.completions||[]).some(c=>String(c.date||c.at||'').slice(0,10)===k)}
 function homeSnapshot(){const tm=todayMissionsSafe(),fs=focusSessions().filter(x=>String(x.date||x.endedAt||'').slice(0,10)===todayKey()),focusMs=fs.reduce((a,x)=>a+Number(x.elapsedMs||0),0),tomatoes=fs.filter(x=>x.status==='completed').length,b=activeBoss();return {level:(typeof calcLevel==='function'?calcLevel(Number(state.xp||0)).level:1),todayDone:tm.filter(doneToday).length,todayTotal:tm.length,focusLabel:fmtFocus(focusMs),tomatoes,boss:b?{id:b.p.id,name:b.p.name,pct:b.s.pct}:null}}
 
-function augmentFocus(){const dock=document.getElementById('v30162FocusDock'),panel=dock?.querySelector('.v30162-focus-panel');if(!panel||panel.querySelector('.v30165-focus-extra'))return;const f=focusState();if(!f)return;if(typeof f.v30165Sound!=='boolean')f.v30165Sound=true;if(typeof f.v30165AutoBreak!=='boolean')f.v30165AutoBreak=false;const stats=focusSessions().filter(x=>String(x.date||'').slice(0,10)===todayKey()),tomatoes=stats.filter(x=>x.status==='completed').length;const first=panel.querySelector('.v30162-focus-section');if(first){const presets=first.querySelector('.v30162-focus-row');if(presets&&!presets.querySelector('[data-v30165-focus="deep"]')){const b=document.createElement('button');b.type='button';b.className='v30162-focus-preset v30165-focus-deep';b.dataset.v30165Action='deep';b.textContent='Deep 90 / 15';presets.appendChild(b)}}const extra=document.createElement('div');extra.className='v30162-focus-section v30165-focus-extra';const opts=missions().filter(m=>!m.archived&&!m.hidden).slice().sort((a,b)=>String(a.name).localeCompare(String(b.name)));extra.innerHTML='<div class="v30165-focus-controls"><label>Focus mission<select data-v30165-focus-select><option value="">Auto · Current Mission</option>'+opts.map(m=>'<option value="'+esc(m.id)+'" '+(String(f.v30165ManualMissionId||'')===String(m.id)?'selected':'')+'>'+esc(m.name)+'</option>').join('')+'</select></label><div><small class="muted">TODAY</small><div style="font-weight:950;margin-top:5px"><span class="v30165-tomato">🍅 '+tomatoes+'</span> completed</div></div></div><div class="v30165-focus-switches"><label><input type="checkbox" data-v30165-focus-toggle="sound" '+(f.v30165Sound!==false?'checked':'')+'> Sound</label><label><input type="checkbox" data-v30165-focus-toggle="autobreak" '+(f.v30165AutoBreak===true?'checked':'')+'> Auto-start break</label></div>';panel.appendChild(extra)}
-function applyDeep(){const api=focusApi(),f=focusState();if(!f||!api)return;if(f.status==='running'&&!confirm('Reset the running Focus block and switch to Deep Focus?'))return;if(f.status==='running')api.pauseFocus?.();f.preset='deep';f.workMin=90;f.breakMin=15;f.mode='work';f.status='ready';f.deadlineAt=null;f.phaseTotalMs=90*60000;f.remainingMs=f.phaseTotalMs;f.linkedMissionId='';saveNow();api.renderFocusDock?.();setTimeout(augmentFocus,0)}
-
-function refreshRpg(){ensureDayTabs();augmentProjects();augmentFocus();checkBossDefeats();try{window.ChapterHomeNavV30163?.renderChapterCard?.()}catch(_){} }
+function refreshRpg(){ensureDayTabs();augmentProjects();checkBossDefeats();try{window.ChapterHomeNavV30163?.renderChapterCard?.()}catch(_){} }
 
 /* Final nav authority: preserve the existing day-page implementation, only restore its entry buttons. */
 const prevTabs=window.renderTabs;window.renderTabs=function(){const out=typeof prevTabs==='function'?prevTabs.apply(this,arguments):undefined;ensureDayTabs();return out};try{renderTabs=window.renderTabs}catch(_){}
@@ -28019,9 +27938,9 @@ document.addEventListener('click',function(e){
  const b=e.target&&e.target.closest&&e.target.closest('[data-v30165-action]');if(!b)return;const a=b.dataset.v30165Action;e.preventDefault();e.stopPropagation();if(a==='life-build')openLifeBuild();else if(a==='open-projects'){state.activeTab='projects';saveNow();try{renderAll()}catch(_){}}else if(a==='setup-project-rpg')openProjectSetup(b.dataset.id);else if(a==='phase-up'||a==='phase-down'){const row=b.closest('.v30165-order-row'),list=row?.parentElement;if(!row||!list)return;if(a==='phase-up'&&row.previousElementSibling)list.insertBefore(row,row.previousElementSibling);if(a==='phase-down'&&row.nextElementSibling)list.insertBefore(row.nextElementSibling,row);[...list.children].forEach((r,i)=>{const n=r.querySelector('.v30165-phase-index');if(n)n.textContent=i+1})}else if(a==='deep')applyDeep();
 },true);
 document.addEventListener('submit',function(e){if(e.target&&e.target.id==='v30165ProjectRpgForm'){e.preventDefault();saveProjectSetup(e.target)}},true);
-document.addEventListener('change',function(e){const f=focusState();if(!f)return;if(e.target&&e.target.matches('[data-v30165-focus-select]')){f.v30165ManualMissionId=String(e.target.value||'');saveNow();const m=mission(f.v30165ManualMissionId);toastNow('Focus link',m?'Pomodoro will link to '+m.name:'Pomodoro will use Current Mission')}else if(e.target&&e.target.matches('[data-v30165-focus-toggle]')){if(e.target.dataset.v30165FocusToggle==='sound')f.v30165Sound=!!e.target.checked;else if(e.target.dataset.v30165FocusToggle==='autobreak')f.v30165AutoBreak=!!e.target.checked;saveNow()}},true);
 
-let q=0;const mo=new MutationObserver(()=>{clearTimeout(q);q=setTimeout(()=>{ensureDayTabs();augmentProjects();augmentFocus()},45)});try{mo.observe(document.body,{childList:true,subtree:true})}catch(_){}
+
+let q=0;const mo=new MutationObserver(()=>{clearTimeout(q);q=setTimeout(()=>{ensureDayTabs();augmentProjects()},45)});try{mo.observe(document.body,{childList:true,subtree:true})}catch(_){}
 syncAllChains();checkBossDefeats();setTimeout(refreshRpg,0);setTimeout(refreshRpg,220);setTimeout(refreshRpg,800);
 window.RPGSystemsV30165={version:VERSION,ensureDayTabs,homeSnapshot,lifeBuildHtml,openLifeBuild,projects,bossState,activeBoss,chainLocked,syncAllChains,checkBossDefeats,augmentProjects,augmentFocus,openProjectSetup};
 window.__MICHELS_LIFE_BUILD__=VERSION;
@@ -28873,7 +28792,7 @@ document.addEventListener('click',function(e){
  }
  const focusAction=e.target?.closest?.('[data-mlv-focus-action]');if(focusAction){
    e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
-   if(focusAction.dataset.mlvFocusAction==='open'){try{window.FocusStoryV30162?.setFocusPanelExpanded?.(true)}catch(_){}return}
+   if(focusAction.dataset.mlvFocusAction==='open'){try{window.MichelsLifeFocusImmersive?.open?.()}catch(_){}return}
    const core=focusAction.closest('[data-mlv-focus-core]');
    applyFocusSettings('custom',core?.querySelector('[data-mlv-focus-work]')?.value,core?.querySelector('[data-mlv-focus-break]')?.value);return
  }
@@ -28894,258 +28813,46 @@ console.info("Michel's Life build "+VERSION+' — permanent left navigation + Se
 
 
 <!-- v3.0.174: equal-size Focus launcher stacked above Quick Capture -->
-<style id="v30173-one-button-focus-style">
-@media(min-width:961px){
-  #v30171Sidebar{overflow:visible!important}
-  #v30171PrimaryNav{flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;padding-bottom:76px!important;scrollbar-width:thin!important}
-  #v30162FocusDock{position:absolute!important;left:14px!important;right:14px!important;bottom:14px!important;top:auto!important;width:auto!important;height:42px!important;z-index:525!important;pointer-events:none!important}
-  #v30162FocusDock .v30173-focus-wrap{position:relative!important;width:100%!important;height:42px!important;overflow:visible!important;pointer-events:none!important}
-  #v30162FocusDock .v30173-focus-trigger{pointer-events:auto!important;width:104px!important;height:42px!important;padding:0 10px!important;display:grid!important;grid-template-columns:18px 1fr 14px!important;align-items:center!important;gap:6px!important;border-radius:13px!important;border:1px solid rgba(var(--ui-gold-rgb,255,209,102),.30)!important;background:linear-gradient(165deg,rgba(var(--ui-panel-rgb,7,13,25),.985),rgba(var(--ui-bg-rgb,7,13,22),.97))!important;color:var(--text)!important;box-shadow:0 10px 28px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.06)!important;backdrop-filter:blur(18px)!important;cursor:pointer!important}
-  #v30162FocusDock .v30173-focus-trigger:hover{transform:translateY(-1px)!important;border-color:rgba(var(--ui-gold-rgb,255,209,102),.55)!important}
-  #v30162FocusDock .v30173-focus-trigger-icon{font-size:15px!important;line-height:1!important}
-  #v30162FocusDock .v30173-focus-trigger b{font:900 12px/1 var(--mlv-ui-font)!important;font-variant-numeric:tabular-nums!important;letter-spacing:.01em!important;white-space:nowrap!important}
-  #v30162FocusDock .v30173-focus-trigger-chevron{font-size:12px!important;color:var(--muted)!important}
-  #v30162FocusDock[data-expanded="1"] .v30173-focus-trigger{border-color:rgba(var(--ui-gold-rgb,255,209,102),.58)!important;box-shadow:0 0 0 1px rgba(var(--ui-gold-rgb,255,209,102),.08),0 12px 32px rgba(0,0,0,.38)!important}
-  #v30162FocusDock .v30173-focus-panel{pointer-events:auto!important;position:absolute!important;left:calc(100% + 14px)!important;right:auto!important;bottom:0!important;width:354px!important;max-height:calc(100vh - 34px)!important;overflow:auto!important;padding:14px!important;border:1px solid rgba(var(--ui-gold-rgb,255,209,102),.26)!important;border-radius:18px!important;background:linear-gradient(165deg,rgba(var(--ui-panel-rgb,7,13,25),.992),rgba(var(--ui-bg-rgb,8,15,26),.985))!important;box-shadow:0 24px 70px rgba(0,0,0,.50),inset 0 1px 0 rgba(255,255,255,.065)!important;backdrop-filter:blur(22px)!important;display:none!important}
-  #v30162FocusDock[data-expanded="1"] .v30173-focus-panel{display:block!important}
-}
-.v30173-focus-head{display:flex!important;align-items:flex-start!important;justify-content:space-between!important;gap:12px!important;margin-bottom:10px!important}.v30173-focus-head-copy{display:flex!important;flex-direction:column!important;min-width:0!important;gap:2px!important}.v30173-focus-head-copy small{font-size:8px!important;font-weight:950!important;letter-spacing:.15em!important;color:var(--ui-gold,var(--gold,#ffd166))!important}.v30173-focus-head-copy b{font-size:13px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}.v30173-focus-head-copy span{font-size:9.5px!important;color:var(--muted)!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}.v30173-focus-close{width:28px!important;height:28px!important;flex:0 0 28px!important;display:grid!important;place-items:center!important;padding:0!important;border-radius:9px!important;border:1px solid rgba(255,255,255,.10)!important;background:rgba(255,255,255,.04)!important;color:var(--muted)!important;font-size:17px!important;cursor:pointer!important}.v30173-focus-clock{display:flex!important;align-items:baseline!important;justify-content:space-between!important;gap:10px!important;padding:10px 12px!important;margin-bottom:10px!important;border-radius:13px!important;background:rgba(255,255,255,.035)!important;border:1px solid rgba(255,255,255,.075)!important}.v30173-focus-clock b{font-size:30px!important;line-height:1!important;font-weight:950!important;font-variant-numeric:tabular-nums!important;letter-spacing:-.04em!important}.v30173-focus-clock span{font-size:9px!important;font-weight:850!important;color:var(--muted)!important;text-transform:uppercase!important;letter-spacing:.08em!important}.v30173-focus-presets{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:6px!important;margin-bottom:8px!important}.v30173-focus-actions{grid-template-columns:2fr 1fr 1fr 1fr!important;margin-top:0!important}.v30173-focus-custom{margin-top:8px!important}.v30173-focus-stats{margin-top:10px!important}.v30173-focus-history-title{margin:12px 0 7px!important;font-size:9px!important;font-weight:900!important;letter-spacing:.10em!important;text-transform:uppercase!important;color:var(--muted)!important}
-@media(max-width:960px){
-  #v30162FocusDock{position:fixed!important;left:12px!important;right:auto!important;bottom:12px!important;width:104px!important;height:42px!important;z-index:525!important;pointer-events:none!important}
-  #v30162FocusDock .v30173-focus-trigger{pointer-events:auto!important;width:104px!important;height:42px!important;padding:0 10px!important;display:grid!important;grid-template-columns:18px 1fr 14px!important;align-items:center!important;gap:6px!important;border-radius:13px!important;border:1px solid rgba(var(--ui-gold-rgb,255,209,102),.30)!important;background:rgba(var(--ui-panel-rgb,7,13,25),.98)!important;color:var(--text)!important}
-  #v30162FocusDock .v30173-focus-panel{pointer-events:auto!important;position:fixed!important;left:12px!important;right:12px!important;bottom:62px!important;width:auto!important;max-height:calc(100vh - 82px)!important;overflow:auto!important;padding:14px!important;border-radius:18px!important;background:rgba(var(--ui-panel-rgb,7,13,25),.99)!important;border:1px solid rgba(var(--ui-gold-rgb,255,209,102),.25)!important;display:none!important}
-  #v30162FocusDock[data-expanded="1"] .v30173-focus-panel{display:block!important}
-}
-</style>
-<script id="v30173-focus-runtime">
-(function(){
-  function dock(){const side=document.getElementById('v30171Sidebar'),root=document.getElementById('v30162FocusDock');if(side&&root&&root.parentElement!==side)side.appendChild(root)}
-  setTimeout(dock,0);setTimeout(dock,250);setTimeout(dock,900);
-  const mo=new MutationObserver(()=>dock());try{mo.observe(document.body,{childList:true,subtree:true})}catch(_){}
-  document.addEventListener('click',function(e){const root=document.getElementById('v30162FocusDock');if(!root||root.dataset.expanded!=='1'||root.contains(e.target))return;root.querySelector('[data-v30162-focus="expand"]')?.click();},false);
-  document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;const root=document.getElementById('v30162FocusDock');if(!root||root.dataset.expanded!=='1')return;root.querySelector('[data-v30162-focus="expand"]')?.click();});
-})();
-</script>
+
+
 <script id="v30173-build-marker">window.__MICHELS_LIFE_BUILD__='3.0.209';</script>
 
 <!-- v3.0.174: equal-size stacked Focus + Quick Capture buttons; Next Up collision guard -->
-<style id="v30174-stacked-action-buttons-style">
-:root{--v30174-action-size:52px;--v30174-action-gap:10px;--v30174-action-left:18px}
 
-/* Both floating actions share exactly the same geometry. */
-#v30106QuickFab,
-#v30162FocusDock .v30173-focus-trigger{
-  width:var(--v30174-action-size)!important;
-  min-width:var(--v30174-action-size)!important;
-  height:var(--v30174-action-size)!important;
-  min-height:var(--v30174-action-size)!important;
-  max-width:var(--v30174-action-size)!important;
-  max-height:var(--v30174-action-size)!important;
-  padding:0!important;
-  border-radius:50%!important;
-  display:grid!important;
-  place-items:center!important;
-  line-height:1!important;
-  box-sizing:border-box!important;
-}
-#v30106QuickFab{
-  position:fixed!important;
-  left:var(--v30174-action-left)!important;
-  bottom:18px!important;
-  z-index:90018!important;
-  font-size:24px!important;
-  font-weight:850!important;
-}
-#v30162FocusDock{
-  position:fixed!important;
-  left:var(--v30174-action-left)!important;
-  right:auto!important;
-  bottom:calc(18px + var(--v30174-action-size) + var(--v30174-action-gap))!important;
-  top:auto!important;
-  width:var(--v30174-action-size)!important;
-  height:var(--v30174-action-size)!important;
-  z-index:90020!important;
-  pointer-events:none!important;
-}
-#v30162FocusDock .v30173-focus-wrap{
-  width:var(--v30174-action-size)!important;
-  height:var(--v30174-action-size)!important;
-  overflow:visible!important;
-  pointer-events:none!important;
-}
-#v30162FocusDock .v30173-focus-trigger{
-  pointer-events:auto!important;
-  grid-template-columns:1fr!important;
-  gap:0!important;
-  background:linear-gradient(165deg,rgba(var(--ui-panel-rgb,7,13,25),.985),rgba(var(--ui-bg-rgb,7,13,22),.97))!important;
-  border:1px solid rgba(var(--ui-accent-rgb,117,228,255),.42)!important;
-  box-shadow:0 12px 30px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.07)!important;
-}
-#v30162FocusDock .v30173-focus-trigger:hover{
-  transform:translateY(-1px)!important;
-  border-color:rgba(var(--ui-accent-rgb,117,228,255),.72)!important;
-}
-#v30162FocusDock .v30173-focus-trigger-icon{font-size:22px!important;line-height:1!important}
-#v30162FocusDock .v30173-focus-trigger b,
-#v30162FocusDock .v30173-focus-trigger-chevron{display:none!important}
-#v30162FocusDock[data-expanded="1"] .v30173-focus-trigger{
-  border-color:rgba(var(--ui-gold-rgb,255,209,102),.66)!important;
-  box-shadow:0 0 0 1px rgba(var(--ui-gold-rgb,255,209,102),.10),0 12px 32px rgba(0,0,0,.42)!important;
-}
-
-/* Reserve the lower-left navigation area for the two buttons. */
-#v30171PrimaryNav{padding-bottom:142px!important}
-
-/* On desktop the Next Up dock belongs only to the main content area, never over the sidebar buttons. */
-@media(min-width:961px){
-  .v3099-nextup-dock{
-    left:auto!important;
-    right:14px!important;
-    transform:none!important;
-    width:min(1040px,calc(100vw - var(--v30171-nav-w,226px) - 56px))!important;
-    animation:none!important;
-  }
-  #v30162FocusDock .v30173-focus-panel{
-    pointer-events:auto!important;
-    position:fixed!important;
-    left:calc(12px + var(--v30171-nav-w,226px) + 14px)!important;
-    right:auto!important;
-    bottom:calc(var(--v3099-dock-space,0px) + 14px)!important;
-    width:354px!important;
-    max-height:calc(100vh - var(--v3099-dock-space,0px) - 30px)!important;
-    overflow:auto!important;
-  }
-}
-
-/* Narrow windows keep the two buttons together and lift them above Next Up. */
-@media(max-width:960px){
-  :root{--v30174-action-left:12px}
-  #v30106QuickFab{bottom:calc(var(--v3099-dock-space,0px) + 12px)!important}
-  #v30162FocusDock{bottom:calc(var(--v3099-dock-space,0px) + 12px + var(--v30174-action-size) + var(--v30174-action-gap))!important}
-  #v30162FocusDock .v30173-focus-panel{
-    position:fixed!important;
-    left:12px!important;
-    right:12px!important;
-    bottom:calc(var(--v3099-dock-space,0px) + 12px + var(--v30174-action-size) + var(--v30174-action-size) + var(--v30174-action-gap))!important;
-    width:auto!important;
-    max-height:calc(100vh - var(--v3099-dock-space,0px) - 145px)!important;
-    overflow:auto!important;
-  }
-}
-</style>
 <script id="v30174-build-marker">window.__MICHELS_LIFE_BUILD__='3.0.209';</script>
 
 
 <!-- v3.0.175: functional matched Action Dock authority -->
 <style id="v30175-action-dock-style">
-:root{--v30175-action-size:56px;--v30175-action-gap:10px;--v30175-action-left:24px}
-/* No descendant selectors here: legacy runtime compaction can collapse selector whitespace. */
-.v30173-focus-trigger{display:none!important;pointer-events:none!important}
-#v30162FocusDock{pointer-events:none!important;z-index:91000!important}
-.v30173-focus-wrap{pointer-events:none!important}
-.v30173-focus-panel{
-  pointer-events:auto!important;position:fixed!important;
-  left:calc(12px + var(--v30171-nav-w,226px) + 16px)!important;right:auto!important;
-  bottom:calc(var(--v3099-dock-space,0px) + 18px)!important;top:auto!important;width:370px!important;
-  max-height:calc(100vh - 36px)!important;overflow:auto!important;
-  padding:15px!important;border-radius:20px!important;
-  border:1px solid rgba(var(--ui-accent-rgb,117,228,255),.25)!important;
-  background:linear-gradient(160deg,rgba(var(--ui-panel-rgb,7,13,25),.995),rgba(var(--ui-bg-rgb,6,11,20),.985))!important;
-  box-shadow:0 26px 76px rgba(0,0,0,.54),0 0 0 1px rgba(255,255,255,.035) inset!important;
-  backdrop-filter:blur(24px)!important;display:none!important;
-}
-.v30173-focus-panel.v30162-open{display:block!important}
-#v30175ActionDock{
-  position:fixed!important;left:var(--v30175-action-left)!important;bottom:20px!important;
-  z-index:92000!important;display:flex!important;flex-direction:column!important;gap:var(--v30175-action-gap)!important;
-  align-items:flex-start!important;pointer-events:none!important;
-}
-.v30175-action{
-  --action-rgb:117,228,255;position:relative!important;
-  width:var(--v30175-action-size)!important;height:var(--v30175-action-size)!important;
-  min-width:var(--v30175-action-size)!important;min-height:var(--v30175-action-size)!important;
-  max-width:var(--v30175-action-size)!important;max-height:var(--v30175-action-size)!important;
-  padding:0!important;margin:0!important;border-radius:18px!important;box-sizing:border-box!important;
-  display:grid!important;place-items:center!important;pointer-events:auto!important;cursor:pointer!important;
-  color:rgb(var(--action-rgb))!important;border:1px solid rgba(var(--action-rgb),.52)!important;
-  background:linear-gradient(145deg,rgba(var(--action-rgb),.20),rgba(var(--ui-panel-rgb,7,13,25),.97) 55%,rgba(var(--ui-bg-rgb,4,9,18),.98))!important;
-  box-shadow:0 12px 30px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.09),0 0 18px rgba(var(--action-rgb),.08)!important;
-  transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease!important;font:inherit!important;overflow:visible!important;
-}
-.v30175-action:hover{transform:translateY(-2px)!important;border-color:rgba(var(--action-rgb),.82)!important;box-shadow:0 16px 34px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.11),0 0 22px rgba(var(--action-rgb),.15)!important}
-.v30175-action:active{transform:translateY(0) scale(.96)!important}
-.v30175-action:focus-visible{outline:2px solid rgba(var(--action-rgb),.92)!important;outline-offset:3px!important}
-.v30175-icon{position:relative!important;z-index:2!important;width:25px!important;height:25px!important;fill:none!important;stroke:currentColor!important;stroke-width:2!important;stroke-linecap:round!important;stroke-linejoin:round!important;pointer-events:none!important}
-#v30175FocusFab{--action-rgb:117,228,255!important}
-#v30106QuickFab{--action-rgb:176,139,255!important;position:static!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;width:var(--v30175-action-size)!important;height:var(--v30175-action-size)!important;min-width:var(--v30175-action-size)!important;min-height:var(--v30175-action-size)!important;max-width:var(--v30175-action-size)!important;max-height:var(--v30175-action-size)!important;border-radius:18px!important;padding:0!important;margin:0!important;display:grid!important;place-items:center!important;pointer-events:auto!important}
-#v30175FocusFab[data-running="1"]{box-shadow:0 12px 30px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.09),0 0 22px rgba(140,255,90,.12)!important}
-#v30175FocusFab[aria-expanded="true"]{border-color:rgba(255,209,102,.82)!important;color:#ffd166!important;box-shadow:0 16px 36px rgba(0,0,0,.48),0 0 0 1px rgba(255,209,102,.10),0 0 24px rgba(255,209,102,.14)!important}
-.v30175-running-dot{position:absolute!important;right:5px!important;top:5px!important;width:8px!important;height:8px!important;border-radius:50%!important;z-index:3!important;background:#8cff5a!important;box-shadow:0 0 10px rgba(140,255,90,.9)!important;display:none!important;pointer-events:none!important}
-#v30175FocusFab[data-running="1"] .v30175-running-dot{display:block!important}
-#v30171PrimaryNav{padding-bottom:152px!important}
-@media(max-width:960px){
-  :root{--v30175-action-left:14px}
-  #v30175ActionDock{bottom:calc(var(--v3099-dock-space,0px) + 14px)!important}
-  .v30173-focus-panel{left:12px!important;right:12px!important;bottom:calc(var(--v3099-dock-space,0px) + 82px)!important;width:auto!important;max-height:calc(100vh - var(--v3099-dock-space,0px) - 100px)!important}
-}
+/* Quick Capture only; no Focus sidebar control. */
+:root{--v30175-action-left:24px}
+#v30175ActionDock{position:fixed!important;left:var(--v30175-action-left)!important;bottom:20px!important;z-index:92000!important;display:flex!important;pointer-events:none!important}
+#v30106QuickFab.v30175-action{position:static!important;inset:auto!important;width:56px!important;height:56px!important;min-width:56px!important;min-height:56px!important;display:grid!important;place-items:center!important;margin:0!important;padding:0!important;border-radius:18px!important;border:1px solid #b08bff85!important;background:linear-gradient(145deg,#b08bff35,#07101fee)!important;color:#b08bff!important;pointer-events:auto!important;cursor:pointer!important;box-shadow:0 12px 30px #0007!important}
+#v30106QuickFab.v30175-action:focus-visible{outline:2px solid #b08bff!important;outline-offset:3px!important}
+#v30106QuickFab .v30175-icon{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+#v30171PrimaryNav{padding-bottom:76px!important}
+@media(max-width:960px){:root{--v30175-action-left:14px}#v30175ActionDock{bottom:calc(var(--v3099-dock-space,0px) + 14px)!important}}
 </style>
 <script id="v30175-action-dock-runtime">
 (function(){
-'use strict';
-if(window.__v30175ActionDockLoaded)return;window.__v30175ActionDockLoaded=true;
-const TIMER_ICON='<svg class="v30175-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 2h6"></path><path d="M12 14l3-3"></path><circle cx="12" cy="13" r="8"></circle><path d="M17.5 6.5 19 5"></path></svg>';
-const PLUS_ICON='<svg class="v30175-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>';
-function focusApi(){return window.FocusStoryV30162||null}
-function quickApi(){return window.QuickCaptureV30175||null}
+'use strict';if(window.__v30175ActionDockLoaded)return;window.__v30175ActionDockLoaded=true;
+const PLUS='<svg class="v30175-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>';
 function ensureDock(){
-  let dock=document.getElementById('v30175ActionDock');
-  if(!dock){dock=document.createElement('div');dock.id='v30175ActionDock';dock.setAttribute('aria-label','Quick actions');document.body.appendChild(dock)}
-  let focus=document.getElementById('v30175FocusFab');
-  if(!focus){focus=document.createElement('button');focus.type='button';focus.id='v30175FocusFab';focus.className='v30175-action';focus.dataset.tip='Focus';focus.setAttribute('aria-label','Open Focus timer');focus.innerHTML=TIMER_ICON+'<span class="v30175-running-dot" aria-hidden="true"></span>';dock.appendChild(focus)}
-  let quick=document.getElementById('v30106QuickFab');
-  if(!quick){quick=document.createElement('button');quick.type='button';quick.id='v30106QuickFab';document.body.appendChild(quick)}
-  quick.id='v30106QuickFab';quick.className='v30175-action';quick.removeAttribute('data-v30106-action');quick.dataset.tip='Quick mission';quick.setAttribute('aria-label','Add a quick mission');quick.innerHTML=PLUS_ICON;
-  if(quick.parentElement!==dock)dock.appendChild(quick);
-  if(focus.parentElement!==dock)dock.insertBefore(focus,dock.firstChild);
-  if(focus.dataset.bound!=='1'){
-    focus.dataset.bound='1';
-    focus.addEventListener('click',function(e){
-      e.preventDefault();e.stopPropagation();
-      const api=focusApi();
-      if(api?.toggleFocusPanel)api.toggleFocusPanel();
-      else{const old=document.querySelector('#v30162FocusDock [data-v30162-focus="expand"]');old?.click()}
-      update();
-    });
-  }
-  if(quick.dataset.bound!=='1'){
-    quick.dataset.bound='1';
-    quick.addEventListener('click',function(e){
-      e.preventDefault();e.stopPropagation();
-      const api=quickApi();
-      if(api?.open)api.open();
-      else{const fallback=[...document.querySelectorAll('[data-v30106-action="quick-capture"]')].find(x=>x!==quick);fallback?.click()}
-    });
-  }
-  update();
-  return dock;
+ let dock=document.getElementById('v30175ActionDock');
+ if(!dock){dock=document.createElement('div');dock.id='v30175ActionDock';dock.setAttribute('aria-label','Quick Capture');document.body.appendChild(dock)}
+ let quick=document.getElementById('v30106QuickFab');
+ if(!quick){quick=document.createElement('button');quick.id='v30106QuickFab';quick.type='button';document.body.appendChild(quick)}
+ quick.className='v30175-action';quick.removeAttribute('data-v30106-action');quick.dataset.tip='Quick mission';
+ quick.setAttribute('aria-label','Add a quick mission');quick.innerHTML=PLUS;
+ if(quick.parentElement!==dock)dock.appendChild(quick);
+ if(quick.dataset.bound!=='1'){quick.dataset.bound='1';quick.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();
+ if(window.QuickCaptureV30175?.open)window.QuickCaptureV30175.open();
+ else document.querySelector('[data-v30106-action="quick-capture"]')?.click()})}
 }
-function update(){
-  const b=document.getElementById('v30175FocusFab'),api=focusApi();if(!b)return;
-  let f=null;try{f=api?.focusState?.()}catch(_){}
-  const open=!!f?.expanded,running=f?.status==='running';
-  b.setAttribute('aria-expanded',open?'true':'false');
-  b.setAttribute('aria-label',open?'Close Focus timer':'Open Focus timer');
-  b.dataset.tip=open?'Close Focus':'Focus';
-  b.dataset.running=running?'1':'0';
-}
-function repair(){ensureDock();update()}
-setTimeout(repair,0);setTimeout(repair,180);setTimeout(repair,700);
-const mo=new MutationObserver(()=>{clearTimeout(window.__v30175RepairT);window.__v30175RepairT=setTimeout(repair,45)});
+setTimeout(ensureDock,0);setTimeout(ensureDock,180);setTimeout(ensureDock,700);
+const mo=new MutationObserver(()=>{clearTimeout(window.__v30175RepairT);window.__v30175RepairT=setTimeout(ensureDock,45)});
 try{mo.observe(document.body,{childList:true,subtree:true})}catch(_){}
-setInterval(update,500);
-document.addEventListener('keydown',function(e){if(e.key==='Escape'){const api=focusApi();let f=null;try{f=api?.focusState?.()}catch(_){}if(f?.expanded){api?.closeFocusPanel?.();update()}}});
-window.ActionDockV30175={ensureDock,update};
-window.__MICHELS_LIFE_BUILD__='3.0.209';
+window.ActionDockV30175={ensureDock};
 })();
 </script>
 <script id="v30175-build-marker">window.__MICHELS_LIFE_BUILD__='3.0.209';</script>
@@ -29522,13 +29229,13 @@ function paint(el,a,kind){if(!el)return;const alpha=Math.max(0,Math.min(1,a/100)
 function visibleSurfaceCandidates(){const root=document.querySelector('#main>.tab.active,#main .tab.active,#main>#tab-settings,#main>#tab-story')||document.getElementById('main');if(!root)return[];const sel='.card,.v132-panel,.v131-hero,.banner,.stat-hero,.v131-kpi,.v132-stat,.v132-mission,.v137-mission,.v132-contract,.v133-ach,.v30134-kpi,.chart-card,.quest-card,.v169-weekly-planner,.v30134-agenda-day';return [...root.querySelectorAll(sel)].filter(el=>!el.closest('[data-mlv184-theme-card],[data-mlv184-chapter-card],.mlv184-journal-sheet,.mlv184-journal-history')&&!el.matches('[data-mlv184-theme-card],[data-mlv184-chapter-card]'))}
 function applyTransparency(v=transparency()){
  const L=heroLayers();if(L){chapterSig='';applyChapter(true)}
- const candidates=visibleSurfaceCandidates();const fixed=[document.getElementById('v30171Sidebar'),document.querySelector('.v30171-settings-nav'),document.getElementById('v3099NextUpDock'),document.querySelector('.v30173-focus-panel')].filter(Boolean);const current=new Set([...candidates,...fixed]);
+ const candidates=visibleSurfaceCandidates();const fixed=[document.getElementById('v30171Sidebar'),document.querySelector('.v30171-settings-nav'),document.getElementById('v3099NextUpDock'),null].filter(Boolean);const current=new Set([...candidates,...fixed]);
  document.querySelectorAll('[data-mlv184-surface]').forEach(el=>{if(!current.has(el))clearSurface(el)});
  if(!v.enabled){current.forEach(clearSurface);syncTransparencyUI(v);syncTransparencyPreview(v);return}
  const set=new Set(candidates);for(const el of candidates){if(el===L?.hero)continue;let parent=el.parentElement,inner=false;while(parent&&parent!==document.body){if(set.has(parent)){inner=true;break}parent=parent.parentElement}const header=el.matches('.banner,.stat-hero,.v131-hero')||/current chapter|overview|summary/i.test(el.querySelector(':scope>h2,:scope>.section-title h2')?.textContent||'');paint(el,header?v.header:(inner?v.card:v.panel),header?'header':(inner?'card':'main'))}
  paint(document.getElementById('v30171Sidebar'),v.sidebar,'sidebar');
  paint(document.querySelector('.v30171-settings-nav'),v.settingsnav,'settingsnav');
- paint(document.getElementById('v3099NextUpDock'),v.dock,'dock');paint(document.querySelector('.v30173-focus-panel'),v.dock,'dock');syncTransparencyUI(v);syncTransparencyPreview(v)
+ paint(document.getElementById('v3099NextUpDock'),v.dock,'dock');syncTransparencyUI(v);syncTransparencyPreview(v)
 }
 
 function themeCardHTML(id,t,cur){const src=assetUrl(themePreviewAsset(id));return `<button type="button" class="mlv184-theme-card ${id===cur?'active':''}" data-mlv184-theme="${esc(id)}"><img class="mlv184-preview-art mlv-visual-image" src="${esc(src)}" alt="" loading="eager" decoding="sync" draggable="false"><span class="mlv184-preview-shade"></span><span class="mlv184-preview-copy"><b>${esc(t.name)}</b><small>${esc(t.desc)}</small></span><span class="mlv184-preview-check">${id===cur?'✓':''}</span></button>`}
