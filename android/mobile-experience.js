@@ -969,6 +969,29 @@
         #mlv-android-focus-sheet .mlv-android-focus-clock{min-height:209px}
         #mlv-android-focus-sheet #mlv-android-focus-progress-ring{width:185px;height:185px}
       }
+      #mlv-android-focus-sheet .mlv-android-focus-sounds{
+        border:1px solid rgba(203,236,247,.14);border-radius:14px;
+        background:rgba(5,17,25,.42);padding:8px 12px
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-sounds summary{
+        cursor:pointer;font:700 12px/1.4 system-ui,sans-serif;
+        padding:4px 2px;min-height:28px;color:#e5f6f9
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-audio-grid{
+        display:grid;grid-template-columns:minmax(0,1fr) auto;
+        gap:10px;align-items:end;padding:12px 0 4px
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-audio-grid label{
+        display:block;min-width:0;color:#d2e7e8;font:650 12px/1.4 system-ui,sans-serif
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-audio-grid select{
+        display:block;width:100%;min-height:48px;margin-top:5px;padding:9px;
+        color:#fff;background:#102d32;border:1px solid #8ab5b655;
+        border-radius:11px;font:650 13px system-ui,sans-serif
+      }
+      #mlv-android-focus-sheet .mlv-android-focus-audio-grid button{
+        min-height:48px;min-width:79px;font:700 12px system-ui,sans-serif
+      }
       /* Full-screen Work/Break MUST expose the user's active wallpaper. */
       html[data-mlv-platform="android"] #mlv-android-focus-overlay:not([hidden]){
         background-color:rgba(4,7,17,.52)!important;
@@ -1204,7 +1227,20 @@
             <button type="button" data-mobile-focus="settings">Focus settings</button>
           <button type="button" data-mobile-focus="alarms">⏰ Alarms</button>
           </div>
-          <details class="mlv-focus-motivation-details"><summary>Frases y afirmaciones / Messages</summary><div id="mlv-android-focus-motivation"></div></details>
+          <details class="mlv-android-focus-sounds">
+            <summary>Focus audio · Completion sound & ambience</summary>
+            <div class="mlv-android-focus-audio-grid">
+              <label>Completion sound
+                <select data-mobile-focus-completion></select>
+              </label>
+              <button type="button" data-mobile-focus="preview-completion">Preview</button>
+              <label>Dreamy + Cinematic soundscapes
+                <select data-mobile-focus-ambience></select>
+              </label>
+              <button type="button" data-mobile-focus="toggle-ambient">Play</button>
+            </div>
+          </details>
+          <details class="mlv-focus-motivation-details"><summary>Messages & affirmations</summary><div id="mlv-android-focus-motivation"></div></details>
           <details><summary>Custom work / break duration</summary>
             <div class="mlv-android-focus-compact">
               <label>Work minutes<input type="number" min="1" max="180" id="mlv-android-focus-work" value="25" /></label>
@@ -1232,6 +1268,14 @@
         if(id==='mlv-android-focus-work'||id==='mlv-android-focus-break')
           event.target.dataset.mlvFocusDirty='1';
       });
+      root.addEventListener('change',event=>{
+        const audio=window.MichelsLifeFocusAudio;
+        if(event.target?.matches?.('[data-mobile-focus-completion]'))
+          audio?.selectCompletion?.(event.target.value);
+        if(event.target?.matches?.('[data-mobile-focus-ambience]'))
+          audio?.selectScene?.(event.target.value);
+        updateFocus();
+      });
       const clearDurationDraft=()=>root.querySelectorAll('#mlv-android-focus-work,#mlv-android-focus-break')
         .forEach(input=>delete input.dataset.mlvFocusDirty);
       root.addEventListener('click',event=>{
@@ -1253,6 +1297,15 @@
         if(action==='close'){close();return;}
         if(action==='enable-notifications'){requestNativeFocusPermission();updateFocus();return;}
         if(action==='alarms'){close();window.MichelsLifeAlarms?.open?.();return;}
+        if(action==='preview-completion'){
+          window.MichelsLifeFocusAudio?.playCompletion?.(true);return;
+        }
+        if(action==='toggle-ambient'){
+          const sound=window.MichelsLifeFocusAudio;
+          if(sound?.playing?.())sound.stopAmbient();
+          else sound?.startAmbient?.();
+          updateFocus();return;
+        }
         if(!api){return;}
         if(action==='toggle'){
           if(api.focusState?.().status!=='running')requestNativeFocusPermission();
@@ -1468,6 +1521,27 @@
       writeText(button,active?focusText('Open','Abrir'):focusText('Start','Iniciar'));
     }
     if(root.hidden)return;
+    const audio=window.MichelsLifeFocusAudio;
+    for(const [selector,options,selected] of [
+      ['[data-mobile-focus-completion]',audio?.completionOptions?.(),audio?.completionId?.()],
+      ['[data-mobile-focus-ambience]',audio?.sceneOptions?.(),audio?.sceneId?.()]
+    ]){
+      const select=q(selector,root);
+      if(!select||!options)continue;
+      if(select.options.length!==options.length||
+         options.some((item,i)=>select.options[i]?.value!==item.id||
+           select.options[i]?.textContent!==item.label)){
+        select.replaceChildren(...options.map(item=>{
+          const option=document.createElement('option');option.value=item.id;
+          option.textContent=item.label;return option;
+        }));
+      }
+      if(select.value!==selected)select.value=selected;
+    }
+    writeText(q('[data-mobile-focus="toggle-ambient"]',root),
+      audio?.playing?.()?focusText('Stop','Detener'):focusText('Play','Reproducir'));
+    writeText(q('[data-mobile-focus="preview-completion"]',root),
+      focusText('Preview','Escuchar'));
     enforceFocusTouchTargets();
     writeText(q('#mlv-android-focus-time',root),left);
     writeText(q('#mlv-android-focus-phase',root),mode.toUpperCase());
