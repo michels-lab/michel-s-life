@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 408,
-  "classified_files_total": 404,
+  "tracked_files_total": 411,
+  "classified_files_total": 407,
   "docs_content_inspected": 99,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -18,8 +18,8 @@
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 16,
-    "source": 129,
-    "test": 47,
+    "source": 130,
+    "test": 49,
     "text_metadata": 1,
     "web_ui": 3,
     "workflow": 52
@@ -29,8 +29,8 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "9a60b2488eb89358ec3e00eda09dc8500c9790147b999a86c94ca5813c18fd08",
-  "evidence_fingerprint": "765a5d09beca30b885a32645db5733f7839f07a2d1aceddc863cf8c7b9119b21",
+  "inventory_fingerprint": "ce2cd8ce649a13da5d7be5d7c75fcd7a767673c0720f59181f3ff6252f6dd00c",
+  "evidence_fingerprint": "2f0520fa77d8a7568cb7bfc3284ee5c6f65d2be8e691c381b99cdcef0bfe7fac",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -268,7 +268,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "386e9cd0256dc68feb3ac43f829d450e8d3a8826"
+      "blob": "c8a995144d2c7bbf01d243586b016e45b614c3e9"
     },
     {
       "path": ".github/workflows/granada-personal-alarms.yml",
@@ -296,7 +296,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "b5c299b93b3d4b0d9deb4a98fed58879c3147f74"
+      "blob": "62602348021ed664a7df94a1daafb0f00cb5c9fc"
     },
     {
       "path": ".github/workflows/granada-transactional-cloud-restore.yml",
@@ -723,7 +723,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "f153aceb815404e2676306f515e75f04d110caa4"
+      "blob": "db5ef39d208c8c15c31c7714f91944ad4e671895"
     },
     {
       "path": "android/app/build.gradle.kts",
@@ -849,7 +849,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "1f12e513ede9937f94a43c9d48bd272411a600e3"
+      "blob": "c292ad1cf690d10193d40c693f29e422ee460950"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/PersonalAlarmOverlay.kt",
@@ -1213,7 +1213,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "d440802506ed1b13c27aa8f3cfa7acdb97c0a13d"
+      "blob": "0fa61a7465e361b8161a6360e264f3be496e1f94"
     },
     {
       "path": "android/mobile-sections.js",
@@ -1269,7 +1269,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "5dee2e3df024097ed7b04717ca318b8135fcdd6b"
+      "blob": "bed7b12b1ba32032aee37b79b181ce14a689e833"
     },
     {
       "path": "android/tools/smoke_candidate_apk_install.sh",
@@ -1290,7 +1290,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "7a3a249fdefa8beeac8e3acbb6356a3f35d6a399"
+      "blob": "eef30fb00afe6927e87f0646746a72da2224b201"
     },
     {
       "path": "android/tools/validate_android_version.py",
@@ -1437,7 +1437,7 @@
       "role": "document",
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
-      "blob": "94b5174ad36defe3f0859586fd1bd374a7f68e1a"
+      "blob": "da45038cf146be611b9e264393310352c99d4589"
     },
     {
       "path": "docs/DEVELOPER_BRANDING.md",
@@ -1801,7 +1801,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "737da1310a0d2a98632e9b2850e288803cc80dd2"
+      "blob": "3eff765bd56757fa99dcbe7996da719ffeb108b8"
     },
     {
       "path": "src/MichelsLife/GoogleCalendarService.cs.gz.b64",
@@ -1857,7 +1857,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "c6fb3243a6170a2608a82d4993e9e08b6de61848"
+      "blob": "46bb381e686012ad81182c55b60bb051fdcb86fc"
     },
     {
       "path": "src/MichelsLife/frontend/i18n.js",
@@ -1871,7 +1871,7 @@
       "role": "web_ui",
       "purpose": "local HTML documentation or web interface",
       "certainty": "inferred",
-      "blob": "50dcd8db7f2eb21b1035c600ebba6214a17ef772"
+      "blob": "485551dbcb8cc23d58a8fca9e63f0fa1d2f8a73c"
     },
     {
       "path": "src/MichelsLife/frontend/motivation-immersive.js",
@@ -1885,7 +1885,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "261636acbd2163a41c5aa7b6a157413fffc2bd2b"
+      "blob": "894d7d3cc1ea049e2befe222aa15daa0236bd238"
     },
     {
       "path": "store/AppxManifest.template.xml",
@@ -1979,6 +1979,13 @@
       "blob": "67f965e59f691e1fcbcb5c95689ec32ab30eabfa"
     },
     {
+      "path": "tools/browser_script_fault_provenance.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "33db10dc0190e7155ff79faf706b1f5685c19583"
+    },
+    {
       "path": "tools/build_canonical_design_reference.py",
       "role": "source",
       "purpose": "code/test implementation",
@@ -2032,7 +2039,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "1f3e43555dad956f26b5e13874fb3bfc3ba2c1ee"
+      "blob": "05aca059c9a6ea054ddd919c737895e4560f008e"
     },
     {
       "path": "tools/granada_android16_host_verdict.py",
@@ -2252,6 +2259,13 @@
       "blob": "1c72213e88a1432a611309466405c9df29fdad79"
     },
     {
+      "path": "tools/test_browser_script_fault_provenance.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "8461337cb9512a356f3b238773ce8c5ca4060474"
+    },
+    {
       "path": "tools/test_chapter_art_recovery_contract.mjs",
       "role": "test",
       "purpose": "code/test implementation",
@@ -2277,7 +2291,7 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "eeb05ece00db04eea788fe432c66df1960550291"
+      "blob": "2dc0e6ac77aa9d8ef7f838ad627128e27628d3cc"
     },
     {
       "path": "tools/test_google_calendar_capture_stability.mjs",
@@ -2385,6 +2399,13 @@
       "blob": "7699962d062396fb478f8bf935b106cc44c7fc6f"
     },
     {
+      "path": "tools/test_granada_story_bundle_paths.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "600cdcd94e13022bde495ed49f93e6466476ce97"
+    },
+    {
       "path": "tools/test_granada_story_diagnostic_core.mjs",
       "role": "test",
       "purpose": "code/test implementation",
@@ -2459,7 +2480,7 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "d30b5285609c29eed00c988dcd52884e021bfc18"
+      "blob": "27949c931cb95f190096bd5da42bbd137a303f72"
     },
     {
       "path": "tools/test_repository_file_auditor.py",
@@ -2529,7 +2550,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "35bd2001fa500f954f0bb4284bc71490e400dc1c"
+      "blob": "6b87ca7f7246cbdc63388eb39c09ed191513a9df"
     },
     {
       "path": "tools/ui_android_google_calendar_truth_smoke.mjs",
@@ -2557,7 +2578,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "6b12f6377715f175a03c1db85436b2357cc439bb"
+      "blob": "43fa38597244fdb0dd47c8487ae4baa19ebd9c09"
     },
     {
       "path": "tools/ui_android_onboarding_persistence_smoke.mjs",
@@ -2620,7 +2641,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "e08c48aff8308a3ff61d70441da6d883d6f5cd3b"
+      "blob": "0b51508350c969a0ae07025769e9206a6276285b"
     },
     {
       "path": "tools/ui_desktop_experience_smoke.mjs",
@@ -2634,7 +2655,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "28a9b0947fe8db475289a212c4bbf240a6d7cf21"
+      "blob": "8e6ecfe9b0c1495c7a41d74910411ce688458bae"
     },
     {
       "path": "tools/ui_granada_account_boundary_crash_browser.mjs",
@@ -2669,14 +2690,14 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "0485db29edb6cfa022983f1b7d7e9b95a5a0ccc8"
+      "blob": "82cc7ae5fd8c72ea456a2a71c472359bd726404d"
     },
     {
       "path": "tools/ui_granada_story_focus_matrix.mjs",
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "a0555d7d2d7bed190248ef7c6b834e4db82d0181"
+      "blob": "a12d52c66240d1b3429fc40f63dd32802e4c59db"
     },
     {
       "path": "tools/ui_granada_transactional_restore_smoke.mjs",
@@ -2830,7 +2851,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "95dc6132cdee2710335786bf443e328ad9e1deb4"
+      "blob": "41016ad633dc9994cd6c361c1b19b42b8dbd413c"
     },
     {
       "path": "tools/validate_granada_inline_scripts.mjs",
@@ -2899,20 +2920,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "a6c071f1dc3e86c2",
+      "id": "446d4222e3c10552",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "33 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/release-unified-v3225-a0214.yml",
+      "observation": "47 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/granada-large-project-story-cloud.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "429ad3c5a7f4a5c7",
+      "id": "b1b1dd4b6f29b56f",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "33 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/release-unified-v3225-a0214.yml",
+      "observation": "47 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-chapter-focus-alarms-e2e.yml, .github/workflows/granada-large-project-story-cloud.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     }
