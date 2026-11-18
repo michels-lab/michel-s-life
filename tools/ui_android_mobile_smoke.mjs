@@ -747,7 +747,7 @@ try{
     const ring=document.getElementById('mlv-android-focus-progress-ring');
     const presets=[...document.querySelectorAll('#mlv-android-focus-sheet [data-mobile-preset]')];
     const r=el=>{const x=el?.getBoundingClientRect();return x?{left:x.left,right:x.right,top:x.top,bottom:x.bottom,width:x.width,height:x.height}:null};
-    return {screen:r(area),ring:r(ring),presets:presets.map(r),close:r(document.querySelector('[data-mobile-focus="close"]')),
+    return {screen:r(area),ring:r(ring),presets:presets.map(r),presetColumns:getComputedStyle(document.querySelector('#mlv-android-focus-sheet .mlv-android-focus-presets')).gridTemplateColumns.trim().split(/\s+/).length,close:r(document.querySelector('[data-mobile-focus="close"]')),
       buttons:[...document.querySelectorAll('#mlv-android-focus-sheet [data-mobile-focus]')].map(el=>({
         action:el.dataset.mobileFocus,...r(el)})),viewport:{w:innerWidth,h:innerHeight}};
   });
@@ -757,6 +757,7 @@ try{
       Math.abs((focusPresentation.ring.left+focusPresentation.ring.right)/2-
         (focusPresentation.screen.left+focusPresentation.screen.right)/2)<=6&&
       focusPresentation.presets.length===3&&focusPresentation.presets.every(x=>x.height>=48&&x.width>=44)&&
+      focusPresentation.presetColumns===3&&focusPresentation.presets.every(x=>x.left>=focusPresentation.screen.left&&x.right<=focusPresentation.screen.right)&&
       focusPresentation.presets.every(x=>Math.abs(x.top-focusPresentation.presets[0].top)<2),
     'Focus is not a full-viewport, touch-first Android workspace: '+JSON.stringify(focusPresentation));
   const polishedFocus=await page.evaluate(()=>{
