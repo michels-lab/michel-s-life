@@ -994,6 +994,26 @@
       #mlv-android-focus-sheet .mlv-focus-motivation-details .mlv-motivation-copy{font-size:12px;line-height:1.3}
       #mlv-android-focus-sheet .mlv-android-focus-clock,
       #mlv-android-focus-sheet .mlv-android-focus-main-actions{flex-shrink:0}
+      /* The host stylesheet can set generic grid/align rules after injection.
+         Pin the actual full-screen Android Focus layout to one centered dial
+         and one three-preset row, not an inherited two-column dashboard. */
+      html[data-mlv-platform="android"] #mlv-android-focus-sheet .mlv-android-focus-clock{
+        display:flex!important;flex-direction:column!important;
+        align-items:center!important;justify-content:center!important;
+        width:100%!important;min-width:0!important
+      }
+      html[data-mlv-platform="android"] #mlv-android-focus-sheet #mlv-android-focus-progress-ring{
+        margin-inline:auto!important;align-self:center!important;
+        flex:0 0 auto!important;max-width:calc(100% - 16px)!important
+      }
+      html[data-mlv-platform="android"] #mlv-android-focus-sheet .mlv-android-focus-presets{
+        display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+        grid-auto-flow:row!important;min-width:0!important;width:100%!important
+      }
+      html[data-mlv-platform="android"] #mlv-android-focus-sheet .mlv-android-focus-presets>button{
+        grid-column:auto!important;min-width:0!important;width:100%!important;
+        padding-inline:5px!important;white-space:nowrap!important
+      }
       @media(max-height:700px){#mlv-android-focus-sheet .mlv-focus-motivation-details{max-height:16vh}}
       /* The drawer must end ABOVE fixed bottom navigation; otherwise a
          menu item scrolled to its bottom is covered by the tab bar. */
