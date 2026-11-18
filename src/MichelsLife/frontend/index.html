@@ -27576,8 +27576,10 @@ function chimeSoft(){try{if(focusState().v30165Sound===false)return;const C=wind
 function chime(){try{if(focusState().v30165Sound===false)return;const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const c=new C();[0,0.14].forEach((d,i)=>{const o=c.createOscillator(),g=c.createGain();o.frequency.value=i?880:660;g.gain.setValueAtTime(.045,c.currentTime+d);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d+.18);o.connect(g);g.connect(c.destination);o.start(c.currentTime+d);o.stop(c.currentTime+d+.2)});setTimeout(()=>c.close(),500)}catch(_){}}
 function focusHistoryHtml(){const rows=focusSessions().slice(0,5);return rows.length?rows.map(s=>`<div class="v30162-focus-history-row"><span>${esc(s.missionName||'Unassigned Focus')}</span><b>${fmtDuration(s.elapsedMs)}</b></div>`).join(''):'<div class="v30162-focus-history-row"><span>No Focus blocks saved yet</span><b>—</b></div>'}
 function refreshFocusViews(){
+ // Keep presentation distinct from native alarm transport. Android's own
+ // update loop owns delivery/retry; one Focus state transition cannot submit
+ // an alarm twice or swallow a failed native attempt.
  try{window.MichelsLifeFocusImmersive?.refresh?.()}catch(_){}
- try{window.MichelsLifeMobileExperience?.updateFocus?.()}catch(_){}
 }
 function updateFocusClock(){
  const f=focusState(),sec=Math.ceil(remaining(f)/1000);if(sec===lastSecond)return;
