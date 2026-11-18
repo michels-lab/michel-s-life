@@ -5,6 +5,8 @@ on:
   pull_request:
     paths:
       - 'tools/ui_granada_large_projects_story_roundtrip_smoke.mjs'
+      - 'tools/browser_script_fault_provenance.mjs'
+      - 'tools/test_browser_script_fault_provenance.mjs'
       - '.github/workflows/granada-large-project-story-cloud.yml'
       - 'src/MichelsLife/frontend/**'
       - 'android/tools/prepare_bundle.py'
@@ -31,6 +33,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Check redacted Chromium fault provenance and negative privacy fixtures
+        run: |
+          node --check tools/browser_script_fault_provenance.mjs
+          node --check tools/test_browser_script_fault_provenance.mjs
+          node --check tools/ui_granada_large_projects_story_roundtrip_smoke.mjs
+          node tools/test_browser_script_fault_provenance.mjs
       - name: Download public canonical AppBundle (read-only)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
