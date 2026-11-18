@@ -28602,7 +28602,7 @@ function focusPane(){
  const status=f?.status==='running'?'Running':f?.status==='paused'?'Paused':'Ready';
  const mode=f?.mode==='break'?'Break':'Work';
  return '<section class="card mlv304-focus-settings" data-mlv-focus-core data-v30171-owner="focus">'+
-   '<div class="section-title"><div><h2>Pomodoro Focus Timer</h2><p>Configure the same Focus timer used from the action dock.</p></div><span class="pill">'+esc(status)+'</span></div>'+
+   '<div class="section-title"><div><h2>Pomodoro Focus Timer</h2><p>Configure the same timer used in the immersive Pomodoro workspace.</p></div><span class="pill">'+esc(status)+'</span></div>'+
    '<div class="mlv304-focus-presets">'+
      '<button type="button" class="'+(preset==='25/5'?'selected':'')+'" data-mlv-focus-preset="25/5"><b>25 / 5</b><small>Classic Pomodoro</small></button>'+
      '<button type="button" class="'+(preset==='50/10'?'selected':'')+'" data-mlv-focus-preset="50/10"><b>50 / 10</b><small>Extended focus</small></button>'+
@@ -28616,7 +28616,7 @@ function focusPane(){
     '</div>'+
    '<div class="mlv304-focus-summary"><div><small>CURRENT PHASE</small><b>'+esc(mode)+'</b></div><div><small>STATUS</small><b>'+esc(status)+'</b></div><div><small>PRESET</small><b>'+esc(preset==='custom'?'Custom':preset)+'</b></div></div>'+
    '<div class="mlv304-focus-actions"><button type="button" class="btn primary" data-mlv-focus-action="apply">Apply timer settings</button><button type="button" class="btn" data-mlv-focus-action="open">Open Focus controls</button></div>'+
-   '<p class="mlv304-focus-note">A running timer is never silently restarted. New durations apply immediately when the timer is ready or paused.</p></section>';
+   '<p class="mlv304-focus-note">A running timer asks before switching durations. Applying a preset restarts the current phase; saved Focus history remains intact.</p></section>';
 }
 function ensureSettingsCorePanels(root){
  if(!root)return;
@@ -28634,22 +28634,19 @@ function refreshFocusPane(root){
  focus.insertAdjacentHTML('beforeend',focusPane());
 }
 function applyFocusSettings(preset,workValue,breakValue){
- let f=null;try{f=window.FocusStoryV30162?.focusState?.()||null}catch(_){}
- if(!f)return false;
+ // Settings is another VIEW of the same FocusStory timer, not a second
+ // authority for phase deadlines, mission links, persistence or history.
+ const timer=window.FocusStoryV30162;
+ if(typeof timer?.applyPreset!=='function')return false;
  let work=Math.max(1,Math.min(180,Number(workValue)||25));
  let rest=Math.max(1,Math.min(60,Number(breakValue)||5));
  if(preset==='25/5'){work=25;rest=5}
  if(preset==='50/10'){work=50;rest=10}
  if(preset==='90/15'){work=90;rest=15}
- f.workMin=work;f.breakMin=rest;f.preset=(preset==='25/5'||preset==='50/10'||preset==='90/15')?preset:'custom';
- if(f.status!=='running'){
-   f.deadlineAt=null;
-   f.phaseTotalMs=(f.mode==='break'?rest:work)*60000;
-   f.remainingMs=f.phaseTotalMs;
-   if(f.status!=='paused')f.status='ready';
- }
- saveNow();
- try{window.FocusStoryV30162?.renderFocusDock?.()}catch(_){}
+ const chosen=(preset==='25/5'||preset==='50/10'||preset==='90/15')?preset:'custom';
+ if(timer.applyPreset(chosen,work,rest)!==true)return false;
+ window.MichelsLifeFocusImmersive?.refresh?.();
+ window.MichelsLifeMobileExperience?.updateFocus?.();
  refreshFocusPane();
  return true;
 }
