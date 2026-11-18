@@ -17,7 +17,7 @@ if(inventory.mode!=='canonical_generated_android_html'||
 const staticInline=new Map(inventory.scripts.filter(x=>x.syntax==='valid').map(x=>[x.digest,x]));
 // Canonical generated Android HTML is the exact material parsed in the browser.
 // Compare failed runtime sources by structure ONLY (never log source/user data).
-const canonicalHtml=await readFile('artifacts/android-ui-bundle/index.html','utf8');
+const canonicalHtml=await readFile('artifacts/android-story-bundle/index.html','utf8');
 function canonicalBody(id){
  if(!id||!/^[A-Za-z0-9_-]{1,100}$/.test(id))return null;
  const at=canonicalHtml.indexOf('id="'+id+'"');
