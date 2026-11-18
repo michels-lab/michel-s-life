@@ -111,15 +111,11 @@
         background-image:linear-gradient(140deg,rgba(3,6,15,.72),rgba(8,11,24,.46),rgba(4,7,17,.8)),var(--mlv-focus-wallpaper,none);
         background-position:center;background-size:cover;background-repeat:no-repeat;color:#f8fbff
       }
-      html:not([data-mlv-platform="android"]) #mlv-desktop-focus-immersive::before{
-        content:"";position:fixed;inset:0;pointer-events:none;
-        backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)
-      }
       #mlv-desktop-focus-immersive .mlv-focus-stage{
         position:relative;box-sizing:border-box;width:min(100%,880px);min-height:min(690px,85vh);
         display:flex;flex-direction:column;gap:24px;padding:clamp(25px,4vw,52px);
         border:1px solid rgba(255,255,255,.25);border-radius:25px;
-        background:rgba(7,13,23,.33);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+        background:rgba(7,13,23,.76);
         box-shadow:0 25px 85px rgba(0,0,0,.45)
       }
       .mlv-focus-stage header{display:flex;justify-content:space-between;align-items:start;gap:15px}
@@ -183,16 +179,6 @@
         color:inherit;background:#ffffff16;font:750 14px system-ui,sans-serif
       }
       html:not([data-mlv-platform="android"]) body.mlv-desktop-focus-open{overflow:hidden!important}
-      /* The pre-immersive Focus dock (v3.0.162/173) has a z-index of
-         2147483643 and is re-created during renderAll(). It must not be
-         painted or receive touches in Windows. Preserve its FocusStory
-         timer/state APIs; replace only the visual presentation. */
-      html:not([data-mlv-platform="android"]) #v30162FocusDock,
-      html:not([data-mlv-platform="android"]) #v30106Focus{
-        display:none!important;visibility:hidden!important;
-        pointer-events:none!important
-      }
-      html:not([data-mlv-platform="android"]) #v30171Sidebar [data-tab="focus"]{display:none!important}
       @media(max-width:650px){.mlv-focus-stage .mlv-focus-clock{font-size:clamp(62px,17vw,110px)}}
       @media(prefers-reduced-motion:reduce){#mlv-desktop-focus-immersive *{animation:none!important;transition:none!important}}
     `;
@@ -311,12 +297,6 @@
   }
   function refresh(){
     if(android())return;
-    // Late legacy renderers keep placing an inert Focus dock inside the
-    // permanent sidebar. Hide it without mutating the canonical timer engine.
-    const sidebar=document.getElementById('v30171Sidebar');
-    const oldDock=sidebar?.querySelector('#v30162FocusDock');
-    if(oldDock){oldDock.hidden=true;oldDock.style.setProperty('display','none','important');
-      oldDock.style.setProperty('pointer-events','none','important');}
     create();if(!screen)return;
     const engine=api(),state=engine?.focusState?.();
     restoreMinimized();
@@ -360,9 +340,6 @@
   const boot=()=>{
     if(android())return;
     create();
-    // A persisted pre-immersive popup may still be marked expanded.
-    // Collapse it once without resetting or replacing the canonical timer.
-    try{api()?.closeFocusPanel?.();}catch(_){}
     refresh();
     window.setInterval(()=>{if(document.body?.isConnected)refresh();},650);
     document.addEventListener('keydown',event=>{
