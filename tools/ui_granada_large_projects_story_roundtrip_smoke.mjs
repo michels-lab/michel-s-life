@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
+import {normalizeError} from './granada_story_diagnostic_core.mjs';
+import {createBrowserScriptFaultTracker} from './browser_script_fault_provenance.mjs';
 
 /**
  * GRANADA GRANDE: REAL canonical Android Project+Chapter form -> authenticated
@@ -111,13 +113,18 @@ async function device(platform){
     localStorage.setItem('michelsLife.language.userOverrideBase.v1','en');
   },platform);
   const page=await context.newPage(),errors=[];
-  page.on('pageerror',e=>errors.push((e.stack||e.message).slice(0,1800)));
+  // Record Chromium parser evidence; never log raw source or account data.
+  const cdp=await context.newCDPSession(page);
+  const provenance=createBrowserScriptFaultTracker(cdp);
+  await cdp.send('Debugger.enable');
+  await cdp.send('Runtime.enable');
+  page.on('pageerror',e=>errors.push(normalizeError(e,'bootstrap')));
   await page.goto(APP_URL,{waitUntil:'domcontentloaded',timeout:60000});
   await page.waitForFunction(()=>typeof state!=='undefined'&&
     !!window.SupabaseSyncV30216?.signIn&&
     !!window.MLVCloudSharedStorageV30216?.capture&&
     !!window.JournalV30189?.save,null,{timeout:60000});
-  return {context,page,errors,platform};
+  return {context,page,errors,platform,provenance};
 }
 
 async function snap(dev){
@@ -408,6 +415,15 @@ try{
     mockSupabase:true,physicalGalaxy:false,publicRelease:false
   }));
 }finally{
+  // Distinguish a failed script from a stackless error, even when an earlier
+  // assertion aborts before the final runtime-exception check.
+  for(const dev of [android,desktop]){
+    if(!dev?.errors?.length)continue;
+    console.error('GRANADA_BROWSER_SCRIPT_PROVENANCE '+JSON.stringify({
+      platform:dev.platform,errors:dev.errors.slice(0,8),
+      failedScripts:await dev.provenance.snapshot()
+    }));
+  }
   await Promise.allSettled([android?.context?.close(),desktop?.context?.close()]);
   await browser.close();
 }
