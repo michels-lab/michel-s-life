@@ -188,7 +188,7 @@ test('six Michel\'s Life original full-length alarm arrangements and Android nat
   const activity=readFileSync('android/app/src/main/java/com/michelslab/michelslife/MainActivity.kt','utf8');
   assert.match(activity,/player\.isLooping = true/);
   for(const name of ['classic','soft','digital','gentle','pulse','radar']){
-    assert.match(alarms,new RegExp(name+':\\\\{'));
+    assert.ok(alarms.includes(name+':{'),'missing original score '+name);
     assert.match(native,new RegExp('"'+name+'" -> Pair'));
   }
 });
