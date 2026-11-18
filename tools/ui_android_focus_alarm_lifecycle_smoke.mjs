@@ -160,6 +160,15 @@ try{
   assert.equal(await page.locator('[data-mobile-focus="close"]').getAttribute('aria-label'),'Cerrar Pomodoro');
   const brandDot=page.locator('.mlv-android-focus-eyebrow .mlv-focus-brand-dot');
   assert.equal(await brandDot.count(),1,'Spanish copy removed the Focus brand dot');
+  const scene=await page.locator('#mlv-android-focus-sheet').evaluate(el=>{
+    const style=getComputedStyle(el);
+    return {
+      alpha:Number(style.backgroundColor.match(/,\s*([\d.]+)\)$/)?.[1]),
+      backdrop:style.backdropFilter
+    };
+  });
+  assert.ok(scene.alpha>0&&scene.alpha<0.65&&scene.backdrop==='none',
+    'Android sheet obscures the selected wallpaper or blurs timer: '+JSON.stringify(scene));
   await page.locator('#mlv-android-focus-sheet details:not(.mlv-focus-motivation-details) summary').click();
   const workInput=page.locator('#mlv-android-focus-work');
   await workInput.fill('37');
