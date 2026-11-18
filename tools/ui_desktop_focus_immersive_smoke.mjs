@@ -69,14 +69,15 @@ try{
     const buttons=[...stage.querySelectorAll(':scope > .mlv-focus-actions button')];
     const rect=r=>({x:r.x,y:r.y,w:r.width,h:r.height,right:r.right,bottom:r.bottom});
     const bounds=stage.getBoundingClientRect();
-    return {stage:rect(bounds),clock:rect(clock.getBoundingClientRect()),
+    const digits=document.createRange();digits.selectNodeContents(clock);
+    return {stage:rect(bounds),clock:rect(digits.getBoundingClientRect()),
       buttonRects:buttons.map(b=>rect(b.getBoundingClientRect())),
       stageWidth:stage.scrollWidth,clientWidth:stage.clientWidth,
       clockFont:parseFloat(getComputedStyle(clock).fontSize),
       audioCollapsed:!stage.querySelector('.mlv-focus-sound-details').open,
       affirmationsCollapsed:!stage.querySelector('.mlv-focus-motivation-details').open};
   });
-  ok(compact.stage.w<=840&&compact.stage.w>610&&compact.stage.h<=713&&
+  ok(compact.stage.w<=840&&compact.stage.w>610&&compact.stage.h>=460&&compact.stage.h<=713&&
      compact.clientWidth>610, 'Focus stage does not fit owner screenshot: '+JSON.stringify(compact));
   ok(compact.clockFont>=65&&compact.clockFont<=115&&
      compact.clock.right<compact.stage.right-15&&compact.clock.x>compact.stage.x+15,
