@@ -1,0 +1,9 @@
+Michel's Life — final stable unified release intent
+Owner command: Operación Granada completa / finish requested improvements
+Windows version: 3.0.227
+Android Direct version: 0.2.16
+Android versionCode: 18
+Source: michels-lab/michel-s-life
+Dest: michels-lab/michel-s-life-releases
+Requirements: full exact-SHA source + UI + Android UI + updater gates, installed Windows Setup/Portable launch, production-signed Android15 native install/relaunch, pinned certificate, checksum and 13-asset destination verification
+No RC, beta, Developer Edition, overwrite, debug-signed release or external expenses.
