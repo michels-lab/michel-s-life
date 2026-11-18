@@ -52,8 +52,11 @@ try{
     const focus=document.getElementById('mlv-desktop-focus-immersive');
     const old=document.getElementById('v30162FocusDock');
     const stage=focus?.querySelector('.mlv-focus-stage');
+    const style=stage?getComputedStyle(stage):null;
+    const alpha=Number(style?.backgroundColor.match(/,\s*([\d.]+)\)$/)?.[1]);
     return focus&&!focus.hidden&&getComputedStyle(focus).display!=='none'&&
-      !old&&!!stage&&getComputedStyle(stage).backdropFilter==='none'&&
+      !old&&!!stage&&style.backdropFilter==='none'&&
+      alpha>0.1&&alpha<0.7&&
       Number(getComputedStyle(focus).zIndex)>1000000000;
   }), 'Desktop immersive view is not the only visible active Focus workspace');
 
