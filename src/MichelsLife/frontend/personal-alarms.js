@@ -11,10 +11,10 @@ const tr=(en,es)=>window.MichelsLifeI18n?.language==='es'?es:en;
 const hhmm=x=>/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(x);
 const validDate=x=>/^\d{4}-\d{2}-\d{2}$/.test(x)&&!Number.isNaN(new Date(x+'T12:00:00').getTime());
 const days=['Su','Mo','Tu','We','Th','Fr','Sa'];
-const SOUNDS=['system','classic','soft','digital','gentle','pulse','custom'];
-const SOUND_NAMES={system:['System default','Sistema'],classic:['Classic bell','Campana clásica'],
- soft:['Soft chime','Campanillas suaves'],digital:['Digital','Digital'],gentle:['Gentle sunrise','Amanecer suave'],
- pulse:['Pulse','Pulso'],custom:['My MP3 / audio','Mi MP3 / audio']};
+const SOUNDS=['system','classic','soft','digital','gentle','pulse','radar','custom'];
+const SOUND_NAMES={system:['System default','Sistema'],classic:['Michel’s Bell','Michel’s Campana'],
+ soft:['Michel’s Chimes','Michel’s Campanillas'],digital:['Michel’s Signal','Michel’s Señal'],gentle:['Michel’s Sunrise','Michel’s Amanecer'],
+ pulse:['Michel’s Pulse','Michel’s Pulso'],radar:['Michel’s Radar','Michel’s Radar'],custom:['My MP3 / audio','Mi MP3 / audio']};
 const soundName=id=>tr(...(SOUND_NAMES[id]||SOUND_NAMES.system));
 let customAudio=null,previewAudio=null;
 function localDateTime(at){
@@ -64,32 +64,55 @@ async function importSound(file){
   return true;
  }catch(e){window.alert(tr('Could not save the ringtone: ','No se pudo guardar el tono: ')+String(e.message||e));return false;}
 }
-// Original synthesised alarm signals (no third-party audio samples or licensing).
-// Each motif lasts several seconds, followed by a brief pause before repeating.
-function playPresetSound(id){
- const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return false;
- const ctx=new Audio();
- const patterns={
-  classic:[[0,880,.36],[.50,660,.36],[1.16,880,.50],[1.88,660,.50],[2.66,880,.52],[3.34,660,.38]],
-  soft:[[0,523,.48],[.65,659,.52],[1.39,784,.46],[2.15,659,.52],[3.03,523,.52]],
-  digital:[[0,1046,.20],[.29,1318,.20],[.58,1046,.20],[1.18,1046,.21],[1.48,1318,.21],[1.78,1046,.21],[2.44,1318,.34],[3.23,1046,.23]],
-  gentle:[[0,392,.60],[.78,523,.63],[1.62,659,.59],[2.46,523,.57],[3.18,392,.54]],
-  pulse:[[0,740,.24],[.34,740,.24],[.69,880,.28],[1.28,740,.24],[1.62,740,.24],[1.97,880,.30],[2.62,988,.36],[3.26,880,.29]],
-  system:[[0,880,.42],[.59,740,.42],[1.38,880,.44],[2.12,740,.44],[3.05,880,.43]]
- };
- const notes=patterns[id]||patterns.system;
- for(const [offset,freq,duration] of notes){
-  const osc=ctx.createOscillator(),gain=ctx.createGain();
-  osc.type=id==='digital'?'square':id==='pulse'?'triangle':'sine';
-  osc.frequency.value=freq;osc.connect(gain);gain.connect(ctx.destination);
-  const at=ctx.currentTime+offset;
-  gain.gain.setValueAtTime(.0001,at);
-  gain.gain.exponentialRampToValueAtTime(id==='digital'?.055:id==='soft'||id==='gentle'?.10:.20,at+.025);
-  gain.gain.exponentialRampToValueAtTime(.0001,at+duration);
-  osc.start(at);osc.stop(at+duration+.03);
+/* Michel's Life exclusive alarm suite — six original synthesized patterns.
+   Each pattern is a 24-second arrangement; no third-party samples or licenses.
+   Live alarm loops the arrangement until dismiss/snooze; preview plays 7s.
+   Two harmonics and envelopes distinguish these alarms from UI beeps. */
+let livePresetContext=null,previewPresetContext=null;
+const MICHEL_ALARM_SCORE={
+ classic:{period:2.8,notes:[[0,880,.45,.23],[.53,659,.48,.21],[1.26,880,.33,.19],[1.7,988,.56,.22]]},
+ soft:{period:3.65,notes:[[0,523,.55,.17],[.66,659,.58,.19],[1.35,784,.68,.20],[2.2,659,.75,.20]]},
+ digital:{period:2.65,notes:[[0,1108,.16,.16],[.27,1397,.16,.16],[.54,1568,.19,.17],[1.1,1108,.25,.16],[1.48,1397,.25,.17]]},
+ gentle:{period:4.1,notes:[[0,392,.80,.10],[.95,523,.75,.13],[1.83,659,.83,.17],[2.8,784,.97,.19]]},
+ pulse:{period:2.6,notes:[[0,740,.22,.22],[.36,740,.22,.22],[.75,880,.40,.24],[1.35,988,.28,.21],[1.77,880,.34,.22]]},
+ radar:{period:2.75,notes:[[0,940,.78,.24,520],[1.10,820,.60,.23,560],[2.05,760,.37,.20,620]]},
+ system:{period:2.6,notes:[[0,880,.36,.21],[.55,660,.36,.21]]}
+};
+function stopPresetAudio(){
+ if(livePresetContext){const ctx=livePresetContext;livePresetContext=null;ctx.close().catch(()=>{});}
+}
+function playPresetSound(id,preview=false){
+ const AudioCtx=window.AudioContext||window.webkitAudioContext;if(!AudioCtx)return;
+ if(preview){if(previewPresetContext){previewPresetContext.close().catch(()=>{});previewPresetContext=null;}}
+ else stopPresetAudio();
+ const ctx=new AudioCtx(),score=MICHEL_ALARM_SCORE[id]||MICHEL_ALARM_SCORE.system;
+ const length=preview?7:24;
+ if(preview)previewPresetContext=ctx;else livePresetContext=ctx;
+ const origin=ctx.currentTime+.015;
+ for(let group=0;group<length;group+=score.period){
+  for(const [offset,freq,lengthSeconds,baseGain,endFreq] of score.notes){
+   const start=group+offset,duration=Math.min(lengthSeconds,length-start);
+   if(duration<=0)continue;
+   const at=origin+start,osc=ctx.createOscillator(),gain=ctx.createGain();
+   osc.type=(id==='digital'||id==='pulse')?'triangle':'sine';
+   osc.frequency.setValueAtTime(freq,at);
+   if(endFreq)osc.frequency.exponentialRampToValueAtTime(endFreq,at+duration);
+   const crescendo=id==='gentle'?.43+.57*(start/24):1;
+   const peak=Math.min(.28,baseGain*crescendo);
+   const attack=Math.min(.035,duration/5),release=Math.min(.12,duration/3);
+   gain.gain.setValueAtTime(.0001,at);
+   gain.gain.exponentialRampToValueAtTime(peak,at+attack);
+   gain.gain.setValueAtTime(peak*.86,at+Math.max(attack,duration-release));
+   gain.gain.exponentialRampToValueAtTime(.0001,at+duration);
+   osc.connect(gain);gain.connect(ctx.destination);
+   osc.start(at);osc.stop(at+duration+.006);
+  }
  }
- window.setTimeout(()=>ctx.close().catch(()=>{}),4400);
- return true;
+ window.setTimeout(()=>{
+   if(previewPresetContext===ctx)previewPresetContext=null;
+   if(livePresetContext===ctx)livePresetContext=null;
+   ctx.close().catch(()=>{});
+ },(length+.20)*1000);
 }
 async function playCustom(isPreview){
  const saved=await storedCustomBlob().catch(()=>null);if(!saved?.blob)return false;
@@ -103,12 +126,13 @@ async function playCustom(isPreview){
 }
 async function previewSound(id){
  try{previewAudio?.pause();}catch(_){}previewAudio=null;
+ if(previewPresetContext){previewPresetContext.close().catch(()=>{});previewPresetContext=null;}
  if(id==='custom'){
   if(await playCustom(true))return;
   const native=window.MichelsLifeAndroid;
   if(typeof native?.previewPersonalAlarmSound==='function'&&native.previewPersonalAlarmSound('custom'))return;
   window.alert(tr('Import an MP3 first.','Primero importa un MP3.'));
- }else playPresetSound(id);
+ }else playPresetSound(id,true);
 }
 function createQuickAlarm(minutes){
  if(![5,10,15,30,60,120].includes(minutes)||records.length>=80)return false;
@@ -538,6 +562,7 @@ function ringAlarm(id){
    // Keep audible reminder repeating until dismissed or snoozed. Windows
    // cannot ring from a closed application; Android has native OS delivery.
    if(windowsRingtone)window.clearInterval(windowsRingtone);
+   stopPresetAudio();
    if(customAudio){customAudio.pause();customAudio=null;}
    const selectedSound=item.sound||'system';
    let useSystemFallback=false;
@@ -552,13 +577,14 @@ function ringAlarm(id){
      try{if(selectedSound!=='custom'||useSystemFallback)
        playPresetSound(useSystemFallback?'system':selectedSound);}catch(_){}
    };
-   tone();windowsRingtone=window.setInterval(tone,4500);
+   tone();windowsRingtone=window.setInterval(tone,24000);
  }
  return true;
 }
 function dismissRing(snooze){
  if(!ring||ring.hidden)return;
  if(windowsRingtone){window.clearInterval(windowsRingtone);windowsRingtone=null;}
+ stopPresetAudio();
  if(customAudio){customAudio.pause();customAudio=null;}
  if(snooze&&ringingId){
   const item=records.find(x=>x.id===ringingId);
