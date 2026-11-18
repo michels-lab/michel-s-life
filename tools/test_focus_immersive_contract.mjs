@@ -5,6 +5,7 @@ import vm from 'node:vm';
 
 const desktop=readFileSync('src/MichelsLife/frontend/focus-immersive.js','utf8');
 const android=readFileSync('android/mobile-experience.js','utf8');
+const androidBridge=readFileSync('android/android-bridge.js','utf8');
 const loader=readFileSync('tools/enable_i18n.py','utf8');
 const bundler=readFileSync('tools/replace_bundle_index.py','utf8');
 
@@ -88,6 +89,8 @@ test('Android real presets call the canonical engine and persist without ghost D
   assert.match(android,/data-mobile-preset="50\/10"/);
   assert.match(android,/data-mobile-preset="90\/15"/);
   assert.doesNotMatch(android,/v30162FocusDock/);
+  assert.doesNotMatch(androidBridge,/v30162FocusDock/);
+  assert.match(androidBridge,/v30175ActionDock/,'Quick Capture still has an Android bridge');
   assert.doesNotMatch(android,/#v30162WorkMin/);
   assert.doesNotMatch(android,/#v30162BreakMin/);
   assert.doesNotMatch(core,/v30162FocusDock/);
