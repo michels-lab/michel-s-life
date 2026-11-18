@@ -27573,15 +27573,20 @@ function chimeSoft(){try{if(focusState().v30165Sound===false)return;const C=wind
 function chime(){try{if(focusState().v30165Sound===false)return;const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const c=new C();[0,0.14].forEach((d,i)=>{const o=c.createOscillator(),g=c.createGain();o.frequency.value=i?880:660;g.gain.setValueAtTime(.045,c.currentTime+d);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d+.18);o.connect(g);g.connect(c.destination);o.start(c.currentTime+d);o.stop(c.currentTime+d+.2)});setTimeout(()=>c.close(),500)}catch(_){}}
 // The legacy sidebar Focus dock has been deleted at source; the engine remains for all clients.
 function renderFocusDock(){return focusState();}
+// Backward-compatible entrypoint: old callers now operate the ONE immersive UI.
+// Do not retain a second floating/side panel or mutate obsolete UI-expanded state.
 function setFocusPanelExpanded(open){
-  const f=focusState();
-  f.dockMode='compact';
-  f.expanded=!!open;
-  persist();
-  renderFocusDock();
-  return f.expanded;
+ if(open)return !!(window.MichelsLifeFocusImmersive?.open?.()||
+                   window.MichelsLifeMobileExperience?.openFocus?.());
+ return !!(window.MichelsLifeFocusImmersive?.minimize?.()||
+           window.MichelsLifeMobileExperience?.closeFocus?.());
 }
-function toggleFocusPanel(){return setFocusPanelExpanded(!focusState().expanded)}
+function toggleFocusPanel(){
+ const desktop=document.getElementById('mlv-desktop-focus-immersive');
+ const mobile=document.getElementById('mlv-android-focus-overlay');
+ const visible=!!(desktop&&!desktop.hidden||mobile&&!mobile.hidden);
+ return setFocusPanelExpanded(!visible);
+}
 function closeFocusPanel(){return setFocusPanelExpanded(false)}
 function updateFocusClock(){const f=focusState(),sec=Math.ceil(remaining(f)/1000);if(sec===lastSecond)return;lastSecond=sec;if(f.status==='running'&&remaining(f)<=0)finishPhase();if(f.status==='running'&&f.mode==='work'&&!f.linkedMissionId){const {cur,m}=currentInfo();if(cur&&m){f.linkedMissionId=String(cur.id);persist();}}}
 function enhanceFocusButtons(root=document){root.querySelectorAll&&root.querySelectorAll('[data-v30106-action="focus"]').forEach(b=>{b.removeAttribute('data-v30106-action');b.setAttribute('data-v30162-focus','open');b.textContent=/focus/i.test(b.textContent||'')?'Pomodoro':b.textContent;b.title='Open Pomodoro Focus Timer'});}
@@ -28812,7 +28817,11 @@ document.addEventListener('click',function(e){
  }
  const focusAction=e.target?.closest?.('[data-mlv-focus-action]');if(focusAction){
    e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
-   if(focusAction.dataset.mlvFocusAction==='open'){try{window.FocusStoryV30162?.setFocusPanelExpanded?.(true)}catch(_){}return}
+   if(focusAction.dataset.mlvFocusAction==='open'){
+     try{window.MichelsLifeFocusImmersive?.open?.()||
+         window.MichelsLifeMobileExperience?.openFocus?.()}catch(e){console.warn('Focus launch failed',e)}
+     return;
+   }
    const core=focusAction.closest('[data-mlv-focus-core]');
    applyFocusSettings('custom',core?.querySelector('[data-mlv-focus-work]')?.value,core?.querySelector('[data-mlv-focus-break]')?.value);return
  }
