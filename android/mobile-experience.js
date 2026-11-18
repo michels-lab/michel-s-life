@@ -133,7 +133,11 @@
       ['[data-mobile-focus="reset"]','Reset','Reiniciar'],
       ['[data-mobile-focus="settings"]','Focus settings','Ajustes de enfoque'],
       ['[data-mobile-focus="alarms"]','⏰ Alarms','⏰ Alarmas'],
-      ['details:not(.mlv-focus-motivation-details) summary','Custom work / break duration','Duración personalizada de enfoque / descanso'],
+
+       ['.mlv-android-focus-sounds summary','Focus audio · Completion sound & ambience','Audio de enfoque · Sonido final y ambiente'],
+       ['.mlv-android-focus-audio-grid label:first-of-type','Completion sound','Sonido al terminar'],
+       ['.mlv-android-focus-audio-grid label:nth-of-type(2)','Dreamy + Cinematic soundscapes','Ambientes soñadores y cinematográficos'],
+       ['#mlv-android-focus-sheet details:has(#mlv-android-focus-work) summary','Custom work / break duration','Duración personalizada de enfoque / descanso'],
       ['.mlv-focus-motivation-details summary','Messages & affirmations','Frases y afirmaciones'],
       ['.mlv-android-focus-compact label:first-child','Work minutes','Minutos de enfoque'],
       ['.mlv-android-focus-compact label:nth-child(2)','Break minutes','Minutos de descanso'],
@@ -147,7 +151,7 @@
       const el=q(selector,root);
       // Input labels contain child controls: mutate only the label's first
       // text node, not textContent, to preserve typed durations and focus.
-      if(selector.includes('compact label')){
+      if(selector.includes('compact label')||selector.includes('audio-grid label')){
         if(el?.firstChild?.nodeType===3){
           const value=focusText(en,es);
           if(el.firstChild.nodeValue!==value)el.firstChild.nodeValue=value;
