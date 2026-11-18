@@ -309,7 +309,8 @@
 
       #mlv-desktop-focus-immersive .mlv-focus-stage{
         width:min(100%,920px)!important;
-        background:linear-gradient(155deg,rgba(5,12,21,.56),rgba(8,17,27,.33))!important;
+        background-color:rgba(7,15,24,.43)!important;
+        background-image:linear-gradient(155deg,rgba(5,12,21,.18),rgba(8,17,27,.11))!important;
         border:1px solid rgba(220,241,255,.22)!important;
         box-shadow:0 24px 70px rgba(0,0,0,.16)!important;
         backdrop-filter:none!important;
