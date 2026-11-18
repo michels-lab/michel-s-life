@@ -29,7 +29,7 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "b4cc58ba93d58a10b83c40c7b5c33b483cca21437a5039e45c7c62471148f507",
+  "inventory_fingerprint": "31ab9cfb70294d88d429982cea1a5bbb0ed90397b5e6944019a5a78e5a56d6f2",
   "evidence_fingerprint": "5c7bcb269bc41d3cf3aacc61b47b6e74843fd15eb5e3f96fd69657cbc523cc9e",
   "files": [
     {
@@ -604,7 +604,7 @@
       "role": "release_intent",
       "purpose": "historical source-controlled release/candidate intent (preserve for traceability)",
       "certainty": "rule",
-      "blob": "fb1d0bf2ed6b4ad051c727f071dcfa15450074f2"
+      "blob": "a54f8a3427c6298c1159ac96f5b59fcf7082c659"
     },
     {
       "path": ".michelslab/release-intents/windows-granada-focus-alarms-2026-11-15.txt",
