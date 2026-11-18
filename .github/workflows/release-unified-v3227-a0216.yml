@@ -11,8 +11,8 @@ permissions:
   actions: read
 
 concurrency:
-  group: michel-life-stable-3227-0216
-  cancel-in-progress: false
+  group: michel-life-stable-3227-0216-final
+  cancel-in-progress: true
 
 jobs:
   exact-source:
