@@ -155,6 +155,38 @@ test('the selector offers preview, imported MP3/WAV/OGG and bounded private nati
   assert.match(overlay,/NativePersonalAlarms\.alarmSoundUri\(context, id\)/);
 });
 
+test('two same-deadline Windows alarms are enqueued independently and survive first dismiss',()=>{
+  const batch=alarms.slice(alarms.indexOf('function collectDueAlarms('),alarms.indexOf('function takeWindowsNotification('));
+  assert.match(batch,/dueAlarms\.push\(item\)/);
+  assert.match(batch,/pendingDueRings\.push\(item\.id\)/);
+  assert.match(batch,/windowsNotifications\.push\(\{id:item\.id/);
+  assert.match(batch,/ringNextDue\(\)/);
+  assert.doesNotMatch(batch,/shown\.add\(key\);ringAlarm\(item\.id\);break/);
+  assert.match(alarms,/ring\.hidden=true;ringingId=null;document\.body\.classList\.remove\('mlv-alarm-visible'\);\s*\/\/[^\n]*\n ringNextDue\(\);/);
+  assert.match(alarms,/if\(!android\(\)&&notify\)windowsNotifications\.push\(/);
+});
+
+test('both native Android and Windows snooze preserve exact 5-minute deadlines',()=>{
+  const nativeSnooze=native.slice(native.indexOf('fun snooze(context:'),native.indexOf('private fun notificationAllowed'));
+  const webSnooze=alarms.slice(alarms.indexOf('function dismissRing('),alarms.indexOf('function collectDueAlarms('));
+  assert.match(nativeSnooze,/val dueAt = System\.currentTimeMillis\(\) \+ 5L \* 60_000L/);
+  assert.match(nativeSnooze,/LocalDateTime\.ofInstant/);
+  assert.match(nativeSnooze,/\.put\("dueAt", dueAt\)/);
+  assert.doesNotMatch(nativeSnooze,/plusMinutes\(6\)|withSecond\(0\)/);
+  assert.match(webSnooze,/const dueAt=Date\.now\(\)\+5\*60000,when=/);
+  assert.match(webSnooze,/date,time,dueAt,repeat:'once'/);
+  assert.doesNotMatch(webSnooze,/setMinutes\(next\.getMinutes\(\)\+1/);
+});
+
+test('user ringtone URLs are revoked on preview replacement and full alarm dismissal',()=>{
+  assert.match(alarms,/function stopCustomAudio\(isPreview=false\)/);
+  assert.match(alarms,/if\(url\)URL\.revokeObjectURL\(url\)/);
+  assert.match(alarms,/const generation=\+\+previewGeneration/);
+  assert.match(alarms,/requestGeneration!==previewGeneration/);
+  assert.match(alarms,/stopCustomAudio\(true\)/);
+  assert.match(alarms,/stopCustomAudio\(false\)/);
+});
+
 test('desktop login startup is enabled once and respects later user opt-out',()=>{
   const shell=readFileSync('src/MichelsLife/DesktopShell.cs','utf8');
   assert.match(shell,/EnsureStartupPreferenceOnce\(\)/);
