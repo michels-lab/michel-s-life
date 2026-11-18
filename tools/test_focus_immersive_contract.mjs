@@ -74,9 +74,23 @@ test('both platforms keep one canonical timer and deliberate mini/navigation mod
     'Mobile mini must retain the running or paused phase owner');
   assert.match(android,/runningPhase!==minimizedForPhase&&f\.mode!==minimizedForMode/);
   assert.match(android,/z-index:2147483005!important/);
-  assert.match(android,/#v30162FocusDock\{\s*display:none!important;visibility:hidden!important/);
+  assert.doesNotMatch(android,/v30162FocusDock/,'Android must never depend on deleted sidebar Focus dock');
   assert.match(android,/background-image:\s*linear-gradient\(/);
   assert.doesNotMatch(desktop,/localStorage\.setItem\(/);
+});
+
+test('Android real presets call the canonical engine and persist without ghost DOM',()=>{
+  const core=readFileSync('src/MichelsLife/frontend/index.html','utf8');
+  assert.match(core,/window\.FocusStoryV30162=\{[^\n]*applyPreset,/);
+  assert.match(android,/api\.applyPreset\(preset,selected\[0\],selected\[1\]\)/);
+  assert.match(android,/api\.applyPreset\('custom',work,rest\)/);
+  assert.match(android,/data-mobile-preset="25\/5"/);
+  assert.match(android,/data-mobile-preset="50\/10"/);
+  assert.match(android,/data-mobile-preset="90\/15"/);
+  assert.doesNotMatch(android,/v30162FocusDock/);
+  assert.doesNotMatch(android,/#v30162WorkMin/);
+  assert.doesNotMatch(android,/#v30162BreakMin/);
+  assert.doesNotMatch(core,/v30162FocusDock/);
 });
 
 test('Windows and Android package the same immersion module once',()=>{
