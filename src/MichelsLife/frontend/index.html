@@ -27565,6 +27565,20 @@ function focusState(){
   if(f.status==='running'&&!Number.isFinite(Number(f.deadlineAt)))f.deadlineAt=Date.now()+f.remainingMs;
   return f;
 }
+function setAudioPreference(kind,value){
+ const f=focusState();
+ if(kind==='completion'){
+   const valid=['soft','glass','aurora','observatory','midnight','silver','off'];
+   f.v30165CompletionSound=valid.includes(value)?value:'soft';
+ }else if(kind==='scene'){
+   const valid=['moonlight','celestial','orbit','aurora','observatory','library','afterglow','silver'];
+   f.v30165Soundscape=valid.includes(value)?value:'moonlight';
+ }else return false;
+ // Canonical persistence and recovery: never store competing audio preferences
+ // in the immersive view or overwrite mission/session history.
+ persist();
+ return true;
+}
 function currentInfo(){try{const c=window.CurrentMissionV131&&CurrentMissionV131.getState&&CurrentMissionV131.getState();if(!c)return {cur:null,m:null};const m=(state.missions||[]).find(x=>String(x.id)===String(c.id))||null;return {cur:c,m}}catch(_){return {cur:null,m:null}}}
 function remaining(f=focusState()){return f.status==='running'?Math.max(0,Number(f.deadlineAt||0)-Date.now()):Math.max(0,Number(f.remainingMs||0))}
 function ensureCurrentRunning(id){const {cur}=currentInfo();if(!cur||String(cur.id)!==String(id))return;if(cur.status==='paused')try{CurrentMissionV131.pause()}catch(_){}}
@@ -27627,7 +27641,7 @@ window.addEventListener('beforeunload',()=>{persist()});
 /* Restore a running timer from persisted absolute deadline. */
 focusState();if(focusState().status==='running'){if(remaining(focusState())<=0)setTimeout(finishPhase,0);else if(focusState().mode==='work'&&focusState().linkedMissionId)ensureCurrentRunning(focusState().linkedMissionId);else if(focusState().mode==='break'&&focusState().linkedMissionId)ensureCurrentPaused(focusState().linkedMissionId);}
 enhanceFocusButtons(document);renderFocusDock();tickTimer=setInterval(updateFocusClock,250);updateFocusClock();
-window.FocusStoryV30162={version:VERSION,focusState,remaining,startFocus,pauseFocus,toggleFocus,resetFocus,skipFocus,applyPreset,focusSessions,chapters,activeChapter,chapterStats,createChapter,closeChapter,addMoment,renderStory,renderFocusDock,setFocusPanelExpanded,toggleFocusPanel,closeFocusPanel,takeWindowsNotification};
+window.FocusStoryV30162={version:VERSION,focusState,remaining,startFocus,pauseFocus,toggleFocus,resetFocus,skipFocus,applyPreset,focusSessions,setAudioPreference,chapters,activeChapter,chapterStats,createChapter,closeChapter,addMoment,renderStory,renderFocusDock,setFocusPanelExpanded,toggleFocusPanel,closeFocusPanel,takeWindowsNotification};
 window.__MICHELS_LIFE_BUILD__=VERSION;
 console.info("Michel's Life build "+VERSION+' — Pomodoro + Story Chapters loaded');
 })();
