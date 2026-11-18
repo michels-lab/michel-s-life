@@ -55,7 +55,7 @@ test('selected weekdays skip unselected days without duplicating the same due ti
 test('Windows and Android both expose alarms beside immersive Pomodoro',()=>{
   assert.match(alarms,/mlv-alarm-ring/);
   assert.match(alarms,/useWallpaper\(ring\)/);
-  assert.match(alarms,/setInterval\(tone,1700\)/);
+  assert.match(alarms,/setInterval\(tone,24000\)/);
   assert.match(alarms,/mlv-alarm-launcher/);
   assert.match(focus,/data-focus-action="alarms"/);
   assert.match(android,/data-mobile-focus="alarms"/);
@@ -130,7 +130,7 @@ test('Quick Alarm stores an exact 5-minute deadline rather than rounding to a la
 });
 
 test('the selector offers preview, imported MP3/WAV/OGG and bounded private native storage',()=>{
-  for(const id of ['classic','soft','digital','gentle','pulse','custom'])
+  for(const id of ['classic','soft','digital','gentle','pulse','radar','custom'])
     assert.ok(alarms.includes(id),id);
   for(const duration of ['5','10','15','30','60','120'])
     assert.match(alarms,new RegExp('data-quick-minutes="'+duration+'"'));
@@ -155,6 +155,38 @@ test('the selector offers preview, imported MP3/WAV/OGG and bounded private nati
   assert.match(overlay,/NativePersonalAlarms\.alarmSoundUri\(context, id\)/);
 });
 
+test('two same-deadline Windows alarms are enqueued independently and survive first dismiss',()=>{
+  const batch=alarms.slice(alarms.indexOf('function collectDueAlarms('),alarms.indexOf('function takeWindowsNotification('));
+  assert.match(batch,/dueAlarms\.push\(item\)/);
+  assert.match(batch,/pendingDueRings\.push\(item\.id\)/);
+  assert.match(batch,/windowsNotifications\.push\(\{id:item\.id/);
+  assert.match(batch,/ringNextDue\(\)/);
+  assert.doesNotMatch(batch,/shown\.add\(key\);ringAlarm\(item\.id\);break/);
+  assert.match(alarms,/ring\.hidden=true;ringingId=null;document\.body\.classList\.remove\('mlv-alarm-visible'\);\s*\/\/[^\n]*\n ringNextDue\(\);/);
+  assert.match(alarms,/if\(!android\(\)&&notify\)windowsNotifications\.push\(/);
+});
+
+test('both native Android and Windows snooze preserve exact 5-minute deadlines',()=>{
+  const nativeSnooze=native.slice(native.indexOf('fun snooze(context:'),native.indexOf('private fun notificationAllowed'));
+  const webSnooze=alarms.slice(alarms.indexOf('function dismissRing('),alarms.indexOf('function collectDueAlarms('));
+  assert.match(nativeSnooze,/val dueAt = System\.currentTimeMillis\(\) \+ 5L \* 60_000L/);
+  assert.match(nativeSnooze,/LocalDateTime\.ofInstant/);
+  assert.match(nativeSnooze,/\.put\("dueAt", dueAt\)/);
+  assert.doesNotMatch(nativeSnooze,/plusMinutes\(6\)|withSecond\(0\)/);
+  assert.match(webSnooze,/const dueAt=Date\.now\(\)\+5\*60000,when=/);
+  assert.match(webSnooze,/date,time,dueAt,repeat:'once'/);
+  assert.doesNotMatch(webSnooze,/setMinutes\(next\.getMinutes\(\)\+1/);
+});
+
+test('user ringtone URLs are revoked on preview replacement and full alarm dismissal',()=>{
+  assert.match(alarms,/function stopCustomAudio\(isPreview=false\)/);
+  assert.match(alarms,/if\(url\)URL\.revokeObjectURL\(url\)/);
+  assert.match(alarms,/const generation=\+\+previewGeneration/);
+  assert.match(alarms,/requestGeneration!==previewGeneration/);
+  assert.match(alarms,/stopCustomAudio\(true\)/);
+  assert.match(alarms,/stopCustomAudio\(false\)/);
+});
+
 test('desktop login startup is enabled once and respects later user opt-out',()=>{
   const shell=readFileSync('src/MichelsLife/DesktopShell.cs','utf8');
   assert.match(shell,/EnsureStartupPreferenceOnce\(\)/);
@@ -172,6 +204,51 @@ test('optional motivational quotes cannot cover Pomodoro timer or primary button
     focus.indexOf('data-focus-action="toggle"'),'desktop quotes appear below controls');
   assert.ok(android.indexOf('<details class="mlv-focus-motivation-details">')>
     android.indexOf('data-mobile-focus="toggle"'),'Android quotes appear below controls');
-  assert.match(focus,/oldDock\.style\.setProperty\('display','none','important'\)/);
-  assert.match(android,/#v30171Sidebar #v30162FocusDock/);
+  assert.doesNotMatch(focus,/oldDock/);
+  assert.doesNotMatch(focus,/backdrop-filter:blur/);
+  assert.doesNotMatch(android,/#v30171Sidebar #v30162FocusDock/);
+  assert.equal(android.includes('backdrop-filter:blur(3px)'),false);
+
+});
+
+test('legacy sidebar Pomodoro presentation is deleted at source',()=>{
+  const core=readFileSync(root+'index.html','utf8');
+  assert.equal(core.includes('function ensureFocusDock('),false);
+  assert.equal(core.includes('v30173-focus-wrap" data-mode='),false);
+  assert.equal(core.includes('Global Focus Timer dock'),false);
+  assert.equal(core.includes('v30162FocusDock'),false);
+  assert.equal(core.includes('v30173-focus-panel'),false);
+  assert.equal(core.includes('function augmentFocus()'),false);
+  assert.ok(core.includes("if(focusAction.dataset.mlvFocusAction==='open')"));
+  assert.ok(core.includes('window.MichelsLifeFocusImmersive?.open?.()'));
+  assert.ok(core.includes('function setFocusPanelExpanded(open){'));
+  assert.equal(core.includes("f.expanded=!!open"),false);
+  assert.ok(core.includes('data-mlv-focus-preset="90/15"'));
+  assert.ok(core.includes("if(preset==='90/15'){work=90;rest=15}"));
+  assert.ok(core.includes('data-v30165-focus-toggle="sound"'));
+  assert.ok(core.includes('data-v30165-focus-toggle="autobreak"'));
+  assert.equal(core.includes('function applyDeep()'),false);
+  assert.ok(core.includes('augmentFocus:ensureFocusPreferences'));
+  assert.equal(core.includes('augmentProjects,augmentFocus,openProjectSetup'),false);
+  assert.equal(core.includes('.v30165-focus-extra{'),false);
+  assert.equal(core.includes("root.id='v30106Focus'"),false);
+  assert.equal(core.includes('v30175FocusFab'),false);
+  assert.ok(core.includes("quick.id='v30106QuickFab'"));
+  assert.equal(core.includes('function renderFocus(){'),false);
+  assert.ok(core.includes('function renderFocusDock(){return focusState();}'));
+  assert.ok(core.includes('MichelsLifeFocusImmersive?.open?.()'));
+});
+
+test('six original 24-second ringtone arrangements repeat until dismissed',()=>{
+  assert.ok(alarms.includes("Michel's Life exclusive alarm suite"));
+  assert.ok(alarms.includes('MICHEL_ALARM_SCORE'));
+  assert.ok(alarms.includes('const length=preview?7:24'));
+  assert.ok(alarms.includes('stopPresetAudio()'));
+  assert.ok(alarms.includes('setInterval(tone,24000)'));
+  assert.ok(native.includes('"radar"'));
+  assert.ok(native.includes('AlarmNote('));
+  assert.ok(alarms.includes('useSystemFallback=true'));
+  assert.ok(native.includes('val durationSeconds = 24'));
+  assert.ok(native.includes('preset-v2-$selected.wav'));
+  assert.ok(overlay.includes('sound.isLooping = true'));
 });

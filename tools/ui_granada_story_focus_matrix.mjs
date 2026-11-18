@@ -15,6 +15,32 @@ if(inventory.mode!=='canonical_generated_android_html'||
    inventory.scriptCount<100||inventory.parseFailureCount!==0)
   throw Error('canonical_inline_js_audit_missing_or_failed');
 const staticInline=new Map(inventory.scripts.filter(x=>x.syntax==='valid').map(x=>[x.digest,x]));
+// Canonical generated Android HTML is the exact material parsed in the browser.
+// Compare failed runtime sources by structure ONLY (never log source/user data).
+const canonicalHtml=await readFile('artifacts/android-story-bundle/index.html','utf8');
+function canonicalBody(id){
+ if(!id||!/^[A-Za-z0-9_-]{1,100}$/.test(id))return null;
+ const at=canonicalHtml.indexOf('id="'+id+'"');
+ if(at<0)return null;
+ const tag=canonicalHtml.lastIndexOf('<script',at);
+ if(tag<0||canonicalHtml.indexOf('>',tag)<at)return null;
+ const start=canonicalHtml.indexOf('>',at)+1;
+ const end=canonicalHtml.indexOf('</script>',start);
+ return end<0?null:canonicalHtml.slice(start,end);
+}
+function structuralDiff(reference,observed){
+ if(typeof reference!=='string'||typeof observed!=='string')return null;
+ let prefix=0,suffix=0;
+ while(prefix<reference.length&&prefix<observed.length&&
+   reference[prefix]===observed[prefix])prefix++;
+ while(suffix<reference.length-prefix&&suffix<observed.length-prefix&&
+   reference[reference.length-1-suffix]===observed[observed.length-1-suffix])suffix++;
+ return {sourceCharacters:reference.length,observedCharacters:observed.length,
+   equal:reference===observed,prefixCharacters:prefix,suffixCharacters:suffix,
+   firstDifferenceLine:reference.slice(0,prefix).split('\n').length,
+   // Never expose source text, URLs, tokens, exception stack or HTML snippets.
+   differenceCharacters:reference.length-observed.length};
+}
 try{
 for(const width of [320,360,412])for(const language of ['en','es']){
  const name=String(width)+'-'+language;
@@ -85,7 +111,9 @@ for(const width of [320,360,412])for(const language of ['en','es']){
            canonicalInlineMatch:!!original,
            sameLineOriginalBytes:sameLine?.bytes??null,
            truncatedRelativeToStatic:sameLine?.bytes>Buffer.byteLength(code,'utf8')
-             ?sameLine.bytes-Buffer.byteLength(code,'utf8'):0
+             ?sameLine.bytes-Buffer.byteLength(code,'utf8'):0,
+           sameLineStructuralDiff:structuralDiff(
+             canonicalBody(original?.id||sameLine?.id),code)
          });
        }
      }).catch(()=>{}));
@@ -236,7 +264,9 @@ for(const width of [320,360,412])for(const language of ['en','es']){
    // Compare the browser's ACTUAL DOM text for the two suspect script tags
    // with the frozen canonical bundle inventory. Hashes/sizes ONLY, never JS
    // source, account data, journal content or arbitrary URLs.
-   const suspectIds=['v251-weekly-real-fix-script','v3021-dashboard-real-category-filter'];
+   const suspectIds=[...new Set(['v251-weekly-real-fix-script',
+     'v3021-dashboard-real-category-filter',
+     ...failureSourceHashes.map(item=>item.inlineId).filter(Boolean)])];
    const domIntegrity=page?await page.evaluate(async ids=>{
      const result=[];
      for(const id of ids){
@@ -253,7 +283,11 @@ for(const width of [320,360,412])for(const language of ['en','es']){
    const compared=domIntegrity.map(x=>{
      const original=inventory.scripts.find(s=>s.id===x.id);
      return {id:x.id,domBytes:x.bytes??null,expectedBytes:original?.bytes??null,
-       domMatchesCanonical:!!original&&x.digest===original.digest,missing:!!x.missing};
+       domMatchesCanonical:!!original&&x.digest===original.digest,missing:!!x.missing,
+       // Byte equality is checked against the generated bundle, not just
+       // the source tree; this distinguishes packaging from runtime mutation.
+       canonicalGeneratedBytes:canonicalBody(x.id)?
+         Buffer.byteLength(canonicalBody(x.id),'utf8'):null};
    });
    console.error('FAIL Android Story/Focus touch '+name+' ['+
      [...new Set(errors.map(e=>e.code))].join(',')+'] '+

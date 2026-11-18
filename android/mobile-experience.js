@@ -508,7 +508,10 @@
       }
       #mlv-android-focus-time{display:block;font-size:clamp(48px,16vw,76px);font-weight:900;letter-spacing:-.055em;font-variant-numeric:tabular-nums;line-height:1.1}
       #mlv-android-focus-status{display:block;margin-top:8px;color:var(--muted,#b4c6d6);font-size:12px}
-      .mlv-android-focus-presets,.mlv-android-focus-main-actions{
+      .mlv-android-focus-presets{
+        display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px
+      }
+      .mlv-android-focus-main-actions{
         display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px
       }
       .mlv-android-focus-presets button[aria-pressed="true"]{
@@ -718,6 +721,7 @@
       }
       #mlv-android-focus-sheet .mlv-android-focus-clock{
         display:flex;flex-direction:column;align-items:center;justify-content:center;
+        width:100%!important;align-self:stretch!important;box-sizing:border-box;
         flex:0 0 auto;min-height:260px;padding:5px 0;
         border:0!important;border-radius:0!important;background:transparent!important
       }
@@ -750,7 +754,8 @@
         letter-spacing:.01em
       }
       #mlv-android-focus-sheet .mlv-android-focus-presets{
-        grid-template-columns:repeat(2,minmax(0,1fr));gap:10px
+        grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px;
+        width:100%!important;min-width:0
       }
       #mlv-android-focus-sheet .mlv-android-focus-presets button{
         min-height:56px!important;height:auto!important;padding:14px 12px!important;
@@ -973,16 +978,13 @@
         background-size:cover!important;background-position:center!important;
         background-repeat:no-repeat!important
       }
+      /* Let the selected Michel's Life wallpaper remain visible through the
+         entire workspace. Readability comes from the dark scene gradient and
+         foreground contrast, not from blur or an almost-opaque sheet. */
       html[data-mlv-platform="android"] #mlv-android-focus-sheet{
-        background:rgba(6,10,22,.16)!important;
-        backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)
+        background:rgba(6,10,22,.42)!important;
+        backdrop-filter:none!important;-webkit-backdrop-filter:none!important
       }
-      html[data-mlv-platform="android"] #v30171Sidebar [data-tab="focus"]{display:none!important}
-      /* Retirement of dead legacy Focus/Alarm sidebar controls, regardless of
-         late canonical rerenders. The working launchers remain outside nav. */
-      html[data-mlv-platform="android"] #v30171Sidebar #v30162FocusDock,
-      html[data-mlv-platform="android"] #v30171Sidebar [data-v30162-focus],
-      html[data-mlv-platform="android"] #v30171Sidebar [data-v30165-focus]{display:none!important;pointer-events:none!important}
       #mlv-android-focus-sheet #mlv-android-focus-time{
         display:block!important;font-size:clamp(54px,14vw,82px)!important;
         font-weight:900!important;line-height:1.06!important;
@@ -995,13 +997,19 @@
       #mlv-android-focus-sheet .mlv-focus-motivation-details .mlv-motivation-copy{font-size:12px;line-height:1.3}
       #mlv-android-focus-sheet .mlv-android-focus-clock,
       #mlv-android-focus-sheet .mlv-android-focus-main-actions{flex-shrink:0}
-      @media(max-height:700px){#mlv-android-focus-sheet .mlv-focus-motivation-details{max-height:16vh}}
-      /* The canonical Focus engine and presets stay in the DOM, but its
-         old floating desktop panel must not be visually interactive on
-         Android: it previously appeared over the mobile sidebar. */
-      html[data-mlv-platform="android"] #v30162FocusDock{
-        display:none!important;visibility:hidden!important;pointer-events:none!important
+      /* The host stylesheet can set generic grid/align rules after injection.
+         Pin the actual full-screen Android Focus layout to one centered dial
+         and one three-preset row, not an inherited two-column dashboard. */
+      html[data-mlv-platform="android"] #mlv-android-focus-sheet .mlv-android-focus-clock{
+        display:flex!important;flex-direction:column!important;
+        align-items:center!important;justify-content:center!important;
+        width:100%!important;min-width:0!important
       }
+      html[data-mlv-platform="android"] #mlv-android-focus-sheet #mlv-android-focus-progress-ring{
+        margin-inline:auto!important;align-self:center!important;
+        flex:0 0 auto!important;max-width:calc(100% - 16px)!important
+      }
+      @media(max-height:700px){#mlv-android-focus-sheet .mlv-focus-motivation-details{max-height:16vh}}
       /* The drawer must end ABOVE fixed bottom navigation; otherwise a
          menu item scrolled to its bottom is covered by the tab bar. */
       html[data-mlv-platform="android"] #v30171Sidebar{
@@ -1187,6 +1195,7 @@
           <div class="mlv-android-focus-presets" aria-label="Focus presets">
             <button type="button" data-mobile-preset="25/5">25 / 5</button>
             <button type="button" data-mobile-preset="50/10">50 / 10</button>
+            <button type="button" data-mobile-preset="90/15">90 / 15</button>
           </div>
           <div class="mlv-android-focus-main-actions">
             <button type="button" class="primary" data-mobile-focus="toggle">Start</button>
@@ -1232,13 +1241,12 @@
         const api=focusApi();
         const preset=source.dataset.mobilePreset;
         if(preset){
-          // Delegate to the authoritative desktop Focus implementation; it
-          // owns confirmation, session persistence and linked mission state.
-          const original=q('#v30162FocusDock [data-v30162-preset="'+preset+'"]');
-          if(original){
-            original.click();
-            clearDurationDraft();
-          }
+          // Set the shared persisted timer state directly. The old dock does
+          // not exist; clicking ghost controls silently lost user input.
+          const durations={'25/5':[25,5],'50/10':[50,10],'90/15':[90,15]};
+          const selected=durations[preset];
+          if(!selected||typeof api?.applyPreset!=='function')return;
+          if(api.applyPreset(preset,selected[0],selected[1])===true)clearDurationDraft();
           updateFocus();return;
         }
         const action=source.dataset.mobileFocus;
@@ -1262,11 +1270,8 @@
         if(action==='custom'){
           const work=q('#mlv-android-focus-work')?.value;
           const rest=q('#mlv-android-focus-break')?.value;
-          const origWork=q('#v30162WorkMin'),origBreak=q('#v30162BreakMin');
-          if(!origWork||!origBreak)return;
-          origWork.value=work;origBreak.value=rest;
-          q('#v30162FocusDock [data-v30162-focus="apply-custom"]')?.click();
-          clearDurationDraft();
+          if(typeof api.applyPreset!=='function')return;
+          if(api.applyPreset('custom',work,rest)===true)clearDurationDraft();
         }
         if(action==='settings'){close();window.__mlvAndroidFastRoute?.('settings');setTimeout(()=>q('#tab-settings [data-v30171-setting="focus"]')?.click(),50);}
         updateFocus();
@@ -1530,7 +1535,6 @@
     window.__mlvAndroidSetDrawer?.(false);
     window.MichelsLifeFocusImmersive?.applyWallpaper?.(root);
     minimizedForPhase=null;minimizedForMode=null;saveMinimizedFocus();
-    api.renderFocusDock?.();
     updateActive();updateFocus();
     q('[data-mobile-focus="close"]',root)?.focus();
     return true;

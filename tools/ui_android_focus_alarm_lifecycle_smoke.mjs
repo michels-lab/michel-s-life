@@ -160,6 +160,15 @@ try{
   assert.equal(await page.locator('[data-mobile-focus="close"]').getAttribute('aria-label'),'Cerrar Pomodoro');
   const brandDot=page.locator('.mlv-android-focus-eyebrow .mlv-focus-brand-dot');
   assert.equal(await brandDot.count(),1,'Spanish copy removed the Focus brand dot');
+  const scene=await page.locator('#mlv-android-focus-sheet').evaluate(el=>{
+    const style=getComputedStyle(el);
+    return {
+      alpha:Number(style.backgroundColor.match(/,\s*([\d.]+)\)$/)?.[1]),
+      backdrop:style.backdropFilter
+    };
+  });
+  assert.ok(scene.alpha>0&&scene.alpha<0.65&&scene.backdrop==='none',
+    'Android sheet obscures the selected wallpaper or blurs timer: '+JSON.stringify(scene));
   await page.locator('#mlv-android-focus-sheet details:not(.mlv-focus-motivation-details) summary').click();
   const workInput=page.locator('#mlv-android-focus-work');
   await workInput.fill('37');
@@ -180,7 +189,30 @@ try{
     null,{timeout:12000});
   assert.equal(await page.locator('[data-mobile-focus="skip"]').textContent(),'Skip phase');
   assert.equal(await workInput.inputValue(),'37','Returning to English discarded typed duration');
-  console.log('PASS: real Android browser Focus ES/EN, preserved controls, brand mark, XP and timer');
+
+  // Regression: the old sidebar Focus dock has actually been deleted. Touch
+  // real preset and custom buttons; they must write to the single canonical
+  // timer instead of clicking selectors for ghost DOM elements.
+  await page.locator('#mlv-android-focus-break').fill('8');
+  await page.locator('#mlv-android-focus-apply').click();
+  const custom=await page.evaluate(()=>window.FocusStoryV30162.focusState());
+  assert.equal(custom.workMin,37,'Custom Focus button did not persist work duration');
+  assert.equal(custom.breakMin,8,'Custom Focus button did not persist break duration');
+  assert.equal(custom.preset,'custom');
+  for(const [preset,work,rest] of [['50/10',50,10],['90/15',90,15],['25/5',25,5]]){
+    await page.locator('#mlv-android-focus-sheet [data-mobile-preset="'+preset+'"]').click();
+    const after=await page.evaluate(()=>({
+      focus:window.FocusStoryV30162.focusState(),
+      ghost:document.querySelector('#v30162FocusDock, #v30175FocusFab'),
+      xp:state.xp
+    }));
+    assert.equal(after.focus.preset,preset,'Android real-touch preset was not saved: '+preset);
+    assert.equal(after.focus.workMin,work,'Android work length incorrect: '+preset);
+    assert.equal(after.focus.breakMin,rest,'Android break length incorrect: '+preset);
+    assert.equal(after.ghost,null,'Old sidebar Focus controls were recreated');
+    assert.equal(after.xp,beforeLocale.xp,'Focus preset touched XP');
+  }
+  console.log('PASS: real Android browser Focus ES/EN, custom 37/8, touch presets 50/10, 90/15, 25/5, no ghost sidebar, XP preserved');
   await context.close();
 }finally{
   await browser.close();

@@ -9,6 +9,18 @@ a=ap.parse_args()
 p=Path(a.index)
 text=p.read_text(encoding='utf-8')
 
+# HTML encoding must be known before any executable or style payload is parsed,
+# across source, the Windows AppBundle and Android's injected bridge package.
+# This is deliberately a release gate, not a browser-error suppression.
+charset='<meta charset="UTF-8" />'
+charset_index=text.find(charset)
+first_script=text.lower().find('<script')
+first_style=text.lower().find('<style')
+assert text.count(charset)==1, 'exactly one UTF-8 declaration required'
+assert 0<=charset_index<1024, 'UTF-8 must be in first 1024 bytes'
+assert charset_index<first_script and charset_index<first_style, (
+    'UTF-8 charset must precede every script/style, including injected platform scripts')
+
 required=(
     "const VERSION='3.0.226'",
     "window.__MICHELS_LIFE_BUILD__='3.0.226'",

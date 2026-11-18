@@ -65,7 +65,15 @@ def main():
         match = re.search(r'<head\b[^>]*>', text, flags=re.I)
         if not match:
             raise SystemExit('index.html has no <head> marker for early language guard')
-        pos = match.end()
+        # Keep the document encoding declaration first. A late <meta charset>
+        # after executing JS can provoke a browser encoding reparse while
+        # consuming this 2 MB legacy inline-script document.
+        charset = re.search(r'<meta\s+charset\s*=\s*["\']?utf-?8["\']?\s*/?>', text, flags=re.I)
+        if not charset or charset.start() < match.end():
+            raise SystemExit('canonical index must declare UTF-8 in <head>')
+        if re.search(r'<(?:script|style)\b', text[match.end():charset.start()], flags=re.I):
+            raise SystemExit('UTF-8 declaration must precede scripts and styles')
+        pos = charset.end()
         text = text[:pos] + '\n' + GUARD_SCRIPT + text[pos:]
         changed = True
 

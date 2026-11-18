@@ -55,7 +55,6 @@ required_bridge = [
     "width:22px!important",
     "#v30175ActionDock{position:sticky",
     "#v30106QuickFab",
-    "#v30162FocusDock",
     "#v176StatusPanel{position:relative",
     "v176-card.v30165-rpg-chapter-hero",
     "setImportantOnce(status,'max-height','none')",
@@ -63,6 +62,14 @@ required_bridge = [
     "mlv-android-drawer-hint",
     "data-mlv-platform",
 ]
+# The legacy Focus dock was deliberately DELETED, not hidden with CSS.
+# Reintroducing its selector or a click handler targeting it is a regression.
+for source_name, source in (("android-bridge.js", bridge), ("mobile-experience.js", mobile_experience)):
+    if "v30162FocusDock" in source or "v30175FocusFab" in source:
+        raise SystemExit(f"Obsolete Pomodoro sidebar dependency reintroduced in {source_name}")
+if "v30175ActionDock" not in bridge or "v30106QuickFab" not in bridge:
+    raise SystemExit("Quick Capture dock must remain operational after deleting Focus dock")
+
 missing = [needle for needle in required_bridge if needle not in bridge]
 if missing:
     raise SystemExit("Android mobile UX contract missing: " + ", ".join(missing))
@@ -79,6 +86,18 @@ required_mobile_experience = [
     "env(safe-area-inset-bottom,0px)",
     "window.__mlvAndroidHandleBack=function()",
 ]
+# Actual Android presets must drive the persisted FocusStory engine without
+# clicking invisible desktop inputs. Keep touch controls and custom durations.
+for action in (
+    "api.applyPreset(preset,selected[0],selected[1])",
+    "api.applyPreset('custom',work,rest)",
+    'data-mobile-preset="25/5"',
+    'data-mobile-preset="50/10"',
+    'data-mobile-preset="90/15"',
+    'window.MichelsLifeMobileExperience={openFocus:open',
+):
+    if action not in mobile_experience:
+        raise SystemExit("Canonical immersive Pomodoro Android action missing: " + action)
 missing_mobile_experience = [needle for needle in required_mobile_experience if needle not in mobile_experience]
 if missing_mobile_experience:
     raise SystemExit("Android mobile experience missing: " + ", ".join(missing_mobile_experience))

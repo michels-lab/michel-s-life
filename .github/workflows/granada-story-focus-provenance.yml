@@ -6,6 +6,7 @@ on:
       - 'tools/granada_story_diagnostic_core.mjs'
       - 'tools/test_granada_story_diagnostic_core.mjs'
       - 'tools/ui_granada_story_focus_matrix.mjs'
+      - 'tools/test_granada_story_bundle_paths.mjs'
       - 'tools/validate_granada_inline_scripts.mjs'
       - '.github/workflows/granada-story-focus-provenance.yml'
       - 'src/MichelsLife/frontend/**'
@@ -34,6 +35,7 @@ jobs:
           node --check tools/granada_story_diagnostic_core.mjs
           node --check tools/test_granada_story_diagnostic_core.mjs
           node --check tools/ui_granada_story_focus_matrix.mjs
+          node tools/test_granada_story_bundle_paths.mjs
           node --check android/mobile-sections.js
           node tools/test_granada_story_diagnostic_core.mjs
       - name: Construct official-app synthetic browser fixture

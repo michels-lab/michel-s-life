@@ -18,25 +18,21 @@ try{
     !!window.MichelsLifeFocusImmersive?.open&&
     !!document.querySelector('#mlv-desktop-focus-launcher'),null,{timeout:60000});
 
-  // The screenshot regression: the old Focus dock was fixed above the
-  // sidebar with a z-index higher than the new immersive workspace.
-  // Force it to expand and prove both old surfaces remain truly nonvisual.
+  // No legacy dock or pre-Pomodoro overlay may be created at all.
+  // Keep the canonical FocusStory timer API, but assert source retirement.
   const legacy=await page.evaluate(()=>{
     window.FocusStoryV30162.setFocusPanelExpanded(true);
-    const old=document.getElementById('v30162FocusDock');
-    const proto=document.getElementById('v30106Focus');
-    const hidden=node=>!node||getComputedStyle(node).display==='none';
     return {
-      oldExists:!!old,
-      legacyHidden:hidden(old),
-      oldEvents:old?getComputedStyle(old).pointerEvents:'none',
-      oldProtoHidden:hidden(proto),
+      oldExists:!!document.getElementById('v30162FocusDock'),
+      prototypeExists:!!document.getElementById('v30106Focus'),
+      deadActionExists:!!document.getElementById('v30175FocusFab'),
+      quickCaptureExists:!!document.getElementById('v30106QuickFab'),
       retainedEngine:!!window.FocusStoryV30162.focusState
     };
   });
-  ok(legacy.oldExists&&legacy.legacyHidden&&legacy.oldProtoHidden&&
-    legacy.oldEvents==='none'&&legacy.retainedEngine,
-    'Old Windows Pomodoro panel or sidebar trigger is still visible: '+JSON.stringify(legacy));
+  ok(!legacy.oldExists&&!legacy.prototypeExists&&!legacy.deadActionExists&&
+    legacy.quickCaptureExists&&legacy.retainedEngine,
+    'Legacy Focus UI must be absent, not hidden: '+JSON.stringify(legacy));
 
   // A theme wallpaper already installed in the app must be used as the
   // full-screen background. The immersive layer may shade it, not erase it.
@@ -55,8 +51,12 @@ try{
   ok(await page.evaluate(()=>{
     const focus=document.getElementById('mlv-desktop-focus-immersive');
     const old=document.getElementById('v30162FocusDock');
+    const stage=focus?.querySelector('.mlv-focus-stage');
+    const style=stage?getComputedStyle(stage):null;
+    const alpha=Number(style?.backgroundColor.match(/,\s*([\d.]+)\)$/)?.[1]);
     return focus&&!focus.hidden&&getComputedStyle(focus).display!=='none'&&
-      getComputedStyle(old).display==='none'&&
+      !old&&!!stage&&style.backdropFilter==='none'&&
+      alpha>0.1&&alpha<0.7&&
       Number(getComputedStyle(focus).zIndex)>1000000000;
   }), 'Desktop immersive view is not the only visible active Focus workspace');
 

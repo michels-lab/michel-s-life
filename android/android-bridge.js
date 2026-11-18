@@ -550,19 +550,6 @@
       }
     }
 
-    const focusDock=q('#v30162FocusDock');
-    if(focusDock){
-      setImportantOnce(focusDock,'left','0');
-      setImportantOnce(focusDock,'right','auto');
-      setImportantOnce(focusDock,'bottom','0');
-      setImportantOnce(focusDock,'width','0');
-      setImportantOnce(focusDock,'height','0');
-      setImportantOnce(focusDock,'min-width','0');
-      setImportantOnce(focusDock,'min-height','0');
-      setImportantOnce(focusDock,'max-width','0');
-      setImportantOnce(focusDock,'max-height','0');
-      setImportantOnce(focusDock,'pointer-events','none');
-    }
 
     // Desktop Home's overflow:hidden hero traps one-finger vertical scroll.
     // An overflow:clip visual crop has no independent scroll container.
@@ -963,8 +950,6 @@
         #v30175ActionDock{position:sticky!important;left:auto!important;right:auto!important;bottom:0!important;width:100%!important;margin:0!important;padding:6px 2px 8px!important;display:flex!important;flex-direction:row!important;justify-content:center!important;gap:9px!important;align-items:center!important;background:linear-gradient(180deg,transparent,rgba(6,9,19,.98) 30%)!important;z-index:8!important;pointer-events:none!important;box-sizing:border-box!important}
         #v30175ActionDock .v30175-action,#v30175ActionDock #v30106QuickFab{--v30175-action-size:44px!important;position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;max-width:44px!important;max-height:44px!important;border-radius:14px!important;pointer-events:auto!important}
         #v30175ActionDock .v30175-icon{width:21px!important;height:21px!important}
-        #v30162FocusDock{left:0!important;right:auto!important;bottom:0!important;width:0!important;height:0!important;min-width:0!important;min-height:0!important;max-width:0!important;max-height:0!important;pointer-events:none!important}
-        #v30162FocusDock .v30173-focus-wrap,#v30162FocusDock .v30173-focus-trigger{width:0!important;height:0!important;min-width:0!important;min-height:0!important;max-width:0!important;max-height:0!important}
         /* Stable Android check controls: never inherit full-width desktop input sizing. */
         #mlv200Onboarding .mlv200-focus{display:grid!important;grid-template-columns:26px minmax(0,1fr)!important;align-items:center!important;gap:10px!important;min-height:52px!important;padding:9px 11px!important}
         #mlv200Onboarding .mlv200-focus input[type="checkbox"]{width:22px!important;height:22px!important;min-width:22px!important;min-height:22px!important;max-width:22px!important;max-height:22px!important;margin:0!important;padding:0!important;transform:none!important;flex:0 0 22px!important;accent-color:var(--accent)!important}
@@ -972,7 +957,6 @@
         #mlv200Onboarding .mlv200-focus b{font-size:13px!important;line-height:1.25!important;overflow-wrap:anywhere!important}
         #mlv200Onboarding .mlv200-option input[type="checkbox"],.day-chip input[type="checkbox"],.mlv185-opacity-toggle input[type="checkbox"]{width:20px!important;height:20px!important;min-width:20px!important;min-height:20px!important;max-width:20px!important;max-height:20px!important;flex:0 0 20px!important;margin:1px 0 0!important}
         #main{padding-bottom:12px!important}
-        #v30162FocusDock .v30173-focus-panel{pointer-events:auto!important;left:10px!important;right:10px!important;bottom:10px!important;width:auto!important;max-height:calc(100vh - var(--mlv-android-topbar-h) - 30px)!important}
                 input,select,textarea,button{max-width:100%;box-sizing:border-box}
       }
       @media(min-width:900px) and (max-width:${MOBILE_BREAKPOINT}px){

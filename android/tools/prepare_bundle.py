@@ -42,9 +42,14 @@ def main():
     marker = '<script src="android-bridge.js" data-mlv-android-bridge="v1"></script>'
     mobile_marker = '<script src="mobile-experience.js" data-mlv-android-mobile-experience="v1"></script>'
     if marker not in text:
-        if "<head>" not in text:
-            raise SystemExit("index.html has no <head> tag")
-        text = text.replace("<head>", "<head>\n" + marker, 1)
+        charset = '<meta charset="UTF-8" />'
+        if "<head>" not in text or charset not in text:
+            raise SystemExit("index.html must declare UTF-8 early in <head>")
+        if text.index(charset) > 1024 or text.index(charset) > text.index('<script'):
+            raise SystemExit("UTF-8 meta must precede all inline scripts")
+        # The Android bridge also belongs after encoding detection.
+        # Never move charset beyond the first 1024 bytes again.
+        text = text.replace(charset, charset + "\n" + marker, 1)
     sections_marker = '<script src="mobile-sections.js" data-mlv-android-mobile-sections="v1"></script>'
     if mobile_marker not in text:
         # Keep the platform-owned shell next to the bridge, before the
