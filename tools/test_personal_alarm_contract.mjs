@@ -191,6 +191,12 @@ test('legacy sidebar Pomodoro presentation is deleted at source',()=>{
   assert.ok(core.includes('window.MichelsLifeFocusImmersive?.open?.()'));
   assert.ok(core.includes('function setFocusPanelExpanded(open){'));
   assert.equal(core.includes("f.expanded=!!open"),false);
+  assert.ok(core.includes('data-mlv-focus-preset="90/15"'));
+  assert.ok(core.includes("if(preset==='90/15'){work=90;rest=15}"));
+  assert.ok(core.includes('data-v30165-focus-toggle="sound"'));
+  assert.ok(core.includes('data-v30165-focus-toggle="autobreak"'));
+  assert.equal(core.includes('function applyDeep()'),false);
+  assert.equal(core.includes('.v30165-focus-extra{'),false);
   assert.equal(core.includes("root.id='v30106Focus'"),false);
   assert.equal(core.includes('v30175FocusFab'),false);
   assert.ok(core.includes("quick.id='v30106QuickFab'"));
