@@ -1226,8 +1226,8 @@
           const durations={'25/5':[25,5],'50/10':[50,10],'90/15':[90,15]};
           const selected=durations[preset];
           if(!selected||typeof api?.applyPreset!=='function')return;
-          api.applyPreset(preset,selected[0],selected[1]);
-          clearDurationDraft();updateFocus();return;
+          if(api.applyPreset(preset,selected[0],selected[1])===true)clearDurationDraft();
+          updateFocus();return;
         }
         const action=source.dataset.mobileFocus;
         if(action==='close'){close();return;}
@@ -1251,8 +1251,7 @@
           const work=q('#mlv-android-focus-work')?.value;
           const rest=q('#mlv-android-focus-break')?.value;
           if(typeof api.applyPreset!=='function')return;
-          api.applyPreset('custom',work,rest);
-          clearDurationDraft();
+          if(api.applyPreset('custom',work,rest)===true)clearDurationDraft();
         }
         if(action==='settings'){close();window.__mlvAndroidFastRoute?.('settings');setTimeout(()=>q('#tab-settings [data-v30171-setting="focus"]')?.click(),50);}
         updateFocus();
