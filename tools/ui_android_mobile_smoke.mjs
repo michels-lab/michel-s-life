@@ -754,7 +754,10 @@ try{
   ok(focusPresentation.screen&&focusPresentation.screen.top<=1&&
       focusPresentation.screen.height>=880&&focusPresentation.screen.width<=412&&
       focusPresentation.ring?.width>=175&&focusPresentation.close?.width>=44&&
-      focusPresentation.presets.length===3&&focusPresentation.presets.every(x=>x.height>=48),
+      Math.abs((focusPresentation.ring.left+focusPresentation.ring.right)/2-
+        (focusPresentation.screen.left+focusPresentation.screen.right)/2)<=6&&
+      focusPresentation.presets.length===3&&focusPresentation.presets.every(x=>x.height>=48&&x.width>=44)&&
+      focusPresentation.presets.every(x=>Math.abs(x.top-focusPresentation.presets[0].top)<2),
     'Focus is not a full-viewport, touch-first Android workspace: '+JSON.stringify(focusPresentation));
   const polishedFocus=await page.evaluate(()=>{
     const sheet=document.getElementById('mlv-android-focus-sheet');
