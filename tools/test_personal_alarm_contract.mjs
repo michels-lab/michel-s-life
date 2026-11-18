@@ -185,6 +185,8 @@ test('legacy sidebar Pomodoro presentation is deleted at source',()=>{
   assert.equal(core.includes('v30173-focus-wrap" data-mode='),false);
   assert.equal(core.includes('Global Focus Timer dock'),false);
   assert.equal(core.includes("root.id='v30106Focus'"),false);
+  assert.equal(core.includes('v30175FocusFab'),false);
+  assert.ok(core.includes("quick.id='v30106QuickFab'"));
   assert.equal(core.includes('function renderFocus(){'),false);
   assert.ok(core.includes('function renderFocusDock(){return focusState();}'));
   assert.ok(core.includes('MichelsLifeFocusImmersive?.open?.()'));
