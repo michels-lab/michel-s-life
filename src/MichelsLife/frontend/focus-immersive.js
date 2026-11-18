@@ -13,8 +13,8 @@
   // Original, royalty-free Michel's Life audio. A + C: dreamy and cinematic.
   // The Web Audio engine is shared by desktop and Android WebView. It NEVER
   // touches FocusStory deadlines/history and never autoplays on boot.
-  const completionKey='michelsLife.focus.completionSound.v1';
-  const sceneKey='michelsLife.focus.soundscape.v1';
+  const completionKey='completion';
+  const sceneKey='scene';
   const finishTones={
     soft:{en:'Soft Bell',es:'Campana suave',notes:[[0,587,.55,.065],[.32,784,.85,.045]]},
     glass:{en:'Glass Chime',es:'Cristal',notes:[[0,988,.4,.052],[.2,1318,.65,.041],[.52,1567,.65,.026]]},
@@ -43,13 +43,16 @@
     effectContext.resume?.().catch?.(()=>{});
     return effectContext;
   }
+  // FocusStory is the ONLY persistence owner. This immersive view must not
+  // write localStorage independently or duplicate timer/session state.
   function readChoice(key,valid,fallback){
-    try{const value=localStorage.getItem(key);return Object.hasOwn(valid,value)?value:fallback;}
-    catch(_){return fallback;}
+    const f=api()?.focusState?.();
+    const value=key==='completion'?f?.v30165CompletionSound:f?.v30165Soundscape;
+    return Object.hasOwn(valid,value)?value:fallback;
   }
   function choice(key,valid,value,fallback){
     const selected=Object.hasOwn(valid,value)?value:fallback;
-    try{localStorage.setItem(key,selected);}catch(_){}
+    api()?.setAudioPreference?.(key,selected);
     return selected;
   }
   const finishId=()=>readChoice(completionKey,finishTones,'soft');
