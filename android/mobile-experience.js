@@ -973,16 +973,10 @@
         background-size:cover!important;background-position:center!important;
         background-repeat:no-repeat!important
       }
+      /* Readable foreground over the selected wallpaper; no optical blur on the timer. */
       html[data-mlv-platform="android"] #mlv-android-focus-sheet{
-        background:rgba(6,10,22,.16)!important;
-        backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)
+        background:rgba(6,10,22,.80)!important
       }
-      html[data-mlv-platform="android"] #v30171Sidebar [data-tab="focus"]{display:none!important}
-      /* Retirement of dead legacy Focus/Alarm sidebar controls, regardless of
-         late canonical rerenders. The working launchers remain outside nav. */
-      html[data-mlv-platform="android"] #v30171Sidebar #v30162FocusDock,
-      html[data-mlv-platform="android"] #v30171Sidebar [data-v30162-focus],
-      html[data-mlv-platform="android"] #v30171Sidebar [data-v30165-focus]{display:none!important;pointer-events:none!important}
       #mlv-android-focus-sheet #mlv-android-focus-time{
         display:block!important;font-size:clamp(54px,14vw,82px)!important;
         font-weight:900!important;line-height:1.06!important;
