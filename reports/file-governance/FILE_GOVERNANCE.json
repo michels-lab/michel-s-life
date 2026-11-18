@@ -29,7 +29,7 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "31ab9cfb70294d88d429982cea1a5bbb0ed90397b5e6944019a5a78e5a56d6f2",
+  "inventory_fingerprint": "dd8f92bc3be722307a301caad26dd0b0995ad3e16078526113ce9271ec000886",
   "evidence_fingerprint": "5c7bcb269bc41d3cf3aacc61b47b6e74843fd15eb5e3f96fd69657cbc523cc9e",
   "files": [
     {
@@ -2158,7 +2158,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "a3fe70d0ecb4b1c90bdcfdb5a5340f2777519682"
+      "blob": "422b8fe60501ccd1f6efd3be9199300edc3f6fb3"
     },
     {
       "path": "tools/render_store_manifest.py",
@@ -2865,7 +2865,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "816ea10a7831878a1bb207c5ac86a27811c4d1ed"
+      "blob": "dfb832302dab57bc579040136302f9ead5680694"
     },
     {
       "path": "tools/validate_external_ui_design.py",
@@ -2879,7 +2879,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "41016ad633dc9994cd6c361c1b19b42b8dbd413c"
+      "blob": "a71ba8f30b429da754de41b938a4f24580508821"
     },
     {
       "path": "tools/validate_granada_inline_scripts.mjs",
