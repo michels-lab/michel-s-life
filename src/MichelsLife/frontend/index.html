@@ -28918,9 +28918,12 @@ function ensureDock(){
   if(!quick){quick=document.createElement('button');quick.type='button';quick.id='v30106QuickFab';dock.appendChild(quick)}
   quick.className='v30175-action';
   quick.removeAttribute('data-v30106-action');
-  quick.dataset.tip='Quick mission';
-   quick.title='Quick Mission · Add a mission for today';
-   quick.setAttribute('aria-label','Add a quick mission');
+  // The action dock refreshes dynamically. Localize at the source so
+  // tooltip, accessible name and visual hint cannot revert between scans.
+  const quickEs=window.MichelsLifeI18n?.language==='es';
+  quick.dataset.tip=quickEs?'Misión rápida':'Quick mission';
+  quick.title=quickEs?'Misión rápida · Agrega una misión para hoy':'Quick Mission · Add a mission for today';
+  quick.setAttribute('aria-label',quickEs?'Agregar una misión rápida':'Add a quick mission');
    // This icon must be visible on every user theme; prior stroke could vanish.
    if(quick.textContent!=='+')quick.textContent='+';
    quick.style.setProperty('font-size','32px','important');
