@@ -130,7 +130,7 @@ test('Quick Alarm stores an exact 5-minute deadline rather than rounding to a la
 });
 
 test('the selector offers preview, imported MP3/WAV/OGG and bounded private native storage',()=>{
-  for(const id of ['classic','soft','digital','gentle','pulse','custom'])
+  for(const id of ['classic','soft','digital','gentle','pulse','radar','custom'])
     assert.ok(alarms.includes(id),id);
   for(const duration of ['5','10','15','30','60','120'])
     assert.match(alarms,new RegExp('data-quick-minutes="'+duration+'"'));
@@ -172,6 +172,49 @@ test('optional motivational quotes cannot cover Pomodoro timer or primary button
     focus.indexOf('data-focus-action="toggle"'),'desktop quotes appear below controls');
   assert.ok(android.indexOf('<details class="mlv-focus-motivation-details">')>
     android.indexOf('data-mobile-focus="toggle"'),'Android quotes appear below controls');
-  assert.match(focus,/oldDock\.style\.setProperty\('display','none','important'\)/);
-  assert.match(android,/#v30171Sidebar #v30162FocusDock/);
+  assert.doesNotMatch(focus,/oldDock|v30162FocusDock/);
+  assert.doesNotMatch(android,/v30162FocusDock/);
+});
+
+test('six Michel\'s Life original full-length alarm arrangements and Android native repeat',()=>{
+  assert.match(alarms,/const MICHEL_ALARM_SCORE=/);
+  assert.match(alarms,/const length=preview\?7:24/);
+  assert.match(alarms,/setInterval\(tone,24000\)/);
+  assert.match(alarms,/stopPresetAudio\(\)/);
+  assert.match(native,/val durationSeconds = 24/);
+  assert.match(native,/preset-v2-\$selected\.wav/);
+  assert.match(native,/fun generatePreset\(file: File, preset: String\)/);
+  assert.match(overlay,/sound\.isLooping = true/);
+  const activity=readFileSync('android/app/src/main/java/com/michelslab/michelslife/MainActivity.kt','utf8');
+  assert.match(activity,/player\.isLooping = true/);
+  for(const name of ['classic','soft','digital','gentle','pulse','radar']){
+    assert.match(alarms,new RegExp(name+':\\\\{'));
+    assert.match(native,new RegExp('"'+name+'" -> Pair'));
+  }
+});
+
+test('native Windows Focus and alarm notifications coexist with Android channels',()=>{
+  const shell=readFileSync('src/MichelsLife/DesktopShell.cs','utf8');
+  const core=readFileSync('src/MichelsLife/frontend/index.html','utf8');
+  const focusNative=readFileSync('android/app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt','utf8');
+  assert.match(shell,/PollWindowsFocusAsync\(\)/);
+  assert.match(shell,/ShowBalloonTip\(type == "completed"/);
+  assert.match(shell,/PollWindowsAlarmsAsync\(\)/);
+  assert.match(core,/function takeWindowsNotification\(\)/);
+  assert.match(core,/queueFocusDesktop\('started'/);
+  assert.match(core,/queueFocusDesktop\('completed'/);
+  assert.match(focusNative,/ACTIVE_NOTIFICATION_ID/);
+  assert.match(focusNative,/\.setCategory\(Notification\.CATEGORY_PROGRESS\)/);
+  assert.match(native,/\.setCategory\(Notification\.CATEGORY_ALARM\)/);
+});
+
+test('legacy Focus buttons are deleted at source and only Quick Capture remains',()=>{
+  const core=readFileSync('src/MichelsLife/frontend/index.html','utf8');
+  for(const old of ['v30162FocusDock','v30175FocusFab','v30173-focus-trigger',
+     'setFocusPanelExpanded','toggleFocusPanel','renderFocusDock']){
+    assert.ok(!core.includes(old),'retired UI unexpectedly present: '+old);
+  }
+  assert.match(core,/window\.ActionDockV30175=\{ensureDock\}/);
+  assert.match(core,/quick\.dataset\.tip='Quick mission'/);
+  assert.match(core,/renderStory,applyPreset,refreshFocusViews,takeWindowsNotification/);
 });
