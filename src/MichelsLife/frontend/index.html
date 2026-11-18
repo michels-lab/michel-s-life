@@ -27615,7 +27615,7 @@ window.addEventListener('beforeunload',()=>{persist()});
 /* Restore a running timer from persisted absolute deadline. */
 focusState();if(focusState().status==='running'){if(remaining(focusState())<=0)setTimeout(finishPhase,0);else if(focusState().mode==='work'&&focusState().linkedMissionId)ensureCurrentRunning(focusState().linkedMissionId);else if(focusState().mode==='break'&&focusState().linkedMissionId)ensureCurrentPaused(focusState().linkedMissionId);}
 enhanceFocusButtons(document);renderFocusDock();tickTimer=setInterval(updateFocusClock,250);updateFocusClock();
-window.FocusStoryV30162={version:VERSION,focusState,remaining,startFocus,pauseFocus,toggleFocus,resetFocus,skipFocus,focusSessions,chapters,activeChapter,chapterStats,createChapter,closeChapter,addMoment,renderStory,renderFocusDock,setFocusPanelExpanded,toggleFocusPanel,closeFocusPanel};
+window.FocusStoryV30162={version:VERSION,focusState,remaining,startFocus,pauseFocus,toggleFocus,resetFocus,skipFocus,applyPreset,focusSessions,chapters,activeChapter,chapterStats,createChapter,closeChapter,addMoment,renderStory,renderFocusDock,setFocusPanelExpanded,toggleFocusPanel,closeFocusPanel};
 window.__MICHELS_LIFE_BUILD__=VERSION;
 console.info("Michel's Life build "+VERSION+' — Pomodoro + Story Chapters loaded');
 })();
