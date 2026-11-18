@@ -973,9 +973,12 @@
         background-size:cover!important;background-position:center!important;
         background-repeat:no-repeat!important
       }
-      /* Readable foreground over the selected wallpaper; no optical blur on the timer. */
+      /* Let the selected Michel's Life wallpaper remain visible through the
+         entire workspace. Readability comes from the dark scene gradient and
+         foreground contrast, not from blur or an almost-opaque sheet. */
       html[data-mlv-platform="android"] #mlv-android-focus-sheet{
-        background:rgba(6,10,22,.80)!important
+        background:rgba(6,10,22,.42)!important;
+        backdrop-filter:none!important;-webkit-backdrop-filter:none!important
       }
       #mlv-android-focus-sheet #mlv-android-focus-time{
         display:block!important;font-size:clamp(54px,14vw,82px)!important;
