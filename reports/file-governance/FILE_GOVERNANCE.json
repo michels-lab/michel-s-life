@@ -29,7 +29,7 @@
     "POTENTIAL_UNLOGGED_CHANGES": 2
   },
   "finding_total": 6,
-  "inventory_fingerprint": "fd1d88a84a15d9847421caa7c31122d408b3174e0805039158fad0effd6b4fd4",
+  "inventory_fingerprint": "70e92c675e514c0bd5183204a87fae8508cee39bcffee008df87d09b8e44664a",
   "evidence_fingerprint": "9de07246b24435b83f3ba3f1f38f2d92eb8f9cf3b2dab745a0215971801a9715",
   "files": [
     {
@@ -72,7 +72,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "f202bdb1d37389f2af9ad1a4cd8961f5a4340db1"
+      "blob": "686653c1a2ae447dcfe67a75090545437b39bb4b"
     },
     {
       "path": ".github/workflows/android-direct-private-candidate-v026.yml",
@@ -730,7 +730,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "db5ef39d208c8c15c31c7714f91944ad4e671895"
+      "blob": "3d4cc9c7094ea3e17b6e686057629b5b42876e22"
     },
     {
       "path": "android/app/build.gradle.kts",
@@ -800,7 +800,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "02c3edcffff10cdcdc7549d560d1d59cf523157f"
+      "blob": "0562d983cb5727b669446bae317c42b40686b138"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/DirectUpdatePolicy.java",
