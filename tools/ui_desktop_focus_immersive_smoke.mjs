@@ -75,8 +75,21 @@ try{
       stageWidth:stage.scrollWidth,clientWidth:stage.clientWidth,
       clockFont:parseFloat(getComputedStyle(clock).fontSize),
       audioCollapsed:!stage.querySelector('.mlv-focus-sound-details').open,
-      affirmationsCollapsed:!stage.querySelector('.mlv-focus-motivation-details').open};
+      affirmationsCollapsed:!stage.querySelector('.mlv-focus-motivation-details').open,
+      cssEvidence:(()=>{
+        const computed=getComputedStyle(stage),parent=getComputedStyle(stage.parentElement);
+        const css=document.getElementById('mlv-desktop-focus-css')?.textContent||'';
+        return {sourceWidthFix:css.includes('width:min(800px,calc(100vw - 48px))'),
+          renderedWidth:computed.width,computedMaxWidth:computed.maxWidth,
+          renderedMinWidth:computed.minWidth,display:computed.display,
+          boxSizing:computed.boxSizing,inline:stage.getAttribute('style')||'',
+          parentWidth:stage.parentElement.getBoundingClientRect().width,
+          parentDisplay:parent.display,gridColumns:parent.gridTemplateColumns,
+          viewport:window.innerWidth};
+      })()};
   });
+  await mkdir('artifacts/ui-smoke',{recursive:true});
+  await page.screenshot({path:'artifacts/ui-smoke/desktop-focus-976x737-owner-viewport.png'});
   ok(compact.stage.w<=840&&compact.stage.w>610&&compact.stage.h>=460&&compact.stage.h<=713&&
      compact.clientWidth>610, 'Focus stage does not fit owner screenshot: '+JSON.stringify(compact));
   ok(compact.clockFont>=65&&compact.clockFont<=115&&
@@ -89,8 +102,7 @@ try{
     ok(button.right<compact.stage.right+2&&button.x>=compact.stage.x-2&&button.h>=40,
       'Primary action clipped at owner viewport: '+JSON.stringify({button,compact}));
   }
-  await mkdir('artifacts/ui-smoke',{recursive:true});
-  await page.screenshot({path:'artifacts/ui-smoke/desktop-focus-976x737-owner-viewport.png'});
+
   await page.setViewportSize({width:1440,height:900});
 
   // Real browser interaction, not a static API test: open the collapsed audio
