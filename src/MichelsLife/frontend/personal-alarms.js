@@ -143,7 +143,7 @@ function createQuickAlarm(minutes){
  if(!item)return false;records.push(item);store();return true;
 }
 
-let records=[],screen=null,ring=null,launcher=null,editing=null,lastTick=Date.now(),shown=new Set(),nativeError='',nativeCache='',ready=false;
+let records=[],screen=null,ring=null,launcher=null,editing=null,lastTick=Date.now(),shown=new Set(),pendingDueRings=[],nativeError='',nativeCache='',ready=false;
 let windowsRingtone=null;
 const windowsNotifications=[];
 function normal(item){
@@ -539,12 +539,12 @@ function close(){
  return true;
 }
 let ringingId=null;
-function ringAlarm(id){
+function ringAlarm(id,{notify=true}={}){
  create();
  const item=records.find(x=>x.id===id);
  if(!item)return false;
  ringingId=id;
- if(!android())windowsNotifications.push({id:item.id,label:item.label||tr('Alarm','Alarma'),time:item.time,sound:item.sound});
+ if(!android()&&notify)windowsNotifications.push({id:item.id,label:item.label||tr('Alarm','Alarma'),time:item.time,sound:item.sound});
  if(item.repeat==='once'&&item.enabled){item.enabled=false;store();}
  screen.hidden=true;ring.hidden=false;useWallpaper(ring);
  document.body.classList.add('mlv-alarm-visible');
@@ -589,30 +589,22 @@ function dismissRing(snooze){
  if(snooze&&ringingId){
   const item=records.find(x=>x.id===ringingId);
   if(item){
-   const when=new Date(Date.now()+5*60000);
+   const dueAt=Date.now()+5*60000,when=new Date(dueAt);
    const date=when.getFullYear()+'-'+String(when.getMonth()+1).padStart(2,'0')+'-'+String(when.getDate()).padStart(2,'0');
    const time=String(when.getHours()).padStart(2,'0')+':'+String(when.getMinutes()).padStart(2,'0');
    const snoozed={id:'s'+Date.now().toString(36),label:item.label||tr('Snoozed alarm','Alarma pospuesta'),
-     date,time,repeat:'once',days:[],sound:item.sound||'system',enabled:true};
-   // Round the native due forward to the next minute so it cannot already be past.
-   if(when.getSeconds()>0){const next=new Date(when);next.setMinutes(next.getMinutes()+1,0,0);
-     snoozed.date=next.getFullYear()+'-'+String(next.getMonth()+1).padStart(2,'0')+'-'+String(next.getDate()).padStart(2,'0');
-     snoozed.time=String(next.getHours()).padStart(2,'0')+':'+String(next.getMinutes()).padStart(2,'0');
-   }
+     date,time,dueAt,repeat:'once',days:[],sound:item.sound||'system',enabled:true};
    if(records.length<80)records.push(snoozed);store();
   }
  }
  try{window.MichelsLifeAndroid?.dismissPersonalAlarm?.(ringingId||'');}catch(_){}
  if(ringingId){for(let i=windowsNotifications.length-1;i>=0;i--)if(windowsNotifications[i].id===ringingId)windowsNotifications.splice(i,1)}
  ring.hidden=true;ringingId=null;document.body.classList.remove('mlv-alarm-visible');
+ // Present any simultaneous alarm after this one is dismissed without dropping it.
+ ringNextDue();
 }
-function tick(){
- if(!screen||android())return;
- const now=Date.now();
- if(now<lastTick){lastTick=now;return;}
- // Sleep or hidden WebView2 throttling: catch alarms within 15 minutes
- // of their actual due time; never flood hours-old alarms on wake.
- const start=Math.max(lastTick,now-15*60*1000);
+function collectDueAlarms(start,now){
+ const dueAlarms=[];
  for(const item of records){
   if(!item.enabled)continue;
   let due=0;
@@ -626,11 +618,33 @@ function tick(){
   }
   const key=item.id+':'+due;
   if(due>start&&due<=now&&!shown.has(key)){
-   shown.add(key);ringAlarm(item.id);break;
+   shown.add(key);dueAlarms.push(item);
   }
+ }
+ return dueAlarms;
+}
+function ringNextDue(){
+ if(ringingId||android())return;
+ while(pendingDueRings.length){
+  const id=pendingDueRings.shift();
+  const item=records.find(x=>x.id===id);
+  if(item?.enabled&&ringAlarm(id,{notify:false}))return;
+ }
+}
+function tick(){
+ if(!screen||android())return;
+ const now=Date.now();
+ if(now<lastTick){lastTick=now;return;}
+ // Catch every due alarm, including multiple reminders with the same deadline.
+ // Keep Windows tray notifications independent of sequential full-screen rings.
+ const start=Math.max(lastTick,now-15*60*1000);
+ for(const item of collectDueAlarms(start,now)){
+  windowsNotifications.push({id:item.id,label:item.label||tr('Alarm','Alarma'),time:item.time,sound:item.sound});
+  pendingDueRings.push(item.id);
  }
  lastTick=now;
  if(shown.size>256)shown.clear();
+ ringNextDue();
 }
 function takeWindowsNotification(){
  // The native tray polls this even if the web timer was throttled.
