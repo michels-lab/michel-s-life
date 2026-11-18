@@ -96,6 +96,23 @@ test('Android real presets call the canonical engine and persist without ghost D
   assert.doesNotMatch(core,/v30162FocusDock/);
 });
 
+test('Windows notifications consume the one canonical Focus timer',()=>{
+  const core=readFileSync('src/MichelsLife/frontend/index.html','utf8');
+  const shell=readFileSync('src/MichelsLife/DesktopShell.cs','utf8');
+  assert.match(core,/function queueWindowsFocus\(type,detail\)/);
+  assert.match(core,/function takeWindowsNotification\(\)/);
+  assert.match(core,/queueWindowsFocus\('started'/);
+  assert.match(core,/queueWindowsFocus\('paused'/);
+  assert.match(core,/queueWindowsFocus\('completed'/);
+  assert.match(core,/renderFocusDock,setFocusPanelExpanded,toggleFocusPanel,closeFocusPanel,takeWindowsNotification/);
+  assert.match(shell,/Tick \+= async \(_, _\) => await PollWindowsFocusAsync\(\)/);
+  assert.match(shell,/window\.FocusStoryV30162\?\.takeWindowsNotification\?\.\(\)/);
+  assert.match(shell,/ShowBalloonTip\(type == "completed" \? 12000 : 5500/);
+  assert.match(core,/function applyPreset\(name,w,b\)/);
+  assert.match(core,/renderFocusDock\(\);return true}/);
+  assert.match(android,/if\(api\.applyPreset\('custom',work,rest\)===true\)clearDurationDraft\(\)/);
+});
+
 test('Windows and Android package the same immersion module once',()=>{
   assert.match(loader,/FOCUS_LOADER_MARKER/);
   assert.match(loader,/text = text\.replace\(FOCUS_LOADER_MARKER, ''\)/);
