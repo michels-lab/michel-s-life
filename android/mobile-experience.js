@@ -508,7 +508,10 @@
       }
       #mlv-android-focus-time{display:block;font-size:clamp(48px,16vw,76px);font-weight:900;letter-spacing:-.055em;font-variant-numeric:tabular-nums;line-height:1.1}
       #mlv-android-focus-status{display:block;margin-top:8px;color:var(--muted,#b4c6d6);font-size:12px}
-      .mlv-android-focus-presets,.mlv-android-focus-main-actions{
+      .mlv-android-focus-presets{
+        display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px
+      }
+      .mlv-android-focus-main-actions{
         display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px
       }
       .mlv-android-focus-presets button[aria-pressed="true"]{
@@ -1005,14 +1008,6 @@
       html[data-mlv-platform="android"] #mlv-android-focus-sheet #mlv-android-focus-progress-ring{
         margin-inline:auto!important;align-self:center!important;
         flex:0 0 auto!important;max-width:calc(100% - 16px)!important
-      }
-      html[data-mlv-platform="android"] #mlv-android-focus-sheet .mlv-android-focus-presets{
-        display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
-        grid-auto-flow:row!important;min-width:0!important;width:100%!important
-      }
-      html[data-mlv-platform="android"] #mlv-android-focus-sheet .mlv-android-focus-presets>button{
-        grid-column:auto!important;min-width:0!important;width:100%!important;
-        padding-inline:5px!important;white-space:nowrap!important
       }
       @media(max-height:700px){#mlv-android-focus-sheet .mlv-focus-motivation-details{max-height:16vh}}
       /* The drawer must end ABOVE fixed bottom navigation; otherwise a
