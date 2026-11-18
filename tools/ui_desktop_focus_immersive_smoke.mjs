@@ -60,6 +60,27 @@ try{
       Number(getComputedStyle(focus).zIndex)>1000000000;
   }), 'Desktop immersive view is not the only visible active Focus workspace');
 
+  // Real browser interaction, not a static API test: open the collapsed audio
+  // panel, choose an end chime, preview it, and play/stop the A+C atmosphere.
+  await page.locator('.mlv-focus-sound-details summary').click();
+  ok(await page.locator('[data-mlv-completion-sound] option').count()===7,
+    'End-of-Pomodoro selector is not populated');
+  ok(await page.locator('[data-mlv-scene-select] option').count()===8,
+    'A+C soundscape selection is not populated');
+  await page.locator('[data-mlv-completion-sound]').selectOption('glass');
+  await page.locator('[data-mlv-audio="preview-completion"]').click();
+  await page.locator('[data-mlv-scene-select]').selectOption('library');
+  await page.locator('[data-mlv-audio="toggle-ambient"]').click();
+  ok(await page.evaluate(()=>window.MichelsLifeFocusAudio.playing()),
+    'Soundscape Play did not start the actual Web Audio scheduler');
+  await page.locator('[data-mlv-audio="toggle-ambient"]').click();
+  ok(await page.evaluate(()=>!window.MichelsLifeFocusAudio.playing()),
+    'Soundscape Stop left an active audio context');
+  const soundPrefs=await page.evaluate(()=>window.FocusStoryV30162.focusState());
+  ok(soundPrefs.v30165CompletionSound==='glass'&&soundPrefs.v30165Soundscape==='library',
+    'End chime and soundscape were not saved by the canonical FocusStory owner');
+  await page.locator('.mlv-focus-sound-details summary').click();
+
   await page.locator('#mlv-desktop-focus-immersive [data-focus-action="toggle"]').click();
   await page.waitForFunction(()=>window.FocusStoryV30162.focusState().status==='running');
   const timer=await page.locator('#mlv-desktop-focus-clock').innerText();
@@ -125,6 +146,9 @@ try{
   ok(restored.mode==='break'&&restored.deadline===breakDeadline&&
     !restored.full&&restored.mini,
     'Desktop reload ignored intentional minimized Break: '+JSON.stringify(restored));
+  const afterReloadSound=await page.evaluate(()=>window.FocusStoryV30162.focusState());
+  ok(afterReloadSound.v30165CompletionSound==='glass'&&afterReloadSound.v30165Soundscape==='library',
+    'End sound and selected A+C soundtrack were lost after reload');
   await page.evaluate(()=>window.FocusStoryV30162?.resetFocus?.());
 
 
