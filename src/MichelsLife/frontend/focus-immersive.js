@@ -9,6 +9,129 @@
   const lang=(en,es)=>window.MichelsLifeI18n?.language==='es'?es:en;
   const live=s=>s?.status==='running'||s?.status==='paused';
   const time=ms=>{const sec=Math.max(0,Math.ceil((Number(ms)||0)/1000));return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');};
+
+  // Original, royalty-free Michel's Life audio. A + C: dreamy and cinematic.
+  // The Web Audio engine is shared by desktop and Android WebView. It NEVER
+  // touches FocusStory deadlines/history and never autoplays on boot.
+  const completionKey='michelsLife.focus.completionSound.v1';
+  const sceneKey='michelsLife.focus.soundscape.v1';
+  const finishTones={
+    soft:{en:'Soft Bell',es:'Campana suave',notes:[[0,587,.55,.065],[.32,784,.85,.045]]},
+    glass:{en:'Glass Chime',es:'Cristal',notes:[[0,988,.4,.052],[.2,1318,.65,.041],[.52,1567,.65,.026]]},
+    aurora:{en:'Aurora Tone',es:'Aurora',notes:[[0,440,.8,.039],[.3,659,1,.035],[.72,880,.9,.028]]},
+    observatory:{en:'Observatory Bell',es:'Observatorio',notes:[[0,392,.8,.053],[.5,587,.85,.035],[.9,784,1.05,.027]]},
+    midnight:{en:'Midnight Chime',es:'Medianoche',notes:[[0,523,.5,.037],[.34,698,.8,.035],[.66,1047,1.2,.026]]},
+    silver:{en:'Silver Echo',es:'Eco plateado',notes:[[0,784,.6,.044],[.36,987,.8,.036],[.75,1175,1.1,.024]]},
+    off:{en:'No sound',es:'Sin sonido',notes:[]}
+  };
+  // All sequences are newly composed harmonic pads, not licensed recordings.
+  const ambientScenes={
+    moonlight:{en:'Moonlight Study',es:'Estudio lunar',group:'A',notes:[220,329.63,440,493.88]},
+    celestial:{en:'Celestial Focus',es:'Enfoque celestial',group:'A',notes:[196,293.66,392,587.33]},
+    orbit:{en:'Quiet Orbit',es:'Órbita tranquila',group:'A',notes:[174.61,261.63,349.23,523.25]},
+    aurora:{en:'Aurora',es:'Aurora',group:'C',notes:[164.81,246.94,329.63,493.88]},
+    observatory:{en:'Observatory',es:'Observatorio',group:'C',notes:[146.83,220,293.66,440]},
+    library:{en:'Midnight Library',es:'Biblioteca nocturna',group:'C',notes:[130.81,196,261.63,392]},
+    afterglow:{en:'Afterglow',es:'Resplandor',group:'C',notes:[174.61,220,349.23,440]},
+    silver:{en:'Silver Room',es:'Sala plateada',group:'C',notes:[196,246.94,392,493.88]}
+  };
+  let effectContext=null,ambientContext=null,ambientInterval=null,ambientScene=null,ambientStep=0;
+  function soundContext(){
+    const C=window.AudioContext||window.webkitAudioContext;
+    if(!C)return null;
+    if(!effectContext||effectContext.state==='closed')effectContext=new C();
+    effectContext.resume?.().catch?.(()=>{});
+    return effectContext;
+  }
+  function readChoice(key,valid,fallback){
+    try{const value=localStorage.getItem(key);return Object.hasOwn(valid,value)?value:fallback;}
+    catch(_){return fallback;}
+  }
+  function choice(key,valid,value,fallback){
+    const selected=Object.hasOwn(valid,value)?value:fallback;
+    try{localStorage.setItem(key,selected);}catch(_){}
+    return selected;
+  }
+  const finishId=()=>readChoice(completionKey,finishTones,'soft');
+  const sceneId=()=>readChoice(sceneKey,ambientScenes,'moonlight');
+  function unlock(){
+    try{return !!soundContext();}catch(_){return false;}
+  }
+  function playCompletion(preview=false){
+    const id=finishId(),score=finishTones[id];
+    if(!score||id==='off')return true;
+    const ctx=soundContext();
+    if(!ctx)return false;
+    try{
+      const start=ctx.currentTime+.025;
+      score.notes.forEach(([offset,freq,duration,gain])=>{
+        const o=ctx.createOscillator(),g=ctx.createGain();
+        o.type=id==='observatory'?'triangle':'sine';
+        o.frequency.setValueAtTime(freq,start+offset);
+        g.gain.setValueAtTime(.0001,start+offset);
+        g.gain.exponentialRampToValueAtTime(gain*(preview?.75:1),start+offset+.035);
+        g.gain.exponentialRampToValueAtTime(.0001,start+offset+duration);
+        o.connect(g);g.connect(ctx.destination);
+        o.start(start+offset);o.stop(start+offset+duration+.04);
+      });
+      return true;
+    }catch(_){return false;}
+  }
+  function stopAmbient(){
+    if(ambientInterval){window.clearInterval(ambientInterval);ambientInterval=null;}
+    const ctx=ambientContext;ambientContext=null;ambientScene=null;
+    if(ctx)ctx.close().catch(()=>{});
+    return true;
+  }
+  function scheduleAmbient(){
+    const ctx=ambientContext,scene=ambientScenes[ambientScene];
+    if(!ctx||!scene||ctx.state==='closed')return;
+    const start=ctx.currentTime+.04,notes=scene.notes;
+    for(let i=0;i<notes.length;i++){
+      const osc=ctx.createOscillator(),env=ctx.createGain();
+      osc.type=i===0?'sine':i===2?'triangle':'sine';
+      const rotation=(ambientStep+i)%notes.length;
+      osc.frequency.setValueAtTime(notes[rotation]*(i===3?2:1),start+.22*i);
+      const gain=i===0?.012:i===3?.004:.006;
+      env.gain.setValueAtTime(.0001,start+.22*i);
+      env.gain.linearRampToValueAtTime(gain,start+2+.22*i);
+      env.gain.setValueAtTime(gain,start+4.8+.22*i);
+      env.gain.exponentialRampToValueAtTime(.0001,start+8.5+.22*i);
+      osc.connect(env);env.connect(ctx.destination);
+      osc.start(start+.22*i);osc.stop(start+8.55+.22*i);
+    }
+    ambientStep=(ambientStep+1)%scene.notes.length;
+  }
+  function startAmbient(){
+    stopAmbient();
+    const C=window.AudioContext||window.webkitAudioContext;
+    if(!C)return false;
+    try{
+      ambientScene=sceneId();ambientContext=new C();
+      ambientContext.resume?.().catch?.(()=>{});
+      ambientStep=0;scheduleAmbient();
+      ambientInterval=window.setInterval(scheduleAmbient,7200);
+      return true;
+    }catch(_){stopAmbient();return false;}
+  }
+  function selectScene(id){
+    const old=ambientScene;choice(sceneKey,ambientScenes,id,'moonlight');
+    if(old)startAmbient();
+    return sceneId();
+  }
+  function textOptions(items,group=false){
+    const es=window.MichelsLifeI18n?.language==='es';
+    return Object.entries(items).map(([id,item])=>({id,label:(group?item.group+' · ':'')+(es?item.es:item.en)}));
+  }
+  window.MichelsLifeFocusAudio={
+    completionOptions:()=>textOptions(finishTones),
+    sceneOptions:()=>textOptions(ambientScenes,true),
+    completionId:finishId,sceneId,selectCompletion:id=>choice(completionKey,finishTones,id,'soft'),
+    selectScene,playCompletion,unlock,startAmbient,stopAmbient,
+    playing:()=>!!ambientContext,playingScene:()=>ambientScene
+  };
+  window.addEventListener?.('pagehide',stopAmbient);
+
   let screen=null,mini=null,launcher=null,lastPhase=null,closedPhase=null,closedMode=null;
   let minimizedLoaded=false;
   let focusSceneSequence=0;
@@ -180,6 +303,46 @@
       }
       html:not([data-mlv-platform="android"]) body.mlv-desktop-focus-open{overflow:hidden!important}
       @media(max-width:650px){.mlv-focus-stage .mlv-focus-clock{font-size:clamp(62px,17vw,110px)}}
+
+      #mlv-desktop-focus-immersive .mlv-focus-stage{
+        width:min(100%,920px)!important;
+        background:linear-gradient(155deg,rgba(5,12,21,.56),rgba(8,17,27,.33))!important;
+        border:1px solid rgba(220,241,255,.22)!important;
+        box-shadow:0 24px 70px rgba(0,0,0,.16)!important;
+        backdrop-filter:none!important;
+      }
+      #mlv-desktop-focus-immersive .mlv-focus-stage h2{letter-spacing:-.035em!important;font-weight:780!important}
+      #mlv-desktop-focus-immersive .mlv-focus-actions{gap:8px!important;flex-wrap:wrap!important}
+      #mlv-desktop-focus-immersive .mlv-focus-actions button{
+        border-radius:12px!important;border-color:rgba(204,236,255,.28)!important;
+        background:rgba(5,19,27,.75)!important;
+      }
+      #mlv-desktop-focus-immersive .mlv-focus-actions button.primary{
+        background:linear-gradient(120deg,#71eed1,#7cddff)!important;color:#09202a!important;
+      }
+      #mlv-desktop-focus-immersive .mlv-focus-motivation-details{
+        border:0!important;background:rgba(3,16,25,.25)!important;padding:4px 10px!important
+      }
+      #mlv-desktop-focus-immersive .mlv-focus-audio-panel{
+        display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
+        padding:12px;border:1px solid rgba(220,241,255,.15);
+        border-radius:16px;background:rgba(3,15,26,.48)
+      }
+      #mlv-desktop-focus-immersive .mlv-focus-audio-group{display:flex;gap:7px;align-items:end;min-width:0}
+      #mlv-desktop-focus-immersive .mlv-focus-audio-group label{
+        flex:1;min-width:0;color:#dbeff3;font:650 12px/1.4 system-ui,sans-serif
+      }
+      #mlv-desktop-focus-immersive .mlv-focus-audio-group select{
+        display:block;width:100%;min-height:40px;margin-top:4px;padding:8px;
+        color:#f5fbff;background:#102a33;border:1px solid #7cb1b555;border-radius:9px;font:600 12px system-ui
+      }
+      #mlv-desktop-focus-immersive .mlv-focus-audio-group button{
+        min-height:40px;min-width:70px;padding:7px 10px;font-size:12px
+      }
+      @media(max-width:670px){
+        #mlv-desktop-focus-immersive .mlv-focus-audio-panel{grid-template-columns:1fr}
+      }
+
       @media(prefers-reduced-motion:reduce){#mlv-desktop-focus-immersive *{animation:none!important;transition:none!important}}
     `;
     document.head.appendChild(el);
@@ -208,7 +371,21 @@
           <button type="button" data-focus-action="reset">Reset</button>
           <button type="button" data-focus-action="minimize">Navigate the app</button>
         </div>
-        <details class="mlv-focus-motivation-details"><summary>Frases y afirmaciones / Messages</summary><div id="mlv-desktop-focus-motivation"></div></details>
+        <div class="mlv-focus-audio-panel" aria-label="Pomodoro audio">
+          <div class="mlv-focus-audio-group">
+            <label for="mlv-focus-completion-select">Completion sound
+              <select id="mlv-focus-completion-select" data-mlv-completion-sound></select>
+            </label>
+            <button type="button" data-mlv-audio="preview-completion">Preview</button>
+          </div>
+          <div class="mlv-focus-audio-group">
+            <label for="mlv-focus-scene-select">Ambient soundscapes · Dreamy + Cinematic
+              <select id="mlv-focus-scene-select" data-mlv-scene-select></select>
+            </label>
+            <button type="button" data-mlv-audio="toggle-ambient">Play</button>
+          </div>
+        </div>
+        <details class="mlv-focus-motivation-details"><summary>Messages & affirmations</summary><div id="mlv-desktop-focus-motivation"></div></details>
       </section>`;
     mini=document.createElement('aside');
     mini.id='mlv-desktop-mini-focus';mini.hidden=true;
@@ -223,9 +400,23 @@
         handleAction(button.dataset.focusAction);
       });
     }
+    screen.addEventListener('change',event=>{
+      if(event.target?.matches?.('[data-mlv-completion-sound]'))
+        window.MichelsLifeFocusAudio?.selectCompletion?.(event.target.value);
+      else if(event.target?.matches?.('[data-mlv-scene-select]'))
+        window.MichelsLifeFocusAudio?.selectScene?.(event.target.value);
+      refresh();
+    });
     document.body.append(screen,mini,launcher);
   }
   function handleAction(command){
+    if(command==='preview-completion')return window.MichelsLifeFocusAudio?.playCompletion?.(true)===true;
+    if(command==='toggle-ambient'){
+      const music=window.MichelsLifeFocusAudio;
+      if(music?.playing?.())music.stopAmbient();
+      else music?.startAmbient?.();
+      refresh();return true;
+    }
     if(command==='open'){open();return true;}
     if(command==='alarms'){
       minimize();
@@ -252,9 +443,9 @@
   function dispatchFocusInput(event){
     if(android())return;
     if(event.type==='keydown'&&!['Enter',' '].includes(event.key))return;
-    const t=event.target?.closest?.('#mlv-desktop-focus-launcher, #mlv-desktop-focus-immersive [data-focus-action], #mlv-desktop-mini-focus [data-focus-action]');
+    const t=event.target?.closest?.('#mlv-desktop-focus-launcher, #mlv-desktop-focus-immersive [data-focus-action], #mlv-desktop-focus-immersive [data-mlv-audio], #mlv-desktop-mini-focus [data-focus-action]');
     if(!t||t.disabled)return;
-    const action=t.id==='mlv-desktop-focus-launcher'?'launch':t.dataset.focusAction;
+    const action=t.id==='mlv-desktop-focus-launcher'?'launch':(t.dataset.mlvAudio||t.dataset.focusAction);
     if(!action)return;
     event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
     const now=Date.now();
@@ -326,6 +517,29 @@
     q('[data-focus-action="skip"]',screen).textContent=lang('Skip phase','Saltar fase');
     q('[data-focus-action="reset"]',screen).textContent=lang('Reset','Reiniciar');
     q('[data-focus-action="alarms"]',screen).textContent=lang('⏰ Alarms','⏰ Alarmas');
+    const audio=window.MichelsLifeFocusAudio;
+    for(const [selector,options,selected] of [
+      ['[data-mlv-completion-sound]',audio?.completionOptions?.(),audio?.completionId?.()],
+      ['[data-mlv-scene-select]',audio?.sceneOptions?.(),audio?.sceneId?.()]
+    ]){
+      const select=q(selector,screen);
+      if(!select||!options)continue;
+      if(select.options.length!==options.length||
+         options.some((item,i)=>select.options[i]?.value!==item.id||
+           select.options[i]?.textContent!==item.label)){
+        select.replaceChildren(...options.map(item=>{
+          const opt=document.createElement('option');opt.value=item.id;opt.textContent=item.label;return opt;
+        }));
+      }
+      if(select.value!==selected)select.value=selected;
+    }
+    const ambientButton=q('[data-mlv-audio="toggle-ambient"]',screen);
+    if(ambientButton)ambientButton.textContent=audio?.playing?.()?lang('Stop','Detener'):lang('Play','Reproducir');
+    const previewButton=q('[data-mlv-audio="preview-completion"]',screen);
+    if(previewButton)previewButton.textContent=lang('Preview','Escuchar');
+    const completionLabel=q('[for="mlv-focus-completion-select"]',screen);
+    if(completionLabel?.firstChild?.nodeType===3)
+      completionLabel.firstChild.textContent=lang('Completion sound','Sonido al terminar')+' ';
     if(!screen.hidden){
       applyWallpaper(screen);
       window.MichelsLifeMotivation?.render?.(
