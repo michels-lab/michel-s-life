@@ -115,7 +115,7 @@
         position:relative;box-sizing:border-box;width:min(100%,880px);min-height:min(690px,85vh);
         display:flex;flex-direction:column;gap:24px;padding:clamp(25px,4vw,52px);
         border:1px solid rgba(255,255,255,.25);border-radius:25px;
-        background:rgba(7,13,23,.76);
+        background:rgba(7,13,23,.56);
         box-shadow:0 25px 85px rgba(0,0,0,.45)
       }
       .mlv-focus-stage header{display:flex;justify-content:space-between;align-items:start;gap:15px}
