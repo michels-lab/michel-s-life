@@ -471,7 +471,7 @@ function create(){
  }
  const soundSelect=q('#mlv-alarm-sound',screen);
  for(const sound of SOUNDS){const option=document.createElement('option');option.value=sound;option.textContent=soundName(sound);soundSelect.appendChild(option);}
- soundSelect.value='system';
+ soundSelect.value='gentle';
  q('#mlv-alarm-preview',screen).addEventListener('click',()=>previewSound(soundSelect.value));
  q('#mlv-alarm-custom-file',screen).addEventListener('change',async e=>{
   const file=e.target.files?.[0];if(file)await importSound(file);
@@ -540,7 +540,7 @@ function resetForm(){
  editing=null;q('#mlv-alarm-form',screen).reset();
  const d=initialTime();
  q('#mlv-alarm-date',screen).value=d.date;q('#mlv-alarm-time',screen).value=d.time;
- q('#mlv-alarm-sound',screen).value='system';
+ q('#mlv-alarm-sound',screen).value='gentle';
  q('#mlv-alarm-cancel-edit',screen).hidden=true;
  updateForm();localize();
 }
