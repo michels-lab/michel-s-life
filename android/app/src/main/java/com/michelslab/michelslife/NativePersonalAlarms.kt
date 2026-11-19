@@ -45,6 +45,7 @@ internal object NativePersonalAlarms {
     private const val KEY_MOTIVATION = "motivationalCopy.v1"
     private const val LAST_DELIVERED_PREFIX = "lastDelivered."
     private const val CHANNEL = "michelslife-personal-alarms-v1"
+    private const val SILENT_CHANNEL = "michelslife-personal-alarms-immersive-v1"
     private const val ACTION = "com.michelslab.michelslife.PERSONAL_ALARM"
     const val EXTRA_OPEN_ALARM = "com.michelslab.michelslife.OPEN_PERSONAL_ALARM"
     private val timePattern = Regex("^(?:[01]\\d|2[0-3]):[0-5]\\d$")
@@ -390,21 +391,38 @@ internal object NativePersonalAlarms {
 
     fun createChannel(context: Context) {
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        if (manager.getNotificationChannel(CHANNEL) != null) return
-        val sound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-            ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
         val audio = AudioAttributes.Builder()
             .setUsage(AudioAttributes.USAGE_ALARM)
             .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build()
-        manager.createNotificationChannel(
-            NotificationChannel(CHANNEL, "Personal alarms", NotificationManager.IMPORTANCE_HIGH).apply {
-                description = "User-scheduled one-time, daily, and weekly alarms"
-                setSound(sound, audio)
-                enableVibration(true)
-                vibrationPattern = longArrayOf(0, 550, 250, 550, 250, 550)
-                lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-            }
-        )
+        // Keep the existing v1 channel (and the owner's channel preferences).
+        if (manager.getNotificationChannel(CHANNEL) == null) {
+            val sound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            manager.createNotificationChannel(
+                NotificationChannel(CHANNEL, "Personal alarms", NotificationManager.IMPORTANCE_HIGH).apply {
+                    description = "User-scheduled one-time, daily, and weekly alarms"
+                    setSound(sound, audio)
+                    enableVibration(true)
+                    vibrationPattern = longArrayOf(0, 550, 250, 550, 250, 550)
+                    lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+                }
+            )
+        }
+        // Android 8+ channels own their sounds permanently. A Notification.Builder
+        // cannot silence an existing audible channel per-notification.
+        // Only when the actual immersive MediaPlayer is playing do we use this
+        // distinct, persistently silent channel. Locked/no-overlay falls back to
+        // the original audible channel with user's settings untouched.
+        if (manager.getNotificationChannel(SILENT_CHANNEL) == null) {
+            manager.createNotificationChannel(
+                NotificationChannel(SILENT_CHANNEL, "Immersive personal alarms", NotificationManager.IMPORTANCE_HIGH).apply {
+                    description = "Visible alarm overlay already plays the selected sound"
+                    setSound(null, null)
+                    enableVibration(false)
+                    lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+                }
+            )
+        }
     }
 
     private fun clean(input: JSONObject): JSONObject? {
@@ -583,7 +601,9 @@ internal object NativePersonalAlarms {
         createChannel(context)
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val open = openIntent(context, id)
-        val notificationBuilder = Notification.Builder(context, CHANNEL)
+        val selectedChannel = if (immersiveOverlayActive &&
+            PersonalAlarmOverlay.hasAudibleRingtone(id)) SILENT_CHANNEL else CHANNEL
+        val notificationBuilder = Notification.Builder(context, selectedChannel)
             .setSmallIcon(R.drawable.ic_stat_michels_focus)
             .setContentTitle(target.optString("label").ifBlank { "Michel's Life · Alarm" })
             .setContentText("Your scheduled alarm is ringing · tap to open")
@@ -592,13 +612,6 @@ internal object NativePersonalAlarms {
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setCategory(Notification.CATEGORY_ALARM)
             .setPriority(Notification.PRIORITY_MAX)
-        // A visible immersive overlay already owns the selected 24s ringtone
-        // and vibration. Silence the *additional* OS notification so its old
-        // system chime does not play on top of the cinematic soundscape.
-        // When locked/overlay denied, leave the normal audible alarm fallback.
-        if (immersiveOverlayActive && PersonalAlarmOverlay.hasAudibleRingtone(id) &&
-            Build.VERSION.SDK_INT >= 26)
-            notificationBuilder.setSilent(true)
         // Fullscreen intents are allowed only for eligible alarm apps and only
         // when Android grants access. If denied, a heads-up notification remains.
         if (Build.VERSION.SDK_INT < 34 || manager.canUseFullScreenIntent())
