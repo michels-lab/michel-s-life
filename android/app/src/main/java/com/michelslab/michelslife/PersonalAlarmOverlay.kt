@@ -42,6 +42,11 @@ internal object PersonalAlarmOverlay {
     private var vibrator: Vibrator? = null
 
     fun isRinging(id: String): Boolean = activeId == id && view != null
+    // Never mute the OS fallback unless the exclusive selected soundtrack
+    // actually started. A visible overlay with failed MediaPlayer is not audio.
+    fun hasAudibleRingtone(id: String): Boolean = try {
+        activeId == id && view != null && player?.isPlaying == true
+    } catch (_: Exception) { false }
 
     fun show(context: Context, id: String, title: String, time: String): Boolean {
         val app = context.applicationContext
