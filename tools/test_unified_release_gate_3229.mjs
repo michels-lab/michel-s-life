@@ -36,8 +36,8 @@ test('both installed platform versions and bundlers agree',()=>{
  assert.ok(bump.includes('PREVIOUS_VERSIONS = ("3.0.228"'));
  assert.ok(host.includes("APP_VERSION='3.0.229'"));
  assert.ok(host.includes("LEGACY_APP_VERSIONS=('3.0.228'"));
- assert.equal((android.match(/ANDROID_VERSION:\s*'?0\.2\.17'?/g)||[]).length,4);
- assert.ok(!android.includes('ANDROID_VERSION: 0.2.16'));
+ assert.equal((android.match(/ANDROID_VERSION:\s*'?0\.2\.18'?/g)||[]).length,4);
+ assert.ok(!android.includes('ANDROID_VERSION: 0.2.17'));
 });
 test('source builds both signed candidates but leaves publication to destination',()=>{
  assert.match(source,/signed-native-android15:/);
@@ -46,9 +46,9 @@ test('source builds both signed candidates but leaves publication to destination
  assert.match(source,/steps\.primary\.outcome/);
  assert.match(source,/steps\.fallback\.outcome/);
  assert.match(source,/step4-after-native-finish\.png step5-after-relaunch\.png/);
- assert.match(source,/\.versionName=="0\.2\.17"/);
+ assert.match(source,/\.versionName=="0\.2\.18"/);
  assert.match(source,/\.versionCode==20/);
- assert.match(source,/MichelsLife-Android-Direct-v0\.2\.17\.apk/);
+ assert.match(source,/MichelsLife-Android-Direct-v0\.2\.18\.apk/);
  assert.ok(!source.includes('RELEASES_REPO_TOKEN'),'retired broken cross-repo publisher must be absent');
  assert.ok(!source.includes('  publish-unified:'),'only destination-owned publisher may publish stable');
  assert.ok(note.includes('3.0.229')&&note.includes('0.2.18'));
