@@ -181,8 +181,20 @@ internal object NativePersonalAlarms {
         if (selected in setOf("classic","soft","digital","gentle","pulse","radar")) {
             return try {
                 dir.mkdirs()
-                val file = File(dir, "preset-v2-$selected.wav")
-                if (!file.isFile || file.length() < 1000L) generatePreset(file, selected)
+                val file = File(dir, "preset-v3-$selected.wav")
+                synchronized(presetRenderLock) {
+                    if (!file.isFile || file.length() < 44L + 24L * 22050L * 4L) {
+                        // Commit completed PCM atomically: no partial or old v2 file.
+                        val pending = File(dir, "preset-v3-$selected.wav.partial")
+                        try {
+                            generatePreset(pending, selected)
+                            if (!pending.renameTo(file)) {
+                                pending.copyTo(file, overwrite = true)
+                                pending.delete()
+                            }
+                        } finally { if (pending.exists()) pending.delete() }
+                    }
+                }
                 Uri.fromFile(file)
             } catch (_: Exception) { defaultSound() }
         }
@@ -193,76 +205,154 @@ internal object NativePersonalAlarms {
         RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
             ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
-    /** Michel's Life original 24-second suite. Synthesized locally, never
-     * downloaded from a third party; loops natively until dismiss or snooze.
-     * All notes are synthesized into one PCM WAV per preset and cached in app
-     * private storage. Version v2 invalidates obsolete 2-second snippets. */
-    private data class AlarmNote(
-        val start: Double, val hz: Double, val length: Double,
-        val gain: Double, val endHz: Double = 0.0
+    /** Michel's Life exclusive soundscapes v3.
+     * 24 seconds, 22.05 kHz stereo PCM, four changing harmonic chapters;
+     * no third-party audio and no network at alarm time. Cache is versioned,
+     * so v2 calculator-like clips are never reused by the upgraded app.
+     * The actual selection IDs and all native alarm scheduling stay intact. */
+    private data class SoundScene(
+        val roots: DoubleArray, val minor: Boolean, val pattern: IntArray,
+        val timbre: String, val drift: Double, val accent: Double
     )
+    private val presetRenderLock = Any()
+
+    private fun scene(id: String): SoundScene = when (id) {
+        "classic" -> SoundScene(doubleArrayOf(174.61,130.81,146.83,174.61),false,
+            intArrayOf(2,4,3,1,2,4,3),"bell",.17,.90)
+        "soft" -> SoundScene(doubleArrayOf(146.83,116.54,130.81,146.83),true,
+            intArrayOf(3,4,2,1,3,4,2),"glass",.26,.72)
+        "digital" -> SoundScene(doubleArrayOf(164.81,130.81,146.83,164.81),true,
+            intArrayOf(4,2,3,1,2,4,3),"shimmer",.38,.92)
+        "gentle" -> SoundScene(doubleArrayOf(130.81,174.61,146.83,196.00),false,
+            intArrayOf(1,2,3,2,4,3,4),"bell",.14,.78)
+        "pulse" -> SoundScene(doubleArrayOf(110.00,87.31,98.00,110.00),true,
+            intArrayOf(2,3,4,2,1,3,2),"bell",.23,.83)
+        "radar" -> SoundScene(doubleArrayOf(82.41,110.00,98.00,82.41),true,
+            intArrayOf(3,2,4,1,3,4,2),"shimmer",.45,.77)
+        else -> scene("gentle")
+    }
 
     private fun generatePreset(file: File, preset: String) {
-        val sampleRate = 16000
+        val sampleRate = 22050
         val durationSeconds = 24
         val samples = sampleRate * durationSeconds
-        val (period, notes) = when (preset) {
-            "classic" -> Pair(2.8, listOf(
-                AlarmNote(0.0,880.0,.45,.23),AlarmNote(.53,659.0,.48,.21),
-                AlarmNote(1.26,880.0,.33,.19),AlarmNote(1.70,988.0,.56,.22)))
-            "soft" -> Pair(3.65, listOf(
-                AlarmNote(0.0,523.0,.55,.17),AlarmNote(.66,659.0,.58,.19),
-                AlarmNote(1.35,784.0,.68,.20),AlarmNote(2.20,659.0,.75,.20)))
-            "digital" -> Pair(2.65, listOf(
-                AlarmNote(0.0,1108.0,.16,.16),AlarmNote(.27,1397.0,.16,.16),
-                AlarmNote(.54,1568.0,.19,.17),AlarmNote(1.10,1108.0,.25,.16),
-                AlarmNote(1.48,1397.0,.25,.17)))
-            "gentle" -> Pair(4.1, listOf(
-                AlarmNote(0.0,392.0,.80,.10),AlarmNote(.95,523.0,.75,.13),
-                AlarmNote(1.83,659.0,.83,.17),AlarmNote(2.80,784.0,.97,.19)))
-            "pulse" -> Pair(2.6, listOf(
-                AlarmNote(0.0,740.0,.22,.22),AlarmNote(.36,740.0,.22,.22),
-                AlarmNote(.75,880.0,.40,.24),AlarmNote(1.35,988.0,.28,.21),
-                AlarmNote(1.77,880.0,.34,.22)))
-            "radar" -> Pair(2.75, listOf(
-                AlarmNote(0.0,940.0,.78,.24,520.0),
-                AlarmNote(1.10,820.0,.60,.23,560.0),
-                AlarmNote(2.05,760.0,.37,.20,620.0)))
-            else -> Pair(2.6, listOf(
-                AlarmNote(0.0,880.0,.36,.21),AlarmNote(.55,660.0,.36,.21)))
+        val score = scene(preset)
+        val left = FloatArray(samples)
+        val right = FloatArray(samples)
+        val chord = if (score.minor) doubleArrayOf(1.0,1.18921,1.49831,1.78180,2.24492)
+                    else doubleArrayOf(1.0,1.25992,1.49831,2.0,2.24492)
+
+        fun voice(start: Double, length: Double, hz: Double,
+                  level: Double, kind: String, pan: Double) {
+            if (length <= 0.0 || hz <= 0.0 || level <= 0.0) return
+            val from = kotlin.math.max(0, kotlin.math.ceil(start * sampleRate).toInt())
+            val to = kotlin.math.min(samples, kotlin.math.floor((start + length) * sampleRate).toInt())
+            val leftGain = kotlin.math.sqrt((1.0 - pan) * .5)
+            val rightGain = kotlin.math.sqrt((1.0 + pan) * .5)
+            val attack = when (kind) {
+                "pad" -> .88
+                "sub" -> .11
+                "swell" -> .9
+                else -> .018
+            }
+            val release = when (kind) {
+                "pad", "swell" -> 1.2
+                "sub" -> .22
+                else -> .55
+            }
+            for (i in from until to) {
+                val t = i.toDouble() / sampleRate - start
+                val envelope = kotlin.math.min(1.0,t / attack) *
+                        kotlin.math.min(1.0,(length - t) / release)
+                if (envelope <= 0.0) continue
+                val angle = 2.0 * PI * hz *
+                        (t + .0018 * sin(2.0 * PI * score.drift * t))
+                val wave = when (kind) {
+                    "pad" -> sin(angle) + .25 * sin(angle * 2.002 + .4) +
+                        .07 * sin(angle * 3.014 + .9)
+                    "sub" -> sin(angle) + .13 * sin(angle * 2.0)
+                    "glass" -> sin(angle) + .36 * sin(angle * 2.76 + .5) +
+                        .11 * sin(angle * 4.18)
+                    "shimmer", "swell" -> sin(angle) + .31 * sin(angle * .997 + .8) +
+                        .12 * sin(angle * 1.503)
+                    else -> sin(angle) + .36 * sin(angle * 2.009 + .45) +
+                        .12 * sin(angle * 3.981)
+                }
+                val tail = if (kind == "bell" || kind == "glass" || kind == "shimmer")
+                    kotlin.math.exp(-t / (if (kind == "glass") 1.23 else 1.75))
+                    else 1.0
+                val value = wave * envelope * tail * level
+                left[i] = (left[i] + value * leftGain).toFloat()
+                right[i] = (right[i] + value * rightGain).toFloat()
+            }
         }
-        val buffer = ByteBuffer.allocate(44 + samples * 2).order(ByteOrder.LITTLE_ENDIAN)
+
+        val offsets = doubleArrayOf(.17,1.02,1.89,2.83,3.71,4.53,5.27)
+        val pans = doubleArrayOf(-.48,.26,.58,-.34,.41,-.58,.18)
+        val pads = doubleArrayOf(-.56,.41,-.24,.62)
+        for (bar in 0..3) {
+            val start = bar * 6.0
+            val root = score.roots[bar]
+            for (degree in 0..3)
+                voice(start,5.98,root*chord[degree],
+                    .064*(if (degree==0) 1.25 else 1.0),"pad",pads[degree])
+            voice(start,5.96,root*.5,.060,"sub",-.05)
+            voice(start+.65,4.65,root*3.01,.020,"swell",
+                if (bar%2==1) .55 else -.55)
+            for (step in score.pattern.indices) {
+                val t = start+offsets[step]
+                val hz = root*2*chord[score.pattern[step]]
+                val gain = (.10+.028*(if (step%3==0) 1 else 0))*score.accent*
+                    (if (bar==3) 1.08 else 1.0)
+                val pan = pans[step]
+                voice(t,2.12,hz,gain,score.timbre,pan)
+                voice(t+.31,1.78,hz*.998,gain*.27,score.timbre,-pan*.7)
+                voice(t+.64,1.38,hz*1.002,gain*.12,score.timbre,pan*.4)
+            }
+            if (preset == "pulse") {
+                for (beat in doubleArrayOf(.15,1.65,3.15,4.65))
+                    voice(start+beat,.80,root*.48,.062,"sub",
+                        if (beat%3.0!=0.0) -.30 else .30)
+            }
+            if (preset == "radar") {
+                voice(start+.20,5.4,root*2.26,.038,"swell",-.69)
+                voice(start+1.35,4.3,root*2.98,.030,"swell",.69)
+            }
+        }
+
+        var peak = 0.0
+        for (i in 0 until samples) {
+            val t = i.toDouble()/sampleRate
+            val rise = .64+.36*kotlin.math.min(1.0,t/18.0)
+            val edge = kotlin.math.min(1.0,kotlin.math.min(t/.21,(durationSeconds-t)/.34))
+            left[i] = (kotlin.math.tanh(left[i].toDouble()*rise)*edge).toFloat()
+            right[i] = (kotlin.math.tanh(right[i].toDouble()*rise)*edge).toFloat()
+            peak = kotlin.math.max(peak,
+                kotlin.math.max(kotlin.math.abs(left[i].toDouble()),
+                    kotlin.math.abs(right[i].toDouble())))
+        }
+        val master = if (peak>0.0) .81/peak else 1.0
+
+        // RIFF PCM stereo: two independent channels for quiet spatial motion.
+        val buffer = ByteBuffer.allocate(44 + samples*4).order(ByteOrder.LITTLE_ENDIAN)
         buffer.put("RIFF".toByteArray(Charsets.US_ASCII))
-        buffer.putInt(36 + samples * 2)
+        buffer.putInt(36+samples*4)
         buffer.put("WAVE".toByteArray(Charsets.US_ASCII))
         buffer.put("fmt ".toByteArray(Charsets.US_ASCII))
         buffer.putInt(16)
         buffer.putShort(1.toShort())
-        buffer.putShort(1.toShort())
-        buffer.putInt(sampleRate)
-        buffer.putInt(sampleRate * 2)
         buffer.putShort(2.toShort())
+        buffer.putInt(sampleRate)
+        buffer.putInt(sampleRate*4)
+        buffer.putShort(4.toShort())
         buffer.putShort(16.toShort())
         buffer.put("data".toByteArray(Charsets.US_ASCII))
-        buffer.putInt(samples * 2)
-        for (sample in 0 until samples) {
-            val time = sample.toDouble() / sampleRate
-            val within = time % period
-            var mix = 0.0
-            for (note in notes) {
-                val local = within - note.start
-                if (local < 0.0 || local >= note.length) continue
-                val attack = (local / .035).coerceIn(0.0, 1.0)
-                val release = ((note.length - local) / .12).coerceIn(0.0, 1.0)
-                val crescendo = if (preset == "gentle") .43 + .57 * (time / durationSeconds) else 1.0
-                val frequency = if (note.endHz > 0.0) {
-                    note.hz * Math.pow(note.endHz / note.hz, local / note.length)
-                } else note.hz
-                val harmonic = sin(2.0 * PI * frequency * local)
-                val shimmer = .18 * sin(4.0 * PI * frequency * local)
-                mix += (harmonic + shimmer) * note.gain * crescendo * attack * release
-            }
-            buffer.putShort((mix.coerceIn(-.75,.75) * Short.MAX_VALUE).toInt().toShort())
+        buffer.putInt(samples*4)
+        for (i in 0 until samples) {
+            buffer.putShort((left[i]*master*Short.MAX_VALUE).toInt().coerceIn(
+                Short.MIN_VALUE.toInt(),Short.MAX_VALUE.toInt()).toShort())
+            buffer.putShort((right[i]*master*Short.MAX_VALUE).toInt().coerceIn(
+                Short.MIN_VALUE.toInt(),Short.MAX_VALUE.toInt()).toShort())
         }
         file.writeBytes(buffer.array())
     }
