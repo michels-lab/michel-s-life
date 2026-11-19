@@ -275,7 +275,7 @@ test('six original 24-second cinematic stereo alarm arrangements repeat until di
 test('new original soundscapes contain evolving harmonies, resonant melody and stereo separation',()=>{
   // Use the actual production synth rather than judging names or passing a
   // mock Web Audio sequence. No audio device/IndexedDB is required.
-  const hook='window.MichelsLifeAlarms={open,close,ringAlarm,read,records:()=>records.slice(),next,localAt,dismissRing,quickAlarm:createQuickAlarm,pollWindows:tick,takeWindowsNotification};';
+  const hook='window.MichelsLifeAlarms={open,close,ringAlarm,read,records:()=>records.slice(),next,localAt,dismissRing,quickAlarm:createQuickAlarm,pollWindows:tick,takeWindowsNotification,isAudible};';
   assert.ok(alarms.includes(hook),'canonical sound runtime hook found');
   const source=alarms.replace(hook,
     'window.__testAlarmRender={renderAlarmSoundscape,ALARM_SCENES};'+hook);
