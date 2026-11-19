@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 432,
-  "classified_files_total": 428,
+  "tracked_files_total": 433,
+  "classified_files_total": 429,
   "docs_content_inspected": 102,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -18,7 +18,7 @@
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 19,
-    "source": 130,
+    "source": 131,
     "test": 54,
     "text_metadata": 1,
     "unknown": 6,
@@ -31,8 +31,8 @@
     "UNKNOWN_PURPOSE": 6
   },
   "finding_total": 12,
-  "inventory_fingerprint": "3cf3602bb918c863465d1cab019e29ebb85a9c997e93bb44794f4dfa8ce107a1",
-  "evidence_fingerprint": "6910066bc9100524cc1bd741b1afbcd237ae313e7ed8dc78da9c36047052a9c0",
+  "inventory_fingerprint": "b554afac5afbdbbe54ded418b58b3124e4931079247c46c8b51852ba832c04d9",
+  "evidence_fingerprint": "da41cbc5456b206ba9e0c475154c8727e6b484a5ccb18b253b9e50004c91a9c5",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -2002,6 +2002,13 @@
       "blob": "744e56f61b4c3ab32f31c6741126f7ab3e999dda"
     },
     {
+      "path": "src/MichelsLife/frontend/settings-color-floating-preview.js",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "b1c29dafd371b310f07e0d76c7688f9160d88523"
+    },
+    {
       "path": "store/AppxManifest.template.xml",
       "role": "config",
       "purpose": "machine-readable configuration",
@@ -3069,20 +3076,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "24435a72f6d0f033",
+      "id": "4a4b00784c5e2e4a",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "39 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-focus-audio-quickmission.yml",
+      "observation": "40 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-focus-audio-quickmission.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "616fc456c14e1099",
+      "id": "224676c4f9ec9363",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "39 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-focus-audio-quickmission.yml",
+      "observation": "40 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-focus-audio-quickmission.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
