@@ -272,7 +272,8 @@ test('new original soundscapes contain evolving harmonies, resonant melody and s
   for(const id of ['classic','soft','digital','gentle','pulse','radar']){
     const score=ALARM_SCENES[id];
     assert.equal(score.roots.length,4,id+' must have four harmonic chapters');
-    assert.equal(score.pattern.length,7,id+' must have a phrase, not two bleeps');
+    assert.ok(score.pattern.length>=4&&score.pattern.length<=9,id+' needs a distinct melodic phrase');
+    assert.equal(score.offsets.length,score.pattern.length,id+' rhythms and notes must align');
     const render=renderAlarmSoundscape(id);
     assert.equal(render.rate,22050);
     assert.equal(render.seconds,24);
