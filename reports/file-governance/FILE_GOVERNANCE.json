@@ -31,8 +31,8 @@
     "UNKNOWN_PURPOSE": 6
   },
   "finding_total": 12,
-  "inventory_fingerprint": "02e6bd59a6d2d9e946a58c4bbc7d8fcb035d7bf6b1da8400e03c2cc3d2cfd008",
-  "evidence_fingerprint": "b12ebdc0ee40da859a8a22ec1b030ce63c6aac4caa90206329aefe6907f918bb",
+  "inventory_fingerprint": "824b6cc00dda539b58701ab2bc3c7d77cbbf611202c3e2595b0602586e62cf4a",
+  "evidence_fingerprint": "2082e7eb235ee7d8aeccebc243a8718040e4d2aeb705f9f330c5c43d0d33e219",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -249,7 +249,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "9a9f19f4529407efdffad714dd2c32ab24f6d144"
+      "blob": "d96f7ce172dcbabf27fb2dac32fe4a61e9688f87"
     },
     {
       "path": ".github/workflows/granada-focus-evidence.yml",
@@ -263,7 +263,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "c405c38b8ff27f92a67bf301d7db5cfe97a95240"
+      "blob": "5c4dcea4f5acd92d695fd3017f7fdb3b95b6d814"
     },
     {
       "path": ".github/workflows/granada-focus-lockscreen-snooze.yml",
@@ -284,7 +284,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "185bc823dff1c7aa5e0ad4d5deec8f5cfebf1049"
+      "blob": "2a305901ad3ae4d1179429a11e2e2b2e51b493bf"
     },
     {
       "path": ".github/workflows/granada-recovery-loss-triage.yml",
@@ -3034,20 +3034,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "097b2fc4f54b0cad",
+      "id": "8a2b8c94064b0656",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "28 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-focus-audio-quickmission.yml",
+      "observation": "30 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-focus-audio-quickmission.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "8a602de9023d99df",
+      "id": "c66abd8a072179d6",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "28 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-focus-audio-quickmission.yml",
+      "observation": "30 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-focus-audio-quickmission.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
