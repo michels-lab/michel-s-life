@@ -117,7 +117,7 @@ test('Quick Alarm stores an exact 5-minute deadline rather than rounding to a la
   assert.equal(ui.quickAlarm(5),true);
   const item=ui.records()[0];
   assert.equal(item.repeat,'once');
-  assert.equal(item.sound,'system');
+  assert.equal(item.sound,'gentle');
   assert.ok(item.dueAt-started>=5*60000&&item.dueAt-started<5*60000+2000,'precise five-minute deadline');
   assert.equal(ui.localAt(item),item.dueAt);
   assert.equal(ui.next(item,item.dueAt-1),item.dueAt);
@@ -239,16 +239,60 @@ test('legacy sidebar Pomodoro presentation is deleted at source',()=>{
   assert.ok(core.includes('MichelsLifeFocusImmersive?.open?.()'));
 });
 
-test('six original 24-second ringtone arrangements repeat until dismissed',()=>{
-  assert.ok(alarms.includes("Michel's Life exclusive alarm suite"));
-  assert.ok(alarms.includes('MICHEL_ALARM_SCORE'));
-  assert.ok(alarms.includes('const length=preview?7:24'));
-  assert.ok(alarms.includes('stopPresetAudio()'));
-  assert.ok(alarms.includes('setInterval(tone,24000)'));
-  assert.ok(native.includes('"radar"'));
-  assert.ok(native.includes('AlarmNote('));
-  assert.ok(alarms.includes('useSystemFallback=true'));
-  assert.ok(native.includes('val durationSeconds = 24'));
-  assert.ok(native.includes('preset-v2-$selected.wav'));
-  assert.ok(overlay.includes('sound.isLooping = true'));
+test('six original 24-second cinematic stereo alarm arrangements repeat until dismissed',()=>{
+  assert.match(alarms,/exclusive alarm suite v3/);
+  assert.match(alarms,/const ALARM_SCENES=/);
+  assert.match(alarms,/const ALARM_SECONDS=24, ALARM_HZ=22050/);
+  assert.match(alarms,/four harmonic chapters|Four harmonic chapters/);
+  assert.match(alarms,/const duration=preview\?12:ALARM_SECONDS/);
+  assert.match(alarms,/stopPresetAudio\(\)/);
+  assert.match(alarms,/setInterval\(tone,24000\)/);
+  assert.match(alarms,/createBuffer\(2,sample.left.length,sample.rate\)/);
+  assert.match(alarms,/Math\.tanh\(left\[i\]\*rise\)/);
+  assert.match(alarms,/useSystemFallback=true/);
+  assert.match(native,/val sampleRate = 22050/);
+  assert.match(native,/val durationSeconds = 24/);
+  assert.match(native,/preset-v3-\$selected\.wav/);
+  assert.match(native,/buffer\.putShort\(2\.toShort\(\)\)/);
+  assert.match(native,/synchronized\(presetRenderLock\)/);
+  assert.match(overlay,/sound\.isLooping = true/);
+});
+
+test('new original soundscapes contain evolving harmonies, resonant melody and stereo separation',()=>{
+  // Use the actual production synth rather than judging names or passing a
+  // mock Web Audio sequence. No audio device/IndexedDB is required.
+  const hook='window.MichelsLifeAlarms={open,close,ringAlarm,read,records:()=>records.slice(),next,localAt,dismissRing,quickAlarm:createQuickAlarm,pollWindows:tick,takeWindowsNotification};';
+  assert.ok(alarms.includes(hook),'canonical sound runtime hook found');
+  const source=alarms.replace(hook,
+    'window.__testAlarmRender={renderAlarmSoundscape,ALARM_SCENES};'+hook);
+  const window={},document={readyState:'loading',addEventListener(){}};
+  vm.runInNewContext(source,{window,document,console,Float32Array,Math},{timeout:1000});
+  const {renderAlarmSoundscape,ALARM_SCENES}=window.__testAlarmRender;
+  const hashes=new Set();
+  for(const id of ['classic','soft','digital','gentle','pulse','radar']){
+    const score=ALARM_SCENES[id];
+    assert.equal(score.roots.length,4,id+' must have four harmonic chapters');
+    assert.equal(score.pattern.length,7,id+' must have a phrase, not two bleeps');
+    const render=renderAlarmSoundscape(id);
+    assert.equal(render.rate,22050);
+    assert.equal(render.seconds,24);
+    assert.equal(render.left.length,22050*24);
+    assert.equal(render.right.length,22050*24);
+    let peak=0,energy=0,spatial=0;
+    const sampleCount=render.left.length;
+    for(let i=0;i<sampleCount;i+=20){
+      const l=render.left[i],r=render.right[i];
+      assert.ok(Number.isFinite(l)&&Number.isFinite(r),id+' contains NaN');
+      peak=Math.max(peak,Math.abs(l),Math.abs(r));
+      energy+=(l*l+r*r)*.5;
+      spatial+=Math.abs(l-r);
+    }
+    const rms=Math.sqrt(energy/(sampleCount/20));
+    assert.ok(peak>.68&&peak<=.82,id+' clipping / unexpectedly quiet peak '+peak);
+    assert.ok(rms>.025,id+' inaudible sustained scene '+rms);
+    assert.ok(spatial>30,id+' lacks left/right motion '+spatial);
+    assert.ok(Math.abs(render.left[0])<.001&&Math.abs(render.right.at(-1))<.03,id+' must fade cleanly between loops');
+    hashes.add(Array.from(render.left.slice(100000,100150)).map(x=>x.toFixed(3)).join(','));
+  }
+  assert.equal(hashes.size,6,'all six themes require their own composition');
 });
