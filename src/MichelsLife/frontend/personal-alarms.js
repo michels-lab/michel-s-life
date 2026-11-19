@@ -74,17 +74,17 @@ async function importSound(file){
 const ALARM_SECONDS=24, ALARM_HZ=22050;
 const ALARM_SCENES={
  classic:{roots:[174.61,130.81,146.83,174.61],minor:false,
-  pattern:[2,4,3,1,2,4,3],timbre:'bell',drift:.17,accent:.90},
+  pattern:[2,4,3,1,2,4,3],offsets:[.17,1.02,1.89,2.83,3.71,4.53,5.27],timbre:'bell',drift:.17,accent:.90},
  soft:{roots:[146.83,116.54,130.81,146.83],minor:true,
-  pattern:[3,4,2,1,3,4,2],timbre:'glass',drift:.26,accent:.72},
+  pattern:[3,4,2,3,4],offsets:[.28,1.55,2.73,3.9,5.15],timbre:'glass',drift:.26,accent:.72},
  digital:{roots:[164.81,130.81,146.83,164.81],minor:true,
-  pattern:[4,2,3,1,2,4,3],timbre:'shimmer',drift:.38,accent:.92},
+  pattern:[4,2,3,1,2,4,3,2,4],offsets:[.14,.67,1.23,1.82,2.49,3.18,3.84,4.51,5.19],timbre:'shimmer',drift:.38,accent:.92},
  gentle:{roots:[130.81,174.61,146.83,196.00],minor:false,
-  pattern:[1,2,3,2,4,3,4],timbre:'bell',drift:.14,accent:.78},
+  pattern:[1,2,3,4],offsets:[.42,1.78,3.28,4.8],timbre:'bell',drift:.14,accent:.78},
  pulse:{roots:[110.00,87.31,98.00,110.00],minor:true,
-  pattern:[2,3,4,2,1,3,2],timbre:'bell',drift:.23,accent:.83},
+  pattern:[2,3,4,1,3],offsets:[.32,1.14,2.66,4.12,5.09],timbre:'bell',drift:.23,accent:.83},
  radar:{roots:[82.41,110.00,98.00,82.41],minor:true,
-  pattern:[3,2,4,1,3,4,2],timbre:'shimmer',drift:.45,accent:.77}
+  pattern:[3,2,4,1],offsets:[.22,1.65,3.31,4.82],timbre:'shimmer',drift:.45,accent:.77}
 };
 const soundBufferCache=new Map();
 let livePresetContext=null,previewPresetContext=null;
@@ -116,7 +116,6 @@ function renderAlarmSoundscape(id){
    left[i]+=value*leftGain;right[i]+=value*rightGain;
   }
  }
- const offsets=[.17,1.02,1.89,2.83,3.71,4.53,5.27];
  for(let bar=0;bar<4;bar++){
   const start=bar*6,root=score.roots[bar];
   // A full sustained chord, not one isolated oscillator at a time.
@@ -127,9 +126,9 @@ function renderAlarmSoundscape(id){
   voice(start+.65,4.65,root*3.01,.020,'swell',bar%2?.55:-.55);
   for(let step=0;step<score.pattern.length;step++){
    // Original tune changes harmony every six seconds, then resolves in bar 4.
-   const t=start+offsets[step],hz=root*2*chord[score.pattern[step]];
+   const t=start+score.offsets[step],hz=root*2*chord[score.pattern[step]];
    const gain=(.10+.028*(step%3===0))*score.accent*(bar===3?1.08:1);
-   const pan=[-.48,.26,.58,-.34,.41,-.58,.18][step];
+   const pan=[-.48,.26,.58,-.34,.41,-.58,.18][step%7];
    voice(t,2.12,hz,gain,score.timbre,pan);
    // Studio-like diffused delay, not repeated hard beeps.
    voice(t+.31,1.78,hz*.998,gain*.27,score.timbre,-pan*.7);
