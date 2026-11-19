@@ -212,23 +212,23 @@ internal object NativePersonalAlarms {
      * The actual selection IDs and all native alarm scheduling stay intact. */
     private data class SoundScene(
         val roots: DoubleArray, val minor: Boolean, val pattern: IntArray,
-        val timbre: String, val drift: Double, val accent: Double
+        val offsets: DoubleArray, val timbre: String, val drift: Double, val accent: Double
     )
     private val presetRenderLock = Any()
 
     private fun scene(id: String): SoundScene = when (id) {
         "classic" -> SoundScene(doubleArrayOf(174.61,130.81,146.83,174.61),false,
-            intArrayOf(2,4,3,1,2,4,3),"bell",.17,.90)
+            intArrayOf(2,4,3,1,2,4,3),doubleArrayOf(.17,1.02,1.89,2.83,3.71,4.53,5.27),"bell",.17,.90)
         "soft" -> SoundScene(doubleArrayOf(146.83,116.54,130.81,146.83),true,
-            intArrayOf(3,4,2,1,3,4,2),"glass",.26,.72)
+            intArrayOf(3,4,2,3,4),doubleArrayOf(.28,1.55,2.73,3.9,5.15),"glass",.26,.72)
         "digital" -> SoundScene(doubleArrayOf(164.81,130.81,146.83,164.81),true,
-            intArrayOf(4,2,3,1,2,4,3),"shimmer",.38,.92)
+            intArrayOf(4,2,3,1,2,4,3,2,4),doubleArrayOf(.14,.67,1.23,1.82,2.49,3.18,3.84,4.51,5.19),"shimmer",.38,.92)
         "gentle" -> SoundScene(doubleArrayOf(130.81,174.61,146.83,196.00),false,
-            intArrayOf(1,2,3,2,4,3,4),"bell",.14,.78)
+            intArrayOf(1,2,3,4),doubleArrayOf(.42,1.78,3.28,4.8),"bell",.14,.78)
         "pulse" -> SoundScene(doubleArrayOf(110.00,87.31,98.00,110.00),true,
-            intArrayOf(2,3,4,2,1,3,2),"bell",.23,.83)
+            intArrayOf(2,3,4,1,3),doubleArrayOf(.32,1.14,2.66,4.12,5.09),"bell",.23,.83)
         "radar" -> SoundScene(doubleArrayOf(82.41,110.00,98.00,82.41),true,
-            intArrayOf(3,2,4,1,3,4,2),"shimmer",.45,.77)
+            intArrayOf(3,2,4,1),doubleArrayOf(.22,1.65,3.31,4.82),"shimmer",.45,.77)
         else -> scene("gentle")
     }
 
@@ -287,7 +287,6 @@ internal object NativePersonalAlarms {
             }
         }
 
-        val offsets = doubleArrayOf(.17,1.02,1.89,2.83,3.71,4.53,5.27)
         val pans = doubleArrayOf(-.48,.26,.58,-.34,.41,-.58,.18)
         val pads = doubleArrayOf(-.56,.41,-.24,.62)
         for (bar in 0..3) {
@@ -300,11 +299,11 @@ internal object NativePersonalAlarms {
             voice(start+.65,4.65,root*3.01,.020,"swell",
                 if (bar%2==1) .55 else -.55)
             for (step in score.pattern.indices) {
-                val t = start+offsets[step]
+                val t = start+score.offsets[step]
                 val hz = root*2*chord[score.pattern[step]]
                 val gain = (.10+.028*(if (step%3==0) 1 else 0))*score.accent*
                     (if (bar==3) 1.08 else 1.0)
-                val pan = pans[step]
+                val pan = pans[step%pans.size]
                 voice(t,2.12,hz,gain,score.timbre,pan)
                 voice(t+.31,1.78,hz*.998,gain*.27,score.timbre,-pan*.7)
                 voice(t+.64,1.38,hz*1.002,gain*.12,score.timbre,pan*.4)
