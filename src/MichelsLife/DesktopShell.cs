@@ -238,9 +238,17 @@ internal static class DesktopShell
             // Do NOT overlay the original cinematic alarm with a Windows 2000s
             // system beep. The native system cue remains only if Web Audio or the
             // user's imported MP3 cannot actually play in the active alarm UI.
-            var audibleRaw = await _webView.CoreWebView2.ExecuteScriptAsync(
-                "(()=>{try{return window.MichelsLifeAlarms?.isAudible?.()===true}catch(_){return false}})()"
-            );
+            var audibleRaw = "false";
+            try
+            {
+                audibleRaw = await _webView.CoreWebView2.ExecuteScriptAsync(
+                    "(()=>{try{return window.MichelsLifeAlarms?.isAudible?.()===true}catch(_){return false}})()"
+                );
+            }
+            catch
+            {
+                // Failed WebView/audio handshake still gets an OS audible cue.
+            }
             if (!string.Equals(audibleRaw, "true", StringComparison.OrdinalIgnoreCase))
             {
                 try { System.Media.SystemSounds.Exclamation.Play(); } catch { }
