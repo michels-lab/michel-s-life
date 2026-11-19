@@ -256,10 +256,15 @@ test('six original 24-second cinematic stereo alarm arrangements repeat until di
   assert.match(native,/buffer\.putShort\(2\.toShort\(\)\)/);
   assert.match(native,/synchronized\(presetRenderLock\)/);
   assert.match(native,/val immersiveOverlayActive = PersonalAlarmOverlay\.show/);
-  assert.match(native,/if \(immersiveOverlayActive && PersonalAlarmOverlay\.hasAudibleRingtone\(id\) &&/);
+  assert.match(native,/val selectedChannel = if \(immersiveOverlayActive &&/);
+  assert.match(native,/PersonalAlarmOverlay\.hasAudibleRingtone\(id\)\) SILENT_CHANNEL else CHANNEL/);
+  assert.match(native,/Notification\.Builder\(context, selectedChannel\)/);
+  assert.match(native,/NotificationChannel\(SILENT_CHANNEL/);
+  assert.match(native,/setSound\(null, null\)/);
+  assert.match(native,/enableVibration\(false\)/);
   assert.match(overlay,/fun hasAudibleRingtone\(id: String\): Boolean/);
   assert.match(overlay,/player\?\.isPlaying == true/);
-  assert.match(native,/notificationBuilder\.setSilent\(true\)/);
+  assert.doesNotMatch(native,/notificationBuilder\.setSilent\(/);
   assert.match(overlay,/sound\.isLooping = true/);
 });
 
