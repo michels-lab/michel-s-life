@@ -1,6 +1,6 @@
 # Michel's Life
 
-## Actual release estable verificado — 19 de noviembre de 2026 (UTC; 18 de noviembre tarde en México)
+## Actual release estable verificado — 19 de noviembre de 2026 (México y UTC)
 
 **Windows 3.0.229 + Android Direct 0.2.18 (versionCode 20)** es la última versión pública estable: [descargar los 13 archivos oficiales](https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.229-android-v0.2.18). Publicado el 2026-11-19 07:18:56 UTC, `draft=false`, `prerelease=false`. Fuente exacta `ac17aefe8b5357f36ae941920774dd652c9f4050`, [CI source #44476655063](https://github.com/michels-lab/michel-s-life/actions/runs/44476655063) **SUCCESS** y [publicador destino #44478564052](https://github.com/michels-lab/michel-s-life-releases/actions/runs/44478564052) **SUCCESS**. Firma Android Direct permanente, SHA-256, Windows Setup/Portable iniciados e instalación/reapertura del APK de producción en Android15 AVD aprobados.
 
