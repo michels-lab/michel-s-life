@@ -31,7 +31,7 @@
     "UNKNOWN_PURPOSE": 6
   },
   "finding_total": 12,
-  "inventory_fingerprint": "fbcd47665f43d37b236141af369da9639ddc410f00f005176f97915270a56fb8",
+  "inventory_fingerprint": "bd8de9eb10a3934fc2a189fdab47963efbfd9599f050f314ac727a122a9260fc",
   "evidence_fingerprint": "6910066bc9100524cc1bd741b1afbcd237ae313e7ed8dc78da9c36047052a9c0",
   "files": [
     {
@@ -641,7 +641,7 @@
       "role": "release_intent",
       "purpose": "historical source-controlled release/candidate intent (preserve for traceability)",
       "certainty": "rule",
-      "blob": "fb625706f3c1e5a8b20c9d3dcc5b96d29e3277e9"
+      "blob": "b594034e71fec3609a6f69e08a8182deb1604f01"
     },
     {
       "path": ".michelslab/release-intents/windows-granada-focus-alarms-2026-11-15.txt",
@@ -2608,7 +2608,7 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "3248efccd0ff9d33d56ae4bcef97af1703985af0"
+      "blob": "7db8781473b84c883ae116f784a2166ff445860c"
     },
     {
       "path": "tools/test_repository_file_auditor.py",
