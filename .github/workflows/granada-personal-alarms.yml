@@ -20,6 +20,7 @@ on:
       - 'android/tools/prepare_bundle.py'
       - '.github/workflows/granada-personal-alarms.yml'
       - '.michelslab/release-intents/unified-v3228-a0217.txt'
+      - '.michelslab/release-intents/unified-v3229-a0218.txt'
   pull_request:
     paths:
       - 'src/MichelsLife/frontend/personal-alarms.js'
