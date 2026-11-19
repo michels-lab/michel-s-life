@@ -596,7 +596,8 @@ internal object NativePersonalAlarms {
         // and vibration. Silence the *additional* OS notification so its old
         // system chime does not play on top of the cinematic soundscape.
         // When locked/overlay denied, leave the normal audible alarm fallback.
-        if (immersiveOverlayActive && Build.VERSION.SDK_INT >= 26)
+        if (immersiveOverlayActive && PersonalAlarmOverlay.hasAudibleRingtone(id) &&
+            Build.VERSION.SDK_INT >= 26)
             notificationBuilder.setSilent(true)
         // Fullscreen intents are allowed only for eligible alarm apps and only
         // when Android grants access. If denied, a heads-up notification remains.
