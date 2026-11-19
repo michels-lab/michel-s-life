@@ -31,7 +31,7 @@
     "UNKNOWN_PURPOSE": 6
   },
   "finding_total": 12,
-  "inventory_fingerprint": "adaed46057aae5d5a4879c49adc5c7def1828874e4f444ea05b18e81007fe4e9",
+  "inventory_fingerprint": "3cf3602bb918c863465d1cab019e29ebb85a9c997e93bb44794f4dfa8ce107a1",
   "evidence_fingerprint": "6910066bc9100524cc1bd741b1afbcd237ae313e7ed8dc78da9c36047052a9c0",
   "files": [
     {
@@ -1530,7 +1530,7 @@
       "role": "document",
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
-      "blob": "e40720c95e6deb957d583ce4560942c02bc9d78b"
+      "blob": "7f966404b499090d94a58d895703850a6b3f8bbc"
     },
     {
       "path": "docs/DEVELOPER_BRANDING.md",
