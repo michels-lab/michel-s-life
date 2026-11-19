@@ -97,6 +97,10 @@ test('Windows alarm delivery stays connected to the tray while minimized',()=>{
   assert.match(shell,/window\.MichelsLifeAlarms\?\.takeWindowsNotification\?\.\(\)/);
   assert.match(shell,/RestoreWindow\(\)/);
   assert.match(shell,/System\.Media\.SystemSounds\.Exclamation\.Play\(\)/);
+  assert.match(shell,/MichelsLifeAlarms\?\.isAudible\?\.\(\)===true/);
+  assert.match(shell,/if \(!string\.Equals\(audibleRaw, "true"/);
+  assert.match(alarms,/function isAudible\(\)/);
+  assert.match(alarms,/takeWindowsNotification,isAudible/);
   assert.match(alarms,/const windowsNotifications=\[\]/);
   assert.match(alarms,/windowsNotifications\.push\(\{/);
   assert.match(alarms,/return windowsNotifications\.shift\(\)\|\|null/);
