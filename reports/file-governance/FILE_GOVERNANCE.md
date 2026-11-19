@@ -5,7 +5,7 @@ No file is auto-deleted or declared unused.
 
 ## Coverage
 
-Tracked: 415; classified: 411; readable documents: 100; above read cap: 0; findings: 4.
+Tracked: 424; classified: 420; readable documents: 100; above read cap: 0; findings: 12.
 
 ## File roles
 
@@ -23,10 +23,11 @@ Tracked: 415; classified: 411; readable documents: 100; above read cap: 0; findi
 | installer_metadata | 1 |
 | release_intent | 17 |
 | source | 130 |
-| test | 50 |
+| test | 52 |
 | text_metadata | 1 |
+| unknown | 6 |
 | web_ui | 3 |
-| workflow | 53 |
+| workflow | 54 |
 
 ## Findings (human review required)
 
@@ -34,6 +35,14 @@ Tracked: 415; classified: 411; readable documents: 100; above read cap: 0; findi
 - **CONFIRMED / BROKEN_RELATIVE_LINK** docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md: Missing: docs/AGENTS.md. Next: Fix link or restore target (ID 7a232f866547f4b1)
 - **CONFIRMED / BROKEN_RELATIVE_LINK** docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md: Missing: docs/tools/ui_android_section_design_smoke.mjs. Next: Fix link or restore target (ID c9b0ed37825bd396)
 - **CONFIRMED / BROKEN_RELATIVE_LINK** docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md: Missing: docs/android/audit/2026-10-12-ui-screenshot-gallery.md. Next: Fix link or restore target (ID 55915b207228a042)
+- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** GIT_AUDIT_LOG.md: 11 implementation/config paths changed since this log's last commit; examples: .github/workflows/granada-focus-audio-quickmission.yml, android/app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt, android/mobile-experience.js, src/MichelsLife/frontend/focus-immersive.js, src/MichelsLife/frontend/i18n.js, src/MichelsLife/frontend/index.html. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID 86c89b40d2c1a3b1)
+- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** android/ANDROID_AUDIT_LOG.md: 11 implementation/config paths changed since this log's last commit; examples: .github/workflows/granada-focus-audio-quickmission.yml, android/app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt, android/mobile-experience.js, src/MichelsLife/frontend/focus-immersive.js, src/MichelsLife/frontend/i18n.js, src/MichelsLife/frontend/index.html. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID f596ebefad624702)
+- **REVIEW / UNKNOWN_PURPOSE** android/app/src/main/res/raw/mlv_focus_aurora.wav: No reliable purpose category from path. Next: Declare role after reviewing usage (ID 5f24662c6e85f329)
+- **REVIEW / UNKNOWN_PURPOSE** android/app/src/main/res/raw/mlv_focus_glass.wav: No reliable purpose category from path. Next: Declare role after reviewing usage (ID a3f98f17133ad740)
+- **REVIEW / UNKNOWN_PURPOSE** android/app/src/main/res/raw/mlv_focus_midnight.wav: No reliable purpose category from path. Next: Declare role after reviewing usage (ID f071b77e97a69cec)
+- **REVIEW / UNKNOWN_PURPOSE** android/app/src/main/res/raw/mlv_focus_observatory.wav: No reliable purpose category from path. Next: Declare role after reviewing usage (ID 586c00d31d4ac5b9)
+- **REVIEW / UNKNOWN_PURPOSE** android/app/src/main/res/raw/mlv_focus_silver.wav: No reliable purpose category from path. Next: Declare role after reviewing usage (ID bd129d6ef59f9598)
+- **REVIEW / UNKNOWN_PURPOSE** android/app/src/main/res/raw/mlv_focus_soft.wav: No reliable purpose category from path. Next: Declare role after reviewing usage (ID e343c98421a4c10a)
 
 Complete path → purpose/role/certainty list lives in FILE_GOVERNANCE.json. SUMMARY.json has counts only for master polling.
 A dated file, duplicate, or suspicious name is an **investigation candidate**, not unwanted material.

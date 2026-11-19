@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 415,
-  "classified_files_total": 411,
+  "tracked_files_total": 424,
+  "classified_files_total": 420,
   "docs_content_inspected": 100,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -19,17 +19,20 @@
     "installer_metadata": 1,
     "release_intent": 17,
     "source": 130,
-    "test": 50,
+    "test": 52,
     "text_metadata": 1,
+    "unknown": 6,
     "web_ui": 3,
-    "workflow": 53
+    "workflow": 54
   },
   "finding_counts": {
-    "BROKEN_RELATIVE_LINK": 4
+    "BROKEN_RELATIVE_LINK": 4,
+    "POTENTIAL_UNLOGGED_CHANGES": 2,
+    "UNKNOWN_PURPOSE": 6
   },
-  "finding_total": 4,
-  "inventory_fingerprint": "564adf87b47b752e6eccb911d15b83a289b73fe3c50eb29fd2923dbb2f5654dd",
-  "evidence_fingerprint": "1b533bb96254d4a85dcffac53fe3c6180cc4698881a1ee21ef601d2867659a17",
+  "finding_total": 12,
+  "inventory_fingerprint": "2663666e879b65a19a341ca39cecaf99af66afe55d7c50da1428aa2866eaa63f",
+  "evidence_fingerprint": "ac5ab158ae6941ebc0833fa7a9f26b24c7143efec06b8a18f17f646e0737723e",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -240,6 +243,13 @@
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
       "blob": "621a4e63bc04f6bdfa09b2a4c4db9abfdc3096cf"
+    },
+    {
+      "path": ".github/workflows/granada-focus-audio-quickmission.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "9a9f19f4529407efdffad714dd2c32ab24f6d144"
     },
     {
       "path": ".github/workflows/granada-focus-evidence.yml",
@@ -855,7 +865,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "6b3244c958ab210a3361dc0eae2dbecdb05b6592"
+      "blob": "0b3bf64a817d2dae5f132c1b1edc7dfe320bf43d"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/NativePersonalAlarms.kt",
@@ -933,6 +943,48 @@
       "purpose": "machine-readable configuration",
       "certainty": "rule",
       "blob": "f0608d9548511fb8cc216a04c1bf249d9d7c48d5"
+    },
+    {
+      "path": "android/app/src/main/res/raw/mlv_focus_aurora.wav",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "d717e41005b55b7298921f095391e743b00eb6eb"
+    },
+    {
+      "path": "android/app/src/main/res/raw/mlv_focus_glass.wav",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "d54b57c4f4431eef99590ba8c49989955ae11de0"
+    },
+    {
+      "path": "android/app/src/main/res/raw/mlv_focus_midnight.wav",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "e3299186da4951da3fb4a598a97e80345300d096"
+    },
+    {
+      "path": "android/app/src/main/res/raw/mlv_focus_observatory.wav",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "c6bd0aa1125dd4ecf4f77abd9c05bfe3780f0c93"
+    },
+    {
+      "path": "android/app/src/main/res/raw/mlv_focus_silver.wav",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "a5ca533afe057a9beba740ae7b9dcd07125db077"
+    },
+    {
+      "path": "android/app/src/main/res/raw/mlv_focus_soft.wav",
+      "role": "unknown",
+      "purpose": "function unknown: owner classification required",
+      "certainty": "unknown",
+      "blob": "27e5449c1365bb7501c82eb3532f8ce0232eb1c2"
     },
     {
       "path": "android/app/src/main/res/values-v31/styles.xml",
@@ -1226,7 +1278,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "0fa61a7465e361b8161a6360e264f3be496e1f94"
+      "blob": "59cc935e3ff73b7637e7c051577b0bcefd0e4db2"
     },
     {
       "path": "android/mobile-sections.js",
@@ -1877,21 +1929,21 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "46bb381e686012ad81182c55b60bb051fdcb86fc"
+      "blob": "0c56106b163ecde772261c315f35362c70157c1e"
     },
     {
       "path": "src/MichelsLife/frontend/i18n.js",
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "581bae401fc83f372e95b5903568347842b8c927"
+      "blob": "aee8f4ee3979cbc97fb0a40f0aff33ef1d05413e"
     },
     {
       "path": "src/MichelsLife/frontend/index.html",
       "role": "web_ui",
       "purpose": "local HTML documentation or web interface",
       "certainty": "inferred",
-      "blob": "485551dbcb8cc23d58a8fca9e63f0fa1d2f8a73c"
+      "blob": "f081c401a4158874b299ae843e7c7fc4c8cbe853"
     },
     {
       "path": "src/MichelsLife/frontend/motivation-immersive.js",
@@ -2258,6 +2310,13 @@
       "blob": "f064e7fcac6b32294763cd2338131cd5ef004427"
     },
     {
+      "path": "tools/test_android_focus_completion_native_audio.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "069ad5cf344dadfb6f84858d54289408a02ee9db"
+    },
+    {
       "path": "tools/test_android_focus_notification_ui.mjs",
       "role": "test",
       "purpose": "code/test implementation",
@@ -2382,6 +2441,13 @@
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "35c17e6033803c3743b16cc3e0feaee1e13229cc"
+    },
+    {
+      "path": "tools/test_granada_focus_audio_quickmission.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "de983009f1d9872f1a83cc6f79648468501c4707"
     },
     {
       "path": "tools/test_granada_focus_evidence_contract.mjs",
@@ -2577,7 +2643,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "6b87ca7f7246cbdc63388eb39c09ed191513a9df"
+      "blob": "662f44e069a1b03347c18add25930b6d2337f538"
     },
     {
       "path": "tools/ui_android_google_calendar_truth_smoke.mjs",
@@ -2682,7 +2748,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "8e6ecfe9b0c1495c7a41d74910411ce688458bae"
+      "blob": "bd3e076112a0f34b05a955a12d73a5c6f24bd5ea"
     },
     {
       "path": "tools/ui_granada_account_boundary_crash_browser.mjs",
@@ -2766,7 +2832,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "63d3f5fcc96a04bea6efe8dc61b354f110dc5ec1"
+      "blob": "b23d6931f2ca88eb55cea51d042b9c43f4393fcb"
     },
     {
       "path": "tools/ui_settings_integrity_smoke.mjs",
@@ -2944,6 +3010,78 @@
       "path": "docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md",
       "observation": "Missing: docs/android/audit/2026-10-12-ui-screenshot-gallery.md",
       "recommendation": "Fix link or restore target",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "86c89b40d2c1a3b1",
+      "code": "POTENTIAL_UNLOGGED_CHANGES",
+      "severity": "review",
+      "path": "GIT_AUDIT_LOG.md",
+      "observation": "11 implementation/config paths changed since this log's last commit; examples: .github/workflows/granada-focus-audio-quickmission.yml, android/app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt, android/mobile-experience.js, src/MichelsLife/frontend/focus-immersive.js, src/MichelsLife/frontend/i18n.js, src/MichelsLife/frontend/index.html",
+      "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "f596ebefad624702",
+      "code": "POTENTIAL_UNLOGGED_CHANGES",
+      "severity": "review",
+      "path": "android/ANDROID_AUDIT_LOG.md",
+      "observation": "11 implementation/config paths changed since this log's last commit; examples: .github/workflows/granada-focus-audio-quickmission.yml, android/app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt, android/mobile-experience.js, src/MichelsLife/frontend/focus-immersive.js, src/MichelsLife/frontend/i18n.js, src/MichelsLife/frontend/index.html",
+      "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "5f24662c6e85f329",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": "android/app/src/main/res/raw/mlv_focus_aurora.wav",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "a3f98f17133ad740",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": "android/app/src/main/res/raw/mlv_focus_glass.wav",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "f071b77e97a69cec",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": "android/app/src/main/res/raw/mlv_focus_midnight.wav",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "586c00d31d4ac5b9",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": "android/app/src/main/res/raw/mlv_focus_observatory.wav",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "bd129d6ef59f9598",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": "android/app/src/main/res/raw/mlv_focus_silver.wav",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
+      "state": "REVIEW_REQUIRED"
+    },
+    {
+      "id": "e343c98421a4c10a",
+      "code": "UNKNOWN_PURPOSE",
+      "severity": "review",
+      "path": "android/app/src/main/res/raw/mlv_focus_soft.wav",
+      "observation": "No reliable purpose category from path",
+      "recommendation": "Declare role after reviewing usage",
       "state": "REVIEW_REQUIRED"
     }
   ],
