@@ -11,6 +11,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.media.AudioAttributes
+import android.net.Uri
 import org.json.JSONObject
 
 /**
@@ -27,6 +29,7 @@ internal object NativeFocusAlarm {
     private const val KEY_DEADLINE = "deadline"
     private const val KEY_MODE = "mode"
     private const val KEY_LANGUAGE = "language"
+    private const val KEY_SOUND = "completionSound"
     private const val CHANNEL_ID = "michelslife-focus-complete"
     private const val ACTIVE_CHANNEL_ID = "michelslife-focus-running-v1"
     private const val ACTIVE_NOTIFICATION_ID = 4707
@@ -34,6 +37,52 @@ internal object NativeFocusAlarm {
     private const val REQUEST_CODE = 4705
     private const val NOTIFICATION_ID = 4705
     private const val MAX_FUTURE_MS = 4 * 60 * 60 * 1000L
+    private fun completionSound(raw: String?): String =
+        if (raw in listOf("soft", "glass", "aurora", "observatory", "midnight", "silver", "off"))
+            raw ?: "soft"
+        else "soft"
+
+    private fun channelIdForSound(sound: String): String =
+        CHANNEL_ID + "-select-v2-" + completionSound(sound)
+
+    // Notification channels have immutable sounds after first creation.
+    // Use a channel for each original ringtone, not a fake JS-only preview.
+    private fun createSelectedCompletionChannel(context: Context, raw: String) {
+        val chosen = completionSound(raw)
+        val names = mapOf(
+            "soft" to "Soft Bell", "glass" to "Glass Chime",
+            "aurora" to "Aurora Tone", "observatory" to "Observatory Bell",
+            "midnight" to "Midnight Chime", "silver" to "Silver Echo",
+            "off" to "No sound"
+        )
+        val channel = NotificationChannel(
+            channelIdForSound(chosen), "Pomodoro · " + (names[chosen] ?: "Soft Bell"),
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            description = "Michel's Life Pomodoro completion · original selected ringtone"
+            enableVibration(chosen != "off")
+            if (chosen == "off") setSound(null, null)
+            else {
+                val tone = when (chosen) {
+                    "glass" -> R.raw.mlv_focus_glass
+                    "aurora" -> R.raw.mlv_focus_aurora
+                    "observatory" -> R.raw.mlv_focus_observatory
+                    "midnight" -> R.raw.mlv_focus_midnight
+                    "silver" -> R.raw.mlv_focus_silver
+                    else -> R.raw.mlv_focus_soft
+                }
+                val uri = Uri.parse("android.resource://" + context.packageName + "/" + tone)
+                val attributes = AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build()
+                setSound(uri, attributes)
+            }
+        }
+        (context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
+            .createNotificationChannel(channel)
+    }
+
 
     fun createChannel(context: Context) {
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -44,6 +93,8 @@ internal object NativeFocusAlarm {
             enableVibration(true)
         }
         manager.createNotificationChannel(channel)
+        val settings = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        createSelectedCompletionChannel(context, settings.getString(KEY_SOUND, "soft") ?: "soft")
         manager.createNotificationChannel(NotificationChannel(
             ACTIVE_CHANNEL_ID, "Running Pomodoro", NotificationManager.IMPORTANCE_LOW
         ).apply {
@@ -113,7 +164,8 @@ internal object NativeFocusAlarm {
         // API 26+ users can block just the Focus channel while leaving app
         // notifications enabled. Runtime permission alone is not proof that
         // an alarm completion can actually display a notification.
-        val completionChannel = manager.getNotificationChannel(CHANNEL_ID)
+        val chosen = completionSound(prefs.getString(KEY_SOUND, "soft"))
+        val completionChannel = manager.getNotificationChannel(channelIdForSound(chosen))
         val runningChannel = manager.getNotificationChannel(ACTIVE_CHANNEL_ID)
         val completionAllowed = permitted &&
             (completionChannel == null ||
@@ -157,6 +209,9 @@ internal object NativeFocusAlarm {
         val language = if (state.optString("language") == "es") "es" else "en"
         val now = System.currentTimeMillis()
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val tone = completionSound(state.optString(KEY_SOUND, "soft"))
+        prefs.edit().putString(KEY_SOUND, tone).apply()
+        createSelectedCompletionChannel(context, tone)
 
         // Idle, paused or invalid states must remove the previous notification.
         if (phaseStatus != "running" || deadline <= 0L || deadline > now + MAX_FUTURE_MS) {
@@ -259,6 +314,7 @@ internal object NativeFocusAlarm {
         if (deadline <= 0L || deadline > System.currentTimeMillis() + 5_000L) return
         val mode = prefs.getString(KEY_MODE, "work") ?: "work"
         val language = prefs.getString(KEY_LANGUAGE, "en") ?: "en"
+        val tone = completionSound(prefs.getString(KEY_SOUND, "soft"))
         // Clearing before notification means duplicate/stale receiver events
         // cannot double-send after reset or an overlapping phase transition.
         prefs.edit().remove(KEY_TOKEN).remove(KEY_DEADLINE).remove(KEY_MODE)
@@ -269,7 +325,7 @@ internal object NativeFocusAlarm {
         FocusSnoozeReminder.prepare(context, token, mode, language)
         val open = openPomodoro(context)
         val isBreak = mode == "break"
-        val notification = Notification.Builder(context, CHANNEL_ID)
+        val notification = Notification.Builder(context, channelIdForSound(tone))
             .setSmallIcon(R.drawable.ic_stat_michels_focus)
             .setContentTitle(if (isBreak) (if (language == "es") "Descanso terminado" else "Break complete") else (if (language == "es") "Sesión de enfoque terminada" else "Focus session complete"))
             .setContentText(if (language == "es") {
@@ -309,7 +365,10 @@ internal object NativeFocusAlarm {
             }
         } else if (es) "Te avisaremos de nuevo en 5 minutos"
         else "Another reminder in 5 minutes"
-        val notification = Notification.Builder(context, CHANNEL_ID)
+        val tone = completionSound(
+            context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY_SOUND, "soft")
+        )
+        val notification = Notification.Builder(context, channelIdForSound(tone))
             .setSmallIcon(R.drawable.ic_stat_michels_focus)
             .setContentTitle(title)
             .setContentText(message)

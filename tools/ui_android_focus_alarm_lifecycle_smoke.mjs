@@ -169,7 +169,19 @@ try{
   });
   assert.ok(scene.alpha>0&&scene.alpha<0.65&&scene.backdrop==='none',
     'Android sheet obscures the selected wallpaper or blurs timer: '+JSON.stringify(scene));
-  await page.locator('#mlv-android-focus-sheet details:not(.mlv-focus-motivation-details) summary').click();
+   const audioDetails=page.locator('.mlv-android-focus-sounds');
+   const audioSummary=audioDetails.locator('summary');
+   assert.match(await audioSummary.innerText(),
+     /Audio de enfoque/,'Spanish locale must not label audio as custom work duration');
+   await audioSummary.click();
+   assert.equal(await audioDetails.getAttribute('open'),'',
+     'Audio controls must become visible to a real user after expanding');
+   assert.match(await audioDetails.locator('label').first().innerText(),
+     /Sonido al terminar/,'Completion preference label must be localized when expanded');
+   assert.equal(await audioDetails.locator('select').count(),2,
+     'Android must offer both completion sound and A+C ambience controls');
+   await audioSummary.click();
+   await page.locator('#mlv-android-focus-sheet details:has(#mlv-android-focus-work) summary').click();
   const workInput=page.locator('#mlv-android-focus-work');
   await workInput.fill('37');
   await page.evaluate(()=>window.MichelsLifeMobileExperience.updateFocus());
