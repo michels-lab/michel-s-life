@@ -782,7 +782,11 @@ function boot(){
   else if(screen&&!screen.hidden){e.preventDefault();close();}
  });
 }
-window.MichelsLifeAlarms={open,close,ringAlarm,read,records:()=>records.slice(),next,localAt,dismissRing,quickAlarm:createQuickAlarm,pollWindows:tick,takeWindowsNotification};
+function isAudible(){
+ return !!ring&&!ring.hidden&&ringingId!==null&&(
+  (livePresetContext?.state==='running')||(!!customAudio&&!customAudio.paused));
+}
+window.MichelsLifeAlarms={open,close,ringAlarm,read,records:()=>records.slice(),next,localAt,dismissRing,quickAlarm:createQuickAlarm,pollWindows:tick,takeWindowsNotification,isAudible};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
 else boot();
 })();
