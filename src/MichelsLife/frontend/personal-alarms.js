@@ -589,8 +589,8 @@ function localize(){
  launcher.textContent=tr('⏰ Alarms','⏰ Alarmas');
  launcher.setAttribute('aria-label',tr('Open alarms','Abrir alarmas'));
  q('#mlv-alarm-note',screen).textContent=(android()?
-  tr('Android uses system sound and vibration, including when Michel’s Life is closed. Battery optimization or notification permissions may affect delivery.',
-  'Android utiliza sonido y vibración del sistema, incluso con Michel’s Life cerrada. El ahorro de batería o los permisos pueden afectar el aviso.'):
+  tr('When the immersive alarm is visible, your selected original soundtrack plays. If the screen is locked or the overlay is unavailable, Android uses the system alarm channel as a safety fallback. Permissions and battery optimization may affect delivery.',
+  'Cuando la alarma inmersiva está visible, suena la composición original que elegiste. Si la pantalla está bloqueada o no se permite la superposición, Android usa el canal de alarma del sistema como respaldo. Los permisos y el ahorro de batería pueden afectar el aviso.'):
   tr('On Windows, sound and the full-screen scene work while Michel’s Life is open. A closed app cannot ring.',
   'En Windows, el sonido y la pantalla inmersiva funcionan con Michel’s Life abierta. Cerrada no puede sonar.'))+
   (nativeError?' · '+nativeError:'');
