@@ -31,7 +31,7 @@
     "UNKNOWN_PURPOSE": 6
   },
   "finding_total": 12,
-  "inventory_fingerprint": "96a24392b7a6cb47b9689aa29ece9df6414b46a7619194b553b31736294aeceb",
+  "inventory_fingerprint": "6559f966da065e0d371386f4974e445ce4a814edf865589ef69a3cf04f5d160c",
   "evidence_fingerprint": "956a40d794663bde3d1477501d9330086733b4da9f27a87e31929bb561c9f7a1",
   "files": [
     {
@@ -711,7 +711,7 @@
       "role": "index",
       "purpose": "navigation/onboarding",
       "certainty": "rule",
-      "blob": "b1e27ec747838d28e446f41fdfe6355ee0a01a61"
+      "blob": "473fe61f22d96cfe3fad3a1ddbe13c8ed072192c"
     },
     {
       "path": "android/ANDROID_AUDIT_LOG.md",
