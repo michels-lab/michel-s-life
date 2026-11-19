@@ -4,7 +4,7 @@
   'use strict';
   if (window.MLColorFloatingPreview) return;
   const STORAGE='michelsLife.granadaColorPreview.v1';
-  const PALETTES=['michelsLife.palette.v189','michelsLife.theme.v343','michelsLifeTheme.v3000','michelsLifePalette.v264'];
+  const PALETTES=['michelsLife.theme.v343','michelsLifeTheme.v3000','michelsLifePalette.v264','michelsLife.colorTheme.v30184'];
   const FIELDS={
     v133Bg:['bg','Background'],v133Panel:['panel','Panel'],v133Card:['card','Card'],
     v133Accent:['accent','Primary accent'],v133Accent2:['accent2','Secondary accent'],
