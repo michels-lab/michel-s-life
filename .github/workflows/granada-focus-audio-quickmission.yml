@@ -12,6 +12,7 @@ on:
       - 'tools/test_android_focus_completion_native_audio.mjs'
       - 'tools/test_granada_focus_audio_quickmission.mjs'
       - '.michelslab/release-intents/unified-v3228-a0217.txt'
+      - '.michelslab/release-intents/unified-v3229-a0218.txt'
       - '.github/workflows/granada-focus-audio-quickmission.yml'
   pull_request:
     paths:
