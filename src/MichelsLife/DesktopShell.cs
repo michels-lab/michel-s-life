@@ -235,7 +235,16 @@ internal static class DesktopShell
                 ? t.GetString() ?? string.Empty : string.Empty;
             if (label.Length > 140) label = label[..140];
             RestoreWindow(); // The immersive alarm is now visible even after minimizing to tray.
-            try { System.Media.SystemSounds.Exclamation.Play(); } catch { }
+            // Do NOT overlay the original cinematic alarm with a Windows 2000s
+            // system beep. The native system cue remains only if Web Audio or the
+            // user's imported MP3 cannot actually play in the active alarm UI.
+            var audibleRaw = await _webView.CoreWebView2.ExecuteScriptAsync(
+                "(()=>{try{return window.MichelsLifeAlarms?.isAudible?.()===true}catch(_){return false}})()"
+            );
+            if (!string.Equals(audibleRaw, "true", StringComparison.OrdinalIgnoreCase))
+            {
+                try { System.Media.SystemSounds.Exclamation.Play(); } catch { }
+            }
             _trayIcon?.ShowBalloonTip(
                 12000, "Michel's Life · Alarma",
                 string.IsNullOrWhiteSpace(time) ? label : $"{time} · {label}",
