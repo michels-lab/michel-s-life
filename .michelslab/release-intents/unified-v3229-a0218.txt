@@ -1,9 +1,9 @@
 {
   "schema": "michelslab.unified-stable-release-intent.v1",
-  "request": "build-and-verify-only",
+  "request": "rebuild-and-verify-exact-source-after-audio-correction",
   "product": "Michel's Life",
-  "change": "six cinematic original alarm arrangements with native sound fallback",
-  "source_base_sha": "d526b1ccd612d5aa358299424b0b4bf83493d5a7",
+  "change": "cinematic six-tone alarms on Windows and Android, no duplicate Windows or native overlay OS beep, safe system sound fallback",
+  "source_base_sha": "248ff82914252dc15a612bbf8f4b3b054710f1bc",
   "windows_version": "3.0.229",
   "android_direct_version": "0.2.18",
   "android_version_code": 20,
@@ -19,5 +19,6 @@
   ],
   "require_signed_android15_native_install_and_relaunch": true,
   "require_windows_installer_and_portable_launch": true,
-  "publication": "destination-owned later, only after exact SHA source run SUCCESS and 13 assets verified"
+  "publication": "destination-owned later, only after exact SHA source run SUCCESS and 13 assets verified",
+  "supersedes_source_intent_sha": "f80d6143e567fda06b99efd0bb8887e228764939"
 }
