@@ -577,7 +577,8 @@ internal object NativePersonalAlarms {
         // An explicitly authorized overlay is the only Android-supported route
         // above other UNLOCKED apps; full-screen notifications show a heads-up
         // while unlocked even when their permission is granted.
-        PersonalAlarmOverlay.show(context, id, target.optString("label"), target.optString("time"))
+        val immersiveOverlayActive = PersonalAlarmOverlay.show(
+            context, id, target.optString("label"), target.optString("time"))
         if (!notificationAllowed(context)) return
         createChannel(context)
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -591,6 +592,12 @@ internal object NativePersonalAlarms {
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setCategory(Notification.CATEGORY_ALARM)
             .setPriority(Notification.PRIORITY_MAX)
+        // A visible immersive overlay already owns the selected 24s ringtone
+        // and vibration. Silence the *additional* OS notification so its old
+        // system chime does not play on top of the cinematic soundscape.
+        // When locked/overlay denied, leave the normal audible alarm fallback.
+        if (immersiveOverlayActive && Build.VERSION.SDK_INT >= 26)
+            notificationBuilder.setSilent(true)
         // Fullscreen intents are allowed only for eligible alarm apps and only
         // when Android grants access. If denied, a heads-up notification remains.
         if (Build.VERSION.SDK_INT < 34 || manager.canUseFullScreenIntent())
