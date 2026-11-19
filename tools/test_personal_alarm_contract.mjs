@@ -256,7 +256,9 @@ test('six original 24-second cinematic stereo alarm arrangements repeat until di
   assert.match(native,/buffer\.putShort\(2\.toShort\(\)\)/);
   assert.match(native,/synchronized\(presetRenderLock\)/);
   assert.match(native,/val immersiveOverlayActive = PersonalAlarmOverlay\.show/);
-  assert.match(native,/if \(immersiveOverlayActive && Build\.VERSION\.SDK_INT >= 26\)/);
+  assert.match(native,/if \(immersiveOverlayActive && PersonalAlarmOverlay\.hasAudibleRingtone\(id\) &&/);
+  assert.match(overlay,/fun hasAudibleRingtone\(id: String\): Boolean/);
+  assert.match(overlay,/player\?\.isPlaying == true/);
   assert.match(native,/notificationBuilder\.setSilent\(true\)/);
   assert.match(overlay,/sound\.isLooping = true/);
 });
