@@ -5,7 +5,7 @@ No file is auto-deleted or declared unused.
 
 ## Coverage
 
-Tracked: 424; classified: 420; readable documents: 100; above read cap: 0; findings: 12.
+Tracked: 427; classified: 423; readable documents: 101; above read cap: 0; findings: 12.
 
 ## File roles
 
@@ -17,17 +17,17 @@ Tracked: 424; classified: 420; readable documents: 100; above read cap: 0; findi
 | build_script | 6 |
 | config | 24 |
 | database_migration | 3 |
-| document | 93 |
+| document | 94 |
 | encoded_source | 2 |
 | index | 4 |
 | installer_metadata | 1 |
 | release_intent | 17 |
 | source | 130 |
-| test | 52 |
+| test | 53 |
 | text_metadata | 1 |
 | unknown | 6 |
 | web_ui | 3 |
-| workflow | 54 |
+| workflow | 55 |
 
 ## Findings (human review required)
 
@@ -35,8 +35,8 @@ Tracked: 424; classified: 420; readable documents: 100; above read cap: 0; findi
 - **CONFIRMED / BROKEN_RELATIVE_LINK** docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md: Missing: docs/AGENTS.md. Next: Fix link or restore target (ID 7a232f866547f4b1)
 - **CONFIRMED / BROKEN_RELATIVE_LINK** docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md: Missing: docs/tools/ui_android_section_design_smoke.mjs. Next: Fix link or restore target (ID c9b0ed37825bd396)
 - **CONFIRMED / BROKEN_RELATIVE_LINK** docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md: Missing: docs/android/audit/2026-10-12-ui-screenshot-gallery.md. Next: Fix link or restore target (ID 55915b207228a042)
-- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** GIT_AUDIT_LOG.md: 11 implementation/config paths changed since this log's last commit; examples: .github/workflows/granada-focus-audio-quickmission.yml, android/app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt, android/mobile-experience.js, src/MichelsLife/frontend/focus-immersive.js, src/MichelsLife/frontend/i18n.js, src/MichelsLife/frontend/index.html. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID 86c89b40d2c1a3b1)
-- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** android/ANDROID_AUDIT_LOG.md: 11 implementation/config paths changed since this log's last commit; examples: .github/workflows/granada-focus-audio-quickmission.yml, android/app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt, android/mobile-experience.js, src/MichelsLife/frontend/focus-immersive.js, src/MichelsLife/frontend/i18n.js, src/MichelsLife/frontend/index.html. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID f596ebefad624702)
+- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** GIT_AUDIT_LOG.md: 28 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-focus-audio-quickmission.yml. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID 097b2fc4f54b0cad)
+- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** android/ANDROID_AUDIT_LOG.md: 28 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-focus-audio-quickmission.yml. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID 8a602de9023d99df)
 - **REVIEW / UNKNOWN_PURPOSE** android/app/src/main/res/raw/mlv_focus_aurora.wav: No reliable purpose category from path. Next: Declare role after reviewing usage (ID 5f24662c6e85f329)
 - **REVIEW / UNKNOWN_PURPOSE** android/app/src/main/res/raw/mlv_focus_glass.wav: No reliable purpose category from path. Next: Declare role after reviewing usage (ID a3f98f17133ad740)
 - **REVIEW / UNKNOWN_PURPOSE** android/app/src/main/res/raw/mlv_focus_midnight.wav: No reliable purpose category from path. Next: Declare role after reviewing usage (ID f071b77e97a69cec)
