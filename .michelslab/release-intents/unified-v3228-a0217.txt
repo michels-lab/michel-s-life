@@ -1,0 +1,23 @@
+{
+  "schema": "michelslab.unified-stable-release-intent.v1",
+  "request": "build-and-verify-only",
+  "product": "Michel's Life",
+  "windows_version": "3.0.228",
+  "android_direct_version": "0.2.17",
+  "android_version_code": 19,
+  "stable_only": true,
+  "source_base_sha": "25b1ba5374a632d6e7205d47582ac3b265a8edd9",
+  "required_checks": [
+    "Source validation",
+    "UI smoke",
+    "Android UI smoke",
+    "GRANADA Android Direct safe update discovery",
+    "GRANADA Quick Mission and original Pomodoro audio",
+    "GRANADA cross-platform immersive Focus",
+    "GRANADA personal alarms — Windows and Android contracts"
+  ],
+  "require_windows_setup_and_portable_launch": true,
+  "require_android_production_signing": true,
+  "require_signed_android15_native_install_and_relaunch": true,
+  "publication": "destination-owned, separate verified intent only; no RC or overwrite"
+}
