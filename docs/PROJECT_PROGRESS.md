@@ -24,6 +24,12 @@ La línea base se establece en este corte por primera vez; NO significa que el p
 | 14 | Errores JavaScript intermitentes Story/Pomodoro eliminados, no solo pasan reintentos | PENDIENTE | Issue #168, trazabilidad script/línea |
 | 15 | Aceptación funcional/estética del propietario en Windows y Galaxy instalados | PENDIENTE | Capturas y uso físico del release candidato |
 
+## Granada de integración y release staging — 20 noviembre 2026
+
+Los [PR #225](https://github.com/michels-lab/michel-s-life/pull/225) y [#226](https://github.com/michels-lab/michel-s-life/pull/226) quedaron **fusionados en main**, commits `a6a7e1d8` (Settings, incluido AppBundle Windows + Android assets) y `a5fc8d06` (Mozart/Chaikovski sintetizados en Focus). Ambas ramas pasaron sus pruebas dedicadas, Source, UI y compilación/instalación de APK de prueba en Android15; Android14/16 nativo de host sigue con incidentes ADB/QEMU conocidos (#139), sin declarar un gate rojo aprobado.
+
+La siguiente versión está **preparándose, no publicada**, en [PR #227](https://github.com/michels-lab/michel-s-life/pull/227): Windows 3.0.230 / Android Direct 0.2.19/code21, nueve validaciones a commit exacto y empaquetado producción firmado con Android15 AVD. Los hitos #8 y #9 exigen versión estable instalada y aprobación, de modo que el porcentaje **sigue 7/15 = 47%**. Ultima estable real 3.0.229/0.2.18. Sin RC ni Developer Edition.
+
 ## Granada 2026-11-20
 
 **Avance estimado 47% → 47% (7/15).** Se abrió el bloque de colores [PR #225](https://github.com/michels-lab/michel-s-life/pull/225): módulo de Settings con contraste, muestras Chapter/Focus/Alarm, botón deshacer, persistencia en clave v30184, pruebas Node y pruebas de navegador desktop/mobile. Se abrió el bloque de música [PR #226](https://github.com/michels-lab/michel-s-life/pull/226): dos temas clásicos basados en fragmentos de dominio público, selección persistente bajo FocusStory, pruebas de síntesis, ocho pistas A/C conservadas, credenciales de música documentadas. **Los dos PRs están abiertos, no equivalen a main ni a release; la CI exact-head sigue en marcha o en cola al registrar el corte.**
