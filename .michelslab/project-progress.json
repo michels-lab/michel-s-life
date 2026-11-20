@@ -24,10 +24,11 @@
     "pending",
     "pending"
   ],
-  "current_phase": "PR #225 Settings y PR #226 clásicos: fuente en ramas, CI exact-HEAD en progreso, sin nuevo release",
+  "current_phase": "PR #225/#226 merged to main; release preparation PR #227 source staging, pending exact-head CI; last stable 3.0.229/0.2.18",
   "source_prs": [
     "https://github.com/michels-lab/michel-s-life/pull/225",
-    "https://github.com/michels-lab/michel-s-life/pull/226"
+    "https://github.com/michels-lab/michel-s-life/pull/226",
+    "https://github.com/michels-lab/michel-s-life/pull/227"
   ],
   "latest_public_release": "v3.0.229-android-v0.2.18",
   "latest_public_release_url": "https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.229-android-v0.2.18",
@@ -36,12 +37,18 @@
   "release_hold": true,
   "last_granada": {
     "date": "2026-11-20",
-    "percent_before": 47,
-    "percent_after": 47,
-    "source_status": "two_unmerged_prs",
+    "progress_before": 47,
+    "progress_after": 47,
+    "source_status": "two_merged_source_prs_one_unmerged_release_prep",
     "verified": 7,
     "total": 15,
-    "gate": "exact-head CI and installed user acceptance pending"
+    "merged_shas": [
+      "a6a7e1d882d5656922e5b1986a7893aa1d3ebeab",
+      "a5fc8d06efa6d08da7afff7107cd124a7d8627c8"
+    ],
+    "release_prep_pr": "https://github.com/michels-lab/michel-s-life/pull/227",
+    "last_stable": "v3.0.229-android-v0.2.18",
+    "pending": "Release prep exact CI, signed new Windows/Android release, physical Galaxy and user QA"
   },
   "note": "47%=7/15 is a newly established bounded milestone baseline, not a claim that 47% of code was written today."
 }
