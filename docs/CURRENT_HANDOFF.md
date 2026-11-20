@@ -1,3 +1,13 @@
+## Operación Granada — integración de código y preparación de release, 2026-11-20
+
+- **PR #225 [MERGED](https://github.com/michels-lab/michel-s-life/pull/225)** como commit fuente `a6a7e1d882d5656922e5b1986a7893aa1d3ebeab`: panel flotante de colores contextual, persistencia Settings, deshacer individual y compilación real de assets Windows/Android. Suite original exact HEAD: Source/UI/Android UI/Settings/Windows/Android15 test APK SUCCESS; Android14/16 debug hosted fallaron por desaparición de emulador/ADB (issue #139), no se reclasifican verdes.
+- **PR #226 [MERGED](https://github.com/michels-lab/michel-s-life/pull/226)** como `a5fc8d06efa6d08da7afff7107cd124a7d8627c8`: dos miniaturas de temas públicos Mozart K545 y Chaikovski Op39 No.1 para Focus (no grabaciones completas), diez temas, selector y preferencias canónicos. Source/UX/Android15 y audio exact HEAD SUCCESS; Android14/16 debug hosted fallaron por ADB/QEMU sin falsificar aprobación.
+- **PR #227 [OPEN / STAGING](https://github.com/michels-lab/michel-s-life/pull/227)**: prepara unificado Windows 3.0.230 / Android Direct 0.2.19 (versionCode21), nueve validaciones exact-SHA incluyendo Settings y música, Windows Setup/Portable y APK Direct producción firmada con instalación y reapertura API35. **Sin intent, tags, 13 archivos de distribución, o release nuevo** hasta checks y publisher exactos.
+- **Última estable verificada intacta:** [Windows 3.0.229 + Android Direct 0.2.18](https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.229-android-v0.2.18).
+- **Avance integral 7/15 = 47%, sin inflación**: hitos #8 y #9 requieren *entrega instalada y aceptación*, no solo merge. Samsung Doze/MP3, actualización in-place, Supabase/Calendar reales, error #168 y QA física final pendientes.
+
+---
+
 ## Operación Granada — cierre técnico de rama 20-nov: empaquetado y regeneración CI
 
 - **Causa raíz adicional de Settings:** el loader de settings-color-floating-preview.js ya existía en index.html, pero tools/replace_bundle_index.py no lo empacaba en el AppBundle y android/tools/prepare_bundle.py tampoco lo copiaba al assets WebView. PR #225 incorpora ahora ambos cambios de producción y 4 pruebas negativas/positivas reales de ZIP y Android, y quita la inyección manual del workflow de navegador para verificar ruta oficial. Último HEAD #225: 13088c21ca9c59fdcc87bb61b0900530a653a073. El workflow exact-HEAD #44830502179 estaba en cola al registrar este corte; primer navegador anterior #44829357070 pasó con la versión precedente, pero no certifica el nuevo empaquetado.
