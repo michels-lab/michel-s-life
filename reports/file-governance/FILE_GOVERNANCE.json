@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 433,
-  "classified_files_total": 429,
-  "docs_content_inspected": 102,
+  "tracked_files_total": 434,
+  "classified_files_total": 430,
+  "docs_content_inspected": 103,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
   "roles": {
@@ -13,7 +13,7 @@
     "build_script": 6,
     "config": 24,
     "database_migration": 3,
-    "document": 95,
+    "document": 96,
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
@@ -31,7 +31,7 @@
     "UNKNOWN_PURPOSE": 6
   },
   "finding_total": 12,
-  "inventory_fingerprint": "24c96df3cc6ec1933f1b6b4e8731221b35ea5a8ae8aedd1f3bf8142b9d9af6d9",
+  "inventory_fingerprint": "4bae646afbc523f8f89068b3d0714f793bd496605d0933d1c5dc9d12237d644a",
   "evidence_fingerprint": "da41cbc5456b206ba9e0c475154c8727e6b484a5ccb18b253b9e50004c91a9c5",
   "files": [
     {
@@ -1566,6 +1566,13 @@
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
       "blob": "0c97c6bbb8599209f6e23ac4eda2417ab06f82ac"
+    },
+    {
+      "path": "docs/PROJECT_PROGRESS.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "d423beb72b16edda495ca3592a431675efc1c66c"
     },
     {
       "path": "docs/RECOVERY_LOSS_TRIAGE.md",
