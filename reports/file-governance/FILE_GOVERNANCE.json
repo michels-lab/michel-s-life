@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 435,
-  "classified_files_total": 431,
+  "tracked_files_total": 439,
+  "classified_files_total": 435,
   "docs_content_inspected": 103,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -18,12 +18,12 @@
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 19,
-    "source": 131,
-    "test": 54,
+    "source": 132,
+    "test": 56,
     "text_metadata": 1,
     "unknown": 6,
     "web_ui": 3,
-    "workflow": 56
+    "workflow": 57
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
@@ -31,8 +31,8 @@
     "UNKNOWN_PURPOSE": 6
   },
   "finding_total": 12,
-  "inventory_fingerprint": "4f6844ff8b5aece9bc6c4f869f80d933b2f2eb59ebc5be1aea5661f34e2bb9f3",
-  "evidence_fingerprint": "5d6866bd6bce5b7bc70f206e11d6a50bfacc80c39d94e26e5d8c7722b11d52fe",
+  "inventory_fingerprint": "978b4ee9e425a432b3a70e37e4468b5fc4aa58df61fb4d125802afc464eaa8e8",
+  "evidence_fingerprint": "39abd460d5751ea5010bc83f5db5a53dd6d7f5f2066fd5445313b93b494e61a9",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -299,6 +299,13 @@
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
       "blob": "19aa5bb9d2bebe319ed84f557974731716742e1d"
+    },
+    {
+      "path": ".github/workflows/granada-settings-live-color.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "c4b2e9b85bd8f1db824a4d114b7fe6c2dcdb91e1"
     },
     {
       "path": ".github/workflows/granada-story-focus-provenance.yml",
@@ -1369,7 +1376,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "bed7b12b1ba32032aee37b79b181ce14a689e833"
+      "blob": "33ebd04f43765284b0a251e318d27726f735ba75"
     },
     {
       "path": "android/tools/smoke_candidate_apk_install.sh",
@@ -2020,7 +2027,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "72ce31cbd20f2b59e1c568ef5b4b4336e3c1c5ea"
+      "blob": "ee2adfd75bf8002bb343997fca529c30770dd37a"
     },
     {
       "path": "store/AppxManifest.template.xml",
@@ -2286,7 +2293,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "159d87dfb0cccfe2e4ddecad99fef2c8f666c847"
+      "blob": "520431213bd38e7fd9f2a260cf791eb5104453fb"
     },
     {
       "path": "tools/repository_file_auditor.py",
@@ -2639,6 +2646,20 @@
       "blob": "9e3618525ac17538cda41d9d386d422b0ab33557"
     },
     {
+      "path": "tools/test_settings_color_bundle.py",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "11d292d26a104fc20ba3a1f4b4d5d69f64c738f9"
+    },
+    {
+      "path": "tools/test_settings_color_preview_granada.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "37df16d8c3796527c9e32073a64b52351d61acd0"
+    },
+    {
       "path": "tools/test_signed_native_release_gate.py",
       "role": "test",
       "purpose": "code/test implementation",
@@ -2861,6 +2882,13 @@
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "82cc7ae5fd8c72ea456a2a71c472359bd726404d"
+    },
+    {
+      "path": "tools/ui_granada_settings_color_preview.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "84e781d6c212c5f53e646d6f9312002c3f0d22b4"
     },
     {
       "path": "tools/ui_granada_story_focus_matrix.mjs",
@@ -3090,20 +3118,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "24ac4b7a84a091e4",
+      "id": "56192b09dfbf0260",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "41 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-focus-audio-quickmission.yml",
+      "observation": "47 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-focus-audio-quickmission.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "8b164e858714b3c5",
+      "id": "e0fb24b2a9ea11c9",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "41 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-focus-audio-quickmission.yml",
+      "observation": "47 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-focus-audio-quickmission.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
