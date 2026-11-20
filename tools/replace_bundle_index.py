@@ -27,8 +27,12 @@ def main() -> None:
     motivation = index.with_name('motivation-immersive.js')
     immersion = index.with_name('focus-immersive.js')
     personal_alarms = index.with_name('personal-alarms.js')
-    if not bundle.exists() or not index.exists() or not motivation.is_file() or not immersion.is_file() or not personal_alarms.is_file():
-        raise SystemExit("bundle/index/shared Focus immersion missing")
+    settings_colors = index.with_name('settings-color-floating-preview.js')
+    shared = (motivation, immersion, personal_alarms, settings_colors)
+    if not bundle.exists() or not index.exists() or not all(path.is_file() for path in shared):
+        raise SystemExit("bundle/index/shared Focus or Settings source missing")
+    if '<script defer src="settings-color-floating-preview.js"></script>' not in index.read_text(encoding="utf-8"):
+        raise SystemExit("canonical index must load Settings color preview; refusing invisible release")
 
     # Keep the temporary archive beside the target bundle. On Windows,
     # os.replace()/Path.replace() cannot atomically move a file between drives
@@ -46,18 +50,22 @@ def main() -> None:
         with zipfile.ZipFile(bundle, "r") as src, zipfile.ZipFile(temp, "w", zipfile.ZIP_DEFLATED, compresslevel=6) as dst:
             for info in src.infolist():
                 name = info.filename.replace("\\", "/")
-                if name in ("index.html", "focus-immersive.js", "personal-alarms.js", "motivation-immersive.js") or name in DROP:
+                if name in ("index.html", "focus-immersive.js", "personal-alarms.js", "motivation-immersive.js", "settings-color-floating-preview.js") or name in DROP:
                     continue
                 dst.writestr(info, src.read(info.filename))
             dst.writestr("index.html", index.read_bytes())
             dst.writestr("focus-immersive.js", immersion.read_bytes())
             dst.writestr("personal-alarms.js", personal_alarms.read_bytes())
             dst.writestr("motivation-immersive.js", motivation.read_bytes())
+            dst.writestr("settings-color-floating-preview.js", settings_colors.read_bytes())
 
         with zipfile.ZipFile(temp) as check:
             names = check.namelist()
             jpg = sum(n.lower().endswith(".jpg") for n in names)
-            if "index.html" not in names or "focus-immersive.js" not in names or "personal-alarms.js" not in names or "motivation-immersive.js" not in names or jpg < 204 or check.testzip() is not None:
+            if (not {"index.html", "focus-immersive.js", "personal-alarms.js",
+                     "motivation-immersive.js", "settings-color-floating-preview.js"}.issubset(names)
+                    or names.count("settings-color-floating-preview.js") != 1
+                    or jpg < 204 or check.testzip() is not None):
                 raise SystemExit(f"rebuilt AppBundle invalid: index={'index.html' in names}, jpg={jpg}")
 
         temp.replace(bundle)
