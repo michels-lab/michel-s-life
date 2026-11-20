@@ -31,7 +31,7 @@ jobs:
           test "$(git diff --name-only HEAD^ HEAD)" = '.michelslab/release-intents/unified-v3230-a0219.txt'
           grep -q '<Version>3.0.230</Version>' src/MichelsLife/MichelsLife.csproj
           grep -q 'versionName = "0.2.19"' android/app/build.gradle.kts
-          grep -q 'versionCode = 20' android/app/build.gradle.kts
+          grep -q 'versionCode = 21' android/app/build.gradle.kts
           for n in $(seq 1 100); do
             gh api "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$GITHUB_SHA&per_page=100" > runs.json
             if jq -e --arg sha "$GITHUB_SHA" '
