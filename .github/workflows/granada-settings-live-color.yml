@@ -10,9 +10,6 @@ on:
       - 'tools/test_settings_color_bundle.py'
       - 'tools/replace_bundle_index.py'
       - 'android/tools/prepare_bundle.py'
-      - 'tools/test_settings_color_bundle.py'
-      - 'tools/replace_bundle_index.py'
-      - 'android/tools/prepare_bundle.py'
       - '.github/workflows/granada-settings-live-color.yml'
   push:
     branches: [main]
@@ -21,6 +18,9 @@ on:
       - 'src/MichelsLife/frontend/index.html'
       - 'tools/test_settings_color_preview_granada.mjs'
       - 'tools/ui_granada_settings_color_preview.mjs'
+      - 'tools/test_settings_color_bundle.py'
+      - 'tools/replace_bundle_index.py'
+      - 'android/tools/prepare_bundle.py'
       - '.github/workflows/granada-settings-live-color.yml'
   workflow_dispatch:
 
