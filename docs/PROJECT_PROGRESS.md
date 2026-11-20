@@ -1,0 +1,33 @@
+# Michel's Life — avance funcional y puertas de aceptación
+
+**Corte:** 2026-11-20 · **Alcance:** cierre funcional y aceptación de la siguiente estable unificada Windows/Android, conservando todos los datos y diseños existentes. El avance **NO** es un porcentaje de líneas de código ni certificación de un Galaxy físico.
+
+## Línea base: 47% (7/15 hitos verificados)
+
+La línea base se establece en este corte por primera vez; NO significa que el proyecto avanzó de 0 a 47% hoy. Criterio: un hito se marca verificado solo con fuente y evidencia de CI o artefacto ya publicado; hitos de dispositivos y cuentas reales no se cierran con simulaciones.
+
+| # | Hito | Estado | Evidencia/puerta pendiente |
+|---|---|---|---|
+| 1 | Windows Setup/Portable estable compilado, iniciado y verificado | VERIFICADO | v3.0.229, publisher #44478564052 |
+| 2 | Android Direct APK firmada instalada y relanzada en Android 15 emulado | VERIFICADO | v0.2.18 code20, source #44476655063 |
+| 3 | Quick Mission con captura/editor real y persistencia comprobada en pruebas | VERIFICADO | Release 3.0.228/0.2.17, PR #218 |
+| 4 | Pomodoro inmersivo Windows/Android y navegación CI sin sidebar antiguo | VERIFICADO | Release 3.0.228/0.2.17, PR #217/218 |
+| 5 | Tonos elegibles para fin de Pomodoro, silencio, preview, preferencias | VERIFICADO | PR #218 y release 3.0.228 |
+| 6 | Alarmas con seis arreglos originales y protección contra doble pitido Windows | VERIFICADO | PR #221/#223 y release 3.0.229 |
+| 7 | Restauración transaccional y seguridad de cuenta verificadas con fuentes/fixtures | VERIFICADO | PR #207; no cuenta como provider real |
+| 8 | Colores persistentes y preview Settings aceptados en app compilada | PENDIENTE | PR #225; CI/head y QA instalada aún no cerrados |
+| 9 | Mozart/Chaikovski integrados en estable y escuchados con selector real | PENDIENTE | PR #226; son fragmentos, no grabaciones completas |
+| 10 | Alarmas Samsung físico con Doze/bloqueo y MP3 personalizados | PENDIENTE | Galaxy/permiso exact-alarm |
+| 11 | Actualización firmada Android in-place preserva datos reales | PENDIENTE | Revisión antes/después sin desinstalar |
+| 12 | Sincronización Supabase de la misma cuenta Windows↔Android, conflictos y aislamiento real | PENDIENTE | Dos dispositivos, cuentas reales |
+| 13 | Google Calendar OAuth real lectura/escritura de misión en Android | PENDIENTE | Aceptación proveedor real |
+| 14 | Errores JavaScript intermitentes Story/Pomodoro eliminados, no solo pasan reintentos | PENDIENTE | Issue #168, trazabilidad script/línea |
+| 15 | Aceptación funcional/estética del propietario en Windows y Galaxy instalados | PENDIENTE | Capturas y uso físico del release candidato |
+
+## Granada 2026-11-20
+
+**Avance estimado 47% → 47% (7/15).** Se abrió el bloque de colores [PR #225](https://github.com/michels-lab/michel-s-life/pull/225): módulo de Settings con contraste, muestras Chapter/Focus/Alarm, botón deshacer, persistencia en clave v30184, pruebas Node y pruebas de navegador desktop/mobile. Se abrió el bloque de música [PR #226](https://github.com/michels-lab/michel-s-life/pull/226): dos temas clásicos basados en fragmentos de dominio público, selección persistente bajo FocusStory, pruebas de síntesis, ocho pistas A/C conservadas, credenciales de música documentadas. **Los dos PRs están abiertos, no equivalen a main ni a release; la CI exact-head sigue en marcha o en cola al registrar el corte.**
+
+**Última estable pública, sin modificación:** Windows 3.0.229 + Android Direct 0.2.18, https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.229-android-v0.2.18, 13 assets, source exact-SHA ac17aefe8b5357f36ae941920774dd652c9f4050. Sin RC ni Developer Edition. Microsoft Store y Google Play no publicados. Issues #168, #139, #171 y QA física se conservan abiertos según su evidencia.
+
+**Próximo cierre Granada:** diagnosticar CI de PR #225/#226 sin ignorar rojos; integrar solo si el HEAD está verificado, entonces preparar release estable unificado con SHA, firma y QA de ambos canales. La aceptación de Galaxy físico y cuentas reales no se sustituye por CI y debe mantenerse pendiente hasta comprobarse.
