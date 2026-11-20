@@ -1,3 +1,11 @@
+## Operación Granada — cierre técnico de rama 20-nov: empaquetado y regeneración CI
+
+- **Causa raíz adicional de Settings:** el loader de settings-color-floating-preview.js ya existía en index.html, pero tools/replace_bundle_index.py no lo empacaba en el AppBundle y android/tools/prepare_bundle.py tampoco lo copiaba al assets WebView. PR #225 incorpora ahora ambos cambios de producción y 4 pruebas negativas/positivas reales de ZIP y Android, y quita la inyección manual del workflow de navegador para verificar ruta oficial. Último HEAD #225: 13088c21ca9c59fdcc87bb61b0900530a653a073. El workflow exact-HEAD #44830502179 estaba en cola al registrar este corte; primer navegador anterior #44829357070 pasó con la versión precedente, pero no certifica el nuevo empaquetado.
+- **Regresión encontrada en PR #226:** suite real Chapter/Pomodoro/Alarmas #44829731359 detectó un test anterior que esperaba exactamente ocho soundscapes. En la misma rama se cambió su aceptación para exigir por ID las ocho originales + las dos nuevas, sin saltarse checks. Último HEAD #226: 2db26913c2af86ec2b1e173b573e177ab79ccbc5; nueva CI #44830559383 en cola. Suite del motor clásico #44829731776 pasó en HEAD previo, pero las suites del HEAD final siguen obligatorias.
+- **Integración/release:** PR #225/#226 siguen ABIERTOS. Sin merge ni release nuevo; gates Source/UI/Android/Windows + pruebas del paquete exact-SHA se comprueban por PR. Mantener 7/15 (47%) hasta probar un hito completo; no declarar QA de hardware real.
+
+---
+
 ## Operación Granada — 2026-11-20: colores Settings + música clásica, CI de origen pendiente
 
 - **Progreso integral con denominador registrado:** **7/15 hitos = 47%** en [docs/PROJECT_PROGRESS.md](PROJECT_PROGRESS.md) y [.michelslab/project-progress.json](../.michelslab/project-progress.json). Es primera línea base, no 47 puntos ganados hoy. El master Michel-Software-Standards actualizó registro estructurado, tablero y bitácora.
