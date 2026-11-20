@@ -11,6 +11,7 @@ MOBILE_SECTIONS = ROOT / "mobile-sections.js"
 FOCUS_IMMERSION = ROOT.parent / 'src/MichelsLife/frontend/focus-immersive.js'
 PERSONAL_ALARMS = ROOT.parent / 'src/MichelsLife/frontend/personal-alarms.js'
 MOTIVATION = ROOT.parent / 'src/MichelsLife/frontend/motivation-immersive.js'
+SETTINGS_COLOR_PREVIEW = ROOT.parent / 'src/MichelsLife/frontend/settings-color-floating-preview.js'
 
 def main():
     ap = argparse.ArgumentParser()
@@ -38,7 +39,10 @@ def main():
     shutil.copy2(FOCUS_IMMERSION, assets / 'focus-immersive.js')
     shutil.copy2(PERSONAL_ALARMS, assets / 'personal-alarms.js')
     shutil.copy2(MOTIVATION, assets / 'motivation-immersive.js')
+    shutil.copy2(SETTINGS_COLOR_PREVIEW, assets / 'settings-color-floating-preview.js')
     text = index.read_text(encoding="utf-8")
+    if '<script defer src="settings-color-floating-preview.js"></script>' not in text:
+        raise SystemExit("Android source missing Settings preview loader")
     marker = '<script src="android-bridge.js" data-mlv-android-bridge="v1"></script>'
     mobile_marker = '<script src="mobile-experience.js" data-mlv-android-mobile-experience="v1"></script>'
     if marker not in text:
