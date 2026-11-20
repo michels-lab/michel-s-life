@@ -23,6 +23,11 @@
   let panel, active=null, saveTimer=0;
   const editOrigin=new Map();
   const translate=(en,es)=>window.MichelsLifeI18n?.language==='es'?es:en;
+  const LABEL_ES={
+    bg:'Fondo',panel:'Panel',card:'Tarjeta',accent:'Acento principal',
+    accent2:'Acento secundario',gold:'Dorado',text:'Texto principal',
+    muted:'Texto secundario',atmosphere:'Atmósfera del cristal'
+  };
   function contrast(foreground,background){
     const luminance=hex=>{
       if(!valid(hex))return null;
@@ -97,7 +102,7 @@
     if(panel?.isConnected)return panel;
     panel=document.createElement('aside');
     panel.id='ml-granada-color-floating-preview';
-    panel.setAttribute('aria-live','polite');
+    panel.setAttribute('aria-live','off');
     panel.setAttribute('role','region');
     panel.setAttribute('aria-label','Color preview');
     panel.style.cssText='position:fixed;z-index:2147482500;width:300px;box-sizing:border-box;max-width:calc(100vw - 24px);max-height:calc(100vh - 24px);overflow:auto;background:#141a29;color:#f4f6fb;border:1px solid #58647c;border-radius:16px;box-shadow:0 18px 48px #000a;padding:14px;font:13px system-ui,sans-serif;pointer-events:auto;display:none;';
@@ -110,7 +115,11 @@
     const [key,label]=field, color=valid(input.value);if(!color)return;
     active=input;
     const p=ensure(),q=s=>p.querySelector(s),saved={...palette(),...stateColors(),[key]:color};
-    q('[data-ml-label]').textContent=translate('Live preview','Vista previa')+' · '+(translate(label,label))+' · '+color.toUpperCase();
+    q('[data-ml-label]').textContent=translate('Live preview','Vista previa')+' · '+translate(label,LABEL_ES[key]||label)+' · '+color.toUpperCase();
+    q('[data-ml-title]').textContent=translate('Your next chapter','Tu siguiente capítulo');
+    q('[data-ml-copy]').textContent=translate('Make today count.','Haz que hoy cuente.');
+    q('[data-ml-card]').textContent=translate('Today · 3 / 5 missions','Hoy · 3 / 5 misiones');
+    q('[data-ml-button]').textContent=translate('Start mission','Iniciar misión');
     q('[data-ml-hex]').textContent=translate('Applied and saved as you move the color picker.','Se aplica y guarda al mover el selector.');
     q('[data-ml-focus-title]').textContent=translate('Focus · Deep work','Pomodoro · Concentración');
     q('[data-ml-focus-copy]').textContent=translate('One step at a time','Un paso a la vez');
@@ -178,11 +187,19 @@
     if(e.target?.closest?.('#ml-granada-undo-color')){e.preventDefault?.();undoColor();return;}
     setTimeout(restore,125);
   },true);
+  function observeSettingsRebuild(){
+    if(typeof window.MutationObserver!=='function'||!document.body)return;
+    const watch=new window.MutationObserver(()=>setTimeout(restore,80));
+    watch.observe(document.body,{attributes:true,attributeFilter:['class','data-view','data-route'],childList:true});
+    const root=document.querySelector('#tab-settings');
+    if(root)watch.observe(root,{attributes:true,attributeFilter:['class','style','hidden'],childList:true,subtree:true});
+  }
   window.addEventListener('pageshow',restore);
   window.addEventListener('focus',restore);
   window.addEventListener('storage',e=>{if(!e.key||e.key===STORAGE||PALETTES.includes(e.key))restore()});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)restore()});
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',restore,{once:true});else restore();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{restore();observeSettingsRebuild()},{once:true});
+  else{restore();observeSettingsRebuild()}
   window.MLColorFloatingPreview=Object.freeze({restore,preview,colors:stateColors,contrast,undoColor,
     applyColor:(key,color)=>{if(!VARS[key]||!valid(color))return false;store(key,color);return true;}});
 })();
