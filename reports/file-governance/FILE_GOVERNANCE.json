@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 434,
-  "classified_files_total": 430,
+  "tracked_files_total": 435,
+  "classified_files_total": 431,
   "docs_content_inspected": 103,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -11,7 +11,7 @@
     "asset": 12,
     "bitacora": 3,
     "build_script": 6,
-    "config": 24,
+    "config": 25,
     "database_migration": 3,
     "document": 96,
     "encoded_source": 2,
@@ -31,8 +31,8 @@
     "UNKNOWN_PURPOSE": 6
   },
   "finding_total": 12,
-  "inventory_fingerprint": "4bae646afbc523f8f89068b3d0714f793bd496605d0933d1c5dc9d12237d644a",
-  "evidence_fingerprint": "da41cbc5456b206ba9e0c475154c8727e6b484a5ccb18b253b9e50004c91a9c5",
+  "inventory_fingerprint": "4f6844ff8b5aece9bc6c4f869f80d933b2f2eb59ebc5be1aea5661f34e2bb9f3",
+  "evidence_fingerprint": "5d6866bd6bce5b7bc70f206e11d6a50bfacc80c39d94e26e5d8c7722b11d52fe",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -523,6 +523,13 @@
       "purpose": "machine-readable configuration",
       "certainty": "rule",
       "blob": "f9b2987f4f645bc0d08a18d2a055ee3d82bb81b8"
+    },
+    {
+      "path": ".michelslab/project-progress.json",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "804521b9d8b62b91f8519b63e0e9f39e1642b38b"
     },
     {
       "path": ".michelslab/project.yml",
@@ -1530,7 +1537,7 @@
       "role": "document",
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
-      "blob": "7f966404b499090d94a58d895703850a6b3f8bbc"
+      "blob": "18b426c291c1b0288052ea7e0960540263c9643a"
     },
     {
       "path": "docs/DEVELOPER_BRANDING.md",
@@ -3083,20 +3090,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "4a4b00784c5e2e4a",
+      "id": "24ac4b7a84a091e4",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "40 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-focus-audio-quickmission.yml",
+      "observation": "41 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-focus-audio-quickmission.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "224676c4f9ec9363",
+      "id": "8b164e858714b3c5",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "40 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-focus-audio-quickmission.yml",
+      "observation": "41 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-focus-audio-quickmission.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
