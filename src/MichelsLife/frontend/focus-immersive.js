@@ -33,7 +33,27 @@
     observatory:{en:'Observatory',es:'Observatorio',group:'C',notes:[146.83,220,293.66,440],pattern:[0,1,3,2,0],beat:1.18},
     library:{en:'Midnight Library',es:'Biblioteca nocturna',group:'C',notes:[130.81,196,261.63,392],pattern:[0,2,1,0,3,1],beat:.84},
     afterglow:{en:'Afterglow',es:'Resplandor',group:'C',notes:[174.61,220,349.23,440],pattern:[2,3,1,0,2],beat:1.02},
-    silver:{en:'Silver Room',es:'Sala plateada',group:'C',notes:[196,246.94,392,493.88],pattern:[3,1,2,0,3,2],beat:.78}
+    silver:{en:'Silver Room',es:'Sala plateada',group:'C',notes:[196,246.94,392,493.88],pattern:[3,1,2,0,3,2],beat:.78},
+    // Classical miniatures: public-domain melodic excerpts, synthesized locally.
+    // These are short ambient arrangements, not full scores or recordings.
+    // Mozart K.545 opening: Mutopia 998 (CC BY-SA typesetting; composition public domain).
+    mozart_k545:{en:'Mozart · Sonata K.545 (theme excerpt)',es:'Mozart · Sonata K.545 (fragmento)',
+      group:'CL',notes:[130.81,196,261.63,329.63],beat:.62,
+      phrases:[
+        ['C5','E5','G5','B4','C5','D5','C5'],
+        ['A5','G5','C5','G5','F5','E5','F5','E5'],
+        ['A4','B4','C5','D5','E5','F5','G5','A5'],
+        ['G5','F5','E5','D5','C5','B4','A4','G4']
+      ]},
+    // Tchaikovsky Op.39/1 opening: Mutopia 2032 (public-domain typesetting).
+    tchaikovsky_op39:{en:'Tchaikovsky · Morning Prayer (theme excerpt)',es:'Chaikovski · Oración matinal (fragmento)',
+      group:'CL',notes:[98,146.83,196,246.94],beat:.73,
+      phrases:[
+        ['B4','B4','A4','C5','B4'],
+        ['A4','G4','A4','B4','B4'],
+        ['E5','A4','A4','D5','C5','F#5'],
+        ['G4','G4','E5','A4','A4','F#5','E5','F#5']
+      ]}
   };
   let effectContext=null,ambientContext=null,ambientInterval=null,ambientScene=null,ambientStep=0;
   function soundContext(){
@@ -105,18 +125,29 @@
     }
     // Each soundscape has its own original melodic motif (not eight copies
     // of the same pad), with quiet plucks above the sustained harmony.
-    scene.pattern.forEach((pitch,i)=>{
+    const noteHz=name=>{
+      const m=/^([A-G])(#?)([2-6])$/.exec(name||'');
+      if(!m)return null;
+      const semitones={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+      const midi=(Number(m[3])+1)*12+semitones[m[1]]+(m[2]?1:0);
+      return 440*Math.pow(2,(midi-69)/12);
+    };
+    const theme=scene.phrases?.[ambientStep%scene.phrases.length];
+    const melody=theme||scene.pattern;
+    melody.forEach((pitch,i)=>{
+      const frequency=theme?noteHz(pitch):notes[pitch];
+      if(!Number.isFinite(frequency)||frequency<=0)return;
       const at=start+.35+i*scene.beat;
       const osc=ctx.createOscillator(),env=ctx.createGain();
-      osc.type=ambientScene==='observatory'||ambientScene==='library'?'triangle':'sine';
-      osc.frequency.setValueAtTime(notes[pitch],at);
+      osc.type=theme?'triangle':ambientScene==='observatory'||ambientScene==='library'?'triangle':'sine';
+      osc.frequency.setValueAtTime(frequency,at);
       env.gain.setValueAtTime(.0001,at);
-      env.gain.exponentialRampToValueAtTime(.008,at+.055);
-      env.gain.exponentialRampToValueAtTime(.0001,at+.67);
+      env.gain.exponentialRampToValueAtTime(theme?.012:.008,at+.055);
+      env.gain.exponentialRampToValueAtTime(.0001,at+(theme?.55:.67));
       osc.connect(env);env.connect(ctx.destination);
-      osc.start(at);osc.stop(at+.7);
+      osc.start(at);osc.stop(at+(theme?.6:.7));
     });
-    ambientStep=(ambientStep+1)%scene.notes.length;
+    ambientStep=(ambientStep+1)%(scene.phrases?.length||scene.notes.length);
   }
   function startAmbient(){
     stopAmbient();
