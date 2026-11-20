@@ -126,8 +126,11 @@ try{
   await page.locator('.mlv-focus-sound-details summary').click();
   ok(await page.locator('[data-mlv-completion-sound] option').count()===7,
     'End-of-Pomodoro selector is not populated');
-  ok(await page.locator('[data-mlv-scene-select] option').count()===8,
-    'A+C soundscape selection is not populated');
+  const scenes=await page.locator('[data-mlv-scene-select] option').evaluateAll(options=>
+    options.map(option=>({value:option.value,label:option.textContent.trim()})));
+  ok(scenes.length===10&&['mozart_k545','tchaikovsky_op39','moonlight','celestial','orbit','aurora','observatory','library','afterglow','silver']
+    .every(id=>scenes.some(scene=>scene.value===id)),
+    'A+C and two classical soundscape selections are not populated: '+JSON.stringify(scenes));
   await page.locator('[data-mlv-completion-sound]').selectOption('glass');
   await page.locator('[data-mlv-audio="preview-completion"]').click();
   await page.locator('[data-mlv-scene-select]').selectOption('library');
