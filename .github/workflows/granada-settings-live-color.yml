@@ -7,6 +7,12 @@ on:
       - 'src/MichelsLife/frontend/index.html'
       - 'tools/test_settings_color_preview_granada.mjs'
       - 'tools/ui_granada_settings_color_preview.mjs'
+      - 'tools/test_settings_color_bundle.py'
+      - 'tools/replace_bundle_index.py'
+      - 'android/tools/prepare_bundle.py'
+      - 'tools/test_settings_color_bundle.py'
+      - 'tools/replace_bundle_index.py'
+      - 'android/tools/prepare_bundle.py'
       - '.github/workflows/granada-settings-live-color.yml'
   push:
     branches: [main]
@@ -40,6 +46,11 @@ jobs:
           node --check tools/ui_granada_settings_color_preview.mjs
       - name: Verify persistence, visual semantics, contrast and isolated undo
         run: node --test tools/test_settings_color_preview_granada.mjs
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Offline release packaging regression — real Windows ZIP and Android WebView assets
+        run: python -m unittest discover -s tools -p 'test_settings_color_bundle.py' -v
 
   settings-color-browser:
     runs-on: ubuntu-24.04
@@ -68,10 +79,6 @@ jobs:
           python tools/replace_bundle_index.py \
             --bundle artifacts/settings-color-bundle.zip \
             --index src/MichelsLife/frontend/index.html
-          python tools/inject_bundle_asset.py \
-            --bundle artifacts/settings-color-bundle.zip \
-            --source src/MichelsLife/frontend/settings-color-floating-preview.js \
-            --arcname settings-color-floating-preview.js
           python tools/inject_bundle_asset.py \
             --bundle artifacts/settings-color-bundle.zip \
             --source src/MichelsLife/frontend/i18n.js --arcname i18n.js
