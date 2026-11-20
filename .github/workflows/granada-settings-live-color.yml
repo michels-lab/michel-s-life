@@ -22,6 +22,7 @@ on:
       - 'tools/replace_bundle_index.py'
       - 'android/tools/prepare_bundle.py'
       - '.github/workflows/granada-settings-live-color.yml'
+      - '.michelslab/release-intents/unified-v3230-a0219.txt'
   workflow_dispatch:
 
 permissions:
