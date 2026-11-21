@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 439,
-  "classified_files_total": 435,
-  "docs_content_inspected": 103,
+  "tracked_files_total": 442,
+  "classified_files_total": 438,
+  "docs_content_inspected": 104,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
   "roles": {
@@ -13,17 +13,17 @@
     "build_script": 6,
     "config": 25,
     "database_migration": 3,
-    "document": 96,
+    "document": 97,
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 19,
     "source": 132,
-    "test": 56,
+    "test": 57,
     "text_metadata": 1,
     "unknown": 6,
     "web_ui": 3,
-    "workflow": 57
+    "workflow": 58
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
@@ -31,8 +31,8 @@
     "UNKNOWN_PURPOSE": 6
   },
   "finding_total": 12,
-  "inventory_fingerprint": "978b4ee9e425a432b3a70e37e4468b5fc4aa58df61fb4d125802afc464eaa8e8",
-  "evidence_fingerprint": "39abd460d5751ea5010bc83f5db5a53dd6d7f5f2066fd5445313b93b494e61a9",
+  "inventory_fingerprint": "3671bb021885b7dcfaceb6ac679d85c2b397aa0db93c5286351d9667aa447df6",
+  "evidence_fingerprint": "f0eb3649720f1606f324925523228555e344b1e7aed43da6e4c23f0e7f497441",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -229,6 +229,13 @@
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
       "blob": "4eaf25091a6301d5a950f826fb169de8e368163c"
+    },
+    {
+      "path": ".github/workflows/granada-classical-focus.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "6e23c736fd2bd7f7f42ec86eab1c1f3c89d1134c"
     },
     {
       "path": ".github/workflows/granada-daily-mission-ledger.yml",
@@ -1544,7 +1551,7 @@
       "role": "document",
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
-      "blob": "18b426c291c1b0288052ea7e0960540263c9643a"
+      "blob": "2a7add9c7ae7ea4f54c7a1c9ecd24f059a8a247f"
     },
     {
       "path": "docs/DEVELOPER_BRANDING.md",
@@ -1608,6 +1615,13 @@
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
       "blob": "129f8dcf63bed1893c18c9c22abeff91eb1c6540"
+    },
+    {
+      "path": "docs/audio/CLASSICAL_FOCUS_RIGHTS.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "870a7a5e4f385a10abfd9709079b32544886c4e7"
     },
     {
       "path": "docs/audit/2026-10-12-release-baseline-drift.md",
@@ -1992,7 +2006,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "0c56106b163ecde772261c315f35362c70157c1e"
+      "blob": "117e2a4b2e413f57f005aa8891084f7ea8bd8d9a"
     },
     {
       "path": "src/MichelsLife/frontend/i18n.js",
@@ -2006,7 +2020,7 @@
       "role": "web_ui",
       "purpose": "local HTML documentation or web interface",
       "certainty": "inferred",
-      "blob": "0bb29eb3f1ca6df166bca072a18163e53a5319a9"
+      "blob": "0230dae9e40c1ea375fa79558fa848a1c54a70b1"
     },
     {
       "path": "src/MichelsLife/frontend/motivation-immersive.js",
@@ -2499,6 +2513,13 @@
       "blob": "3034481ea3aa50dac93e30ee781a73cedf514c26"
     },
     {
+      "path": "tools/test_granada_classical_focus.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "6a697e8ba4b2d0c2df8cb4ed547b515579341d92"
+    },
+    {
       "path": "tools/test_granada_cross_provider_restore_review.mjs",
       "role": "test",
       "purpose": "code/test implementation",
@@ -2517,7 +2538,7 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "de983009f1d9872f1a83cc6f79648468501c4707"
+      "blob": "9d50c3ba739e0ecc800f66804478a9c3729c9fe0"
     },
     {
       "path": "tools/test_granada_focus_evidence_contract.mjs",
@@ -2846,7 +2867,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "bd3e076112a0f34b05a955a12d73a5c6f24bd5ea"
+      "blob": "7df7b869556e7ecc271f5c8353f2f3195db756ad"
     },
     {
       "path": "tools/ui_granada_account_boundary_crash_browser.mjs",
@@ -3118,20 +3139,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "56192b09dfbf0260",
+      "id": "c2048208feaafb37",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "47 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-focus-audio-quickmission.yml",
+      "observation": "49 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-classical-focus.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "e0fb24b2a9ea11c9",
+      "id": "65a4aef11ab70e3c",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "47 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-focus-audio-quickmission.yml",
+      "observation": "49 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-classical-focus.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
