@@ -1,86 +1,177 @@
-name: Validate actual public Michel's Life Android APK installation
+name: Validate actual public signed Michel's Life Direct APK in-place upgrade
 
 on:
   workflow_dispatch:
   pull_request:
     paths:
       - '.github/workflows/android-public-install-smoke.yml'
-      - 'android/tools/**'
+      - 'android/tools/smoke_published_apk_install.sh'
+      - 'tools/select_published_android_upgrade.py'
+      - 'tools/test_select_published_android_upgrade.py'
   push:
     branches: [main]
     paths:
       - '.github/workflows/android-public-install-smoke.yml'
+      - 'android/tools/smoke_published_apk_install.sh'
+      - 'tools/select_published_android_upgrade.py'
+      - 'tools/test_select_published_android_upgrade.py'
 
 permissions:
   contents: read
 
+env:
+  GH_TOKEN: ${{ github.token }}
+  RELEASES_REPO: michels-lab/michel-s-life-releases
+  ANDROID_CERT_PIN: 36a9f5144243d14ebade9d38559cfd7d4d9207c1edba01e6f0fbdd5f076a50fa
+
 jobs:
-  install-published-apk:
-    name: Download actual GitHub release APK, install and launch on Android emulator
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+  signed-in-place-upgrade:
+    name: Latest two real published production-signed Direct APKs on Android15
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reject historical, draft, duplicate, incomplete or missing-release fallback
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s tools -p 'test_select_published_android_upgrade.py' -v
+          bash -n android/tools/smoke_published_apk_install.sh
 
-      - name: Verify currently published Android Direct APK alongside Windows
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Resolve two adjacent publicly published Windows and signed Direct APKs
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p artifacts/public
-          gh release view v3.0.216 --repo michels-lab/michel-s-life-releases --json assets > assets.json
-          if jq -e 'any(.assets[]; .name=="MichelsLife-Android-Direct-v0.2.4.apk")' assets.json >/dev/null; then
-            version="0.2.4"; code=6
-          else
-            version="0.2.3"; code=5
-          fi
-          echo "ANDROID_PUBLIC_VERSION=$version" >> "$GITHUB_ENV"
-          gh release download v3.0.216 \
-            --repo michels-lab/michel-s-life-releases \
-            --pattern "MichelsLife-Android-Direct-v${version}.apk*" \
-            --pattern "android-v${version}-manifest.json" \
-            --dir artifacts/public
-          cd artifacts/public
-          sha256sum -c "MichelsLife-Android-Direct-v${version}.apk.sha256"
-          jq -e --arg ver "$version" --argjson code "$code" '
-            .versionName==$ver and .versionCode==$code
-            and .package=="com.michelslab.michelslife"
-            and .distribution=="production-signed"
-            and .signerCertSha256=="36a9f5144243d14ebade9d38559cfd7d4d9207c1edba01e6f0fbdd5f076a50fa"
-          ' "android-v${version}-manifest.json"
-          actual="$(sha256sum "MichelsLife-Android-Direct-v${version}.apk" | awk '{print $1}')"
-          test "$actual" = "$(jq -r .sha256 "android-v${version}-manifest.json")"
-          unzip -tq "MichelsLife-Android-Direct-v${version}.apk" >/dev/null
-          echo "Current GitHub Windows v3.0.216 + signed Android v${version}: $actual"
+          mkdir -p artifacts/public/latest artifacts/public/previous artifacts/installed
+          gh api "repos/$RELEASES_REPO/releases/latest" > artifacts/public/latest-release.json
+          gh api "repos/$RELEASES_REPO/releases?per_page=70" > artifacts/public/release-history.json
+          python3 tools/select_published_android_upgrade.py \
+            --latest artifacts/public/latest-release.json \
+            --history artifacts/public/release-history.json --env "$GITHUB_ENV"
 
-      - name: Enable emulator KVM acceleration on GitHub hosted runner
+      - name: Download EXACT official public APKs and verify certificate, SHA and code
         shell: bash
         run: |
-          if [ -e /dev/kvm ]; then
-            sudo chmod 666 /dev/kvm
-          else
-            echo "::warning::Runner has no /dev/kvm; emulator will use software acceleration"
-          fi
+          set -euo pipefail
+          for generation in LATEST PREVIOUS; do
+            tag_var="${generation}_TAG"
+            version_var="${generation}_VERSION"
+            tag="${!tag_var}"
+            version="${!version_var}"
+            if [ "$generation" = LATEST ]; then d=latest; else d=previous; fi
+            gh release download "$tag" --repo "$RELEASES_REPO" \
+              --pattern "MichelsLife-Android-Direct-v${version}.apk" \
+              --pattern "MichelsLife-Android-Direct-v${version}.apk.sha256" \
+              --pattern "android-v${version}-manifest.json" \
+              --dir "artifacts/public/$d"
+            (
+              cd "artifacts/public/$d"
+              sha256sum -c "MichelsLife-Android-Direct-v${version}.apk.sha256"
+            )
+            apk="artifacts/public/$d/MichelsLife-Android-Direct-v${version}.apk"
+            manifest="artifacts/public/$d/android-v${version}-manifest.json"
+            jq -e --arg v "$version" --arg cert "$ANDROID_CERT_PIN" '
+              .versionName==$v and (.versionCode|type=="number") and
+              .versionCode>0 and .platform=="android" and
+              .package=="com.michelslab.michelslife" and
+              .distribution=="production-signed" and .signerCertSha256==$cert and
+              (.sourceSha|test("^[a-f0-9]{40}$"))' "$manifest"
+            test "$(sha256sum "$apk" | cut -d ' ' -f1)" = "$(jq -r .sha256 "$manifest")"
+            "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$apk" \
+              > "artifacts/public/$d/apksigner.txt"
+            signer="$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' \
+              "artifacts/public/$d/apksigner.txt" | tr -d ':' | tr '[:upper:]' '[:lower:]')"
+            test "$signer" = "$ANDROID_CERT_PIN"
+            code="$(jq -er .versionCode "$manifest")"
+            "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$apk" \
+              | grep -F "name='com.michelslab.michelslife' versionCode='$code' versionName='$version'"
+            echo "${generation}_CODE=$code" >> "$GITHUB_ENV"
+          done
 
-      - name: Test clean installation and launch of EXACT public APK
+      - name: Enable actual Android emulator KVM
+        shell: bash
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
+
+      - name: First clean signed APK update with real Android15 GPU
+        id: primary
+        continue-on-error: true
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 36
+          api-level: 35
           target: google_apis
           arch: x86_64
           profile: pixel_6
-          avd-name: life-public-apk
-          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect
+          avd-name: mlv-public-signed-upgrade-primary
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu software -feature -Vulkan
           disable-animations: true
           emulator-boot-timeout: 600
           script: bash android/tools/smoke_published_apk_install.sh
 
-      - name: Keep genuine emulator install/launch output, even if test failed
+      - name: Separate unsuccessful real device attempt before retry
+        if: steps.primary.outcome != 'success'
+        shell: bash
+        run: |
+          if [ -d artifacts/installed ]; then
+            mv artifacts/installed artifacts/primary-native-failed
+          fi
+          adb kill-server || true
+          sleep 3
+          adb start-server || true
+
+      - name: Alternate GPU independent Android15 run with same signed APKs
+        id: fallback
+        if: steps.primary.outcome != 'success'
+        continue-on-error: true
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          avd-name: mlv-public-signed-upgrade-alternate
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu swiftshader -feature -Vulkan
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash android/tools/smoke_published_apk_install.sh
+
+      - name: REQUIRE real signed in-place install and three native screenshots
+        if: always()
+        env:
+          PRIMARY: ${{ steps.primary.outcome }}
+          FALLBACK: ${{ steps.fallback.outcome }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$PRIMARY" != success ] && [ "$FALLBACK" != success ]; then
+            echo "::error::Both real signed Android15 upgrade attempts failed; no browser fallback"
+            exit 1
+          fi
+          for file in before-upgrade.png after-upgrade.png after-cold-relaunch.png; do
+            test -s "artifacts/installed/$file" || {
+              echo "::error::Missing actual production-signed native $file"; exit 1;
+            }
+          done
+          cmp artifacts/installed/uid-before.txt artifacts/installed/uid-after.txt
+          cmp artifacts/installed/uid-before.txt artifacts/installed/uid-relaunch.txt
+          echo "VERIFIED_REAL_SIGNED_INPLACE_UPGRADE_API35: primary=$PRIMARY fallback=$FALLBACK"
+          echo "::notice::This does NOT certify protected WebView mission/localStorage persistence or physical Galaxy QA."
+
+      - name: Keep exact APK, certificate, before/after/relaunch and failed attempts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: MichelsLife-Android-Direct-public-install-evidence
-          path: artifacts/installed/
-          retention-days: 30
+          name: MichelsLife-public-Direct-signed-inplace-upgrade-API35
+          path: |
+            artifacts/public/latest-release.json
+            artifacts/public/release-history.json
+            artifacts/public/latest/android-v*-manifest.json
+            artifacts/public/latest/apksigner.txt
+            artifacts/public/previous/android-v*-manifest.json
+            artifacts/public/previous/apksigner.txt
+            artifacts/installed/
+            artifacts/primary-native-failed/
           if-no-files-found: warn
+          retention-days: 30
