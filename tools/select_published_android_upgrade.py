@@ -22,7 +22,7 @@ def identity(release):
     if not match:
         raise ValueError("invalid_unified_release_tag")
     windows, android = map(int, match.groups())
-    if android < 19 or windows < 230 or windows - android != 211:
+    if android < 18 or windows < 229 or windows - android != 211:
         raise ValueError("unsupported_release_version_chain")
     assets = release.get("assets")
     if not isinstance(assets, list):
@@ -46,6 +46,8 @@ def identity(release):
 
 def choose(latest, history):
     new_win, new_android, new_tag = identity(latest)
+    if new_android < 19:
+        raise ValueError("latest_must_have_prior_signed_stable")
     if not isinstance(history, list):
         raise ValueError("release_history_missing")
     matches = []
