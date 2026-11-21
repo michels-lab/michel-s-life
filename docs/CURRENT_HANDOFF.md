@@ -1,3 +1,12 @@
+## Operación Granada — distribución de próxima estable preparada, 20-nov-2026
+
+- **Publicador destino ya integrado:** [PR #20 de michels-lab/michel-s-life-releases](https://github.com/michels-lab/michel-s-life-releases/pull/20) **MERGED**, commit `da6f9d4a239642891fb4757e500d6758b9c140e9`. Contiene workflow DESTINO para Windows 3.0.230 + Android Direct 0.2.19/code21 y CI independiente de configuración: **SUCCESS** en branch HEAD, sin crear intent de publicación. Requiere nueve checks exactos de fuente (incluidos Settings y música), Windows Setup/Portable y Android producción firmada instalado/reabierto en Android15, 13 assets y hashes; no permite sobrescribir tags.
+- **Fuente de siguiente versión:** [PR #227](https://github.com/michels-lab/michel-s-life/pull/227) sigue abierta en `release/granada-v3230-android-v0219`, pruebas source exact-head en ejecución/cola. No fusionar afirmando verde sin resultados; Android14/16 debug ADB/QEMU issue #139 rojo conocido. No se han creado `.michelslab/release-intents/unified-v3230-a0219.txt` ni intent destino; no hay nueva estable o APK nueva de usuario.
+- **Producto ya integrado:** [#225](https://github.com/michels-lab/michel-s-life/pull/225) Settings y [#226](https://github.com/michels-lab/michel-s-life/pull/226) clásicos en main, pero la **última estable descargable** sigue [Windows 3.0.229 / Android Direct 0.2.18](https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.229-android-v0.2.18).
+- **Línea base global sin inflar:** 7/15=47%; falta entrega/aceptación de #8/9 y demás pruebas reales de teléfono, proveedor y #168.
+
+---
+
 ## Operación Granada — integración de código y preparación de release, 2026-11-20
 
 - **PR #225 [MERGED](https://github.com/michels-lab/michel-s-life/pull/225)** como commit fuente `a6a7e1d882d5656922e5b1986a7893aa1d3ebeab`: panel flotante de colores contextual, persistencia Settings, deshacer individual y compilación real de assets Windows/Android. Suite original exact HEAD: Source/UI/Android UI/Settings/Windows/Android15 test APK SUCCESS; Android14/16 debug hosted fallaron por desaparición de emulador/ADB (issue #139), no se reclasifican verdes.
