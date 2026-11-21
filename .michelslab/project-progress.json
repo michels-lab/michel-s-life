@@ -24,31 +24,47 @@
     "pending",
     "pending"
   ],
-  "current_phase": "PR #225/#226 merged to main; release preparation PR #227 source staging, pending exact-head CI; last stable 3.0.229/0.2.18",
+  "current_phase": "PUBLIC stable Windows 3.0.230 / Android Direct 0.2.19, 13 assets, signed Android15 native success; physical owner acceptance still open",
   "source_prs": [
     "https://github.com/michels-lab/michel-s-life/pull/225",
     "https://github.com/michels-lab/michel-s-life/pull/226",
     "https://github.com/michels-lab/michel-s-life/pull/227"
   ],
-  "latest_public_release": "v3.0.229-android-v0.2.18",
-  "latest_public_release_url": "https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.229-android-v0.2.18",
+  "latest_public_release": "v3.0.230-android-v0.2.19",
+  "latest_public_release_url": "https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.230-android-v0.2.19",
   "source_report": "https://github.com/michels-lab/michel-s-life/blob/main/docs/PROJECT_PROGRESS.md",
   "owner_acceptance": false,
-  "release_hold": true,
+  "release_hold": false,
   "last_granada": {
     "date": "2026-11-20",
     "progress_before": 47,
     "progress_after": 47,
-    "source_status": "two_merged_source_prs_one_unmerged_release_prep",
     "verified": 7,
     "total": 15,
-    "merged_shas": [
-      "a6a7e1d882d5656922e5b1986a7893aa1d3ebeab",
-      "a5fc8d06efa6d08da7afff7107cd124a7d8627c8"
-    ],
-    "release_prep_pr": "https://github.com/michels-lab/michel-s-life/pull/227",
-    "last_stable": "v3.0.229-android-v0.2.18",
-    "pending": "Release prep exact CI, signed new Windows/Android release, physical Galaxy and user QA"
+    "source_status": "three_product_prs_merged_stable_signed_release_verified",
+    "source_intent_sha": "9e3a3abc84c811fc2baf4eb64e5a50ca1ccc31cf",
+    "source_run_url": "https://github.com/michels-lab/michel-s-life/actions/runs/44842053581",
+    "publisher_intent_sha": "49f5a5ee61100d88dfb0a3c9e045ee1fc5173ea8",
+    "publisher_run_url": "https://github.com/michels-lab/michel-s-life-releases/actions/runs/44844286557",
+    "release_url": "https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.230-android-v0.2.19",
+    "asset_count": 13,
+    "signed_android15_native": "success",
+    "nine_exact_sha_gates": "success",
+    "unrelated_auditor": "failure_from_concurrent_report_git_push",
+    "acceptance_pending": [
+      "owner visual color preview installed Windows and Galaxy",
+      "owner classical music playback aesthetics",
+      "Samsung physical Doze and custom MP3",
+      "in-place data-retention upgrade",
+      "real Supabase and Google Calendar OAuth",
+      "intermittent JavaScript #168",
+      "owner final installed QA"
+    ]
   },
-  "note": "47%=7/15 is a newly established bounded milestone baseline, not a claim that 47% of code was written today."
+  "note": "47%=7/15 is a newly established bounded milestone baseline, not a claim that 47% of code was written today.",
+  "latest_public_release_source_sha": "9e3a3abc84c811fc2baf4eb64e5a50ca1ccc31cf",
+  "latest_public_release_source_run": 44842053581,
+  "latest_public_release_publisher_run": 44844286557,
+  "latest_public_release_utc": "2026-11-21T00:31:09Z",
+  "next_release_acceptance_hold": true
 }
