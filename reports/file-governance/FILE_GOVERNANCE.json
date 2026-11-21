@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 445,
-  "classified_files_total": 441,
+  "tracked_files_total": 446,
+  "classified_files_total": 442,
   "docs_content_inspected": 105,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -17,7 +17,7 @@
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
-    "release_intent": 19,
+    "release_intent": 20,
     "source": 132,
     "test": 58,
     "text_metadata": 1,
@@ -31,8 +31,8 @@
     "UNKNOWN_PURPOSE": 6
   },
   "finding_total": 12,
-  "inventory_fingerprint": "a52759889eb9bb31af5a1821a9f35eacd57ea17aaf2024be4046450094b3fa75",
-  "evidence_fingerprint": "c4713f73c9c21a03ce7fb0892c8a6a46c6973b9eee5c8f60c7987a0273a264fd",
+  "inventory_fingerprint": "6a6773f626fcf75c14230ca6d3fa1ee1023487a08ec36383888110ee86bcb0a2",
+  "evidence_fingerprint": "eee64a535041fcc6ca3ce1672390a7c6131c9f0001b00ccd239d49cac311f0f0",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -672,6 +672,13 @@
       "blob": "b594034e71fec3609a6f69e08a8182deb1604f01"
     },
     {
+      "path": ".michelslab/release-intents/unified-v3230-a0219.txt",
+      "role": "release_intent",
+      "purpose": "historical source-controlled release/candidate intent (preserve for traceability)",
+      "certainty": "rule",
+      "blob": "d61d5194a269157231420ae3227702af67bfc3fe"
+    },
+    {
       "path": ".michelslab/release-intents/windows-granada-focus-alarms-2026-11-15.txt",
       "role": "release_intent",
       "purpose": "historical source-controlled release/candidate intent (preserve for traceability)",
@@ -753,7 +760,7 @@
       "role": "index",
       "purpose": "navigation/onboarding",
       "certainty": "rule",
-      "blob": "b0f8bfa0a7cd6e583866c8fa8f7bf2dc8459ae25"
+      "blob": "6a4aa400cac8022471d4abb409423380f54bed6e"
     },
     {
       "path": "android/ANDROID_AUDIT_LOG.md",
@@ -3160,20 +3167,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "fb904e92e006fbfc",
+      "id": "95fe0e234e1d8f2d",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "51 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-classical-focus.yml",
+      "observation": "52 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-classical-focus.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "71281f5be0274231",
+      "id": "d8468aeec1016d84",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "51 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-classical-focus.yml",
+      "observation": "52 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-classical-focus.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
