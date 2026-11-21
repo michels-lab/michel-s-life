@@ -3,6 +3,7 @@
 # Clean Android15 emulator only, never the user's Galaxy. Protected release
 # build prevents inspecting private WebView/localStorage without user consent.
 set -euo pipefail
+trap 'echo "::error::Signed native upgrade aborted at script line $LINENO" >&2' ERR
 
 PKG="com.michelslab.michelslife"
 PREVIOUS_VERSION="${PREVIOUS_VERSION:?set previous official version}"
@@ -53,9 +54,20 @@ package_info(){
   timeout 20s adb shell dumpsys package "$PKG" >"$OUT/package-$label.txt"
   grep -F "versionCode=$code" "$OUT/package-$label.txt"
   grep -F "versionName=$version" "$OUT/package-$label.txt"
-  uid="$(grep -oE 'userId=[0-9]+' "$OUT/package-$label.txt" | head -1 | cut -d= -f2)"
+  # Android 15 exposes stable package UID through pm list packages -U.
+  # Some API35 dumpsys layouts no longer print userId=<number>, so a
+  # grep-only command substitution previously killed the smoke silently
+  # under set -e / pipefail, BEFORE the actual upgrade ever ran.
+  timeout 15s adb shell pm list packages -U "$PKG" >"$OUT/package-uid-$label.txt"
+  local package_line
+  package_line="$(grep -F "package:$PKG " "$OUT/package-uid-$label.txt" | head -1 || true)"
+  uid="$(printf '%s\n' "$package_line" | sed -nE 's/.*[[:space:]]uid:([0-9]+).*/\1/p')"
   if [[ ! "$uid" =~ ^[0-9]+$ ]]; then
-    echo "::error::PackageManager UID unavailable at $label"
+    uid="$(grep -oE 'userId=[0-9]+' "$OUT/package-$label.txt" | head -1 | cut -d= -f2 || true)"
+  fi
+  if [[ ! "$uid" =~ ^[0-9]+$ ]]; then
+    echo "::error::Unable to obtain exact installed $PKG UID from package manager at stage $label"
+    echo "::error::No APK upgrade accepted as proof without a real UID comparison"
     return 1
   fi
   echo "$uid" >"$OUT/uid-$label.txt"
