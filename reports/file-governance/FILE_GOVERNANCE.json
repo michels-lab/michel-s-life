@@ -31,7 +31,7 @@
     "UNKNOWN_PURPOSE": 6
   },
   "finding_total": 12,
-  "inventory_fingerprint": "6a6773f626fcf75c14230ca6d3fa1ee1023487a08ec36383888110ee86bcb0a2",
+  "inventory_fingerprint": "a058784ed9a0ca3069f24bf2c63f2f77a37f3d366935d327d567815665853a41",
   "evidence_fingerprint": "eee64a535041fcc6ca3ce1672390a7c6131c9f0001b00ccd239d49cac311f0f0",
   "files": [
     {
@@ -1607,7 +1607,7 @@
       "role": "document",
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
-      "blob": "df3301ab4be2e08e5699872667087be3de627dd7"
+      "blob": "19f2560c9695cb3548e62add463b0ad4e16a7a01"
     },
     {
       "path": "docs/RECOVERY_LOSS_TRIAGE.md",
