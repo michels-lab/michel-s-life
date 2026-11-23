@@ -1,6 +1,14 @@
 # Michel's Life — avance funcional y puertas de aceptación
 
-**Corte:** 2026-11-20 (México), publicación 2026-11-21 UTC · **Alcance:** aceptación de la estable unificada Windows/Android ya publicada, conservando todos los datos y diseños existentes. El avance **NO** es un porcentaje de líneas de código ni certificación de un Galaxy físico.
+## Publicación 23-nov 2026 — 3.0.231 / Android Direct 0.2.20
+
+**Release técnica publicada:** [Windows 3.0.231 + Android Direct 0.2.20](https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.231-android-v0.2.20), `versionCode22`, 13 assets, publicada 2026-11-23 20:13:17 UTC, certificado Android Direct de producción y checksums verificados. [Fuente #45245978185](https://github.com/michels-lab/michel-s-life/actions/runs/45245978185) SUCCESS (9/9 suites exact SHA, Windows lanzado, APK de producción Android15 instalada/reabierta). [Publicador #45256957584](https://github.com/michels-lab/michel-s-life-releases/actions/runs/45256957584) SUCCESS. Fuente `9ce4881b93e16f378f7f78c1808c897d385d67fc`; intent destino `f6b6e65df6b5c037be590d498eee2bd1c609c51f`.
+
+**Música clásica visible de verdad:** PR #230 fusionada: botones directos Mozart K.545 y Chaikovski Op.39/1 en Focus Windows/Android, sin desplegar Audio; selección guardada, reproducción/cambio/detención probados en Chromium. **Fragmentos temáticos sintetizados, NO piezas completas.** La audición/aceptación visual física del usuario del hito #9 sigue pendiente. PR #229 fusionada: actualización real Android firmada 0.2.18→0.2.19 bajo Android15 API35, instalando con `adb install -r`, mismo UID y relanzamiento; no examina los datos privados/localStorage.
+
+**Total integral: 7/15 = 47%**, no confundir release técnica completada con aceptación final. El posible problema de concurrencia del File Steward en repositorio de distribución es independiente del producto, no invalida la release; el usuario todavía necesita probar la estable instalada. Issue JavaScript #168 sigue abierto.
+
+**Corte:** 2026-11-23, última publicación 2026-11-23 20:13:17 UTC · **Alcance:** aceptación de la estable unificada Windows/Android ya publicada, conservando todos los datos y diseños existentes. El avance **NO** es un porcentaje de líneas de código ni certificación de un Galaxy físico.
 
 ## Línea base: 47% (7/15 hitos verificados)
 
@@ -8,15 +16,15 @@ La línea base se establece en este corte por primera vez; NO significa que el p
 
 | # | Hito | Estado | Evidencia/puerta pendiente |
 |---|---|---|---|
-| 1 | Windows Setup/Portable estable compilado, iniciado y verificado | VERIFICADO | v3.0.230, source #44842053581 y publisher #44844286557 |
-| 2 | Android Direct APK firmada instalada y relanzada en Android 15 emulado | VERIFICADO | v0.2.19 code21, signed-native-android15 #44842053581 SUCCESS |
+| 1 | Windows Setup/Portable estable compilado, iniciado y verificado | VERIFICADO | v3.0.231, source #45245978185 y publisher #45256957584 |
+| 2 | Android Direct APK firmada instalada y relanzada en Android 15 emulado | VERIFICADO | v0.2.20 code22, signed-native-android15 #45245978185 SUCCESS |
 | 3 | Quick Mission con captura/editor real y persistencia comprobada en pruebas | VERIFICADO | Release 3.0.228/0.2.17, PR #218 |
 | 4 | Pomodoro inmersivo Windows/Android y navegación CI sin sidebar antiguo | VERIFICADO | Release 3.0.228/0.2.17, PR #217/218 |
 | 5 | Tonos elegibles para fin de Pomodoro, silencio, preview, preferencias | VERIFICADO | PR #218 y release 3.0.228 |
 | 6 | Alarmas con seis arreglos originales y protección contra doble pitido Windows | VERIFICADO | PR #221/#223 y release 3.0.229 |
 | 7 | Restauración transaccional y seguridad de cuenta verificadas con fuentes/fixtures | VERIFICADO | PR #207; no cuenta como provider real |
-| 8 | Colores persistentes y preview Settings aceptados en app compilada | PENDIENTE | v3.0.230 publicada; CI y paquete verificados; falta confirmación visual del propietario en Windows/Galaxy |
-| 9 | Mozart/Chaikovski integrados en estable y escuchados con selector real | PENDIENTE | v3.0.230 publicada y selector probado en navegador; falta audición/aceptación de propietario, son fragmentos sintéticos |
+| 8 | Colores persistentes y preview Settings aceptados en app compilada | PENDIENTE | v3.0.231 publicada; CI y paquete verificados; falta confirmación visual del propietario en Windows/Galaxy |
+| 9 | Mozart/Chaikovski integrados en estable y escuchados con selector real | PENDIENTE | v3.0.231 publicada y botones clásicos visibles en navegador; falta audición/aceptación de propietario, son fragmentos sintéticos |
 | 10 | Alarmas Samsung físico con Doze/bloqueo y MP3 personalizados | PENDIENTE | Galaxy/permiso exact-alarm |
 | 11 | Actualización firmada Android in-place preserva datos reales | PENDIENTE | Revisión antes/después sin desinstalar |
 | 12 | Sincronización Supabase de la misma cuenta Windows↔Android, conflictos y aislamiento real | PENDIENTE | Dos dispositivos, cuentas reales |
