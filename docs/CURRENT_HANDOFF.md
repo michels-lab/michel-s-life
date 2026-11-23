@@ -1,3 +1,17 @@
+## Release pública y distribución auditada — 23-nov-2026
+
+**ÚLTIMA ESTABLE OFICIAL:** [Windows **3.0.231** + Android Direct **0.2.20** (code22)](https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.231-android-v0.2.20); publicación `2026-11-23T20:13:17Z`; `draft=false`, `prerelease=false`, **13 assets**. Fuente release-intent exacta `9ce4881b93e16f378f7f78c1808c897d385d67fc`; [source CI #45245978185](https://github.com/michels-lab/michel-s-life/actions/runs/45245978185) **SUCCESS** con **9/9 suites de mismo SHA**, Windows Setup/Portable launch y APK Direct firmada de producción instalada, onboarded y relanzada realmente en Android15 AVD (`signed-native-android15` SUCCESS). [Publisher destino #45256957584](https://github.com/michels-lab/michel-s-life-releases/actions/runs/45256957584) **SUCCESS**, certificado fijo, hashes, manifiesto y 13 assets comprobados mediante descarga antes de publicar.
+
+**Corrección de experiencia #230 YA EN ARTEFACTOS PÚBLICOS:** Focus Windows y Android muestra directamente **Mozart Sonata K.545** y **Chaikovski Oración matinal Op.39/1** en sección de música clásica, botones sin desplegar Audio; play/switch/stop y persistencia canon FocusStory probados en Playwright. **Estas dos pistas son breves arreglos temáticos sintetizados, NO obras completas ni archivos comerciales**. Se preservan ocho ambientes originales y siete tonos Pomodoro.
+
+**Actualización firmada #229:** prueba real de `adb install -r` Android Direct 0.2.18→0.2.19 [run #44860600222](https://github.com/michels-lab/michel-s-life/actions/runs/44860600222) SUCCESS, certificado/UID constante y reinicio con capturas; **NO** acredita preservación del contenido privado localStorage del usuario o Galaxy físico. La 0.2.20 actual también se instaló/onboarded/reabrió en Android15 API35 de CI, pero no se declara upgrade con datos reales.
+
+**Mantenimiento de distribución:** auditor File Steward destino #45256957609 falló históricamente por `rebase` concurrente de reportes (no falló el publisher); [PR destino #22](https://github.com/michels-lab/michel-s-life-releases/pull/22) fusionada y primer workflow real [#45262231059](https://github.com/michels-lab/michel-s-life-releases/actions/runs/45262231059) SUCCESS. Un verificador de latest seguía exigiendo erróneamente versión 3.0.217/Android0.2.5; [PR destino #23](https://github.com/michels-lab/michel-s-life-releases/pull/23) fusionada y [live #45263145707](https://github.com/michels-lab/michel-s-life-releases/actions/runs/45263145707) **SUCCESS**, validación independiente de **última** release real, 13 assets, 3 binarios descargados, firma del APK y 9 gates.
+
+**Avance real global:** 7/15 = **47%**; no subirlo sin evidencia de aceptación física del propietario en Windows/Galaxy, Doze/MP3, conservación real de datos en actualizaciones, Supabase/OAuth reales, eliminación demostrada del error JavaScript intermitente #168 y decisión estética/audio. No RC ni Developer edition; versiones anteriores se preservan. El contenido que sigue en esta bitácora es histórico, anterior a la 3.0.231.
+
+---
+
 ## Operación Granada pos-release — auditor concurrente y actualización Direct nativa, 20-nov México / 21-nov UTC
 
 - **Última estable sigue pública, intacta:** [Windows 3.0.230 + Android Direct 0.2.19](https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.230-android-v0.2.19), 13 assets, fuente/run #44842053581 y publisher #44844286557 **SUCCESS**. No se creó versión nueva, RC o Developer Edition en este corte.
