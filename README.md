@@ -81,3 +81,10 @@ Preserve the approved Themes, backgrounds, Current Chapter and layout. Automated
 Do not commit user states, private OAuth tokens, signing keystores or secrets. Supabase browser clients use a publishable key only, with per-user RLS in the backend. GitHub repository signing credentials and Play Console setup are separate from source code. The source repository is public, but redistribution and reuse rights depend on `LICENSE.txt`, not the public repository visibility.
 
 Project state and known gaps are recorded in `GIT_AUDIT_LOG.md`, `android/ANDROID_AUDIT_LOG.md` and `docs/INFRASTRUCTURE_AUDIT.md`.
+
+
+## Michel's Life stable publication — 2026-11-23
+
+Windows **3.0.231** / Android Direct **0.2.20** (`versionCode 22`) was published as stable tag [`v3.0.231-android-v0.2.20`](https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.231-android-v0.2.20). Exact source SHA: `9ce4881b93e16f378f7f78c1808c897d385d67fc`; source run [45245978185](https://github.com/michels-lab/michel-s-life/actions/runs/45245978185) completed success; destination publisher [45256957584](https://github.com/michels-lab/michel-s-life-releases/actions/runs/45256957584) completed success. `releases/latest` resolves to this tag, with 13 uploaded assets, `draft=false`, `prerelease=false`. No RC or Developer Edition was published. The previous stable release was not overwritten.
+
+**Acceptance baseline remains 7/15 (47%)** until real user acceptance on Windows and Galaxy. Mozart K545 and Tchaikovsky Op. 39 are **visible buttons playing synthesized thematic excerpts**, **not complete works**; integrating complete performances remains pending. Publication does not equal device acceptance.
