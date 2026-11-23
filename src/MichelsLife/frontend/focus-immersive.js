@@ -658,17 +658,22 @@
     q('[data-focus-action="alarms"]',screen).textContent=lang('⏰ Alarms','⏰ Alarmas');
     const audio=window.MichelsLifeFocusAudio;
     const classicalHeading=q('[data-mlv-classical-heading]',screen);
-    if(classicalHeading)classicalHeading.textContent=lang('Classical music','Música clásica');
+    const headingText=lang('Classical music','Música clásica');
+    if(classicalHeading&&classicalHeading.textContent!==headingText)
+      classicalHeading.textContent=headingText;
     const classicalNote=q('[data-mlv-classical-note]',screen);
-    if(classicalNote)classicalNote.textContent=lang(
-      'Short synthesized excerpts, not complete recordings.',
+    const noteText=lang('Short synthesized excerpts, not complete recordings.',
       'Fragmentos breves sintetizados, no grabaciones completas.');
+    if(classicalNote&&classicalNote.textContent!==noteText)
+      classicalNote.textContent=noteText;
     screen.querySelectorAll('[data-mlv-classical]').forEach(button=>{
       const id=button.dataset.mlvClassical;
       const item=audio?.classicalOptions?.().find(option=>option.id===id);
       const active=audio?.playing?.()&&audio?.playingScene?.()===id;
-      button.textContent=(active?'■ ':'▶ ')+(item?.label||id);
-      button.setAttribute('aria-pressed',String(!!active));
+      const text=(active?'■ ':'▶ ')+(item?.label||id);
+      if(button.textContent!==text)button.textContent=text;
+      if(button.getAttribute('aria-pressed')!==String(!!active))
+        button.setAttribute('aria-pressed',String(!!active));
     });
     for(const [selector,options,selected] of [
       ['[data-mlv-completion-sound]',audio?.completionOptions?.(),audio?.completionId?.()],
