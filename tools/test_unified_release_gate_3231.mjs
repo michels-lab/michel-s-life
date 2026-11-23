@@ -37,9 +37,9 @@ test('both installed platform versions and bundlers agree',()=>{
  assert.ok(bridge.includes("__MICHELSLIFE_ANDROID_BRIDGE__='0.2.20'"));
  assert.ok(cloud.includes('ANDROID_VERSION = "0.2.20"'));
  assert.ok(bump.includes('TARGET_VERSION = "3.0.231"'));
- assert.ok(bump.includes('PREVIOUS_VERSIONS = ("3.0.229"'));
+ assert.ok(bump.includes('PREVIOUS_VERSIONS = ("3.0.230"'));
  assert.ok(host.includes("APP_VERSION='3.0.231'"));
- assert.ok(host.includes("LEGACY_APP_VERSIONS=('3.0.229'"));
+ assert.ok(host.includes("LEGACY_APP_VERSIONS=('3.0.230'"));
  assert.equal((android.match(/ANDROID_VERSION:\s*'?0\.2\.20'?/g)||[]).length,4);
  assert.ok(!android.includes('ANDROID_VERSION: 0.2.18'));
 });
