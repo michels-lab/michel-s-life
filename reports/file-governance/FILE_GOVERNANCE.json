@@ -31,7 +31,7 @@
     "UNKNOWN_PURPOSE": 6
   },
   "finding_total": 12,
-  "inventory_fingerprint": "036e92a3cb111905bac85a663544dc337b9ce8db825013c3de19dbc69a344987",
+  "inventory_fingerprint": "5268febf6bd79a49a67a90dc4b4d76fbd5189f070ffe72a2f878cd2eea48a16b",
   "evidence_fingerprint": "a7d41e80c59222c164bca460f53bfdebc43b07ec5b4057c5c53a59c8c41de9f6",
   "files": [
     {
@@ -557,7 +557,7 @@
       "role": "config",
       "purpose": "machine-readable configuration",
       "certainty": "rule",
-      "blob": "b78afc4c4414f31e9a762c5740ec7486850b0806"
+      "blob": "f0145f6eea126827663eb4ec05e9369558ed704f"
     },
     {
       "path": ".michelslab/project.yml",
@@ -774,7 +774,7 @@
       "role": "index",
       "purpose": "navigation/onboarding",
       "certainty": "rule",
-      "blob": "6a4aa400cac8022471d4abb409423380f54bed6e"
+      "blob": "5e48798e33d7e39997ae2e533724244172c690c9"
     },
     {
       "path": "android/ANDROID_AUDIT_LOG.md",
@@ -1621,7 +1621,7 @@
       "role": "document",
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
-      "blob": "19f2560c9695cb3548e62add463b0ad4e16a7a01"
+      "blob": "dabbb5d57edb6306abcab808edeb8655a2cb4b06"
     },
     {
       "path": "docs/RECOVERY_LOSS_TRIAGE.md",
