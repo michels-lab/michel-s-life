@@ -157,7 +157,7 @@
       const el=q(selector,root);
       // Input labels contain child controls: mutate only the label's first
       // text node, not textContent, to preserve typed durations and focus.
-      if(selector.includes('compact label')||selector.includes('audio-grid label')){
+      if(selector.includes('compact label')||selector.includes('audio-grid label')||selector.includes('quick-completion label')){
         if(el?.firstChild?.nodeType===3){
           const value=focusText(en,es);
           if(el.firstChild.nodeValue!==value)el.firstChild.nodeValue=value;
