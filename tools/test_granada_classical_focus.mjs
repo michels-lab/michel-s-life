@@ -186,7 +186,7 @@ test('direct Focus audio controls expose 8 ambient tracks plus 2 classics and co
   assert.ok(desktop.indexOf('data-mlv-scene="moonlight"')<desktop.indexOf('<details class="mlv-focus-sound-details"'));
   assert.ok(mobile.indexOf('data-mobile-scene="moonlight"')<mobile.indexOf('<details class="mlv-android-focus-sounds"'));
   assert.ok(desktop.indexOf('data-mlv-completion-sound')<desktop.indexOf('<details class="mlv-focus-sound-details"'));
-  assert.ok(mobile.indexOf('data-mobile-focus-completion')<mobile.indexOf('<details class="mlv-android-focus-sounds"'));
+  assert.ok(mobile.indexOf('<select data-mobile-focus-completion>')<mobile.indexOf('<details class="mlv-android-focus-sounds"'));
   assert.equal((desktop.match(/data-mlv-completion-sound/g)||[]).length,3,'desktop must avoid a duplicated completion picker');
   assert.equal((mobile.match(/<select data-mobile-focus-completion>/g)||[]).length,1,'Android completion input must not be duplicated');
   assert.match(mobile,/selector\.includes\('quick-completion label'\)/,'localization must preserve nested select control');
