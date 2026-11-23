@@ -10,6 +10,8 @@
 
 **Pendientes de aceptación del propietario:** escuchar/ver en equipos físicos, Samsung Doze/bloqueo/MP3, preservación de los datos personales al actualizar, Supabase/Google reales, issue #168 y QA de apariencia. Progreso integral **7/15 = 47%**, sin aumentar artificialmente. La versión anterior **3.0.230/0.2.19** permanece disponible y no fue sobrescrita.
 
+**Desarrollo en revisión, NO incluido en la estable anterior:** [PR #232 — biblioteca ambiental visible y preescucha de Pomodoro](https://github.com/michels-lab/michel-s-life/pull/232). [Auditoría y límites de aceptación](docs/audit/2026-11-23-focus-direct-catalog.md). El avance oficial sigue 7/15; estos cambios requieren CI exacto, revisión instalada y una publicación estable posterior.
+
 ---
 
 ## Historial: release anterior — 20 de noviembre de 2026 (México) / 21 de noviembre UTC
