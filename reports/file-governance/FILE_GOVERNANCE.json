@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 448,
-  "classified_files_total": 444,
+  "tracked_files_total": 450,
+  "classified_files_total": 446,
   "docs_content_inspected": 105,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -18,8 +18,8 @@
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 20,
-    "source": 133,
-    "test": 59,
+    "source": 134,
+    "test": 60,
     "text_metadata": 1,
     "unknown": 6,
     "web_ui": 3,
@@ -31,8 +31,8 @@
     "UNKNOWN_PURPOSE": 6
   },
   "finding_total": 12,
-  "inventory_fingerprint": "cb50fec905fe696cae726a77108425a3fecc4b788dbe591ac0d305c9dcc3a3c9",
-  "evidence_fingerprint": "2d5a9858110281e7cc48bb0f1c7673e5243513943694df7409125aafedf75413",
+  "inventory_fingerprint": "a36fe1fadf8988e859f53ff4a0687f2a238a900210dfd9c4e068ea43894d797b",
+  "evidence_fingerprint": "318323cb627e9f61a08af95bea7490d7155a729ce8be8f2fcd64abfd1b3075d7",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -95,7 +95,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "96bd16876ee02f48fdf9a8864b327fd8b147b633"
+      "blob": "c0466c7e8c95d6f98f4e39e0517c7c6f33e62086"
     },
     {
       "path": ".github/workflows/android-ui-smoke.yml",
@@ -1411,7 +1411,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "c1ffa990f9edb597ccd5dfe3dd7a3de3ef4b0e7a"
+      "blob": "4c2a578cabe9fd5463dbd584164d22326ae0cf67"
     },
     {
       "path": "android/tools/validate_android_mobile_ux.py",
@@ -2345,6 +2345,13 @@
       "blob": "d6731638e75474a3b32f2a64ab74bd7b4fda3a95"
     },
     {
+      "path": "tools/select_published_android_upgrade.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "1039e269783b99ea3d3cf5290af08484c3905ee4"
+    },
+    {
       "path": "tools/spanish_copy_source_audit.mjs",
       "role": "source",
       "purpose": "code/test implementation",
@@ -2700,6 +2707,13 @@
       "purpose": "code/test implementation",
       "certainty": "rule",
       "blob": "9e3618525ac17538cda41d9d386d422b0ab33557"
+    },
+    {
+      "path": "tools/test_select_published_android_upgrade.py",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "8c5f7fcec5a3047b42364eab6b3558d1a090f6ee"
     },
     {
       "path": "tools/test_settings_color_bundle.py",
@@ -3181,20 +3195,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "6bcdac00653cd869",
+      "id": "236ba185e86dde81",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "55 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-direct-update.yml",
+      "observation": "59 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "fb574942449f2f9d",
+      "id": "08b7d6fb0f66f524",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "55 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml, .github/workflows/granada-android-direct-update.yml",
+      "observation": "59 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
