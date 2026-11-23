@@ -48,6 +48,13 @@ try{
   const mozart=card.locator(mobile?'[data-mobile-classical="mozart_k545"]':'[data-mlv-classical="mozart_k545"]');
   const tchaikovsky=card.locator(mobile?'[data-mobile-classical="tchaikovsky_op39"]':'[data-mlv-classical="tchaikovsky_op39"]');
   assert.equal(await card.isVisible(),true,'classical section must be visible by default');
+  const firstViewport=await card.evaluate(el=>{
+    const r=el.getBoundingClientRect();
+    return {top:r.top,bottom:r.bottom,height:window.innerHeight,
+      display:getComputedStyle(el).display,visibility:getComputedStyle(el).visibility};
+  });
+  assert.ok(firstViewport.top>=0 && firstViewport.top < firstViewport.height-50,
+    'classical songs must appear near top of Focus WITHOUT scrolling: '+JSON.stringify(firstViewport));
   assert.equal(await mozart.count(),1);
   assert.equal(await tchaikovsky.count(),1);
   assert.equal(await mozart.getAttribute('aria-pressed'),'false','music must not autoplay');
