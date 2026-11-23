@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 450,
-  "classified_files_total": 446,
+  "tracked_files_total": 451,
+  "classified_files_total": 447,
   "docs_content_inspected": 105,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -18,7 +18,7 @@
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 20,
-    "source": 134,
+    "source": 135,
     "test": 60,
     "text_metadata": 1,
     "unknown": 6,
@@ -31,8 +31,8 @@
     "UNKNOWN_PURPOSE": 6
   },
   "finding_total": 12,
-  "inventory_fingerprint": "a36fe1fadf8988e859f53ff4a0687f2a238a900210dfd9c4e068ea43894d797b",
-  "evidence_fingerprint": "318323cb627e9f61a08af95bea7490d7155a729ce8be8f2fcd64abfd1b3075d7",
+  "inventory_fingerprint": "b26d08c9ee366ab32323a67f23538f1741eb07613a16d7956785e0d8b8d8dc9a",
+  "evidence_fingerprint": "06a6a5b91e4c6d95e539e8d6dfccf4153952a825978b70107cfb6fa6c80df5fe",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -102,7 +102,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "c2a76dd944d79fd05041b4aecd2ea86db4cc73dc"
+      "blob": "c436e14d504576df37b5afc27a96d8588ded5a1c"
     },
     {
       "path": ".github/workflows/build-store-msix.yml",
@@ -235,7 +235,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "be2c3f9e5be6be2213677e22c09c7cc86b97472a"
+      "blob": "278379cf75d5d617832c6f4965584a7fc79a1af6"
     },
     {
       "path": ".github/workflows/granada-daily-mission-ledger.yml",
@@ -480,7 +480,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "836c30d41eb587f7392c732f68a62bec9ae81a22"
+      "blob": "85833ec67168bd8e4531bfb652a790c3c532f092"
     },
     {
       "path": ".gitignore",
@@ -1341,7 +1341,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "59cc935e3ff73b7637e7c051577b0bcefd0e4db2"
+      "blob": "9f848793a51c0b38cbea17ca0a8deb8c84c3b1b6"
     },
     {
       "path": "android/mobile-sections.js",
@@ -2027,7 +2027,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "117e2a4b2e413f57f005aa8891084f7ea8bd8d9a"
+      "blob": "c6fbe64085131778bc4b2225e541c66ce4e74777"
     },
     {
       "path": "src/MichelsLife/frontend/i18n.js",
@@ -2559,7 +2559,7 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "6a697e8ba4b2d0c2df8cb4ed547b515579341d92"
+      "blob": "3e61363fdf7b297ab5ab16bb9cf07d251b257c1e"
     },
     {
       "path": "tools/test_granada_cross_provider_restore_review.mjs",
@@ -2898,6 +2898,13 @@
       "blob": "287f00920124675ee30d86a28e8d6bb064d31993"
     },
     {
+      "path": "tools/ui_classical_focus_visible_smoke.mjs",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "0512012d7a40f107a0f7b11234452644eccb03cf"
+    },
+    {
       "path": "tools/ui_cloud_device_boundary_granada_smoke.mjs",
       "role": "source",
       "purpose": "code/test implementation",
@@ -3195,20 +3202,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "236ba185e86dde81",
+      "id": "018e4242f910cd55",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "59 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml",
+      "observation": "60 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "08b7d6fb0f66f524",
+      "id": "d44f615f37e04126",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "59 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml",
+      "observation": "60 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
