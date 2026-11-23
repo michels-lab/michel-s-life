@@ -169,17 +169,34 @@ try{
   });
   assert.ok(scene.alpha>0&&scene.alpha<0.65&&scene.backdrop==='none',
     'Android sheet obscures the selected wallpaper or blurs timer: '+JSON.stringify(scene));
+   // The completion picker moved outside the collapsed Audio drawer: check
+   // actual visible UI, ES/EN localization and canonical preference persistence.
+   const completionLabel=page.locator('.mlv-android-focus-quick-completion label');
+   const completionSelect=completionLabel.locator('select[data-mobile-focus-completion]');
+   assert.equal(await completionLabel.count(),1,'One direct completion selector is required');
+   assert.equal(await completionSelect.count(),1,'Completion select must survive localization');
+   assert.match(await completionLabel.innerText(),
+     /Sonido al terminar/,'Visible completion label must be localized in Spanish');
+   assert.equal(await completionSelect.isVisible(),true,
+     'Completion picker must be visible without opening audio');
+   assert.equal(await page.locator('[data-mobile-focus="preview-completion"]').isVisible(),true,
+     'Preview button must be visible without opening audio');
+   const originalCompletion=await completionSelect.inputValue();
+   const nextCompletion=originalCompletion==='glass'?'soft':'glass';
+   await completionSelect.selectOption(nextCompletion);
+   assert.equal(await page.evaluate(()=>window.MichelsLifeFocusAudio.completionId()),nextCompletion,
+     'Visible completion picker must write the canonical FocusStory preference');
    const audioDetails=page.locator('.mlv-android-focus-sounds');
    const audioSummary=audioDetails.locator('summary');
    assert.match(await audioSummary.innerText(),
      /Audio de enfoque/,'Spanish locale must not label audio as custom work duration');
    await audioSummary.click();
    assert.equal(await audioDetails.getAttribute('open'),'',
-     'Audio controls must become visible to a real user after expanding');
-   assert.match(await audioDetails.locator('label').first().innerText(),
-     /Sonido al terminar/,'Completion preference label must be localized when expanded');
-   assert.equal(await audioDetails.locator('select').count(),2,
-     'Android must offer both completion sound and A+C ambience controls');
+     'Advanced ambient control must become visible when expanded');
+   assert.equal(await audioDetails.locator('select[data-mobile-focus-ambience]').count(),1,
+     'Advanced music control should retain its full A+C selection');
+   assert.equal(await audioDetails.locator('select[data-mobile-focus-completion]').count(),0,
+     'No duplicate completion picker should remain inside the drawer');
    await audioSummary.click();
    await page.locator('#mlv-android-focus-sheet details:has(#mlv-android-focus-work) summary').click();
   const workInput=page.locator('#mlv-android-focus-work');
@@ -200,6 +217,11 @@ try{
   await page.waitForFunction(()=>document.querySelector('[data-mobile-focus="reset"]')?.textContent==='Reset',
     null,{timeout:12000});
   assert.equal(await page.locator('[data-mobile-focus="skip"]').textContent(),'Skip phase');
+  assert.match(await completionLabel.innerText(),/Completion sound/,
+    'Completion label must translate to English without removing the nested picker');
+  assert.equal(await completionSelect.count(),1,'English locale removed the completion select');
+  assert.equal(await completionSelect.inputValue(),nextCompletion,
+    'Locale round trip discarded canonical completion sound selection');
   assert.equal(await workInput.inputValue(),'37','Returning to English discarded typed duration');
 
   // Regression: the old sidebar Focus dock has actually been deleted. Touch
