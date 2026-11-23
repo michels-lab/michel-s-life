@@ -31,6 +31,7 @@ on:
       - '.michelslab/release-intents/unified-v3229-a0218.txt'
       - '.github/workflows/ui-smoke.yml'
       - '.michelslab/release-intents/unified-v3230-a0219.txt'
+      - '.michelslab/release-intents/unified-v3231-a0220.txt'
   workflow_dispatch:
 
 permissions:

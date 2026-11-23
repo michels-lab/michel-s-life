@@ -21,6 +21,7 @@ on:
       - 'tools/test_granada_focus_audio_quickmission.mjs'
       - '.github/workflows/granada-classical-focus.yml'
       - '.michelslab/release-intents/unified-v3230-a0219.txt'
+      - '.michelslab/release-intents/unified-v3231-a0220.txt'
   workflow_dispatch:
 
 permissions:
