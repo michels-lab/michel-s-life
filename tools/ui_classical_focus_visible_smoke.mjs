@@ -15,7 +15,8 @@ try{
     isMobile:true,hasTouch:true,deviceScaleFactor:2.625
   }:{viewport:{width:976,height:737}});
   await context.addInitScript(mode=>{
-    localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify({
+    if(!localStorage.getItem('vida_rpg_personal_progress_v2'))
+      localStorage.setItem('vida_rpg_personal_progress_v2',JSON.stringify({
       version:2,activeTab:'dashboard',xp:0,coins:0,totalCoinsEarned:0,
       settings:{characterName:'QA',onboardingRequired:false,
         onboardingCompletedAt:'2026-11-01T12:00:00Z',v30200GenericProfile:true},
