@@ -55,6 +55,7 @@
         ['G4','G4','E5','A4','A4','F#5','E5','F#5']
       ]}
   };
+  const classicalIds=['mozart_k545','tchaikovsky_op39'];
   let effectContext=null,ambientContext=null,ambientInterval=null,ambientScene=null,ambientStep=0;
   function soundContext(){
     const C=window.AudioContext||window.webkitAudioContext;
@@ -166,6 +167,14 @@
     if(old)startAmbient();
     return sceneId();
   }
+  function toggleClassical(id){
+    // Exactly one chosen scene and Web Audio context, persisted by FocusStory.
+    if(!classicalIds.includes(id))return false;
+    if(ambientContext&&ambientScene===id){stopAmbient();return true;}
+    const wasPlaying=!!ambientContext;
+    selectScene(id);
+    return wasPlaying?!!ambientContext:startAmbient();
+  }
   function textOptions(items,group=false){
     const es=window.MichelsLifeI18n?.language==='es';
     return Object.entries(items).map(([id,item])=>({id,label:(group?item.group+' · ':'')+(es?item.es:item.en)}));
@@ -173,6 +182,8 @@
   window.MichelsLifeFocusAudio={
     completionOptions:()=>textOptions(finishTones),
     sceneOptions:()=>textOptions(ambientScenes,true),
+    classicalOptions:()=>classicalIds.map(id=>({id,label:lang(ambientScenes[id].en,ambientScenes[id].es)})),
+    toggleClassical,
     completionId:finishId,sceneId,selectCompletion:id=>choice(completionKey,finishTones,id,'soft'),
     selectScene,playCompletion,unlock,startAmbient,stopAmbient,
     playing:()=>!!ambientContext,playingScene:()=>ambientScene
@@ -357,6 +368,29 @@
       #mlv-desktop-mini-focus>button:focus-visible,#mlv-desktop-focus-launcher:focus-visible{
         outline:3px solid var(--ui-accent,#88dbff);outline-offset:3px
       }
+      .mlv-focus-classical{
+        flex:0 0 auto;display:flex;flex-wrap:wrap;align-items:center;
+        justify-content:space-between;gap:8px;padding:10px 12px;
+        border:1px solid rgba(214,229,255,.25);border-radius:14px;
+        background:rgba(8,23,40,.58)
+      }
+      .mlv-focus-classical strong{
+        display:block;font:750 12px/1.4 system-ui,sans-serif;color:#e7f4ff
+      }
+      .mlv-focus-classical-actions{display:flex;gap:8px;flex-wrap:wrap}
+      .mlv-focus-classical button{
+        cursor:pointer;touch-action:manipulation;min-height:44px;
+        padding:9px 12px;color:#f3f9ff;background:rgba(255,255,255,.08);
+        border:1px solid rgba(210,231,250,.28);border-radius:10px;
+        font:700 12px/1.3 system-ui,sans-serif
+      }
+      .mlv-focus-classical button[aria-pressed="true"]{
+        background:rgba(131,226,217,.23);border-color:#9cf5df;color:#fff
+      }
+      .mlv-focus-classical button:focus-visible{
+        outline:3px solid var(--ui-accent,#88dbff);outline-offset:2px
+      }
+      .mlv-focus-classical-note{width:100%;font:500 11px/1.4 system-ui,sans-serif;color:#d0dbe5}
       .mlv-focus-sound-details,
       .mlv-focus-motivation-details{
         flex:0 0 auto!important;min-height:0!important;max-height:26vh;
@@ -450,6 +484,14 @@
           <div class="mlv-focus-actions"><button type="button" class="mlv-focus-btn" data-focus-action="alarms">⏰ Alarmas</button>
           <button type="button" class="mlv-focus-btn" data-focus-action="minimize" aria-label="Minimize Pomodoro">—</button></div>
         </header>
+        <div class="mlv-focus-classical" role="group" aria-label="Classical music">
+          <strong data-mlv-classical-heading>Música clásica · Classical music</strong>
+          <div class="mlv-focus-classical-actions">
+            <button type="button" data-mlv-classical="mozart_k545" aria-pressed="false">▶ Mozart · Sonata K.545</button>
+            <button type="button" data-mlv-classical="tchaikovsky_op39" aria-pressed="false">▶ Chaikovski · Oración matinal</button>
+          </div>
+          <span class="mlv-focus-classical-note" data-mlv-classical-note>Short synthesized excerpts, not complete recordings.</span>
+        </div>
         <div class="mlv-focus-center">
           <span class="mlv-focus-mode" id="mlv-desktop-focus-mode">FOCUS</span>
           <strong class="mlv-focus-clock" role="timer" aria-live="off" id="mlv-desktop-focus-clock">25:00</strong>
@@ -470,7 +512,7 @@
             <button type="button" class="mlv-focus-btn" data-mlv-audio="preview-completion">Preview</button>
           </div>
           <div class="mlv-focus-audio-group">
-            <label for="mlv-focus-scene-select">Ambient soundscapes · Dreamy + Cinematic
+            <label for="mlv-focus-scene-select">Music · Ambient and Classical
               <select id="mlv-focus-scene-select" data-mlv-scene-select></select>
             </label>
             <button type="button" class="mlv-focus-btn" data-mlv-audio="toggle-ambient">Play</button>
@@ -537,9 +579,9 @@
   function dispatchFocusInput(event){
     if(android())return;
     if(event.type==='keydown'&&!['Enter',' '].includes(event.key))return;
-    const t=event.target?.closest?.('#mlv-desktop-focus-launcher, #mlv-desktop-focus-immersive [data-focus-action], #mlv-desktop-focus-immersive [data-mlv-audio], #mlv-desktop-mini-focus [data-focus-action]');
+    const t=event.target?.closest?.('#mlv-desktop-focus-launcher, #mlv-desktop-focus-immersive [data-focus-action], #mlv-desktop-focus-immersive [data-mlv-audio], #mlv-desktop-focus-immersive [data-mlv-classical], #mlv-desktop-mini-focus [data-focus-action]');
     if(!t||t.disabled)return;
-    const action=t.id==='mlv-desktop-focus-launcher'?'launch':(t.dataset.mlvAudio||t.dataset.focusAction);
+    const action=t.id==='mlv-desktop-focus-launcher'?'launch':(t.dataset.mlvClassical?'classical:'+t.dataset.mlvClassical:(t.dataset.mlvAudio||t.dataset.focusAction));
     if(!action)return;
     event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
     const now=Date.now();
@@ -550,7 +592,10 @@
        lastInput.action===action&&now-lastInput.at<350)return;
     if(event.type==='keydown')lastInput={at:now,action,kind:'keydown'};
     else lastInput=null;
-    if(action==='launch')open();else handleAction(action);
+    if(action==='launch')open();
+    else if(action.startsWith('classical:')){
+      window.MichelsLifeFocusAudio?.toggleClassical?.(action.slice(10));refresh();
+    }else handleAction(action);
   }
   // Handle the completed click: hiding/mounting a dialog on pointerdown
   // makes its originating button vanish before pointerup (WebView/Chromium).
@@ -612,6 +657,19 @@
     q('[data-focus-action="reset"]',screen).textContent=lang('Reset','Reiniciar');
     q('[data-focus-action="alarms"]',screen).textContent=lang('⏰ Alarms','⏰ Alarmas');
     const audio=window.MichelsLifeFocusAudio;
+    const classicalHeading=q('[data-mlv-classical-heading]',screen);
+    if(classicalHeading)classicalHeading.textContent=lang('Classical music','Música clásica');
+    const classicalNote=q('[data-mlv-classical-note]',screen);
+    if(classicalNote)classicalNote.textContent=lang(
+      'Short synthesized excerpts, not complete recordings.',
+      'Fragmentos breves sintetizados, no grabaciones completas.');
+    screen.querySelectorAll('[data-mlv-classical]').forEach(button=>{
+      const id=button.dataset.mlvClassical;
+      const item=audio?.classicalOptions?.().find(option=>option.id===id);
+      const active=audio?.playing?.()&&audio?.playingScene?.()===id;
+      button.textContent=(active?'■ ':'▶ ')+(item?.label||id);
+      button.setAttribute('aria-pressed',String(!!active));
+    });
     for(const [selector,options,selected] of [
       ['[data-mlv-completion-sound]',audio?.completionOptions?.(),audio?.completionId?.()],
       ['[data-mlv-scene-select]',audio?.sceneOptions?.(),audio?.sceneId?.()]
@@ -631,6 +689,9 @@
     if(ambientButton)ambientButton.textContent=audio?.playing?.()?lang('Stop','Detener'):lang('Play','Reproducir');
     const previewButton=q('[data-mlv-audio="preview-completion"]',screen);
     if(previewButton)previewButton.textContent=lang('Preview','Escuchar');
+    const sceneLabel=q('[for="mlv-focus-scene-select"]',screen);
+    if(sceneLabel?.firstChild?.nodeType===3)
+      sceneLabel.firstChild.textContent=lang('Music · Ambient and Classical','Música · Ambiental y clásica')+' ';
     const completionLabel=q('[for="mlv-focus-completion-select"]',screen);
     if(completionLabel?.firstChild?.nodeType===3)
       completionLabel.firstChild.textContent=lang('Completion sound','Sonido al terminar')+' ';
