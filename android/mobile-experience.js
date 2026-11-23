@@ -136,9 +136,11 @@
       ['[data-mobile-focus="settings"]','Focus settings','Ajustes de enfoque'],
       ['[data-mobile-focus="alarms"]','⏰ Alarms','⏰ Alarmas'],
 
+       ['[data-mlv-android-classical-heading]','Classical music','Música clásica'],
+       ['[data-mlv-android-classical-note]','Short synthesized excerpts · Not full recordings','Fragmentos breves sintetizados · No son grabaciones completas'],
        ['.mlv-android-focus-sounds summary','Focus audio · Completion sound & ambience','Audio de enfoque · Sonido final y ambiente'],
        ['.mlv-android-focus-audio-grid label:first-of-type','Completion sound','Sonido al terminar'],
-       ['.mlv-android-focus-audio-grid label:nth-of-type(2)','Dreamy + Cinematic soundscapes','Ambientes soñadores y cinematográficos'],
+       ['.mlv-android-focus-audio-grid label:nth-of-type(2)','Music · Ambient and classical','Música · Ambiental y clásica'],
        ['#mlv-android-focus-sheet details:has(#mlv-android-focus-work) summary','Custom work / break duration','Duración personalizada de enfoque / descanso'],
       ['.mlv-focus-motivation-details summary','Messages & affirmations','Frases y afirmaciones'],
       ['.mlv-android-focus-compact label:first-child','Work minutes','Minutos de enfoque'],
@@ -975,6 +977,35 @@
         #mlv-android-focus-sheet .mlv-android-focus-clock{min-height:209px}
         #mlv-android-focus-sheet #mlv-android-focus-progress-ring{width:185px;height:185px}
       }
+      #mlv-android-focus-sheet .mlv-android-classical{
+        display:flex;flex-direction:column;flex:0 0 auto;gap:8px;
+        border:1px solid rgba(199,225,255,.27);border-radius:14px;
+        background:rgba(9,22,42,.68);padding:11px 12px
+      }
+      #mlv-android-focus-sheet .mlv-android-classical>strong{
+        font:800 12px/1.3 system-ui,sans-serif;color:#ecf6ff
+      }
+      #mlv-android-focus-sheet .mlv-android-classical-actions{
+        display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px
+      }
+      #mlv-android-focus-sheet .mlv-android-classical-actions>button{
+        min-width:0;min-height:48px!important;padding:10px 8px!important;
+        font:750 12px/1.3 system-ui,sans-serif!important;
+        border:1px solid rgba(208,237,255,.26)!important;
+        background:rgba(255,255,255,.065)!important;white-space:normal;
+        overflow-wrap:anywhere
+      }
+      #mlv-android-focus-sheet .mlv-android-classical-actions>button[aria-pressed="true"]{
+        border-color:#9cf5df!important;background:rgba(131,226,217,.19)!important
+      }
+      #mlv-android-focus-sheet .mlv-android-classical-note{
+        font:500 10px/1.35 system-ui,sans-serif;color:rgba(229,238,248,.8)
+      }
+      @media(max-width:350px){
+        #mlv-android-focus-sheet .mlv-android-classical-actions{
+          grid-template-columns:minmax(0,1fr)
+        }
+      }
       #mlv-android-focus-sheet .mlv-android-focus-sounds{
         border:1px solid rgba(203,236,247,.14);border-radius:14px;
         background:rgba(5,17,25,.42);padding:8px 12px
@@ -1240,7 +1271,7 @@
                 <select data-mobile-focus-completion></select>
               </label>
               <button type="button" data-mobile-focus="preview-completion">Preview</button>
-              <label>Dreamy + Cinematic soundscapes
+              <label>Music · Ambient and classical
                 <select data-mobile-focus-ambience></select>
               </label>
               <button type="button" data-mobile-focus="toggle-ambient">Play</button>
