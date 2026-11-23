@@ -5,7 +5,7 @@ No file is auto-deleted or declared unused.
 
 ## Coverage
 
-Tracked: 451; classified: 447; readable documents: 105; above read cap: 0; findings: 12.
+Tracked: 455; classified: 451; readable documents: 106; above read cap: 0; findings: 12.
 
 ## File roles
 
@@ -17,17 +17,17 @@ Tracked: 451; classified: 447; readable documents: 105; above read cap: 0; findi
 | build_script | 6 |
 | config | 25 |
 | database_migration | 3 |
-| document | 98 |
+| document | 99 |
 | encoded_source | 2 |
 | index | 4 |
 | installer_metadata | 1 |
-| release_intent | 20 |
+| release_intent | 21 |
 | source | 135 |
-| test | 60 |
+| test | 61 |
 | text_metadata | 1 |
 | unknown | 6 |
 | web_ui | 3 |
-| workflow | 59 |
+| workflow | 60 |
 
 ## Findings (human review required)
 
@@ -35,8 +35,8 @@ Tracked: 451; classified: 447; readable documents: 105; above read cap: 0; findi
 - **CONFIRMED / BROKEN_RELATIVE_LINK** docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md: Missing: docs/AGENTS.md. Next: Fix link or restore target (ID 7a232f866547f4b1)
 - **CONFIRMED / BROKEN_RELATIVE_LINK** docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md: Missing: docs/tools/ui_android_section_design_smoke.mjs. Next: Fix link or restore target (ID c9b0ed37825bd396)
 - **CONFIRMED / BROKEN_RELATIVE_LINK** docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md: Missing: docs/android/audit/2026-10-12-ui-screenshot-gallery.md. Next: Fix link or restore target (ID 55915b207228a042)
-- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** GIT_AUDIT_LOG.md: 60 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID 018e4242f910cd55)
-- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** android/ANDROID_AUDIT_LOG.md: 60 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID d44f615f37e04126)
+- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** GIT_AUDIT_LOG.md: 63 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID 14844cf58e826f8f)
+- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** android/ANDROID_AUDIT_LOG.md: 63 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID 3397537481da0fcf)
 - **REVIEW / UNKNOWN_PURPOSE** android/app/src/main/res/raw/mlv_focus_aurora.wav: No reliable purpose category from path. Next: Declare role after reviewing usage (ID 5f24662c6e85f329)
 - **REVIEW / UNKNOWN_PURPOSE** android/app/src/main/res/raw/mlv_focus_glass.wav: No reliable purpose category from path. Next: Declare role after reviewing usage (ID a3f98f17133ad740)
 - **REVIEW / UNKNOWN_PURPOSE** android/app/src/main/res/raw/mlv_focus_midnight.wav: No reliable purpose category from path. Next: Declare role after reviewing usage (ID f071b77e97a69cec)

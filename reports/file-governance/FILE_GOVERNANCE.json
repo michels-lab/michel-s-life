@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 451,
-  "classified_files_total": 447,
-  "docs_content_inspected": 105,
+  "tracked_files_total": 455,
+  "classified_files_total": 451,
+  "docs_content_inspected": 106,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
   "roles": {
@@ -13,17 +13,17 @@
     "build_script": 6,
     "config": 25,
     "database_migration": 3,
-    "document": 98,
+    "document": 99,
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
-    "release_intent": 20,
+    "release_intent": 21,
     "source": 135,
-    "test": 60,
+    "test": 61,
     "text_metadata": 1,
     "unknown": 6,
     "web_ui": 3,
-    "workflow": 59
+    "workflow": 60
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
@@ -31,8 +31,8 @@
     "UNKNOWN_PURPOSE": 6
   },
   "finding_total": 12,
-  "inventory_fingerprint": "b26d08c9ee366ab32323a67f23538f1741eb07613a16d7956785e0d8b8d8dc9a",
-  "evidence_fingerprint": "06a6a5b91e4c6d95e539e8d6dfccf4153952a825978b70107cfb6fa6c80df5fe",
+  "inventory_fingerprint": "036e92a3cb111905bac85a663544dc337b9ce8db825013c3de19dbc69a344987",
+  "evidence_fingerprint": "a7d41e80c59222c164bca460f53bfdebc43b07ec5b4057c5c53a59c8c41de9f6",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -74,7 +74,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "be269c9eeeaf79e1d1b3c27a01d3d80c4bb430dc"
+      "blob": "279f5bd48b028414e1ed81557d8d81dc139e6f1d"
     },
     {
       "path": ".github/workflows/android-direct-private-candidate-v026.yml",
@@ -102,7 +102,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "c436e14d504576df37b5afc27a96d8588ded5a1c"
+      "blob": "3f28697bb75574a9026c74c455bb31ee19409328"
     },
     {
       "path": ".github/workflows/build-store-msix.yml",
@@ -123,7 +123,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "0e8e64d4412817d48d56fd8d221976a4e97fad9c"
+      "blob": "880a79f699b008cdfb4f8cd11be31c3a6a34faed"
     },
     {
       "path": ".github/workflows/external-ui-baseline-guard.yml",
@@ -172,7 +172,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "9bfe529ad6d3b83469bcc8b312ee21bc37afd796"
+      "blob": "af53d813ab3e9e634d962cfc4646344ca09e7cb4"
     },
     {
       "path": ".github/workflows/granada-android-drawer-atomic.yml",
@@ -235,7 +235,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "278379cf75d5d617832c6f4965584a7fc79a1af6"
+      "blob": "4234eb0a9958f1d6bc97c39a67d3b03d30496bab"
     },
     {
       "path": ".github/workflows/granada-daily-mission-ledger.yml",
@@ -256,7 +256,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "b2d27798b281fc20f26c6d20f7416b696910813b"
+      "blob": "bc49d900a97f3e9dd30eeb5e2066bf900d3e9f51"
     },
     {
       "path": ".github/workflows/granada-focus-evidence.yml",
@@ -270,7 +270,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "76285b39c75eec2c80d766af19ec26e9f0d7e1a8"
+      "blob": "502a72e17f886c10965c732ec6db51e470d2233a"
     },
     {
       "path": ".github/workflows/granada-focus-lockscreen-snooze.yml",
@@ -291,7 +291,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "7e4e417d41d02f7c87586c35e33c4e7daba95def"
+      "blob": "b23e7f5218afe099d69bce2a5472ff7be43b551f"
     },
     {
       "path": ".github/workflows/granada-recovery-loss-triage.yml",
@@ -312,7 +312,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "299a4a6460f1ec043727ff7d84385e21f12c598b"
+      "blob": "907d25d0d225580aa8f933fed8aa1a95c53e05e5"
     },
     {
       "path": ".github/workflows/granada-story-focus-provenance.yml",
@@ -441,6 +441,13 @@
       "blob": "988c7d84e97144663c85051b20715ca6e2e6e7c2"
     },
     {
+      "path": ".github/workflows/release-unified-v3231-a0220.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "0c3ae6a517e36e2c60e93c134a77c9a0471adf53"
+    },
+    {
       "path": ".github/workflows/release-windows-v3222-a0211.yml",
       "role": "workflow",
       "purpose": "GitHub Actions automation",
@@ -480,7 +487,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "85833ec67168bd8e4531bfb652a790c3c532f092"
+      "blob": "be304862135839bb1d8ededab2883eb2cae48552"
     },
     {
       "path": ".gitignore",
@@ -679,6 +686,13 @@
       "blob": "d61d5194a269157231420ae3227702af67bfc3fe"
     },
     {
+      "path": ".michelslab/release-intents/unified-v3231-a0220.txt",
+      "role": "release_intent",
+      "purpose": "historical source-controlled release/candidate intent (preserve for traceability)",
+      "certainty": "rule",
+      "blob": "5120babe5e496be002294fb8c065893c2b4f93c7"
+    },
+    {
       "path": ".michelslab/release-intents/windows-granada-focus-alarms-2026-11-15.txt",
       "role": "release_intent",
       "purpose": "historical source-controlled release/candidate intent (preserve for traceability)",
@@ -809,14 +823,14 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "ab146781f3ac663503048e8fcbb67d874f9ce078"
+      "blob": "358f768d73d875cbb4c8b203df260a120cb63fa9"
     },
     {
       "path": "android/app/build.gradle.kts",
       "role": "build_script",
       "purpose": "platform build/project/installer script",
       "certainty": "inferred",
-      "blob": "1c6d82bdb4c590670424243012dd31b47b20d45c"
+      "blob": "0405764e13cdcb3085300fb66c9f989c9a851a73"
     },
     {
       "path": "android/app/src/directRelease/AndroidManifest.xml",
@@ -879,7 +893,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "d2fe42aa5f9a2df65089798c58febbedc97b6cef"
+      "blob": "00b5d669132e972241046804273329da78f40fd0"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/DirectUpdatePolicy.java",
@@ -1939,6 +1953,13 @@
       "blob": "45567074987fabb1fd5c93fffe633a2ff4a5a6e9"
     },
     {
+      "path": "docs/releases/v3.0.231.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "e09a25983d464da413f31b798093f6e81708dcb6"
+    },
+    {
       "path": "installer/MichelsLife.iss",
       "role": "build_script",
       "purpose": "platform build/project/installer script",
@@ -1992,7 +2013,7 @@
       "role": "build_script",
       "purpose": "platform build/project/installer script",
       "certainty": "inferred",
-      "blob": "0817b9dc7671c38819127e54d899f7bfb229368c"
+      "blob": "e3cddd265fb6ed8039cc254b9d4930edd9ac13b9"
     },
     {
       "path": "src/MichelsLife/Program.cs.gz.b64",
@@ -2188,7 +2209,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "df964bd6819a52c96dbad2b9f15ab899efe97bd5"
+      "blob": "67b0929e4eecc84a74a75f3ae195f6b57cd8c70d"
     },
     {
       "path": "tools/ci_publish_file_steward.py",
@@ -2314,14 +2335,14 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "a8ec74fba4450a32b52ad1092d050092f51aca4e"
+      "blob": "d5d9ade1298caadf11ee43919d8ee048cea2cea8"
     },
     {
       "path": "tools/release_smoke_test.py",
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "1b2db053309d4204d6b82293550f98b5c97ca381"
+      "blob": "5eda215a6c546aa12fce817e31220cd61d019761"
     },
     {
       "path": "tools/render_store_manifest.py",
@@ -2793,6 +2814,13 @@
       "blob": "ca393a4f1d8f52ac3368b92cb17e4febee7c7d89"
     },
     {
+      "path": "tools/test_unified_release_gate_3231.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "5cb3776a555700c29f5a81f04187c9215249ced1"
+    },
+    {
       "path": "tools/ui_android_calendar_read_smoke.mjs",
       "role": "source",
       "purpose": "code/test implementation",
@@ -3119,7 +3147,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "4e0d2efd74a3990175cfe456f694184613ff9fc0"
+      "blob": "ad494d59e428eca0b9a2525f11cc9a408b3e5e36"
     },
     {
       "path": "tools/validate_external_ui_design.py",
@@ -3133,7 +3161,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "8ce6a7853279b6079185154d2a53dd3b601cd29d"
+      "blob": "06443df7fa75b101b81dc3675a9c1eae0e281f13"
     },
     {
       "path": "tools/validate_granada_inline_scripts.mjs",
@@ -3202,20 +3230,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "018e4242f910cd55",
+      "id": "14844cf58e826f8f",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "60 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml",
+      "observation": "63 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "d44f615f37e04126",
+      "id": "3397537481da0fcf",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "60 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml",
+      "observation": "63 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
