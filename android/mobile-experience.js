@@ -1241,6 +1241,14 @@
             <button type="button" class="mlv-android-focus-close" data-mobile-focus="close" aria-label="Close Focus">×</button>
           </div>
           <div class="mlv-focus-session-strip"><span id="mlv-focus-session-meta">WORK SESSION · 25 MIN</span><span id="mlv-focus-session-state">READY</span></div>
+          <div class="mlv-android-classical" role="group" aria-label="Classical music">
+            <strong data-mlv-android-classical-heading>Música clásica</strong>
+            <div class="mlv-android-classical-actions">
+              <button type="button" data-mobile-classical="mozart_k545" aria-pressed="false">▶ Mozart · K.545</button>
+              <button type="button" data-mobile-classical="tchaikovsky_op39" aria-pressed="false">▶ Chaikovski · Oración matinal</button>
+            </div>
+            <span class="mlv-android-classical-note" data-mlv-android-classical-note>Fragmentos breves sintetizados</span>
+          </div>
           <div class="mlv-android-focus-clock">
             <div id="mlv-android-focus-progress-ring">
               <div class="mlv-android-focus-dial">
@@ -1316,9 +1324,14 @@
       const clearDurationDraft=()=>root.querySelectorAll('#mlv-android-focus-work,#mlv-android-focus-break')
         .forEach(input=>delete input.dataset.mlvFocusDirty);
       root.addEventListener('click',event=>{
-        const source=event.target.closest('[data-mobile-focus],[data-mobile-preset],#mlv-android-focus-dim');
+        const source=event.target.closest('[data-mobile-focus],[data-mobile-preset],[data-mobile-classical],#mlv-android-focus-dim');
         if(!source)return;
         if(source.id==='mlv-android-focus-dim'){close();return;}
+        const classicalId=source.dataset.mobileClassical;
+        if(classicalId){
+          window.MichelsLifeFocusAudio?.toggleClassical?.(classicalId);
+          updateFocus();return;
+        }
         const api=focusApi();
         const preset=source.dataset.mobilePreset;
         if(preset){
@@ -1559,6 +1572,13 @@
     }
     if(root.hidden)return;
     const audio=window.MichelsLifeFocusAudio;
+    root.querySelectorAll('[data-mobile-classical]').forEach(button=>{
+      const id=button.dataset.mobileClassical;
+      const option=audio?.classicalOptions?.().find(item=>item.id===id);
+      const active=audio?.playing?.()&&audio?.playingScene?.()===id;
+      button.setAttribute('aria-pressed',String(!!active));
+      writeText(button,(active?'■ ':'▶ ')+(option?.label||id));
+    });
     for(const [selector,options,selected] of [
       ['[data-mobile-focus-completion]',audio?.completionOptions?.(),audio?.completionId?.()],
       ['[data-mobile-focus-ambience]',audio?.sceneOptions?.(),audio?.sceneId?.()]
