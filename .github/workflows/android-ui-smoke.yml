@@ -11,6 +11,7 @@ on:
       - 'android/mobile-sections.js'
       - 'android/tools/prepare_bundle.py'
       - 'tools/ui_android_mobile_smoke.mjs'
+      - 'tools/ui_classical_focus_visible_smoke.mjs'
       - 'tools/ui_android_focus_alarm_lifecycle_smoke.mjs'
       - 'tools/ui_granada_transactional_restore_smoke.mjs'
       - 'tools/ui_android_quest_chain_guard_smoke.mjs'
@@ -120,6 +121,11 @@ jobs:
           export MLV_ANDROID_UI_URL=http://127.0.0.1:4174
           export MLV_ANDROID_UI_SCREENSHOT=artifacts/android-ui-smoke/android-mobile.png
           node tools/ui_android_mobile_smoke.mjs
+
+      - name: Real Android 412px touch must expose and play Mozart and Chaikovski directly in Focus
+        run: |
+          export MLV_ANDROID_UI_URL=http://127.0.0.1:4174
+          MLV_CLASSICAL_PLATFORM=android node tools/ui_classical_focus_visible_smoke.mjs
 
       - name: Real Android touch must respect Current Mission Quest Chain locks
         run: |

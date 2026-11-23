@@ -136,9 +136,11 @@
       ['[data-mobile-focus="settings"]','Focus settings','Ajustes de enfoque'],
       ['[data-mobile-focus="alarms"]','⏰ Alarms','⏰ Alarmas'],
 
+       ['[data-mlv-android-classical-heading]','Classical music','Música clásica'],
+       ['[data-mlv-android-classical-note]','Short synthesized excerpts · Not full recordings','Fragmentos breves sintetizados · No son grabaciones completas'],
        ['.mlv-android-focus-sounds summary','Focus audio · Completion sound & ambience','Audio de enfoque · Sonido final y ambiente'],
        ['.mlv-android-focus-audio-grid label:first-of-type','Completion sound','Sonido al terminar'],
-       ['.mlv-android-focus-audio-grid label:nth-of-type(2)','Dreamy + Cinematic soundscapes','Ambientes soñadores y cinematográficos'],
+       ['.mlv-android-focus-audio-grid label:nth-of-type(2)','Music · Ambient and classical','Música · Ambiental y clásica'],
        ['#mlv-android-focus-sheet details:has(#mlv-android-focus-work) summary','Custom work / break duration','Duración personalizada de enfoque / descanso'],
       ['.mlv-focus-motivation-details summary','Messages & affirmations','Frases y afirmaciones'],
       ['.mlv-android-focus-compact label:first-child','Work minutes','Minutos de enfoque'],
@@ -975,6 +977,35 @@
         #mlv-android-focus-sheet .mlv-android-focus-clock{min-height:209px}
         #mlv-android-focus-sheet #mlv-android-focus-progress-ring{width:185px;height:185px}
       }
+      #mlv-android-focus-sheet .mlv-android-classical{
+        display:flex;flex-direction:column;flex:0 0 auto;gap:8px;
+        border:1px solid rgba(199,225,255,.27);border-radius:14px;
+        background:rgba(9,22,42,.68);padding:11px 12px
+      }
+      #mlv-android-focus-sheet .mlv-android-classical>strong{
+        font:800 12px/1.3 system-ui,sans-serif;color:#ecf6ff
+      }
+      #mlv-android-focus-sheet .mlv-android-classical-actions{
+        display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px
+      }
+      #mlv-android-focus-sheet .mlv-android-classical-actions>button{
+        min-width:0;min-height:48px!important;padding:10px 8px!important;
+        font:750 12px/1.3 system-ui,sans-serif!important;
+        border:1px solid rgba(208,237,255,.26)!important;
+        background:rgba(255,255,255,.065)!important;white-space:normal;
+        overflow-wrap:anywhere
+      }
+      #mlv-android-focus-sheet .mlv-android-classical-actions>button[aria-pressed="true"]{
+        border-color:#9cf5df!important;background:rgba(131,226,217,.19)!important
+      }
+      #mlv-android-focus-sheet .mlv-android-classical-note{
+        font:500 10px/1.35 system-ui,sans-serif;color:rgba(229,238,248,.8)
+      }
+      @media(max-width:350px){
+        #mlv-android-focus-sheet .mlv-android-classical-actions{
+          grid-template-columns:minmax(0,1fr)
+        }
+      }
       #mlv-android-focus-sheet .mlv-android-focus-sounds{
         border:1px solid rgba(203,236,247,.14);border-radius:14px;
         background:rgba(5,17,25,.42);padding:8px 12px
@@ -1210,6 +1241,14 @@
             <button type="button" class="mlv-android-focus-close" data-mobile-focus="close" aria-label="Close Focus">×</button>
           </div>
           <div class="mlv-focus-session-strip"><span id="mlv-focus-session-meta">WORK SESSION · 25 MIN</span><span id="mlv-focus-session-state">READY</span></div>
+          <div class="mlv-android-classical" role="group" aria-label="Classical music">
+            <strong data-mlv-android-classical-heading>Música clásica</strong>
+            <div class="mlv-android-classical-actions">
+              <button type="button" data-mobile-classical="mozart_k545" aria-pressed="false">▶ Mozart · K.545</button>
+              <button type="button" data-mobile-classical="tchaikovsky_op39" aria-pressed="false">▶ Chaikovski · Oración matinal</button>
+            </div>
+            <span class="mlv-android-classical-note" data-mlv-android-classical-note>Fragmentos breves sintetizados</span>
+          </div>
           <div class="mlv-android-focus-clock">
             <div id="mlv-android-focus-progress-ring">
               <div class="mlv-android-focus-dial">
@@ -1240,7 +1279,7 @@
                 <select data-mobile-focus-completion></select>
               </label>
               <button type="button" data-mobile-focus="preview-completion">Preview</button>
-              <label>Dreamy + Cinematic soundscapes
+              <label>Music · Ambient and classical
                 <select data-mobile-focus-ambience></select>
               </label>
               <button type="button" data-mobile-focus="toggle-ambient">Play</button>
@@ -1285,9 +1324,14 @@
       const clearDurationDraft=()=>root.querySelectorAll('#mlv-android-focus-work,#mlv-android-focus-break')
         .forEach(input=>delete input.dataset.mlvFocusDirty);
       root.addEventListener('click',event=>{
-        const source=event.target.closest('[data-mobile-focus],[data-mobile-preset],#mlv-android-focus-dim');
+        const source=event.target.closest('[data-mobile-focus],[data-mobile-preset],[data-mobile-classical],#mlv-android-focus-dim');
         if(!source)return;
         if(source.id==='mlv-android-focus-dim'){close();return;}
+        const classicalId=source.dataset.mobileClassical;
+        if(classicalId){
+          window.MichelsLifeFocusAudio?.toggleClassical?.(classicalId);
+          updateFocus();return;
+        }
         const api=focusApi();
         const preset=source.dataset.mobilePreset;
         if(preset){
@@ -1528,6 +1572,13 @@
     }
     if(root.hidden)return;
     const audio=window.MichelsLifeFocusAudio;
+    root.querySelectorAll('[data-mobile-classical]').forEach(button=>{
+      const id=button.dataset.mobileClassical;
+      const option=audio?.classicalOptions?.().find(item=>item.id===id);
+      const active=audio?.playing?.()&&audio?.playingScene?.()===id;
+      button.setAttribute('aria-pressed',String(!!active));
+      writeText(button,(active?'■ ':'▶ ')+(option?.label||id));
+    });
     for(const [selector,options,selected] of [
       ['[data-mobile-focus-completion]',audio?.completionOptions?.(),audio?.completionId?.()],
       ['[data-mobile-focus-ambience]',audio?.sceneOptions?.(),audio?.sceneId?.()]

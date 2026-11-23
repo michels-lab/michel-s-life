@@ -6,6 +6,8 @@ on:
       - 'src/MichelsLife/frontend/focus-immersive.js'
       - 'src/MichelsLife/frontend/index.html'
       - 'tools/test_granada_classical_focus.mjs'
+      - 'tools/ui_classical_focus_visible_smoke.mjs'
+      - 'android/mobile-experience.js'
       - 'tools/test_granada_focus_audio_quickmission.mjs'
       - '.github/workflows/granada-classical-focus.yml'
   push:
@@ -14,6 +16,8 @@ on:
       - 'src/MichelsLife/frontend/focus-immersive.js'
       - 'src/MichelsLife/frontend/index.html'
       - 'tools/test_granada_classical_focus.mjs'
+      - 'tools/ui_classical_focus_visible_smoke.mjs'
+      - 'android/mobile-experience.js'
       - 'tools/test_granada_focus_audio_quickmission.mjs'
       - '.github/workflows/granada-classical-focus.yml'
       - '.michelslab/release-intents/unified-v3230-a0219.txt'
@@ -35,6 +39,8 @@ jobs:
         run: |
           node --check src/MichelsLife/frontend/focus-immersive.js
           node --check tools/test_granada_classical_focus.mjs
+          node --check tools/ui_classical_focus_visible_smoke.mjs
+          node --check android/mobile-experience.js
           node --check tools/test_granada_focus_audio_quickmission.mjs
       - name: Run existing Quick Mission/Pomodoro audio controls
         run: node --test tools/test_granada_focus_audio_quickmission.mjs

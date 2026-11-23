@@ -105,3 +105,47 @@ test('Spanish composer names are localized, and original composition categories 
   assert.match(focusSource,/These are short ambient arrangements, not full scores or recordings/);
   assert.doesNotMatch(focusSource,/https?:\/\/.*\.mp3/);
 });
+
+test('visible classical cards toggle one canonical audio scene and never autoplay or duplicate intervals',()=>{
+  const f=harness();
+  assert.equal(f.api.playing(),false);
+  assert.equal(f.api.toggleClassical('bad-id'),false,'unknown sound must not be accepted');
+  assert.equal(f.api.playing(),false);
+  assert.equal(f.api.classicalOptions().length,2);
+  assert.equal(f.api.toggleClassical('mozart_k545'),true);
+  assert.equal(f.api.playingScene(),'mozart_k545');
+  assert.equal(f.api.playing(),true);
+  assert.equal(f.api.sceneId(),'mozart_k545');
+  assert.equal(f.timers.size,1);
+  assert.equal(f.api.toggleClassical('tchaikovsky_op39'),true);
+  assert.equal(f.api.playingScene(),'tchaikovsky_op39');
+  assert.equal(f.api.sceneId(),'tchaikovsky_op39');
+  assert.equal(f.timers.size,1,'switching classical composers must not leak scheduler timers');
+  assert.equal(f.api.toggleClassical('tchaikovsky_op39'),true);
+  assert.equal(f.api.playing(),false,'pressing playing composer stops ambient');
+  assert.equal(f.timers.size,0);
+  assert.equal(f.api.sceneId(),'tchaikovsky_op39','stopping must retain selected composer in canonical preferences');
+  const es=harness(f.persisted);
+  es.api.selectScene('mozart_k545');
+  es.api.stopAmbient();
+  assert.equal(es.api.sceneId(),'mozart_k545');
+});
+
+test('both actual Focus surfaces expose explicit classical music controls OUTSIDE collapsed audio drawers',()=>{
+  const android=readFileSync('android/mobile-experience.js','utf8');
+  for(const id of classical){
+    assert.match(focusSource,new RegExp('data-mlv-classical="'+id+'"'));
+    assert.match(android,new RegExp('data-mobile-classical="'+id+'"'));
+  }
+  assert.match(focusSource,/data-mlv-classical-heading/);
+  assert.match(android,/data-mlv-android-classical-heading/);
+  assert.ok(focusSource.indexOf('data-mlv-classical-heading')<focusSource.indexOf('<details class="mlv-focus-sound-details"'),
+    'desktop should show music without opening audio details');
+  assert.ok(android.indexOf('data-mlv-android-classical-heading')<android.indexOf('<details class="mlv-android-focus-sounds"'),
+    'Android should show music without opening audio details');
+  assert.match(focusSource,/\[data-mlv-classical\]/);
+  assert.match(android,/\[data-mobile-classical\]/);
+  assert.match(android,/audio\?\.classicalOptions\?\.\(\)/);
+  assert.match(focusSource,/audio\?\.classicalOptions\?\.\(\)/);
+  assert.doesNotMatch(focusSource,/localStorage\.setItem\(/,'no second audio persistence store');
+});
