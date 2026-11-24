@@ -111,7 +111,7 @@ for(const width of [320,360,412])for(const language of ['en','es']){
        const direct=p.tagName==='SCRIPT'?p:p.closest?.('script');
        if(direct&&ids.has(direct.id))return direct;
        // A parent innerHTML/replaceChildren could drop a SCRIPT subtree.
-       if(p.nodeType===1&&p.querySelector){
+       if(['BODY','HTML','HEAD'].includes(p.tagName)&&p.querySelector){
          for(const id of ids){
            const child=p.querySelector('[id="'+id+'"]');
            if(child?.tagName==='SCRIPT')return child;
