@@ -77,6 +77,24 @@ try{
     await preview[mobile?'tap':'click']();
     await page.waitForFunction(()=>window.MichelsLifeFocusAudio.previewingCompletion()===null);
   }
+  // A real timer expiry, not a preview callback: shorten an already running
+  // synthetic QA session's canonical deadline and observe its actual finish.
+  await page.evaluate(()=>{
+    const engine=window.FocusStoryV30162,audio=window.MichelsLifeFocusAudio;
+    engine.applyPreset('qa',1,1);
+    const original=audio.playCompletion;
+    window.__qaCompletionCalls=[];
+    audio.playCompletion=function(preview=false){
+      const ok=original.call(audio,preview);
+      window.__qaCompletionCalls.push({preview,id:audio.completionId(),ok});
+      return ok;
+    };
+    engine.startFocus();
+    engine.focusState().deadlineAt=Date.now()+1600;
+  });
+  await page.waitForFunction(()=>window.__qaCompletionCalls?.some(x=>!x.preview&&x.id==='tchaikovsky_op39'&&x.ok),null,{timeout:12000});
+  assert.equal(await page.evaluate(()=>window.FocusStoryV30162.focusState().mode),'break');
+  await page.evaluate(()=>window.MichelsLifeFocusAudio.stopClassical());
   const scenes=await page.evaluate(()=>window.MichelsLifeFocusAudio.sceneOptions().map(x=>x.id));
   assert.equal(scenes.length,8);assert.ok(!scenes.includes('mozart_k545'));
   await page.reload({waitUntil:'domcontentloaded',timeout:60000});
