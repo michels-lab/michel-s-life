@@ -279,7 +279,7 @@ test('new original soundscapes contain evolving harmonies, resonant melody and s
   assert.ok(alarms.includes(hook),'canonical sound runtime hook found');
   const source=alarms.replace(hook,
     'window.__testAlarmRender={renderAlarmSoundscape,ALARM_SCENES};'+hook);
-  const window={},document={readyState:'loading',addEventListener(){}};
+  const window={},document={readyState:'loading',documentElement:{dataset:{}},addEventListener(){}};
   vm.runInNewContext(source,{window,document,console,Float32Array,Math},{timeout:1000});
   const {renderAlarmSoundscape,ALARM_SCENES}=window.__testAlarmRender;
   const hashes=new Set();
@@ -327,7 +327,7 @@ test('Mozart and Tchaikovsky alarm presets share selectable offline Windows + na
   assert.ok(alarms.includes('const phrase=score.phrases?.[bar]'));
   assert.ok(alarms.includes('phrase.map((note,step)'));
   assert.ok(native.includes('val phrase = score.phrases?.get(bar)'));
-  assert.ok(native.includes('val hz = if (phrase != null) pitch(phrase[step])'));
+  assert.ok(native.includes('phrase != null -> pitch(phrase[step])'));
   assert.ok(alarms.includes('const duration=preview?12:ALARM_SECONDS'));
   assert.ok(native.includes('Uri.fromFile(file)'));
   assert.ok(native.includes('preset-v3-$selected.wav'));
