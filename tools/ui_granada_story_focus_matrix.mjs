@@ -15,6 +15,11 @@ if(inventory.mode!=='canonical_generated_android_html'||
    inventory.scriptCount<100||inventory.parseFailureCount!==0)
   throw Error('canonical_inline_js_audit_missing_or_failed');
 const staticInline=new Map(inventory.scripts.filter(x=>x.syntax==='valid').map(x=>[x.digest,x]));
+const invariantScriptIds=[
+  'v251-weekly-real-fix-script','v3021-dashboard-real-category-filter',
+  'v3130-presets-only-settings-script','v217-premium-edit-unified-script'
+];
+const canonicalById=new Map(inventory.scripts.map(x=>[x.id,x]));
 // Canonical generated Android HTML is the exact material parsed in the browser.
 // Compare failed runtime sources by structure ONLY (never log source/user data).
 const canonicalHtml=await readFile('artifacts/android-story-bundle/index.html','utf8');
@@ -134,6 +139,32 @@ for(const width of [320,360,412])for(const language of ['en','es']){
    await page.waitForFunction(()=>!!window.__mlvAndroidFastRoute &&
      !!document.getElementById('mlv-android-bottom-nav') &&
      !!document.getElementById('mlv-android-menu-button'),null,{timeout:60000});
+   // A page may look correct yet have source text rewritten by legacy
+   // translation walkers. Verify DOM script bytes AND SHA before navigation,
+   // after Settings rerenders, after reload and after chapter submission.
+   // No script source or private page text leaves this synthetic browser.
+   async function assertInlineIntegrity(stage){
+     const observed=await page.evaluate(async ids=>{
+       const out=[];
+       for(const id of ids){
+         const el=document.getElementById(id);
+         if(!el){out.push({id,missing:true});continue;}
+         const bytes=new TextEncoder().encode(el.textContent||'');
+         const hash=await crypto.subtle.digest('SHA-256',bytes);
+         const digest=Array.from(new Uint8Array(hash))
+           .map(x=>x.toString(16).padStart(2,'0')).join('');
+         out.push({id,bytes:bytes.length,digest});
+       }
+       return out;
+     },invariantScriptIds);
+     const mismatches=observed.filter(x=>{
+       const original=canonicalById.get(x.id);
+       return !original||x.missing||x.bytes!==original.bytes||x.digest!==original.digest;
+     });
+     ok(mismatches.length===0,'inline_script_source_divergence_'+stage+'_'+
+       mismatches.map(x=>x.id).join('_'));
+   }
+   await assertInlineIntegrity('initial');
    let nav=page.locator('#mlv-android-bottom-nav');
    async function storyRoute(){
      // Story is now a primary mobile destination. The legacy drawer can be
@@ -183,6 +214,7 @@ for(const width of [320,360,412])for(const language of ['en','es']){
    phase='settings';
    await nav.locator('[data-mobile-tab="settings"]').tap({timeout:16000});
    await page.waitForSelector('#tab-settings.active .v30171-settings-shell',{state:'visible',timeout:16000});
+   await assertInlineIntegrity('settings');
    phase='focus';
    const focusButton=nav.locator('[data-mobile-tab="focus"]');
    ok(await focusButton.count()===1 && await focusButton.isVisible(),'pomodoro_hidden');
@@ -210,6 +242,7 @@ for(const width of [320,360,412])for(const language of ['en','es']){
    await page.waitForFunction(()=>window.__mlvStoryFocusClearance?.installed===true&&
      !!window.FocusStoryV30162?.focusState&&
      !!document.getElementById('mlv-android-bottom-nav'),null,{timeout:60000});
+   await assertInlineIntegrity('relaunch');
    const persisted=await page.evaluate(()=>({status:window.FocusStoryV30162?.focusState?.().status,
      deadline:window.FocusStoryV30162?.focusState?.().deadlineAt}));
    ok(persisted.status==='running'&&persisted.deadline===before.deadline,
@@ -251,6 +284,7 @@ for(const width of [320,360,412])for(const language of ['en','es']){
    // running Focus still present, using only synthetic QA data.
    if(width===412)await page.screenshot({path:output+'/'+name+'-chapter-saved.png'});
    phase='final';
+   await assertInlineIntegrity('chapter');
    ok(errors.length===0,'unexpected_javascript_pageerror');
    passed=true;
    console.log('PASS Android Story/Focus touch '+name);
