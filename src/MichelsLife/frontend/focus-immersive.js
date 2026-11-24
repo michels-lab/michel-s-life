@@ -189,7 +189,7 @@
     classicalOptions:()=>classicalIds.map(id=>({id,label:lang(finishTones[id].en,finishTones[id].es)})),
     toggleClassical,toggleScene,
     completionId:finishId,sceneId,selectCompletion:id=>{stopClassical();return choice(completionKey,finishTones,id,'soft');},
-    selectScene,playCompletion,stopClassical,previewingCompletion:()=>previewingId,unlock,startAmbient,stopAmbient,
+    selectScene,playCompletion,stopClassical,previewingCompletion:()=>previewingId,recordingPlayback:()=>classicalSource?{paused:classicalSource.paused,currentTime:classicalSource.currentTime,duration:classicalSource.duration,src:classicalSource.src}:null,unlock,startAmbient,stopAmbient,
     playing:()=>!!ambientContext,playingScene:()=>ambientScene
   };
   window.addEventListener?.('pagehide',()=>{stopAmbient();stopClassical();});

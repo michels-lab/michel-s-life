@@ -72,6 +72,7 @@ try{
     await completion.selectOption(id);
     await preview[mobile?'tap':'click']();
     await page.waitForFunction(id=>window.MichelsLifeFocusAudio.previewingCompletion()===id,id,{timeout:10000});
+    await page.waitForFunction(()=>{const x=window.MichelsLifeFocusAudio.recordingPlayback();return x&&!x.paused&&x.currentTime>.1&&x.duration>110;},null,{timeout:15000});
     assert.equal(await page.evaluate(()=>window.MichelsLifeFocusAudio.playing()),false,'classical must not start ambient');
     assert.equal(await page.evaluate(()=>window.FocusStoryV30162.focusState().v30165CompletionSound),id);
     await preview[mobile?'tap':'click']();
@@ -93,6 +94,7 @@ try{
     engine.focusState().deadlineAt=Date.now()+1600;
   });
   await page.waitForFunction(()=>window.__qaCompletionCalls?.some(x=>!x.preview&&x.id==='tchaikovsky_op39'&&x.ok),null,{timeout:12000});
+  await page.waitForFunction(()=>{const x=window.MichelsLifeFocusAudio.recordingPlayback();return x&&!x.paused&&x.currentTime>.1&&x.duration>110;},null,{timeout:15000});
   assert.equal(await page.evaluate(()=>window.FocusStoryV30162.focusState().mode),'break');
   await page.evaluate(()=>window.MichelsLifeFocusAudio.stopClassical());
   const scenes=await page.evaluate(()=>window.MichelsLifeFocusAudio.sceneOptions().map(x=>x.id));

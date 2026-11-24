@@ -15,6 +15,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - name: Install FFmpeg decoder and encoder
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - name: Download the actual licensed performances
         run: python3 tools/import_classical_recordings.py
       - uses: actions/upload-artifact@v4

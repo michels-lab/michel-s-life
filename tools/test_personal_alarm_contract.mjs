@@ -312,27 +312,16 @@ test('new original soundscapes contain evolving harmonies, resonant melody and s
   assert.equal(hashes.size,6,'all six themes require their own composition');
 });
 
-test('Mozart and Tchaikovsky alarm presets share selectable offline Windows + native Android IDs',()=>{
-  const ids=['mozart_k545','tchaikovsky_op39'];
-  for(const id of ids){
-    assert.ok(alarms.includes("'"+id+"'"),'JS alarm selector missing '+id);
-    assert.ok(alarms.includes(id+':{roots:'),'JS score missing '+id);
-    assert.ok(native.includes('"'+id+'" -> SoundScene'),'Android score missing '+id);
-    assert.ok(native.includes('"'+id+'"'),'Android sound URI missing '+id);
-  }
-  for(const note of ['C5','E5','G5','B4','A4','F#5']){
-    assert.ok(alarms.includes("'"+note+"'"),'Windows note '+note);
-    assert.ok(native.includes('"'+note+'"'),'Android note '+note);
-  }
-  assert.ok(alarms.includes('const phrase=score.phrases?.[bar]'));
-  assert.ok(alarms.includes('phrase.map((note,step)'));
-  assert.ok(native.includes('val phrase = score.phrases?.get(bar)'));
-  assert.ok(native.includes('phrase != null -> pitch(phrase[step])'));
-  assert.ok(alarms.includes('const duration=preview?12:ALARM_SECONDS'));
-  assert.ok(native.includes('Uri.fromFile(file)'));
-  assert.ok(native.includes('preset-v3-$selected.wav'));
+test('Mozart and Tchaikovsky alarms use the bundled human performances on both platforms',()=>{
+ for(const id of ['mozart_k545','tchaikovsky_op39']){
+  assert.ok(alarms.includes("'"+id+"'"));
+  assert.ok(native.includes('R.raw.mlv_focus_'+id));
+  assert.ok(readFileSync('android/app/src/main/res/raw/mlv_focus_'+id+'.mp3').length>500000);
+  assert.ok(!alarms.includes(id+':{roots:'));
+ }
+ assert.ok(alarms.includes("new Audio('assets/audio/classical/'+id+'.mp3')"));
+ assert.ok(native.includes('if (recorded != 0) return Uri.parse'));
 });
-
 test('all ten original Focus motifs are selectable and survive daily alarm reloads',()=>{
   const ids=[
     'focus_moonlight','focus_celestial','focus_orbit','focus_aurora',
@@ -353,8 +342,7 @@ test('all ten original Focus motifs are selectable and survive daily alarm reloa
   window.MichelsLifeAlarms.read();
   assert.deepEqual(Array.from(window.MichelsLifeAlarms.records(),x=>x.sound),ids);
   for(const id of ids){
-    assert.ok(alarms.includes(id+':{roots:'),'WebAudio score missing '+id);
-    assert.ok(native.includes('"'+id+'" -> SoundScene'),'native score missing '+id);
+    if(id.startsWith('focus_')){assert.ok(alarms.includes(id+':{roots:'),'WebAudio score missing '+id);assert.ok(native.includes('"'+id+'" -> SoundScene'),'native score missing '+id);}else assert.ok(native.includes('R.raw.mlv_focus_'+id));
     assert.ok(native.includes('"'+id+'"'),'native selection missing '+id);
   }
   assert.ok(alarms.includes('score.ambientNotes[degree]'));
