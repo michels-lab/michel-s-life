@@ -179,7 +179,7 @@ internal object NativePersonalAlarms {
             val file = File(dir, name)
             return if (file.isFile && file.length() > 128L) Uri.fromFile(file) else defaultSound()
         }
-        if (selected in setOf("classic","soft","digital","gentle","pulse","radar")) {
+        if (selected in setOf("classic","soft","digital","gentle","pulse","radar","mozart_k545","tchaikovsky_op39")) {
             return try {
                 dir.mkdirs()
                 val file = File(dir, "preset-v3-$selected.wav")
@@ -213,7 +213,8 @@ internal object NativePersonalAlarms {
      * The actual selection IDs and all native alarm scheduling stay intact. */
     private data class SoundScene(
         val roots: DoubleArray, val minor: Boolean, val pattern: IntArray,
-        val offsets: DoubleArray, val timbre: String, val drift: Double, val accent: Double
+        val offsets: DoubleArray, val timbre: String, val drift: Double, val accent: Double,
+        val phrases: Array<Array<String>>? = null
     )
     private val presetRenderLock = Any()
 
@@ -230,6 +231,20 @@ internal object NativePersonalAlarms {
             intArrayOf(2,3,4,1,3),doubleArrayOf(.32,1.14,2.66,4.12,5.09),"bell",.23,.83)
         "radar" -> SoundScene(doubleArrayOf(82.41,110.00,98.00,82.41),true,
             intArrayOf(3,2,4,1),doubleArrayOf(.22,1.65,3.31,4.82),"shimmer",.45,.77)
+        "mozart_k545" -> SoundScene(doubleArrayOf(130.81,174.61,146.83,130.81),false,
+            intArrayOf(),doubleArrayOf(),"glass",.12,.86,
+            arrayOf(
+                arrayOf("C5","E5","G5","B4","C5","D5","C5"),
+                arrayOf("A5","G5","C5","G5","F5","E5","F5","E5"),
+                arrayOf("A4","B4","C5","D5","E5","F5","G5","A5"),
+                arrayOf("G5","F5","E5","D5","C5","B4","A4","G4")))
+        "tchaikovsky_op39" -> SoundScene(doubleArrayOf(98.00,87.31,110.00,98.00),true,
+            intArrayOf(),doubleArrayOf(),"bell",.08,.80,
+            arrayOf(
+                arrayOf("B4","B4","A4","C5","B4"),
+                arrayOf("A4","G4","A4","B4","B4"),
+                arrayOf("E5","A4","A4","D5","C5","F#5"),
+                arrayOf("G4","G4","E5","A4","A4","F#5","E5","F#5")))
         else -> scene("gentle")
     }
 
@@ -290,6 +305,15 @@ internal object NativePersonalAlarms {
 
         val pans = doubleArrayOf(-.48,.26,.58,-.34,.41,-.58,.18)
         val pads = doubleArrayOf(-.56,.41,-.24,.62)
+        val semitones = mapOf('C' to 0,'D' to 2,'E' to 4,'F' to 5,
+            'G' to 7,'A' to 9,'B' to 11)
+        fun pitch(note: String): Double {
+            if (note.length !in 2..3) return 0.0
+            val base = semitones[note[0]] ?: return 0.0
+            val octave = note.last().toString().toIntOrNull() ?: return 0.0
+            val midi = 12 * (octave + 1) + base + if (note.contains('#')) 1 else 0
+            return 440.0 * Math.pow(2.0,(midi-69)/12.0)
+        }
         for (bar in 0..3) {
             val start = bar * 6.0
             val root = score.roots[bar]
@@ -299,9 +323,11 @@ internal object NativePersonalAlarms {
             voice(start,5.96,root*.5,.060,"sub",-.05)
             voice(start+.65,4.65,root*3.01,.020,"swell",
                 if (bar%2==1) .55 else -.55)
-            for (step in score.pattern.indices) {
-                val t = start+score.offsets[step]
-                val hz = root*2*chord[score.pattern[step]]
+            val phrase = score.phrases?.get(bar)
+            val melodyCount = phrase?.size ?: score.pattern.size
+            for (step in 0 until melodyCount) {
+                val t = if (phrase != null) start+.18+step*5.34/phrase.size else start+score.offsets[step]
+                val hz = if (phrase != null) pitch(phrase[step]) else root*2*chord[score.pattern[step]]
                 val gain = (.10+.028*(if (step%3==0) 1 else 0))*score.accent*
                     (if (bar==3) 1.08 else 1.0)
                 val pan = pans[step%pans.size]

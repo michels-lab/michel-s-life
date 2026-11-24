@@ -311,3 +311,24 @@ test('new original soundscapes contain evolving harmonies, resonant melody and s
   }
   assert.equal(hashes.size,6,'all six themes require their own composition');
 });
+
+test('Mozart and Tchaikovsky alarm presets share selectable offline Windows + native Android IDs',()=>{
+  const ids=['mozart_k545','tchaikovsky_op39'];
+  for(const id of ids){
+    assert.ok(alarms.includes("'"+id+"'"),'JS alarm selector missing '+id);
+    assert.ok(alarms.includes(id+':{roots:'),'JS score missing '+id);
+    assert.ok(native.includes('"'+id+'" -> SoundScene'),'Android score missing '+id);
+    assert.ok(native.includes('"'+id+'"'),'Android sound URI missing '+id);
+  }
+  for(const note of ['C5','E5','G5','B4','A4','F#5']){
+    assert.ok(alarms.includes("'"+note+"'"),'Windows note '+note);
+    assert.ok(native.includes('"'+note+'"'),'Android note '+note);
+  }
+  assert.ok(alarms.includes('const phrase=score.phrases?.[bar]'));
+  assert.ok(alarms.includes('phrase.map((note,step)'));
+  assert.ok(native.includes('val phrase = score.phrases?.get(bar)'));
+  assert.ok(native.includes('val hz = if (phrase != null) pitch(phrase[step])'));
+  assert.ok(alarms.includes('const duration=preview?12:ALARM_SECONDS'));
+  assert.ok(native.includes('Uri.fromFile(file)'));
+  assert.ok(native.includes('preset-v3-$selected.wav'));
+});

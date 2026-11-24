@@ -11,10 +11,12 @@ const tr=(en,es)=>window.MichelsLifeI18n?.language==='es'?es:en;
 const hhmm=x=>/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(x);
 const validDate=x=>/^\d{4}-\d{2}-\d{2}$/.test(x)&&!Number.isNaN(new Date(x+'T12:00:00').getTime());
 const days=['Su','Mo','Tu','We','Th','Fr','Sa'];
-const SOUNDS=['system','classic','soft','digital','gentle','pulse','radar','custom'];
+const SOUNDS=['system','classic','soft','digital','gentle','pulse','radar','mozart_k545','tchaikovsky_op39','custom'];
 const SOUND_NAMES={system:['System default','Sistema'],classic:['Velvet Dawn · cinematic bells','Alba de terciopelo · campanas'],
  soft:['Glass Garden · dream chimes','Jardín de cristal · campanillas'],digital:['Neon Orbit · ambient synth','Órbita neón · sintetizador'],gentle:['First Light · gentle sunrise','Primera luz · amanecer'],
- pulse:['Inner Pulse · warm heartbeat','Pulso interior · latido cálido'],radar:['Celestial Tide · atmospheric','Marea celeste · atmosférico'],custom:['My MP3 / audio','Mi MP3 / audio']};
+ pulse:['Inner Pulse · warm heartbeat','Pulso interior · latido cálido'],radar:['Celestial Tide · atmospheric','Marea celeste · atmosférico'],
+ mozart_k545:['Mozart · Sonata K.545 · classical alarm','Mozart · Sonata K.545 · alarma clásica'],
+ tchaikovsky_op39:['Tchaikovsky · Morning Prayer Op.39/1','Chaikovski · Oración matinal Op.39/1'],custom:['My MP3 / audio','Mi MP3 / audio']};
 const soundName=id=>tr(...(SOUND_NAMES[id]||SOUND_NAMES.system));
 let customAudio=null,previewAudio=null,customAudioUrl=null,previewAudioUrl=null;
 let previewGeneration=0;
@@ -84,8 +86,31 @@ const ALARM_SCENES={
  pulse:{roots:[110.00,87.31,98.00,110.00],minor:true,
   pattern:[2,3,4,1,3],offsets:[.32,1.14,2.66,4.12,5.09],timbre:'bell',drift:.23,accent:.83},
  radar:{roots:[82.41,110.00,98.00,82.41],minor:true,
-  pattern:[3,2,4,1],offsets:[.22,1.65,3.31,4.82],timbre:'shimmer',drift:.45,accent:.77}
+  pattern:[3,2,4,1],offsets:[.22,1.65,3.31,4.82],timbre:'shimmer',drift:.45,accent:.77},
+ // Public-domain excerpts now have standalone 24-second alarm arrangements
+ // on both platforms, even when the Android WebView is not running.
+ mozart_k545:{roots:[130.81,174.61,146.83,130.81],minor:false,
+  pattern:[],offsets:[],timbre:'glass',drift:.12,accent:.86,
+  phrases:[
+   ['C5','E5','G5','B4','C5','D5','C5'],
+   ['A5','G5','C5','G5','F5','E5','F5','E5'],
+   ['A4','B4','C5','D5','E5','F5','G5','A5'],
+   ['G5','F5','E5','D5','C5','B4','A4','G4']]},
+ tchaikovsky_op39:{roots:[98.00,87.31,110.00,98.00],minor:true,
+  pattern:[],offsets:[],timbre:'bell',drift:.08,accent:.80,
+  phrases:[
+   ['B4','B4','A4','C5','B4'],
+   ['A4','G4','A4','B4','B4'],
+   ['E5','A4','A4','D5','C5','F#5'],
+   ['G4','G4','E5','A4','A4','F#5','E5','F#5']]}
 };
+const SEMITONES={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+function frequency(note){
+ const match=/^([A-G])(#?)([0-8])$/.exec(note);
+ if(!match)return 0;
+ const midi=12*(Number(match[3])+1)+SEMITONES[match[1]]+(match[2]?1:0);
+ return 440*Math.pow(2,(midi-69)/12);
+}
 const soundBufferCache=new Map();
 let livePresetContext=null,previewPresetContext=null;
 function renderAlarmSoundscape(id){
@@ -124,9 +149,13 @@ function renderAlarmSoundscape(id){
      'pad',[-.56,.41,-.24,.62][degree]);
   voice(start,5.96,root*.5,.060,'sub',-.05);
   voice(start+.65,4.65,root*3.01,.020,'swell',bar%2?.55:-.55);
-  for(let step=0;step<score.pattern.length;step++){
-   // Original tune changes harmony every six seconds, then resolves in bar 4.
-   const t=start+score.offsets[step],hz=root*2*chord[score.pattern[step]];
+  const phrase=score.phrases?.[bar];
+  const melody=phrase
+   ? phrase.map((note,step)=>[start+.18+step*5.34/phrase.length,frequency(note)])
+   : score.pattern.map((degree,step)=>[start+score.offsets[step],root*2*chord[degree]]);
+  for(let step=0;step<melody.length;step++){
+   // Classical phrases use the same spatial echoes and evolving pad as original presets.
+   const [t,hz]=melody[step];
    const gain=(.10+.028*(step%3===0))*score.accent*(bar===3?1.08:1);
    const pan=[-.48,.26,.58,-.34,.41,-.58,.18][step%7];
    voice(t,2.12,hz,gain,score.timbre,pan);
