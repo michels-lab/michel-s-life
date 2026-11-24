@@ -69,3 +69,12 @@ test('all normal Android candidate native lanes still require actual same-run AP
  }
  assert.match(android,/name: MichelsLife-Android-TEST-v\$\{\{ env\.ANDROID_VERSION \}\}/);
 });
+
+
+test('release validators cannot silently keep the previous build version',()=>{
+ for(const path of ['tools/validate_generated_index.py','tools/validate_brand_identity.py']){
+   const actual=read(path);
+   assert.ok(actual.includes('3.0.232'),path+' must check version of THIS source release');
+   assert.ok(!actual.includes('3.0.231'),path+' still validates previous release, rather than this one');
+ }
+});
