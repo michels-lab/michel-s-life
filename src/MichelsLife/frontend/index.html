@@ -21124,9 +21124,11 @@ body.ml-theme-ui [data-v3065-day-final="off"]{
     }catch(e){}
   }
 
+  function isDayTextControl(target){
+    return !!(target && /^(?:v133TextColor|v133MutedTextColor|v30168MainText|v30168SecondaryText|.*DayText.*)$/.test(target.id||''));
+  }
   function isPickerActive(){
-    const a=document.activeElement;
-    return !!(a && /DayText/.test(a.id||''));
+    return isDayTextControl(document.activeElement);
   }
 
   function isOnChip(el){
@@ -21284,7 +21286,7 @@ body.ml-theme-ui [data-v3065-day-final="off"]{
 
   document.addEventListener('input',ev=>{
     const t=ev.target;
-    if(t && /DayText/.test(t.id||'')){
+    if(isDayTextControl(t)){
       persistDayTextFromVisibleInputs();
       applyDayTextForever();
       setTimeout(applyDayTextForever,80);
@@ -21294,12 +21296,19 @@ body.ml-theme-ui [data-v3065-day-final="off"]{
 
   document.addEventListener('change',ev=>{
     const t=ev.target;
-    if(t && /DayText/.test(t.id||'')){
+    if(isDayTextControl(t)){
       persistDayTextFromVisibleInputs();
       applyDayTextForever();
       setTimeout(applyDayTextForever,80);
       setTimeout(applyDayTextForever,220);
     }
+  },true);
+
+  // Settings changes now come through one canonical palette owner. The
+  // bridge emits this after the active/muted aliases have been synchronized;
+  // keep weekday repaint ownership HERE rather than creating a second engine.
+  document.addEventListener('mlv:theme-text-changed',()=>{
+    applyDayTextForever();
   },true);
 
   document.addEventListener('click',ev=>{
