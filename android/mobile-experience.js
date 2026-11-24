@@ -142,7 +142,7 @@
        ['.mlv-android-focus-quick-completion label','Completion sound','Sonido al terminar'],
        ['[data-mobile-focus="preview-completion"]','▶ Listen','▶ Escuchar'],
        ['[data-mobile-ambient-heading]','Ambient music · 8 tracks','Música ambiental · 8 pistas'],
-       ['.mlv-android-focus-audio-grid label:first-of-type','Music · Ambient and classical','Música · Ambiental y clásica'],
+       ['.mlv-android-focus-audio-grid label:first-of-type','Background music','Música de ambiente'],
        ['#mlv-android-focus-sheet details:has(#mlv-android-focus-work) summary','Custom work / break duration','Duración personalizada de enfoque / descanso'],
       ['.mlv-focus-motivation-details summary','Messages & affirmations','Frases y afirmaciones'],
       ['.mlv-android-focus-compact label:first-child','Work minutes','Minutos de enfoque'],
@@ -1297,7 +1297,7 @@
           <details class="mlv-android-focus-sounds">
             <summary>Focus audio · Completion sound & ambience</summary>
             <div class="mlv-android-focus-audio-grid">
-              <label>Music · Ambient and classical
+              <label>Background music
                 <select data-mobile-focus-ambience></select>
               </label>
               <button type="button" data-mobile-focus="toggle-ambient">Play</button>
@@ -1371,6 +1371,7 @@
         if(action==='enable-notifications'){requestNativeFocusPermission();updateFocus();return;}
         if(action==='alarms'){close();window.MichelsLifeAlarms?.open?.();return;}
         if(action==='preview-completion'){
+          if(window.MichelsLifeFocusAudio?.previewingCompletion?.()){window.MichelsLifeFocusAudio.stopClassical();updateFocus();return;}
           window.MichelsLifeFocusAudio?.playCompletion?.(true);return;
         }
         if(action==='toggle-ambient'){
@@ -1637,7 +1638,7 @@
     writeText(q('[data-mobile-focus="toggle-ambient"]',root),
       audio?.playing?.()?focusText('Stop','Detener'):focusText('Play','Reproducir'));
     writeText(q('[data-mobile-focus="preview-completion"]',root),
-      focusText('Preview','Escuchar'));
+      audio?.previewingCompletion?.()?focusText('Stop preview','Detener'):focusText('Preview','Escuchar'));
     enforceFocusTouchTargets();
     writeText(q('#mlv-android-focus-time',root),left);
     writeText(q('#mlv-android-focus-phase',root),mode.toUpperCase());

@@ -38,7 +38,7 @@ internal object NativeFocusAlarm {
     private const val NOTIFICATION_ID = 4705
     private const val MAX_FUTURE_MS = 4 * 60 * 60 * 1000L
     private fun completionSound(raw: String?): String =
-        if (raw in listOf("soft", "glass", "aurora", "observatory", "midnight", "silver", "off"))
+        if (raw in listOf("soft", "glass", "aurora", "observatory", "midnight", "silver", "mozart_k545", "tchaikovsky_op39", "off"))
             raw ?: "soft"
         else "soft"
 
@@ -53,6 +53,8 @@ internal object NativeFocusAlarm {
             "soft" to "Soft Bell", "glass" to "Glass Chime",
             "aurora" to "Aurora Tone", "observatory" to "Observatory Bell",
             "midnight" to "Midnight Chime", "silver" to "Silver Echo",
+            "mozart_k545" to "Mozart · Sonata K.545",
+            "tchaikovsky_op39" to "Tchaikovsky · Morning Prayer",
             "off" to "No sound"
         )
         val channel = NotificationChannel(
@@ -69,6 +71,8 @@ internal object NativeFocusAlarm {
                     "observatory" -> R.raw.mlv_focus_observatory
                     "midnight" -> R.raw.mlv_focus_midnight
                     "silver" -> R.raw.mlv_focus_silver
+                    "mozart_k545" -> R.raw.mlv_focus_mozart_k545
+                    "tchaikovsky_op39" -> R.raw.mlv_focus_tchaikovsky_op39
                     else -> R.raw.mlv_focus_soft
                 }
                 val uri = Uri.parse("android.resource://" + context.packageName + "/" + tone)

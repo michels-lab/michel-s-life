@@ -27590,15 +27590,20 @@ function focusState(){
   if(!['ready','running','paused'].includes(f.status))f.status='ready';if(!['compact','mini'].includes(f.dockMode))f.dockMode='compact';if(f.dockMode==='mini')f.expanded=false;
   const total=(f.mode==='work'?f.workMin:f.breakMin)*60000;f.phaseTotalMs=clamp(f.phaseTotalMs,1000,180*60000,total);f.remainingMs=clamp(f.remainingMs,0,f.phaseTotalMs,f.phaseTotalMs);
   if(f.status==='running'&&!Number.isFinite(Number(f.deadlineAt)))f.deadlineAt=Date.now()+f.remainingMs;
+  // Migrate the mistakenly saved classical ambience choice to completion once.
+  if(['mozart_k545','tchaikovsky_op39'].includes(f.v30165Soundscape)){
+    if(!f.v30165CompletionSound||f.v30165CompletionSound==='soft')f.v30165CompletionSound=f.v30165Soundscape;
+    f.v30165Soundscape='moonlight';
+  }
   return f;
 }
 function setAudioPreference(kind,value){
  const f=focusState();
  if(kind==='completion'){
-   const valid=['soft','glass','aurora','observatory','midnight','silver','off'];
+   const valid=['soft','glass','aurora','observatory','midnight','silver','mozart_k545','tchaikovsky_op39','off'];
    f.v30165CompletionSound=valid.includes(value)?value:'soft';
  }else if(kind==='scene'){
-   const valid=['moonlight','celestial','orbit','aurora','observatory','library','afterglow','silver','mozart_k545','tchaikovsky_op39'];
+   const valid=['moonlight','celestial','orbit','aurora','observatory','library','afterglow','silver'];
    f.v30165Soundscape=valid.includes(value)?value:'moonlight';
  }else return false;
  // Canonical persistence and recovery: never store competing audio preferences

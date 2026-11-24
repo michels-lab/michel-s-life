@@ -106,7 +106,8 @@ internal object NativePersonalAlarms {
             return pool.optString(Math.floorMod(key, pool.length().toLong()).toInt(), "")
                 .take(180)
         }
-        return Pair(choose("affirmations"), choose("phrases"))
+        return Pair(choose("affirmations").ifBlank { "Actúo con propósito, un paso a la vez." },
+            choose("phrases").ifBlank { "Una sesión. Un paso que importa." })
     }
 
     fun wallpaper(context: Context): String =
