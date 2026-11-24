@@ -40,6 +40,11 @@ def main():
     shutil.copy2(PERSONAL_ALARMS, assets / 'personal-alarms.js')
     shutil.copy2(MOTIVATION, assets / 'motivation-immersive.js')
     shutil.copy2(SETTINGS_COLOR_PREVIEW, assets / 'settings-color-floating-preview.js')
+    for filename in ('mozart_k545.mp3','tchaikovsky_op39.mp3','RECORDINGS.json'):
+        source = FOCUS_IMMERSION.parent / 'assets/audio/classical' / filename
+        target = assets / 'assets/audio/classical' / filename
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
     text = index.read_text(encoding="utf-8")
     if '<script defer src="settings-color-floating-preview.js"></script>' not in text:
         raise SystemExit("Android source missing Settings preview loader")

@@ -123,23 +123,8 @@ const ALARM_SCENES={
   ambientNotes:[174.61,220,349.23,440]},
  focus_silver:{roots:[196,174.61,220,196],minor:true,
   pattern:[3,1,2,0,3,2],offsets:[],timbre:'glass',drift:.23,accent:.79,
-  ambientNotes:[196,246.94,392,493.88]},
- // Public-domain excerpts now have standalone 24-second alarm arrangements
- // on both platforms, even when the Android WebView is not running.
- mozart_k545:{roots:[130.81,174.61,146.83,130.81],minor:false,
-  pattern:[],offsets:[],timbre:'glass',drift:.12,accent:.86,
-  phrases:[
-   ['C5','E5','G5','B4','C5','D5','C5'],
-   ['A5','G5','C5','G5','F5','E5','F5','E5'],
-   ['A4','B4','C5','D5','E5','F5','G5','A5'],
-   ['G5','F5','E5','D5','C5','B4','A4','G4']]},
- tchaikovsky_op39:{roots:[98.00,87.31,110.00,98.00],minor:true,
-  pattern:[],offsets:[],timbre:'bell',drift:.08,accent:.80,
-  phrases:[
-   ['B4','B4','A4','C5','B4'],
-   ['A4','G4','A4','B4','B4'],
-   ['E5','A4','A4','D5','C5','F#5'],
-   ['G4','G4','E5','A4','A4','F#5','E5','F#5']]}
+  ambientNotes:[196,246.94,392,493.88]}
+
 };
 const SEMITONES={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
 function frequency(note){
@@ -150,6 +135,8 @@ function frequency(note){
 }
 const soundBufferCache=new Map();
 let livePresetContext=null,previewPresetContext=null;
+let liveRecording=null,previewRecording=null;
+function stopRecording(preview){const audio=preview?previewRecording:liveRecording;if(preview)previewRecording=null;else liveRecording=null;if(audio){audio.pause();audio.currentTime=0;}}
 function renderAlarmSoundscape(id){
  const score=ALARM_SCENES[id]||ALARM_SCENES.gentle;
  const count=ALARM_HZ*ALARM_SECONDS,left=new Float32Array(count),right=new Float32Array(count);
@@ -225,9 +212,16 @@ function renderAlarmSoundscape(id){
  return {left,right,rate:ALARM_HZ,seconds:ALARM_SECONDS};
 }
 function stopPresetAudio(){
+ stopRecording(false);
  if(livePresetContext){const ctx=livePresetContext;livePresetContext=null;ctx.close().catch(()=>{});}
 }
 function playPresetSound(id,preview=false){
+ stopRecording(preview);
+ if(['mozart_k545','tchaikovsky_op39'].includes(id)){
+  if(!preview)stopPresetAudio();
+  if(preview&&previewPresetContext){previewPresetContext.close().catch(()=>{});previewPresetContext=null;}
+  try{const audio=new Audio('assets/audio/classical/'+id+'.mp3');audio.loop=!preview;if(preview)previewRecording=audio;else liveRecording=audio;audio.play().catch(()=>{if((preview?previewRecording:liveRecording)===audio)stopRecording(preview);});return true;}catch(_){return false;}
+ }
  const AudioCtx=window.AudioContext||window.webkitAudioContext;
  if(!AudioCtx)return false;
  if(preview){
@@ -282,12 +276,12 @@ async function playCustom(isPreview,requestGeneration=null){
  // Playback may settle after a preview is replaced or an alarm dismissed.
  if((isPreview?previewAudio:customAudio)!==audio)return false;
  if(!isPreview&&(!ring||ring.hidden||ringingId===null)){stopCustomAudio(false);return false;}
- if(isPreview)window.setTimeout(()=>{if(previewAudio===audio)stopCustomAudio(true);},5000);
+ if(isPreview)window.setTimeout(()=>{if(previewAudio===audio)stopCustomAudio(true);stopRecording(true);},5000);
  return true;
 }
 async function previewSound(id){
  const generation=++previewGeneration;
- stopCustomAudio(true);
+ stopCustomAudio(true);stopRecording(true);
  if(previewPresetContext){previewPresetContext.close().catch(()=>{});previewPresetContext=null;}
  if(id==='custom'){
   if(await playCustom(true,generation))return;
@@ -764,7 +758,7 @@ function ringAlarm(id,{notify=true}={}){
    // An alarm takes priority over the ringtone preview, including a slow
    // IndexedDB read that may still complete after the alarm begins.
    previewGeneration++;
-   stopCustomAudio(true);
+   stopCustomAudio(true);stopRecording(true);
    if(previewPresetContext){previewPresetContext.close().catch(()=>{});previewPresetContext=null;}
    stopPresetAudio();
    stopCustomAudio(false);
@@ -888,7 +882,7 @@ function boot(){
 }
 function isAudible(){
  return !!ring&&!ring.hidden&&ringingId!==null&&(
-  (livePresetContext?.state==='running')||(!!customAudio&&!customAudio.paused));
+  (livePresetContext?.state==='running')||(!!liveRecording&&!liveRecording.paused)||(!!customAudio&&!customAudio.paused));
 }
 window.MichelsLifeAlarms={open,close,ringAlarm,read,records:()=>records.slice(),next,localAt,dismissRing,quickAlarm:createQuickAlarm,pollWindows:tick,takeWindowsNotification,isAudible};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});

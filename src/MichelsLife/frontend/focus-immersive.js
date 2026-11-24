@@ -22,8 +22,8 @@
     observatory:{en:'Observatory Bell',es:'Observatorio',notes:[[0,392,.8,.053],[.5,587,.85,.035],[.9,784,1.05,.027]]},
     midnight:{en:'Midnight Chime',es:'Medianoche',notes:[[0,523,.5,.037],[.34,698,.8,.035],[.66,1047,1.2,.026]]},
     silver:{en:'Silver Echo',es:'Eco plateado',notes:[[0,784,.6,.044],[.36,987,.8,.036],[.75,1175,1.1,.024]]},
-    mozart_k545:{en:'Mozart · Sonata K.545 · piano excerpt',es:'Mozart · Sonata K.545 · fragmento de piano',classical:true},
-    tchaikovsky_op39:{en:'Tchaikovsky · Morning Prayer · piano excerpt',es:'Chaikovski · Oración matinal · fragmento de piano',classical:true},
+    mozart_k545:{en:'Mozart · Sonata K.545 · recording',es:'Mozart · Sonata K.545 · grabación',classical:true},
+    tchaikovsky_op39:{en:'Tchaikovsky · Morning Prayer · recording',es:'Chaikovski · Oración matinal · grabación',classical:true},
     off:{en:'No sound',es:'Sin sonido',notes:[]}
   };
   // All sequences are newly composed harmonic pads, not licensed recordings.
@@ -37,15 +37,7 @@
     afterglow:{en:'Afterglow',es:'Resplandor',group:'C',notes:[174.61,220,349.23,440],pattern:[2,3,1,0,2],beat:1.02},
     silver:{en:'Silver Room',es:'Sala plateada',group:'C',notes:[196,246.94,392,493.88],pattern:[3,1,2,0,3,2],beat:.78}
   };
-  // Score-derived completion music. See docs/audio/CLASSICAL_FOCUS_RIGHTS.md.
-  const classicalScores={"mozart_k545":[[0,60,0.275,0.543],[0,72,1.1,0.606],[0.275,67,0.275,0.543],[0.55,64,0.275,0.543],[0.825,67,0.275,0.543],[1.1,60,0.275,0.543],[1.1,76,0.55,0.606],[1.375,67,0.275,0.543],[1.65,64,0.275,0.543],[1.65,79,0.55,0.606],[1.925,67,0.275,0.543],[2.2,62,0.275,0.543],[2.2,71,0.825,0.606],[2.475,67,0.275,0.543],[2.75,65,0.275,0.543],[3.025,67,0.275,0.543],[3.025,72,0.1375,0.606],[3.1625,74,0.1375,0.606],[3.3,60,0.275,0.543],[3.3,72,0.55,0.606],[3.575,67,0.275,0.543],[3.85,64,0.275,0.543],[4.125,67,0.275,0.543],[4.4,60,0.275,0.543],[4.4,81,1.1,0.606],[4.675,69,0.275,0.543],[4.95,65,0.275,0.543],[5.225,69,0.275,0.543],[5.5,60,0.275,0.543],[5.5,79,0.55,0.606],[5.775,67,0.275,0.543],[6.05,64,0.275,0.543],[6.05,84,0.55,0.835],[6.325,67,0.275,0.543],[6.6,59,0.275,0.543],[6.6,79,0.55,0.835],[6.875,67,0.275,0.543],[7.15,62,0.275,0.543],[7.15,77,0.275,0.835],[7.425,67,0.275,0.543],[7.425,76,0.1375,0.717],[7.5625,77,0.1375,0.661],[7.7,60,0.275,0.543],[7.7,76,0.55,0.606],[7.975,67,0.275,0.543],[8.25,64,0.275,0.543],[8.525,67,0.275,0.543],[8.8,65,0.55,0.543],[8.8,69,0.275,0.543],[9.075,71,0.1375,0.614],[9.2125,72,0.1375,0.646],[9.35,74,0.1375,0.677],[9.4875,76,0.1375,0.709],[9.625,77,0.1375,0.74],[9.7625,79,0.1375,0.772],[9.9,81,0.1375,0.772],[10.0375,79,0.1375,0.74],[10.175,77,0.1375,0.709],[10.3125,76,0.1375,0.677],[10.45,53,0.55,0.543],[10.45,60,0.55,0.543],[10.45,74,0.1375,0.646],[10.5875,72,0.1375,0.614],[10.725,71,0.1375,0.575],[10.8625,69,0.1375,0.543],[11,52,0.55,0.543],[11,60,0.55,0.543],[11,67,0.275,0.543],[11.275,69,0.1375,0.614],[11.4125,71,0.1375,0.646],[11.55,72,0.1375,0.677],[11.6875,74,0.1375,0.709],[11.825,76,0.1375,0.74],[11.9625,77,0.1375,0.772],[12.1,79,0.1375,0.772],[12.2375,77,0.1375,0.74],[12.375,76,0.1375,0.709],[12.5125,74,0.1375,0.677],[12.65,52,0.55,0.543],[12.65,60,0.55,0.543],[12.65,72,0.1375,0.646],[12.7875,71,0.1375,0.614],[12.925,69,0.1375,0.575],[13.0625,67,0.1375,0.543],[13.2,50,0.55,0.543],[13.2,60,0.55,0.543],[13.2,65,0.275,0.543],[13.475,67,0.1375,0.614],[13.6125,69,0.1375,0.646],[13.75,71,0.1375,0.677],[13.8875,72,0.1375,0.709],[14.025,74,0.1375,0.74],[14.1625,76,0.1375,0.772],[14.3,77,0.1375,0.772],[14.4375,76,0.1375,0.74],[14.575,74,0.1375,0.709],[14.7125,72,0.1375,0.677],[14.85,50,0.55,0.543],[14.85,59,0.55,0.543],[14.85,71,0.1375,0.646],[14.9875,69,0.1375,0.614],[15.125,67,0.1375,0.575],[15.2625,65,0.1375,0.543],[15.4,48,0.55,0.543],[15.4,60,0.55,0.543],[15.4,64,0.275,0.543],[15.675,65,0.1375,0.614],[15.8125,67,0.1375,0.646],[15.95,69,0.1375,0.677],[16.0875,71,0.1375,0.709],[16.225,72,0.1375,0.74],[16.3625,74,0.1375,0.772],[16.5,76,0.1375,0.772],[16.6375,74,0.1375,0.74],[16.775,72,0.1375,0.709],[16.9125,71,0.1375,0.677],[17.05,48,0.55,0.543],[17.05,52,0.55,0.543],[17.05,69,0.1375,0.646],[17.1875,67,0.1375,0.614],[17.325,65,0.1375,0.575],[17.4625,64,0.1375,0.543]],"tchaikovsky_op39":[[0,67,0.9677,0.56],[0,71,0.9677,0.56],[0,55,0.9677,0.42],[0,62,0.9677,0.42],[0.9677,67,1.4516,0.56],[0.9677,71,1.4516,0.56],[0.9677,55,1.4516,0.42],[0.9677,62,1.4516,0.42],[2.4194,66,0.4839,0.56],[2.4194,69,0.4839,0.56],[2.4194,50,0.4839,0.42],[2.4194,62,0.4839,0.42],[2.9032,67,0.9677,0.56],[2.9032,72,0.9677,0.56],[2.9032,52,0.9677,0.42],[2.9032,60,0.9677,0.42],[3.871,67,1.9355,0.56],[3.871,71,1.9355,0.56],[3.871,55,1.9355,0.42],[3.871,62,1.9355,0.42],[5.8065,66,0.9677,0.56],[5.8065,69,0.9677,0.56],[5.8065,50,0.9677,0.42],[5.8065,62,0.9677,0.42],[6.7742,64,0.9677,0.56],[6.7742,67,0.9677,0.56],[6.7742,52,0.9677,0.42],[6.7742,59,0.9677,0.42],[7.7419,64,0.9677,0.56],[7.7419,69,0.9677,0.56],[7.7419,48,0.9677,0.42],[7.7419,52,0.9677,0.42],[8.7097,63,2.9032,0.56],[8.7097,71,2.9032,0.56],[8.7097,47,2.9032,0.42],[8.7097,54,2.9032,0.42],[11.6129,71,0.9677,0.56],[11.6129,62,0.9677,0.56],[11.6129,52,0.9677,0.42],[11.6129,44,0.9677,0.42],[12.5806,64,1.4516,0.56],[12.5806,61,1.9355,0.56],[12.5806,52,0.9677,0.42],[12.5806,45,0.9677,0.42],[13.5484,52,0.9677,0.42],[13.5484,43,0.9677,0.42],[14.0323,69,0.4839,0.56],[14.5161,69,0.9677,0.56],[14.5161,60,0.9677,0.56],[14.5161,50,0.9677,0.42],[14.5161,42,0.9677,0.42],[15.4839,62,1.4516,0.56],[15.4839,59,0.9677,0.56],[15.4839,50,0.9677,0.42],[15.4839,43,0.9677,0.42],[16.4516,60,0.9677,0.56],[16.4516,50,0.9677,0.42],[16.4516,45,0.9677,0.42],[16.9355,66,0.4839,0.56],[17.4194,67,0.9677,0.56],[17.4194,62,0.9677,0.56],[17.4194,47,0.9677,0.42],[17.4194,55,0.9677,0.42],[18.3871,67,0.9677,0.56],[18.3871,64,0.9677,0.56],[18.3871,48,0.9677,0.42],[18.3871,55,0.9677,0.42],[19.3548,76,0.7258,0.56],[19.3548,67,0.9677,0.56],[19.3548,49,0.9677,0.42],[19.3548,57,0.9677,0.42],[20.0806,69,0.2419,0.56],[20.3226,69,2.9032,0.56],[20.3226,67,0.9677,0.56],[20.3226,50,1.9355,0.42],[20.3226,57,1.9355,0.42],[21.2903,66,0.4839,0.56],[21.7742,64,0.4839,0.56],[22.2581,66,0.9677,0.56],[22.2581,50,0.9677,0.42],[22.2581,62,0.9677,0.42]]};
-  function renderClassicalPiano(notes,rate=22050){
- const seconds=Math.max(...notes.map(n=>n[0]+n[2]))+.8;const pcm=new Float32Array(Math.ceil(seconds*rate));
- for(const [start,midi,duration,velocity] of notes){const hz=440*Math.pow(2,(midi-69)/12),first=Math.round(start*rate),count=Math.min(pcm.length-first,Math.ceil((duration+.36)*rate)),strength=.16*velocity;
- for(let i=0;i<count;i++){const t=i/rate,attack=Math.min(1,t/.009),release=t>duration?Math.exp(-12*(t-duration)):1,phase=2*Math.PI*hz*t;const fundamental=Math.sin(phase)*Math.exp(-1.6*t);const overtones=.38*Math.sin(phase*2.001)*Math.exp(-3.8*t)+.15*Math.sin(phase*3.004)*Math.exp(-6*t)+.055*Math.sin(phase*4.009)*Math.exp(-9*t);pcm[first+i]+=strength*attack*release*(fundamental+overtones);}}
- let peak=.01;for(const sample of pcm)peak=Math.max(peak,Math.abs(sample));const level=.78/peak;for(let i=0;i<pcm.length;i++)pcm[i]*=level*Math.min(1,(pcm.length-i)/(rate*.3));return pcm;
-}
-  const classicalCache=new Map();
+  // Licensed human performances, bundled locally. No synthesized fallback.
   let classicalSource=null,previewingId=null;
   const classicalIds=['mozart_k545','tchaikovsky_op39'];
   let effectContext=null,ambientContext=null,ambientInterval=null,ambientScene=null,ambientStep=0;
@@ -75,26 +67,24 @@
   }
   function stopClassical(){
     const source=classicalSource;classicalSource=null;previewingId=null;
-    if(source)try{source.stop();}catch(_){}
+    if(source)try{source.pause();source.currentTime=0;}catch(_){}
   }
   function playCompletion(preview=false){
     const id=finishId(),score=finishTones[id];
     stopClassical();
     if(!score||id==='off')return true;
+    if(score.classical){
+      try{
+        const source=new Audio('assets/audio/classical/'+id+'.mp3');
+        source.loop=false;classicalSource=source;previewingId=preview?id:null;
+        const clear=()=>{if(classicalSource===source){classicalSource=null;previewingId=null;}};
+        source.onended=clear;source.onerror=clear;
+        source.play().catch(clear);return true;
+      }catch(_){return false;}
+    }
     const ctx=soundContext();
     if(!ctx)return false;
     try{
-      if(score.classical){
-        let pcm=classicalCache.get(id);
-        if(!pcm){pcm=renderClassicalPiano(classicalScores[id]);classicalCache.set(id,pcm);}
-        const buffer=ctx.createBuffer(1,pcm.length,22050);
-        buffer.getChannelData(0).set(pcm);
-        const source=ctx.createBufferSource();source.buffer=buffer;
-        source.connect(ctx.destination);classicalSource=source;
-        previewingId=preview?id:null;
-        source.onended=()=>{if(classicalSource===source){classicalSource=null;previewingId=null;}};
-        source.start(ctx.currentTime+.025);return true;
-      }
       const start=ctx.currentTime+.025;
       score.notes.forEach(([offset,freq,duration,gain])=>{
         const o=ctx.createOscillator(),g=ctx.createGain();

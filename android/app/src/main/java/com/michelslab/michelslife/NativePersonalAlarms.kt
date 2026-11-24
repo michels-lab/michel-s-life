@@ -174,13 +174,19 @@ internal object NativePersonalAlarms {
 
     fun soundUri(context: Context, selected: String): Uri? {
         val dir = File(context.filesDir, "personal-alarm-audio")
+        val recorded = when (selected) {
+            "mozart_k545" -> R.raw.mlv_focus_mozart_k545
+            "tchaikovsky_op39" -> R.raw.mlv_focus_tchaikovsky_op39
+            else -> 0
+        }
+        if (recorded != 0) return Uri.parse("android.resource://" + context.packageName + "/" + recorded)
         if (selected == "custom") {
             val name = prefs(context).getString(KEY_CUSTOM_FILE, "") ?: ""
             if (!Regex("^custom\\.(mp3|wav|ogg)$").matches(name)) return defaultSound()
             val file = File(dir, name)
             return if (file.isFile && file.length() > 128L) Uri.fromFile(file) else defaultSound()
         }
-        if (selected in setOf("classic","soft","digital","gentle","pulse","radar","mozart_k545","tchaikovsky_op39",
+        if (selected in setOf("classic","soft","digital","gentle","pulse","radar",
                 "focus_moonlight","focus_celestial","focus_orbit","focus_aurora",
                 "focus_observatory","focus_library","focus_afterglow","focus_silver")) {
             return try {
@@ -260,20 +266,6 @@ internal object NativePersonalAlarms {
         "focus_silver" -> SoundScene(doubleArrayOf(196.0,174.61,220.0,196.0),true,
             intArrayOf(3,1,2,0,3,2),doubleArrayOf(),"glass",.23,.79,
             ambientNotes=doubleArrayOf(196.0,246.94,392.0,493.88))
-        "mozart_k545" -> SoundScene(doubleArrayOf(130.81,174.61,146.83,130.81),false,
-            intArrayOf(),doubleArrayOf(),"glass",.12,.86,
-            arrayOf(
-                arrayOf("C5","E5","G5","B4","C5","D5","C5"),
-                arrayOf("A5","G5","C5","G5","F5","E5","F5","E5"),
-                arrayOf("A4","B4","C5","D5","E5","F5","G5","A5"),
-                arrayOf("G5","F5","E5","D5","C5","B4","A4","G4")))
-        "tchaikovsky_op39" -> SoundScene(doubleArrayOf(98.00,87.31,110.00,98.00),true,
-            intArrayOf(),doubleArrayOf(),"bell",.08,.80,
-            arrayOf(
-                arrayOf("B4","B4","A4","C5","B4"),
-                arrayOf("A4","G4","A4","B4","B4"),
-                arrayOf("E5","A4","A4","D5","C5","F#5"),
-                arrayOf("G4","G4","E5","A4","A4","F#5","E5","F#5")))
         else -> scene("gentle")
     }
 
