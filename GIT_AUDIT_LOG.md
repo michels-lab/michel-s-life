@@ -1,3 +1,10 @@
+## 2026-11-23 — Staging release final siguiente 3.0.232 / Android Direct 0.2.21: NO PUBLICADA
+
+- Rama `granada/weekday-color-preview-20261123` integra [#232](https://github.com/michels-lab/michel-s-life/pull/232) y [#233](https://github.com/michels-lab/michel-s-life/pull/233) con merge commit `282d733f3756afe3c434660dff2c3ccbb2df2b23` de dos padres; cambios fuente conjuntos en Focus, Android Focus, Settings y protección contra JS inline traducido.
+- Se actualizaron las versiones reales de Windows `3.0.232` y Android Direct `0.2.21/code23`, notas `docs/releases/v3.0.232.md` y workflow `.github/workflows/release-unified-v3232-a0221.yml` **SIN crear intent**. Sus 11 comprobaciones exact-SHA incluyen Source, UI, Android UI, Android safe update, Quick audio, Focus inmersivo, alarmas nativas, Settings, clásico, Story/Focus y Data Health. Todos los filtros push para 11 checks se conectaron al futuro intent aislado.
+- Publicador de destino en [michels-lab/michel-s-life-releases PR #24](https://github.com/michels-lab/michel-s-life-releases/pull/24): SHA de fuente y run destino ligados al JSON de intent, certificado Direct permanente, Android15 API35 firmado/instalado/reabierto, Windows Setup/Portable lanzado y 13 assets checksum + descarga; **publicador NO ejecutado, cero assets nuevos publicados**.
+- CI pendiente del candidate HEAD. No se ignora #168 ni errores de Data Health; no se infiere QA física del Galaxy, permisos Doze, MP3 bajo bloqueo o aceptación final. Última estable `3.0.231/0.2.20`; avance `7/15 = 47%` sin incremento.
+
 ## GRANADA 2026-11-23 — corrección fuente de días de semana y probable origen de #168 (PR #233)
 
 - **Root cause de Settings reproducible en fuente:** el motor autoritativo v3.0.65 obtiene letras de días activos desde `v133TextColor` y días inactivos desde `v133MutedTextColor` a alpha 0.66; sus dos listeners todavía buscaban IDs retirados `DayText`. Se corrigieron ambos listeners y se reconectó el módulo canónico de paleta mediante un único evento después de sincronizar campos v133/v30168. Se añadió ejemplo flotante domingo–sábado localizado, con un lunes activo ilustrativo, sin crear otro renderizador.

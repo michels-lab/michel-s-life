@@ -84,5 +84,20 @@
     "new_release_published": false,
     "milestones_verified_unchanged": 7,
     "total_milestones": 15
+  },
+  "active_release_staging": {
+    "as_of": "2026-11-23",
+    "windows_version": "3.0.232",
+    "android_direct_version": "0.2.21",
+    "android_version_code": 23,
+    "source_pr": "https://github.com/michels-lab/michel-s-life/pull/233",
+    "merged_feature_parent": "https://github.com/michels-lab/michel-s-life/pull/232",
+    "publisher_pr": "https://github.com/michels-lab/michel-s-life-releases/pull/24",
+    "required_exact_sha_gates": 11,
+    "source_intent_committed": false,
+    "publisher_intent_committed": false,
+    "public_release_verified": false,
+    "owner_acceptance": false,
+    "official_progress_percent": 47
   }
 }

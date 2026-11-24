@@ -14,6 +14,9 @@
 
 ## Desarrollo activo — Granada 23-nov-2026 (NO publicado)
 
+**Integración reunida y distribución preparada, todavía sin publicación:** [PR #233](https://github.com/michels-lab/michel-s-life/pull/233) ya incorpora los seis archivos del PR #232 mediante un commit de integración con dos padres; candidata **Windows 3.0.232 + Android Direct 0.2.21 (versionCode23)**. [Notas de release candidatas](docs/releases/v3.0.232.md). [Publicador oficial preparado](https://github.com/michels-lab/michel-s-life-releases/pull/24) sigue **inerte** hasta que se complete la CI del mismo SHA, la instalación Android15 firmada y la verificación de Windows. La estable pública sigue siendo 3.0.231/0.2.20 (13 assets); progreso de aceptación 7/15 = 47%. El problema #168 sigue sin cierre.
+
+
 - [PR #232: catálogo musical y sonido final visibles en Pomodoro](https://github.com/michels-lab/michel-s-life/pull/232) — revisión; no integrado en la última estable.
 - [PR #233: tipografía de días de semana + aislamiento de scripts de traducción](https://github.com/michels-lab/michel-s-life/pull/233) — causa exacta de colores: días activos «Texto principal»; inactivos «Texto secundario» a 66 % de opacidad. Se añadió muestra en el panel flotante de Settings. Diagnóstico #168: dos traductores globales escribían en nodos SCRIPT/STYLE; filtros corregidos y regresión de fuente. **Confirmación Chromium/Android CI pendiente**, no afirmar cierre hasta verificar.
 - [Auditoría funcional de Settings y análisis de #168](docs/audit/2026-11-23-weekday-color-live.md). Otra [auditoría del audio de Focus](docs/audit/2026-11-23-focus-direct-catalog.md). **Progreso de aceptación 7/15 = 47 %**, sin contar PRs como QA física; versión oficial anterior continúa 3.0.231 / Android Direct 0.2.20.
