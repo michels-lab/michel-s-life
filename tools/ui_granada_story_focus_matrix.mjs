@@ -122,11 +122,11 @@ for(const width of [320,360,412])for(const language of ['en','es']){
      const traceWrite=(node,kind,value)=>{
        const owner=scriptOwner(node);
        if(!owner||evidence.length>=48)return;
-       const lines=String(new Error().stack||'').split('\\n').slice(2,7);
+       const lines=String(new Error().stack||'').split('\n').slice(2,7);
        const callers=lines.map(line=>{
-         const match=line.match(/(index\\.html|i18n\\.js|mobile-experience\\.js|android-bridge\\.js|settings-color-floating-preview\\.js):(\\d+):(\\d+)/);
+         const match=line.match(/(index\.html|i18n\.js|mobile-experience\.js|android-bridge\.js|settings-color-floating-preview\.js):(\d+):(\d+)/);
          if(!match)return null;
-         const fn=line.match(/\\bat\\s+([A-Za-z_$][\\w$.-]*)\\s*\\(/)?.[1]||'anonymous';
+         const fn=line.match(/\bat\s+([A-Za-z_$][\w$.-]*)\s*\(/)?.[1]||'anonymous';
          return {script:match[1],line:Number(match[2]),column:Number(match[3]),fn};
        }).filter(Boolean).slice(0,3);
        evidence.push({stage:'script-write',id:owner.id,kind,
