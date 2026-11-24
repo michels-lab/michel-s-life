@@ -14,6 +14,10 @@ on:
       - 'android/android-bridge.js'
       - 'android/mobile-experience.js'
       - 'android/mobile-sections.js'
+  push:
+    branches: [main]
+    paths:
+      - '.michelslab/release-intents/unified-v3232-a0221.txt'
   workflow_dispatch:
 
 permissions:
