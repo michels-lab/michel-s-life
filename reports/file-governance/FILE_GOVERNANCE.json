@@ -1,29 +1,29 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 455,
-  "classified_files_total": 451,
-  "docs_content_inspected": 106,
+  "tracked_files_total": 464,
+  "classified_files_total": 460,
+  "docs_content_inspected": 112,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
   "roles": {
     "agent": 9,
     "asset": 12,
-    "bitacora": 3,
+    "bitacora": 4,
     "build_script": 6,
     "config": 25,
     "database_migration": 3,
-    "document": 99,
+    "document": 104,
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 21,
     "source": 135,
-    "test": 61,
+    "test": 63,
     "text_metadata": 1,
     "unknown": 6,
     "web_ui": 3,
-    "workflow": 60
+    "workflow": 61
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
@@ -31,8 +31,8 @@
     "UNKNOWN_PURPOSE": 6
   },
   "finding_total": 12,
-  "inventory_fingerprint": "b674b1cd8e0758a8eececbd76230aa72138b32ff5edb94af145a30615a6ddbca",
-  "evidence_fingerprint": "a7d41e80c59222c164bca460f53bfdebc43b07ec5b4057c5c53a59c8c41de9f6",
+  "inventory_fingerprint": "0a10f03eac4e1463f30d3a114cb769f208c641c382fbd799a366a768930fc7a1",
+  "evidence_fingerprint": "d056f08b8ce2c06e7d12e983e8a8c44d91c79f6805a2e627c6484564fc914d17",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -74,7 +74,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "279f5bd48b028414e1ed81557d8d81dc139e6f1d"
+      "blob": "2c170abac02c4a30815edef283b0d7225c2f850f"
     },
     {
       "path": ".github/workflows/android-direct-private-candidate-v026.yml",
@@ -102,7 +102,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "3f28697bb75574a9026c74c455bb31ee19409328"
+      "blob": "b10f22244a32332b80e9e661b3f7a35c2b245a8d"
     },
     {
       "path": ".github/workflows/build-store-msix.yml",
@@ -123,7 +123,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "880a79f699b008cdfb4f8cd11be31c3a6a34faed"
+      "blob": "f847832fa55234f865ae6e67e73e52b1fdf5ac75"
     },
     {
       "path": ".github/workflows/external-ui-baseline-guard.yml",
@@ -172,7 +172,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "af53d813ab3e9e634d962cfc4646344ca09e7cb4"
+      "blob": "d64ac4f4eec3c75d0d4ef09ad8c156539db64211"
     },
     {
       "path": ".github/workflows/granada-android-drawer-atomic.yml",
@@ -235,7 +235,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "4234eb0a9958f1d6bc97c39a67d3b03d30496bab"
+      "blob": "690bdb48bc1c01529d87274671ddd0284de763d0"
     },
     {
       "path": ".github/workflows/granada-daily-mission-ledger.yml",
@@ -249,14 +249,14 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "621a4e63bc04f6bdfa09b2a4c4db9abfdc3096cf"
+      "blob": "f3bda89027463310adae36460524c91877b608fb"
     },
     {
       "path": ".github/workflows/granada-focus-audio-quickmission.yml",
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "bc49d900a97f3e9dd30eeb5e2066bf900d3e9f51"
+      "blob": "cc0fe8337caab93f0ec746917e390095daa011ad"
     },
     {
       "path": ".github/workflows/granada-focus-evidence.yml",
@@ -270,7 +270,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "502a72e17f886c10965c732ec6db51e470d2233a"
+      "blob": "886f368e5b771a78bb7f3fc5846c8e7d43017d59"
     },
     {
       "path": ".github/workflows/granada-focus-lockscreen-snooze.yml",
@@ -291,7 +291,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "b23e7f5218afe099d69bce2a5472ff7be43b551f"
+      "blob": "81c3b94d2ce2ca2b078e4b0e6d8e815d7ea1e07d"
     },
     {
       "path": ".github/workflows/granada-recovery-loss-triage.yml",
@@ -312,14 +312,14 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "907d25d0d225580aa8f933fed8aa1a95c53e05e5"
+      "blob": "62153ff611415b8a0a11ee9e4f3fec1b45cfd18e"
     },
     {
       "path": ".github/workflows/granada-story-focus-provenance.yml",
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "62602348021ed664a7df94a1daafb0f00cb5c9fc"
+      "blob": "f0e9648a4e1b45e2b37c64262d55d9ab791a3f5f"
     },
     {
       "path": ".github/workflows/granada-transactional-cloud-restore.yml",
@@ -448,6 +448,13 @@
       "blob": "0c3ae6a517e36e2c60e93c134a77c9a0471adf53"
     },
     {
+      "path": ".github/workflows/release-unified-v3232-a0221.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "2a95002b554a11e5a05935418ecc333159fb9384"
+    },
+    {
       "path": ".github/workflows/release-windows-v3222-a0211.yml",
       "role": "workflow",
       "purpose": "GitHub Actions automation",
@@ -487,7 +494,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "be304862135839bb1d8ededab2883eb2cae48552"
+      "blob": "8197f18ae5638940574ebff2dbd1be2de588e716"
     },
     {
       "path": ".gitignore",
@@ -557,7 +564,7 @@
       "role": "config",
       "purpose": "machine-readable configuration",
       "certainty": "rule",
-      "blob": "f0145f6eea126827663eb4ec05e9369558ed704f"
+      "blob": "7ad9d161aee32f935fdc0604a1aed442a2ab6018"
     },
     {
       "path": ".michelslab/project.yml",
@@ -753,7 +760,7 @@
       "role": "bitacora",
       "purpose": "technical/audit change history",
       "certainty": "rule",
-      "blob": "8f02b5f606e7972204d3950120bbce35d05296a4"
+      "blob": "7e3b76cbde324e525a3b056adc08cc5bd1458479"
     },
     {
       "path": "LICENSE.txt",
@@ -774,7 +781,7 @@
       "role": "index",
       "purpose": "navigation/onboarding",
       "certainty": "rule",
-      "blob": "8d1f0927e1a70d1436e16bb6673deaaedf0b6087"
+      "blob": "e9f531201e5eb5e16015f73504641b8f08c5c981"
     },
     {
       "path": "android/ANDROID_AUDIT_LOG.md",
@@ -823,14 +830,14 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "358f768d73d875cbb4c8b203df260a120cb63fa9"
+      "blob": "e5c0f3cee9402e8a72a7dd798c4e89877f807265"
     },
     {
       "path": "android/app/build.gradle.kts",
       "role": "build_script",
       "purpose": "platform build/project/installer script",
       "certainty": "inferred",
-      "blob": "0405764e13cdcb3085300fb66c9f989c9a851a73"
+      "blob": "5a68e9b47bff505e513e252c6bd64d092aac6c81"
     },
     {
       "path": "android/app/src/directRelease/AndroidManifest.xml",
@@ -893,7 +900,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "00b5d669132e972241046804273329da78f40fd0"
+      "blob": "be1bf9a8fe4d3d00494c83bf066b87dbfd353bbc"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/DirectUpdatePolicy.java",
@@ -949,7 +956,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "554e1829bbcf0cb494e45a8bf70811f3f69cc749"
+      "blob": "c2bca1e86bb85bd14d50f4843deb6768e0629acf"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/PersonalAlarmOverlay.kt",
@@ -1355,7 +1362,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "9f848793a51c0b38cbea17ca0a8deb8c84c3b1b6"
+      "blob": "8224d191ff16bad7ff5876d504845c0781c7c2ee"
     },
     {
       "path": "android/mobile-sections.js",
@@ -1806,6 +1813,41 @@
       "blob": "62eb114ab4fbfc420f50590db2caef34d9ca9c35"
     },
     {
+      "path": "docs/audit/2026-11-23-focus-direct-catalog.md",
+      "role": "bitacora",
+      "purpose": "technical/audit change history",
+      "certainty": "rule",
+      "blob": "956701ccb2fdb133a26de807ef76736dd8e6fe2a"
+    },
+    {
+      "path": "docs/audit/2026-11-23-weekday-color-live.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "749b0985efe2cb6f90bc5f68aa7b42653db07987"
+    },
+    {
+      "path": "docs/audit/2026-11-24-classical-native-alarm-soundscapes.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "6f300bf4aef153c8ae5697175934e8097ad56167"
+    },
+    {
+      "path": "docs/audit/2026-11-24-granada-release-runtime-provenance.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "946c5ccbc5c625af546a372f9cbd13b76b9e275a"
+    },
+    {
+      "path": "docs/audit/2026-11-24-granada-v153-root-cause.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "770002a9ed9d7f2fb61d24bb82bb38c6365434d8"
+    },
+    {
       "path": "docs/audit/HANDOFF_LEGACY_2026-10-05.md",
       "role": "document",
       "purpose": "manual/decision/report/historical note",
@@ -1960,6 +2002,13 @@
       "blob": "e09a25983d464da413f31b798093f6e81708dcb6"
     },
     {
+      "path": "docs/releases/v3.0.232.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "82ff17328a7c922ff011106406dd1b9956ae1a8f"
+    },
+    {
       "path": "installer/MichelsLife.iss",
       "role": "build_script",
       "purpose": "platform build/project/installer script",
@@ -2013,7 +2062,7 @@
       "role": "build_script",
       "purpose": "platform build/project/installer script",
       "certainty": "inferred",
-      "blob": "e3cddd265fb6ed8039cc254b9d4930edd9ac13b9"
+      "blob": "6d5bd084d00ebcde3bc35ea8b261da42f3710f7a"
     },
     {
       "path": "src/MichelsLife/Program.cs.gz.b64",
@@ -2048,7 +2097,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "c6fbe64085131778bc4b2225e541c66ce4e74777"
+      "blob": "a441d0f28d2d5fe23a48c8d262d7ed27b64a5290"
     },
     {
       "path": "src/MichelsLife/frontend/i18n.js",
@@ -2062,7 +2111,7 @@
       "role": "web_ui",
       "purpose": "local HTML documentation or web interface",
       "certainty": "inferred",
-      "blob": "0230dae9e40c1ea375fa79558fa848a1c54a70b1"
+      "blob": "7b987bb6f731ee7eac3cae277ce2b5fbaae54326"
     },
     {
       "path": "src/MichelsLife/frontend/motivation-immersive.js",
@@ -2076,14 +2125,14 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "744e56f61b4c3ab32f31c6741126f7ab3e999dda"
+      "blob": "d71ebb4e3c93403b9a8d228298e64d2bbef38e23"
     },
     {
       "path": "src/MichelsLife/frontend/settings-color-floating-preview.js",
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "ee2adfd75bf8002bb343997fca529c30770dd37a"
+      "blob": "b60762e96e8b1abc25865010fde81e56394d55eb"
     },
     {
       "path": "store/AppxManifest.template.xml",
@@ -2209,7 +2258,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "67b0929e4eecc84a74a75f3ae195f6b57cd8c70d"
+      "blob": "4f9ffca70798f29e42d0dd926d0256ad3c5fa720"
     },
     {
       "path": "tools/ci_publish_file_steward.py",
@@ -2335,14 +2384,14 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "d5d9ade1298caadf11ee43919d8ee048cea2cea8"
+      "blob": "34731b957d52c9317d30f05852de61279567eef3"
     },
     {
       "path": "tools/release_smoke_test.py",
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "5eda215a6c546aa12fce817e31220cd61d019761"
+      "blob": "952c406032e482ff3d52e328806e01a9256f8c05"
     },
     {
       "path": "tools/render_store_manifest.py",
@@ -2580,7 +2629,7 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "3e61363fdf7b297ab5ab16bb9cf07d251b257c1e"
+      "blob": "ee510b2bb9737ae5bfa9edf196cf4d4c74ccab1b"
     },
     {
       "path": "tools/test_granada_cross_provider_restore_review.mjs",
@@ -2702,6 +2751,13 @@
       "blob": "22a7e07da7a3d324249ee08c3d79ee32679042f1"
     },
     {
+      "path": "tools/test_inline_translation_safety.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "b357b2b9d69c426d422c1d44764f35a1647aff5a"
+    },
+    {
       "path": "tools/test_michels_life_bootstrap.py",
       "role": "test",
       "purpose": "code/test implementation",
@@ -2720,7 +2776,7 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "7db8781473b84c883ae116f784a2166ff445860c"
+      "blob": "f17ad9666f0300099d5c80a0d24dccedf9a9fbe3"
     },
     {
       "path": "tools/test_repository_file_auditor.py",
@@ -2748,7 +2804,7 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "37df16d8c3796527c9e32073a64b52351d61acd0"
+      "blob": "fb1a6ac8db59ea7c23c6c7d2bdd3a9a4b03bca5d"
     },
     {
       "path": "tools/test_signed_native_release_gate.py",
@@ -2821,6 +2877,13 @@
       "blob": "5cb3776a555700c29f5a81f04187c9215249ced1"
     },
     {
+      "path": "tools/test_unified_release_gate_3232.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "db3657dbdc208fd571e108ecbefcbaa491fa49b8"
+    },
+    {
       "path": "tools/ui_android_calendar_read_smoke.mjs",
       "role": "source",
       "purpose": "code/test implementation",
@@ -2846,7 +2909,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "662f44e069a1b03347c18add25930b6d2337f538"
+      "blob": "b917b387ea846abae2682f9b94cfe80d6a204e93"
     },
     {
       "path": "tools/ui_android_google_calendar_truth_smoke.mjs",
@@ -2874,7 +2937,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "43fa38597244fdb0dd47c8487ae4baa19ebd9c09"
+      "blob": "62ebf1ff79ac99269eca9b82f2a70a9b0d6465ac"
     },
     {
       "path": "tools/ui_android_onboarding_persistence_smoke.mjs",
@@ -2930,7 +2993,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "0512012d7a40f107a0f7b11234452644eccb03cf"
+      "blob": "4429b5268a3dce1331fd6a3325badfd5d281564b"
     },
     {
       "path": "tools/ui_cloud_device_boundary_granada_smoke.mjs",
@@ -3007,7 +3070,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "a12d52c66240d1b3429fc40f63dd32802e4c59db"
+      "blob": "524fee663068ab0b35bc25c7ed19e1b748b69616"
     },
     {
       "path": "tools/ui_granada_transactional_restore_smoke.mjs",
@@ -3147,7 +3210,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "ad494d59e428eca0b9a2525f11cc9a408b3e5e36"
+      "blob": "c2ff5667eae9a3fcfaf766cfda787dcf1fc14589"
     },
     {
       "path": "tools/validate_external_ui_design.py",
@@ -3161,7 +3224,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "06443df7fa75b101b81dc3675a9c1eae0e281f13"
+      "blob": "16cc688e340f04818bb733519ff0736f86dec5eb"
     },
     {
       "path": "tools/validate_granada_inline_scripts.mjs",
@@ -3230,20 +3293,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "14844cf58e826f8f",
+      "id": "c8f3e39a706c096a",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "63 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml",
+      "observation": "20 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/ci.yml, .github/workflows/release-unified-v3232-a0221.yml, .michelslab/project-progress.json, android/android-bridge.js, android/app/src/main/java/com/michelslab/michelslife/CloudSync.kt",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "3397537481da0fcf",
+      "id": "d5073223bab2537a",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "63 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml",
+      "observation": "70 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
