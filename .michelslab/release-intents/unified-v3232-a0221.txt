@@ -1,0 +1,28 @@
+{
+  "schema": "michelslab.unified-stable-release-intent.v1",
+  "request": "operacion-granada-stable-release",
+  "product": "Michel's Life",
+  "change": "Integrated PR #233: direct 8 ambient and 2 classical Focus controls, completion preview, shared alarm catalog, weekday Settings preview, v153 inline script integrity fix, separated mini Focus/Alarm hit targets. Classical arrangements are excerpts, not complete works.",
+  "source_base_sha": "702d8eb1f646fe33564e67d952840457eaffaa26",
+  "windows_version": "3.0.232",
+  "android_direct_version": "0.2.21",
+  "android_version_code": 23,
+  "stable_only": true,
+  "required_checks": [
+    "Source validation",
+    "UI smoke",
+    "Android UI smoke",
+    "GRANADA - Story Focus touch provenance",
+    "GRANADA Data Health and recovery safety",
+    "GRANADA Android Direct safe update discovery",
+    "GRANADA Quick Mission and original Pomodoro audio",
+    "GRANADA cross-platform immersive Focus",
+    "GRANADA personal alarms — Windows and Android contracts",
+    "GRANADA Settings live color persistence",
+    "GRANADA classical Focus excerpts"
+  ],
+  "require_signed_android15_native_install_and_relaunch": true,
+  "require_windows_installer_and_portable_launch": true,
+  "publication": "destination-owned only after exact-SHA successful source workflow, production-signed Android15 real native QA, Windows binaries and all 13 assets verified; no overwrite",
+  "validation": "PR exact head 836cc3a7850a99337c81630046f6af9c2db252d4 11/11 required checks and Android15 debug installed, 3 real onboarding taps, two force-stop relaunches, canonical persistence and sleep/notification Focus PASS. Android14/16 debug failures remain recorded; physical Galaxy/Windows and real accounts unverified."
+}
