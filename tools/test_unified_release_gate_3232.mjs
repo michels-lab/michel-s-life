@@ -78,3 +78,8 @@ test('release validators cannot silently keep the previous build version',()=>{
    assert.ok(!actual.includes('3.0.231'),path+' still validates previous release, rather than this one');
  }
 });
+
+test('source intent preflight checks the actual Android versionCode, not the previous release',()=>{
+ assert.match(source,/grep -q 'versionCode = 23'/);
+ assert.doesNotMatch(source,/grep -q 'versionCode = 22'/);
+});

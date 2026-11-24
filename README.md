@@ -12,7 +12,9 @@
 
 ---
 
-## Desarrollo activo — Granada 23-nov-2026 (NO publicado)
+## Desarrollo activo — Granada 24-nov-2026 (NO publicado)
+
+**24-nov: causa raíz reproducida y corregida en candidato.** El limpiador histórico `v153-no-coins-english-cleanup-script` reescribía todas las hojas DOM, incluso scripts, eliminando espacios/monedas. Reproduce exactamente 4 tamaños de código alterado del CI de #168. Se limita a UI de badges, excluye fuente, estilos y contenido editable y conserva XP; se agrega regresión de ejecución. También se incorpora [PR #234](https://github.com/michels-lab/michel-s-life/pull/234) (diez nuevos tonos de alarma), se corrige preflight `versionCode 23` y se mantienen gates exactos. Ningún nuevo release hasta CI y firma/publicación verificadas.
 
 **Integración reunida y distribución preparada, todavía sin publicación:** [PR #233](https://github.com/michels-lab/michel-s-life/pull/233) ya incorpora los seis archivos del PR #232 mediante un commit de integración con dos padres; candidata **Windows 3.0.232 + Android Direct 0.2.21 (versionCode23)**. [Notas de release candidatas](docs/releases/v3.0.232.md). [Publicador oficial preparado](https://github.com/michels-lab/michel-s-life-releases/pull/24) sigue **inerte** hasta que se complete la CI del mismo SHA, la instalación Android15 firmada y la verificación de Windows. La estable pública sigue siendo 3.0.231/0.2.20 (13 assets); progreso de aceptación 7/15 = 47%. El problema #168 sigue sin cierre.
 

@@ -4060,7 +4060,12 @@ textarea::placeholder{
       '.v143-insight-sub','.v143-insight-title','.v132-contract','.v132-mission',
       '.v140-library-item','.card','.v132-panel','button','span','small','p','div'
     ];
-    const elements = document.querySelectorAll(selectors.join(','));
+    // This pass owns rendered badges/labels only, never executable source,
+    // editable data, templates or raw code. In particular do not scan '*':
+    // the previous wildcard textContent assignment rewrote inline scripts.
+    const excluded='script,style,noscript,template,textarea,input,select,option,pre,code,[contenteditable="true"],[data-mlv-i18n-owned="source"]';
+    const elements = Array.from(document.querySelectorAll(selectors.join(',')))
+      .filter(el=>!el.isContentEditable&&!el.closest(excluded));
     elements.forEach(el=>{
       const txt = (el.textContent || '').trim();
       if(!txt) return;
@@ -4068,14 +4073,15 @@ textarea::placeholder{
       // Hide compact coin badges/counters only if they are clearly coin-related
       const exactCoin = /^(\+?\d+\s*(coins|coin)|coins|coin|monedas|🪙|\d+\s*🪙)$/i.test(txt);
       const containsCoinBadge = /🪙|coins?\b|monedas?\b/i.test(txt) && txt.length <= 40;
-      if(exactCoin || containsCoinBadge){
+      // Combined XP/coin badges retain the XP; only coin-only copy is hidden.
+      if(exactCoin || (containsCoinBadge&&!/\bXP\b/i.test(txt))){
         el.classList.add('v153-hide-coins');
       }
     });
 
-    // Clean text chunks where a sentence contains "+X XP · +Y coins"
-    document.querySelectorAll('*').forEach(el=>{
-      if(el.children.length===0 && el.textContent){
+    // Reuse the explicit rendered-UI scope. Do not normalize unrelated text.
+    elements.forEach(el=>{
+      if(el.children.length===0 && el.textContent && /🪙|coins?\b|monedas?\b/i.test(el.textContent)){
         let t = el.textContent;
         t = t.replace(/\s*[·•|-]?\s*\+?\d+\s*(coins?|monedas?)\b/gi,'');
         t = t.replace(/\s*🪙\s*\d+/gi,'');

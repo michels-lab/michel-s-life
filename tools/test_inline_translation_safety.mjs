@@ -67,3 +67,46 @@ test('all nine canonical visible-text walkers contain an explicit script/style b
     assert.match(fragment,/FILTER_REJECT/,'TreeWalker filter did not reject non-visible source');
   }
 });
+
+test('v153 coin cleanup never writes executable source or normalizes unrelated UI text',()=>{
+  const owner=script('v153-no-coins-english-cleanup-script');
+  const start=owner.indexOf('  function removeCoinsFromUI(){');
+  const end=owner.indexOf('\n  function finalPass(){',start);
+  assert.ok(start>=0&&end>start);
+  const body=owner.slice(start,end);
+  const ids=['v251-weekly-real-fix-script','v3021-dashboard-real-category-filter',
+    'v3130-presets-only-settings-script','v217-premium-edit-unified-script'];
+  const exclusions=new Set(['SCRIPT','STYLE','NOSCRIPT','TEMPLATE','TEXTAREA','INPUT','SELECT','OPTION','PRE','CODE']);
+  function leaf(tagName,textContent,editable=false,owned=false){
+    const node={tagName,textContent,children:[],isContentEditable:editable,
+      closest(selector){
+        const terms=selector.split(',');
+        return terms.includes(tagName.toLowerCase())||
+          (owned&&terms.includes('[data-mlv-i18n-owned="source"]'))?node:null;
+      },classList:{added:[],add(value){this.added.push(value)}}};
+    return node;
+  }
+  const scripts=ids.map(id=>leaf('SCRIPT',script(id)));
+  const otherProtected=Array.from(exclusions).filter(x=>x!=='SCRIPT')
+    .map(tag=>leaf(tag,'  3 coins;  x   y  '));
+  const editor=leaf('DIV','  3 coins  ',true);
+  const owned=leaf('DIV','  3 coins  ',false,true);
+  const ordinary=leaf('P','  ordinary   spacing  ');
+  const mixed=leaf('SPAN','+25 XP · +3 coins');
+  const coin=leaf('SMALL','3 coins');
+  const unchanged=[...scripts,...otherProtected,editor,owned,ordinary];
+  const before=unchanged.map(el=>el.textContent);
+  // Return protected elements deliberately, even though the production
+  // query now scopes rendered UI, to also test the exclusion boundary.
+  const selectors=[];
+  const document={querySelectorAll(selector){
+    selectors.push(selector);return [...unchanged,mixed,coin];
+  }};
+  new Function('document',body+'\nremoveCoinsFromUI();')(document);
+  assert.ok(selectors.every(x=>x!=='*'),'wildcard leaf cleanup reintroduced');
+  assert.deepEqual(unchanged.map(el=>el.textContent),before);
+  for(const el of unchanged)assert.deepEqual(el.classList.added,[]);
+  assert.equal(mixed.textContent,'+25 XP');
+  assert.deepEqual(mixed.classList.added,[],'XP badge must stay visible');
+  assert.ok(coin.classList.added.includes('v153-hide-coins'));
+});

@@ -279,7 +279,7 @@ test('new original soundscapes contain evolving harmonies, resonant melody and s
   assert.ok(alarms.includes(hook),'canonical sound runtime hook found');
   const source=alarms.replace(hook,
     'window.__testAlarmRender={renderAlarmSoundscape,ALARM_SCENES};'+hook);
-  const window={},document={readyState:'loading',addEventListener(){}};
+  const window={},document={readyState:'loading',documentElement:{dataset:{}},addEventListener(){}};
   vm.runInNewContext(source,{window,document,console,Float32Array,Math},{timeout:1000});
   const {renderAlarmSoundscape,ALARM_SCENES}=window.__testAlarmRender;
   const hashes=new Set();
@@ -310,4 +310,55 @@ test('new original soundscapes contain evolving harmonies, resonant melody and s
     hashes.add(Array.from(render.left.slice(100000,100150)).map(x=>x.toFixed(3)).join(','));
   }
   assert.equal(hashes.size,6,'all six themes require their own composition');
+});
+
+test('Mozart and Tchaikovsky alarm presets share selectable offline Windows + native Android IDs',()=>{
+  const ids=['mozart_k545','tchaikovsky_op39'];
+  for(const id of ids){
+    assert.ok(alarms.includes("'"+id+"'"),'JS alarm selector missing '+id);
+    assert.ok(alarms.includes(id+':{roots:'),'JS score missing '+id);
+    assert.ok(native.includes('"'+id+'" -> SoundScene'),'Android score missing '+id);
+    assert.ok(native.includes('"'+id+'"'),'Android sound URI missing '+id);
+  }
+  for(const note of ['C5','E5','G5','B4','A4','F#5']){
+    assert.ok(alarms.includes("'"+note+"'"),'Windows note '+note);
+    assert.ok(native.includes('"'+note+'"'),'Android note '+note);
+  }
+  assert.ok(alarms.includes('const phrase=score.phrases?.[bar]'));
+  assert.ok(alarms.includes('phrase.map((note,step)'));
+  assert.ok(native.includes('val phrase = score.phrases?.get(bar)'));
+  assert.ok(native.includes('phrase != null -> pitch(phrase[step])'));
+  assert.ok(alarms.includes('const duration=preview?12:ALARM_SECONDS'));
+  assert.ok(native.includes('Uri.fromFile(file)'));
+  assert.ok(native.includes('preset-v3-$selected.wav'));
+});
+
+test('all ten original Focus motifs are selectable and survive daily alarm reloads',()=>{
+  const ids=[
+    'focus_moonlight','focus_celestial','focus_orbit','focus_aurora',
+    'focus_observatory','focus_library','focus_afterglow','focus_silver',
+    'mozart_k545','tchaikovsky_op39'
+  ];
+  const saved=ids.map((sound,i)=>({
+    id:'scene-'+i,label:'Audio '+i,time:'09:00',repeat:'daily',date:'',
+    days:[],sound,enabled:true
+  }));
+  const records=new Map([['michelsLife.alarms.v1',JSON.stringify(saved)]]);
+  const localStorage={
+    getItem:key=>records.get(key)||null,
+    setItem:(key,value)=>records.set(key,value)
+  };
+  const window={},document={readyState:'loading',documentElement:{dataset:{}},addEventListener(){}};
+  vm.runInNewContext(alarms,{window,document,localStorage,console},{timeout:1000});
+  window.MichelsLifeAlarms.read();
+  assert.deepEqual(Array.from(window.MichelsLifeAlarms.records(),x=>x.sound),ids);
+  for(const id of ids){
+    assert.ok(alarms.includes(id+':{roots:'),'WebAudio score missing '+id);
+    assert.ok(native.includes('"'+id+'" -> SoundScene'),'native score missing '+id);
+    assert.ok(native.includes('"'+id+'"'),'native selection missing '+id);
+  }
+  assert.ok(alarms.includes('score.ambientNotes[degree]'));
+  assert.ok(native.includes('notes[score.pattern[step]]'));
+  assert.ok(alarms.includes("preview?12:ALARM_SECONDS"));
+  assert.ok(native.includes('preset-v3-$selected.wav'));
 });

@@ -179,7 +179,9 @@ internal object NativePersonalAlarms {
             val file = File(dir, name)
             return if (file.isFile && file.length() > 128L) Uri.fromFile(file) else defaultSound()
         }
-        if (selected in setOf("classic","soft","digital","gentle","pulse","radar")) {
+        if (selected in setOf("classic","soft","digital","gentle","pulse","radar","mozart_k545","tchaikovsky_op39",
+                "focus_moonlight","focus_celestial","focus_orbit","focus_aurora",
+                "focus_observatory","focus_library","focus_afterglow","focus_silver")) {
             return try {
                 dir.mkdirs()
                 val file = File(dir, "preset-v3-$selected.wav")
@@ -213,7 +215,9 @@ internal object NativePersonalAlarms {
      * The actual selection IDs and all native alarm scheduling stay intact. */
     private data class SoundScene(
         val roots: DoubleArray, val minor: Boolean, val pattern: IntArray,
-        val offsets: DoubleArray, val timbre: String, val drift: Double, val accent: Double
+        val offsets: DoubleArray, val timbre: String, val drift: Double, val accent: Double,
+        val phrases: Array<Array<String>>? = null,
+        val ambientNotes: DoubleArray? = null
     )
     private val presetRenderLock = Any()
 
@@ -230,6 +234,45 @@ internal object NativePersonalAlarms {
             intArrayOf(2,3,4,1,3),doubleArrayOf(.32,1.14,2.66,4.12,5.09),"bell",.23,.83)
         "radar" -> SoundScene(doubleArrayOf(82.41,110.00,98.00,82.41),true,
             intArrayOf(3,2,4,1),doubleArrayOf(.22,1.65,3.31,4.82),"shimmer",.45,.77)
+        // Native offline 24s arrangements of the eight original Focus motifs.
+        "focus_moonlight" -> SoundScene(doubleArrayOf(220.0,174.61,196.0,220.0),false,
+            intArrayOf(0,2,1,3,2),doubleArrayOf(),"glass",.16,.73,
+            ambientNotes=doubleArrayOf(220.0,329.63,440.0,493.88))
+        "focus_celestial" -> SoundScene(doubleArrayOf(196.0,174.61,220.0,196.0),false,
+            intArrayOf(0,3,2,1,3),doubleArrayOf(),"shimmer",.22,.78,
+            ambientNotes=doubleArrayOf(196.0,293.66,392.0,587.33))
+        "focus_orbit" -> SoundScene(doubleArrayOf(174.61,146.83,196.0,174.61),true,
+            intArrayOf(1,2,0,2,3,2),doubleArrayOf(),"glass",.31,.72,
+            ambientNotes=doubleArrayOf(174.61,261.63,349.23,523.25))
+        "focus_aurora" -> SoundScene(doubleArrayOf(164.81,146.83,174.61,164.81),true,
+            intArrayOf(3,2,1,0,1),doubleArrayOf(),"shimmer",.28,.75,
+            ambientNotes=doubleArrayOf(164.81,246.94,329.63,493.88))
+        "focus_observatory" -> SoundScene(doubleArrayOf(146.83,130.81,164.81,146.83),false,
+            intArrayOf(0,1,3,2,0),doubleArrayOf(),"bell",.13,.75,
+            ambientNotes=doubleArrayOf(146.83,220.0,293.66,440.0))
+        "focus_library" -> SoundScene(doubleArrayOf(130.81,116.54,146.83,130.81),true,
+            intArrayOf(0,2,1,0,3,1),doubleArrayOf(),"glass",.18,.69,
+            ambientNotes=doubleArrayOf(130.81,196.0,261.63,392.0))
+        "focus_afterglow" -> SoundScene(doubleArrayOf(174.61,164.81,196.0,174.61),false,
+            intArrayOf(2,3,1,0,2),doubleArrayOf(),"bell",.19,.77,
+            ambientNotes=doubleArrayOf(174.61,220.0,349.23,440.0))
+        "focus_silver" -> SoundScene(doubleArrayOf(196.0,174.61,220.0,196.0),true,
+            intArrayOf(3,1,2,0,3,2),doubleArrayOf(),"glass",.23,.79,
+            ambientNotes=doubleArrayOf(196.0,246.94,392.0,493.88))
+        "mozart_k545" -> SoundScene(doubleArrayOf(130.81,174.61,146.83,130.81),false,
+            intArrayOf(),doubleArrayOf(),"glass",.12,.86,
+            arrayOf(
+                arrayOf("C5","E5","G5","B4","C5","D5","C5"),
+                arrayOf("A5","G5","C5","G5","F5","E5","F5","E5"),
+                arrayOf("A4","B4","C5","D5","E5","F5","G5","A5"),
+                arrayOf("G5","F5","E5","D5","C5","B4","A4","G4")))
+        "tchaikovsky_op39" -> SoundScene(doubleArrayOf(98.00,87.31,110.00,98.00),true,
+            intArrayOf(),doubleArrayOf(),"bell",.08,.80,
+            arrayOf(
+                arrayOf("B4","B4","A4","C5","B4"),
+                arrayOf("A4","G4","A4","B4","B4"),
+                arrayOf("E5","A4","A4","D5","C5","F#5"),
+                arrayOf("G4","G4","E5","A4","A4","F#5","E5","F#5")))
         else -> scene("gentle")
     }
 
@@ -290,6 +333,15 @@ internal object NativePersonalAlarms {
 
         val pans = doubleArrayOf(-.48,.26,.58,-.34,.41,-.58,.18)
         val pads = doubleArrayOf(-.56,.41,-.24,.62)
+        val semitones = mapOf('C' to 0,'D' to 2,'E' to 4,'F' to 5,
+            'G' to 7,'A' to 9,'B' to 11)
+        fun pitch(note: String): Double {
+            if (note.length !in 2..3) return 0.0
+            val base = semitones[note[0]] ?: return 0.0
+            val octave = note.last().toString().toIntOrNull() ?: return 0.0
+            val midi = 12 * (octave + 1) + base + if (note.contains('#')) 1 else 0
+            return 440.0 * Math.pow(2.0,(midi-69)/12.0)
+        }
         for (bar in 0..3) {
             val start = bar * 6.0
             val root = score.roots[bar]
@@ -299,9 +351,20 @@ internal object NativePersonalAlarms {
             voice(start,5.96,root*.5,.060,"sub",-.05)
             voice(start+.65,4.65,root*3.01,.020,"swell",
                 if (bar%2==1) .55 else -.55)
-            for (step in score.pattern.indices) {
-                val t = start+score.offsets[step]
-                val hz = root*2*chord[score.pattern[step]]
+            val phrase = score.phrases?.get(bar)
+            val notes = score.ambientNotes
+            val melodyCount = phrase?.size ?: score.pattern.size
+            for (step in 0 until melodyCount) {
+                val t = when {
+                    phrase != null -> start+.18+step*5.34/phrase.size
+                    notes != null -> start+.20+step*5.4/score.pattern.size
+                    else -> start+score.offsets[step]
+                }
+                val hz = when {
+                    phrase != null -> pitch(phrase[step])
+                    notes != null -> notes[score.pattern[step]]
+                    else -> root*2*chord[score.pattern[step]]
+                }
                 val gain = (.10+.028*(if (step%3==0) 1 else 0))*score.accent*
                     (if (bar==3) 1.08 else 1.0)
                 val pan = pans[step%pans.size]
