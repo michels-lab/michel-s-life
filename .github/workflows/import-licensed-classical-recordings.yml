@@ -1,0 +1,32 @@
+name: Import licensed classical recordings (owner correction)
+on:
+  push:
+    branches:
+      - granada/focus-clock-first-classical-completion-20261124
+    paths:
+      - 'tools/import_classical_recordings.py'
+      - '.github/workflows/import-licensed-classical-recordings.yml'
+permissions:
+  contents: write
+jobs:
+  import-recordings:
+    if: github.repository == 'michels-lab/michel-s-life'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download the actual licensed performances
+        run: python3 tools/import_classical_recordings.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: licensed-classical-recordings
+          path: src/MichelsLife/frontend/assets/audio/classical/
+      - name: Commit only the verified audio assets to the existing correction branch
+        run: |
+          git config user.name "Michel's Life Recording Import"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/MichelsLife/frontend/assets/audio/classical/ android/app/src/main/res/raw/mlv_focus_mozart_k545.* android/app/src/main/res/raw/mlv_focus_tchaikovsky_op39.*
+          git add -u android/app/src/main/res/raw/
+          git diff --cached --stat
+          git commit -m "assets(audio): bundle verified licensed classical performances" || exit 1
+          git push origin HEAD:refs/heads/granada/focus-clock-first-classical-completion-20261124
