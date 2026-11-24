@@ -54,6 +54,7 @@ for(const width of [320,360,412])for(const language of ['en','es']){
  const parseLocations=[];
  const failureSourceHashes=[];
  const sourceRequests=[];
+ const executedScriptIntegrity=[];
  try{
    context=await browser.newContext({viewport:{width,height:915},screen:{width,height:915},isMobile:true,hasTouch:true,deviceScaleFactor:2.625});
    await context.addInitScript(locale=>{
@@ -192,7 +193,6 @@ for(const width of [320,360,412])for(const language of ['en','es']){
    // JavaScript. Capture the exact engine-compiled inline source SHA too.
    // Only the four selected historical SCRIPT offsets are fetched; never
    // record source text, arbitrary script URLs or user data.
-   const executedScriptIntegrity=[];
    cdp.on('Debugger.scriptParsed',event=>{
      if(sourceRequests.length>=100||!event.scriptId)return;
      const line=Number.isSafeInteger(event.startLine)?event.startLine+1:null;
