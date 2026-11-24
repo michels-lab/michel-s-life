@@ -92,13 +92,14 @@ for(const width of [320,360,412])for(const language of ['en','es']){
        });
        if(evidence.length<48)evidence.push({stage,scripts});
      };
-     const record=(kind,node,oldText)=>{
+     const record=(kind,node,oldText,detail=null)=>{
        const parent=node?.nodeType===1?node:node?.parentElement;
        const owner=parent?.tagName==='SCRIPT'?parent:parent?.closest?.('script');
        if(!owner||!ids.has(owner.id)||evidence.length>=48)return;
        evidence.push({stage:'text-mutation',id:owner.id,kind,
          beforeCharacters:oldText?.length??null,
-         currentCharacters:owner.textContent?.length??null});
+         currentCharacters:owner.textContent?.length??null,
+         ...(detail||{})});
      };
      // The previous evidence proved that complete SCRIPT text is later
      // REPLACED (childList), not just character-edited. Capture the owning
@@ -110,14 +111,7 @@ for(const width of [320,360,412])for(const language of ['en','es']){
        if(!p)return null;
        const direct=p.tagName==='SCRIPT'?p:p.closest?.('script');
        if(direct&&ids.has(direct.id))return direct;
-       // A parent innerHTML/replaceChildren could drop a SCRIPT subtree.
-       if(['BODY','HTML','HEAD'].includes(p.tagName)&&p.querySelector){
-         for(const id of ids){
-           const child=p.querySelector('[id="'+id+'"]');
-           if(child?.tagName==='SCRIPT')return child;
-         }
-       }
-       return null;
+         return null;
      };
      const traceWrite=(node,kind,value)=>{
        const owner=scriptOwner(node);
@@ -160,7 +154,12 @@ for(const width of [320,360,412])for(const language of ['en','es']){
          else if(entry.type==='childList'){
            const node=entry.target;
            if(node?.tagName==='SCRIPT'&&ids.has(node.id))
-             record('childList',node,null);
+             record('childList',node,null,{
+               addedNodeCount:entry.addedNodes.length,
+               removedNodeCount:entry.removedNodes.length,
+               addedTextCharacters:[...entry.addedNodes].reduce((n,x)=>n+(x.textContent?.length||0),0),
+               removedTextCharacters:[...entry.removedNodes].reduce((n,x)=>n+(x.textContent?.length||0),0)
+             });
          }
        }
      });
@@ -189,6 +188,30 @@ for(const width of [320,360,412])for(const language of ['en','es']){
      parseLocations.push(detail);
    };
    const cdp=await context.newCDPSession(page);
+   // #168: an altered DOM node is NOT proof that Chromium executed altered
+   // JavaScript. Capture the exact engine-compiled inline source SHA too.
+   // Only the four selected historical SCRIPT offsets are fetched; never
+   // record source text, arbitrary script URLs or user data.
+   const executedScriptIntegrity=[];
+   cdp.on('Debugger.scriptParsed',event=>{
+     if(sourceRequests.length>=100||!event.scriptId)return;
+     const line=Number.isSafeInteger(event.startLine)?event.startLine+1:null;
+     if(line===null)return;
+     const candidate=inventory.scripts.find(x=>
+       invariantScriptIds.includes(x.id)&&Math.abs(x.startLine-line)<=2);
+     if(!candidate)return;
+     sourceRequests.push(cdp.send('Debugger.getScriptSource',
+       {scriptId:event.scriptId}).then(reply=>{
+       if(typeof reply.scriptSource!=='string')return;
+       const code=reply.scriptSource;
+       executedScriptIntegrity.push({
+         id:candidate.id,engineStartLine:line,
+         compiledBytes:Buffer.byteLength(code,'utf8'),
+         canonicalBytes:candidate.bytes,
+         compiledHashMatchesCanonical:createHash('sha256').update(code).digest('hex')===candidate.digest
+       });
+     }).catch(()=>{}));
+   });
    cdp.on('Debugger.scriptFailedToParse',event=>{
      record(safePlace(event.url,event.startLine,event.startColumn,'parser'));
      // Collect a digest of the failed script, NOT its contents. For an
@@ -424,7 +447,8 @@ for(const width of [320,360,412])for(const language of ['en','es']){
      [...new Set(errors.map(e=>e.code))].join(',')+'] '+
      JSON.stringify({errors:errors.slice(0,3),parser:parseLocations,
        failedScriptFingerprints:failureSourceHashes.slice(-12),
-       domScriptIntegrity:compared,earlyScriptEvidence}));
+       domScriptIntegrity:compared,executedScriptIntegrity,
+       earlyScriptEvidence}));
    if(page)try{await page.screenshot({path:output+'/'+name+'-failure.png',timeout:6000});}catch{}
  }finally{
    cases.push({width,language,passed,phase,errors});
