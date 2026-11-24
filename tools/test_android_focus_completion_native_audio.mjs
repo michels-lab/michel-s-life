@@ -21,8 +21,8 @@ test('Android native alarm receives same canonical selected completion chime as 
     'must not introduce a duplicate Android timer');
 });
 
-test('six original WAV chimes are 16-bit PCM, distinct, nonempty and referenced by native notifications',()=>{
-  const ids=['soft','glass','aurora','observatory','midnight','silver'],hashes=new Set();
+test('eight WAV chimes and score excerpts are 16-bit PCM, distinct, nonempty and referenced by native notifications',()=>{
+  const ids=['soft','glass','aurora','observatory','midnight','silver','mozart_k545','tchaikovsky_op39'],hashes=new Set();
   for(const id of ids){
     const file='android/app/src/main/res/raw/mlv_focus_'+id+'.wav';
     const data=readFileSync(file);
@@ -42,6 +42,6 @@ test('six original WAV chimes are 16-bit PCM, distinct, nonempty and referenced 
     hashes.add(digest);
     assert.ok(native.includes('R.raw.mlv_focus_'+id),'Kotlin channel missing '+id);
   }
-  assert.equal(hashes.size,6);
+  assert.equal(hashes.size,8);
 });
 console.log('PASS original Android background Pomodoro completion tone channel and RIFF provenance');

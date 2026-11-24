@@ -51,53 +51,38 @@ try{
     await page.locator('#mlv-desktop-focus-launcher').click();
   }
   assert.equal(await root.isVisible(),true,platform+' immersive focus not opened');
-  const card=root.locator(mobile?'.mlv-android-classical':'.mlv-focus-classical');
-  const mozart=card.locator(mobile?'[data-mobile-classical="mozart_k545"]':'[data-mlv-classical="mozart_k545"]');
-  const tchaikovsky=card.locator(mobile?'[data-mobile-classical="tchaikovsky_op39"]':'[data-mlv-classical="tchaikovsky_op39"]');
-  assert.equal(await card.isVisible(),true,'classical section must be visible by default');
-  const firstViewport=await card.evaluate(el=>{
-    const r=el.getBoundingClientRect();
-    return {top:r.top,bottom:r.bottom,height:window.innerHeight,
-      display:getComputedStyle(el).display,visibility:getComputedStyle(el).visibility};
-  });
-  assert.ok(firstViewport.top>=0 && firstViewport.top < firstViewport.height-50,
-    'classical songs must appear near top of Focus WITHOUT scrolling: '+JSON.stringify(firstViewport));
-  assert.equal(await mozart.count(),1);
-  assert.equal(await tchaikovsky.count(),1);
-  assert.equal(await mozart.getAttribute('aria-pressed'),'false','music must not autoplay');
-  const details=root.locator(mobile?'.mlv-android-focus-sounds':'.mlv-focus-sound-details');
-  assert.equal(await details.getAttribute('open'),null,'hidden audio drawer should stay closed');
-  const title=await card.innerText();
-  assert.match(title,/Música clásica/);
-  assert.match(title,/Mozart/);
-  assert.match(title,/Chaikovski/);
-  await mozart.scrollIntoViewIfNeeded();
-  await page.screenshot({path:out+'/'+platform+'-music-visible.png'});
-  await mozart[mobile?'tap':'click']();
-  await page.waitForFunction(()=>window.MichelsLifeFocusAudio?.playing?.()&&
-    window.MichelsLifeFocusAudio?.playingScene?.()==='mozart_k545',null,{timeout:8000});
-  assert.equal(await mozart.getAttribute('aria-pressed'),'true','Mozart must be indicated playing');
-  await tchaikovsky[mobile?'tap':'click']();
-  await page.waitForFunction(()=>window.MichelsLifeFocusAudio?.playingScene?.()==='tchaikovsky_op39',null,{timeout:8000});
-  assert.equal(await tchaikovsky.getAttribute('aria-pressed'),'true','Tchaikovsky must be indicated playing');
-  const saved=await page.evaluate(()=>{
-    const a=window.MichelsLifeFocusAudio,s=window.FocusStoryV30162.focusState();
-    return {selected:a.sceneId(),persisted:s.v30165Soundscape,
-      oldMozart:a.classicalOptions().length,allScenes:a.sceneOptions().length};
-  });
-  assert.equal(saved.selected,'tchaikovsky_op39');
-  assert.equal(saved.persisted,'tchaikovsky_op39');
-  assert.equal(saved.allScenes,10,'eight original scenes must be preserved');
-  await tchaikovsky[mobile?'tap':'click']();
-  assert.equal(await page.evaluate(()=>window.MichelsLifeFocusAudio.playing()),false,
-    'second press must stop, not leave an ambient interval');
-  assert.equal(await tchaikovsky.getAttribute('aria-pressed'),'false');
+  const completion=root.locator(mobile?'[data-mobile-focus-completion]':'[data-mlv-completion-sound]');
+  const preview=root.locator(mobile?'[data-mobile-focus="preview-completion"]':'[data-mlv-audio="preview-completion"]');
+  const clock=root.locator(mobile?'#mlv-android-focus-time':'#mlv-desktop-focus-clock');
+  const motivation=root.locator(mobile?'#mlv-android-focus-motivation':'#mlv-desktop-focus-motivation');
+  await motivation.locator('.mlv-motivation-line').first().waitFor({state:'visible'});
+  const first=await root.evaluate((el,mobile)=>{
+    const c=el.querySelector(mobile?'#mlv-android-focus-time':'#mlv-desktop-focus-clock');
+    const m=el.querySelector(mobile?'#mlv-android-focus-motivation':'#mlv-desktop-focus-motivation');
+    const r=c.getBoundingClientRect(),v=m.getBoundingClientRect();
+    return {clockTop:r.top,clockBottom:r.bottom,motivationTop:v.top,motivationBottom:v.bottom,height:innerHeight,collapsed:!!m.closest('details:not([open])')};
+  },mobile);
+  assert.ok(first.clockTop>=0&&first.clockBottom<=first.height&&first.motivationBottom<=first.height&&!first.collapsed,'clock and phrases must be fully visible at first viewport: '+JSON.stringify(first));
+  assert.equal(await motivation.locator('.mlv-motivation-line:not([hidden])').count(),2);
+  assert.equal(await completion.locator('option').count(),9);
+  assert.match(await completion.locator('option[value="mozart_k545"]').innerText(),/Mozart/);
+  assert.match(await completion.locator('option[value="tchaikovsky_op39"]').innerText(),/Chaikovski/);
+  await page.screenshot({path:out+'/'+platform+'-clock-first.png'});
+  for(const id of ['mozart_k545','tchaikovsky_op39']){
+    await completion.selectOption(id);
+    await preview[mobile?'tap':'click']();
+    await page.waitForFunction(id=>window.MichelsLifeFocusAudio.previewingCompletion()===id,id,{timeout:10000});
+    assert.equal(await page.evaluate(()=>window.MichelsLifeFocusAudio.playing()),false,'classical must not start ambient');
+    assert.equal(await page.evaluate(()=>window.FocusStoryV30162.focusState().v30165CompletionSound),id);
+    await preview[mobile?'tap':'click']();
+    await page.waitForFunction(()=>window.MichelsLifeFocusAudio.previewingCompletion()===null);
+  }
+  const scenes=await page.evaluate(()=>window.MichelsLifeFocusAudio.sceneOptions().map(x=>x.id));
+  assert.equal(scenes.length,8);assert.ok(!scenes.includes('mozart_k545'));
   await page.reload({waitUntil:'domcontentloaded',timeout:60000});
-  await page.waitForFunction(()=>!!window.MichelsLifeFocusAudio?.sceneId,null,{timeout:60000});
-  assert.equal(await page.evaluate(()=>window.MichelsLifeFocusAudio.sceneId()),
-    'tchaikovsky_op39','classical choice not persisted across reload');
+  await page.waitForFunction(()=>window.MichelsLifeFocusAudio?.completionId?.()==='tchaikovsky_op39');
   assert.deepEqual(errors,[],
     'real Chromium runtime errors cannot be ignored; sanitized CDP provenance='+
       JSON.stringify(await parserFaults.snapshot()));
-  console.log('PASS real '+platform+' visible classical Mozart/Chaikovski, direct taps, Web Audio state, stop and reload persistence');
+  console.log('PASS real '+platform+' clock-first, visible motivation, classical completion preview, stop and reload persistence');
 }finally{await browser.close();}

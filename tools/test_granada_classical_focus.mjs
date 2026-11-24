@@ -7,15 +7,17 @@ const focusSource=readFileSync('src/MichelsLife/frontend/focus-immersive.js','ut
 const html=readFileSync('src/MichelsLife/frontend/index.html','utf8');
 const legacy=['moonlight','celestial','orbit','aurora','observatory','library','afterglow','silver'];
 const classical=['mozart_k545','tchaikovsky_op39'];
-const all=new Set([...legacy,...classical]);
+const all=new Set(legacy);
 
 function harness(persisted={v30165Soundscape:'moonlight',v30165CompletionSound:'soft'}){
-  const frequencies=[],startTimes=[],contexts=[],timers=new Map();
+  const frequencies=[],startTimes=[],contexts=[],timers=new Map(),buffers=[],sources=[];
   let timerCounter=0;
   class AudioContext{
     constructor(){this.currentTime=0;this.state='running';this.destination={};this.closed=false;contexts.push(this);}
     resume(){return Promise.resolve();}
     close(){this.closed=true;this.state='closed';return Promise.resolve();}
+    createBuffer(channels,length,rate){const samples=new Float32Array(length);const buffer={samples,length,rate,getChannelData(){return samples;}};buffers.push(buffer);return buffer;}
+    createBufferSource(){const source={stopped:false,connect(){},start(){this.started=true;},stop(){this.stopped=true;}};sources.push(source);return source;}
     createOscillator(){
       return {type:'sine',frequency:{setValueAtTime(freq,time){frequencies.push(freq)}},
         connect(){},start(time){startTimes.push(time)},stop(){}};
@@ -41,155 +43,74 @@ function harness(persisted={v30165Soundscape:'moonlight',v30165CompletionSound:'
   window.window=window;
   window.document={readyState:'loading',documentElement:{dataset:{mlvPlatform:'android'}},querySelector(){return null},addEventListener(){}};
   vm.runInNewContext(focusSource,window,{filename:'focus-immersive.js'});
-  return {api:window.MichelsLifeFocusAudio,frequencies,startTimes,contexts,timers,persisted};
+  return {api:window.MichelsLifeFocusAudio,frequencies,startTimes,contexts,timers,persisted,buffers,sources};
 }
 
-test('canonical FocusStory validator accepts exactly the two new IDs, with no competing audio storage',()=>{
-  const expression=html.match(/function setAudioPreference\(kind,value\)\{[\s\S]*?\n\}/)?.[0]||'';
-  assert.ok(expression,'canonical preferences function missing');
-  for(const id of classical)assert.ok(expression.includes("'"+id+"'"),'canonical state rejects '+id);
-  assert.doesNotMatch(focusSource,/localStorage\.setItem\(/,'only FocusStory may persist selected scene');
+
+test('classical music is exclusively a completion sound, all eight original ambience choices remain',()=>{
+ const f=harness();
+ assert.deepEqual(Array.from(f.api.sceneOptions(),o=>o.id),legacy);
+ assert.equal(f.api.completionOptions().length,9);
+ for(const id of classical){
+   assert.ok(f.api.completionOptions().some(o=>o.id===id));
+   assert.equal(f.api.toggleScene(id),false);
+   assert.equal(f.api.selectCompletion(id),id);
+   assert.equal(f.persisted.v30165CompletionSound,id);
+   assert.equal(f.persisted.v30165Soundscape,'moonlight');
+ }
+ const pref=html.match(/function setAudioPreference\(kind,value\)\{[\s\S]*?\n\}/)?.[0];
+ assert.ok(pref); assert.match(pref,/completion[\s\S]*?mozart_k545/);
+ assert.doesNotMatch(pref.split("kind==='scene'")[1],/mozart_k545|tchaikovsky_op39/);
+ assert.match(html,/Migrate the mistakenly saved classical ambience choice/);
 });
-
-test('ten scenes keep all eight original pieces, and classical themes describe excerpts rather than fake recordings',()=>{
-  const {api}=harness();
-  const options=api.sceneOptions();
-  assert.equal(options.length,10);
-  for(const id of legacy)assert.ok(options.some(o=>o.id===id),'removed original scene '+id);
-  for(const id of classical)assert.ok(options.some(o=>o.id===id),'missing '+id);
-  assert.match(options.find(x=>x.id==='mozart_k545').label,/Mozart.*K\.545.*excerpt/);
-  assert.match(options.find(x=>x.id==='tchaikovsky_op39').label,/Tchaikovsky.*Morning Prayer.*excerpt/);
+test('both one-shot piano excerpts are actual non-silent score-derived audio with no ambient scheduler',()=>{
+ const f=harness();
+ for(const id of classical){
+   f.api.selectCompletion(id);
+   assert.equal(f.api.playCompletion(true),true);
+   assert.equal(f.api.previewingCompletion(),id);
+   assert.equal(f.api.playing(),false);
+   assert.equal(f.timers.size,0);
+   const buffer=f.buffers.at(-1),source=f.sources.at(-1);
+   assert.ok(source.started&&buffer.rate===22050);
+   assert.ok(buffer.length/22050>=18&&buffer.length/22050<=25);
+   assert.ok(buffer.samples.some(x=>Math.abs(x)>.1));
+   assert.ok(buffer.samples.every(x=>Number.isFinite(x)&&Math.abs(x)<=.8));
+   f.api.stopClassical();assert.equal(source.stopped,true);
+   assert.equal(f.api.playCompletion(),true);
+   assert.equal(f.api.previewingCompletion(),null);
+   assert.equal(f.api.playing(),false);
+ }
+ assert.notEqual(f.buffers[0].length,f.buffers.at(-1).length);
+ assert.equal(harness(f.persisted).api.completionId(),'tchaikovsky_op39');
 });
-
-test('Mozart K545 opening pitches are real synthesized note frequencies with a bounded scheduler',()=>{
-  const f=harness();
-  assert.equal(f.api.playing(),false,'must not autoplay on boot');
-  assert.equal(f.api.selectScene('mozart_k545'),'mozart_k545');
-  assert.equal(f.persisted.v30165Soundscape,'mozart_k545');
-  assert.equal(f.api.startAmbient(),true);
-  const near=(hz)=>f.frequencies.some(x=>Math.abs(x-hz)<1);
-  assert.ok(near(523.25),'C5 should sound');
-  assert.ok(near(659.26),'E5 should sound');
-  assert.ok(near(783.99),'G5 should sound');
-  assert.equal(f.timers.size,1,'one scheduler only');
-  assert.ok(f.frequencies.every(x=>Number.isFinite(x)&&x>=90&&x<=1200));
-  assert.ok(f.startTimes.every(x=>Number.isFinite(x)&&x>=0&&x<=7.2));
-  f.api.stopAmbient();
-  assert.equal(f.timers.size,0);
-  assert.equal(f.contexts.at(-1).closed,true);
+test('same-source native WAV files match score-based browser PCM sample by sample within quantization',()=>{
+ const f=harness();
+ for(const id of classical){
+   f.api.selectCompletion(id);assert.equal(f.api.playCompletion(),true);
+   const pcm=f.buffers.at(-1).samples;
+   const wav=readFileSync('android/app/src/main/res/raw/mlv_focus_'+id+'.wav');
+   assert.equal(wav.toString('ascii',0,4),'RIFF');
+   assert.equal(wav.readUInt32LE(24),22050);assert.equal(wav.readUInt32LE(40),pcm.length*2);
+   for(let i=0;i<pcm.length;i+=137)assert.ok(Math.abs(wav.readInt16LE(44+2*i)-Math.round(pcm[i]*32767))<=2,'native/browser audio differs: '+id+' '+i);
+ }
 });
-
-test('Tchaikovsky Op39 hymn theme evolves across multiple measures and preserves user scene choice',()=>{
-  const f=harness();
-  f.api.selectScene('tchaikovsky_op39');
-  assert.equal(f.api.startAmbient(),true);
-  assert.ok(f.frequencies.some(x=>Math.abs(x-493.88)<1),'B4 opening must sound');
-  const period=f.timers.values().next().value;
-  assert.equal(typeof period,'function');
-  period();period();
-  assert.ok(f.frequencies.some(x=>Math.abs(x-739.99)<1),'F-sharp high note must appear in later phrase');
-  const old=f.contexts.at(-1);
-  f.api.selectScene('mozart_k545');
-  assert.equal(old.closed,true,'switch must close obsolete context');
-  assert.equal(f.timers.size,1,'no interval leak');
-  assert.equal(f.api.sceneId(),'mozart_k545');
-  const next=harness(f.persisted);
-  assert.equal(next.api.sceneId(),'mozart_k545','reopening the app must read the canonical preference');
-  f.api.stopAmbient();
+test('eight original ambient tracks still support selection, start/stop and a single scheduler',()=>{
+ const f=harness();
+ for(const id of legacy){
+   const previous=f.contexts.at(-1);
+   assert.equal(f.api.toggleScene(id),true);
+   assert.equal(f.api.playingScene(),id);assert.equal(f.timers.size,1);
+   if(previous)assert.equal(previous.closed,true);
+ }
+ assert.equal(f.api.toggleScene('silver'),true);assert.equal(f.timers.size,0);
 });
-
-test('Spanish composer names are localized, and original composition categories remain separate',()=>{
-  const f=harness();
-  assert.equal(f.api.sceneOptions().filter(x=>x.label.startsWith('CL · ')).length,2);
-  // Public-domain composers are reproduced as short new synth arrangements.
-  assert.match(focusSource,/These are short ambient arrangements, not full scores or recordings/);
-  assert.doesNotMatch(focusSource,/https?:\/\/.*\.mp3/);
-});
-
-test('visible classical cards toggle one canonical audio scene and never autoplay or duplicate intervals',()=>{
-  const f=harness();
-  assert.equal(f.api.playing(),false);
-  assert.equal(f.api.toggleClassical('bad-id'),false,'unknown sound must not be accepted');
-  assert.equal(f.api.playing(),false);
-  assert.equal(f.api.classicalOptions().length,2);
-  assert.equal(f.api.toggleClassical('mozart_k545'),true);
-  assert.equal(f.api.playingScene(),'mozart_k545');
-  assert.equal(f.api.playing(),true);
-  assert.equal(f.api.sceneId(),'mozart_k545');
-  assert.equal(f.timers.size,1);
-  assert.equal(f.api.toggleClassical('tchaikovsky_op39'),true);
-  assert.equal(f.api.playingScene(),'tchaikovsky_op39');
-  assert.equal(f.api.sceneId(),'tchaikovsky_op39');
-  assert.equal(f.timers.size,1,'switching classical composers must not leak scheduler timers');
-  assert.equal(f.api.toggleClassical('tchaikovsky_op39'),true);
-  assert.equal(f.api.playing(),false,'pressing playing composer stops ambient');
-  assert.equal(f.timers.size,0);
-  assert.equal(f.api.sceneId(),'tchaikovsky_op39','stopping must retain selected composer in canonical preferences');
-  const es=harness(f.persisted);
-  es.api.selectScene('mozart_k545');
-  es.api.stopAmbient();
-  assert.equal(es.api.sceneId(),'mozart_k545');
-});
-
-test('both actual Focus surfaces expose explicit classical music controls OUTSIDE collapsed audio drawers',()=>{
-  const android=readFileSync('android/mobile-experience.js','utf8');
-  for(const id of classical){
-    assert.match(focusSource,new RegExp('data-mlv-classical="'+id+'"'));
-    assert.match(android,new RegExp('data-mobile-classical="'+id+'"'));
-  }
-  assert.match(focusSource,/data-mlv-classical-heading/);
-  assert.match(android,/data-mlv-android-classical-heading/);
-  assert.ok(focusSource.indexOf('data-mlv-classical-heading')<focusSource.indexOf('<details class="mlv-focus-sound-details"'),
-    'desktop should show music without opening audio details');
-  assert.ok(android.indexOf('data-mlv-android-classical-heading')<android.indexOf('<details class="mlv-android-focus-sounds"'),
-    'Android should show music without opening audio details');
-  assert.match(focusSource,/\[data-mlv-classical\]/);
-  assert.match(android,/\[data-mobile-classical\]/);
-  assert.match(android,/audio\?\.classicalOptions\?\.\(\)/);
-  assert.match(focusSource,/audio\?\.classicalOptions\?\.\(\)/);
-  assert.doesNotMatch(focusSource,/localStorage\.setItem\(/,'no second audio persistence store');
-});
-
-
-test('all eight original ambient scenes are directly previewable with one bounded scheduler',()=>{
-  const f=harness();
-  assert.equal(f.api.playing(),false);
-  assert.equal(f.api.toggleScene('unknown'),false);
-  assert.equal(f.api.playing(),false,'invalid scene must never autoplay or reset choice');
-  for(const id of legacy){
-    const previous=f.contexts.at(-1);
-    assert.equal(f.api.toggleScene(id),true,'cannot start '+id);
-    assert.equal(f.api.playingScene(),id);
-    assert.equal(f.persisted.v30165Soundscape,id,'selection must persist for '+id);
-    assert.equal(f.timers.size,1,'concurrent scheduler after '+id);
-    if(previous)assert.equal(previous.closed,true,'previous context leaked on '+id);
-  }
-  assert.equal(f.api.toggleScene('silver'),true,'same track must act as Stop');
-  assert.equal(f.api.playing(),false);
-  assert.equal(f.timers.size,0);
-  assert.equal(f.persisted.v30165Soundscape,'silver','Stop must not lose saved choice');
-});
-
-test('direct Focus audio controls expose 8 ambient tracks plus 2 classics and completion preview on BOTH platforms',()=>{
-  const desktop=focusSource;
-  const mobile=readFileSync('android/mobile-experience.js','utf8');
-  for(const id of legacy){
-    assert.match(desktop,new RegExp('data-mlv-scene="'+id+'"'),id+' hidden on Windows');
-    assert.match(mobile,new RegExp('data-mobile-scene="'+id+'"'),id+' hidden on Android');
-  }
-  for(const id of classical){
-    assert.match(desktop,new RegExp('data-mlv-classical="'+id+'"'));
-    assert.match(mobile,new RegExp('data-mobile-classical="'+id+'"'));
-  }
-  assert.match(desktop,/toggleScene\(id\)/);
-  assert.match(mobile,/MichelsLifeFocusAudio\?\.toggleScene\?\.\(sceneId\)/);
-  assert.ok(desktop.indexOf('data-mlv-scene="moonlight"')<desktop.indexOf('<details class="mlv-focus-sound-details"'));
-  assert.ok(mobile.indexOf('data-mobile-scene="moonlight"')<mobile.indexOf('<details class="mlv-android-focus-sounds"'));
-  assert.ok(desktop.indexOf('data-mlv-completion-sound')<desktop.indexOf('<details class="mlv-focus-sound-details"'));
-  assert.ok(mobile.indexOf('<select data-mobile-focus-completion>')<mobile.indexOf('<details class="mlv-android-focus-sounds"'));
-  assert.equal((desktop.match(/data-mlv-completion-sound/g)||[]).length,3,'desktop must avoid a duplicated completion picker');
-  assert.equal((mobile.match(/<select data-mobile-focus-completion>/g)||[]).length,1,'Android completion input must not be duplicated');
-  assert.match(mobile,/selector\.includes\('quick-completion label'\)/,'localization must preserve nested select control');
-  assert.match(desktop,/data-mlv-audio="preview-completion"/);
-  assert.match(mobile,/data-mobile-focus="preview-completion"/);
+test('both real focus templates put clock and visible motivation before audio, no hidden quotes or wall of track buttons',()=>{
+ const mobile=readFileSync('android/mobile-experience.js','utf8');
+ for(const [s,clock,motivation,completion] of [[focusSource,'id="mlv-desktop-focus-clock"','id="mlv-desktop-focus-motivation"','<select id="mlv-focus-completion-select"'],[mobile,'id="mlv-android-focus-time"','id="mlv-android-focus-motivation"','<select data-mobile-focus-completion>']]){
+   assert.ok(s.indexOf(clock)>0&&s.indexOf(clock)<s.indexOf(motivation)&&s.indexOf(motivation)<s.indexOf(completion));
+   assert.doesNotMatch(s,/<details class="mlv-focus-motivation-details">/);
+   assert.doesNotMatch(s,/data-(?:mlv|mobile)-classical="mozart_k545"/);
+ }
+ assert.match(focusSource,/window\.MichelsLifeFocusAudio/);
 });

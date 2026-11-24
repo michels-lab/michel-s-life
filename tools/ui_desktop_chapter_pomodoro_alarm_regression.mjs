@@ -70,13 +70,13 @@ try{
  await page.locator('#mlv-desktop-focus-launcher').click({timeout:12000});
  await page.waitForFunction(()=>!document.getElementById('mlv-desktop-focus-immersive')?.hidden);
  const focusLayout=await page.evaluate(()=>{
-   const details=document.querySelector('#mlv-desktop-focus-immersive .mlv-focus-motivation-details');
+   const motivation=document.querySelector('#mlv-desktop-focus-motivation');
    const clock=document.getElementById('mlv-desktop-focus-clock')?.getBoundingClientRect();
    const start=document.querySelector('#mlv-desktop-focus-immersive [data-focus-action="toggle"]')?.getBoundingClientRect();
-   return {closed:!!details&&!details.open,clock:clock?.toJSON(),start:start?.toJSON(),height:innerHeight,
+   return {visible:!!motivation&&motivation.querySelectorAll('.mlv-motivation-line:not([hidden])').length===2&&!motivation.closest('details:not([open])'),clock:clock?.toJSON(),start:start?.toJSON(),height:innerHeight,
      inertSidebar:!!document.querySelector('#v30171Sidebar #v30162FocusDock:not([hidden])')};
  });
- assert(focusLayout.closed&&focusLayout.clock?.height>40&&focusLayout.start?.height>35&&
+ assert(focusLayout.visible&&focusLayout.clock?.height>40&&focusLayout.start?.height>35&&
    focusLayout.start.y+focusLayout.start.height<=focusLayout.height+2&&!focusLayout.inertSidebar,
    'Pomodoro clock or buttons obscured by motivational quotes/legacy sidebar: '+JSON.stringify(focusLayout));
  await page.locator('#mlv-desktop-focus-immersive [data-focus-action="toggle"]').click();

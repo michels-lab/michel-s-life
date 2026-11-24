@@ -46,11 +46,11 @@ function audioSandbox(){
   return {api:sandbox.MichelsLifeFocusAudio,state,timers,created,osc:()=>oscCount,sandbox};
 }
 
-test('real audio controls expose eight original A+C scenes and seven end tones',()=>{
+test('real audio controls expose eight original A+C scenes and nine end tones',()=>{
   const {api}=audioSandbox();
   assert.ok(api,'audio engine must be exported at boot');
-  assert.equal(api.sceneOptions().length,10);
-  assert.equal(api.completionOptions().length,7);
+  assert.equal(api.sceneOptions().length,8);
+  assert.equal(api.completionOptions().length,9);
   assert.ok(api.sceneOptions().some(x=>x.label.includes('Moonlight Study')));
   assert.ok(api.sceneOptions().some(x=>x.label.includes('Midnight Library')));
   assert.ok(api.completionOptions().some(x=>x.id==='off'));
