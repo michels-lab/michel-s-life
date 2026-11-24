@@ -1074,6 +1074,7 @@
         font-weight:900!important;line-height:1.06!important;
         min-height:58px!important;color:#fff!important;letter-spacing:-.05em!important
       }
+      #mlv-android-focus-sheet .mlv-focus-motivation-always{flex:0 0 auto;min-width:0}
       #mlv-android-focus-sheet .mlv-focus-motivation-details{order:50;max-height:23vh;overflow:auto;flex:0 0 auto;border:1px solid #ffffff23;border-radius:12px;padding:8px 11px}
       #mlv-android-focus-sheet .mlv-focus-motivation-details summary{min-height:34px;cursor:pointer;font-size:12px;font-weight:700}
       #mlv-android-focus-sheet .mlv-focus-motivation-details:not([open]){max-height:50px}
@@ -1265,29 +1266,6 @@
             <button type="button" class="mlv-android-focus-close" data-mobile-focus="close" aria-label="Close Focus">×</button>
           </div>
           <div class="mlv-focus-session-strip"><span id="mlv-focus-session-meta">WORK SESSION · 25 MIN</span><span id="mlv-focus-session-state">READY</span></div>
-          <div class="mlv-android-classical" role="group" aria-label="Classical music">
-            <strong data-mlv-android-classical-heading>Música clásica</strong>
-            <div class="mlv-android-classical-actions">
-              <button type="button" data-mobile-classical="mozart_k545" aria-pressed="false">▶ Mozart · K.545</button>
-              <button type="button" data-mobile-classical="tchaikovsky_op39" aria-pressed="false">▶ Chaikovski · Oración matinal</button>
-            </div>
-            <strong data-mobile-ambient-heading>Música ambiental · 8 pistas</strong>
-            <div class="mlv-android-ambient-actions" role="group" aria-label="Ambient music">
-              <button type="button" data-mobile-scene="moonlight" aria-pressed="false">▶ moonlight</button>
-              <button type="button" data-mobile-scene="celestial" aria-pressed="false">▶ celestial</button>
-              <button type="button" data-mobile-scene="orbit" aria-pressed="false">▶ orbit</button>
-              <button type="button" data-mobile-scene="aurora" aria-pressed="false">▶ aurora</button>
-              <button type="button" data-mobile-scene="observatory" aria-pressed="false">▶ observatory</button>
-              <button type="button" data-mobile-scene="library" aria-pressed="false">▶ library</button>
-              <button type="button" data-mobile-scene="afterglow" aria-pressed="false">▶ afterglow</button>
-              <button type="button" data-mobile-scene="silver" aria-pressed="false">▶ silver</button>
-            </div>
-            <span class="mlv-android-classical-note" data-mlv-android-classical-note>Fragmentos breves sintetizados</span>
-          </div>
-          <div class="mlv-android-focus-quick-completion" role="group" aria-label="Completion sound">
-            <label>Sonido al terminar<select data-mobile-focus-completion></select></label>
-            <button type="button" data-mobile-focus="preview-completion">▶ Escuchar</button>
-          </div>
           <div class="mlv-android-focus-clock">
             <div id="mlv-android-focus-progress-ring">
               <div class="mlv-android-focus-dial">
@@ -1298,6 +1276,7 @@
             <span id="mlv-android-focus-status">Ready · Work</span>
             <span class="mlv-focus-clock-caption" id="mlv-focus-end-time">Ready when you are</span>
           </div>
+          <div id="mlv-android-focus-motivation" class="mlv-focus-motivation-always" aria-label="Messages and affirmations"></div>
           <div class="mlv-focus-controls-title">Session length</div>
           <div class="mlv-android-focus-presets" aria-label="Focus presets">
             <button type="button" data-mobile-preset="25/5">25 / 5</button>
@@ -1311,6 +1290,10 @@
             <button type="button" data-mobile-focus="settings">Focus settings</button>
           <button type="button" data-mobile-focus="alarms">⏰ Alarms</button>
           </div>
+          <div class="mlv-android-focus-quick-completion" role="group" aria-label="Completion sound">
+            <label>Sonido al terminar<select data-mobile-focus-completion></select></label>
+            <button type="button" data-mobile-focus="preview-completion">▶ Escuchar</button>
+          </div>
           <details class="mlv-android-focus-sounds">
             <summary>Focus audio · Completion sound & ambience</summary>
             <div class="mlv-android-focus-audio-grid">
@@ -1320,7 +1303,7 @@
               <button type="button" data-mobile-focus="toggle-ambient">Play</button>
             </div>
           </details>
-          <details class="mlv-focus-motivation-details"><summary>Messages & affirmations</summary><div id="mlv-android-focus-motivation"></div></details>
+
           <details><summary>Custom work / break duration</summary>
             <div class="mlv-android-focus-compact">
               <label>Work minutes<input type="number" min="1" max="180" id="mlv-android-focus-work" value="25" /></label>

@@ -295,7 +295,7 @@
       html:not([data-mlv-platform="android"]) #mlv-desktop-focus-immersive{
         position:fixed;inset:0;z-index:2147483500;
         display:grid;grid-template-columns:minmax(0,1fr);place-items:center;box-sizing:border-box;
-        padding:clamp(12px,3.2vw,42px);overflow:auto;
+        padding:clamp(12px,2.4vw,24px);overflow:auto;
         color:#f8fbff;background-color:rgba(4,9,16,.5);
         background-image:linear-gradient(152deg,rgba(3,9,18,.5),rgba(5,13,22,.29) 54%,rgba(2,8,14,.57)),var(--mlv-focus-wallpaper,none);
         background-position:center;background-size:cover;background-repeat:no-repeat
@@ -303,12 +303,12 @@
       #mlv-desktop-focus-stage{
         position:relative;display:flex;flex-direction:column;box-sizing:border-box;
         /* No percentage max-width: grid's intrinsic track was capping this at 467px. */
-        width:min(800px,calc(100vw - 48px))!important;max-width:800px!important;
+        width:min(1040px,calc(100vw - 32px))!important;max-width:1040px!important;
         justify-self:center!important;
-        height:clamp(460px,72dvh,555px)!important;min-height:0!important;
-        max-height:calc(100dvh - 24px)!important;
-        overflow-y:auto!important;overflow-x:hidden!important;
-        gap:clamp(10px,1.9vh,19px)!important;padding:clamp(20px,3vw,34px)!important;
+        height:auto!important;min-height:calc(100dvh - 84px)!important;
+        max-height:none!important;
+        overflow:visible!important;
+        gap:clamp(8px,1.4vh,14px)!important;padding:clamp(14px,2.2vw,25px)!important;
         border:1px solid rgba(213,237,245,.26);border-radius:26px;
         background-color:rgba(7,17,27,.47)!important;
         background-image:linear-gradient(145deg,rgba(9,27,36,.16),rgba(6,16,27,.06))!important;
@@ -329,7 +329,7 @@
         letter-spacing:-.045em!important
       }
       #mlv-desktop-focus-stage>.mlv-focus-center{
-        display:flex;flex:1 0 auto!important;min-height:165px!important;
+        display:flex;flex:1 0 auto!important;min-height:125px!important;
         flex-direction:column;align-items:center;justify-content:center;
         gap:6px!important;padding:7px 0!important;text-align:center
       }
@@ -422,7 +422,11 @@
         cursor:pointer;font:700 12px/1.45 system-ui,sans-serif;
         color:#d9f0f2;padding:2px 0
       }
-      .mlv-focus-motivation{gap:6px;margin:8px auto 0}
+       .mlv-focus-motivation-always{flex:0 0 auto;min-width:0}
+      .mlv-focus-motivation{gap:6px;margin:0 auto!important}
+      #mlv-desktop-focus-stage .mlv-motivation{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:8px;margin:0 auto!important}
+      #mlv-desktop-focus-stage .mlv-motivation-line{padding:8px 12px}
+      @media(max-width:670px){#mlv-desktop-focus-stage .mlv-motivation{grid-template-columns:1fr}}
       .mlv-focus-motivation-copy{
         font-size:clamp(12px,1.35vw,15px);line-height:1.4
       }
@@ -499,41 +503,23 @@
           <div class="mlv-focus-actions"><button type="button" class="mlv-focus-btn" data-focus-action="alarms">⏰ Alarmas</button>
           <button type="button" class="mlv-focus-btn" data-focus-action="minimize" aria-label="Minimize Pomodoro">—</button></div>
         </header>
-        <div class="mlv-focus-classical" role="group" aria-label="Classical music">
-          <strong data-mlv-classical-heading>Música clásica · Classical music</strong>
-          <div class="mlv-focus-classical-actions">
-            <button type="button" data-mlv-classical="mozart_k545" aria-pressed="false">▶ Mozart · Sonata K.545</button>
-            <button type="button" data-mlv-classical="tchaikovsky_op39" aria-pressed="false">▶ Chaikovski · Oración matinal</button>
-          </div>
-          <strong data-mlv-ambient-heading>Ambient music · 8 tracks</strong>
-          <div class="mlv-focus-ambient-actions" role="group" aria-label="Ambient music">
-            <button type="button" data-mlv-scene="moonlight" aria-pressed="false">▶ moonlight</button>
-            <button type="button" data-mlv-scene="celestial" aria-pressed="false">▶ celestial</button>
-            <button type="button" data-mlv-scene="orbit" aria-pressed="false">▶ orbit</button>
-            <button type="button" data-mlv-scene="aurora" aria-pressed="false">▶ aurora</button>
-            <button type="button" data-mlv-scene="observatory" aria-pressed="false">▶ observatory</button>
-            <button type="button" data-mlv-scene="library" aria-pressed="false">▶ library</button>
-            <button type="button" data-mlv-scene="afterglow" aria-pressed="false">▶ afterglow</button>
-            <button type="button" data-mlv-scene="silver" aria-pressed="false">▶ silver</button>
-          </div>
-          <span class="mlv-focus-classical-note" data-mlv-classical-note>Short synthesized excerpts, not complete recordings.</span>
+        <div class="mlv-focus-center">
+          <span class="mlv-focus-mode" id="mlv-desktop-focus-mode">FOCUS</span>
+          <strong class="mlv-focus-clock" role="timer" aria-live="off" id="mlv-desktop-focus-clock">25:00</strong>
+          <p class="mlv-focus-status" id="mlv-desktop-focus-status">Ready to focus</p>
+        </div>
+        <div id="mlv-desktop-focus-motivation" class="mlv-focus-motivation-always" aria-label="Messages and affirmations"></div>
+        <div class="mlv-focus-actions">
+          <button type="button" class="mlv-focus-btn primary" data-focus-action="toggle">Start</button>
+          <button type="button" class="mlv-focus-btn" data-focus-action="skip">Skip phase</button>
+          <button type="button" class="mlv-focus-btn" data-focus-action="reset">Reset</button>
+          <button type="button" class="mlv-focus-btn" data-focus-action="minimize">Navigate the app</button>
         </div>
         <div class="mlv-focus-quick-completion" role="group" aria-label="Completion sound">
           <label for="mlv-focus-completion-select">Completion sound
             <select id="mlv-focus-completion-select" data-mlv-completion-sound></select>
           </label>
           <button type="button" class="mlv-focus-btn" data-mlv-audio="preview-completion">▶ Preview completion</button>
-        </div>
-        <div class="mlv-focus-center">
-          <span class="mlv-focus-mode" id="mlv-desktop-focus-mode">FOCUS</span>
-          <strong class="mlv-focus-clock" role="timer" aria-live="off" id="mlv-desktop-focus-clock">25:00</strong>
-          <p class="mlv-focus-status" id="mlv-desktop-focus-status">Ready to focus</p>
-        </div>
-        <div class="mlv-focus-actions">
-          <button type="button" class="mlv-focus-btn primary" data-focus-action="toggle">Start</button>
-          <button type="button" class="mlv-focus-btn" data-focus-action="skip">Skip phase</button>
-          <button type="button" class="mlv-focus-btn" data-focus-action="reset">Reset</button>
-          <button type="button" class="mlv-focus-btn" data-focus-action="minimize">Navigate the app</button>
         </div>
         <details class="mlv-focus-sound-details"><summary>Audio · Completion tone & ambience</summary>
         <div class="mlv-focus-audio-panel" aria-label="Pomodoro audio">
@@ -544,7 +530,7 @@
             <button type="button" class="mlv-focus-btn" data-mlv-audio="toggle-ambient">Play</button>
           </div>
         </div></details>
-        <details class="mlv-focus-motivation-details"><summary>Messages & affirmations</summary><div id="mlv-desktop-focus-motivation"></div></details>
+
       </section>`;
     // Scope layout directly to the canonical stage and use explicit child
     // selectors: a production CSS sanitizer collapsed descendant whitespace,
