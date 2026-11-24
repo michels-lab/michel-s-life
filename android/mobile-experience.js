@@ -1301,6 +1301,8 @@
                 <select data-mobile-focus-ambience></select>
               </label>
               <button type="button" data-mobile-focus="toggle-ambient">Play</button>
+              <label><span data-mobile-volume-label>Volume</span><input type="range" min="0" max="100" value="35" data-mobile-ambient-volume aria-label="Background music volume" /></label>
+              <small style="overflow-wrap:anywhere">Scott Buckley · CC BY 4.0 · www.scottbuckley.com.au · creativecommons.org/licenses/by/4.0/</small>
             </div>
           </details>
 
@@ -1331,6 +1333,7 @@
         if(id==='mlv-android-focus-work'||id==='mlv-android-focus-break')
           event.target.dataset.mlvFocusDirty='1';
       });
+      root.addEventListener('input',event=>{if(event.target?.matches?.('[data-mobile-ambient-volume]'))window.MichelsLifeFocusAudio?.setAmbientVolume?.(Number(event.target.value)/100);});
       root.addEventListener('change',event=>{
         const audio=window.MichelsLifeFocusAudio;
         if(event.target?.matches?.('[data-mobile-focus-completion]'))
@@ -1635,6 +1638,8 @@
       }
       if(select.value!==selected)select.value=selected;
     }
+    const volume=q('[data-mobile-ambient-volume]',root);if(volume&&document.activeElement!==volume)volume.value=String(Math.round((audio?.ambientVolume?.()??.35)*100));
+    writeText(q('[data-mobile-volume-label]',root),focusText('Volume','Volumen'));
     writeText(q('[data-mobile-focus="toggle-ambient"]',root),
       audio?.playing?.()?focusText('Stop','Detener'):focusText('Play','Reproducir'));
     writeText(q('[data-mobile-focus="preview-completion"]',root),

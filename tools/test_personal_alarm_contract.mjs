@@ -326,7 +326,7 @@ test('all ten original Focus motifs are selectable and survive daily alarm reloa
   const ids=[
     'focus_moonlight','focus_celestial','focus_orbit','focus_aurora',
     'focus_observatory','focus_library','focus_afterglow','focus_silver',
-    'mozart_k545','tchaikovsky_op39'
+    'mozart_k545','tchaikovsky_op39','sb_meanwhile','sb_moonlight','sb_cobalt','sb_skyward','sb_life_is','sb_first_snow','sb_midsommar','sb_at_the_end_of_all_things','sb_in_this_moment','sb_hyperion','sb_ascension','sb_bring_me_the_sky'
   ];
   const saved=ids.map((sound,i)=>({
     id:'scene-'+i,label:'Audio '+i,time:'09:00',repeat:'daily',date:'',

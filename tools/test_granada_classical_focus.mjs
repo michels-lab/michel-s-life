@@ -8,7 +8,8 @@ const focusSource=readFileSync('src/MichelsLife/frontend/focus-immersive.js','ut
 const html=readFileSync('src/MichelsLife/frontend/index.html','utf8');
 const legacy=['moonlight','celestial','orbit','aurora','observatory','library','afterglow','silver'];
 const classical=['mozart_k545','tchaikovsky_op39'];
-const all=new Set(legacy);
+const library=['sb_meanwhile','sb_moonlight','sb_cobalt','sb_skyward','sb_life_is','sb_first_snow','sb_midsommar','sb_at_the_end_of_all_things','sb_in_this_moment','sb_hyperion','sb_ascension','sb_bring_me_the_sky'];
+const all=new Set([...legacy,...library]);
 
 function harness(persisted={v30165Soundscape:'moonlight',v30165CompletionSound:'soft'}){
   const frequencies=[],startTimes=[],contexts=[],timers=new Map(),buffers=[],sources=[];
@@ -52,8 +53,8 @@ function harness(persisted={v30165Soundscape:'moonlight',v30165CompletionSound:'
 
 test('classical music is exclusively a completion sound, all eight original ambience choices remain',()=>{
  const f=harness();
- assert.deepEqual(Array.from(f.api.sceneOptions(),o=>o.id),legacy);
- assert.equal(f.api.completionOptions().length,9);
+ assert.deepEqual(Array.from(f.api.sceneOptions(),o=>o.id),[...legacy,...library]);
+ assert.equal(f.api.completionOptions().length,21);
  for(const id of classical){
    assert.ok(f.api.completionOptions().some(o=>o.id===id));
    assert.equal(f.api.toggleScene(id),false);
@@ -139,4 +140,21 @@ test('completion and recorded preview take exclusive ownership of audio, and a n
  assert.equal(f.api.playCompletion(),true);
  assert.equal(f.timers.size,0);
  assert.equal(f.api.playing(),false);
+});
+
+
+test('licensed library loops independently at adjustable volume; expiry interrupts it and retains the completion choice',()=>{
+ const f=harness();
+ for(const id of library){
+  f.api.selectCompletion(id);assert.equal(f.api.selectScene(id),id);assert.equal(f.api.startAmbient(),true);
+  const p=f.recordings.at(-1);assert.equal(p.loop,true);assert.equal(p.src,'assets/audio/classical/'+id+'.mp3');assert.equal(f.timers.size,0);
+  f.api.setAmbientVolume(.2);assert.equal(p.volume,.2);assert.equal(f.api.playingScene(),id);
+  assert.equal(f.api.playCompletion(),true);assert.equal(p.paused,true);assert.equal(f.api.playing(),false);assert.equal(f.recordings.at(-1).loop,false);assert.equal(f.api.completionId(),id);
+ }
+});
+test('all library recordings have hash provenance and same native/web audio',()=>{
+ const folder='src/MichelsLife/frontend/assets/audio/classical/';
+ const manifest=JSON.parse(readFileSync(folder+'LIBRARY.json','utf8'));
+ assert.deepEqual(manifest.map(x=>x.id),library);
+ for(const item of manifest){const bytes=readFileSync(folder+item.id+'.mp3');assert.ok(bytes.length>100000);assert.deepEqual(bytes,readFileSync('android/app/src/main/res/raw/mlv_focus_'+item.id+'.mp3'));assert.equal(createHash('sha256').update(bytes).digest('hex'),item.asset_sha256);assert.equal(item.license,'CC BY 4.0');assert.ok(item.duration_seconds>30);}
 });

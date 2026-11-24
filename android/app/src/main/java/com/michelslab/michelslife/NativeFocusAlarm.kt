@@ -38,7 +38,7 @@ internal object NativeFocusAlarm {
     private const val NOTIFICATION_ID = 4705
     private const val MAX_FUTURE_MS = 4 * 60 * 60 * 1000L
     private fun completionSound(raw: String?): String =
-        if (raw in listOf("soft", "glass", "aurora", "observatory", "midnight", "silver", "mozart_k545", "tchaikovsky_op39", "off"))
+        if (raw in listOf("soft", "glass", "aurora", "observatory", "midnight", "silver", "mozart_k545", "tchaikovsky_op39", "sb_meanwhile", "sb_moonlight", "sb_cobalt", "sb_skyward", "sb_life_is", "sb_first_snow", "sb_midsommar", "sb_at_the_end_of_all_things", "sb_in_this_moment", "sb_hyperion", "sb_ascension", "sb_bring_me_the_sky", "off"))
             raw ?: "soft"
         else "soft"
 
@@ -55,6 +55,18 @@ internal object NativeFocusAlarm {
             "midnight" to "Midnight Chime", "silver" to "Silver Echo",
             "mozart_k545" to "Mozart · Sonata K.545",
             "tchaikovsky_op39" to "Tchaikovsky · Morning Prayer",
+            "sb_meanwhile" to "Meanwhile · Scott Buckley",
+            "sb_moonlight" to "Moonlight · Scott Buckley",
+            "sb_cobalt" to "Cobalt · Scott Buckley",
+            "sb_skyward" to "Skyward · Scott Buckley",
+            "sb_life_is" to "Life Is · Scott Buckley",
+            "sb_first_snow" to "First Snow · Scott Buckley",
+            "sb_midsommar" to "Midsommar · Scott Buckley",
+            "sb_at_the_end_of_all_things" to "At The End Of All Things · Scott Buckley",
+            "sb_in_this_moment" to "In This Moment · Scott Buckley",
+            "sb_hyperion" to "Hyperion · Scott Buckley",
+            "sb_ascension" to "Ascension · Scott Buckley",
+            "sb_bring_me_the_sky" to "Bring Me The Sky · Scott Buckley",
             "off" to "No sound"
         )
         val channel = NotificationChannel(
@@ -73,6 +85,18 @@ internal object NativeFocusAlarm {
                     "silver" -> R.raw.mlv_focus_silver
                     "mozart_k545" -> R.raw.mlv_focus_mozart_k545
                     "tchaikovsky_op39" -> R.raw.mlv_focus_tchaikovsky_op39
+                    "sb_meanwhile" -> R.raw.mlv_focus_sb_meanwhile
+                    "sb_moonlight" -> R.raw.mlv_focus_sb_moonlight
+                    "sb_cobalt" -> R.raw.mlv_focus_sb_cobalt
+                    "sb_skyward" -> R.raw.mlv_focus_sb_skyward
+                    "sb_life_is" -> R.raw.mlv_focus_sb_life_is
+                    "sb_first_snow" -> R.raw.mlv_focus_sb_first_snow
+                    "sb_midsommar" -> R.raw.mlv_focus_sb_midsommar
+                    "sb_at_the_end_of_all_things" -> R.raw.mlv_focus_sb_at_the_end_of_all_things
+                    "sb_in_this_moment" -> R.raw.mlv_focus_sb_in_this_moment
+                    "sb_hyperion" -> R.raw.mlv_focus_sb_hyperion
+                    "sb_ascension" -> R.raw.mlv_focus_sb_ascension
+                    "sb_bring_me_the_sky" -> R.raw.mlv_focus_sb_bring_me_the_sky
                     else -> R.raw.mlv_focus_soft
                 }
                 val uri = Uri.parse("android.resource://" + context.packageName + "/" + tone)

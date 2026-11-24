@@ -28,9 +28,10 @@ def main() -> None:
     immersion = index.with_name('focus-immersive.js')
     personal_alarms = index.with_name('personal-alarms.js')
     settings_colors = index.with_name('settings-color-floating-preview.js')
-    classical = [index.parent / 'assets/audio/classical' / (name + '.mp3') for name in ('mozart_k545','tchaikovsky_op39')]
+    classical = [index.parent / 'assets/audio/classical' / (name + '.mp3') for name in ('mozart_k545','tchaikovsky_op39','sb_meanwhile','sb_moonlight','sb_cobalt','sb_skyward','sb_life_is','sb_first_snow','sb_midsommar','sb_at_the_end_of_all_things','sb_in_this_moment','sb_hyperion','sb_ascension','sb_bring_me_the_sky')]
     rights = index.parent / 'assets/audio/classical/RECORDINGS.json'
-    shared = (motivation, immersion, personal_alarms, settings_colors, *classical, rights)
+    library = rights.with_name('LIBRARY.json')
+    shared = (motivation, immersion, personal_alarms, settings_colors, *classical, rights, library)
     if not bundle.exists() or not index.exists() or not all(path.is_file() for path in shared):
         raise SystemExit("bundle/index/shared Focus or Settings source missing")
     if '<script defer src="settings-color-floating-preview.js"></script>' not in index.read_text(encoding="utf-8"):
@@ -62,7 +63,7 @@ def main() -> None:
             dst.writestr("personal-alarms.js", personal_alarms.read_bytes())
             dst.writestr("motivation-immersive.js", motivation.read_bytes())
             dst.writestr("settings-color-floating-preview.js", settings_colors.read_bytes())
-            for item in (*classical, rights):
+            for item in (*classical, rights, library):
                 dst.writestr("assets/audio/classical/" + item.name, item.read_bytes())
 
         with zipfile.ZipFile(temp) as check:

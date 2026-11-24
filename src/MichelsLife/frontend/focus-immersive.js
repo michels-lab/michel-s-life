@@ -24,6 +24,18 @@
     silver:{en:'Silver Echo',es:'Eco plateado',notes:[[0,784,.6,.044],[.36,987,.8,.036],[.75,1175,1.1,.024]]},
     mozart_k545:{en:'Mozart · Sonata K.545 · recording',es:'Mozart · Sonata K.545 · grabación',classical:true},
     tchaikovsky_op39:{en:'Tchaikovsky · Morning Prayer · recording',es:'Chaikovski · Oración matinal · grabación',classical:true},
+    sb_meanwhile:{en:"Meanwhile · Scott Buckley",es:"Meanwhile · Scott Buckley",classical:true},
+    sb_moonlight:{en:"Moonlight · Scott Buckley",es:"Moonlight · Scott Buckley",classical:true},
+    sb_cobalt:{en:"Cobalt · Scott Buckley",es:"Cobalt · Scott Buckley",classical:true},
+    sb_skyward:{en:"Skyward · Scott Buckley",es:"Skyward · Scott Buckley",classical:true},
+    sb_life_is:{en:"Life Is · Scott Buckley",es:"Life Is · Scott Buckley",classical:true},
+    sb_first_snow:{en:"First Snow · Scott Buckley",es:"First Snow · Scott Buckley",classical:true},
+    sb_midsommar:{en:"Midsommar · Scott Buckley",es:"Midsommar · Scott Buckley",classical:true},
+    sb_at_the_end_of_all_things:{en:"At The End Of All Things · Scott Buckley",es:"At The End Of All Things · Scott Buckley",classical:true},
+    sb_in_this_moment:{en:"In This Moment · Scott Buckley",es:"In This Moment · Scott Buckley",classical:true},
+    sb_hyperion:{en:"Hyperion · Scott Buckley",es:"Hyperion · Scott Buckley",classical:true},
+    sb_ascension:{en:"Ascension · Scott Buckley",es:"Ascension · Scott Buckley",classical:true},
+    sb_bring_me_the_sky:{en:"Bring Me The Sky · Scott Buckley",es:"Bring Me The Sky · Scott Buckley",classical:true},
     off:{en:'No sound',es:'Sin sonido',notes:[]}
   };
   // All sequences are newly composed harmonic pads, not licensed recordings.
@@ -36,9 +48,22 @@
     library:{en:'Midnight Library',es:'Biblioteca nocturna',group:'C',notes:[130.81,196,261.63,392],pattern:[0,2,1,0,3,1],beat:.84},
     afterglow:{en:'Afterglow',es:'Resplandor',group:'C',notes:[174.61,220,349.23,440],pattern:[2,3,1,0,2],beat:1.02},
     silver:{en:'Silver Room',es:'Sala plateada',group:'C',notes:[196,246.94,392,493.88],pattern:[3,1,2,0,3,2],beat:.78}
+    ,
+    sb_meanwhile:{en:"Meanwhile · Scott Buckley",es:"Meanwhile · Scott Buckley",group:"Ambient",recorded:true},
+    sb_moonlight:{en:"Moonlight · Scott Buckley",es:"Moonlight · Scott Buckley",group:"Ambient",recorded:true},
+    sb_cobalt:{en:"Cobalt · Scott Buckley",es:"Cobalt · Scott Buckley",group:"Ambient",recorded:true},
+    sb_skyward:{en:"Skyward · Scott Buckley",es:"Skyward · Scott Buckley",group:"Ambient",recorded:true},
+    sb_life_is:{en:"Life Is · Scott Buckley",es:"Life Is · Scott Buckley",group:"Ambient",recorded:true},
+    sb_first_snow:{en:"First Snow · Scott Buckley",es:"First Snow · Scott Buckley",group:"Ambient",recorded:true},
+    sb_midsommar:{en:"Midsommar · Scott Buckley",es:"Midsommar · Scott Buckley",group:"Ambient",recorded:true},
+    sb_at_the_end_of_all_things:{en:"At The End Of All Things · Scott Buckley",es:"At The End Of All Things · Scott Buckley",group:"Ambient",recorded:true},
+    sb_in_this_moment:{en:"In This Moment · Scott Buckley",es:"In This Moment · Scott Buckley",group:"Ambient",recorded:true},
+    sb_hyperion:{en:"Hyperion · Scott Buckley",es:"Hyperion · Scott Buckley",group:"Cinematic",recorded:true},
+    sb_ascension:{en:"Ascension · Scott Buckley",es:"Ascension · Scott Buckley",group:"Cinematic",recorded:true},
+    sb_bring_me_the_sky:{en:"Bring Me The Sky · Scott Buckley",es:"Bring Me The Sky · Scott Buckley",group:"Cinematic",recorded:true}
   };
   // Licensed human performances, bundled locally. No synthesized fallback.
-  let classicalSource=null,previewingId=null;
+  let classicalSource=null,previewingId=null,ambientRecording=null,ambientVolume=.35;
   const classicalIds=['mozart_k545','tchaikovsky_op39'];
   let effectContext=null,ambientContext=null,ambientInterval=null,ambientScene=null,ambientStep=0;
   function soundContext(){
@@ -102,6 +127,8 @@
     }catch(_){return false;}
   }
   function stopAmbient(){
+    const player=ambientRecording;ambientRecording=null;
+    if(player)try{player.pause();player.currentTime=0;}catch(_){}
     if(ambientInterval){window.clearInterval(ambientInterval);ambientInterval=null;}
     const ctx=ambientContext;ambientContext=null;ambientScene=null;
     if(ctx)ctx.close().catch(()=>{});
@@ -116,7 +143,7 @@
       osc.type=i===0?'sine':i===2?'triangle':'sine';
       const rotation=(ambientStep+i)%notes.length;
       osc.frequency.setValueAtTime(notes[rotation]*(i===3?2:1),start+.22*i);
-      const gain=i===0?.012:i===3?.004:.006;
+      const gain=(i===0?.012:i===3?.004:.006)*Math.max(.0001,ambientVolume/.35);
       env.gain.setValueAtTime(.0001,start+.22*i);
       env.gain.linearRampToValueAtTime(gain,start+2+.22*i);
       env.gain.setValueAtTime(gain,start+4.8+.22*i);
@@ -143,7 +170,7 @@
       osc.type=theme?'triangle':ambientScene==='observatory'||ambientScene==='library'?'triangle':'sine';
       osc.frequency.setValueAtTime(frequency,at);
       env.gain.setValueAtTime(.0001,at);
-      env.gain.exponentialRampToValueAtTime(theme?.012:.008,at+.055);
+      env.gain.exponentialRampToValueAtTime((theme?.012:.008)*Math.max(.0001,ambientVolume/.35),at+.055);
       env.gain.exponentialRampToValueAtTime(.0001,at+(theme?.55:.67));
       osc.connect(env);env.connect(ctx.destination);
       osc.start(at);osc.stop(at+(theme?.6:.7));
@@ -154,10 +181,19 @@
     stopAmbient();
     // Explicit new ambience replaces the recording rather than mixing audio.
     stopClassical();
+    const id=sceneId();
+    if(ambientScenes[id]?.recorded){
+      try{
+        const player=new Audio('assets/audio/classical/'+id+'.mp3');
+        player.loop=true;player.volume=ambientVolume;ambientRecording=player;ambientScene=id;
+        const clear=()=>{if(ambientRecording===player)stopAmbient();};
+        player.onerror=clear;player.play().catch(clear);return true;
+      }catch(_){stopAmbient();return false;}
+    }
     const C=window.AudioContext||window.webkitAudioContext;
     if(!C)return false;
     try{
-      ambientScene=sceneId();ambientContext=new C();
+      ambientScene=id;ambientContext=new C();
       ambientContext.resume?.().catch?.(()=>{});
       ambientStep=0;scheduleAmbient();
       ambientInterval=window.setInterval(scheduleAmbient,7200);
@@ -173,10 +209,10 @@
     // Every soundtrack shares one canonical persisted choice and scheduler.
     // Reject unknown IDs rather than silently switching to the default.
     if(!Object.hasOwn(ambientScenes,id))return false;
-    if(ambientContext&&ambientScene===id){stopAmbient();return true;}
-    const wasPlaying=!!ambientContext;
+    if((ambientContext||ambientRecording)&&ambientScene===id){stopAmbient();return true;}
+    const wasPlaying=!!(ambientContext||ambientRecording);
     selectScene(id);
-    return wasPlaying?!!ambientContext:startAmbient();
+    return wasPlaying?!!(ambientContext||ambientRecording):startAmbient();
   }
   function toggleClassical(id){
     if(!classicalIds.includes(id))return false;
@@ -194,7 +230,9 @@
     toggleClassical,toggleScene,
     completionId:finishId,sceneId,selectCompletion:id=>{stopClassical();return choice(completionKey,finishTones,id,'soft');},
     selectScene,playCompletion,stopClassical,previewingCompletion:()=>previewingId,recordingActive:()=>!!classicalSource,recordingPlayback:()=>classicalSource?{paused:classicalSource.paused,currentTime:classicalSource.currentTime,duration:classicalSource.duration,src:classicalSource.src}:null,unlock,startAmbient,stopAmbient,
-    playing:()=>!!ambientContext,playingScene:()=>ambientScene
+    playing:()=>!!(ambientContext||ambientRecording),playingScene:()=>ambientScene,
+    ambientVolume:()=>ambientVolume,setAmbientVolume:value=>{const n=Number(value);if(!Number.isFinite(n))return ambientVolume;ambientVolume=Math.max(0,Math.min(1,n));if(ambientRecording)ambientRecording.volume=ambientVolume;return ambientVolume;},
+    ambientPlayback:()=>ambientRecording?{paused:ambientRecording.paused,currentTime:ambientRecording.currentTime,duration:ambientRecording.duration,loop:ambientRecording.loop,src:ambientRecording.src,volume:ambientRecording.volume}:null
   };
   window.addEventListener?.('pagehide',()=>{stopAmbient();stopClassical();});
 
@@ -532,6 +570,8 @@
               <select id="mlv-focus-scene-select" data-mlv-scene-select></select>
             </label>
             <button type="button" class="mlv-focus-btn" data-mlv-audio="toggle-ambient">Play</button>
+            <label><span data-mlv-volume-label>Volume</span><input type="range" min="0" max="100" value="35" data-mlv-ambient-volume aria-label="Background music volume" /></label>
+            <small style="flex-basis:100%;overflow-wrap:anywhere">Scott Buckley · CC BY 4.0 · www.scottbuckley.com.au · creativecommons.org/licenses/by/4.0/</small>
           </div>
         </div></details>
 
@@ -552,6 +592,7 @@
         handleAction(button.dataset.focusAction);
       });
     }
+    screen.addEventListener('input',event=>{if(event.target?.matches?.('[data-mlv-ambient-volume]'))window.MichelsLifeFocusAudio?.setAmbientVolume?.(Number(event.target.value)/100);});
     screen.addEventListener('change',event=>{
       if(event.target?.matches?.('[data-mlv-completion-sound]'))
         window.MichelsLifeFocusAudio?.selectCompletion?.(event.target.value);
@@ -718,6 +759,9 @@
       }
       if(select.value!==selected)select.value=selected;
     }
+    const vol=q('[data-mlv-ambient-volume]',screen),volLabel=q('[data-mlv-volume-label]',screen);
+    if(vol&&document.activeElement!==vol)vol.value=String(Math.round((audio?.ambientVolume?.()??.35)*100));
+    if(volLabel)volLabel.textContent=lang('Volume','Volumen');
     const ambientButton=q('[data-mlv-audio="toggle-ambient"]',screen);
     if(ambientButton)ambientButton.textContent=audio?.playing?.()?lang('Stop','Detener'):lang('Play','Reproducir');
     const previewButton=q('[data-mlv-audio="preview-completion"]',screen);

@@ -177,6 +177,18 @@ internal object NativePersonalAlarms {
         val recorded = when (selected) {
             "mozart_k545" -> R.raw.mlv_focus_mozart_k545
             "tchaikovsky_op39" -> R.raw.mlv_focus_tchaikovsky_op39
+            "sb_meanwhile" -> R.raw.mlv_focus_sb_meanwhile
+            "sb_moonlight" -> R.raw.mlv_focus_sb_moonlight
+            "sb_cobalt" -> R.raw.mlv_focus_sb_cobalt
+            "sb_skyward" -> R.raw.mlv_focus_sb_skyward
+            "sb_life_is" -> R.raw.mlv_focus_sb_life_is
+            "sb_first_snow" -> R.raw.mlv_focus_sb_first_snow
+            "sb_midsommar" -> R.raw.mlv_focus_sb_midsommar
+            "sb_at_the_end_of_all_things" -> R.raw.mlv_focus_sb_at_the_end_of_all_things
+            "sb_in_this_moment" -> R.raw.mlv_focus_sb_in_this_moment
+            "sb_hyperion" -> R.raw.mlv_focus_sb_hyperion
+            "sb_ascension" -> R.raw.mlv_focus_sb_ascension
+            "sb_bring_me_the_sky" -> R.raw.mlv_focus_sb_bring_me_the_sky
             else -> 0
         }
         if (recorded != 0) return Uri.parse("android.resource://" + context.packageName + "/" + recorded)

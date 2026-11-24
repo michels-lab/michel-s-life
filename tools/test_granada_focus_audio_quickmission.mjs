@@ -49,8 +49,8 @@ function audioSandbox(){
 test('real audio controls expose eight original A+C scenes and nine end tones',()=>{
   const {api}=audioSandbox();
   assert.ok(api,'audio engine must be exported at boot');
-  assert.equal(api.sceneOptions().length,8);
-  assert.equal(api.completionOptions().length,9);
+  assert.equal(api.sceneOptions().length,20);
+  assert.equal(api.completionOptions().length,21);
   assert.ok(api.sceneOptions().some(x=>x.label.includes('Moonlight Study')));
   assert.ok(api.sceneOptions().some(x=>x.label.includes('Midnight Library')));
   assert.ok(api.completionOptions().some(x=>x.id==='off'));

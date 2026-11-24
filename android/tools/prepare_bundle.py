@@ -40,7 +40,7 @@ def main():
     shutil.copy2(PERSONAL_ALARMS, assets / 'personal-alarms.js')
     shutil.copy2(MOTIVATION, assets / 'motivation-immersive.js')
     shutil.copy2(SETTINGS_COLOR_PREVIEW, assets / 'settings-color-floating-preview.js')
-    for filename in ('mozart_k545.mp3','tchaikovsky_op39.mp3','RECORDINGS.json'):
+    for filename in ('mozart_k545.mp3','tchaikovsky_op39.mp3','RECORDINGS.json','LIBRARY.json','sb_meanwhile.mp3', 'sb_moonlight.mp3', 'sb_cobalt.mp3', 'sb_skyward.mp3', 'sb_life_is.mp3', 'sb_first_snow.mp3', 'sb_midsommar.mp3', 'sb_at_the_end_of_all_things.mp3', 'sb_in_this_moment.mp3', 'sb_hyperion.mp3', 'sb_ascension.mp3', 'sb_bring_me_the_sky.mp3'):
         source = FOCUS_IMMERSION.parent / 'assets/audio/classical' / filename
         target = assets / 'assets/audio/classical' / filename
         target.parent.mkdir(parents=True, exist_ok=True)

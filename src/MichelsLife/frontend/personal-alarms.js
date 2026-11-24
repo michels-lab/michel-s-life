@@ -13,7 +13,7 @@ const validDate=x=>/^\d{4}-\d{2}-\d{2}$/.test(x)&&!Number.isNaN(new Date(x+'T12:
 const days=['Su','Mo','Tu','We','Th','Fr','Sa'];
 const SOUNDS=['system','classic','soft','digital','gentle','pulse','radar',
  'focus_moonlight','focus_celestial','focus_orbit','focus_aurora','focus_observatory','focus_library','focus_afterglow','focus_silver',
- 'mozart_k545','tchaikovsky_op39','custom'];
+ 'mozart_k545','tchaikovsky_op39','sb_meanwhile','sb_moonlight','sb_cobalt','sb_skyward','sb_life_is','sb_first_snow','sb_midsommar','sb_at_the_end_of_all_things','sb_in_this_moment','sb_hyperion','sb_ascension','sb_bring_me_the_sky','custom'];
 const SOUND_NAMES={system:['System default','Sistema'],classic:['Velvet Dawn · cinematic bells','Alba de terciopelo · campanas'],
  soft:['Glass Garden · dream chimes','Jardín de cristal · campanillas'],digital:['Neon Orbit · ambient synth','Órbita neón · sintetizador'],gentle:['First Light · gentle sunrise','Primera luz · amanecer'],
  pulse:['Inner Pulse · warm heartbeat','Pulso interior · latido cálido'],radar:['Celestial Tide · atmospheric','Marea celeste · atmosférico'],
@@ -26,7 +26,18 @@ const SOUND_NAMES={system:['System default','Sistema'],classic:['Velvet Dawn · 
  focus_afterglow:['Afterglow · ambient','Resplandor · ambiental'],
  focus_silver:['Silver Room · ambient','Sala plateada · ambiental'],
  mozart_k545:['Mozart · Sonata K.545 · classical alarm','Mozart · Sonata K.545 · alarma clásica'],
- tchaikovsky_op39:['Tchaikovsky · Morning Prayer Op.39/1','Chaikovski · Oración matinal Op.39/1'],custom:['My MP3 / audio','Mi MP3 / audio']};
+ tchaikovsky_op39:['Tchaikovsky · Morning Prayer Op.39/1','Chaikovski · Oración matinal Op.39/1'],sb_meanwhile:["Meanwhile · Scott Buckley · CC BY 4.0","Meanwhile · Scott Buckley · CC BY 4.0"],
+ sb_moonlight:["Moonlight · Scott Buckley · CC BY 4.0","Moonlight · Scott Buckley · CC BY 4.0"],
+ sb_cobalt:["Cobalt · Scott Buckley · CC BY 4.0","Cobalt · Scott Buckley · CC BY 4.0"],
+ sb_skyward:["Skyward · Scott Buckley · CC BY 4.0","Skyward · Scott Buckley · CC BY 4.0"],
+ sb_life_is:["Life Is · Scott Buckley · CC BY 4.0","Life Is · Scott Buckley · CC BY 4.0"],
+ sb_first_snow:["First Snow · Scott Buckley · CC BY 4.0","First Snow · Scott Buckley · CC BY 4.0"],
+ sb_midsommar:["Midsommar · Scott Buckley · CC BY 4.0","Midsommar · Scott Buckley · CC BY 4.0"],
+ sb_at_the_end_of_all_things:["At The End Of All Things · Scott Buckley · CC BY 4.0","At The End Of All Things · Scott Buckley · CC BY 4.0"],
+ sb_in_this_moment:["In This Moment · Scott Buckley · CC BY 4.0","In This Moment · Scott Buckley · CC BY 4.0"],
+ sb_hyperion:["Hyperion · Scott Buckley · CC BY 4.0","Hyperion · Scott Buckley · CC BY 4.0"],
+ sb_ascension:["Ascension · Scott Buckley · CC BY 4.0","Ascension · Scott Buckley · CC BY 4.0"],
+ sb_bring_me_the_sky:["Bring Me The Sky · Scott Buckley · CC BY 4.0","Bring Me The Sky · Scott Buckley · CC BY 4.0"],custom:['My MP3 / audio','Mi MP3 / audio']};
 const soundName=id=>tr(...(SOUND_NAMES[id]||SOUND_NAMES.system));
 let customAudio=null,previewAudio=null,customAudioUrl=null,previewAudioUrl=null;
 let previewGeneration=0;
@@ -217,7 +228,7 @@ function stopPresetAudio(){
 }
 function playPresetSound(id,preview=false){
  stopRecording(preview);
- if(['mozart_k545','tchaikovsky_op39'].includes(id)){
+ if(['mozart_k545','tchaikovsky_op39','sb_meanwhile','sb_moonlight','sb_cobalt','sb_skyward','sb_life_is','sb_first_snow','sb_midsommar','sb_at_the_end_of_all_things','sb_in_this_moment','sb_hyperion','sb_ascension','sb_bring_me_the_sky'].includes(id)){
   if(!preview)stopPresetAudio();
   if(preview&&previewPresetContext){previewPresetContext.close().catch(()=>{});previewPresetContext=null;}
   try{const audio=new Audio('assets/audio/classical/'+id+'.mp3');audio.loop=!preview;if(preview)previewRecording=audio;else liveRecording=audio;audio.play().catch(()=>{if((preview?previewRecording:liveRecording)===audio)stopRecording(preview);});return true;}catch(_){return false;}
@@ -550,6 +561,7 @@ function create(){
   q('.mlv-alarm-days',screen).appendChild(label);
  }
  const soundSelect=q('#mlv-alarm-sound',screen);
+ const musicCredits=document.createElement('small');musicCredits.textContent="Scott Buckley · CC BY 4.0 · www.scottbuckley.com.au · creativecommons.org/licenses/by/4.0/";musicCredits.style.overflowWrap='anywhere';soundSelect.parentElement?.appendChild(musicCredits);
  for(const sound of SOUNDS){const option=document.createElement('option');option.value=sound;option.textContent=soundName(sound);soundSelect.appendChild(option);}
  soundSelect.value='gentle';
  q('#mlv-alarm-preview',screen).addEventListener('click',()=>previewSound(soundSelect.value));

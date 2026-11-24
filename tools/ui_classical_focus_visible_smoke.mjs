@@ -98,7 +98,7 @@ try{
   assert.equal(await page.evaluate(()=>window.FocusStoryV30162.focusState().mode),'break');
   await page.evaluate(()=>window.MichelsLifeFocusAudio.stopClassical());
   const scenes=await page.evaluate(()=>window.MichelsLifeFocusAudio.sceneOptions().map(x=>x.id));
-  assert.equal(scenes.length,8);assert.ok(!scenes.includes('mozart_k545'));
+  assert.equal(scenes.length,20);assert.ok(!scenes.includes('mozart_k545'));
   await page.reload({waitUntil:'domcontentloaded',timeout:60000});
   await page.waitForFunction(()=>window.MichelsLifeFocusAudio?.completionId?.()==='tchaikovsky_op39');
   assert.deepEqual(errors,[],
