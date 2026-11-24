@@ -8,11 +8,16 @@ on:
       - 'tools/ui_granada_story_focus_matrix.mjs'
       - 'tools/test_granada_story_bundle_paths.mjs'
       - 'tools/validate_granada_inline_scripts.mjs'
+      - 'tools/test_inline_translation_safety.mjs'
       - '.github/workflows/granada-story-focus-provenance.yml'
       - 'src/MichelsLife/frontend/**'
       - 'android/android-bridge.js'
       - 'android/mobile-experience.js'
       - 'android/mobile-sections.js'
+  push:
+    branches: [main]
+    paths:
+      - '.michelslab/release-intents/unified-v3232-a0221.txt'
   workflow_dispatch:
 
 permissions:
@@ -38,6 +43,7 @@ jobs:
           node tools/test_granada_story_bundle_paths.mjs
           node --check android/mobile-sections.js
           node tools/test_granada_story_diagnostic_core.mjs
+          node --test tools/test_inline_translation_safety.mjs
       - name: Construct official-app synthetic browser fixture
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

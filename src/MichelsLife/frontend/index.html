@@ -1970,7 +1970,13 @@ applyV133Theme();try{renderAll()}catch(err){console.error('v13.3 English fixes e
     if(next!==text)node.nodeValue=next;
   }
   function translateVisibleDOM(root=document.body){try{if((localStorage.getItem('michelsLife.language.v1')||navigator.language||'').toLowerCase().startsWith('es'))return;}catch(_){} 
-    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(n){return n.nodeValue&&/[áéíóúñÁÉÍÓÚÑ]|Misiones|Metas|Configuración|pendientes|monedas|Semanal|Diaria|Única/.test(n.nodeValue)?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT}});
+    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(n){
+      // Only translate visible UI copy. The previous walker translated text
+      // INSIDE <script> and <style>, altering executable source on render.
+      const p=n.parentElement;
+      if(!p||['SCRIPT','STYLE','NOSCRIPT','TEXTAREA'].includes(p.tagName))return NodeFilter.FILTER_REJECT;
+      return n.nodeValue&&/[áéíóúñÁÉÍÓÚÑ]|Misiones|Metas|Configuración|pendientes|monedas|Semanal|Diaria|Única/.test(n.nodeValue)?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT;
+    }});
     const nodes=[]; while(walker.nextNode())nodes.push(walker.currentNode);
     nodes.forEach(translateTextNode);
   }
@@ -4054,7 +4060,12 @@ textarea::placeholder{
       '.v143-insight-sub','.v143-insight-title','.v132-contract','.v132-mission',
       '.v140-library-item','.card','.v132-panel','button','span','small','p','div'
     ];
-    const elements = document.querySelectorAll(selectors.join(','));
+    // This pass owns rendered badges/labels only, never executable source,
+    // editable data, templates or raw code. In particular do not scan '*':
+    // the previous wildcard textContent assignment rewrote inline scripts.
+    const excluded='script,style,noscript,template,textarea,input,select,option,pre,code,[contenteditable="true"],[data-mlv-i18n-owned="source"]';
+    const elements = Array.from(document.querySelectorAll(selectors.join(',')))
+      .filter(el=>!el.isContentEditable&&!el.closest(excluded));
     elements.forEach(el=>{
       const txt = (el.textContent || '').trim();
       if(!txt) return;
@@ -4062,14 +4073,15 @@ textarea::placeholder{
       // Hide compact coin badges/counters only if they are clearly coin-related
       const exactCoin = /^(\+?\d+\s*(coins|coin)|coins|coin|monedas|🪙|\d+\s*🪙)$/i.test(txt);
       const containsCoinBadge = /🪙|coins?\b|monedas?\b/i.test(txt) && txt.length <= 40;
-      if(exactCoin || containsCoinBadge){
+      // Combined XP/coin badges retain the XP; only coin-only copy is hidden.
+      if(exactCoin || (containsCoinBadge&&!/\bXP\b/i.test(txt))){
         el.classList.add('v153-hide-coins');
       }
     });
 
-    // Clean text chunks where a sentence contains "+X XP · +Y coins"
-    document.querySelectorAll('*').forEach(el=>{
-      if(el.children.length===0 && el.textContent){
+    // Reuse the explicit rendered-UI scope. Do not normalize unrelated text.
+    elements.forEach(el=>{
+      if(el.children.length===0 && el.textContent && /🪙|coins?\b|monedas?\b/i.test(el.textContent)){
         let t = el.textContent;
         t = t.replace(/\s*[·•|-]?\s*\+?\d+\s*(coins?|monedas?)\b/gi,'');
         t = t.replace(/\s*🪙\s*\d+/gi,'');
@@ -5430,6 +5442,12 @@ textarea::placeholder{
   function cleanupBadText(){
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
       acceptNode(n){
+        // Never rewrite executable SCRIPT text or STYLE syntax. This
+        // renderer-wide cleanup previously corrupted earlier inline scripts
+        // and triggered intermittent Chromium SyntaxError on relaunch.
+        const p=n.parentElement;
+        if(!p||['SCRIPT','STYLE','NOSCRIPT','TEXTAREA'].includes(p.tagName))
+          return NodeFilter.FILTER_REJECT;
         return /Monthsages|Mensajes|Configuración|Guardar configuración|Etapa visual|Ambiente por hora/.test(n.nodeValue||'')
           ? NodeFilter.FILTER_ACCEPT
           : NodeFilter.FILTER_REJECT;
@@ -21124,9 +21142,11 @@ body.ml-theme-ui [data-v3065-day-final="off"]{
     }catch(e){}
   }
 
+  function isDayTextControl(target){
+    return !!(target && /^(?:v133TextColor|v133MutedTextColor|v30168MainText|v30168SecondaryText|.*DayText.*)$/.test(target.id||''));
+  }
   function isPickerActive(){
-    const a=document.activeElement;
-    return !!(a && /DayText/.test(a.id||''));
+    return isDayTextControl(document.activeElement);
   }
 
   function isOnChip(el){
@@ -21284,7 +21304,7 @@ body.ml-theme-ui [data-v3065-day-final="off"]{
 
   document.addEventListener('input',ev=>{
     const t=ev.target;
-    if(t && /DayText/.test(t.id||'')){
+    if(isDayTextControl(t)){
       persistDayTextFromVisibleInputs();
       applyDayTextForever();
       setTimeout(applyDayTextForever,80);
@@ -21294,12 +21314,19 @@ body.ml-theme-ui [data-v3065-day-final="off"]{
 
   document.addEventListener('change',ev=>{
     const t=ev.target;
-    if(t && /DayText/.test(t.id||'')){
+    if(isDayTextControl(t)){
       persistDayTextFromVisibleInputs();
       applyDayTextForever();
       setTimeout(applyDayTextForever,80);
       setTimeout(applyDayTextForever,220);
     }
+  },true);
+
+  // Settings changes now come through one canonical palette owner. The
+  // bridge emits this after the active/muted aliases have been synchronized;
+  // keep weekday repaint ownership HERE rather than creating a second engine.
+  document.addEventListener('mlv:theme-text-changed',()=>{
+    applyDayTextForever();
   },true);
 
   document.addEventListener('click',ev=>{

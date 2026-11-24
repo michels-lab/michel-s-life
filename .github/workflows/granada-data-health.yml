@@ -8,6 +8,10 @@ on:
       - 'tools/ui_granada_data_health_smoke.mjs'
       - '.github/workflows/granada-data-health.yml'
       - 'android/audit/2026-10-20-granada-data-health.md'
+  push:
+    branches: [main]
+    paths:
+      - '.michelslab/release-intents/unified-v3232-a0221.txt'
   workflow_dispatch:
 
 permissions:

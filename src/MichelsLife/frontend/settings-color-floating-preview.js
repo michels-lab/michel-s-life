@@ -52,6 +52,28 @@
     for(const k of PALETTES) Object.assign(p,read(k));
     return p;
   }
+  // The active weekday letters come from Main text; inactive letters come
+  // from Secondary text with the canonical 66% alpha (v3.0.65).
+  // Notify their owning script after canonical storage/field sync, never
+  // create a second weekday color store or duplicate weekday paint engine.
+  function notifyDayText(){
+    const CE=window.CustomEvent;
+    if(typeof CE==='function'&&typeof document.dispatchEvent==='function')
+      document.dispatchEvent(new CE('mlv:theme-text-changed'));
+  }
+  function syncRelatedInputs(key,color){
+    const root=document.querySelector('#tab-settings');
+    if(!root)return;
+    for(const [id,[kind]] of Object.entries(FIELDS)){
+      if(kind!==key)continue;
+      const el=root.querySelector('#'+id);
+      if(el&&el.value.toLowerCase()!==color.toLowerCase())el.value=color;
+    }
+  }
+  function inactiveWeekdayColor(hex){
+    const channels=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16));
+    return 'rgba('+channels.join(',')+',0.66)';
+  }
   function setVars(key,color) {
     for(const el of [document.documentElement,document.body]){
       if(!el) continue;
@@ -82,6 +104,10 @@
       }
     }catch(_){}
     setVars(key,color);
+    if(key==='text'||key==='muted'){
+      syncRelatedInputs(key,color);
+      notifyDayText();
+    }
     clearTimeout(saveTimer);
     saveTimer=setTimeout(()=>{try{if(typeof window.save==='function')window.save()}catch(_){}},110);
   }
@@ -97,6 +123,7 @@
       const input=root.querySelector('#'+id);
       if(input&&document.activeElement!==input&&valid(c[key])&&input.value.toLowerCase()!==c[key].toLowerCase())input.value=c[key];
     }
+    if(valid(c.text)||valid(c.muted))notifyDayText();
   }
   function ensure(){
     if(panel?.isConnected)return panel;
@@ -106,7 +133,7 @@
     panel.setAttribute('role','region');
     panel.setAttribute('aria-label','Color preview');
     panel.style.cssText='position:fixed;z-index:2147482500;width:300px;box-sizing:border-box;max-width:calc(100vw - 24px);max-height:calc(100vh - 24px);overflow:auto;background:#141a29;color:#f4f6fb;border:1px solid #58647c;border-radius:16px;box-shadow:0 18px 48px #000a;padding:14px;font:13px system-ui,sans-serif;pointer-events:auto;display:none;';
-    panel.innerHTML='<div data-ml-label style="font-weight:750;font-size:12px;margin-bottom:10px"></div><div data-ml-sample style="border-radius:12px;padding:13px;border:1px solid #596277"><div data-ml-title style="font-size:18px;font-weight:750;margin-bottom:5px">Your next chapter</div><div data-ml-copy style="font-size:12px;margin-bottom:10px">Make today count.</div><div data-ml-card style="border-radius:8px;padding:9px;margin-bottom:8px">Today · 3 / 5 missions</div><div data-ml-focus style="border:1px solid;border-radius:9px;padding:8px;margin-bottom:7px"><strong data-ml-focus-title>Focus · Deep work</strong><div data-ml-focus-copy>One step at a time</div></div><div data-ml-alarm style="border:1px solid;border-radius:9px;padding:8px;margin-bottom:8px"><strong data-ml-alarm-title>Alarm · First Light</strong></div><span data-ml-button style="display:inline-block;padding:7px 12px;border-radius:8px;font-weight:700">Start mission</span></div><div data-ml-contrast style="font-size:12px;margin-top:9px"></div><div data-ml-hex style="font-size:11px;opacity:.75;margin-top:8px"></div><button id="ml-granada-undo-color" data-ml-undo type="button" style="margin-top:9px;min-height:34px;width:100%;background:#27334b;color:#fff;border:1px solid #7082a0;border-radius:8px;cursor:pointer">Undo this color</button>';
+    panel.innerHTML='<div data-ml-label style="font-weight:750;font-size:12px;margin-bottom:10px"></div><div data-ml-sample style="border-radius:12px;padding:13px;border:1px solid #596277"><div data-ml-title style="font-size:18px;font-weight:750;margin-bottom:5px">Your next chapter</div><div data-ml-copy style="font-size:12px;margin-bottom:10px">Make today count.</div><div data-ml-card style="border-radius:8px;padding:9px;margin-bottom:8px">Today · 3 / 5 missions</div><div data-ml-focus style="border:1px solid;border-radius:9px;padding:8px;margin-bottom:7px"><strong data-ml-focus-title>Focus · Deep work</strong><div data-ml-focus-copy>One step at a time</div></div><div data-ml-alarm style="border:1px solid;border-radius:9px;padding:8px;margin-bottom:8px"><strong data-ml-alarm-title>Alarm · First Light</strong></div><div data-ml-weekdays style="border:1px solid #657386;border-radius:9px;padding:8px;margin-bottom:8px"><strong data-ml-weekdays-heading style="display:block;font-size:11px;margin-bottom:5px">Weekday letters · Example</strong><div data-ml-weekday-strip style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;text-align:center"><span data-ml-day="0" style="padding:5px 0;border-radius:6px;font-weight:750;font-size:11px">D</span><span data-ml-day="1" style="padding:5px 0;border-radius:6px;font-weight:750;font-size:11px">D</span><span data-ml-day="2" style="padding:5px 0;border-radius:6px;font-weight:750;font-size:11px">D</span><span data-ml-day="3" style="padding:5px 0;border-radius:6px;font-weight:750;font-size:11px">D</span><span data-ml-day="4" style="padding:5px 0;border-radius:6px;font-weight:750;font-size:11px">D</span><span data-ml-day="5" style="padding:5px 0;border-radius:6px;font-weight:750;font-size:11px">D</span><span data-ml-day="6" style="padding:5px 0;border-radius:6px;font-weight:750;font-size:11px">D</span></div><span data-ml-weekdays-help style="display:block;font-size:10px;margin-top:5px">Active: Main text; inactive: Secondary text (66%).</span></div><span data-ml-button style="display:inline-block;padding:7px 12px;border-radius:8px;font-weight:700">Start mission</span></div><div data-ml-contrast style="font-size:12px;margin-top:9px"></div><div data-ml-hex style="font-size:11px;opacity:.75;margin-top:8px"></div><button id="ml-granada-undo-color" data-ml-undo type="button" style="margin-top:9px;min-height:34px;width:100%;background:#27334b;color:#fff;border:1px solid #7082a0;border-radius:8px;cursor:pointer">Undo this color</button>';
     document.body.appendChild(panel);
     return panel;
   }
@@ -124,6 +151,10 @@
     q('[data-ml-focus-title]').textContent=translate('Focus · Deep work','Pomodoro · Concentración');
     q('[data-ml-focus-copy]').textContent=translate('One step at a time','Un paso a la vez');
     q('[data-ml-alarm-title]').textContent=translate('Alarm · First Light','Alarma · Primera luz');
+    q('[data-ml-weekdays-heading]').textContent=translate('Weekday letters · Example','Letras de los días · Ejemplo');
+    q('[data-ml-weekdays-help]').textContent=translate(
+      'Active: Main text; inactive: Secondary text (66%).',
+      'Activos: Texto principal; inactivos: Texto secundario (66 %).');
     q('[data-ml-undo]').textContent=translate('Undo this color','Deshacer este color');
     const bg=valid(saved.bg)||'#070914',card=valid(saved.card)||'#1c2639';
     const fg=valid(saved.text)||'#eef4ff',muted=valid(saved.muted)||'#aab4c8';
@@ -141,6 +172,18 @@
     q('[data-ml-focus]').style.borderColor=accent2;
     q('[data-ml-alarm]').style.background=card;
     q('[data-ml-alarm]').style.borderColor=gold;
+    q('[data-ml-weekdays]').style.background=card;
+    q('[data-ml-weekdays]').style.borderColor=accent2;
+    q('[data-ml-weekdays-heading]').style.color=fg;
+    q('[data-ml-weekdays-help]').style.color=muted;
+    const daySymbols=translate(['S','M','T','W','T','F','S'],['D','L','M','M','J','V','S']);
+    for(let i=0;i<7;i++){
+      const day=q('[data-ml-day="'+i+'"]');
+      day.textContent=daySymbols[i];
+      day.style.color=i===1?fg:inactiveWeekdayColor(muted);
+      day.style.background=i===1?accent2+'33':'transparent';
+      day.style.border=i===1?'1px solid '+accent2:'1px solid transparent';
+    }
     q('[data-ml-button]').style.background=accent;
     q('[data-ml-button]').style.color='#08101b';
     q('[data-ml-label]').style.color=key==='gold'?gold:'#f4f6fb';

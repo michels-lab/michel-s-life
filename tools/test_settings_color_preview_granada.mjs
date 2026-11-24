@@ -9,7 +9,7 @@ const themeKey='michelsLife.colorTheme.v30184';
 
 function fixture(saved=new Map(),language='es'){
   const events={document:new Map(),window:new Map()};
-  const writes=[],nodes=new Map(),timeouts=[];
+  const writes=[],nodes=new Map(),timeouts=[],dispatched=[];
   let panel=null,saveCalls=0;
   const style=()=>({setProperty:(name,value,priority)=>writes.push({name,value,priority})});
   const fieldIds={
@@ -44,6 +44,11 @@ function fixture(saved=new Map(),language='es'){
     addEventListener(name,fn){
       if(!events.document.has(name))events.document.set(name,[]);
       events.document.get(name).push(fn);
+    },
+    dispatchEvent(event){
+      dispatched.push(event.type);
+      for(const handler of events.document.get(event.type)||[])handler(event);
+      return true;
     }
   };
   const localStorage={
@@ -54,6 +59,7 @@ function fixture(saved=new Map(),language='es'){
     localStorage,document:doc,state:{settings:{}},
     MichelsLifeI18n:{language},
     innerWidth:1280,innerHeight:840,console,
+    CustomEvent:class {constructor(type){this.type=type;}},
     setTimeout(fn){timeouts.push(fn);return timeouts.length},
     clearTimeout(){},
     addEventListener(name,fn){
@@ -69,7 +75,7 @@ function fixture(saved=new Map(),language='es'){
     for(const h of handlers)h({target,...extras});
   };
   return {
-    api:sandbox.MLColorFloatingPreview,storage:saved,writes,fields,doc,root,
+    api:sandbox.MLColorFloatingPreview,storage:saved,writes,fields,doc,root,dispatched,
     fire,panel:()=>panel,node:sel=>nodes.get(sel),saveCalls:()=>saveCalls,
     flush:()=>{for(const fn of timeouts.splice(0))fn();}
   };
@@ -154,4 +160,48 @@ test('source keeps no automatic theme overrides or changes to Focus Story, alarm
   assert.match(source,/window\.addEventListener\('pageshow'/);
   assert.match(source,/pointer-events:auto/);
   assert.match(source,/granadaColorPreview\.v1/);
+});
+
+
+test('weekday text uses EXACT existing canonical token mapping: active main, inactive muted with 66% alpha',()=>{
+  const f=fixture();
+  const active=f.fields.v30168MainText;
+  f.doc.activeElement=active;
+  f.fire('document','focusin',active);
+  assert.match(f.panel().innerHTML,/data-ml-weekdays/,'weekday example absent from floating preview');
+  assert.match(f.node('[data-ml-weekdays-heading]').textContent,/Letras de los días/);
+  assert.match(f.node('[data-ml-weekdays-help]').textContent,/Activos: Texto principal/);
+  assert.equal(f.node('[data-ml-day="1"]').textContent,'L','Monday is the active day in demo');
+  active.value='#1155aa';
+  f.fire('document','input',active);
+  assert.equal(f.fields.v133TextColor.value,'#1155aa',
+    'current color picker must update the v133 alias read by legacy day controller');
+  assert.equal(f.node('[data-ml-day="1"]').style.color,'#1155aa');
+  assert.ok(f.dispatched.includes('mlv:theme-text-changed'),
+    'canonical change event is necessary to repaint inactive and active weekday chips');
+  const muted=f.fields.v30168SecondaryText;
+  f.doc.activeElement=muted;
+  f.fire('document','input',muted);
+  muted.value='#99aabb';
+  f.fire('document','input',muted);
+  assert.equal(f.fields.v133MutedTextColor.value,'#99aabb');
+  assert.equal(f.node('[data-ml-day="0"]').style.color,'rgba(153,170,187,0.66)');
+  assert.equal(f.node('[data-ml-day="1"]').style.color,'#1155aa');
+  assert.equal(JSON.parse(f.storage.get(storageKey)).text,'#1155aa');
+  assert.equal(JSON.parse(f.storage.get(storageKey)).muted,'#99aabb');
+});
+
+test('weekday repaint uses owning real day engine, not a second partial DOM override',()=>{
+  const html=readFileSync('src/MichelsLife/frontend/index.html','utf8');
+  const engine=html.slice(html.indexOf('function readDayText()'),html.indexOf('</script>',html.indexOf('function readDayText()')));
+  assert.match(engine,/active:resolvedThemeColor\('v133TextColor'/);
+  assert.match(engine,/inactive:resolvedThemeColor\('v133MutedTextColor'/);
+  assert.match(engine,/inactiveAlpha:66/);
+  assert.match(engine,/function isDayTextControl\(target\)/);
+  assert.match(engine,/v30168MainText\|v30168SecondaryText/);
+  assert.equal((engine.match(/if\(isDayTextControl\(t\)\)/g)||[]).length,2,
+    'both input and change must listen to visible current controls');
+  assert.match(engine,/addEventListener\('mlv:theme-text-changed'/);
+  assert.doesNotMatch(source,/\.quest-days \.day-mini|\.mission-days \.day-dot|\.v169-day-btn/,
+    'floating UI must not duplicate owner day paint styles');
 });

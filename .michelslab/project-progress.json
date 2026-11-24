@@ -1,6 +1,6 @@
 {
   "schema": "michels-lab-product-progress-v1",
-  "as_of": "2026-11-23",
+  "as_of": "2026-11-24",
   "repository": "michels-lab/michel-s-life",
   "scope": "Cierre funcional y aceptación de la siguiente estable unificada Windows/Android Michel's Life; pruebas de fuente y CI separadas de aceptación física",
   "state": "measured",
@@ -71,5 +71,37 @@
   "latest_public_release_source_run": 45245978185,
   "latest_public_release_publisher_run": 45256957584,
   "latest_public_release_utc": "2026-11-23T20:13:17Z",
-  "next_release_acceptance_hold": true
+  "next_release_acceptance_hold": true,
+  "active_development": {
+    "status": "unmerged_candidate_requires_exact_head_ci",
+    "source_prs": [
+      "https://github.com/michels-lab/michel-s-life/pull/232",
+      "https://github.com/michels-lab/michel-s-life/pull/233",
+      "https://github.com/michels-lab/michel-s-life/pull/234"
+    ],
+    "focus": "Focus catalog, weekday color preview, ten new native alarm arrangements; v153 wildcard DOM rewrite isolated and corrected; exact runtime CI pending",
+    "runtime_issue": "https://github.com/michels-lab/michel-s-life/issues/168",
+    "owner_acceptance": "pending",
+    "new_release_published": false,
+    "milestones_verified_unchanged": 7,
+    "total_milestones": 15,
+    "root_cause_evidence": "Legacy v153 removeCoinsFromUI reproduces all four observed script character counts exactly; mock execution verifies source, editable text and ordinary UI untouched"
+  },
+  "active_release_staging": {
+    "as_of": "2026-11-24",
+    "windows_version": "3.0.232",
+    "android_direct_version": "0.2.21",
+    "android_version_code": 23,
+    "source_pr": "https://github.com/michels-lab/michel-s-life/pull/233",
+    "merged_feature_parent": "https://github.com/michels-lab/michel-s-life/pull/232",
+    "publisher_pr": "https://github.com/michels-lab/michel-s-life-releases/pull/24",
+    "required_exact_sha_gates": 11,
+    "source_intent_committed": false,
+    "publisher_intent_committed": false,
+    "public_release_verified": false,
+    "owner_acceptance": false,
+    "official_progress_percent": 47,
+    "additional_feature_parent": "https://github.com/michels-lab/michel-s-life/pull/234",
+    "source_preflight_version_code_corrected": 23
+  }
 }

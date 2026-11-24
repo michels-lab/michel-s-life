@@ -149,3 +149,47 @@ test('both actual Focus surfaces expose explicit classical music controls OUTSID
   assert.match(focusSource,/audio\?\.classicalOptions\?\.\(\)/);
   assert.doesNotMatch(focusSource,/localStorage\.setItem\(/,'no second audio persistence store');
 });
+
+
+test('all eight original ambient scenes are directly previewable with one bounded scheduler',()=>{
+  const f=harness();
+  assert.equal(f.api.playing(),false);
+  assert.equal(f.api.toggleScene('unknown'),false);
+  assert.equal(f.api.playing(),false,'invalid scene must never autoplay or reset choice');
+  for(const id of legacy){
+    const previous=f.contexts.at(-1);
+    assert.equal(f.api.toggleScene(id),true,'cannot start '+id);
+    assert.equal(f.api.playingScene(),id);
+    assert.equal(f.persisted.v30165Soundscape,id,'selection must persist for '+id);
+    assert.equal(f.timers.size,1,'concurrent scheduler after '+id);
+    if(previous)assert.equal(previous.closed,true,'previous context leaked on '+id);
+  }
+  assert.equal(f.api.toggleScene('silver'),true,'same track must act as Stop');
+  assert.equal(f.api.playing(),false);
+  assert.equal(f.timers.size,0);
+  assert.equal(f.persisted.v30165Soundscape,'silver','Stop must not lose saved choice');
+});
+
+test('direct Focus audio controls expose 8 ambient tracks plus 2 classics and completion preview on BOTH platforms',()=>{
+  const desktop=focusSource;
+  const mobile=readFileSync('android/mobile-experience.js','utf8');
+  for(const id of legacy){
+    assert.match(desktop,new RegExp('data-mlv-scene="'+id+'"'),id+' hidden on Windows');
+    assert.match(mobile,new RegExp('data-mobile-scene="'+id+'"'),id+' hidden on Android');
+  }
+  for(const id of classical){
+    assert.match(desktop,new RegExp('data-mlv-classical="'+id+'"'));
+    assert.match(mobile,new RegExp('data-mobile-classical="'+id+'"'));
+  }
+  assert.match(desktop,/toggleScene\(id\)/);
+  assert.match(mobile,/MichelsLifeFocusAudio\?\.toggleScene\?\.\(sceneId\)/);
+  assert.ok(desktop.indexOf('data-mlv-scene="moonlight"')<desktop.indexOf('<details class="mlv-focus-sound-details"'));
+  assert.ok(mobile.indexOf('data-mobile-scene="moonlight"')<mobile.indexOf('<details class="mlv-android-focus-sounds"'));
+  assert.ok(desktop.indexOf('data-mlv-completion-sound')<desktop.indexOf('<details class="mlv-focus-sound-details"'));
+  assert.ok(mobile.indexOf('<select data-mobile-focus-completion>')<mobile.indexOf('<details class="mlv-android-focus-sounds"'));
+  assert.equal((desktop.match(/data-mlv-completion-sound/g)||[]).length,3,'desktop must avoid a duplicated completion picker');
+  assert.equal((mobile.match(/<select data-mobile-focus-completion>/g)||[]).length,1,'Android completion input must not be duplicated');
+  assert.match(mobile,/selector\.includes\('quick-completion label'\)/,'localization must preserve nested select control');
+  assert.match(desktop,/data-mlv-audio="preview-completion"/);
+  assert.match(mobile,/data-mobile-focus="preview-completion"/);
+});

@@ -12,6 +12,17 @@
 
 ---
 
+## Desarrollo activo — Granada 24-nov-2026 (NO publicado)
+
+**24-nov: causa raíz reproducida y corregida en candidato.** El limpiador histórico `v153-no-coins-english-cleanup-script` reescribía todas las hojas DOM, incluso scripts, eliminando espacios/monedas. Reproduce exactamente 4 tamaños de código alterado del CI de #168. Se limita a UI de badges, excluye fuente, estilos y contenido editable y conserva XP; se agrega regresión de ejecución. También se incorpora [PR #234](https://github.com/michels-lab/michel-s-life/pull/234) (diez nuevos tonos de alarma), se corrige preflight `versionCode 23` y se mantienen gates exactos. Ningún nuevo release hasta CI y firma/publicación verificadas.
+
+**Integración reunida y distribución preparada, todavía sin publicación:** [PR #233](https://github.com/michels-lab/michel-s-life/pull/233) ya incorpora los seis archivos del PR #232 mediante un commit de integración con dos padres; candidata **Windows 3.0.232 + Android Direct 0.2.21 (versionCode23)**. [Notas de release candidatas](docs/releases/v3.0.232.md). [Publicador oficial preparado](https://github.com/michels-lab/michel-s-life-releases/pull/24) sigue **inerte** hasta que se complete la CI del mismo SHA, la instalación Android15 firmada y la verificación de Windows. La estable pública sigue siendo 3.0.231/0.2.20 (13 assets); progreso de aceptación 7/15 = 47%. El problema #168 sigue sin cierre.
+
+
+- [PR #232: catálogo musical y sonido final visibles en Pomodoro](https://github.com/michels-lab/michel-s-life/pull/232) — revisión; no integrado en la última estable.
+- [PR #233: tipografía de días de semana + aislamiento de scripts de traducción](https://github.com/michels-lab/michel-s-life/pull/233) — causa exacta de colores: días activos «Texto principal»; inactivos «Texto secundario» a 66 % de opacidad. Se añadió muestra en el panel flotante de Settings. Diagnóstico #168: dos traductores globales escribían en nodos SCRIPT/STYLE; filtros corregidos y regresión de fuente. **Confirmación Chromium/Android CI pendiente**, no afirmar cierre hasta verificar.
+- [Auditoría funcional de Settings y análisis de #168](docs/audit/2026-11-23-weekday-color-live.md). Otra [auditoría del audio de Focus](docs/audit/2026-11-23-focus-direct-catalog.md). **Progreso de aceptación 7/15 = 47 %**, sin contar PRs como QA física; versión oficial anterior continúa 3.0.231 / Android Direct 0.2.20.
+
 ## Historial: release anterior — 20 de noviembre de 2026 (México) / 21 de noviembre UTC
 
 **Windows 3.0.230 + Android Direct 0.2.19 (versionCode 21)** fue la última versión pública verificada en el corte anterior: [descargar 13 archivos oficiales](https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.230-android-v0.2.19), publicada el **2026-11-21 00:31:09 UTC**; `draft=false`, `prerelease=false`, 13 assets. Fuente exacta `9e3a3abc84c811fc2baf4eb64e5a50ca1ccc31cf`, [workflow source #44842053581](https://github.com/michels-lab/michel-s-life/actions/runs/44842053581) **SUCCESS** y [publicador destino #44844286557](https://github.com/michels-lab/michel-s-life-releases/actions/runs/44844286557) **SUCCESS**. Las nueve suites exact-SHA pasaron; Setup/Portable Windows iniciados, APK Direct con firma permanente y SHA-256 comprobados e instalación/onboarding/reapertura del **APK firmado de producción** en Android15 AVD aprobados. Las validaciones de Android14/16 debug hospedado siguen teniendo incidencias ADB/QEMU y File Steward audit falló por conflicto de actualización concurrente; ninguna se finge superada.
