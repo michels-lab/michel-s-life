@@ -1970,7 +1970,13 @@ applyV133Theme();try{renderAll()}catch(err){console.error('v13.3 English fixes e
     if(next!==text)node.nodeValue=next;
   }
   function translateVisibleDOM(root=document.body){try{if((localStorage.getItem('michelsLife.language.v1')||navigator.language||'').toLowerCase().startsWith('es'))return;}catch(_){} 
-    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(n){return n.nodeValue&&/[áéíóúñÁÉÍÓÚÑ]|Misiones|Metas|Configuración|pendientes|monedas|Semanal|Diaria|Única/.test(n.nodeValue)?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT}});
+    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(n){
+      // Only translate visible UI copy. The previous walker translated text
+      // INSIDE <script> and <style>, altering executable source on render.
+      const p=n.parentElement;
+      if(!p||['SCRIPT','STYLE','NOSCRIPT','TEXTAREA'].includes(p.tagName))return NodeFilter.FILTER_REJECT;
+      return n.nodeValue&&/[áéíóúñÁÉÍÓÚÑ]|Misiones|Metas|Configuración|pendientes|monedas|Semanal|Diaria|Única/.test(n.nodeValue)?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT;
+    }});
     const nodes=[]; while(walker.nextNode())nodes.push(walker.currentNode);
     nodes.forEach(translateTextNode);
   }
@@ -5430,6 +5436,12 @@ textarea::placeholder{
   function cleanupBadText(){
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
       acceptNode(n){
+        // Never rewrite executable SCRIPT text or STYLE syntax. This
+        // renderer-wide cleanup previously corrupted earlier inline scripts
+        // and triggered intermittent Chromium SyntaxError on relaunch.
+        const p=n.parentElement;
+        if(!p||['SCRIPT','STYLE','NOSCRIPT','TEXTAREA'].includes(p.tagName))
+          return NodeFilter.FILTER_REJECT;
         return /Monthsages|Mensajes|Configuración|Guardar configuración|Etapa visual|Ambiente por hora/.test(n.nodeValue||'')
           ? NodeFilter.FILTER_ACCEPT
           : NodeFilter.FILTER_REJECT;
