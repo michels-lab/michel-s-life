@@ -1,5 +1,11 @@
 # Michel's Life — avance funcional y puertas de aceptación
 
+## Publicación 24-nov 2026 — 3.0.232 / Android Direct 0.2.21
+
+**Estable oficial publicada:** [Windows 3.0.232 + Android Direct 0.2.21](https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.232-android-v0.2.21), code23, 13 assets, 2026-11-24 20:52:21 UTC, draft=false, prerelease=false. [Fuente #45478901654](https://github.com/michels-lab/michel-s-life/actions/runs/45478901654) SUCCESS, 11/11 exact-SHA gates, Windows Setup y portable launch PASS, APK firmada e instalación/relaunch API35 SUCCESS. [Publicador #45485082290](https://github.com/michels-lab/michel-s-life-releases/actions/runs/45485082290) SUCCESS y hashes descargados comprobados. Fuente `d82359c010ece7fc0f12d2dcc8238d718093ad22`; intent destino `0941ea1010f38c74fc310172334958356c2a4787`.
+
+**Avance integral 8/15 = 53%** (antes 47%). Hito #14 VERIFICADO: #168 cerrado tras reproducir corrupción exacta de cuatro scripts, corregir limpiador v153, comprobar Story/Focus 6/6 y Android UI; PR #233 y #235 integradas, segunda compilación exacta publicada. Acceso Alarmas en barra superior Android sin overlay de formulario; 8 ambientes + 2 miniaturas clásicas directas, preescucha de fin, 10 arreglos Alarmas, colores días persistentes y preview. Hitos #8–13 y #15 siguen pendientes por aceptación real, no por empaquetado. Android14/16 debug fallidos; Android15 firmado no demuestra datos privados. Antes de actualizar en Galaxy respaldar datos y no desinstalar.
+
 ## Publicación 23-nov 2026 — 3.0.231 / Android Direct 0.2.20
 
 **Release técnica publicada:** [Windows 3.0.231 + Android Direct 0.2.20](https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.231-android-v0.2.20), `versionCode22`, 13 assets, publicada 2026-11-23 20:13:17 UTC, certificado Android Direct de producción y checksums verificados. [Fuente #45245978185](https://github.com/michels-lab/michel-s-life/actions/runs/45245978185) SUCCESS (9/9 suites exact SHA, Windows lanzado, APK de producción Android15 instalada/reabierta). [Publicador #45256957584](https://github.com/michels-lab/michel-s-life-releases/actions/runs/45256957584) SUCCESS. Fuente `9ce4881b93e16f378f7f78c1808c897d385d67fc`; intent destino `f6b6e65df6b5c037be590d498eee2bd1c609c51f`.
@@ -29,7 +35,7 @@ La línea base se establece en este corte por primera vez; NO significa que el p
 | 11 | Actualización firmada Android in-place preserva datos reales | PENDIENTE | Revisión antes/después sin desinstalar |
 | 12 | Sincronización Supabase de la misma cuenta Windows↔Android, conflictos y aislamiento real | PENDIENTE | Dos dispositivos, cuentas reales |
 | 13 | Google Calendar OAuth real lectura/escritura de misión en Android | PENDIENTE | Aceptación proveedor real |
-| 14 | Errores JavaScript intermitentes Story/Pomodoro eliminados, no solo pasan reintentos | PENDIENTE | Issue #168, trazabilidad script/línea |
+| 14 | Errores JavaScript intermitentes Story/Pomodoro eliminados, no solo pasan reintentos | VERIFICADO | #168 cerrado, PR #233/#235, release 3.0.232/0.2.21 y CI exacta |
 | 15 | Aceptación funcional/estética del propietario en Windows y Galaxy instalados | PENDIENTE | Capturas y uso físico del release candidato |
 
 ## Granada completada: release unificado verificado — 20 noviembre México / 21 noviembre UTC
