@@ -31,8 +31,8 @@
     "UNKNOWN_PURPOSE": 6
   },
   "finding_total": 12,
-  "inventory_fingerprint": "ae3d184c8c7344ec3e1e7455e7236790b62d1876e8ecbf159ec5c1d003f8abe0",
-  "evidence_fingerprint": "2b5d5445f3c2de7262b0e7107dffecf3891deccb31951270ce21ca26330a0ff3",
+  "inventory_fingerprint": "ac98dcc54c18bd89b058f71a082eb033fccf6ee8fdf00205f654ecade475b136",
+  "evidence_fingerprint": "f9c7055fe08c179487a80cd310813f110c2670f17673b2c4f065a8acec8bbcb1",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -1369,7 +1369,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "8224d191ff16bad7ff5876d504845c0781c7c2ee"
+      "blob": "1e4cf20725a65e06da157821eb6dd5cad401705c"
     },
     {
       "path": "android/mobile-sections.js",
@@ -1852,7 +1852,7 @@
       "role": "document",
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
-      "blob": "770002a9ed9d7f2fb61d24bb82bb38c6365434d8"
+      "blob": "91c885dc703fee38184c861cf520a25d85d7050d"
     },
     {
       "path": "docs/audit/HANDOFF_LEGACY_2026-10-05.md",
@@ -2132,7 +2132,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "d71ebb4e3c93403b9a8d228298e64d2bbef38e23"
+      "blob": "4a80679dcd03ab6a476101c850c81bae1ba42228"
     },
     {
       "path": "src/MichelsLife/frontend/settings-color-floating-preview.js",
@@ -2944,7 +2944,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "62ebf1ff79ac99269eca9b82f2a70a9b0d6465ac"
+      "blob": "fee51d55341263394a8a429503a862b14996440f"
     },
     {
       "path": "tools/ui_android_onboarding_persistence_smoke.mjs",
@@ -2986,7 +2986,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "3d9439454239903e944eb8ed6eb12e76b6635f7c"
+      "blob": "7489f3a5218f8c21ede434fdd1620b9ecf032fb8"
     },
     {
       "path": "tools/ui_auto_update_smoke.mjs",
@@ -3300,20 +3300,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "748d14ef786ce019",
+      "id": "c695e5cf3b3165f3",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "21 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/ci.yml, .github/workflows/release-unified-v3232-a0221.yml, .michelslab/project-progress.json, .michelslab/release-intents/unified-v3232-a0221.txt, android/android-bridge.js",
+      "observation": "22 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/ci.yml, .github/workflows/release-unified-v3232-a0221.yml, .michelslab/project-progress.json, .michelslab/release-intents/unified-v3232-a0221.txt, android/android-bridge.js",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "a329eeb14e0ebc86",
+      "id": "54e2ff71603bb94e",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "71 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml",
+      "observation": "72 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
