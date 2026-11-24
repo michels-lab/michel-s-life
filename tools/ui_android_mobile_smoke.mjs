@@ -856,6 +856,20 @@ try{
   ok(miniAfterBack.visible&&miniAfterBack.bottom<=miniAfterBack.navTop-2&&
       miniAfterBack.remaining.includes(':')&&miniAfterBack.control==='Resume',
     'Paused Focus timer is not persistent, or hides mobile navigation: '+JSON.stringify(miniAfterBack));
+  // Both persistent quick controls must have independent hit targets;
+  // previous floating Alarms launcher covered the mini timer Resume.
+  const collision=await page.evaluate(()=>{
+    const mini=document.getElementById('mlv-android-mini-focus');
+    const alarm=document.getElementById('mlv-alarm-launcher');
+    const resume=mini?.querySelector('.mlv-mini-toggle');
+    if(!mini||!alarm||!resume)return {missing:true};
+    const a=alarm.getBoundingClientRect(),m=mini.getBoundingClientRect(),r=resume.getBoundingClientRect();
+    const hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
+    const alarmHit=document.elementFromPoint(a.left+a.width/2,a.top+a.height/2);
+    return {gap:m.top-a.bottom,resumeHit:resume.contains(hit),alarmHit:alarm.contains(alarmHit)};
+  });
+  ok(!collision.missing&&collision.gap>=5&&collision.resumeHit&&collision.alarmHit,
+    'Alarm launcher and Focus mini controls must not overlap: '+JSON.stringify(collision));
   await page.locator('#mlv-android-mini-focus .mlv-mini-toggle').click();
   await page.waitForFunction(()=>window.FocusStoryV30162?.focusState?.().status==='running');
   await page.locator('#mlv-android-mini-focus .mlv-mini-toggle').click();

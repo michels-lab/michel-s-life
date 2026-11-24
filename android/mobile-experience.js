@@ -654,7 +654,7 @@
         font:800 12px system-ui,sans-serif;color:inherit;touch-action:manipulation
       }
       html[data-mlv-platform="android"] body.mlv-android-timer-active #main{
-        padding-bottom:calc(164px + env(safe-area-inset-bottom,0px))!important
+        padding-bottom:calc(146px + var(--mlv-mini-focus-clearance,76px) + env(safe-area-inset-bottom,0px))!important
       }
       html[data-mlv-platform="android"] body.mlv-android-focus-open #mlv-android-mini-focus,
       html[data-mlv-platform="android"] body.mlv-android-mission-edit-open #mlv-android-mini-focus,
@@ -1444,6 +1444,16 @@
         }
       });
       document.body.appendChild(mini);
+      // Report the actual rendered timer height (including Spanish labels,
+      // scaling and narrow screens) so the independent alarm launcher and
+      // scroll clearance never cover its Resume/Pause control.
+      if(typeof ResizeObserver==='function'){
+        const observer=new ResizeObserver(()=>{
+          const height=Math.ceil(mini.getBoundingClientRect().height);
+          if(height>0)document.body.style.setProperty('--mlv-mini-focus-clearance',height+'px');
+        });
+        observer.observe(mini);
+      }
     }
     // One visible action from every Android section, no desktop shortcut
     // dependency. The canonical MLV216QuickCapture owns data and saving.

@@ -474,6 +474,19 @@ function styles(){
  padding:10px 13px;box-shadow:0 10px 35px #0008;background:#091424ee;white-space:nowrap
 }
 html[data-mlv-platform=android] #mlv-alarm-launcher{right:15px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:2147483000}
+/* The shared mini timer occupies the bottom 82px + its own height. Keep
+   the alarm launcher above it, not on top of its Pause/Resume hit target.
+   --mlv-mini-focus-clearance is measured by Android's existing mini view. */
+html[data-mlv-platform=android] body.mlv-android-timer-active #mlv-alarm-launcher{
+ bottom:calc(92px + var(--mlv-mini-focus-clearance,76px) + env(safe-area-inset-bottom,0px))
+}
+html[data-mlv-platform=android] body.mlv-android-focus-open #mlv-alarm-launcher,
+html[data-mlv-platform=android] body.mlv-android-mission-edit-open #mlv-alarm-launcher,
+html[data-mlv-platform=android] body.mlv-android-keyboard-editing #mlv-alarm-launcher,
+html[data-mlv-platform=android] body:has(#mlv200Onboarding:not([hidden])) #mlv-alarm-launcher,
+html[data-mlv-platform=android] body:has([data-mlv216-qc]:not([hidden])) #mlv-alarm-launcher{
+ visibility:hidden;pointer-events:none
+}
 html[data-mlv-platform=android] #mlv-alarm-screen,html[data-mlv-platform=android] #mlv-alarm-ring{
  padding:calc(10px + env(safe-area-inset-top,0px)) 10px calc(13px + env(safe-area-inset-bottom,0px))!important
 }
