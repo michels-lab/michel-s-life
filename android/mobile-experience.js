@@ -1445,8 +1445,7 @@
       });
       document.body.appendChild(mini);
       // Report the actual rendered timer height (including Spanish labels,
-      // scaling and narrow screens) so the independent alarm launcher and
-      // scroll clearance never cover its Resume/Pause control.
+      // scaling and narrow screens) for the scroll clearance below content.
       if(typeof ResizeObserver==='function'){
         const observer=new ResizeObserver(()=>{
           const height=Math.ceil(mini.getBoundingClientRect().height);

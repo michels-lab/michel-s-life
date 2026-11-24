@@ -866,9 +866,9 @@ try{
     const a=alarm.getBoundingClientRect(),m=mini.getBoundingClientRect(),r=resume.getBoundingClientRect();
     const hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
     const alarmHit=document.elementFromPoint(a.left+a.width/2,a.top+a.height/2);
-    return {gap:m.top-a.bottom,resumeHit:resume.contains(hit),alarmHit:alarm.contains(alarmHit)};
+    return {docked:alarm.parentElement?.id==='mlv-android-topbar',gap:m.top-a.bottom,resumeHit:resume.contains(hit),alarmHit:alarm.contains(alarmHit)};
   });
-  ok(!collision.missing&&collision.gap>=5&&collision.resumeHit&&collision.alarmHit,
+  ok(!collision.missing&&collision.docked&&collision.gap>=5&&collision.resumeHit&&collision.alarmHit,
     'Alarm launcher and Focus mini controls must not overlap: '+JSON.stringify(collision));
   await page.locator('#mlv-android-mini-focus .mlv-mini-toggle').click();
   await page.waitForFunction(()=>window.FocusStoryV30162?.focusState?.().status==='running');

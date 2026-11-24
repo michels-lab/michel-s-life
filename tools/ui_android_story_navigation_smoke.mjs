@@ -183,6 +183,16 @@ try{
   await page.waitForFunction(()=>getComputedStyle(
     document.getElementById('mlv-android-bottom-nav')).display!=='none',
     null,{timeout:5000});
+  // Alarm navigation is structurally inside the top bar. This guarantees
+  // the floating alarm cannot block the chapter button at any scroll offset.
+  const alarm=page.locator('#mlv-android-topbar > #mlv-alarm-launcher');
+  await alarm.waitFor({state:'visible',timeout:5000});
+  await alarm.tap();
+  await page.waitForSelector('#mlv-alarm-screen:not([hidden])',{state:'visible'});
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('#mlv-alarm-screen',{state:'hidden'});
+  assert(await nameField.inputValue()===chapterName,'Alarm navigation discarded the Story draft');
+  assert(await mottoField.inputValue()===chapterMotto,'Alarm navigation discarded the Story motto');
   await start.scrollIntoViewIfNeeded();
   const touchTarget=await start.evaluate(button=>{
     const bar=document.getElementById('mlv-android-bottom-nav');
@@ -190,7 +200,8 @@ try{
     const cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
     const hit=document.elementFromPoint(cx,cy);
     return {buttonBottom:rect.bottom,barTop:barRect.top,
-      centerIsButton:hit===button||button.contains(hit),inViewport:cy>0&&cy<innerHeight};
+      centerIsButton:hit===button||button.contains(hit),inViewport:cy>0&&cy<innerHeight,
+      hitTag:hit?.tagName||null,hitId:hit?.id||null,hitClass:typeof hit?.className==='string'?hit.className.slice(0,180):null};
   });
   assert(touchTarget.buttonBottom<=touchTarget.barTop-5&&
     touchTarget.centerIsButton&&touchTarget.inViewport,
