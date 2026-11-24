@@ -348,7 +348,7 @@ test('all ten original Focus motifs are selectable and survive daily alarm reloa
     getItem:key=>records.get(key)||null,
     setItem:(key,value)=>records.set(key,value)
   };
-  const window={},document={readyState:'loading',addEventListener(){}};
+  const window={},document={readyState:'loading',documentElement:{dataset:{}},addEventListener(){}};
   vm.runInNewContext(alarms,{window,document,localStorage,console},{timeout:1000});
   window.MichelsLifeAlarms.read();
   assert.deepEqual(Array.from(window.MichelsLifeAlarms.records(),x=>x.sound),ids);
