@@ -90,16 +90,69 @@ for(const width of [320,360,412])for(const language of ['en','es']){
          const el=document.getElementById(id);
          return {id,present:!!el,characters:el?.textContent?.length??null};
        });
-       if(evidence.length<32)evidence.push({stage,scripts});
+       if(evidence.length<48)evidence.push({stage,scripts});
      };
      const record=(kind,node,oldText)=>{
        const parent=node?.nodeType===1?node:node?.parentElement;
        const owner=parent?.tagName==='SCRIPT'?parent:parent?.closest?.('script');
-       if(!owner||!ids.has(owner.id)||evidence.length>=32)return;
+       if(!owner||!ids.has(owner.id)||evidence.length>=48)return;
        evidence.push({stage:'text-mutation',id:owner.id,kind,
          beforeCharacters:oldText?.length??null,
          currentCharacters:owner.textContent?.length??null});
      };
+     // The previous evidence proved that complete SCRIPT text is later
+     // REPLACED (childList), not just character-edited. Capture the owning
+     // DOM API call stack WITHOUT any source/script/user data. This is
+     // diagnosis-only and never suppresses a failing integrity gate.
+     const scriptOwner=node=>{
+       if(!node)return null;
+       const p=node.nodeType===1?node:node.parentElement;
+       if(!p)return null;
+       const direct=p.tagName==='SCRIPT'?p:p.closest?.('script');
+       if(direct&&ids.has(direct.id))return direct;
+       // A parent innerHTML/replaceChildren could drop a SCRIPT subtree.
+       if(p.nodeType===1&&p.querySelector){
+         for(const id of ids){
+           const child=p.querySelector('[id="'+id+'"]');
+           if(child?.tagName==='SCRIPT')return child;
+         }
+       }
+       return null;
+     };
+     const traceWrite=(node,kind,value)=>{
+       const owner=scriptOwner(node);
+       if(!owner||evidence.length>=48)return;
+       const lines=String(new Error().stack||'').split('\\n').slice(2,7);
+       const callers=lines.map(line=>{
+         const match=line.match(/(index\\.html|i18n\\.js|mobile-experience\\.js|android-bridge\\.js|settings-color-floating-preview\\.js):(\\d+):(\\d+)/);
+         if(!match)return null;
+         const fn=line.match(/\\bat\\s+([A-Za-z_$][\\w$.-]*)\\s*\\(/)?.[1]||'anonymous';
+         return {script:match[1],line:Number(match[2]),column:Number(match[3]),fn};
+       }).filter(Boolean).slice(0,3);
+       evidence.push({stage:'script-write',id:owner.id,kind,
+         beforeCharacters:owner.textContent?.length??null,
+         newCharacters:typeof value==='string'?value.length:null,callers});
+     };
+     for(const [proto,key] of [
+       [Node.prototype,'textContent'],[Node.prototype,'nodeValue'],
+       [CharacterData.prototype,'data'],[Element.prototype,'innerHTML']
+     ]){
+       const descriptor=Object.getOwnPropertyDescriptor(proto,key);
+       if(!descriptor?.configurable||!descriptor?.set||!descriptor?.get)continue;
+       Object.defineProperty(proto,key,{
+         configurable:true,enumerable:descriptor.enumerable,
+         get(){return descriptor.get.call(this)},
+         set(value){traceWrite(this,key,value);return descriptor.set.call(this,value)}
+       });
+     }
+     for(const key of ['replaceChildren','replaceChild','removeChild','appendChild','insertBefore']){
+       const original=Node.prototype[key];
+       if(typeof original!=='function')continue;
+       Object.defineProperty(Node.prototype,key,{
+         configurable:true,writable:true,
+         value:function(...args){traceWrite(this,key,null);return original.apply(this,args)}
+       });
+     }
      const observer=new MutationObserver(entries=>{
        for(const entry of entries){
          if(entry.type==='characterData')
@@ -365,7 +418,7 @@ for(const width of [320,360,412])for(const language of ['en','es']){
          Buffer.byteLength(canonicalBody(x.id),'utf8'):null};
    });
    const earlyScriptEvidence=page?await page.evaluate(
-     ()=>window.__mlv168EarlyEvidence?.slice(0,28)||null
+     ()=>window.__mlv168EarlyEvidence?.slice(0,48)||null
    ).catch(()=>null):null;
    console.error('FAIL Android Story/Focus touch '+name+' ['+
      [...new Set(errors.map(e=>e.code))].join(',')+'] '+
