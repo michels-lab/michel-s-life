@@ -116,3 +116,27 @@ test('both real focus templates put clock and visible motivation before audio, n
  }
  assert.match(focusSource,/window\.MichelsLifeFocusAudio/);
 });
+
+
+test('completion and recorded preview take exclusive ownership of audio, and a new ambience stops the recording',()=>{
+ const f=harness();
+ for(const id of classical){
+   f.api.selectCompletion(id);
+   for(const preview of [false,true]){
+     assert.equal(f.api.startAmbient(),true);
+     const ambient=f.contexts.at(-1);
+     assert.equal(f.api.playCompletion(preview),true);
+     const player=f.recordings.at(-1);
+     assert.equal(ambient.closed,true);
+     assert.equal(f.timers.size,0);
+     assert.equal(f.api.recordingActive(),true);
+     assert.equal(f.api.startAmbient(),true);
+     assert.equal(player.paused,true);
+     assert.equal(f.api.recordingActive(),false);
+   }
+ }
+ f.api.selectCompletion('off');
+ assert.equal(f.api.playCompletion(),true);
+ assert.equal(f.timers.size,0);
+ assert.equal(f.api.playing(),false);
+});

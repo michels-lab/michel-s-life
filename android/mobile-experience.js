@@ -137,7 +137,7 @@
       ['[data-mobile-focus="alarms"]','⏰ Alarms','⏰ Alarmas'],
 
        ['[data-mlv-android-classical-heading]','Classical music','Música clásica'],
-       ['[data-mlv-android-classical-note]','Short synthesized excerpts · Not full recordings','Fragmentos breves sintetizados · No son grabaciones completas'],
+       ['[data-mlv-android-classical-note]','Licensed piano recordings · Completion only','Grabaciones de piano con licencia · Solo al terminar'],
        ['.mlv-android-focus-sounds summary','Focus audio · Completion sound & ambience','Audio de enfoque · Sonido final y ambiente'],
        ['.mlv-android-focus-quick-completion label','Completion sound','Sonido al terminar'],
        ['[data-mobile-focus="preview-completion"]','▶ Listen','▶ Escuchar'],
@@ -1371,7 +1371,7 @@
         if(action==='enable-notifications'){requestNativeFocusPermission();updateFocus();return;}
         if(action==='alarms'){close();window.MichelsLifeAlarms?.open?.();return;}
         if(action==='preview-completion'){
-          if(window.MichelsLifeFocusAudio?.previewingCompletion?.()){window.MichelsLifeFocusAudio.stopClassical();updateFocus();return;}
+          if(window.MichelsLifeFocusAudio?.recordingActive?.()){window.MichelsLifeFocusAudio.stopClassical();updateFocus();return;}
           window.MichelsLifeFocusAudio?.playCompletion?.(true);return;
         }
         if(action==='toggle-ambient'){
@@ -1638,7 +1638,7 @@
     writeText(q('[data-mobile-focus="toggle-ambient"]',root),
       audio?.playing?.()?focusText('Stop','Detener'):focusText('Play','Reproducir'));
     writeText(q('[data-mobile-focus="preview-completion"]',root),
-      audio?.previewingCompletion?.()?focusText('Stop preview','Detener'):focusText('Preview','Escuchar'));
+      audio?.recordingActive?.()?focusText('Stop recording','Detener grabación'):focusText('Preview','Escuchar'));
     enforceFocusTouchTargets();
     writeText(q('#mlv-android-focus-time',root),left);
     writeText(q('#mlv-android-focus-phase',root),mode.toUpperCase());

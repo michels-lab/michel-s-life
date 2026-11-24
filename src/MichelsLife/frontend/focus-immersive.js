@@ -72,6 +72,8 @@
   function playCompletion(preview=false){
     const id=finishId(),score=finishTones[id];
     stopClassical();
+    // Final audio takes precedence; hear licensed previews in isolation too.
+    if(!preview||score?.classical)stopAmbient();
     if(!score||id==='off')return true;
     if(score.classical){
       try{
@@ -150,6 +152,8 @@
   }
   function startAmbient(){
     stopAmbient();
+    // Explicit new ambience replaces the recording rather than mixing audio.
+    stopClassical();
     const C=window.AudioContext||window.webkitAudioContext;
     if(!C)return false;
     try{
@@ -189,7 +193,7 @@
     classicalOptions:()=>classicalIds.map(id=>({id,label:lang(finishTones[id].en,finishTones[id].es)})),
     toggleClassical,toggleScene,
     completionId:finishId,sceneId,selectCompletion:id=>{stopClassical();return choice(completionKey,finishTones,id,'soft');},
-    selectScene,playCompletion,stopClassical,previewingCompletion:()=>previewingId,recordingPlayback:()=>classicalSource?{paused:classicalSource.paused,currentTime:classicalSource.currentTime,duration:classicalSource.duration,src:classicalSource.src}:null,unlock,startAmbient,stopAmbient,
+    selectScene,playCompletion,stopClassical,previewingCompletion:()=>previewingId,recordingActive:()=>!!classicalSource,recordingPlayback:()=>classicalSource?{paused:classicalSource.paused,currentTime:classicalSource.currentTime,duration:classicalSource.duration,src:classicalSource.src}:null,unlock,startAmbient,stopAmbient,
     playing:()=>!!ambientContext,playingScene:()=>ambientScene
   };
   window.addEventListener?.('pagehide',()=>{stopAmbient();stopClassical();});
@@ -558,7 +562,7 @@
     document.body.append(screen,mini,launcher);
   }
   function handleAction(command){
-    if(command==='preview-completion'){const audio=window.MichelsLifeFocusAudio;if(audio?.previewingCompletion?.()){audio.stopClassical();return true;}return audio?.playCompletion?.(true)===true;}
+    if(command==='preview-completion'){const audio=window.MichelsLifeFocusAudio;if(audio?.recordingActive?.()){audio.stopClassical();refresh();return true;}return audio?.playCompletion?.(true)===true;}
     if(command==='toggle-ambient'){
       const music=window.MichelsLifeFocusAudio;
       if(music?.playing?.())music.stopAmbient();
@@ -676,8 +680,8 @@
     if(classicalHeading&&classicalHeading.textContent!==headingText)
       classicalHeading.textContent=headingText;
     const classicalNote=q('[data-mlv-classical-note]',screen);
-    const noteText=lang('Short synthesized excerpts, not complete recordings.',
-      'Fragmentos breves sintetizados, no grabaciones completas.');
+    const noteText=lang('Licensed piano recordings · completion only.',
+      'Grabaciones de piano con licencia · solo al terminar.');
     if(classicalNote&&classicalNote.textContent!==noteText)
       classicalNote.textContent=noteText;
     const ambientHeading=q('[data-mlv-ambient-heading]',screen);
@@ -693,8 +697,8 @@
     screen.querySelectorAll('[data-mlv-classical]').forEach(button=>{
       const id=button.dataset.mlvClassical;
       const item=audio?.classicalOptions?.().find(option=>option.id===id);
-      const active=audio?.playing?.()&&audio?.playingScene?.()===id;
-      const text=(active?'■ ':'▶ ')+(item?.label||id);
+      const active=audio?.previewingCompletion?.()===id;
+       const text=(active?'■ ':'▶ ')+(item?.label||id);
       if(button.textContent!==text)button.textContent=text;
       if(button.getAttribute('aria-pressed')!==String(!!active))
         button.setAttribute('aria-pressed',String(!!active));
@@ -717,7 +721,7 @@
     const ambientButton=q('[data-mlv-audio="toggle-ambient"]',screen);
     if(ambientButton)ambientButton.textContent=audio?.playing?.()?lang('Stop','Detener'):lang('Play','Reproducir');
     const previewButton=q('[data-mlv-audio="preview-completion"]',screen);
-    if(previewButton)previewButton.textContent=audio?.previewingCompletion?.()?lang('■ Stop preview','■ Detener preescucha'):lang('▶ Listen to completion','▶ Escuchar sonido final');
+    if(previewButton)previewButton.textContent=audio?.recordingActive?.()?lang('■ Stop recording','■ Detener grabación'):lang('▶ Listen to completion','▶ Escuchar sonido final');
     const sceneLabel=q('[for="mlv-focus-scene-select"]',screen);
     if(sceneLabel?.firstChild?.nodeType===3)
       sceneLabel.firstChild.textContent=lang('Background music','Música de ambiente')+' ';
