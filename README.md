@@ -12,6 +12,12 @@
 
 ---
 
+## Desarrollo activo — Granada 23-nov-2026 (NO publicado)
+
+- [PR #232: catálogo musical y sonido final visibles en Pomodoro](https://github.com/michels-lab/michel-s-life/pull/232) — revisión; no integrado en la última estable.
+- [PR #233: tipografía de días de semana + aislamiento de scripts de traducción](https://github.com/michels-lab/michel-s-life/pull/233) — causa exacta de colores: días activos «Texto principal»; inactivos «Texto secundario» a 66 % de opacidad. Se añadió muestra en el panel flotante de Settings. Diagnóstico #168: dos traductores globales escribían en nodos SCRIPT/STYLE; filtros corregidos y regresión de fuente. **Confirmación Chromium/Android CI pendiente**, no afirmar cierre hasta verificar.
+- [Auditoría funcional de Settings y análisis de #168](docs/audit/2026-11-23-weekday-color-live.md). Otra [auditoría del audio de Focus](docs/audit/2026-11-23-focus-direct-catalog.md). **Progreso de aceptación 7/15 = 47 %**, sin contar PRs como QA física; versión oficial anterior continúa 3.0.231 / Android Direct 0.2.20.
+
 ## Historial: release anterior — 20 de noviembre de 2026 (México) / 21 de noviembre UTC
 
 **Windows 3.0.230 + Android Direct 0.2.19 (versionCode 21)** fue la última versión pública verificada en el corte anterior: [descargar 13 archivos oficiales](https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.230-android-v0.2.19), publicada el **2026-11-21 00:31:09 UTC**; `draft=false`, `prerelease=false`, 13 assets. Fuente exacta `9e3a3abc84c811fc2baf4eb64e5a50ca1ccc31cf`, [workflow source #44842053581](https://github.com/michels-lab/michel-s-life/actions/runs/44842053581) **SUCCESS** y [publicador destino #44844286557](https://github.com/michels-lab/michel-s-life-releases/actions/runs/44844286557) **SUCCESS**. Las nueve suites exact-SHA pasaron; Setup/Portable Windows iniciados, APK Direct con firma permanente y SHA-256 comprobados e instalación/onboarding/reapertura del **APK firmado de producción** en Android15 AVD aprobados. Las validaciones de Android14/16 debug hospedado siguen teniendo incidencias ADB/QEMU y File Steward audit falló por conflicto de actualización concurrente; ninguna se finge superada.

@@ -71,5 +71,18 @@
   "latest_public_release_source_run": 45245978185,
   "latest_public_release_publisher_run": 45256957584,
   "latest_public_release_utc": "2026-11-23T20:13:17Z",
-  "next_release_acceptance_hold": true
+  "next_release_acceptance_hold": true,
+  "active_development": {
+    "status": "unmerged_candidate_requires_exact_head_ci",
+    "source_prs": [
+      "https://github.com/michels-lab/michel-s-life/pull/232",
+      "https://github.com/michels-lab/michel-s-life/pull/233"
+    ],
+    "focus": "Audio Pomodoro direct choices and weekday main/muted preview; guard two legacy i18n TreeWalkers against rewriting inline JS",
+    "runtime_issue": "https://github.com/michels-lab/michel-s-life/issues/168",
+    "owner_acceptance": "pending",
+    "new_release_published": false,
+    "milestones_verified_unchanged": 7,
+    "total_milestones": 15
+  }
 }
