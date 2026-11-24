@@ -332,3 +332,33 @@ test('Mozart and Tchaikovsky alarm presets share selectable offline Windows + na
   assert.ok(native.includes('Uri.fromFile(file)'));
   assert.ok(native.includes('preset-v3-$selected.wav'));
 });
+
+test('all ten original Focus motifs are selectable and survive daily alarm reloads',()=>{
+  const ids=[
+    'focus_moonlight','focus_celestial','focus_orbit','focus_aurora',
+    'focus_observatory','focus_library','focus_afterglow','focus_silver',
+    'mozart_k545','tchaikovsky_op39'
+  ];
+  const saved=ids.map((sound,i)=>({
+    id:'scene-'+i,label:'Audio '+i,time:'09:00',repeat:'daily',date:'',
+    days:[],sound,enabled:true
+  }));
+  const records=new Map([['michelsLife.alarms.v1',JSON.stringify(saved)]]);
+  const localStorage={
+    getItem:key=>records.get(key)||null,
+    setItem:(key,value)=>records.set(key,value)
+  };
+  const window={},document={readyState:'loading',addEventListener(){}};
+  vm.runInNewContext(alarms,{window,document,localStorage,console},{timeout:1000});
+  window.MichelsLifeAlarms.read();
+  assert.deepEqual(Array.from(window.MichelsLifeAlarms.records(),x=>x.sound),ids);
+  for(const id of ids){
+    assert.ok(alarms.includes(id+':{roots:'),'WebAudio score missing '+id);
+    assert.ok(native.includes('"'+id+'" -> SoundScene'),'native score missing '+id);
+    assert.ok(native.includes('"'+id+'"'),'native selection missing '+id);
+  }
+  assert.ok(alarms.includes('score.ambientNotes[degree]'));
+  assert.ok(native.includes('notes[score.pattern[step]]'));
+  assert.ok(alarms.includes("preview?12:ALARM_SECONDS"));
+  assert.ok(native.includes('preset-v3-$selected.wav'));
+});

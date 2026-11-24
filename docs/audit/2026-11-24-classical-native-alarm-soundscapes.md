@@ -15,3 +15,10 @@ Michel's Life ya ofrece temas de Mozart y Chaikovski en Pomodoro, pero la selecc
 Código candidato en `granada/classical-native-alarm-soundscapes-20261124`. Última estable publicada sigue Windows **3.0.231** / Android Direct **0.2.20**. Avance integral de aceptación **7/15 = 47 %**; esta implementación no equivale a publicación, CI aprobado o audición física. Revisar CI exact-HEAD y escuchar en Windows/Galaxy real, comprobar alarma en pantalla bloqueada, Doze, volumen, notificación, permiso de alarmas exactas y MP3 personalizado.
 
 No fusionar confundiendo la rama del catálogo Focus #232 con la de Settings/Story #233; su integración y errores de CI se tratan por separado.
+
+## Ampliación de paridad Focus / Alarmas
+La biblioteca completa ahora tiene diez arreglos en el selector de Alarmas: las ocho ambientaciones del Pomodoro (Moonlight Study, Celestial Focus, Quiet Orbit, Aurora, Observatory, Midnight Library, Afterglow y Silver Room) y los dos arreglos clásicos. Los originales seis tonos de alarma siguen presentes, así como Sistema y MP3.
+
+Los ocho motivos de Focus conservan patrones y tonos base, adaptados a arreglos autónomos de 24 s para avisos de alarma; **no** son audio continuo idéntico a un Pomodoro. Ambos sintetizadores reproducen localmente la misma estructura de selección, con nombres bilingües y el almacenamiento de alarmas ya existente. El nuevo contrato comprueba diez identificadores y preservación al recargar alarmas diarias; el contrato no sustituye reproducción real.
+
+El PR de catálogo visible de Pomodoro #232 sigue aparte y todavía exige completar sus CI para integrarlo; el PR de colores y error JS #233 también se mantiene abierto, sin presentarlos como resueltos.

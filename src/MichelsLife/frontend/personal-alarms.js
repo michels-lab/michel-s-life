@@ -11,10 +11,20 @@ const tr=(en,es)=>window.MichelsLifeI18n?.language==='es'?es:en;
 const hhmm=x=>/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(x);
 const validDate=x=>/^\d{4}-\d{2}-\d{2}$/.test(x)&&!Number.isNaN(new Date(x+'T12:00:00').getTime());
 const days=['Su','Mo','Tu','We','Th','Fr','Sa'];
-const SOUNDS=['system','classic','soft','digital','gentle','pulse','radar','mozart_k545','tchaikovsky_op39','custom'];
+const SOUNDS=['system','classic','soft','digital','gentle','pulse','radar',
+ 'focus_moonlight','focus_celestial','focus_orbit','focus_aurora','focus_observatory','focus_library','focus_afterglow','focus_silver',
+ 'mozart_k545','tchaikovsky_op39','custom'];
 const SOUND_NAMES={system:['System default','Sistema'],classic:['Velvet Dawn · cinematic bells','Alba de terciopelo · campanas'],
  soft:['Glass Garden · dream chimes','Jardín de cristal · campanillas'],digital:['Neon Orbit · ambient synth','Órbita neón · sintetizador'],gentle:['First Light · gentle sunrise','Primera luz · amanecer'],
  pulse:['Inner Pulse · warm heartbeat','Pulso interior · latido cálido'],radar:['Celestial Tide · atmospheric','Marea celeste · atmosférico'],
+ focus_moonlight:['Moonlight Study · ambient','Estudio lunar · ambiental'],
+ focus_celestial:['Celestial Focus · ambient','Enfoque celestial · ambiental'],
+ focus_orbit:['Quiet Orbit · ambient','Órbita tranquila · ambiental'],
+ focus_aurora:['Aurora · ambient','Aurora · ambiental'],
+ focus_observatory:['Observatory · ambient','Observatorio · ambiental'],
+ focus_library:['Midnight Library · ambient','Biblioteca nocturna · ambiental'],
+ focus_afterglow:['Afterglow · ambient','Resplandor · ambiental'],
+ focus_silver:['Silver Room · ambient','Sala plateada · ambiental'],
  mozart_k545:['Mozart · Sonata K.545 · classical alarm','Mozart · Sonata K.545 · alarma clásica'],
  tchaikovsky_op39:['Tchaikovsky · Morning Prayer Op.39/1','Chaikovski · Oración matinal Op.39/1'],custom:['My MP3 / audio','Mi MP3 / audio']};
 const soundName=id=>tr(...(SOUND_NAMES[id]||SOUND_NAMES.system));
@@ -87,6 +97,33 @@ const ALARM_SCENES={
   pattern:[2,3,4,1,3],offsets:[.32,1.14,2.66,4.12,5.09],timbre:'bell',drift:.23,accent:.83},
  radar:{roots:[82.41,110.00,98.00,82.41],minor:true,
   pattern:[3,2,4,1],offsets:[.22,1.65,3.31,4.82],timbre:'shimmer',drift:.45,accent:.77},
+ // The eight original Focus scenes now have native 24s alarm counterparts.
+ // Roots and motifs match the existing Focus soundtrack; harmonic pads
+ // evolve across the four bars while the motif is clearly recognizable.
+ focus_moonlight:{roots:[220,174.61,196,220],minor:false,
+  pattern:[0,2,1,3,2],offsets:[],timbre:'glass',drift:.16,accent:.73,
+  ambientNotes:[220,329.63,440,493.88]},
+ focus_celestial:{roots:[196,174.61,220,196],minor:false,
+  pattern:[0,3,2,1,3],offsets:[],timbre:'shimmer',drift:.22,accent:.78,
+  ambientNotes:[196,293.66,392,587.33]},
+ focus_orbit:{roots:[174.61,146.83,196,174.61],minor:true,
+  pattern:[1,2,0,2,3,2],offsets:[],timbre:'glass',drift:.31,accent:.72,
+  ambientNotes:[174.61,261.63,349.23,523.25]},
+ focus_aurora:{roots:[164.81,146.83,174.61,164.81],minor:true,
+  pattern:[3,2,1,0,1],offsets:[],timbre:'shimmer',drift:.28,accent:.75,
+  ambientNotes:[164.81,246.94,329.63,493.88]},
+ focus_observatory:{roots:[146.83,130.81,164.81,146.83],minor:false,
+  pattern:[0,1,3,2,0],offsets:[],timbre:'bell',drift:.13,accent:.75,
+  ambientNotes:[146.83,220,293.66,440]},
+ focus_library:{roots:[130.81,116.54,146.83,130.81],minor:true,
+  pattern:[0,2,1,0,3,1],offsets:[],timbre:'glass',drift:.18,accent:.69,
+  ambientNotes:[130.81,196,261.63,392]},
+ focus_afterglow:{roots:[174.61,164.81,196,174.61],minor:false,
+  pattern:[2,3,1,0,2],offsets:[],timbre:'bell',drift:.19,accent:.77,
+  ambientNotes:[174.61,220,349.23,440]},
+ focus_silver:{roots:[196,174.61,220,196],minor:true,
+  pattern:[3,1,2,0,3,2],offsets:[],timbre:'glass',drift:.23,accent:.79,
+  ambientNotes:[196,246.94,392,493.88]},
  // Public-domain excerpts now have standalone 24-second alarm arrangements
  // on both platforms, even when the Android WebView is not running.
  mozart_k545:{roots:[130.81,174.61,146.83,130.81],minor:false,
@@ -152,7 +189,9 @@ function renderAlarmSoundscape(id){
   const phrase=score.phrases?.[bar];
   const melody=phrase
    ? phrase.map((note,step)=>[start+.18+step*5.34/phrase.length,frequency(note)])
-   : score.pattern.map((degree,step)=>[start+score.offsets[step],root*2*chord[degree]]);
+   : score.ambientNotes
+     ? score.pattern.map((degree,step)=>[start+.20+step*5.4/score.pattern.length,score.ambientNotes[degree]])
+     : score.pattern.map((degree,step)=>[start+score.offsets[step],root*2*chord[degree]]);
   for(let step=0;step<melody.length;step++){
    // Classical phrases use the same spatial echoes and evolving pad as original presets.
    const [t,hz]=melody[step];
