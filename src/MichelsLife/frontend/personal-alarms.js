@@ -473,12 +473,18 @@ function styles(){
  position:fixed;right:157px;bottom:94px;z-index:2147483200;border-radius:16px;
  padding:10px 13px;box-shadow:0 10px 35px #0008;background:#091424ee;white-space:nowrap
 }
-html[data-mlv-platform=android] #mlv-alarm-launcher{right:15px;bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:2147483000}
-/* The shared mini timer occupies the bottom 82px + its own height. Keep
-   the alarm launcher above it, not on top of its Pause/Resume hit target.
-   --mlv-mini-focus-clearance is measured by Android's existing mini view. */
-html[data-mlv-platform=android] body.mlv-android-timer-active #mlv-alarm-launcher{
- bottom:calc(92px + var(--mlv-mini-focus-clearance,76px) + env(safe-area-inset-bottom,0px))
+/* Android has a dedicated navigation slot, never a floating content overlay.
+   Keep the standalone launcher out of the viewport until the native bar mounts. */
+html[data-mlv-platform=android] #mlv-alarm-launcher{display:none!important}
+html[data-mlv-platform=android] #mlv-android-topbar:has(>#mlv-alarm-launcher){gap:5px;padding-inline:8px}
+html[data-mlv-platform=android] #mlv-android-topbar>#mlv-alarm-launcher{
+ display:grid!important;place-items:center;position:static!important;inset:auto!important;
+ flex:0 0 44px;width:44px!important;min-width:44px!important;height:44px!important;min-height:44px!important;
+ margin:0!important;padding:0!important;border-radius:12px;box-shadow:none;font-size:19px;line-height:1;
+ background:rgba(255,255,255,.07);touch-action:manipulation
+}
+html[data-mlv-platform=android] #mlv-android-topbar:has(>#mlv-alarm-launcher) .mlv-android-topbar-copy strong{
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis
 }
 html[data-mlv-platform=android] body.mlv-android-focus-open #mlv-alarm-launcher,
 html[data-mlv-platform=android] body.mlv-android-mission-edit-open #mlv-alarm-launcher,
@@ -607,6 +613,21 @@ function create(){
  q('[data-ring-dismiss]',ring).addEventListener('click',()=>dismissRing(false));
  q('[data-ring-snooze]',ring).addEventListener('click',()=>dismissRing(true));
  document.body.append(screen,ring,launcher);
+ // The Android bar is created independently by android-bridge.js.
+ // Use the same button, not a duplicate listener or overlay; handle either
+ // module load order and topbar replacement. No observer on content churn.
+ const dock=()=>{
+  if(!android())return;
+  const bar=document.getElementById('mlv-android-topbar');
+  if(!bar||launcher.parentElement===bar)return;
+  bar.insertBefore(launcher,bar.querySelector('.mlv-android-section-controls')||null);
+  localize();
+ };
+ dock();
+ if(android()){
+  const dockObserver=new MutationObserver(dock);
+  dockObserver.observe(document.body,{childList:true});
+ }
  resetForm();renderList();
 }
 function updateForm(){
@@ -667,8 +688,10 @@ function localize(){
   }catch(_){}
  }
  q('#mlv-alarm-count',screen).textContent=tr('Alarms','Alarmas')+' · '+records.length;
- launcher.textContent=tr('⏰ Alarms','⏰ Alarmas');
+ const launcherText=android()?'⏰':tr('⏰ Alarms','⏰ Alarmas');
+ if(launcher.textContent!==launcherText)launcher.textContent=launcherText;
  launcher.setAttribute('aria-label',tr('Open alarms','Abrir alarmas'));
+ launcher.title=tr('Alarms','Alarmas');
  q('#mlv-alarm-note',screen).textContent=(android()?
   tr('When the immersive alarm is visible, your selected original soundtrack plays. If the screen is locked or the overlay is unavailable, Android uses the system alarm channel as a safety fallback. Permissions and battery optimization may affect delivery.',
   'Cuando la alarma inmersiva está visible, suena la composición original que elegiste. Si la pantalla está bloqueada o no se permite la superposición, Android usa el canal de alarma del sistema como respaldo. Los permisos y el ahorro de batería pueden afectar el aviso.'):
