@@ -201,13 +201,13 @@ test('desktop login startup is enabled once and respects later user opt-out',()=
   assert.match(shell,/CheckOnClick = true/);
 });
 
-test('optional motivational quotes cannot cover Pomodoro timer or primary buttons',()=>{
-  assert.match(focus,/<details class="mlv-focus-motivation-details">/);
-  assert.match(android,/<details class="mlv-focus-motivation-details">/);
-  assert.ok(focus.indexOf('<details class="mlv-focus-motivation-details">')>
-    focus.indexOf('data-focus-action="toggle"'),'desktop quotes appear below controls');
-  assert.ok(android.indexOf('<details class="mlv-focus-motivation-details">')>
-    android.indexOf('data-mobile-focus="toggle"'),'Android quotes appear below controls');
+test('permanent motivational quotes follow the clock and precede the optional sound settings',()=>{
+  assert.doesNotMatch(focus,/<details class="mlv-focus-motivation-details">/);
+  assert.doesNotMatch(android,/<details class="mlv-focus-motivation-details">/);
+  assert.ok(focus.indexOf('id="mlv-desktop-focus-clock"')<focus.indexOf('id="mlv-desktop-focus-motivation"'));
+  assert.ok(focus.indexOf('id="mlv-desktop-focus-motivation"')<focus.indexOf('<select id="mlv-focus-completion-select"'));
+  assert.ok(android.indexOf('id="mlv-android-focus-time"')<android.indexOf('id="mlv-android-focus-motivation"'));
+  assert.ok(android.indexOf('id="mlv-android-focus-motivation"')<android.indexOf('<select data-mobile-focus-completion>'));
   assert.doesNotMatch(focus,/oldDock/);
   assert.doesNotMatch(focus,/backdrop-filter:blur/);
   assert.doesNotMatch(android,/#v30171Sidebar #v30162FocusDock/);
