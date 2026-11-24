@@ -75,6 +75,47 @@ for(const width of [320,360,412])for(const language of ['en','es']){
      window.__MICHELSLIFE_INSTALL_LANGUAGE__=locale;
      window.MichelsLifeAndroid={postMessage(){}};
    },language);
+   // Issue #168 evidence: observe SCRIPT text BEFORE the HTML parser starts
+   // any app code. Never log source, URLs, user content or script characters.
+   // First snapshot distinguishes parse-time normalization from app mutation.
+   await context.addInitScript(()=>{
+     const ids=new Set([
+       'v251-weekly-real-fix-script','v3021-dashboard-real-category-filter',
+       'v3130-presets-only-settings-script','v217-premium-edit-unified-script'
+     ]);
+     const evidence=[];
+     window.__mlv168EarlyEvidence=evidence;
+     const snapshots=stage=>{
+       const scripts=[...ids].map(id=>{
+         const el=document.getElementById(id);
+         return {id,present:!!el,characters:el?.textContent?.length??null};
+       });
+       if(evidence.length<32)evidence.push({stage,scripts});
+     };
+     const record=(kind,node,oldText)=>{
+       const parent=node?.nodeType===1?node:node?.parentElement;
+       const owner=parent?.tagName==='SCRIPT'?parent:parent?.closest?.('script');
+       if(!owner||!ids.has(owner.id)||evidence.length>=32)return;
+       evidence.push({stage:'text-mutation',id:owner.id,kind,
+         beforeCharacters:oldText?.length??null,
+         currentCharacters:owner.textContent?.length??null});
+     };
+     const observer=new MutationObserver(entries=>{
+       for(const entry of entries){
+         if(entry.type==='characterData')
+           record('characterData',entry.target,entry.oldValue);
+         else if(entry.type==='childList'){
+           const node=entry.target;
+           if(node?.tagName==='SCRIPT'&&ids.has(node.id))
+             record('childList',node,null);
+         }
+       }
+     });
+     observer.observe(document,{subtree:true,characterData:true,
+       characterDataOldValue:true,childList:true});
+     document.addEventListener('DOMContentLoaded',()=>snapshots('domcontentloaded'),true);
+     window.addEventListener('load',()=>snapshots('load'),true);
+   });
    page=await context.newPage();
    // Chrome DevTools reports script parse locations even when Playwright
    // pageerror SyntaxError.stack is empty/unlocated. Never retain source
@@ -323,10 +364,14 @@ for(const width of [320,360,412])for(const language of ['en','es']){
        canonicalGeneratedBytes:canonicalBody(x.id)?
          Buffer.byteLength(canonicalBody(x.id),'utf8'):null};
    });
+   const earlyScriptEvidence=page?await page.evaluate(
+     ()=>window.__mlv168EarlyEvidence?.slice(0,28)||null
+   ).catch(()=>null):null;
    console.error('FAIL Android Story/Focus touch '+name+' ['+
      [...new Set(errors.map(e=>e.code))].join(',')+'] '+
      JSON.stringify({errors:errors.slice(0,3),parser:parseLocations,
-       failedScriptFingerprints:failureSourceHashes.slice(-12),domScriptIntegrity:compared}));
+       failedScriptFingerprints:failureSourceHashes.slice(-12),
+       domScriptIntegrity:compared,earlyScriptEvidence}));
    if(page)try{await page.screenshot({path:output+'/'+name+'-failure.png',timeout:6000});}catch{}
  }finally{
    cases.push({width,language,passed,phase,errors});
