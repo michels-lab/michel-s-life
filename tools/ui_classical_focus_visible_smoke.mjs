@@ -1,6 +1,7 @@
 import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
 import {mkdir} from 'node:fs/promises';
+import {createBrowserScriptFaultTracker} from './browser_script_fault_provenance.mjs';
 
 const platform=process.env.MLV_CLASSICAL_PLATFORM;
 assert.ok(['desktop','android'].includes(platform),'explicit platform required');
@@ -29,6 +30,12 @@ try{
     if(mode==='android')window.MichelsLifeAndroid={postMessage(){}};
   },platform);
   const page=await context.newPage();
+  // #168: capture only CDP script basename/line/length/hash. Never include
+  // inline source, full URLs, tokens or owner data in CI logs.
+  const cdp=await context.newCDPSession(page);
+  const parserFaults=createBrowserScriptFaultTracker(cdp);
+  await cdp.send('Runtime.enable');
+  await cdp.send('Debugger.enable');
   const errors=[];
   page.on('pageerror',e=>errors.push(String(e?.name||'Error')+':'+String(e?.message||'').slice(0,100)));
   await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
@@ -89,6 +96,8 @@ try{
   await page.waitForFunction(()=>!!window.MichelsLifeFocusAudio?.sceneId,null,{timeout:60000});
   assert.equal(await page.evaluate(()=>window.MichelsLifeFocusAudio.sceneId()),
     'tchaikovsky_op39','classical choice not persisted across reload');
-  assert.deepEqual(errors,[],'real Chromium runtime errors cannot be ignored');
+  assert.deepEqual(errors,[],
+    'real Chromium runtime errors cannot be ignored; sanitized CDP provenance='+
+      JSON.stringify(await parserFaults.snapshot()));
   console.log('PASS real '+platform+' visible classical Mozart/Chaikovski, direct taps, Web Audio state, stop and reload persistence');
 }finally{await browser.close();}
