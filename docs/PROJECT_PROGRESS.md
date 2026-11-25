@@ -1,5 +1,8 @@
 # Michel's Life — avance funcional y puertas de aceptación
 
+## 24-nov — 3.0.233 / Android 0.2.22 en preparación
+PR #236 integrado, 22/23 checks exitosos, API35 debug PASS; Android14/16 ADB falló. Release firmado pendiente; avance 8/15 = 53%. 18 grabaciones y biblioteca personal, sin cambios de dashboard.
+
 ## Candidato 24-nov — biblioteca real y reproductor
 
 18 grabaciones completas en repositorio (12 Scott Buckley + cuatro piano + Mozart/Chaikovski); importaciones 45509032674 y 45516226514 exitosas. 16/40 nuevas verificadas. Reproductor: volumen guardado, repetir/lista/aleatorio sin repetición inmediata, selección de colección, pausa y avance, stop independiente. Valida integridad de cada MP3 al empaquetar, prueba Chromium con archivos reales y conteo actualizado. Pendiente CI exacto de este candidato, física Windows/Galaxy y publicación; estable anterior no aceptada. Se preserva #8–13 y #15 pendientes; avance integral 8/15 = 53%. No se cambia el dashboard.

@@ -22,8 +22,8 @@ assert charset_index<first_script and charset_index<first_style, (
     'UTF-8 charset must precede every script/style, including injected platform scripts')
 
 required=(
-    "const VERSION='3.0.232'",
-    "window.__MICHELS_LIFE_BUILD__='3.0.232'",
+    "const VERSION='3.0.233'",
+    "window.__MICHELS_LIFE_BUILD__='3.0.233'",
     "assets/michels_life_app_icon.svg",
     "assets/michels_life_mark.svg",
     "assets/michels_life_lockup.svg",
@@ -42,7 +42,7 @@ required=(
     "--mlv-font-midnights",
     "Choose by era. Every card keeps its own permanent preview, so you can compare styles without selecting them first.",
     "function createCanonicalSettingsShell(root){",
-    "shell.dataset.v30171Canonical='3.0.232';",
+    "shell.dataset.v30171Canonical='3.0.233';",
     "panes.typography.insertAdjacentHTML('beforeend',typographyPane());",
     "panes.about.insertAdjacentHTML('beforeend',aboutPane());",
     "function activateSetting(key,root){",
@@ -113,4 +113,4 @@ with tempfile.TemporaryDirectory() as td:
         if r.returncode:
             print(r.stderr,file=sys.stderr)
             raise SystemExit(f'JS syntax failed {i}')
-print(f'OK: canonical v3.0.232 frontend + migration checks + {len(parser.items)} inline scripts')
+print(f'OK: canonical v3.0.233 frontend + migration checks + {len(parser.items)} inline scripts')
