@@ -37,7 +37,14 @@ try{
 
  // An active chapter's aura is decorative, never a 210px layout row.
  await page.evaluate(()=>{
-   if(!window.FocusStoryV30162.activeChapter?.())window.FocusStoryV30162.createChapter?.('Granada visual chapter','Fixed visual fixture',new Date().toISOString().slice(0,10));
+   const api=window.FocusStoryV30162;
+   if(!api.activeChapter?.()){
+     const result=api.createChapter('Granada visual chapter','Fixed visual fixture',new Date().toISOString().slice(0,10));
+     if(!result?.ok)throw Error('Chapter fixture rejected: '+JSON.stringify(result));
+   }
+   if(!api.activeChapter?.())throw Error('Active chapter fixture not persisted');
+   window.renderAll?.();
+   window.ChapterHomeNavV30163?.renderChapterCard?.();
  });
  await page.waitForFunction(()=>!!document.querySelector('#v176StatusPanel .v30165-hero-aura'),null,{timeout:15000});
  const layout=await page.evaluate(()=>{

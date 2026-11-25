@@ -17,7 +17,8 @@ test('chapter is backed by artwork and a real recovery layer, not black empty su
  assert.match(html,/#mlv184ChapterArt\{z-index:1!important\}/);
  assert.match(html,/#mlv184ChapterShade\{z-index:2!important\}/);
  assert.match(html,/#mlv184ChapterAtmosphere\{z-index:3!important\}/);
- assert.match(html,/:not\(#mlv184ChapterRecovery\)\{position:relative!important;z-index:4!important\}/);
+ assert.match(html,/:not\(#mlv184ChapterRecovery\):not\(\.v30165-hero-aura\)\{position:relative!important;z-index:4!important\}/);
+ assert.match(html, /\.v30165-rpg-chapter-hero \.v30165-hero-aura\{position:absolute!important/);
  // Flat opaque 74-100% overpaint was the actual black-card regression.
  assert.doesNotMatch(html,/let chapterSig='';function applyChapter\(force\)\{[^\n]*v\.enabled\?v\.header\/100:\.74/);
  assert.match(html,/const left=Math\.max\(\.23,Math\.min\(\.51,requested\*\.58\)\)/);
