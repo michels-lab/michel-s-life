@@ -35,6 +35,15 @@ try{
    chapter.position==='absolute'&&chapter.background!=='none'&&chapter.background.length>30,
    'Chapter art recovery absent / black: '+JSON.stringify(chapter));
 
+ // An active chapter's aura is decorative, never a 210px layout row.
+ const layout=await page.evaluate(()=>{
+   const hero=document.querySelector('#v176StatusPanel>.v30165-rpg-chapter-hero');
+   const aura=hero?.querySelector('.v30165-hero-aura');
+   const content=hero?.querySelector('.v30165-hero-content');
+   return {active:!!content,auraPosition:aura?getComputedStyle(aura).position:null};
+ });
+ if(layout.active)assert(layout.auraPosition==='absolute','Chapter decoration occupies the layout: '+JSON.stringify(layout));
+
  // Reject real image requests during this failure scenario. Otherwise the
  // normal chapter refresh can replace the deliberately broken preview with
  // a previously cached successful image, making the test nondeterministic.

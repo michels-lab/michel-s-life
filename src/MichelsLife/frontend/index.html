@@ -29152,7 +29152,7 @@ body.mlv184-background-owned #v25-sky-layer,body.mlv184-background-owned #v27-sk
 #v176StatusPanel>.mlv184-chapter-root #mlv184ChapterArt{z-index:1!important}
 #v176StatusPanel>.mlv184-chapter-root #mlv184ChapterShade{z-index:2!important}
 #v176StatusPanel>.mlv184-chapter-root #mlv184ChapterAtmosphere{z-index:3!important}
-#v176StatusPanel>.mlv184-chapter-root>*:not(#mlv184ChapterArt):not(#mlv184ChapterShade):not(#mlv184ChapterAtmosphere):not(#mlv184ChapterRecovery){z-index:4!important;position:relative!important}
+#v176StatusPanel>.mlv184-chapter-root>*:not(#mlv184ChapterArt):not(#mlv184ChapterShade):not(#mlv184ChapterAtmosphere):not(#mlv184ChapterRecovery):not(.v30165-hero-aura){z-index:4!important;position:relative!important}
 #v176StatusPanel>.mlv184-chapter-root[data-mlv189-art="recovery"] #mlv184ChapterArt{visibility:hidden!important}
 
 #mlv184ChapterArt{z-index:0!important;left:-5%!important;top:-5%!important;right:auto!important;bottom:auto!important;width:110%!important;height:110%!important;max-width:none!important;object-fit:cover!important;object-position:center!important;opacity:1!important;transform-origin:50% 50%!important;animation:mlv189ChapterCamera 12s cubic-bezier(.42,0,.58,1) infinite alternate!important;animation-play-state:running!important;will-change:transform!important}
@@ -29163,7 +29163,7 @@ body.mlv184-background-owned #v25-sky-layer,body.mlv184-background-owned #v27-sk
 #mlv184FogB{right:-30%!important;top:-12%!important;animation:mlv186FogRight 14s ease-in-out infinite alternate!important;background:radial-gradient(ellipse,rgba(255,223,165,.29),rgba(167,121,255,.11) 42%,transparent 74%)!important}
 #mlv184Dust{display:none!important;visibility:hidden!important;opacity:0!important;animation:none!important;background:none!important}
 #mlv184Beam{position:absolute!important;left:-38%!important;top:-55%!important;width:42%!important;height:210%!important;background:linear-gradient(90deg,transparent,rgba(255,247,220,.17),rgba(255,255,255,.08),transparent)!important;filter:blur(9px)!important;transform:rotate(17deg)!important;animation:mlv186LightSweep 9s ease-in-out infinite!important;animation-play-state:running!important;display:block!important;visibility:visible!important}
-#v176StatusPanel>.v30165-rpg-chapter-hero.mlv184-chapter-root>*:not(#mlv184ChapterArt):not(#mlv184ChapterShade):not(#mlv184ChapterAtmosphere):not(#mlv184ChapterRecovery){position:relative!important;z-index:4!important}
+#v176StatusPanel>.v30165-rpg-chapter-hero.mlv184-chapter-root>*:not(#mlv184ChapterArt):not(#mlv184ChapterShade):not(#mlv184ChapterAtmosphere):not(#mlv184ChapterRecovery):not(.v30165-hero-aura){position:relative!important;z-index:4!important}
 @keyframes mlv189ChapterCamera{0%{transform:scale(1.025) translate3d(-2.2%,.7%,0)}48%{transform:scale(1.065) translate3d(.3%,-.9%,0)}100%{transform:scale(1.105) translate3d(2.5%,-1.6%,0)}}
 @keyframes mlv186FogLeft{0%{transform:translate3d(-9%,5%,0) scale(.94);opacity:.18}100%{transform:translate3d(38%,-10%,0) scale(1.18);opacity:.40}}
 @keyframes mlv186FogRight{0%{transform:translate3d(13%,-8%,0) scale(.91);opacity:.15}100%{transform:translate3d(-37%,17%,0) scale(1.15);opacity:.36}}

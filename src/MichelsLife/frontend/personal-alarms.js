@@ -42,6 +42,13 @@ const SOUND_NAMES={system:['System default','Sistema'],classic:['Velvet Dawn · 
  satie_gymnopedie_1:["Erik Satie · Gymnopédie No. 1","Erik Satie · Gymnopédie No. 1"],
  bach_prelude_bwv846:["Johann Sebastian Bach · Prelude in C major, BWV 846","Johann Sebastian Bach · Prelude in C major, BWV 846"],custom:['My MP3 / audio','Mi MP3 / audio']};
 const soundName=id=>tr(...(SOUND_NAMES[id]||SOUND_NAMES.system));
+const soundGroup=id=>id==='system'?0:id==='custom'?5:id.startsWith('focus_')?2:id.startsWith('sb_')?4:/^(mozart|tchaikovsky|debussy|chopin|satie|bach)_/.test(id)?3:1;
+const soundGroupNames=()=>[tr('System','Sistema'),tr('Alarm tones','Tonos de alarma'),tr('Original ambience','Ambiente original'),tr('Classical recordings','Grabaciones clásicas'),tr('Ambient and cinematic recordings','Grabaciones ambientales y cinematográficas'),tr('My audio','Mi audio')];
+function buildSoundPicker(select){
+ const groups=soundGroupNames().map((label,i)=>{const g=document.createElement('optgroup');g.label=label;g.dataset.soundGroup=String(i);return g;});
+ for(const id of SOUNDS){const option=document.createElement('option');option.value=id;option.textContent=soundName(id);groups[soundGroup(id)].appendChild(option);}
+ select.replaceChildren(...groups.filter(g=>g.children.length));
+}
 // One collapsed attribution section in About, or bottom of Settings.
 function mountAudioCredits(){
  const host=document.querySelector('#tab-settings [data-v30171-pane="about"] [data-mlv-about-core]');
@@ -628,7 +635,7 @@ function create(){
   q('.mlv-alarm-days',screen).appendChild(label);
  }
  const soundSelect=q('#mlv-alarm-sound',screen);
- for(const sound of SOUNDS){const option=document.createElement('option');option.value=sound;option.textContent=soundName(sound);soundSelect.appendChild(option);}
+ buildSoundPicker(soundSelect);
  soundSelect.value='gentle';
  q('#mlv-alarm-preview',screen).addEventListener('click',()=>previewSound(soundSelect.value));
  q('#mlv-alarm-custom-file',screen).addEventListener('change',async e=>{
@@ -740,6 +747,7 @@ function localize(){
  options[1].textContent=tr('Daily','Todos los días');
  options[2].textContent=tr('Weekly / selected days','Semanal / elegir días');
  q('#mlv-alarm-sound',screen).querySelectorAll('option').forEach(option=>option.textContent=soundName(option.value));
+ q('#mlv-alarm-sound',screen).querySelectorAll('optgroup').forEach(group=>group.label=soundGroupNames()[Number(group.dataset.soundGroup)]);
  q('#mlv-alarm-preview',screen).textContent=tr('▶ Preview','▶ Escuchar');
  q('#mlv-alarm-quick-title',screen).textContent=tr('Quick Alarm · ring in','Alarma rápida · sonar en');
  const esDays=['Do','Lu','Ma','Mi','Ju','Vi','Sá'];
