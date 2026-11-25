@@ -101,6 +101,15 @@ try{
   const archived=root.locator(mobile?'[data-mobile-archived-track]':'[data-mlv-archived-track]');await archived.selectOption('sb_meanwhile');
   await root.locator(mobile?'[data-mobile-focus="restore-ambient"]':'[data-mlv-audio="restore-ambient"]')[mobile?'tap':'click']();
   await page.waitForFunction(()=>window.MichelsLifeFocusAudio.sceneOptions().some(x=>x.id==='sb_meanwhile'));
+  // Actual user-selected MP3 import and browser playback, independent of alarms.
+  const fileInput=root.locator(mobile?'[data-mobile-personal-files]':'[data-mlv-personal-files]');
+  await fileInput.setInputFiles('src/MichelsLife/frontend/assets/audio/classical/sb_meanwhile.mp3');
+  await page.waitForFunction(()=>window.MichelsLifeFocusAudio.sceneOptions().some(x=>x.id.startsWith('my_')));
+  const myId=await page.evaluate(()=>window.MichelsLifeFocusAudio.sceneOptions().find(x=>x.id.startsWith('my_')).id);
+  await ambient.selectOption(myId);await ambientToggle[mobile?'tap':'click']();
+  await page.waitForFunction(()=>{const p=window.MichelsLifeFocusAudio.ambientPlayback();return p&&p.src.startsWith('blob:')&&!p.paused&&p.currentTime>.1;},null,{timeout:15000});
+  await root.locator(mobile?'[data-mobile-focus="stop-ambient"]':'[data-mlv-audio="stop-ambient"]')[mobile?'tap':'click']();
+  await root.locator(mobile?'[data-mobile-ambient-collection]':'[data-mlv-ambient-collection]').selectOption('all');
   // A real timer expiry, not a preview callback: shorten an already running
   // synthetic QA session's canonical deadline and observe its actual finish.
   await page.evaluate(()=>{
@@ -121,9 +130,9 @@ try{
   assert.equal(await page.evaluate(()=>window.FocusStoryV30162.focusState().mode),'break');
   await page.evaluate(()=>window.MichelsLifeFocusAudio.stopClassical());
   const scenes=await page.evaluate(()=>window.MichelsLifeFocusAudio.sceneOptions().map(x=>x.id));
-  assert.equal(scenes.length,24);assert.ok(!scenes.includes('mozart_k545'));
+  assert.equal(scenes.length,25);assert.ok(!scenes.includes('mozart_k545'));
   await page.reload({waitUntil:'domcontentloaded',timeout:60000});
-  await page.waitForFunction(()=>window.MichelsLifeFocusAudio?.completionId?.()==='tchaikovsky_op39');
+  await page.waitForFunction(()=>window.MichelsLifeFocusAudio?.completionId?.()==='tchaikovsky_op39'&&window.MichelsLifeFocusAudio?.sceneOptions?.().some(x=>x.id.startsWith('my_')));
   assert.deepEqual(errors,[],
     'real Chromium runtime errors cannot be ignored; sanitized CDP provenance='+
       JSON.stringify(await parserFaults.snapshot()));

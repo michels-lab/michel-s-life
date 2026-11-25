@@ -27604,7 +27604,7 @@ function setAudioPreference(kind,value){
    f.v30165CompletionSound=valid.includes(value)?value:'soft';
  }else if(kind==='scene'){
    const valid=['moonlight','celestial','orbit','aurora','observatory','library','afterglow','silver','sb_meanwhile','sb_moonlight','sb_cobalt','sb_skyward','sb_life_is','sb_first_snow','sb_midsommar','sb_at_the_end_of_all_things','sb_in_this_moment','sb_hyperion','sb_ascension','sb_bring_me_the_sky','debussy_clair_de_lune','chopin_nocturne_op9','satie_gymnopedie_1','bach_prelude_bwv846'];
-   f.v30165Soundscape=valid.includes(value)?value:'moonlight';
+   f.v30165Soundscape=valid.includes(value)||(typeof value==='string'&&/^my_[a-f0-9]{32}$/.test(value))?value:'moonlight';
  }else if(kind==='ambientVolume'){
    if(typeof value!=='number'||!Number.isFinite(value))return false;
    f.v30165AmbientVolume=Math.max(0,Math.min(1,value));
@@ -27612,12 +27612,12 @@ function setAudioPreference(kind,value){
    if(!['repeat','playlist','shuffle'].includes(value))return false;
    f.v30165AmbientMode=value;
  }else if(kind==='ambientCollection'){
-   if(!['all','Ambient','Cinematic','Classical'].includes(value))return false;
+   if(!['all','Ambient','Cinematic','Classical','Personal'].includes(value))return false;
    f.v30165AmbientCollection=value;
  }else if(kind==='archivedAmbient'){
    if(!Array.isArray(value))return false;
    const valid=['moonlight','celestial','orbit','aurora','observatory','library','afterglow','silver','sb_meanwhile','sb_moonlight','sb_cobalt','sb_skyward','sb_life_is','sb_first_snow','sb_midsommar','sb_at_the_end_of_all_things','sb_in_this_moment','sb_hyperion','sb_ascension','sb_bring_me_the_sky','debussy_clair_de_lune','chopin_nocturne_op9','satie_gymnopedie_1','bach_prelude_bwv846'];
-   f.v30165ArchivedAmbient=[...new Set(value.filter(id=>valid.includes(id)))];
+   f.v30165ArchivedAmbient=[...new Set(value.filter(id=>valid.includes(id)||(typeof id==='string'&&/^my_[a-f0-9]{32}$/.test(id))))];
  }else return false;
  // Canonical persistence and recovery: never store competing audio preferences
  // in the immersive view or overwrite mission/session history.

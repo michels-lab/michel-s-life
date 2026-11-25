@@ -124,12 +124,12 @@ try{
 
   // Real browser interaction, not a static API test: open the collapsed audio
   // panel, choose an end chime, preview it, and play/stop the A+C atmosphere.
-  await page.locator('.mlv-focus-sound-details summary').click();
-  ok(await page.locator('[data-mlv-completion-sound] option').count()===9,
+  await page.locator('.mlv-focus-sound-details > summary').click();
+  ok(await page.locator('[data-mlv-completion-sound] option').count()===25,
     'End-of-Pomodoro selector is not populated');
   const scenes=await page.locator('[data-mlv-scene-select] option').evaluateAll(options=>
     options.map(option=>({value:option.value,label:option.textContent.trim()})));
-  ok(scenes.length===8&&['moonlight','celestial','orbit','aurora','observatory','library','afterglow','silver']
+  ok(scenes.length===24&&['moonlight','celestial','orbit','aurora','observatory','library','afterglow','silver']
     .every(id=>scenes.some(scene=>scene.value===id)),
     'Eight original ambient soundscape selections are not populated: '+JSON.stringify(scenes));
   await page.locator('[data-mlv-completion-sound]').selectOption('glass');
@@ -144,7 +144,7 @@ try{
   const soundPrefs=await page.evaluate(()=>window.FocusStoryV30162.focusState());
   ok(soundPrefs.v30165CompletionSound==='glass'&&soundPrefs.v30165Soundscape==='library',
     'End chime and soundscape were not saved by the canonical FocusStory owner');
-  await page.locator('.mlv-focus-sound-details summary').click();
+  await page.locator('.mlv-focus-sound-details > summary').click();
 
   await page.locator('#mlv-desktop-focus-immersive [data-focus-action="toggle"]').click();
   await page.waitForFunction(()=>window.FocusStoryV30162.focusState().status==='running');
