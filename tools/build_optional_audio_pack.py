@@ -65,12 +65,12 @@ def duration(path):
     subprocess.run(["ffmpeg", "-v", "error", "-xerror", "-i", str(path), "-map", "0:a:0", "-f", "null", "-"], check=True)
     return seconds
 
-def build(items, output, acquire=download, probe=duration):
+def build(items, output, acquire=download, probe=duration, pack="01"):
     validate_catalog(items)
     output = pathlib.Path(output)
     output.parent.mkdir(parents=True, exist_ok=True)
     records = []
-    credits = ["Michel's Life — Optional music pack 01", "", "Extract this ZIP, then select MP3 files in Focus > My music.", "Extrae este ZIP y selecciona los MP3 en Pomodoro > Mi música.", "These are complete publisher MP3s, unmodified. No endorsement implied.", ""]
+    credits = [f"Michel's Life — Optional music pack {pack}", "", "Extract this ZIP, then select MP3 files in Focus > My music.", "Extrae este ZIP y selecciona los MP3 en Pomodoro > Mi música.", "These are complete publisher MP3s, unmodified. No endorsement implied.", ""]
     with tempfile.TemporaryDirectory(dir=output.parent) as tmp:
         tmp = pathlib.Path(tmp)
         candidate = tmp / "pack.zip"
@@ -105,6 +105,8 @@ def build(items, output, acquire=download, probe=duration):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=pathlib.Path, required=True)
+    parser.add_argument("--pack", choices=("01", "02"), default="01")
     args = parser.parse_args()
-    records = build(json.loads(CATALOG.read_text(encoding="utf-8")), args.output)
+    catalog = CATALOG.with_name(f"OPTIONAL_PACK_{args.pack}.json")
+    records = build(json.loads(catalog.read_text(encoding="utf-8")), args.output, pack=args.pack)
     print("PACK VERIFIED", len(records), hashlib.sha256(args.output.read_bytes()).hexdigest())
