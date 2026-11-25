@@ -1,5 +1,9 @@
 # Michel's Life — avance funcional y puertas de aceptación
 
+## Candidato 24-nov — biblioteca real y reproductor
+
+18 grabaciones completas en repositorio (12 Scott Buckley + cuatro piano + Mozart/Chaikovski); importaciones 45509032674 y 45516226514 exitosas. 16/40 nuevas verificadas. Reproductor: volumen guardado, repetir/lista/aleatorio sin repetición inmediata, selección de colección, pausa y avance, stop independiente. Valida integridad de cada MP3 al empaquetar, prueba Chromium con archivos reales y conteo actualizado. Pendiente CI exacto de este candidato, física Windows/Galaxy y publicación; estable anterior no aceptada. Se preserva #8–13 y #15 pendientes; avance integral 8/15 = 53%. No se cambia el dashboard.
+
 ## Publicación 24-nov 2026 — 3.0.232 / Android Direct 0.2.21
 
 **Estable oficial publicada:** [Windows 3.0.232 + Android Direct 0.2.21](https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.232-android-v0.2.21), code23, 13 assets, 2026-11-24 20:52:21 UTC, draft=false, prerelease=false. [Fuente #45478901654](https://github.com/michels-lab/michel-s-life/actions/runs/45478901654) SUCCESS, 11/11 exact-SHA gates, Windows Setup y portable launch PASS, APK firmada e instalación/relaunch API35 SUCCESS. [Publicador #45485082290](https://github.com/michels-lab/michel-s-life-releases/actions/runs/45485082290) SUCCESS y hashes descargados comprobados. Fuente `d82359c010ece7fc0f12d2dcc8238d718093ad22`; intent destino `0941ea1010f38c74fc310172334958356c2a4787`.

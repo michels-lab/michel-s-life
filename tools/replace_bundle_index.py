@@ -7,6 +7,8 @@ files on every code change.
 """
 from __future__ import annotations
 import argparse
+import hashlib
+import json
 import tempfile
 import zipfile
 from pathlib import Path
@@ -35,6 +37,14 @@ def main() -> None:
     shared = (motivation, immersion, personal_alarms, settings_colors, *classical, rights, library, piano)
     if not bundle.exists() or not index.exists() or not all(path.is_file() for path in shared):
         raise SystemExit("bundle/index/shared Focus or Settings source missing")
+    records = [item for manifest in (rights, library, piano) for item in json.loads(manifest.read_text(encoding='utf-8'))]
+    expected = {path.stem for path in classical}
+    if len(records) != len(expected) or {item['id'] for item in records} != expected:
+        raise SystemExit('audio manifest/catalog mismatch')
+    for record in records:
+        path = rights.with_name(record['id'] + '.mp3')
+        if hashlib.sha256(path.read_bytes()).hexdigest() != record['asset_sha256']:
+            raise SystemExit('audio integrity mismatch: ' + record['id'])
     if '<script defer src="settings-color-floating-preview.js"></script>' not in index.read_text(encoding="utf-8"):
         raise SystemExit("canonical index must load Settings color preview; refusing invisible release")
 

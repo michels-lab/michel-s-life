@@ -27609,8 +27609,11 @@ function setAudioPreference(kind,value){
    if(typeof value!=='number'||!Number.isFinite(value))return false;
    f.v30165AmbientVolume=Math.max(0,Math.min(1,value));
  }else if(kind==='ambientMode'){
-   if(!['repeat','playlist'].includes(value))return false;
+   if(!['repeat','playlist','shuffle'].includes(value))return false;
    f.v30165AmbientMode=value;
+ }else if(kind==='ambientCollection'){
+   if(!['all','Ambient','Cinematic','Classical'].includes(value))return false;
+   f.v30165AmbientCollection=value;
  }else return false;
  // Canonical persistence and recovery: never store competing audio preferences
  // in the immersive view or overwrite mission/session history.

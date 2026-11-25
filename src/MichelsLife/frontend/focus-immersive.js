@@ -189,9 +189,17 @@
   function savedVolume(){const v=api()?.focusState?.()?.v30165AmbientVolume;return typeof v==='number'&&Number.isFinite(v)?Math.max(0,Math.min(1,v)):.35;}
   function getVolume(){return volumeDraft??savedVolume();}
   function setVolume(value,save=true){const n=Number(value);if(!Number.isFinite(n))return getVolume();ambientVolume=Math.max(0,Math.min(1,n));volumeDraft=ambientVolume;if(ambientRecording)ambientRecording.volume=ambientVolume;if(save&&api()?.setAudioPreference?.('ambientVolume',ambientVolume)===true)volumeDraft=null;return ambientVolume;}
-  const ambientMode=()=>api()?.focusState?.()?.v30165AmbientMode==='playlist'?'playlist':'repeat';
-  function setAmbientMode(mode){if(!['repeat','playlist'].includes(mode))return false;api()?.setAudioPreference?.('ambientMode',mode);if(ambientRecording)ambientRecording.loop=ambientMode()==='repeat';return true;}
-  function moveAmbient(delta){const ids=Object.keys(ambientScenes).filter(id=>ambientScenes[id].recorded);if(!ids.length)return false;const index=ids.indexOf(sceneId());const next=ids[(index<0?(delta<0?ids.length-1:0):(index+delta+ids.length)%ids.length)];selectScene(next);return true;}
+  const ambientMode=()=>{const m=api()?.focusState?.()?.v30165AmbientMode;return ['repeat','playlist','shuffle'].includes(m)?m:'repeat';};
+  const ambientCollection=()=>{const c=api()?.focusState?.()?.v30165AmbientCollection;return ['Ambient','Cinematic','Classical'].includes(c)?c:'all';};
+  let shuffleHistory=[],shuffleBag=[];
+  function resetShuffle(){shuffleHistory=[];shuffleBag=[];}
+  function collectionIds(){const c=ambientCollection();return Object.keys(ambientScenes).filter(id=>ambientScenes[id].recorded&&(c==='all'||ambientScenes[id].group===c));}
+  function setAmbientCollection(value){if(!['all','Ambient','Cinematic','Classical'].includes(value))return false;api()?.setAudioPreference?.('ambientCollection',value);resetShuffle();const ids=collectionIds();if(ids.length&&!ids.includes(sceneId()))selectScene(ids[0]);return true;}
+  function setAmbientMode(mode){if(!['repeat','playlist','shuffle'].includes(mode))return false;if(mode!==ambientMode())resetShuffle();api()?.setAudioPreference?.('ambientMode',mode);if(ambientRecording)ambientRecording.loop=ambientMode()==='repeat';return true;}
+  function moveAmbient(delta){const ids=collectionIds();if(!ids.length)return false;const current=sceneId(),index=ids.indexOf(current);let next;if(ambientMode()==='shuffle'){
+    if(delta<0&&shuffleHistory.length)next=shuffleHistory.pop();
+    else{shuffleBag=shuffleBag.filter(id=>ids.includes(id)&&id!==current);if(!shuffleBag.length){shuffleBag=ids.filter(id=>id!==current);for(let i=shuffleBag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffleBag[i],shuffleBag[j]]=[shuffleBag[j],shuffleBag[i]];}}next=shuffleBag.pop()||ids[0];if(next!==current&&ids.includes(current))shuffleHistory.push(current);if(shuffleHistory.length>100)shuffleHistory.shift();}
+    }else next=ids[(index<0?(delta<0?ids.length-1:0):(index+delta+ids.length)%ids.length)];selectScene(next,true);return true;}
   function startAmbient(){
     stopAmbient();
     // Explicit new ambience replaces the recording rather than mixing audio.
@@ -202,7 +210,7 @@
         const player=new Audio('assets/audio/classical/'+id+'.mp3');
         player.loop=ambientMode()==='repeat';player.volume=ambientVolume;ambientRecording=player;ambientScene=id;
         const clear=()=>{if(ambientRecording===player)stopAmbient();};
-        player.onerror=clear;player.onended=()=>{if(ambientRecording!==player)return;if(ambientMode()==='playlist')moveAmbient(1);else clear();};player.play().catch(clear);return true;
+        player.onerror=clear;player.onended=()=>{if(ambientRecording!==player)return;if(ambientMode()!=='repeat')moveAmbient(1);else clear();};player.play().catch(clear);return true;
       }catch(_){stopAmbient();return false;}
     }
     const C=window.AudioContext||window.webkitAudioContext;
@@ -216,7 +224,8 @@
     }catch(_){stopAmbient();return false;}
   }
   function toggleAmbientPlayback(){if(ambientRecording){const player=ambientRecording;if(player.paused){player.play().catch(()=>{if(ambientRecording===player)stopAmbient();});}else player.pause();return true;}if(ambientContext)return stopAmbient();return startAmbient();}
-  function selectScene(id){
+  function selectScene(id,fromPlaylist=false){
+    if(!fromPlaylist){resetShuffle();const group=ambientScenes[id]?.group;if(ambientCollection()!=='all'&&group!==ambientCollection())api()?.setAudioPreference?.('ambientCollection','all');}
     const old=ambientScene;choice(sceneKey,ambientScenes,id,'moonlight');
     if(old)startAmbient();
     return sceneId();
@@ -237,7 +246,7 @@
   }
   function textOptions(items,group=false){
     const es=window.MichelsLifeI18n?.language==='es';
-    return Object.entries(items).map(([id,item])=>({id,label:(group?item.group+' · ':'')+(es?item.es:item.en)}));
+    return Object.entries(items).map(([id,item])=>({id,label:(group?({A:lang('Original soundscape','Ambiente original'),C:lang('Original soundscape','Ambiente original'),Ambient:lang('Ambient','Ambiental'),Cinematic:lang('Cinematic','Cinematográfica'),Classical:lang('Classical piano','Piano clásico')}[item.group]||item.group)+' · ':'')+(es?item.es:item.en)}));
   }
   window.MichelsLifeFocusAudio={
     completionOptions:()=>textOptions(finishTones),
@@ -247,7 +256,7 @@
     completionId:finishId,sceneId,selectCompletion:id=>{stopClassical();return choice(completionKey,finishTones,id,'soft');},
     selectScene,playCompletion,stopClassical,previewingCompletion:()=>previewingId,recordingActive:()=>!!classicalSource,recordingPlayback:()=>classicalSource?{paused:classicalSource.paused,currentTime:classicalSource.currentTime,duration:classicalSource.duration,src:classicalSource.src}:null,unlock,startAmbient,stopAmbient,
     playing:()=>!!(ambientContext||ambientRecording),playingScene:()=>ambientScene,
-    ambientVolume:getVolume,setAmbientVolume:setVolume,ambientMode,setAmbientMode,moveAmbient,toggleAmbientPlayback,
+    ambientVolume:getVolume,setAmbientVolume:setVolume,ambientMode,setAmbientMode,ambientCollection,setAmbientCollection,moveAmbient,toggleAmbientPlayback,
     ambientPlayback:()=>ambientRecording?{paused:ambientRecording.paused,currentTime:ambientRecording.currentTime,duration:ambientRecording.duration,loop:ambientRecording.loop,src:ambientRecording.src,volume:ambientRecording.volume}:null
   };
   window.addEventListener?.('pagehide',()=>{stopAmbient();stopClassical();});
@@ -587,7 +596,7 @@
             </label>
             <button type="button" class="mlv-focus-btn" data-mlv-audio="toggle-ambient">Play</button>
             <label><span data-mlv-volume-label>Volume</span><input type="range" min="0" max="100" value="35" data-mlv-ambient-volume aria-label="Background music volume" /></label>
-            <div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="mlv-focus-btn" data-mlv-audio="previous-ambient" aria-label="Previous track">⏮</button><button type="button" class="mlv-focus-btn" data-mlv-audio="next-ambient" aria-label="Next track">⏭</button><button type="button" class="mlv-focus-btn" data-mlv-audio="stop-ambient">Stop</button><select data-mlv-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option></select></div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="mlv-focus-btn" data-mlv-audio="previous-ambient" aria-label="Previous track">⏮</button><button type="button" class="mlv-focus-btn" data-mlv-audio="next-ambient" aria-label="Next track">⏭</button><button type="button" class="mlv-focus-btn" data-mlv-audio="stop-ambient">Stop</button><select data-mlv-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option><option value="shuffle">Shuffle</option></select><select data-mlv-ambient-collection aria-label="Playlist collection"><option value="all">All recordings</option><option value="Ambient">Ambient</option><option value="Cinematic">Cinematic</option><option value="Classical">Classical piano</option></select></div>
             <small data-mlv-ambient-progress aria-live="off"></small>
             <small style="flex-basis:100%;overflow-wrap:anywhere">Scott Buckley · CC BY 4.0 · www.scottbuckley.com.au · creativecommons.org/licenses/by/4.0/</small>
             <details><summary>Classical credits / Créditos clásicos</summary><small style="overflow-wrap:anywhere">Claude Debussy · Clair de Lune — Laurens Goedhart (CC BY 3.0; https://creativecommons.org/licenses/by/3.0/; https://commons.wikimedia.org/wiki/File:Clair_de_lune_(Claude_Debussy)_Suite_bergamasque.ogg) | Frédéric Chopin · Nocturne Op. 9 No. 2 — Peter Johnston / Musopen (CC0 1.0; https://creativecommons.org/publicdomain/zero/1.0/; https://commons.wikimedia.org/wiki/File:Chopin_Nocturne_No._2_in_E_Flat_Major%2C_Op._9.ogg) | Erik Satie · Gymnopédie No. 1 — Robin Alciatore / Musopen (Public domain; https://creativecommons.org/publicdomain/mark/1.0/; https://commons.wikimedia.org/wiki/File:Erik_Satie_-_gymnopedies_-_la_1_ere._lent_et_douloureux.ogg) | Johann Sebastian Bach · Prelude in C major, BWV 846 — Kimiko Ishizaka (CC0 1.0; https://creativecommons.org/publicdomain/zero/1.0/; https://commons.wikimedia.org/wiki/File:Kimiko_Ishizaka_-_Bach_-_Well-Tempered_Clavier%2C_Book_1_-_01_Prelude_No._1_in_C_major%2C_BWV_846.ogg) · MP3 conversion only.</small></details>
@@ -615,6 +624,7 @@
     screen.addEventListener('change',event=>{
       if(event.target?.matches?.('[data-mlv-ambient-volume]'))window.MichelsLifeFocusAudio?.setAmbientVolume?.(Number(event.target.value)/100);
       else if(event.target?.matches?.('[data-mlv-ambient-mode]'))window.MichelsLifeFocusAudio?.setAmbientMode?.(event.target.value);
+      else if(event.target?.matches?.('[data-mlv-ambient-collection]'))window.MichelsLifeFocusAudio?.setAmbientCollection?.(event.target.value);
       else if(event.target?.matches?.('[data-mlv-completion-sound]'))
         window.MichelsLifeFocusAudio?.selectCompletion?.(event.target.value);
       else if(event.target?.matches?.('[data-mlv-scene-select]'))
@@ -748,7 +758,7 @@
     if(classicalNote&&classicalNote.textContent!==noteText)
       classicalNote.textContent=noteText;
     const ambientHeading=q('[data-mlv-ambient-heading]',screen);
-    if(ambientHeading)ambientHeading.textContent=lang('Ambient music · 8 tracks','Música ambiental · 8 pistas');
+    if(ambientHeading)ambientHeading.textContent=lang('Ambient music','Música ambiental')+' · '+(audio?.sceneOptions?.().length||0);
     screen.querySelectorAll('[data-mlv-scene]').forEach(button=>{
       const id=button.dataset.mlvScene;
       const option=audio?.sceneOptions?.().find(item=>item.id===id);
@@ -786,7 +796,8 @@
     if(volLabel)volLabel.textContent=lang('Volume','Volumen');
     const ambientButton=q('[data-mlv-audio="toggle-ambient"]',screen);
     const playback=audio?.ambientPlayback?.(),modeSelect=q('[data-mlv-ambient-mode]',screen),progress=q('[data-mlv-ambient-progress]',screen);
-    if(modeSelect){modeSelect.value=audio?.ambientMode?.()||'repeat';modeSelect.options[0].textContent=lang('Repeat track','Repetir pista');modeSelect.options[1].textContent=lang('Continuous playlist','Lista continua');}
+    if(modeSelect){modeSelect.value=audio?.ambientMode?.()||'repeat';modeSelect.options[0].textContent=lang('Repeat track','Repetir pista');modeSelect.options[1].textContent=lang('Continuous playlist','Lista continua');modeSelect.options[2].textContent=lang('Shuffle','Aleatorio');}
+    const coll=q('[data-mlv-ambient-collection]',screen);if(coll){coll.value=audio?.ambientCollection?.()||'all';const names=[lang('All recordings','Todas las grabaciones'),lang('Ambient','Ambiental'),lang('Cinematic','Cinematográfica'),lang('Classical piano','Piano clásico')];names.forEach((name,i)=>coll.options[i].textContent=name);}
     if(progress)progress.textContent=playback&&Number.isFinite(playback.duration)?time(playback.currentTime*1000)+' / '+time(playback.duration*1000):'';
     const stop=q('[data-mlv-audio="stop-ambient"]',screen);if(stop)stop.textContent=lang('Stop','Detener');
     if(ambientButton)ambientButton.textContent=playback?(playback.paused?lang('Resume','Reanudar'):lang('Pause','Pausar')):audio?.playing?.()?lang('Stop','Detener'):lang('Play','Reproducir');

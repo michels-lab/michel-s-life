@@ -141,7 +141,7 @@
        ['.mlv-android-focus-sounds summary','Focus audio · Completion sound & ambience','Audio de enfoque · Sonido final y ambiente'],
        ['.mlv-android-focus-quick-completion label','Completion sound','Sonido al terminar'],
        ['[data-mobile-focus="preview-completion"]','▶ Listen','▶ Escuchar'],
-       ['[data-mobile-ambient-heading]','Ambient music · 8 tracks','Música ambiental · 8 pistas'],
+       ['[data-mobile-ambient-heading]','Ambient music','Música ambiental'],
        ['.mlv-android-focus-audio-grid label:first-of-type','Background music','Música de ambiente'],
        ['#mlv-android-focus-sheet details:has(#mlv-android-focus-work) summary','Custom work / break duration','Duración personalizada de enfoque / descanso'],
       ['.mlv-focus-motivation-details summary','Messages & affirmations','Frases y afirmaciones'],
@@ -1302,7 +1302,7 @@
               </label>
               <button type="button" data-mobile-focus="toggle-ambient">Play</button>
               <label><span data-mobile-volume-label>Volume</span><input type="range" min="0" max="100" value="35" data-mobile-ambient-volume aria-label="Background music volume" /></label>
-              <div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" data-mobile-focus="previous-ambient" aria-label="Previous track">⏮</button><button type="button" data-mobile-focus="next-ambient" aria-label="Next track">⏭</button><button type="button" data-mobile-focus="stop-ambient">Stop</button><select data-mobile-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option></select></div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" data-mobile-focus="previous-ambient" aria-label="Previous track">⏮</button><button type="button" data-mobile-focus="next-ambient" aria-label="Next track">⏭</button><button type="button" data-mobile-focus="stop-ambient">Stop</button><select data-mobile-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option><option value="shuffle">Shuffle</option></select><select data-mobile-ambient-collection aria-label="Playlist collection"><option value="all">All recordings</option><option value="Ambient">Ambient</option><option value="Cinematic">Cinematic</option><option value="Classical">Classical piano</option></select></div>
               <small data-mobile-ambient-progress aria-live="off"></small>
               <small style="overflow-wrap:anywhere">Scott Buckley · CC BY 4.0 · www.scottbuckley.com.au · creativecommons.org/licenses/by/4.0/</small>
               <details><summary>Classical credits / Créditos clásicos</summary><small style="overflow-wrap:anywhere">Claude Debussy · Clair de Lune — Laurens Goedhart (CC BY 3.0; https://creativecommons.org/licenses/by/3.0/; https://commons.wikimedia.org/wiki/File:Clair_de_lune_(Claude_Debussy)_Suite_bergamasque.ogg) | Frédéric Chopin · Nocturne Op. 9 No. 2 — Peter Johnston / Musopen (CC0 1.0; https://creativecommons.org/publicdomain/zero/1.0/; https://commons.wikimedia.org/wiki/File:Chopin_Nocturne_No._2_in_E_Flat_Major%2C_Op._9.ogg) | Erik Satie · Gymnopédie No. 1 — Robin Alciatore / Musopen (Public domain; https://creativecommons.org/publicdomain/mark/1.0/; https://commons.wikimedia.org/wiki/File:Erik_Satie_-_gymnopedies_-_la_1_ere._lent_et_douloureux.ogg) | Johann Sebastian Bach · Prelude in C major, BWV 846 — Kimiko Ishizaka (CC0 1.0; https://creativecommons.org/publicdomain/zero/1.0/; https://commons.wikimedia.org/wiki/File:Kimiko_Ishizaka_-_Bach_-_Well-Tempered_Clavier%2C_Book_1_-_01_Prelude_No._1_in_C_major%2C_BWV_846.ogg) · MP3 conversion only.</small></details>
@@ -1341,6 +1341,7 @@
         const audio=window.MichelsLifeFocusAudio;
         if(event.target?.matches?.('[data-mobile-ambient-volume]'))audio?.setAmbientVolume?.(Number(event.target.value)/100);
         if(event.target?.matches?.('[data-mobile-ambient-mode]'))audio?.setAmbientMode?.(event.target.value);
+        if(event.target?.matches?.('[data-mobile-ambient-collection]'))audio?.setAmbientCollection?.(event.target.value);
         if(event.target?.matches?.('[data-mobile-focus-completion]'))
           audio?.selectCompletion?.(event.target.value);
         if(event.target?.matches?.('[data-mobile-focus-ambience]'))
@@ -1647,7 +1648,8 @@
     const volume=q('[data-mobile-ambient-volume]',root);if(volume&&document.activeElement!==volume)volume.value=String(Math.round((audio?.ambientVolume?.()??.35)*100));
     writeText(q('[data-mobile-volume-label]',root),focusText('Volume','Volumen'));
     const playback=audio?.ambientPlayback?.(),playMode=q('[data-mobile-ambient-mode]',root);
-    if(playMode){playMode.value=audio?.ambientMode?.()||'repeat';writeText(playMode.options[0],focusText('Repeat track','Repetir pista'));writeText(playMode.options[1],focusText('Continuous playlist','Lista continua'));}
+    if(playMode){playMode.value=audio?.ambientMode?.()||'repeat';writeText(playMode.options[0],focusText('Repeat track','Repetir pista'));writeText(playMode.options[1],focusText('Continuous playlist','Lista continua'));writeText(playMode.options[2],focusText('Shuffle','Aleatorio'));}
+    const coll=q('[data-mobile-ambient-collection]',root);if(coll){coll.value=audio?.ambientCollection?.()||'all';[focusText('All recordings','Todas las grabaciones'),focusText('Ambient','Ambiental'),focusText('Cinematic','Cinematográfica'),focusText('Classical piano','Piano clásico')].forEach((name,i)=>writeText(coll.options[i],name));}
     const fmtAudio=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
     writeText(q('[data-mobile-ambient-progress]',root),playback&&Number.isFinite(playback.duration)?fmtAudio(playback.currentTime)+' / '+fmtAudio(playback.duration):'');
     writeText(q('[data-mobile-focus="stop-ambient"]',root),focusText('Stop','Detener'));

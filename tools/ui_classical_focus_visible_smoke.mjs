@@ -64,7 +64,7 @@ try{
   },mobile);
   assert.ok(first.clockTop>=0&&first.clockBottom<=first.height&&first.motivationBottom<=first.height&&!first.collapsed,'clock and phrases must be fully visible at first viewport: '+JSON.stringify(first));
   assert.equal(await motivation.locator('.mlv-motivation-line:not([hidden])').count(),2);
-  assert.equal(await completion.locator('option').count(),9);
+  assert.equal(await completion.locator('option').count(),25);
   assert.match(await completion.locator('option[value="mozart_k545"]').innerText(),/Mozart/);
   assert.match(await completion.locator('option[value="tchaikovsky_op39"]').innerText(),/Chaikovski/);
   await page.screenshot({path:out+'/'+platform+'-clock-first.png'});
@@ -77,6 +77,19 @@ try{
     assert.equal(await page.evaluate(()=>window.FocusStoryV30162.focusState().v30165CompletionSound),id);
     await preview[mobile?'tap':'click']();
     await page.waitForFunction(()=>window.MichelsLifeFocusAudio.previewingCompletion()===null);
+  }
+  // Test actual packaged MP3 playback in the ambient selector, not only JS mocks.
+  const ambient=root.locator(mobile?'[data-mobile-focus-ambience]':'[data-mlv-scene-select]');
+  const audioDetails=ambient.locator('xpath=ancestor::details[1]');
+  if(await audioDetails.count())await audioDetails.evaluate(el=>el.open=true);
+  const ambientToggle=root.locator(mobile?'[data-mobile-focus="toggle-ambient"]':'[data-mlv-audio="toggle-ambient"]');
+  for(const id of ['sb_meanwhile','debussy_clair_de_lune']){
+    await ambient.selectOption(id);await ambientToggle[mobile?'tap':'click']();
+    await page.waitForFunction(id=>{const p=window.MichelsLifeFocusAudio.ambientPlayback();return p&&!p.paused&&p.currentTime>.1&&p.duration>100&&p.src.includes(id+'.mp3');},id,{timeout:15000});
+    await ambientToggle[mobile?'tap':'click']();await page.waitForFunction(()=>window.MichelsLifeFocusAudio.ambientPlayback()?.paused===true);
+    await ambientToggle[mobile?'tap':'click']();await page.waitForFunction(()=>window.MichelsLifeFocusAudio.ambientPlayback()?.paused===false);
+    await root.locator(mobile?'[data-mobile-focus="stop-ambient"]':'[data-mlv-audio="stop-ambient"]')[mobile?'tap':'click']();
+    await page.waitForFunction(()=>!window.MichelsLifeFocusAudio.playing());
   }
   // A real timer expiry, not a preview callback: shorten an already running
   // synthetic QA session's canonical deadline and observe its actual finish.

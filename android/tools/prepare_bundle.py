@@ -2,6 +2,8 @@
 from pathlib import Path
 from zipfile import ZipFile
 import argparse
+import json
+import hashlib
 import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -45,6 +47,11 @@ def main():
         target = assets / 'assets/audio/classical' / filename
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, target)
+    audio_dir = assets / 'assets/audio/classical'
+    for manifest in ('RECORDINGS.json','LIBRARY.json','PIANO.json'):
+        for record in json.loads((audio_dir / manifest).read_text(encoding='utf-8')):
+            if hashlib.sha256((audio_dir / (record['id']+'.mp3')).read_bytes()).hexdigest() != record['asset_sha256']:
+                raise SystemExit('Android audio integrity mismatch: ' + record['id'])
     text = index.read_text(encoding="utf-8")
     if '<script defer src="settings-color-floating-preview.js"></script>' not in text:
         raise SystemExit("Android source missing Settings preview loader")

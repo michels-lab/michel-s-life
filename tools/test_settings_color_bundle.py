@@ -68,7 +68,7 @@ class SettingsBundleTests(unittest.TestCase):
                 )
                 self.assertIn(LOADER.encode(), z.read("index.html"))
                 self.assertEqual(sum(name.endswith(".jpg") for name in names), 204)
-                for name in ("mozart_k545.mp3", "tchaikovsky_op39.mp3", "RECORDINGS.json"):
+                for name in sorted(p.name for p in (FRONTEND / 'assets/audio/classical').iterdir() if p.suffix in ('.mp3','.json')):
                     path = "assets/audio/classical/" + name
                     self.assertEqual(names.count(path), 1)
                     self.assertEqual(z.read(path), (FRONTEND / path).read_bytes())
@@ -89,7 +89,7 @@ class SettingsBundleTests(unittest.TestCase):
                 (assets / "settings-color-floating-preview.js").read_bytes(),
                 (FRONTEND / "settings-color-floating-preview.js").read_bytes()
             )
-            for name in ("mozart_k545.mp3", "tchaikovsky_op39.mp3", "RECORDINGS.json"):
+            for name in sorted(p.name for p in (FRONTEND / 'assets/audio/classical').iterdir() if p.suffix in ('.mp3','.json')):
                 path = "assets/audio/classical/" + name
                 self.assertEqual((assets / path).read_bytes(), (FRONTEND / path).read_bytes())
             android_html=(assets / "index.html").read_text(encoding="utf-8")

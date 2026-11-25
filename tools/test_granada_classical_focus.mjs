@@ -40,6 +40,7 @@ function harness(persisted={v30165Soundscape:'moonlight',v30165CompletionSound:'
         else if(kind==='completion')persisted.v30165CompletionSound=value;
         else if(kind==='ambientVolume')persisted.v30165AmbientVolume=value;
         else if(kind==='ambientMode')persisted.v30165AmbientMode=value;
+        else if(kind==='ambientCollection')persisted.v30165AmbientCollection=value;
         return true;
       }
     },
@@ -180,4 +181,13 @@ test('piano collection supports ambience, completion and verified native assets'
  const manifest=JSON.parse(readFileSync(folder+'PIANO.json','utf8'));
  assert.deepEqual(manifest.map(x=>x.id),piano);
  for(const item of manifest){const id=item.id,bytes=readFileSync(folder+id+'.mp3');assert.equal(createHash('sha256').update(bytes).digest('hex'),item.asset_sha256);assert.deepEqual(bytes,readFileSync('android/app/src/main/res/raw/mlv_focus_'+id+'.mp3'));assert.ok(item.performer&&item.license_url&&item.source_page);assert.equal(f.api.selectScene(id),id);assert.equal(f.api.startAmbient(),true);assert.equal(f.recordings.at(-1).loop,true);assert.equal(f.api.selectCompletion(id),id);assert.equal(f.api.playCompletion(),true);assert.equal(f.recordings.at(-1).loop,false);}
+});
+
+
+test('shuffle traverses a selected piano collection without repeating before exhausting it',()=>{
+ const f=harness();f.api.setAmbientCollection('Classical');f.api.setAmbientMode('shuffle');assert.equal(f.api.sceneId(),piano[0]);
+ assert.equal(harness(f.persisted).api.ambientCollection(),'Classical');assert.equal(harness(f.persisted).api.ambientMode(),'shuffle');
+ f.api.startAmbient();const seen=new Set([f.api.playingScene()]);for(let i=1;i<piano.length;i++){f.recordings.at(-1).onended();const id=f.api.playingScene();assert.ok(piano.includes(id));assert.ok(!seen.has(id));seen.add(id);}
+ const previous=f.api.playingScene();f.api.moveAmbient(-1);assert.notEqual(f.api.playingScene(),previous);assert.ok(piano.includes(f.api.playingScene()));f.api.stopAmbient();
+ f.api.selectScene(library[0]);assert.equal(f.api.ambientCollection(),'all');
 });
