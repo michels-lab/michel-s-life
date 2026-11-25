@@ -229,3 +229,18 @@ test('archive updates preserve unloaded local tracks without exposing unknown en
  assert.ok(!f.api.archivedOptions().some(o=>o.id===id));
  assert.equal(f.api.archiveScene(library[0],false),true);assert.ok(f.persisted.v30165ArchivedAmbient.includes(id));
 });
+
+
+test('paused recorded-to-original transitions retain the selection and never autoplay on further switches',()=>{
+ const f=harness();f.api.selectScene(library[0]);f.api.startAmbient();f.api.toggleAmbientPlayback();
+ const contexts=f.contexts.length;
+ f.api.selectScene('moonlight');
+ assert.equal(f.api.playingScene(),'moonlight');assert.equal(f.api.playing(),true);
+ assert.equal(f.api.ambientPlayback().paused,true);assert.equal(f.contexts.length,contexts);
+ f.api.selectScene(library[1]);let p=f.recordings.at(-1);
+ assert.equal(p.paused,true);assert.equal(p.playCalls,0);
+ f.api.selectScene('moonlight');assert.equal(f.api.ambientPlayback().paused,true);
+ f.api.toggleAmbientPlayback();assert.equal(f.api.playingScene(),'moonlight');
+ assert.equal(f.contexts.length,contexts+1);assert.equal(f.timers.size,1);
+ f.api.stopAmbient();assert.equal(f.api.playing(),false);assert.equal(f.api.ambientPlayback(),null);
+});
