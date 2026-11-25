@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 512,
-  "classified_files_total": 508,
+  "tracked_files_total": 514,
+  "classified_files_total": 510,
   "docs_content_inspected": 114,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
@@ -19,11 +19,11 @@
     "installer_metadata": 1,
     "release_intent": 22,
     "source": 138,
-    "test": 63,
+    "test": 64,
     "text_metadata": 1,
     "unknown": 6,
     "web_ui": 3,
-    "workflow": 64
+    "workflow": 65
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
@@ -31,8 +31,8 @@
     "UNKNOWN_PURPOSE": 6
   },
   "finding_total": 12,
-  "inventory_fingerprint": "b26259c0400ca68eb86b97551b1af1e22e590318f7e7f909fe8eae4461ab9a83",
-  "evidence_fingerprint": "58990371f401f0f0acfc65f86c23688857118a46a700bb1be7dbeb945de22b4d",
+  "inventory_fingerprint": "fd70b29b7e98103abe8139ea5c9b42b994819a25f650df2b625a39562e24b5ee",
+  "evidence_fingerprint": "d7a9203a5761065c6216b1abecd6f5d1ac6e704f552fff8d7d0da74cfd48baa3",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -74,7 +74,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "2c170abac02c4a30815edef283b0d7225c2f850f"
+      "blob": "f282afe6543e19368adcbcfb71666bde7dc2e995"
     },
     {
       "path": ".github/workflows/android-direct-private-candidate-v026.yml",
@@ -102,7 +102,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "b10f22244a32332b80e9e661b3f7a35c2b245a8d"
+      "blob": "4402cdafd5c7dfdac5a56f9a28cfbb2d75309714"
     },
     {
       "path": ".github/workflows/build-store-msix.yml",
@@ -123,7 +123,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "f847832fa55234f865ae6e67e73e52b1fdf5ac75"
+      "blob": "5132f27c1dde9dae899610f6cacada53f16bebd3"
     },
     {
       "path": ".github/workflows/external-ui-baseline-guard.yml",
@@ -172,7 +172,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "d64ac4f4eec3c75d0d4ef09ad8c156539db64211"
+      "blob": "ccdaec94d4792a806c49d096fa0920c3b9a7bf70"
     },
     {
       "path": ".github/workflows/granada-android-drawer-atomic.yml",
@@ -235,7 +235,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "690bdb48bc1c01529d87274671ddd0284de763d0"
+      "blob": "335202688194ff073d67781ee5ba722743a00e38"
     },
     {
       "path": ".github/workflows/granada-daily-mission-ledger.yml",
@@ -249,14 +249,14 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "f3bda89027463310adae36460524c91877b608fb"
+      "blob": "aef1a113eddc4eeb6fef1fc70bd6b11412a4c365"
     },
     {
       "path": ".github/workflows/granada-focus-audio-quickmission.yml",
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "cc0fe8337caab93f0ec746917e390095daa011ad"
+      "blob": "0d5f0f25fabe44998a39c43ad55793625df2fa9b"
     },
     {
       "path": ".github/workflows/granada-focus-evidence.yml",
@@ -270,7 +270,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "886f368e5b771a78bb7f3fc5846c8e7d43017d59"
+      "blob": "634eaaf3e4d6364c47e31be3f2563a6daad4ffd2"
     },
     {
       "path": ".github/workflows/granada-focus-lockscreen-snooze.yml",
@@ -291,7 +291,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "81c3b94d2ce2ca2b078e4b0e6d8e815d7ea1e07d"
+      "blob": "9f00b0326155986a5f257d7dd13dda9969fce6ea"
     },
     {
       "path": ".github/workflows/granada-recovery-loss-triage.yml",
@@ -312,14 +312,14 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "62153ff611415b8a0a11ee9e4f3fec1b45cfd18e"
+      "blob": "2a2dac471c0c6a69ccedee644e1c701b91d249de"
     },
     {
       "path": ".github/workflows/granada-story-focus-provenance.yml",
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "f0e9648a4e1b45e2b37c64262d55d9ab791a3f5f"
+      "blob": "a9af92523c673d6257b7efcf806f5f47bd55cc26"
     },
     {
       "path": ".github/workflows/granada-transactional-cloud-restore.yml",
@@ -476,6 +476,13 @@
       "blob": "2a95002b554a11e5a05935418ecc333159fb9384"
     },
     {
+      "path": ".github/workflows/release-unified-v3233-a0222.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "067b47f2f9a438b3ebbc86b744196706aed82781"
+    },
+    {
       "path": ".github/workflows/release-windows-v3222-a0211.yml",
       "role": "workflow",
       "purpose": "GitHub Actions automation",
@@ -515,7 +522,7 @@
       "role": "workflow",
       "purpose": "GitHub Actions automation",
       "certainty": "rule",
-      "blob": "8197f18ae5638940574ebff2dbd1be2de588e716"
+      "blob": "95c03146ac80fad28b26904edba15dd763214052"
     },
     {
       "path": ".gitignore",
@@ -3220,6 +3227,13 @@
       "blob": "db3657dbdc208fd571e108ecbefcbaa491fa49b8"
     },
     {
+      "path": "tools/test_unified_release_gate_3233.mjs",
+      "role": "test",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "ee8aa8205cfd8c9c998425554f47c2cccd2c948c"
+    },
+    {
       "path": "tools/ui_android_calendar_read_smoke.mjs",
       "role": "source",
       "purpose": "code/test implementation",
@@ -3629,20 +3643,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "73df71dda176744e",
+      "id": "4cbd6438d9fb7ea3",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "46 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/ci.yml, .github/workflows/import-cinematic-audio.yml, .github/workflows/import-licensed-classical-recordings.yml, .github/workflows/import-piano-collection.yml, .github/workflows/release-unified-v3232-a0221.yml",
+      "observation": "58 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-classical-focus.yml, .github/workflows/granada-data-health.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "4b8f01bac3b631cd",
+      "id": "40c40267009f8fe3",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "85 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml",
+      "observation": "87 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
