@@ -134,8 +134,8 @@
   "active_candidate": {
     "block": "4A",
     "pr": "https://github.com/michels-lab/michel-s-life/pull/239",
-    "head": "520c88a9fcc336ec5cd50022a4b957137c06ded8",
-    "status": "implementation_committed_browser_contract_updated_exact_ci_pending",
+    "head": "490bf37dbc1e0e366fbc6d0b49c06bf1da320b42",
+    "status": "implementation_committed_exact_candidate_ci_queued",
     "baseline": "3.0.230",
     "changes": [
       "Windows minimize and single-instance restore",
@@ -144,14 +144,14 @@
       "discrete About credits and grouped music controls",
       "paused original/recorded audio continuity",
       "consistent original ambience pause/resume/stop, disabled unavailable skip controls, bilingual All audio label",
-      "two populated desktop audio columns, stacked compact layout, bilingual section headings on both platforms"
+      "two populated desktop audio columns, stacked compact layout, bilingual section headings on both platforms",
+      "explicit local MP3 loading status on Windows and Android, browser real audio predicates tolerate pending source"
     ],
     "remaining": [
       "exact candidate CI",
       "installed dashboard visual comparison",
       "owner acceptance",
       "stable publication",
-      "resolve reported PR mergeability against current main",
       "validate new two-column audio layout and dedicated Pause/Resume/Stop browser contract"
     ],
     "overlapping_pr": "https://github.com/michels-lab/michel-s-life/pull/237",
@@ -173,13 +173,24 @@
       "status": "catalog and build workflow candidate, artifact not verified"
     },
     "previous_head_ci": {
-      "head": "dd3f74c63815e8b3caba60c157013e6204523006",
-      "windows_native_launch": "success",
-      "windows_run": 45586983962,
-      "focus_classical": "success",
-      "focus_run": 45586981925,
-      "ui_smoke": "failure: old Stop expectation after Pause",
-      "ui_run": 45586980843
+      "head": "520c88a9fcc336ec5cd50022a4b957137c06ded8",
+      "success": 19,
+      "total": 22,
+      "windows_run": 45587721211,
+      "android_run": 45587721011,
+      "android_build": "success",
+      "android15_install_relaunch": "success",
+      "android14_16": "ADB transport failure",
+      "ui_desktop_run": 45587720890,
+      "ui_android_run": 45587721024,
+      "ui_failure": "TypeError reading startsWith of null during async local audio load; fixed test predicate without reducing playback requirements"
+    },
+    "mergeable_at_last_check": true,
+    "next_release": {
+      "windows": "3.0.234",
+      "android_direct": "0.2.23",
+      "version_code": 25,
+      "status": "planned_not_bumped_or_published"
     }
   }
 }
