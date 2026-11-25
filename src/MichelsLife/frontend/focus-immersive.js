@@ -24,22 +24,22 @@
     silver:{en:'Silver Echo',es:'Eco plateado',notes:[[0,784,.6,.044],[.36,987,.8,.036],[.75,1175,1.1,.024]]},
     mozart_k545:{en:'Mozart · Sonata K.545 · recording',es:'Mozart · Sonata K.545 · grabación',classical:true},
     tchaikovsky_op39:{en:'Tchaikovsky · Morning Prayer · recording',es:'Chaikovski · Oración matinal · grabación',classical:true},
-    sb_meanwhile:{en:"Meanwhile · Scott Buckley",es:"Meanwhile · Scott Buckley",classical:true},
-    sb_moonlight:{en:"Moonlight · Scott Buckley",es:"Moonlight · Scott Buckley",classical:true},
-    sb_cobalt:{en:"Cobalt · Scott Buckley",es:"Cobalt · Scott Buckley",classical:true},
-    sb_skyward:{en:"Skyward · Scott Buckley",es:"Skyward · Scott Buckley",classical:true},
-    sb_life_is:{en:"Life Is · Scott Buckley",es:"Life Is · Scott Buckley",classical:true},
-    sb_first_snow:{en:"First Snow · Scott Buckley",es:"First Snow · Scott Buckley",classical:true},
-    sb_midsommar:{en:"Midsommar · Scott Buckley",es:"Midsommar · Scott Buckley",classical:true},
-    sb_at_the_end_of_all_things:{en:"At The End Of All Things · Scott Buckley",es:"At The End Of All Things · Scott Buckley",classical:true},
-    sb_in_this_moment:{en:"In This Moment · Scott Buckley",es:"In This Moment · Scott Buckley",classical:true},
-    sb_hyperion:{en:"Hyperion · Scott Buckley",es:"Hyperion · Scott Buckley",classical:true},
-    sb_ascension:{en:"Ascension · Scott Buckley",es:"Ascension · Scott Buckley",classical:true},
-    sb_bring_me_the_sky:{en:"Bring Me The Sky · Scott Buckley",es:"Bring Me The Sky · Scott Buckley",classical:true},
-    debussy_clair_de_lune:{en:"Claude Debussy · Clair de Lune · Laurens Goedhart · CC BY 3.0",es:"Claude Debussy · Clair de Lune · Laurens Goedhart · CC BY 3.0",classical:true},
-    chopin_nocturne_op9:{en:"Frédéric Chopin · Nocturne Op. 9 No. 2 · Peter Johnston / Musopen · CC0 1.0",es:"Frédéric Chopin · Nocturne Op. 9 No. 2 · Peter Johnston / Musopen · CC0 1.0",classical:true},
-    satie_gymnopedie_1:{en:"Erik Satie · Gymnopédie No. 1 · Robin Alciatore / Musopen · Public domain",es:"Erik Satie · Gymnopédie No. 1 · Robin Alciatore / Musopen · Public domain",classical:true},
-    bach_prelude_bwv846:{en:"Johann Sebastian Bach · Prelude in C major, BWV 846 · Kimiko Ishizaka · CC0 1.0",es:"Johann Sebastian Bach · Prelude in C major, BWV 846 · Kimiko Ishizaka · CC0 1.0",classical:true},
+    sb_meanwhile:{en:"Meanwhile",es:"Meanwhile",classical:true},
+    sb_moonlight:{en:"Moonlight",es:"Moonlight",classical:true},
+    sb_cobalt:{en:"Cobalt",es:"Cobalt",classical:true},
+    sb_skyward:{en:"Skyward",es:"Skyward",classical:true},
+    sb_life_is:{en:"Life Is",es:"Life Is",classical:true},
+    sb_first_snow:{en:"First Snow",es:"First Snow",classical:true},
+    sb_midsommar:{en:"Midsommar",es:"Midsommar",classical:true},
+    sb_at_the_end_of_all_things:{en:"At The End Of All Things",es:"At The End Of All Things",classical:true},
+    sb_in_this_moment:{en:"In This Moment",es:"In This Moment",classical:true},
+    sb_hyperion:{en:"Hyperion",es:"Hyperion",classical:true},
+    sb_ascension:{en:"Ascension",es:"Ascension",classical:true},
+    sb_bring_me_the_sky:{en:"Bring Me The Sky",es:"Bring Me The Sky",classical:true},
+    debussy_clair_de_lune:{en:"Claude Debussy · Clair de Lune",es:"Claude Debussy · Clair de Lune",classical:true},
+    chopin_nocturne_op9:{en:"Frédéric Chopin · Nocturne Op. 9 No. 2",es:"Frédéric Chopin · Nocturne Op. 9 No. 2",classical:true},
+    satie_gymnopedie_1:{en:"Erik Satie · Gymnopédie No. 1",es:"Erik Satie · Gymnopédie No. 1",classical:true},
+    bach_prelude_bwv846:{en:"Johann Sebastian Bach · Prelude in C major, BWV 846",es:"Johann Sebastian Bach · Prelude in C major, BWV 846",classical:true},
     off:{en:'No sound',es:'Sin sonido',notes:[]}
   };
   // All sequences are newly composed harmonic pads, not licensed recordings.
@@ -53,23 +53,23 @@
     afterglow:{en:'Afterglow',es:'Resplandor',group:'C',notes:[174.61,220,349.23,440],pattern:[2,3,1,0,2],beat:1.02},
     silver:{en:'Silver Room',es:'Sala plateada',group:'C',notes:[196,246.94,392,493.88],pattern:[3,1,2,0,3,2],beat:.78}
     ,
-    sb_meanwhile:{en:"Meanwhile · Scott Buckley",es:"Meanwhile · Scott Buckley",group:"Ambient",recorded:true},
-    sb_moonlight:{en:"Moonlight · Scott Buckley",es:"Moonlight · Scott Buckley",group:"Ambient",recorded:true},
-    sb_cobalt:{en:"Cobalt · Scott Buckley",es:"Cobalt · Scott Buckley",group:"Ambient",recorded:true},
-    sb_skyward:{en:"Skyward · Scott Buckley",es:"Skyward · Scott Buckley",group:"Ambient",recorded:true},
-    sb_life_is:{en:"Life Is · Scott Buckley",es:"Life Is · Scott Buckley",group:"Ambient",recorded:true},
-    sb_first_snow:{en:"First Snow · Scott Buckley",es:"First Snow · Scott Buckley",group:"Ambient",recorded:true},
-    sb_midsommar:{en:"Midsommar · Scott Buckley",es:"Midsommar · Scott Buckley",group:"Ambient",recorded:true},
-    sb_at_the_end_of_all_things:{en:"At The End Of All Things · Scott Buckley",es:"At The End Of All Things · Scott Buckley",group:"Ambient",recorded:true},
-    sb_in_this_moment:{en:"In This Moment · Scott Buckley",es:"In This Moment · Scott Buckley",group:"Ambient",recorded:true},
-    sb_hyperion:{en:"Hyperion · Scott Buckley",es:"Hyperion · Scott Buckley",group:"Cinematic",recorded:true},
-    sb_ascension:{en:"Ascension · Scott Buckley",es:"Ascension · Scott Buckley",group:"Cinematic",recorded:true},
-    sb_bring_me_the_sky:{en:"Bring Me The Sky · Scott Buckley",es:"Bring Me The Sky · Scott Buckley",group:"Cinematic",recorded:true}
+    sb_meanwhile:{en:"Meanwhile",es:"Meanwhile",group:"Ambient",recorded:true},
+    sb_moonlight:{en:"Moonlight",es:"Moonlight",group:"Ambient",recorded:true},
+    sb_cobalt:{en:"Cobalt",es:"Cobalt",group:"Ambient",recorded:true},
+    sb_skyward:{en:"Skyward",es:"Skyward",group:"Ambient",recorded:true},
+    sb_life_is:{en:"Life Is",es:"Life Is",group:"Ambient",recorded:true},
+    sb_first_snow:{en:"First Snow",es:"First Snow",group:"Ambient",recorded:true},
+    sb_midsommar:{en:"Midsommar",es:"Midsommar",group:"Ambient",recorded:true},
+    sb_at_the_end_of_all_things:{en:"At The End Of All Things",es:"At The End Of All Things",group:"Ambient",recorded:true},
+    sb_in_this_moment:{en:"In This Moment",es:"In This Moment",group:"Ambient",recorded:true},
+    sb_hyperion:{en:"Hyperion",es:"Hyperion",group:"Cinematic",recorded:true},
+    sb_ascension:{en:"Ascension",es:"Ascension",group:"Cinematic",recorded:true},
+    sb_bring_me_the_sky:{en:"Bring Me The Sky",es:"Bring Me The Sky",group:"Cinematic",recorded:true}
     ,
-    debussy_clair_de_lune:{en:"Claude Debussy · Clair de Lune · Laurens Goedhart · CC BY 3.0",es:"Claude Debussy · Clair de Lune · Laurens Goedhart · CC BY 3.0",group:'Classical',recorded:true},
-    chopin_nocturne_op9:{en:"Frédéric Chopin · Nocturne Op. 9 No. 2 · Peter Johnston / Musopen · CC0 1.0",es:"Frédéric Chopin · Nocturne Op. 9 No. 2 · Peter Johnston / Musopen · CC0 1.0",group:'Classical',recorded:true},
-    satie_gymnopedie_1:{en:"Erik Satie · Gymnopédie No. 1 · Robin Alciatore / Musopen · Public domain",es:"Erik Satie · Gymnopédie No. 1 · Robin Alciatore / Musopen · Public domain",group:'Classical',recorded:true},
-    bach_prelude_bwv846:{en:"Johann Sebastian Bach · Prelude in C major, BWV 846 · Kimiko Ishizaka · CC0 1.0",es:"Johann Sebastian Bach · Prelude in C major, BWV 846 · Kimiko Ishizaka · CC0 1.0",group:'Classical',recorded:true}
+    debussy_clair_de_lune:{en:"Claude Debussy · Clair de Lune",es:"Claude Debussy · Clair de Lune",group:'Classical',recorded:true},
+    chopin_nocturne_op9:{en:"Frédéric Chopin · Nocturne Op. 9 No. 2",es:"Frédéric Chopin · Nocturne Op. 9 No. 2",group:'Classical',recorded:true},
+    satie_gymnopedie_1:{en:"Erik Satie · Gymnopédie No. 1",es:"Erik Satie · Gymnopédie No. 1",group:'Classical',recorded:true},
+    bach_prelude_bwv846:{en:"Johann Sebastian Bach · Prelude in C major, BWV 846",es:"Johann Sebastian Bach · Prelude in C major, BWV 846",group:'Classical',recorded:true}
   };
   // Licensed human performances, bundled locally. No synthesized fallback.
   // Personal files stay in the device's IndexedDB. Metadata is separate so
@@ -556,7 +556,7 @@
       .mlv-focus-classical-note{width:100%;font:500 11px/1.4 system-ui,sans-serif;color:#d0dbe5}
       .mlv-focus-sound-details,
       .mlv-focus-motivation-details{
-        flex:0 0 auto!important;min-height:0!important;max-height:26vh;
+        flex:0 0 auto!important;min-height:0!important;max-height:none;
         overflow-y:auto;box-sizing:border-box;padding:8px 12px;
         border:1px solid rgba(199,239,245,.14);border-radius:12px;
         background:rgba(3,14,23,.28)
@@ -584,7 +584,7 @@
         border-radius:12px;background:rgba(3,15,26,.4)
       }
       .mlv-focus-audio-group{
-        display:flex;align-items:end;gap:7px;min-width:0
+        display:grid;grid-template-columns:minmax(0,1fr);gap:12px;min-width:0
       }
       .mlv-focus-audio-group>label{
         flex:1;min-width:0;color:#dceef4;font:650 12px/1.4 system-ui,sans-serif
@@ -595,7 +595,13 @@
         background:#102c35;border:1px solid rgba(146,202,212,.35);
         font:600 12px system-ui,sans-serif
       }
-      .mlv-focus-audio-group>button{
+      #mlv-desktop-focus-stage .mlv-audio-controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+       #mlv-desktop-focus-stage .mlv-audio-settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+       #mlv-desktop-focus-stage .mlv-audio-library{display:grid;gap:8px;border-top:1px solid rgba(205,239,250,.14);padding-top:10px}
+       #mlv-desktop-focus-stage .mlv-audio-archive{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px}
+       #mlv-desktop-focus-stage .mlv-audio-library input,#mlv-desktop-focus-stage .mlv-audio-settings select,#mlv-desktop-focus-stage .mlv-audio-archive select{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+       @media(max-width:550px){#mlv-desktop-focus-stage .mlv-audio-controls{grid-template-columns:repeat(2,minmax(0,1fr))}#mlv-desktop-focus-stage .mlv-audio-settings,#mlv-desktop-focus-stage .mlv-audio-archive{grid-template-columns:1fr}}
+       .mlv-focus-audio-group>button{
         min-height:42px;min-width:68px;padding:8px 10px;font-size:12px
       }
       #mlv-desktop-mini-focus,#mlv-desktop-focus-launcher{
@@ -675,14 +681,11 @@
             <label for="mlv-focus-scene-select">Background music
               <select id="mlv-focus-scene-select" data-mlv-scene-select></select>
             </label>
-            <button type="button" class="mlv-focus-btn" data-mlv-audio="toggle-ambient">Play</button>
-            <label><span data-mlv-volume-label>Volume</span><input type="range" min="0" max="100" value="35" data-mlv-ambient-volume aria-label="Background music volume" /></label>
-            <div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="mlv-focus-btn" data-mlv-audio="previous-ambient" aria-label="Previous track">⏮ Previous</button><button type="button" class="mlv-focus-btn" data-mlv-audio="next-ambient" aria-label="Skip track">Next ⏭</button><button type="button" class="mlv-focus-btn" data-mlv-audio="stop-ambient">Stop</button><select data-mlv-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option><option value="shuffle">Shuffle</option></select><select data-mlv-ambient-collection aria-label="Playlist collection"><option value="all">All recordings</option><option value="Ambient">Ambient</option><option value="Cinematic">Cinematic</option><option value="Classical">Classical piano</option><option value="Personal">My music</option></select></div>
-            <small data-mlv-ambient-progress aria-live="off"></small>
-            <label><span data-mlv-personal-label>Import my music</span><input type="file" multiple accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg" data-mlv-personal-files /></label><small data-mlv-personal-status role="status"></small>
-            <div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="mlv-focus-btn" data-mlv-audio="archive-ambient">Archive track</button><select data-mlv-archived-track aria-label="Archived tracks"></select><button type="button" class="mlv-focus-btn" data-mlv-audio="restore-ambient">Restore</button></div>
-            <small style="flex-basis:100%;overflow-wrap:anywhere">Scott Buckley · CC BY 4.0 · www.scottbuckley.com.au · creativecommons.org/licenses/by/4.0/</small>
-            <details><summary>Classical credits / Créditos clásicos</summary><small style="overflow-wrap:anywhere">Claude Debussy · Clair de Lune — Laurens Goedhart (CC BY 3.0; https://creativecommons.org/licenses/by/3.0/; https://commons.wikimedia.org/wiki/File:Clair_de_lune_(Claude_Debussy)_Suite_bergamasque.ogg) | Frédéric Chopin · Nocturne Op. 9 No. 2 — Peter Johnston / Musopen (CC0 1.0; https://creativecommons.org/publicdomain/zero/1.0/; https://commons.wikimedia.org/wiki/File:Chopin_Nocturne_No._2_in_E_Flat_Major%2C_Op._9.ogg) | Erik Satie · Gymnopédie No. 1 — Robin Alciatore / Musopen (Public domain; https://creativecommons.org/publicdomain/mark/1.0/; https://commons.wikimedia.org/wiki/File:Erik_Satie_-_gymnopedies_-_la_1_ere._lent_et_douloureux.ogg) | Johann Sebastian Bach · Prelude in C major, BWV 846 — Kimiko Ishizaka (CC0 1.0; https://creativecommons.org/publicdomain/zero/1.0/; https://commons.wikimedia.org/wiki/File:Kimiko_Ishizaka_-_Bach_-_Well-Tempered_Clavier%2C_Book_1_-_01_Prelude_No._1_in_C_major%2C_BWV_846.ogg) · MP3 conversion only.</small></details>
+             <div class="mlv-audio-controls"><button type="button" class="mlv-focus-btn" data-mlv-audio="toggle-ambient">Play</button><button type="button" class="mlv-focus-btn" data-mlv-audio="previous-ambient" aria-label="Previous track">⏮ Previous</button><button type="button" class="mlv-focus-btn" data-mlv-audio="next-ambient" aria-label="Skip track">Next ⏭</button><button type="button" class="mlv-focus-btn" data-mlv-audio="stop-ambient">Stop</button></div>
+             <small data-mlv-ambient-progress aria-live="off"></small>
+             <label><span data-mlv-volume-label>Volume</span><input type="range" min="0" max="100" value="35" data-mlv-ambient-volume aria-label="Background music volume" /></label>
+             <div class="mlv-audio-settings"><select data-mlv-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option><option value="shuffle">Shuffle</option></select><select data-mlv-ambient-collection aria-label="Playlist collection"><option value="all">All recordings</option><option value="Ambient">Ambient</option><option value="Cinematic">Cinematic</option><option value="Classical">Classical piano</option><option value="Personal">My music</option></select></div>
+             <div class="mlv-audio-library"><label><span data-mlv-personal-label>Import my music</span><input type="file" multiple accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg" data-mlv-personal-files /></label><small data-mlv-personal-status role="status"></small><div class="mlv-audio-archive"><button type="button" class="mlv-focus-btn" data-mlv-audio="archive-ambient">Archive track</button><select data-mlv-archived-track aria-label="Archived tracks"></select><button type="button" class="mlv-focus-btn" data-mlv-audio="restore-ambient">Restore</button></div></div>
           </div>
         </div></details>
 

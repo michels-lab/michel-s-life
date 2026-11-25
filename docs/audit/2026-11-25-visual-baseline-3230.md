@@ -1,0 +1,3 @@
+# Block 4A — owner visual regression
+
+Owner approved Windows 3.0.230 (source 9e3a3abc84c811fc2baf4eb64e5a50ca1ccc31cf). Preserve general dashboard/Story/theme baseline, current immersive clock and phrases, data and all recorded sound IDs. Do not downgrade index to reintroduce fixed script corruption. Candidate: normal taskbar minimize, relaunch activation via same-session single-instance, noninterrupting shortcut conflict, collapsed credits in About or Settings footer, and grouped audio controls desktop/mobile. No generic theme overrides. Dashboard visual parity and splash still require inspection and correction; no claim of runtime acceptance, complete block or release. PR #237 overlaps focus audio; reconcile before integration. #238 remains separate.

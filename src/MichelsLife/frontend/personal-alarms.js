@@ -26,22 +26,56 @@ const SOUND_NAMES={system:['System default','Sistema'],classic:['Velvet Dawn · 
  focus_afterglow:['Afterglow · ambient','Resplandor · ambiental'],
  focus_silver:['Silver Room · ambient','Sala plateada · ambiental'],
  mozart_k545:['Mozart · Sonata K.545 · classical alarm','Mozart · Sonata K.545 · alarma clásica'],
- tchaikovsky_op39:['Tchaikovsky · Morning Prayer Op.39/1','Chaikovski · Oración matinal Op.39/1'],sb_meanwhile:["Meanwhile · Scott Buckley · CC BY 4.0","Meanwhile · Scott Buckley · CC BY 4.0"],
- sb_moonlight:["Moonlight · Scott Buckley · CC BY 4.0","Moonlight · Scott Buckley · CC BY 4.0"],
- sb_cobalt:["Cobalt · Scott Buckley · CC BY 4.0","Cobalt · Scott Buckley · CC BY 4.0"],
- sb_skyward:["Skyward · Scott Buckley · CC BY 4.0","Skyward · Scott Buckley · CC BY 4.0"],
- sb_life_is:["Life Is · Scott Buckley · CC BY 4.0","Life Is · Scott Buckley · CC BY 4.0"],
- sb_first_snow:["First Snow · Scott Buckley · CC BY 4.0","First Snow · Scott Buckley · CC BY 4.0"],
- sb_midsommar:["Midsommar · Scott Buckley · CC BY 4.0","Midsommar · Scott Buckley · CC BY 4.0"],
- sb_at_the_end_of_all_things:["At The End Of All Things · Scott Buckley · CC BY 4.0","At The End Of All Things · Scott Buckley · CC BY 4.0"],
- sb_in_this_moment:["In This Moment · Scott Buckley · CC BY 4.0","In This Moment · Scott Buckley · CC BY 4.0"],
- sb_hyperion:["Hyperion · Scott Buckley · CC BY 4.0","Hyperion · Scott Buckley · CC BY 4.0"],
- sb_ascension:["Ascension · Scott Buckley · CC BY 4.0","Ascension · Scott Buckley · CC BY 4.0"],
- sb_bring_me_the_sky:["Bring Me The Sky · Scott Buckley · CC BY 4.0","Bring Me The Sky · Scott Buckley · CC BY 4.0"],debussy_clair_de_lune:["Claude Debussy · Clair de Lune · Laurens Goedhart · CC BY 3.0","Claude Debussy · Clair de Lune · Laurens Goedhart · CC BY 3.0"],
- chopin_nocturne_op9:["Frédéric Chopin · Nocturne Op. 9 No. 2 · Peter Johnston / Musopen · CC0 1.0","Frédéric Chopin · Nocturne Op. 9 No. 2 · Peter Johnston / Musopen · CC0 1.0"],
- satie_gymnopedie_1:["Erik Satie · Gymnopédie No. 1 · Robin Alciatore / Musopen · Public domain","Erik Satie · Gymnopédie No. 1 · Robin Alciatore / Musopen · Public domain"],
- bach_prelude_bwv846:["Johann Sebastian Bach · Prelude in C major, BWV 846 · Kimiko Ishizaka · CC0 1.0","Johann Sebastian Bach · Prelude in C major, BWV 846 · Kimiko Ishizaka · CC0 1.0"],custom:['My MP3 / audio','Mi MP3 / audio']};
+ tchaikovsky_op39:['Tchaikovsky · Morning Prayer Op.39/1','Chaikovski · Oración matinal Op.39/1'],sb_meanwhile:["Meanwhile","Meanwhile"],
+ sb_moonlight:["Moonlight","Moonlight"],
+ sb_cobalt:["Cobalt","Cobalt"],
+ sb_skyward:["Skyward","Skyward"],
+ sb_life_is:["Life Is","Life Is"],
+ sb_first_snow:["First Snow","First Snow"],
+ sb_midsommar:["Midsommar","Midsommar"],
+ sb_at_the_end_of_all_things:["At The End Of All Things","At The End Of All Things"],
+ sb_in_this_moment:["In This Moment","In This Moment"],
+ sb_hyperion:["Hyperion","Hyperion"],
+ sb_ascension:["Ascension","Ascension"],
+ sb_bring_me_the_sky:["Bring Me The Sky","Bring Me The Sky"],debussy_clair_de_lune:["Claude Debussy · Clair de Lune","Claude Debussy · Clair de Lune"],
+ chopin_nocturne_op9:["Frédéric Chopin · Nocturne Op. 9 No. 2","Frédéric Chopin · Nocturne Op. 9 No. 2"],
+ satie_gymnopedie_1:["Erik Satie · Gymnopédie No. 1","Erik Satie · Gymnopédie No. 1"],
+ bach_prelude_bwv846:["Johann Sebastian Bach · Prelude in C major, BWV 846","Johann Sebastian Bach · Prelude in C major, BWV 846"],custom:['My MP3 / audio','Mi MP3 / audio']};
 const soundName=id=>tr(...(SOUND_NAMES[id]||SOUND_NAMES.system));
+// One collapsed attribution section in About, or bottom of Settings.
+function mountAudioCredits(){
+ const host=document.querySelector('#tab-about')||document.querySelector('#tab-settings');
+ if(!host||host.querySelector('#mlv-about-audio-credits'))return;
+ const details=document.createElement('details');details.id='mlv-about-audio-credits';
+ details.style.cssText='margin:16px 0 4px;font-size:12px;max-width:100%;overflow-wrap:anywhere;';
+ const summary=document.createElement('summary');summary.textContent=tr('Audio credits and licenses','Créditos y licencias de audio');
+ const body=document.createElement('div');body.style.cssText='padding:8px 0;line-height:1.55;';
+ details.append(summary,body);host.appendChild(details);
+ details.addEventListener('toggle',async()=>{
+  if(!details.open||body.dataset.loaded==='true'||body.dataset.loading==='true')return;
+  body.dataset.loading='true';
+  try{
+   const manifests=await Promise.all(['RECORDINGS','LIBRARY','PIANO'].map(async name=>{
+    const response=await fetch('assets/audio/classical/'+name+'.json');
+    if(!response.ok)throw Error('Audio credits unavailable');
+    return response.json();
+   }));
+   body.replaceChildren();
+   for(const item of manifests.flat()){
+    const row=document.createElement('p');row.style.margin='5px 0';
+    row.append(document.createTextNode(item.title+' — '+item.performer+' · '));
+    const license=document.createElement('a');license.href=item.license_url;license.textContent=item.license;license.target='_blank';license.rel='noopener noreferrer';
+    const source=document.createElement('a');source.href=item.source_page;source.textContent=tr('Source','Fuente');source.target='_blank';source.rel='noopener noreferrer';
+    row.append(license,document.createTextNode(' · '),source,document.createTextNode(' · '+(item.modifications||'MP3 conversion only')));
+    body.appendChild(row);
+   }
+   body.dataset.loaded='true';
+  }catch(_){body.textContent=tr('Audio credits: Scott Buckley (CC BY 4.0), Musopen, Wikimedia Commons and IMSLP. Reopen to retry full credits.','Créditos: Scott Buckley (CC BY 4.0), Musopen, Wikimedia Commons e IMSLP. Vuelve a abrir para reintentar.');}
+  finally{delete body.dataset.loading;}
+ });
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountAudioCredits,{once:true});else mountAudioCredits();
+document.addEventListener('click',()=>setTimeout(mountAudioCredits,100),true);
 let customAudio=null,previewAudio=null,customAudioUrl=null,previewAudioUrl=null;
 let previewGeneration=0;
 function localDateTime(at){
@@ -485,7 +519,7 @@ function styles(){
 .mlv-alarm-quick strong{flex-basis:100%;font:800 13px system-ui,sans-serif;color:#cde9f9}
 .mlv-alarm-quick button{min-width:65px;flex:1 0 auto}
 .mlv-alarm-sound-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.mlv-alarm-sound-row select{flex:1;min-width:120px}
+.mlv-alarm-sound-row select{flex:1 1 240px;min-width:0;max-width:100%;width:auto}
 .mlv-alarm-sound-row button{flex:0 0 auto}
 #mlv-alarm-custom-file{display:block;min-height:0;padding:9px;max-width:100%;font-size:13px}
 #mlv-alarm-custom-name{font:500 12px system-ui,sans-serif;opacity:.84;overflow-wrap:anywhere}
@@ -594,8 +628,6 @@ function create(){
   q('.mlv-alarm-days',screen).appendChild(label);
  }
  const soundSelect=q('#mlv-alarm-sound',screen);
- const musicCredits=document.createElement('small');musicCredits.textContent="Scott Buckley · CC BY 4.0 · www.scottbuckley.com.au · creativecommons.org/licenses/by/4.0/";musicCredits.style.overflowWrap='anywhere';soundSelect.parentElement?.appendChild(musicCredits);
- const pianoCredits=document.createElement('details');const pianoSummary=document.createElement('summary');pianoSummary.textContent='Classical credits / Créditos clásicos';pianoCredits.appendChild(pianoSummary);const pianoText=document.createElement('small');pianoText.textContent="Claude Debussy · Clair de Lune — Laurens Goedhart (CC BY 3.0; https://creativecommons.org/licenses/by/3.0/; https://commons.wikimedia.org/wiki/File:Clair_de_lune_(Claude_Debussy)_Suite_bergamasque.ogg) | Frédéric Chopin · Nocturne Op. 9 No. 2 — Peter Johnston / Musopen (CC0 1.0; https://creativecommons.org/publicdomain/zero/1.0/; https://commons.wikimedia.org/wiki/File:Chopin_Nocturne_No._2_in_E_Flat_Major%2C_Op._9.ogg) | Erik Satie · Gymnopédie No. 1 — Robin Alciatore / Musopen (Public domain; https://creativecommons.org/publicdomain/mark/1.0/; https://commons.wikimedia.org/wiki/File:Erik_Satie_-_gymnopedies_-_la_1_ere._lent_et_douloureux.ogg) | Johann Sebastian Bach · Prelude in C major, BWV 846 — Kimiko Ishizaka (CC0 1.0; https://creativecommons.org/publicdomain/zero/1.0/; https://commons.wikimedia.org/wiki/File:Kimiko_Ishizaka_-_Bach_-_Well-Tempered_Clavier%2C_Book_1_-_01_Prelude_No._1_in_C_major%2C_BWV_846.ogg) · MP3 conversion only.";pianoText.style.overflowWrap='anywhere';pianoCredits.appendChild(pianoText);soundSelect.parentElement?.appendChild(pianoCredits);
  for(const sound of SOUNDS){const option=document.createElement('option');option.value=sound;option.textContent=soundName(sound);soundSelect.appendChild(option);}
  soundSelect.value='gentle';
  q('#mlv-alarm-preview',screen).addEventListener('click',()=>previewSound(soundSelect.value));

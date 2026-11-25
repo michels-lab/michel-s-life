@@ -1042,7 +1042,14 @@
         display:grid;grid-template-columns:minmax(0,1fr) auto;
         gap:10px;align-items:end;padding:12px 0 4px
       }
-      #mlv-android-focus-sheet .mlv-android-focus-audio-grid label{
+      #mlv-android-focus-sheet .mlv-android-focus-audio-grid{grid-template-columns:minmax(0,1fr)!important}
+       #mlv-android-focus-sheet .mlv-audio-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+       #mlv-android-focus-sheet .mlv-audio-settings{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+       #mlv-android-focus-sheet .mlv-audio-library{display:grid;gap:8px;border-top:1px solid rgba(205,239,250,.14);padding-top:10px}
+       #mlv-android-focus-sheet .mlv-audio-archive{display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
+       #mlv-android-focus-sheet .mlv-audio-library input,#mlv-android-focus-sheet .mlv-audio-settings select,#mlv-android-focus-sheet .mlv-audio-archive select{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+       @media(max-width:550px){#mlv-android-focus-sheet .mlv-audio-controls{grid-template-columns:repeat(2,minmax(0,1fr))}#mlv-android-focus-sheet .mlv-audio-settings,#mlv-android-focus-sheet .mlv-audio-archive{grid-template-columns:1fr}}
+       #mlv-android-focus-sheet .mlv-android-focus-audio-grid label{
         display:block;min-width:0;color:#d2e7e8;font:650 12px/1.4 system-ui,sans-serif
       }
       #mlv-android-focus-sheet .mlv-android-focus-audio-grid select{
@@ -1300,14 +1307,11 @@
               <label>Background music
                 <select data-mobile-focus-ambience></select>
               </label>
-              <button type="button" data-mobile-focus="toggle-ambient">Play</button>
-              <label><span data-mobile-volume-label>Volume</span><input type="range" min="0" max="100" value="35" data-mobile-ambient-volume aria-label="Background music volume" /></label>
-              <div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" data-mobile-focus="previous-ambient" aria-label="Previous track">⏮ Previous</button><button type="button" data-mobile-focus="next-ambient" aria-label="Skip track">Next ⏭</button><button type="button" data-mobile-focus="stop-ambient">Stop</button><select data-mobile-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option><option value="shuffle">Shuffle</option></select><select data-mobile-ambient-collection aria-label="Playlist collection"><option value="all">All recordings</option><option value="Ambient">Ambient</option><option value="Cinematic">Cinematic</option><option value="Classical">Classical piano</option><option value="Personal">My music</option></select></div>
-              <small data-mobile-ambient-progress aria-live="off"></small>
-              <label><span data-mobile-personal-label>Import my music</span><input type="file" multiple accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg" data-mobile-personal-files /></label><small data-mobile-personal-status role="status"></small>
-              <div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" data-mobile-focus="archive-ambient">Archive track</button><select data-mobile-archived-track aria-label="Archived tracks"></select><button type="button" data-mobile-focus="restore-ambient">Restore</button></div>
-              <small style="overflow-wrap:anywhere">Scott Buckley · CC BY 4.0 · www.scottbuckley.com.au · creativecommons.org/licenses/by/4.0/</small>
-              <details><summary>Classical credits / Créditos clásicos</summary><small style="overflow-wrap:anywhere">Claude Debussy · Clair de Lune — Laurens Goedhart (CC BY 3.0; https://creativecommons.org/licenses/by/3.0/; https://commons.wikimedia.org/wiki/File:Clair_de_lune_(Claude_Debussy)_Suite_bergamasque.ogg) | Frédéric Chopin · Nocturne Op. 9 No. 2 — Peter Johnston / Musopen (CC0 1.0; https://creativecommons.org/publicdomain/zero/1.0/; https://commons.wikimedia.org/wiki/File:Chopin_Nocturne_No._2_in_E_Flat_Major%2C_Op._9.ogg) | Erik Satie · Gymnopédie No. 1 — Robin Alciatore / Musopen (Public domain; https://creativecommons.org/publicdomain/mark/1.0/; https://commons.wikimedia.org/wiki/File:Erik_Satie_-_gymnopedies_-_la_1_ere._lent_et_douloureux.ogg) | Johann Sebastian Bach · Prelude in C major, BWV 846 — Kimiko Ishizaka (CC0 1.0; https://creativecommons.org/publicdomain/zero/1.0/; https://commons.wikimedia.org/wiki/File:Kimiko_Ishizaka_-_Bach_-_Well-Tempered_Clavier%2C_Book_1_-_01_Prelude_No._1_in_C_major%2C_BWV_846.ogg) · MP3 conversion only.</small></details>
+             <div class="mlv-audio-controls"><button type="button" data-mobile-focus="toggle-ambient">Play</button><button type="button" data-mobile-focus="previous-ambient" aria-label="Previous track">⏮ Previous</button><button type="button" data-mobile-focus="next-ambient" aria-label="Skip track">Next ⏭</button><button type="button" data-mobile-focus="stop-ambient">Stop</button></div>
+             <small data-mobile-ambient-progress aria-live="off"></small>
+             <label><span data-mobile-volume-label>Volume</span><input type="range" min="0" max="100" value="35" data-mobile-ambient-volume aria-label="Background music volume" /></label>
+             <div class="mlv-audio-settings"><select data-mobile-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option><option value="shuffle">Shuffle</option></select><select data-mobile-ambient-collection aria-label="Playlist collection"><option value="all">All recordings</option><option value="Ambient">Ambient</option><option value="Cinematic">Cinematic</option><option value="Classical">Classical piano</option><option value="Personal">My music</option></select></div>
+             <div class="mlv-audio-library"><label><span data-mobile-personal-label>Import my music</span><input type="file" multiple accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg" data-mobile-personal-files /></label><small data-mobile-personal-status role="status"></small><div class="mlv-audio-archive"><button type="button" data-mobile-focus="archive-ambient">Archive track</button><select data-mobile-archived-track aria-label="Archived tracks"></select><button type="button" data-mobile-focus="restore-ambient">Restore</button></div></div>
             </div>
           </details>
 
