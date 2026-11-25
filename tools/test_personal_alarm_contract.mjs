@@ -159,6 +159,8 @@ test('the selector offers preview, imported MP3/WAV/OGG and chunked private nati
   for(const name of ['beginCustomAlarmSound','appendCustomAlarmSound','finishCustomAlarmSound','cancelCustomAlarmSound'])assert.ok(bridge.includes('fun '+name+'('));
   assert.match(activity,/override fun onShowFileChooser/);
   assert.match(activity,/ACTION_OPEN_DOCUMENT/);
+  assert.match(activity,/Intent.EXTRA_ALLOW_MULTIPLE, fileChooserParams\?\.mode == FileChooserParams.MODE_OPEN_MULTIPLE/);
+  assert.match(activity,/data\?\.clipData/);
   assert.match(activity,/pendingWebFilePicker\?\.onReceiveValue/);
   assert.match(activity,/NativePersonalAlarms\.alarmSoundUri\(this, id\)/);
   assert.match(overlay,/NativePersonalAlarms\.alarmSoundUri\(context, id\)/);

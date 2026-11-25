@@ -103,8 +103,8 @@ try{
   await page.waitForFunction(()=>window.MichelsLifeFocusAudio.sceneOptions().some(x=>x.id==='sb_meanwhile'));
   // Actual user-selected MP3 import and browser playback, independent of alarms.
   const fileInput=root.locator(mobile?'[data-mobile-personal-files]':'[data-mlv-personal-files]');
-  await fileInput.setInputFiles('src/MichelsLife/frontend/assets/audio/classical/sb_meanwhile.mp3');
-  await page.waitForFunction(()=>window.MichelsLifeFocusAudio.sceneOptions().some(x=>x.id.startsWith('my_')));
+  await fileInput.setInputFiles(['src/MichelsLife/frontend/assets/audio/classical/sb_meanwhile.mp3','src/MichelsLife/frontend/assets/audio/classical/debussy_clair_de_lune.mp3']);
+  await page.waitForFunction(()=>window.MichelsLifeFocusAudio.sceneOptions().filter(x=>x.id.startsWith('my_')).length===2);
   const myId=await page.evaluate(()=>window.MichelsLifeFocusAudio.sceneOptions().find(x=>x.id.startsWith('my_')).id);
   await ambient.selectOption(myId);await ambientToggle[mobile?'tap':'click']();
   await page.waitForFunction(()=>{const p=window.MichelsLifeFocusAudio.ambientPlayback();return p&&p.src.startsWith('blob:')&&!p.paused&&p.currentTime>.1;},null,{timeout:15000});
@@ -130,9 +130,9 @@ try{
   assert.equal(await page.evaluate(()=>window.FocusStoryV30162.focusState().mode),'break');
   await page.evaluate(()=>window.MichelsLifeFocusAudio.stopClassical());
   const scenes=await page.evaluate(()=>window.MichelsLifeFocusAudio.sceneOptions().map(x=>x.id));
-  assert.equal(scenes.length,25);assert.ok(!scenes.includes('mozart_k545'));
+  assert.equal(scenes.length,26);assert.ok(!scenes.includes('mozart_k545'));
   await page.reload({waitUntil:'domcontentloaded',timeout:60000});
-  await page.waitForFunction(()=>window.MichelsLifeFocusAudio?.completionId?.()==='tchaikovsky_op39'&&window.MichelsLifeFocusAudio?.sceneOptions?.().some(x=>x.id.startsWith('my_')));
+  await page.waitForFunction(()=>window.MichelsLifeFocusAudio?.completionId?.()==='tchaikovsky_op39'&&window.MichelsLifeFocusAudio?.sceneOptions?.().filter(x=>x.id.startsWith('my_')).length===2);
   assert.deepEqual(errors,[],
     'real Chromium runtime errors cannot be ignored; sanitized CDP provenance='+
       JSON.stringify(await parserFaults.snapshot()));

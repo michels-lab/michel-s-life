@@ -247,7 +247,7 @@
   function archiveScene(id,archived=true){
     if(!Object.hasOwn(ambientScenes,id))return false;
     const old=archivedIds();if(old.has(id)===archived)return true;
-    const selected=sceneId(),wasActive=ambientScene===id,wasPaused=!!ambientRecording?.paused;
+    const selected=sceneId(),wasActive=ambientScene===id,wasPaused=!!ambientRecording?.paused||pauseOnReady;
     if(archived)old.add(id);else old.delete(id);
     if(api()?.setAudioPreference?.('archivedAmbient',[...old])!==true)return false;
     resetShuffle();
@@ -258,7 +258,7 @@
     }
     return true;
   }
-  function setAmbientCollection(value){if(!['all','Ambient','Cinematic','Classical','Personal'].includes(value))return false;api()?.setAudioPreference?.('ambientCollection',value);resetShuffle();const ids=activeIds();const selected=sceneId();if(!ids.length){stopAmbient();return true;}if(ambientScene&&!ids.includes(ambientScene)){const paused=!!ambientRecording?.paused;stopAmbient();choice(sceneKey,ambientScenes,selected,'moonlight');if(!paused)startAmbient();}else choice(sceneKey,ambientScenes,selected,'moonlight');return true;}
+  function setAmbientCollection(value){if(!['all','Ambient','Cinematic','Classical','Personal'].includes(value))return false;api()?.setAudioPreference?.('ambientCollection',value);resetShuffle();const ids=activeIds();const selected=sceneId();if(!ids.length){stopAmbient();return true;}if(ambientScene&&!ids.includes(ambientScene)){const paused=!!ambientRecording?.paused||pauseOnReady;stopAmbient();choice(sceneKey,ambientScenes,selected,'moonlight');if(!paused)startAmbient();}else choice(sceneKey,ambientScenes,selected,'moonlight');return true;}
   function setAmbientMode(mode){if(!['repeat','playlist','shuffle'].includes(mode))return false;if(mode!==ambientMode())resetShuffle();api()?.setAudioPreference?.('ambientMode',mode);if(ambientRecording)ambientRecording.loop=ambientMode()==='repeat';return true;}
   function moveAmbient(delta,automatic=false){const ids=collectionIds();if(!ids.length)return false;const current=sceneId(),index=ids.indexOf(current);let next;if(ambientMode()==='shuffle'){
     shuffleHistory=shuffleHistory.filter(id=>ids.includes(id));if(delta<0&&shuffleHistory.length)next=shuffleHistory.pop();
