@@ -63,7 +63,7 @@
     sb_bring_me_the_sky:{en:"Bring Me The Sky · Scott Buckley",es:"Bring Me The Sky · Scott Buckley",group:"Cinematic",recorded:true}
   };
   // Licensed human performances, bundled locally. No synthesized fallback.
-  let classicalSource=null,previewingId=null,ambientRecording=null,ambientVolume=.35;
+  let classicalSource=null,previewingId=null,ambientRecording=null,ambientVolume=.35,volumeDraft=null;
   const classicalIds=['mozart_k545','tchaikovsky_op39'];
   let effectContext=null,ambientContext=null,ambientInterval=null,ambientScene=null,ambientStep=0;
   function soundContext(){
@@ -177,17 +177,23 @@
     });
     ambientStep=(ambientStep+1)%(scene.phrases?.length||scene.notes.length);
   }
+  function savedVolume(){const v=api()?.focusState?.()?.v30165AmbientVolume;return typeof v==='number'&&Number.isFinite(v)?Math.max(0,Math.min(1,v)):.35;}
+  function getVolume(){return volumeDraft??savedVolume();}
+  function setVolume(value,save=true){const n=Number(value);if(!Number.isFinite(n))return getVolume();ambientVolume=Math.max(0,Math.min(1,n));volumeDraft=ambientVolume;if(ambientRecording)ambientRecording.volume=ambientVolume;if(save&&api()?.setAudioPreference?.('ambientVolume',ambientVolume)===true)volumeDraft=null;return ambientVolume;}
+  const ambientMode=()=>api()?.focusState?.()?.v30165AmbientMode==='playlist'?'playlist':'repeat';
+  function setAmbientMode(mode){if(!['repeat','playlist'].includes(mode))return false;api()?.setAudioPreference?.('ambientMode',mode);if(ambientRecording)ambientRecording.loop=ambientMode()==='repeat';return true;}
+  function moveAmbient(delta){const ids=Object.keys(ambientScenes).filter(id=>ambientScenes[id].recorded);if(!ids.length)return false;const index=ids.indexOf(sceneId());const next=ids[(index<0?(delta<0?ids.length-1:0):(index+delta+ids.length)%ids.length)];selectScene(next);return true;}
   function startAmbient(){
     stopAmbient();
     // Explicit new ambience replaces the recording rather than mixing audio.
     stopClassical();
-    const id=sceneId();
+    const id=sceneId();ambientVolume=getVolume();
     if(ambientScenes[id]?.recorded){
       try{
         const player=new Audio('assets/audio/classical/'+id+'.mp3');
-        player.loop=true;player.volume=ambientVolume;ambientRecording=player;ambientScene=id;
+        player.loop=ambientMode()==='repeat';player.volume=ambientVolume;ambientRecording=player;ambientScene=id;
         const clear=()=>{if(ambientRecording===player)stopAmbient();};
-        player.onerror=clear;player.play().catch(clear);return true;
+        player.onerror=clear;player.onended=()=>{if(ambientRecording!==player)return;if(ambientMode()==='playlist')moveAmbient(1);else clear();};player.play().catch(clear);return true;
       }catch(_){stopAmbient();return false;}
     }
     const C=window.AudioContext||window.webkitAudioContext;
@@ -200,6 +206,7 @@
       return true;
     }catch(_){stopAmbient();return false;}
   }
+  function toggleAmbientPlayback(){if(ambientRecording){const player=ambientRecording;if(player.paused){player.play().catch(()=>{if(ambientRecording===player)stopAmbient();});}else player.pause();return true;}if(ambientContext)return stopAmbient();return startAmbient();}
   function selectScene(id){
     const old=ambientScene;choice(sceneKey,ambientScenes,id,'moonlight');
     if(old)startAmbient();
@@ -231,7 +238,7 @@
     completionId:finishId,sceneId,selectCompletion:id=>{stopClassical();return choice(completionKey,finishTones,id,'soft');},
     selectScene,playCompletion,stopClassical,previewingCompletion:()=>previewingId,recordingActive:()=>!!classicalSource,recordingPlayback:()=>classicalSource?{paused:classicalSource.paused,currentTime:classicalSource.currentTime,duration:classicalSource.duration,src:classicalSource.src}:null,unlock,startAmbient,stopAmbient,
     playing:()=>!!(ambientContext||ambientRecording),playingScene:()=>ambientScene,
-    ambientVolume:()=>ambientVolume,setAmbientVolume:value=>{const n=Number(value);if(!Number.isFinite(n))return ambientVolume;ambientVolume=Math.max(0,Math.min(1,n));if(ambientRecording)ambientRecording.volume=ambientVolume;return ambientVolume;},
+    ambientVolume:getVolume,setAmbientVolume:setVolume,ambientMode,setAmbientMode,moveAmbient,toggleAmbientPlayback,
     ambientPlayback:()=>ambientRecording?{paused:ambientRecording.paused,currentTime:ambientRecording.currentTime,duration:ambientRecording.duration,loop:ambientRecording.loop,src:ambientRecording.src,volume:ambientRecording.volume}:null
   };
   window.addEventListener?.('pagehide',()=>{stopAmbient();stopClassical();});
@@ -571,6 +578,8 @@
             </label>
             <button type="button" class="mlv-focus-btn" data-mlv-audio="toggle-ambient">Play</button>
             <label><span data-mlv-volume-label>Volume</span><input type="range" min="0" max="100" value="35" data-mlv-ambient-volume aria-label="Background music volume" /></label>
+            <div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="mlv-focus-btn" data-mlv-audio="previous-ambient" aria-label="Previous track">⏮</button><button type="button" class="mlv-focus-btn" data-mlv-audio="next-ambient" aria-label="Next track">⏭</button><button type="button" class="mlv-focus-btn" data-mlv-audio="stop-ambient">Stop</button><select data-mlv-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option></select></div>
+            <small data-mlv-ambient-progress aria-live="off"></small>
             <small style="flex-basis:100%;overflow-wrap:anywhere">Scott Buckley · CC BY 4.0 · www.scottbuckley.com.au · creativecommons.org/licenses/by/4.0/</small>
           </div>
         </div></details>
@@ -592,9 +601,11 @@
         handleAction(button.dataset.focusAction);
       });
     }
-    screen.addEventListener('input',event=>{if(event.target?.matches?.('[data-mlv-ambient-volume]'))window.MichelsLifeFocusAudio?.setAmbientVolume?.(Number(event.target.value)/100);});
+    screen.addEventListener('input',event=>{if(event.target?.matches?.('[data-mlv-ambient-volume]'))window.MichelsLifeFocusAudio?.setAmbientVolume?.(Number(event.target.value)/100,false);});
     screen.addEventListener('change',event=>{
-      if(event.target?.matches?.('[data-mlv-completion-sound]'))
+      if(event.target?.matches?.('[data-mlv-ambient-volume]'))window.MichelsLifeFocusAudio?.setAmbientVolume?.(Number(event.target.value)/100);
+      else if(event.target?.matches?.('[data-mlv-ambient-mode]'))window.MichelsLifeFocusAudio?.setAmbientMode?.(event.target.value);
+      else if(event.target?.matches?.('[data-mlv-completion-sound]'))
         window.MichelsLifeFocusAudio?.selectCompletion?.(event.target.value);
       else if(event.target?.matches?.('[data-mlv-scene-select]'))
         window.MichelsLifeFocusAudio?.selectScene?.(event.target.value);
@@ -606,10 +617,11 @@
     if(command==='preview-completion'){const audio=window.MichelsLifeFocusAudio;if(audio?.recordingActive?.()){audio.stopClassical();refresh();return true;}return audio?.playCompletion?.(true)===true;}
     if(command==='toggle-ambient'){
       const music=window.MichelsLifeFocusAudio;
-      if(music?.playing?.())music.stopAmbient();
-      else music?.startAmbient?.();
+      music?.toggleAmbientPlayback?.();
       refresh();return true;
     }
+    if(command==='stop-ambient'){window.MichelsLifeFocusAudio?.stopAmbient?.();refresh();return true;}
+    if(command==='previous-ambient'||command==='next-ambient'){window.MichelsLifeFocusAudio?.moveAmbient?.(command==='previous-ambient'?-1:1);refresh();return true;}
     if(command==='open'){open();return true;}
     if(command==='alarms'){
       minimize();
@@ -763,7 +775,11 @@
     if(vol&&document.activeElement!==vol)vol.value=String(Math.round((audio?.ambientVolume?.()??.35)*100));
     if(volLabel)volLabel.textContent=lang('Volume','Volumen');
     const ambientButton=q('[data-mlv-audio="toggle-ambient"]',screen);
-    if(ambientButton)ambientButton.textContent=audio?.playing?.()?lang('Stop','Detener'):lang('Play','Reproducir');
+    const playback=audio?.ambientPlayback?.(),modeSelect=q('[data-mlv-ambient-mode]',screen),progress=q('[data-mlv-ambient-progress]',screen);
+    if(modeSelect){modeSelect.value=audio?.ambientMode?.()||'repeat';modeSelect.options[0].textContent=lang('Repeat track','Repetir pista');modeSelect.options[1].textContent=lang('Continuous playlist','Lista continua');}
+    if(progress)progress.textContent=playback&&Number.isFinite(playback.duration)?time(playback.currentTime*1000)+' / '+time(playback.duration*1000):'';
+    const stop=q('[data-mlv-audio="stop-ambient"]',screen);if(stop)stop.textContent=lang('Stop','Detener');
+    if(ambientButton)ambientButton.textContent=playback?(playback.paused?lang('Resume','Reanudar'):lang('Pause','Pausar')):audio?.playing?.()?lang('Stop','Detener'):lang('Play','Reproducir');
     const previewButton=q('[data-mlv-audio="preview-completion"]',screen);
     if(previewButton)previewButton.textContent=audio?.recordingActive?.()?lang('■ Stop recording','■ Detener grabación'):lang('▶ Listen to completion','▶ Escuchar sonido final');
     const sceneLabel=q('[for="mlv-focus-scene-select"]',screen);

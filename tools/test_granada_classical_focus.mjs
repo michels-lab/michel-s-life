@@ -37,6 +37,8 @@ function harness(persisted={v30165Soundscape:'moonlight',v30165CompletionSound:'
       setAudioPreference(kind,value){
         if(kind==='scene')persisted.v30165Soundscape=all.has(value)?value:'moonlight';
         else if(kind==='completion')persisted.v30165CompletionSound=value;
+        else if(kind==='ambientVolume')persisted.v30165AmbientVolume=value;
+        else if(kind==='ambientMode')persisted.v30165AmbientMode=value;
         return true;
       }
     },
@@ -157,4 +159,16 @@ test('all library recordings have hash provenance and same native/web audio',()=
  const manifest=JSON.parse(readFileSync(folder+'LIBRARY.json','utf8'));
  assert.deepEqual(manifest.map(x=>x.id),library);
  for(const item of manifest){const bytes=readFileSync(folder+item.id+'.mp3');assert.ok(bytes.length>100000);assert.deepEqual(bytes,readFileSync('android/app/src/main/res/raw/mlv_focus_'+item.id+'.mp3'));assert.equal(createHash('sha256').update(bytes).digest('hex'),item.asset_sha256);assert.equal(item.license,'CC BY 4.0');assert.ok(item.duration_seconds>30);}
+});
+
+
+test('playlist, pause/resume, track navigation and saved volume preserve the canonical timer settings',()=>{
+ const f=harness();f.api.selectScene(library[0]);f.api.setAmbientVolume(.17);f.api.setAmbientMode('playlist');
+ assert.equal(harness(f.persisted).api.ambientVolume(),.17);assert.equal(harness(f.persisted).api.ambientMode(),'playlist');
+ f.api.startAmbient();const first=f.recordings.at(-1);assert.equal(first.loop,false);assert.equal(first.volume,.17);
+ first.currentTime=12;f.api.toggleAmbientPlayback();assert.equal(first.paused,true);f.api.toggleAmbientPlayback();assert.equal(first.paused,false);assert.equal(first.currentTime,12);
+ first.onended();const second=f.recordings.at(-1);assert.equal(f.api.playingScene(),library[1]);assert.equal(first.paused,true);
+ f.api.moveAmbient(-1);assert.equal(second.paused,true);assert.equal(f.api.playingScene(),library[0]);
+ f.api.setAmbientMode('repeat');assert.equal(f.recordings.at(-1).loop,true);
+ f.api.stopAmbient();assert.equal(f.api.playing(),false);assert.equal(f.timers.size,0);
 });

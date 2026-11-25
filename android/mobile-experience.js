@@ -1302,6 +1302,8 @@
               </label>
               <button type="button" data-mobile-focus="toggle-ambient">Play</button>
               <label><span data-mobile-volume-label>Volume</span><input type="range" min="0" max="100" value="35" data-mobile-ambient-volume aria-label="Background music volume" /></label>
+              <div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" data-mobile-focus="previous-ambient" aria-label="Previous track">⏮</button><button type="button" data-mobile-focus="next-ambient" aria-label="Next track">⏭</button><button type="button" data-mobile-focus="stop-ambient">Stop</button><select data-mobile-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option></select></div>
+              <small data-mobile-ambient-progress aria-live="off"></small>
               <small style="overflow-wrap:anywhere">Scott Buckley · CC BY 4.0 · www.scottbuckley.com.au · creativecommons.org/licenses/by/4.0/</small>
             </div>
           </details>
@@ -1333,9 +1335,11 @@
         if(id==='mlv-android-focus-work'||id==='mlv-android-focus-break')
           event.target.dataset.mlvFocusDirty='1';
       });
-      root.addEventListener('input',event=>{if(event.target?.matches?.('[data-mobile-ambient-volume]'))window.MichelsLifeFocusAudio?.setAmbientVolume?.(Number(event.target.value)/100);});
+      root.addEventListener('input',event=>{if(event.target?.matches?.('[data-mobile-ambient-volume]'))window.MichelsLifeFocusAudio?.setAmbientVolume?.(Number(event.target.value)/100,false);});
       root.addEventListener('change',event=>{
         const audio=window.MichelsLifeFocusAudio;
+        if(event.target?.matches?.('[data-mobile-ambient-volume]'))audio?.setAmbientVolume?.(Number(event.target.value)/100);
+        if(event.target?.matches?.('[data-mobile-ambient-mode]'))audio?.setAmbientMode?.(event.target.value);
         if(event.target?.matches?.('[data-mobile-focus-completion]'))
           audio?.selectCompletion?.(event.target.value);
         if(event.target?.matches?.('[data-mobile-focus-ambience]'))
@@ -1379,10 +1383,11 @@
         }
         if(action==='toggle-ambient'){
           const sound=window.MichelsLifeFocusAudio;
-          if(sound?.playing?.())sound.stopAmbient();
-          else sound?.startAmbient?.();
+          sound?.toggleAmbientPlayback?.();
           updateFocus();return;
         }
+        if(action==='stop-ambient'){window.MichelsLifeFocusAudio?.stopAmbient?.();updateFocus();return;}
+        if(action==='previous-ambient'||action==='next-ambient'){window.MichelsLifeFocusAudio?.moveAmbient?.(action==='previous-ambient'?-1:1);updateFocus();return;}
         if(!api){return;}
         if(action==='toggle'){
           if(api.focusState?.().status!=='running')requestNativeFocusPermission();
@@ -1640,8 +1645,12 @@
     }
     const volume=q('[data-mobile-ambient-volume]',root);if(volume&&document.activeElement!==volume)volume.value=String(Math.round((audio?.ambientVolume?.()??.35)*100));
     writeText(q('[data-mobile-volume-label]',root),focusText('Volume','Volumen'));
-    writeText(q('[data-mobile-focus="toggle-ambient"]',root),
-      audio?.playing?.()?focusText('Stop','Detener'):focusText('Play','Reproducir'));
+    const playback=audio?.ambientPlayback?.(),playMode=q('[data-mobile-ambient-mode]',root);
+    if(playMode){playMode.value=audio?.ambientMode?.()||'repeat';writeText(playMode.options[0],focusText('Repeat track','Repetir pista'));writeText(playMode.options[1],focusText('Continuous playlist','Lista continua'));}
+    const fmtAudio=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
+    writeText(q('[data-mobile-ambient-progress]',root),playback&&Number.isFinite(playback.duration)?fmtAudio(playback.currentTime)+' / '+fmtAudio(playback.duration):'');
+    writeText(q('[data-mobile-focus="stop-ambient"]',root),focusText('Stop','Detener'));
+    writeText(q('[data-mobile-focus="toggle-ambient"]',root),playback?(playback.paused?focusText('Resume','Reanudar'):focusText('Pause','Pausar')):audio?.playing?.()?focusText('Stop','Detener'):focusText('Play','Reproducir'));
     writeText(q('[data-mobile-focus="preview-completion"]',root),
       audio?.recordingActive?.()?focusText('Stop recording','Detener grabación'):focusText('Preview','Escuchar'));
     enforceFocusTouchTargets();
