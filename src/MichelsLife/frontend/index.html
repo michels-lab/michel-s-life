@@ -60,14 +60,12 @@ html.v3084-start-cover::after{
   top:50%;
   z-index:2147483647;
   pointer-events:none;
-  width:min(620px,82vw);
-  aspect-ratio:1600/600;
+  width:clamp(72px,12vw,132px);
+  aspect-ratio:1;
   transform:translate(-50%,-50%);
-  border:1px solid rgba(var(--ui-accent-rgb,117,228,255),.24);
-  border-radius:28px;
-  background:url("assets/michels_life_lockup.svg") center/92% auto no-repeat,linear-gradient(145deg,rgba(249,252,255,.94),rgba(224,236,248,.90));
-  box-shadow:0 24px 74px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.72);
-  backdrop-filter:blur(18px);
+  border:0;
+  background:url("assets/michels_life_app_icon.svg") center/contain no-repeat;
+  filter:drop-shadow(0 12px 28px rgba(0,0,0,.42));
 }
 html.v3084-start-cover *,html.v3084-start-cover *::before,html.v3084-start-cover *::after{
   animation:none!important;
@@ -14004,22 +14002,20 @@ body.v255-render-lock #tab-missions{
       root.querySelectorAll('.banner,.modal,.dialog,.card,section,aside,.panel,.modal-backdrop,.modal-overlay,[role="dialog"]').forEach(el=>{
         if(seen.has(el)) return;
         seen.add(el);
-        if(isPanelText(el.textContent||'')) out.push(el);
+        // Only the actual carryover notice owns the dismissal controls.
+        // A parent card containing Today, missions and a nested notice is not
+        // itself a notice and must never inherit the banner styling or hide.
+        const action=el.querySelector('[data-action="move-all-carry"]');
+        const exactBanner=el.matches('.banner')&&action&&action.closest('.banner')===el;
+        const directDialog=el.matches('.modal,.dialog,[role="dialog"]')&&action&&action.closest('.modal,.dialog,[role="dialog"],.banner')===el;
+        if((exactBanner||directDialog)&&isPanelText(el.textContent||''))out.push(el);
       });
     });
 
     return out.filter(el=>!el.closest('.v169-weekly-planner'));
   }
   function bestPanelFromButton(btn){
-    let el=btn;
-    while(el && el!==document.body){
-      if(el.id==='tab-dashboard') break;
-      if(isPanelText(el.textContent||'') && el.matches('.banner,.modal,.dialog,.card,section,aside,.panel,.modal-backdrop,.modal-overlay,[role="dialog"],div')){
-        return el;
-      }
-      el=el.parentElement;
-    }
-    return btn.closest('.banner,.modal,.dialog,.card,section,aside,.panel,.modal-backdrop,.modal-overlay,[role="dialog"]');
+    return candidates().find(panel=>panel.contains(btn))||null;
   }
   function hidePanel(panel){
     if(!panel) return;
@@ -14036,7 +14032,7 @@ body.v255-render-lock #tab-missions{
       return;
     }
 
-    const target=panel.closest('.banner,.card,section,aside,.panel') || panel;
+    const target=panel;
     target.style.setProperty('display','none','important');
     target.setAttribute('hidden','hidden');
     target.setAttribute('aria-hidden','true');
@@ -22256,7 +22252,7 @@ html body .v169-day-btn{
     (function waitForStableBackground(){
       const root=document.getElementById('v30103Background');
       const ready=!!(root&&root.classList.contains('ready')&&root.querySelector('img.v30113-bg-active'));
-      if(ready||Date.now()-started>1800){revealFast();return;}
+      if(ready||Date.now()-started>900){revealFast();return;}
       setTimeout(waitForStableBackground,35);
     })();
   }

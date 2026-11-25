@@ -44,7 +44,7 @@ const SOUND_NAMES={system:['System default','Sistema'],classic:['Velvet Dawn · 
 const soundName=id=>tr(...(SOUND_NAMES[id]||SOUND_NAMES.system));
 // One collapsed attribution section in About, or bottom of Settings.
 function mountAudioCredits(){
- const host=document.querySelector('#tab-about')||document.querySelector('#tab-settings');
+ const host=document.querySelector('#tab-settings [data-v30171-pane="about"] [data-mlv-about-core]');
  if(!host||host.querySelector('#mlv-about-audio-credits'))return;
  const details=document.createElement('details');details.id='mlv-about-audio-credits';
  details.style.cssText='margin:16px 0 4px;font-size:12px;max-width:100%;overflow-wrap:anywhere;';
