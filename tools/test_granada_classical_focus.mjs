@@ -191,3 +191,10 @@ test('shuffle traverses a selected piano collection without repeating before exh
  const previous=f.api.playingScene();f.api.moveAmbient(-1);assert.notEqual(f.api.playingScene(),previous);assert.ok(piano.includes(f.api.playingScene()));f.api.stopAmbient();
  f.api.selectScene(library[0]);assert.equal(f.api.ambientCollection(),'all');
 });
+
+
+test('manual next skips an active track in repeat mode without modifying timer or completion; paused skip stays paused',()=>{
+ const f=harness();f.api.selectScene(library[0]);f.api.selectCompletion(classical[0]);f.api.setAmbientMode('repeat');f.api.startAmbient();
+ const first=f.recordings.at(-1);f.api.moveAmbient(1);assert.equal(first.paused,true);assert.equal(f.api.playingScene(),library[1]);assert.equal(f.recordings.at(-1).loop,true);assert.equal(f.api.completionId(),classical[0]);
+ f.api.toggleAmbientPlayback();f.api.moveAmbient(1);assert.equal(f.api.playingScene(),library[2]);assert.equal(f.recordings.at(-1).paused,true);f.api.toggleAmbientPlayback();assert.equal(f.recordings.at(-1).paused,false);f.api.stopAmbient();
+});

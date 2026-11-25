@@ -88,6 +88,8 @@ try{
     await page.waitForFunction(id=>{const p=window.MichelsLifeFocusAudio.ambientPlayback();return p&&!p.paused&&p.currentTime>.1&&p.duration>100&&p.src.includes(id+'.mp3');},id,{timeout:15000});
     await ambientToggle[mobile?'tap':'click']();await page.waitForFunction(()=>window.MichelsLifeFocusAudio.ambientPlayback()?.paused===true);
     await ambientToggle[mobile?'tap':'click']();await page.waitForFunction(()=>window.MichelsLifeFocusAudio.ambientPlayback()?.paused===false);
+    const next=root.locator(mobile?'[data-mobile-focus="next-ambient"]':'[data-mlv-audio="next-ambient"]');await next[mobile?'tap':'click']();
+    await page.waitForFunction(id=>{const p=window.MichelsLifeFocusAudio.ambientPlayback();return p&&!p.paused&&!p.src.includes(id+'.mp3')&&p.currentTime>.1;},id,{timeout:15000});
     await root.locator(mobile?'[data-mobile-focus="stop-ambient"]':'[data-mlv-audio="stop-ambient"]')[mobile?'tap':'click']();
     await page.waitForFunction(()=>!window.MichelsLifeFocusAudio.playing());
   }

@@ -121,43 +121,93 @@ internal object NativePersonalAlarms {
         return true
     }
 
-    /** The web file picker never grants arbitrary filesystem access to JavaScript.
-     * We validate MIME, bound the file to 6 MiB, and copy it to private app storage
-     * so OS alarm delivery can read it after WebView closes. */
-    fun installCustomSound(context: Context, dataUrl: String): JSONObject {
-        try {
-            if (dataUrl.length > 8_500_000) return JSONObject().put("error", "Audio exceeds 6 MB")
-            val delimiter = dataUrl.indexOf(";base64,")
-            if (!dataUrl.startsWith("data:audio/") || delimiter < 6) return JSONObject().put("error", "Unsupported audio")
-            val mime = dataUrl.substring(5, delimiter).lowercase()
-            val ext = when (mime) {
-                "audio/mpeg", "audio/mp3", "audio/x-mpeg" -> "mp3"
-                "audio/wav", "audio/x-wav", "audio/wave" -> "wav"
-                "audio/ogg" -> "ogg"
-                else -> return JSONObject().put("error", "Only MP3, WAV and OGG allowed")
-            }
-            val bytes = Base64.decode(dataUrl.substring(delimiter + 8), Base64.DEFAULT)
-            if (bytes.size !in 128..(6 * 1024 * 1024)) return JSONObject().put("error", "Invalid audio size")
-            val validHeader = when(ext){
-                "mp3" -> (bytes.size >= 3 && String(bytes, 0, 3, Charsets.US_ASCII) == "ID3") ||
-                    (bytes.size >= 2 && bytes[0] == 0xFF.toByte() && (bytes[1].toInt() and 0xE0) == 0xE0)
-                "wav" -> bytes.size > 12 && String(bytes, 0, 4, Charsets.US_ASCII) == "RIFF" &&
-                    String(bytes, 8, 4, Charsets.US_ASCII) == "WAVE"
-                else -> bytes.size > 4 && String(bytes, 0, 4, Charsets.US_ASCII) == "OggS"
-            }
-            if (!validHeader) return JSONObject().put("error", "Audio header does not match file type")
+    /** Import a user-selected file in bounded transport chunks, with no fixed total limit.
+     * The active audio is never overwritten before the complete file is verified. */
+    private const val AUDIO_CHUNK_BYTES = 256 * 1024
+    private data class AudioImport(val token: String, val extension: String, val expected: Long, val file: File, var written: Long = 0L)
+    private var audioImport: AudioImport? = null
+    private fun audioError(message: String) = JSONObject().put("error", message)
+    @Synchronized
+    fun beginCustomSound(context: Context, extension: String, sizeText: String): JSONObject {
+        val size = sizeText.toLongOrNull() ?: return audioError("Invalid audio size")
+        if (extension !in setOf("mp3", "wav", "ogg") || size < 128L) return audioError("Invalid audio file")
+        return try {
             val dir = File(context.filesDir, "personal-alarm-audio").apply { mkdirs() }
-            val output = File(dir, "custom.$ext")
-            val staging = File(dir, "custom.staging")
-            staging.writeBytes(bytes)
-            if (!staging.renameTo(output)) { staging.delete(); return JSONObject().put("error", "Could not save audio") }
-            // Preserve the previous audio until replacement is verified.
-            if (!prefs(context).edit().putString(KEY_CUSTOM_FILE, output.name).commit())
-                return JSONObject().put("error", "Could not persist audio selection")
-            dir.listFiles()?.filter { it.name.startsWith("custom.") && it.name != output.name }
-                ?.forEach { it.delete() }
-            return JSONObject().put("ok", true).put("bytes", bytes.size)
-        } catch (_: Exception) { return JSONObject().put("error", "Audio import failed") }
+            audioImport?.file?.delete()
+            audioImport = null
+            dir.listFiles()?.filter { it.name.startsWith("import-") && it.name.endsWith(".part") }?.forEach { it.delete() }
+            if (dir.usableSpace < size) return audioError("Not enough available storage")
+            val token = java.util.UUID.randomUUID().toString()
+            val staging = File(dir, "import-$token.part")
+            if (!staging.createNewFile()) return audioError("Could not create audio staging file")
+            audioImport = AudioImport(token, extension, size, staging)
+            JSONObject().put("ok", true).put("token", token)
+        } catch (_: Exception) { audioError("Could not start audio import") }
+    }
+    @Synchronized
+    fun appendCustomSound(token: String, offsetText: String, encoded: String): JSONObject {
+        val transfer = audioImport ?: return audioError("No audio import in progress")
+        if (transfer.token != token) return audioError("Invalid audio transfer")
+        val offset = offsetText.toLongOrNull()
+        if (offset != transfer.written || encoded.length > ((AUDIO_CHUNK_BYTES + 2) / 3) * 4)
+            return audioError("Invalid audio chunk sequence")
+        return try {
+            val bytes = Base64.decode(encoded, Base64.NO_WRAP)
+            if (bytes.isEmpty() || bytes.size > AUDIO_CHUNK_BYTES || bytes.size.toLong() > transfer.expected - transfer.written)
+                return audioError("Invalid audio chunk")
+            transfer.file.appendBytes(bytes)
+            transfer.written += bytes.size.toLong()
+            JSONObject().put("ok", true).put("written", transfer.written.toString())
+        } catch (_: Exception) { audioError("Could not write audio; check available storage") }
+    }
+    @Synchronized
+    fun cancelCustomSound(token: String): Boolean {
+        val transfer = audioImport ?: return false
+        if (transfer.token != token) return false
+        transfer.file.delete()
+        audioImport = null
+        return true
+    }
+    @Synchronized
+    fun finishCustomSound(context: Context, token: String): JSONObject {
+        val transfer = audioImport ?: return audioError("No audio import in progress")
+        if (token != transfer.token) return audioError("Invalid audio transfer")
+        var output: File? = null
+        var published = false
+        return try {
+            if (transfer.written != transfer.expected || transfer.file.length() != transfer.expected)
+                return audioError("Incomplete audio import")
+            val header = ByteArray(12)
+            val count = transfer.file.inputStream().use { it.read(header) }
+            val validHeader = when (transfer.extension) {
+                "mp3" -> (count >= 3 && String(header, 0, 3, Charsets.US_ASCII) == "ID3") ||
+                    (count >= 2 && header[0] == 0xFF.toByte() && (header[1].toInt() and 0xE0) == 0xE0)
+                "wav" -> count >= 12 && String(header, 0, 4, Charsets.US_ASCII) == "RIFF" &&
+                    String(header, 8, 4, Charsets.US_ASCII) == "WAVE"
+                else -> count >= 4 && String(header, 0, 4, Charsets.US_ASCII) == "OggS"
+            }
+            if (!validHeader) return audioError("Audio header does not match file type")
+            val media = android.media.MediaMetadataRetriever()
+            try {
+                media.setDataSource(transfer.file.absolutePath)
+                val duration = media.extractMetadata(android.media.MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
+                if (duration == null || duration <= 0L) return audioError("Audio cannot be decoded")
+            } finally { media.release() }
+            val target = File(transfer.file.parentFile, "custom-$token.${transfer.extension}")
+            output = target
+            if (!transfer.file.renameTo(target)) return audioError("Could not save audio")
+            if (!prefs(context).edit().putString(KEY_CUSTOM_FILE, target.name).commit())
+                return audioError("Could not persist audio selection")
+            published = true
+            // Old files are deleted only after the new selection was persisted.
+            target.parentFile?.listFiles()?.filter { (it.name.startsWith("custom.") || it.name.startsWith("custom-")) && it.name != target.name }?.forEach { it.delete() }
+            JSONObject().put("ok", true).put("bytes", transfer.written.toString())
+        } catch (_: Exception) { audioError("Audio import failed") }
+        finally {
+            if (!published) output?.delete()
+            transfer.file.delete()
+            audioImport = null
+        }
     }
 
     /** Per-alarm sound used by the native overlay and the lock-screen Activity.
@@ -198,7 +248,7 @@ internal object NativePersonalAlarms {
         if (recorded != 0) return Uri.parse("android.resource://" + context.packageName + "/" + recorded)
         if (selected == "custom") {
             val name = prefs(context).getString(KEY_CUSTOM_FILE, "") ?: ""
-            if (!Regex("^custom\\.(mp3|wav|ogg)$").matches(name)) return defaultSound()
+            if (!Regex("^custom(?:-[a-f0-9-]{36})?\\.(mp3|wav|ogg)$").matches(name)) return defaultSound()
             val file = File(dir, name)
             return if (file.isFile && file.length() > 128L) Uri.fromFile(file) else defaultSound()
         }

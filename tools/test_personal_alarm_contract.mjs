@@ -133,16 +133,21 @@ test('Quick Alarm stores an exact 5-minute deadline rather than rounding to a la
   assert.ok(savedRecords[1].dueAt-started>=3600000,'one-hour quick deadline');
 });
 
-test('the selector offers preview, imported MP3/WAV/OGG and bounded private native storage',()=>{
+test('the selector offers preview, imported MP3/WAV/OGG and chunked private native storage without a file-size cap',()=>{
   for(const id of ['classic','soft','digital','gentle','pulse','radar','custom'])
     assert.ok(alarms.includes(id),id);
   for(const duration of ['5','10','15','30','60','120'])
     assert.match(alarms,new RegExp('data-quick-minutes="'+duration+'"'));
   for(const feature of ['mlv-alarm-sound','mlv-alarm-preview','mlv-alarm-custom-file',
-    'customDatabase','saveCustomBlob','indexedDB','installCustomAlarmSound','playPresetSound'])
+    'customDatabase','saveCustomBlob','indexedDB','beginCustomAlarmSound','appendCustomAlarmSound','finishCustomAlarmSound','cancelCustomAlarmSound','playPresetSound'])
     assert.ok(alarms.includes(feature),feature);
-  assert.match(alarms,/file.size>6\*1024\*1024/);
-  assert.match(native,/fun installCustomSound\(context: Context, dataUrl: String\)/);
+  assert.doesNotMatch(alarms,/file\.size\s*>\s*6\*1024\*1024|max 6 MB/);
+  assert.match(alarms,/file\.slice\(offset,Math\.min\(file\.size,offset\+AUDIO_CHUNK_BYTES\)\)/);
+  assert.match(native,/fun beginCustomSound\(context: Context, extension: String, sizeText: String\)/);
+  assert.match(native,/transfer\.file\.appendBytes\(bytes\)/);
+  assert.match(native,/transfer\.written != transfer\.expected/);
+  assert.match(native,/dir\.usableSpace < size/);
+  assert.doesNotMatch(native,/Audio exceeds 6 MB|8_500_000|6 \* 1024 \* 1024/);
   assert.match(native,/Base64\.decode/);
   assert.match(native,/File\(context\.filesDir, "personal-alarm-audio"\)/);
   assert.match(native,/\.put\("sound", sound\)/);
@@ -151,7 +156,7 @@ test('the selector offers preview, imported MP3/WAV/OGG and bounded private nati
   assert.match(native,/fun alarmSoundUri\(context: Context, alarmId: String\)/);
   const bridge=readFileSync('android/app/src/main/java/com/michelslab/michelslife/AndroidBridge.kt','utf8');
   const activity=readFileSync('android/app/src/main/java/com/michelslab/michelslife/MainActivity.kt','utf8');
-  assert.match(bridge,/fun installCustomAlarmSound\(dataUrl: String\)/);
+  for(const name of ['beginCustomAlarmSound','appendCustomAlarmSound','finishCustomAlarmSound','cancelCustomAlarmSound'])assert.ok(bridge.includes('fun '+name+'('));
   assert.match(activity,/override fun onShowFileChooser/);
   assert.match(activity,/ACTION_OPEN_DOCUMENT/);
   assert.match(activity,/pendingWebFilePicker\?\.onReceiveValue/);

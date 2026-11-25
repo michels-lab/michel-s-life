@@ -70,26 +70,56 @@ async function storedCustomBlob(){
   req.onsuccess=()=>resolve(req.result||null);req.onerror=()=>reject(req.error||Error('Audio load failed'));});}
  finally{db.close();}
 }
-function readDataURL(file){return new Promise((resolve,reject)=>{
- const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(reader.error||Error('Could not read audio'));reader.readAsDataURL(file);
+function readDataURL(part){return new Promise((resolve,reject)=>{
+ const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(reader.error||Error('Could not read audio'));reader.readAsDataURL(part);
 });}
+const AUDIO_CHUNK_BYTES=256*1024; // transport block, never a maximum file size
+let importingAudio=false;
+function nativeResult(raw){const result=JSON.parse(raw||'{}');if(!result.ok)throw Error(result.error||'Native audio storage failed');return result;}
+async function restoreCustomBlob(saved){
+ if(saved?.blob)return saveCustomBlob(saved.blob,saved.name);
+ const db=await customDatabase();
+ try{await new Promise((resolve,reject)=>{const tx=db.transaction('audio','readwrite');tx.objectStore('audio').delete('selected');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});}finally{db.close();}
+}
 async function importSound(file){
- if(!file)return false;
- if(file.size<128||file.size>6*1024*1024||!/\.(mp3|wav|ogg)$/i.test(file.name)){
-  window.alert(tr('Choose an MP3, WAV or OGG file up to 6 MB.','Elige MP3, WAV u OGG de hasta 6 MB.'));return false;
+ if(!file||importingAudio)return false;
+ if(!Number.isSafeInteger(file.size)||file.size<128||!/\.(mp3|wav|ogg)$/i.test(file.name)){
+  window.alert(tr('Choose a valid MP3, WAV or OGG file.','Elige un archivo MP3, WAV u OGG válido.'));return false;
  }
+ importingAudio=true;
+ const input=screen&&q('#mlv-alarm-custom-file',screen),label=screen&&q('#mlv-alarm-custom-name',screen);
+ const oldLabel=label?.textContent||'';if(input)input.disabled=true;
+ const progress=percent=>{if(label)label.textContent=tr('Importing audio… ','Importando audio… ')+percent+'%';};
+ let token=null,native=null,previous=null,webSaved=false,committed=false;
  try{
   if(android()){
-   const native=window.MichelsLifeAndroid;
-   if(typeof native?.installCustomAlarmSound!=='function')throw Error('Android must support persistent alarm audio.');
-   const result=JSON.parse(native.installCustomAlarmSound(await readDataURL(file))||'{}');
-   if(!result.ok)throw Error(result.error||'Native audio storage failed');
+   native=window.MichelsLifeAndroid;
+   if(typeof native?.beginCustomAlarmSound!=='function'||typeof native?.appendCustomAlarmSound!=='function'||typeof native?.finishCustomAlarmSound!=='function'||typeof native?.cancelCustomAlarmSound!=='function')throw Error(tr('Update the Android app to import large audio files.','Actualiza la app de Android para importar archivos grandes.'));
+   token=nativeResult(native.beginCustomAlarmSound(file.name.split('.').pop().toLowerCase(),String(file.size))).token;
+   for(let offset=0;offset<file.size;offset+=AUDIO_CHUNK_BYTES){
+    const part=file.slice(offset,Math.min(file.size,offset+AUDIO_CHUNK_BYTES));
+    const data=await readDataURL(part),marker=data.indexOf(';base64,');
+    if(marker<0)throw Error('Invalid audio chunk');
+    nativeResult(native.appendCustomAlarmSound(token,String(offset),data.slice(marker+8)));
+    progress(Math.floor(95*Math.min(file.size,offset+part.size)/file.size));
+   }
   }
-  await saveCustomBlob(file,file.name.slice(0,100));
-  const select=q('#mlv-alarm-sound',screen);if(select)select.value='custom';
-  const label=q('#mlv-alarm-custom-name',screen);if(label)label.textContent=file.name.slice(0,100);
+  // IDB stores the File as a Blob, not a full base64 string or ArrayBuffer.
+  // Both platforms are bounded by actual storage capacity, not a product limit.
+  previous=await storedCustomBlob();
+  await saveCustomBlob(file,file.name.slice(0,100));webSaved=true;
+  if(token){nativeResult(native.finishCustomAlarmSound(token));committed=true;}
+  const select=screen&&q('#mlv-alarm-sound',screen);if(select)select.value='custom';
+  if(label)label.textContent=file.name.slice(0,100);
   return true;
- }catch(e){window.alert(tr('Could not save the ringtone: ','No se pudo guardar el tono: ')+String(e.message||e));return false;}
+ }catch(e){
+  if(webSaved&&!committed)try{await restoreCustomBlob(previous);}catch(_){}
+  if(label)label.textContent=oldLabel;
+  window.alert(tr('Could not save the audio (check available storage and file format): ','No se pudo guardar el audio (revisa el espacio disponible y el formato): ')+String(e.message||e));return false;
+ }finally{
+  if(token&&!committed)try{native.cancelCustomAlarmSound(token);}catch(_){}
+  importingAudio=false;if(input)input.disabled=false;
+ }
 }
 /* Michel's Life exclusive alarm suite v3 — six original, evolving 24s
    cinematic miniatures, NOT repeated calculator-style note pairs.
@@ -539,7 +569,7 @@ function create(){
   <span class="mlv-alarm-sound-row"><select id="mlv-alarm-sound"></select><button type="button" id="mlv-alarm-preview">▶ Preview</button></span></label>
  <label class="full"><span data-alarm-t="upload">Upload your MP3 / audio</span>
   <input id="mlv-alarm-custom-file" type="file" accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg" />
-  <small id="mlv-alarm-custom-name">MP3, WAV or OGG · max 6 MB</small></label>
+  <small id="mlv-alarm-custom-name">MP3, WAV or OGG · available storage / espacio disponible</small></label>
  <div class="mlv-alarm-buttons full"><button type="submit" class="primary" id="mlv-alarm-save">Create alarm</button>
  <button type="button" id="mlv-alarm-cancel-edit" hidden>Cancel edit</button></div></form>
  <div class="mlv-alarm-count" id="mlv-alarm-count"></div><div id="mlv-alarm-list" class="mlv-alarm-list"></div>
