@@ -1045,7 +1045,9 @@
       #mlv-android-focus-sheet .mlv-android-focus-audio-grid{grid-template-columns:minmax(0,1fr)!important}
        #mlv-android-focus-sheet .mlv-audio-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
        #mlv-android-focus-sheet .mlv-audio-settings{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
-       #mlv-android-focus-sheet .mlv-audio-library{display:grid;gap:8px;border-top:1px solid rgba(205,239,250,.14);padding-top:10px}
+       #mlv-android-focus-sheet .mlv-audio-library{display:grid;gap:10px;min-width:0;border-top:1px solid rgba(205,239,250,.14);padding-top:10px}
+       #mlv-android-focus-sheet .mlv-audio-heading{margin:0;color:inherit;font:750 13px/1.4 system-ui,sans-serif}
+       #mlv-android-focus-sheet .mlv-audio-controls>button{min-width:0;white-space:normal;overflow-wrap:anywhere}
        #mlv-android-focus-sheet .mlv-audio-archive{display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
        #mlv-android-focus-sheet .mlv-audio-library input,#mlv-android-focus-sheet .mlv-audio-settings select,#mlv-android-focus-sheet .mlv-audio-archive select{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
        @media(max-width:550px){#mlv-android-focus-sheet .mlv-audio-controls{grid-template-columns:repeat(2,minmax(0,1fr))}#mlv-android-focus-sheet .mlv-audio-settings,#mlv-android-focus-sheet .mlv-audio-archive{grid-template-columns:1fr}}
@@ -1304,6 +1306,7 @@
           <details class="mlv-android-focus-sounds">
             <summary>Focus audio · Completion sound & ambience</summary>
             <div class="mlv-android-focus-audio-grid">
+              <h3 class="mlv-audio-heading" data-mobile-audio-heading>Playback</h3>
               <label>Background music
                 <select data-mobile-focus-ambience></select>
               </label>
@@ -1311,7 +1314,7 @@
              <small data-mobile-ambient-progress aria-live="off"></small>
              <label><span data-mobile-volume-label>Volume</span><input type="range" min="0" max="100" value="35" data-mobile-ambient-volume aria-label="Background music volume" /></label>
              <div class="mlv-audio-settings"><select data-mobile-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option><option value="shuffle">Shuffle</option></select><select data-mobile-ambient-collection aria-label="Playlist collection"><option value="all">All audio</option><option value="Ambient">Ambient</option><option value="Cinematic">Cinematic</option><option value="Classical">Classical piano</option><option value="Personal">My music</option></select></div>
-             <div class="mlv-audio-library"><label><span data-mobile-personal-label>Import my music</span><input type="file" multiple accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg" data-mobile-personal-files /></label><small data-mobile-personal-status role="status"></small><div class="mlv-audio-archive"><button type="button" data-mobile-focus="archive-ambient">Archive track</button><select data-mobile-archived-track aria-label="Archived tracks"></select><button type="button" data-mobile-focus="restore-ambient">Restore</button></div></div>
+             <div class="mlv-audio-library"><h3 class="mlv-audio-heading" data-mobile-library-heading>Music library</h3><label><span data-mobile-personal-label>Import my music</span><input type="file" multiple accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg" data-mobile-personal-files /></label><small data-mobile-personal-status role="status"></small><div class="mlv-audio-archive"><button type="button" data-mobile-focus="archive-ambient">Archive track</button><select data-mobile-archived-track aria-label="Archived tracks"></select><button type="button" data-mobile-focus="restore-ambient">Restore</button></div></div>
             </div>
           </details>
 
@@ -1660,6 +1663,7 @@
     writeText(archiveButton,focusText('Archive track','Archivar canción'));if(archiveButton)archiveButton.disabled=!audio?.sceneId?.();
     if(archivedSelect){const selected=archivedSelect.value;const opts=[{id:'',label:focusText('Archived','Archivadas')+' ('+archived.length+')'},...archived];if(archivedSelect.options.length!==opts.length||opts.some((x,i)=>archivedSelect.options[i]?.value!==x.id||archivedSelect.options[i]?.textContent!==x.label)){archivedSelect.replaceChildren(...opts.map(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.label;return o;}));archivedSelect.value=archived.some(x=>x.id===selected)?selected:'';}archivedSelect.disabled=!archived.length;}
     writeText(restoreButton,focusText('Restore','Restaurar'));if(restoreButton)restoreButton.disabled=!archivedSelect?.value;
+    writeText(q('[data-mobile-audio-heading]',root),focusText('Playback','Reproducción'));writeText(q('[data-mobile-library-heading]',root),focusText('Music library','Biblioteca musical'));
     writeText(q('[data-mobile-personal-label]',root),focusText('Import my music (local files)','Importar mi música (archivos locales)'));writeText(q('[data-mobile-personal-status]',root),audio?.personalStatus?.()||focusText('MP3, WAV, OGG · available storage','MP3, WAV, OGG · espacio disponible'));
     const ambientToggle=q('[data-mobile-focus="toggle-ambient"]',root);if(ambientToggle)ambientToggle.disabled=!audio?.sceneId?.();
     const playback=audio?.ambientPlayback?.(),playMode=q('[data-mobile-ambient-mode]',root);
