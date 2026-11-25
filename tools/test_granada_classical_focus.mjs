@@ -30,7 +30,7 @@ function harness(persisted={v30165Soundscape:'moonlight',v30165CompletionSound:'
     }
   }
   const recordings=[];
-  class Audio{constructor(src){this.src=src;this.paused=true;this.currentTime=0;recordings.push(this);}play(){this.paused=false;return Promise.resolve();}pause(){this.paused=true;}}
+  class Audio{constructor(src){this.src=src;this.paused=true;this.currentTime=0;this.playCalls=0;recordings.push(this);}play(){this.playCalls++;this.paused=false;return Promise.resolve();}pause(){this.paused=true;}}
   const window={
     AudioContext,Audio,
     FocusStoryV30162:{
@@ -212,4 +212,20 @@ test('archiving the entire selected collection stops playback and does not fall 
  const f=harness();f.api.setAmbientCollection('Classical');f.api.startAmbient();for(const id of piano)assert.equal(f.api.archiveScene(id),true);
  assert.equal(f.api.sceneId(),'');assert.equal(f.api.sceneOptions().length,0);assert.equal(f.api.playing(),false);assert.equal(f.api.startAmbient(),false);assert.equal(f.api.moveAmbient(1),false);assert.equal(f.api.ambientCollection(),'Classical');
  assert.equal(f.api.archiveScene(piano[0],false),true);assert.equal(f.api.sceneId(),piano[0]);assert.equal(f.api.playing(),false);assert.equal(f.api.startAmbient(),true);f.api.stopAmbient();
+});
+
+test('paused navigation, collection changes and archive replacement never call play before explicit resume',()=>{
+ const f=harness();f.api.selectScene(library[0]);f.api.startAmbient();f.api.toggleAmbientPlayback();
+ f.api.moveAmbient(1);let p=f.recordings.at(-1);assert.equal(p.paused,true);assert.equal(p.playCalls,0);
+ f.api.selectScene(library[2]);p=f.recordings.at(-1);assert.equal(p.paused,true);assert.equal(p.playCalls,0);
+ f.api.setAmbientCollection('Classical');p=f.recordings.at(-1);assert.equal(p.paused,true);assert.equal(p.playCalls,0);
+ f.api.archiveScene(f.api.playingScene());p=f.recordings.at(-1);assert.equal(p.paused,true);assert.equal(p.playCalls,0);
+ f.api.toggleAmbientPlayback();assert.equal(p.playCalls,1);assert.equal(p.paused,false);f.api.stopAmbient();
+});
+test('archive updates preserve unloaded local tracks without exposing unknown entries',()=>{
+ const id='my_'+'a'.repeat(32),f=harness({v30165Soundscape:'moonlight',v30165CompletionSound:'soft',v30165ArchivedAmbient:[id,'invalid']});
+ assert.equal(f.api.archiveScene(library[0]),true);
+ assert.ok(f.persisted.v30165ArchivedAmbient.includes(id));assert.ok(!f.persisted.v30165ArchivedAmbient.includes('invalid'));
+ assert.ok(!f.api.archivedOptions().some(o=>o.id===id));
+ assert.equal(f.api.archiveScene(library[0],false),true);assert.ok(f.persisted.v30165ArchivedAmbient.includes(id));
 });
