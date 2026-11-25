@@ -259,7 +259,7 @@
     return true;
   }
   function setAmbientCollection(value){if(!['all','Ambient','Cinematic','Classical','Personal'].includes(value))return false;if(api()?.setAudioPreference?.('ambientCollection',value)!==true)return false;resetShuffle();const ids=activeIds();const selected=sceneId();if(!ids.length){stopAmbient();return true;}if(ambientScene&&!ids.includes(ambientScene)){const paused=!!ambientRecording?.paused||pauseOnReady;stopAmbient();choice(sceneKey,ambientScenes,selected,'moonlight');startAmbient(paused);}else choice(sceneKey,ambientScenes,selected,'moonlight');return true;}
-  function setAmbientMode(mode){if(!['repeat','playlist','shuffle'].includes(mode))return false;if(mode!==ambientMode())resetShuffle();api()?.setAudioPreference?.('ambientMode',mode);if(ambientRecording)ambientRecording.loop=ambientMode()==='repeat';return true;}
+  function setAmbientMode(mode){if(!['repeat','playlist','shuffle'].includes(mode))return false;const previous=ambientMode();if(api()?.setAudioPreference?.('ambientMode',mode)!==true)return false;if(mode!==previous)resetShuffle();if(ambientRecording)ambientRecording.loop=ambientMode()==='repeat';return true;}
   function moveAmbient(delta,automatic=false){const ids=collectionIds();if(!ids.length)return false;const current=sceneId(),index=ids.indexOf(current);let next;if(ambientMode()==='shuffle'){
     shuffleHistory=shuffleHistory.filter(id=>ids.includes(id));if(delta<0&&shuffleHistory.length)next=shuffleHistory.pop();
     else{shuffleBag=shuffleBag.filter(id=>ids.includes(id)&&id!==current);if(!shuffleBag.length){shuffleBag=ids.filter(id=>id!==current);for(let i=shuffleBag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffleBag[i],shuffleBag[j]]=[shuffleBag[j],shuffleBag[i]];}}next=shuffleBag.pop()||ids[0];if(next!==current&&ids.includes(current))shuffleHistory.push(current);if(shuffleHistory.length>100)shuffleHistory.shift();}
@@ -302,7 +302,7 @@
       return true;
     }catch(_){stopAmbient();return false;}
   }
-  function toggleAmbientPlayback(){if(personalPending){pauseOnReady=!pauseOnReady;return true;}if(ambientRecording){const player=ambientRecording;if(player.paused){player.play().catch(()=>{if(ambientRecording===player)stopAmbient();});}else player.pause();return true;}if(ambientContext)return stopAmbient();return startAmbient();}
+  function toggleAmbientPlayback(){if(personalPending){pauseOnReady=!pauseOnReady;return true;}if(ambientRecording){const player=ambientRecording;if(player.paused){player.play().catch(()=>{if(ambientRecording===player)stopAmbient();});}else player.pause();return true;}if(ambientContext)return startAmbient(true);return startAmbient();}
   function selectScene(id,fromPlaylist=false,paused=!!ambientRecording?.paused||pauseOnReady){
     if(!isAvailable(id))return sceneId();
     if(!fromPlaylist){resetShuffle();const group=ambientScenes[id]?.group;if(ambientCollection()!=='all'&&group!==ambientCollection())api()?.setAudioPreference?.('ambientCollection','all');}
@@ -339,7 +339,8 @@
     playing:()=>!!ambientScene,
     importPersonalTracks,loadPersonalTracks,personalStatus:()=>personalStatus,personalImporting:()=>personalImporting,playingScene:()=>ambientScene,
     ambientVolume:getVolume,setAmbientVolume:setVolume,ambientMode,setAmbientMode,ambientCollection,setAmbientCollection,moveAmbient,toggleAmbientPlayback,
-    ambientPlayback:()=>ambientRecording?{paused:ambientRecording.paused,currentTime:ambientRecording.currentTime,duration:ambientRecording.duration,loop:ambientRecording.loop,src:ambientRecording.src,volume:ambientRecording.volume}:ambientScene&&pauseOnReady?{paused:true,currentTime:0,duration:NaN,loop:false,src:null,volume:getVolume()}:null
+    canNavigateAmbient:()=>collectionIds().length>1||(collectionIds().length===1&&!collectionIds().includes(sceneId())),
+    ambientPlayback:()=>ambientRecording?{paused:ambientRecording.paused,currentTime:ambientRecording.currentTime,duration:ambientRecording.duration,loop:ambientRecording.loop,src:ambientRecording.src,volume:ambientRecording.volume}:ambientScene?{paused:pauseOnReady,currentTime:0,duration:NaN,loop:false,src:null,volume:getVolume()}:null
   };
   if(window.indexedDB)loadPersonalTracks();
   window.addEventListener?.('pagehide',()=>{stopAmbient();stopClassical();});
@@ -686,7 +687,7 @@
              <div class="mlv-audio-controls"><button type="button" class="mlv-focus-btn" data-mlv-audio="toggle-ambient">Play</button><button type="button" class="mlv-focus-btn" data-mlv-audio="previous-ambient" aria-label="Previous track">⏮ Previous</button><button type="button" class="mlv-focus-btn" data-mlv-audio="next-ambient" aria-label="Skip track">Next ⏭</button><button type="button" class="mlv-focus-btn" data-mlv-audio="stop-ambient">Stop</button></div>
              <small data-mlv-ambient-progress aria-live="off"></small>
              <label><span data-mlv-volume-label>Volume</span><input type="range" min="0" max="100" value="35" data-mlv-ambient-volume aria-label="Background music volume" /></label>
-             <div class="mlv-audio-settings"><select data-mlv-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option><option value="shuffle">Shuffle</option></select><select data-mlv-ambient-collection aria-label="Playlist collection"><option value="all">All recordings</option><option value="Ambient">Ambient</option><option value="Cinematic">Cinematic</option><option value="Classical">Classical piano</option><option value="Personal">My music</option></select></div>
+             <div class="mlv-audio-settings"><select data-mlv-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option><option value="shuffle">Shuffle</option></select><select data-mlv-ambient-collection aria-label="Playlist collection"><option value="all">All audio</option><option value="Ambient">Ambient</option><option value="Cinematic">Cinematic</option><option value="Classical">Classical piano</option><option value="Personal">My music</option></select></div>
              <div class="mlv-audio-library"><label><span data-mlv-personal-label>Import my music</span><input type="file" multiple accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg" data-mlv-personal-files /></label><small data-mlv-personal-status role="status"></small><div class="mlv-audio-archive"><button type="button" class="mlv-focus-btn" data-mlv-audio="archive-ambient">Archive track</button><select data-mlv-archived-track aria-label="Archived tracks"></select><button type="button" class="mlv-focus-btn" data-mlv-audio="restore-ambient">Restore</button></div></div>
           </div>
         </div></details>
@@ -893,12 +894,12 @@
     const ambientButton=q('[data-mlv-audio="toggle-ambient"]',screen);if(ambientButton)ambientButton.disabled=!audio?.sceneId?.();
     const playback=audio?.ambientPlayback?.(),modeSelect=q('[data-mlv-ambient-mode]',screen),progress=q('[data-mlv-ambient-progress]',screen);
     if(modeSelect){modeSelect.value=audio?.ambientMode?.()||'repeat';modeSelect.options[0].textContent=lang('Repeat track','Repetir pista');modeSelect.options[1].textContent=lang('Continuous playlist','Lista continua');modeSelect.options[2].textContent=lang('Shuffle','Aleatorio');}
-    const coll=q('[data-mlv-ambient-collection]',screen);if(coll){coll.value=audio?.ambientCollection?.()||'all';const names=[lang('All recordings','Todas las grabaciones'),lang('Ambient','Ambiental'),lang('Cinematic','Cinematográfica'),lang('Classical piano','Piano clásico'),lang('My music','Mi música')];names.forEach((name,i)=>coll.options[i].textContent=name);}
+    const coll=q('[data-mlv-ambient-collection]',screen);if(coll){coll.value=audio?.ambientCollection?.()||'all';const names=[lang('All audio','Todo el audio'),lang('Ambient','Ambiental'),lang('Cinematic','Cinematográfica'),lang('Classical piano','Piano clásico'),lang('My music','Mi música')];names.forEach((name,i)=>coll.options[i].textContent=name);}
     if(progress)progress.textContent=playback&&Number.isFinite(playback.duration)?time(playback.currentTime*1000)+' / '+time(playback.duration*1000):'';
     const prevTrack=q('[data-mlv-audio="previous-ambient"]',screen),nextTrack=q('[data-mlv-audio="next-ambient"]',screen);
-    if(prevTrack){prevTrack.textContent=lang('⏮ Previous','⏮ Anterior');prevTrack.setAttribute('aria-label',lang('Previous track','Canción anterior'));}
-    if(nextTrack){nextTrack.textContent=lang('Next ⏭','Saltar ⏭');nextTrack.setAttribute('aria-label',lang('Skip track','Saltar canción'));}
-    const stop=q('[data-mlv-audio="stop-ambient"]',screen);if(stop)stop.textContent=lang('Stop','Detener');
+    if(prevTrack){prevTrack.disabled=!audio?.canNavigateAmbient?.();prevTrack.textContent=lang('⏮ Previous','⏮ Anterior');prevTrack.setAttribute('aria-label',lang('Previous track','Canción anterior'));}
+    if(nextTrack){nextTrack.disabled=!audio?.canNavigateAmbient?.();nextTrack.textContent=lang('Next ⏭','Saltar ⏭');nextTrack.setAttribute('aria-label',lang('Skip track','Saltar canción'));}
+    const stop=q('[data-mlv-audio="stop-ambient"]',screen);if(stop){stop.textContent=lang('Stop','Detener');stop.disabled=!audio?.playing?.();}
     if(ambientButton)ambientButton.textContent=playback?(playback.paused?lang('Resume','Reanudar'):lang('Pause','Pausar')):audio?.playing?.()?lang('Stop','Detener'):lang('Play','Reproducir');
     const previewButton=q('[data-mlv-audio="preview-completion"]',screen);
     if(previewButton)previewButton.textContent=audio?.recordingActive?.()?lang('■ Stop recording','■ Detener grabación'):lang('▶ Listen to completion','▶ Escuchar sonido final');
