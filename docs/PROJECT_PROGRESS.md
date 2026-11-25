@@ -1,5 +1,9 @@
 # Michel's Life — avance funcional y puertas de aceptación
 
+## Michel’s Life — release 3.0.233 / Android Direct 0.2.22 PUBLICADO
+
+Estable oficial [v3.0.233-android-v0.2.22](https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.233-android-v0.2.22), code24, 13 assets, publicada 2026-11-25 03:46:24 UTC (24-nov 21:46 Saltillo), draft=false, prerelease=false. Fuente exacta cc446a3f00200ceadaf5fa8776f372ef6639bfc4: [45540789141](https://github.com/michels-lab/michel-s-life/actions/runs/45540789141) SUCCESS, once gates exact-SHA SUCCESS, Windows Setup/Portable launch y APK Android Direct production-signed instalación/relaunch API35 SUCCESS. Publicador destino fcb60da09e52d3e8adfa5c3fc02755a7bef184b2: [45540970195](https://github.com/michels-lab/michel-s-life-releases/actions/runs/45540970195) SUCCESS, verificador independiente [45540970202](https://github.com/michels-lab/michel-s-life-releases/actions/runs/45540970202) SUCCESS. PR #236 integrado. 18 grabaciones completas, Pomodoro clock-first/frases visibles, playlists/salto/archivo/restauración, importación local múltiple y alarmas sin máximo fijo. 16/40 nuevas grabaciones verificadas, avance integral 8/15=53%; no inflar hitos por release. Android14/16 debug no certificados (ADB); aceptación física, audio completo bloqueado, persistencia de datos personales y futuras ampliaciones pendientes. Actualizar sin desinstalar y respaldar datos.
+
 ## 24-nov — 3.0.233 / Android 0.2.22 en preparación
 PR #236 integrado, 22/23 checks exitosos, API35 debug PASS; Android14/16 ADB falló. Release firmado pendiente; avance 8/15 = 53%. 18 grabaciones y biblioteca personal, sin cambios de dashboard.
 

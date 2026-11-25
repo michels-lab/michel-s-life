@@ -24,7 +24,7 @@
     "verified",
     "pending"
   ],
-  "current_phase": "PUBLIC stable Windows 3.0.232 + Android Direct 0.2.21 code23; 13 assets, eleven exact SHA gates and signed-native Android15 SUCCESS; owner physical acceptance pending",
+  "current_phase": "PUBLIC stable Windows 3.0.233 / Android Direct 0.2.22 code24; 13 assets, 11/11 exact gates, signed native Android15 and independent release verifier SUCCESS; physical owner acceptance pending",
   "source_prs": [
     "https://github.com/michels-lab/michel-s-life/pull/225",
     "https://github.com/michels-lab/michel-s-life/pull/226",
@@ -35,8 +35,8 @@
     "https://github.com/michels-lab/michel-s-life/pull/233",
     "https://github.com/michels-lab/michel-s-life/pull/235"
   ],
-  "latest_public_release": "v3.0.232-android-v0.2.21",
-  "latest_public_release_url": "https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.232-android-v0.2.21",
+  "latest_public_release": "v3.0.233-android-v0.2.22",
+  "latest_public_release_url": "https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.233-android-v0.2.22",
   "source_report": "https://github.com/michels-lab/michel-s-life/blob/main/docs/PROJECT_PROGRESS.md",
   "owner_acceptance": false,
   "release_hold": false,
@@ -108,5 +108,27 @@
     "source_run": 45478901654,
     "publisher_run": 45485082290,
     "source_pr_fix": "https://github.com/michels-lab/michel-s-life/pull/235"
-  }
+  },
+  "latest_granada_release": {
+    "date": "2026-11-25",
+    "release_tag": "v3.0.233-android-v0.2.22",
+    "url": "https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.233-android-v0.2.22",
+    "published_at_utc": "2026-11-25T03:46:24Z",
+    "source_sha": "cc446a3f00200ceadaf5fa8776f372ef6639bfc4",
+    "source_run": 45540789141,
+    "publisher_intent_sha": "fcb60da09e52d3e8adfa5c3fc02755a7bef184b2",
+    "publisher_run": 45540970195,
+    "independent_verifier_run": 45540970202,
+    "public_assets": 13,
+    "draft": false,
+    "prerelease": false,
+    "source_exact_sha_gates": 11,
+    "signed_android15": "success",
+    "windows_native_launch": "success",
+    "owner_acceptance": false,
+    "progress_percent": 53,
+    "verified_milestones": 8,
+    "total_milestones": 15
+  },
+  "next_audit": "Probar Pomodoro, importación personal y archivo en Windows/Galaxy físicos, comprobar sonido final y alarma bloqueada; preservar datos al actualizar."
 }
