@@ -9,3 +9,5 @@ Reconciled #237 exact audio transport implementation and regression cases into #
 
 ## Third execution
 Fixed both legacy scene-layer selectors that forced the decorative .v30165-hero-aura into normal layout (210px empty row). No new hero design, palette or wallpaper. Grouped existing alarm picker IDs into System, Alarm tones, Original ambience, Classical recordings, Ambient/cinematic recordings and My audio, with bilingual group labels and unchanged selected IDs. Added conditional runtime assertion for active-chapter aura. Exact installed visual acceptance remains pending.
+
+Added executable-level Windows smoke: minimize original HWND, verify visible minimized window, launch the same EXE, require second process exit and exact original PID/HWND restored. Browser regression now creates a real active chapter if needed before asserting absolute aura layout. These are automated checks, not installed owner acceptance.
