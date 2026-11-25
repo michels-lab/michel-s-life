@@ -39,7 +39,7 @@ function hash(s){let h=2166136261;for(const ch of String(s)){h^=ch.charCodeAt(0)
 function choose(values,key,type){return values.length?values[hash(key+':'+type)%values.length]:'';}
 function select(key){
  const content=read(),seed=new Date().toDateString()+':'+String(key||'focus');
- return {affirmation:choose(content.affirmations,seed,'affirmation'),phrase:choose(content.phrases,seed,'phrase')};
+ return {affirmation:choose(content.affirmations,seed,'affirmation')||tr('I act with purpose, one step at a time.','Actúo con propósito, un paso a la vez.'),phrase:choose(content.phrases,seed,'phrase')||tr('One session. One meaningful step.','Una sesión. Un paso que importa.')};
 }
 function styles(){
  if(document.getElementById('mlv-motivation-style'))return;

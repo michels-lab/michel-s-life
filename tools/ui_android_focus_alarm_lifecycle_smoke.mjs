@@ -187,7 +187,7 @@ try{
    assert.equal(await page.evaluate(()=>window.MichelsLifeFocusAudio.completionId()),nextCompletion,
      'Visible completion picker must write the canonical FocusStory preference');
    const audioDetails=page.locator('.mlv-android-focus-sounds');
-   const audioSummary=audioDetails.locator('summary');
+   const audioSummary=audioDetails.locator(':scope > summary');
    assert.match(await audioSummary.innerText(),
      /Audio de enfoque/,'Spanish locale must not label audio as custom work duration');
    await audioSummary.click();

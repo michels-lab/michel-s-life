@@ -42,8 +42,20 @@ class AndroidBridge(
 
     /** Copies validated user audio into private files, not WebView storage only. */
     @JavascriptInterface
-    fun installCustomAlarmSound(dataUrl: String): String =
-        NativePersonalAlarms.installCustomSound(activity, dataUrl).toString()
+    fun beginCustomAlarmSound(extension: String, size: String): String =
+        NativePersonalAlarms.beginCustomSound(activity, extension, size).toString()
+
+    @JavascriptInterface
+    fun appendCustomAlarmSound(token: String, offset: String, encoded: String): String =
+        NativePersonalAlarms.appendCustomSound(token, offset, encoded).toString()
+
+    @JavascriptInterface
+    fun finishCustomAlarmSound(token: String): String =
+        NativePersonalAlarms.finishCustomSound(activity, token).toString()
+
+    @JavascriptInterface
+    fun cancelCustomAlarmSound(token: String): Boolean =
+        NativePersonalAlarms.cancelCustomSound(token)
 
     /** Android alarm registry is authoritative after recurring/one-time delivery. */
     @JavascriptInterface

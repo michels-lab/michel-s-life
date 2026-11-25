@@ -75,7 +75,8 @@ try{
       stageWidth:stage.scrollWidth,clientWidth:stage.clientWidth,
       clockFont:parseFloat(getComputedStyle(clock).fontSize),
       audioCollapsed:!stage.querySelector('.mlv-focus-sound-details').open,
-      affirmationsCollapsed:!stage.querySelector('.mlv-focus-motivation-details').open,
+      affirmationsVisible:stage.querySelectorAll('#mlv-desktop-focus-motivation .mlv-motivation-line:not([hidden])').length===2,
+      stageHeight:stage.scrollHeight,clientHeight:stage.clientHeight,
       cssEvidence:(()=>{
         const computed=getComputedStyle(stage),parent=getComputedStyle(stage.parentElement);
         const css=document.getElementById('mlv-desktop-focus-css')?.textContent||'';
@@ -106,12 +107,12 @@ try{
   });
   await mkdir('artifacts/ui-smoke',{recursive:true});
   await page.screenshot({path:'artifacts/ui-smoke/desktop-focus-976x737-owner-viewport.png'});
-  ok(compact.stage.w<=840&&compact.stage.w>610&&compact.stage.h>=460&&compact.stage.h<=713&&
+  ok(compact.stage.w<=976&&compact.stage.w>610&&compact.stage.h>=460&&compact.stage.h<=713&&
      compact.clientWidth>610, 'Focus stage does not fit owner screenshot: '+JSON.stringify(compact));
   ok(compact.clockFont>=65&&compact.clockFont<=115&&
      compact.clock.right<compact.stage.right-15&&compact.clock.x>compact.stage.x+15,
      'Clock too big or clipped at owner viewport: '+JSON.stringify(compact));
-  ok(compact.stageWidth<=compact.clientWidth+3&&compact.audioCollapsed&&compact.affirmationsCollapsed,
+  ok(compact.stageWidth<=compact.clientWidth+3&&compact.audioCollapsed&&compact.affirmationsVisible&&compact.stageHeight<=compact.clientHeight+3&&compact.clock.bottom<=737,
      'Visual controls introduce overflow or cover timer: '+JSON.stringify(compact));
   for(let i=0;i<compact.buttonRects.length;i++){
     const button=compact.buttonRects[i];
@@ -123,14 +124,14 @@ try{
 
   // Real browser interaction, not a static API test: open the collapsed audio
   // panel, choose an end chime, preview it, and play/stop the A+C atmosphere.
-  await page.locator('.mlv-focus-sound-details summary').click();
-  ok(await page.locator('[data-mlv-completion-sound] option').count()===7,
+  await page.locator('.mlv-focus-sound-details > summary').click();
+  ok(await page.locator('[data-mlv-completion-sound] option').count()===25,
     'End-of-Pomodoro selector is not populated');
   const scenes=await page.locator('[data-mlv-scene-select] option').evaluateAll(options=>
     options.map(option=>({value:option.value,label:option.textContent.trim()})));
-  ok(scenes.length===10&&['mozart_k545','tchaikovsky_op39','moonlight','celestial','orbit','aurora','observatory','library','afterglow','silver']
+  ok(scenes.length===24&&['moonlight','celestial','orbit','aurora','observatory','library','afterglow','silver']
     .every(id=>scenes.some(scene=>scene.value===id)),
-    'A+C and two classical soundscape selections are not populated: '+JSON.stringify(scenes));
+    'Eight original ambient soundscape selections are not populated: '+JSON.stringify(scenes));
   await page.locator('[data-mlv-completion-sound]').selectOption('glass');
   await page.locator('[data-mlv-audio="preview-completion"]').click();
   await page.locator('[data-mlv-scene-select]').selectOption('library');
@@ -143,7 +144,7 @@ try{
   const soundPrefs=await page.evaluate(()=>window.FocusStoryV30162.focusState());
   ok(soundPrefs.v30165CompletionSound==='glass'&&soundPrefs.v30165Soundscape==='library',
     'End chime and soundscape were not saved by the canonical FocusStory owner');
-  await page.locator('.mlv-focus-sound-details summary').click();
+  await page.locator('.mlv-focus-sound-details > summary').click();
 
   await page.locator('#mlv-desktop-focus-immersive [data-focus-action="toggle"]').click();
   await page.waitForFunction(()=>window.FocusStoryV30162.focusState().status==='running');

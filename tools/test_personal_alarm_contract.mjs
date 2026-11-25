@@ -133,16 +133,21 @@ test('Quick Alarm stores an exact 5-minute deadline rather than rounding to a la
   assert.ok(savedRecords[1].dueAt-started>=3600000,'one-hour quick deadline');
 });
 
-test('the selector offers preview, imported MP3/WAV/OGG and bounded private native storage',()=>{
+test('the selector offers preview, imported MP3/WAV/OGG and chunked private native storage without a file-size cap',()=>{
   for(const id of ['classic','soft','digital','gentle','pulse','radar','custom'])
     assert.ok(alarms.includes(id),id);
   for(const duration of ['5','10','15','30','60','120'])
     assert.match(alarms,new RegExp('data-quick-minutes="'+duration+'"'));
   for(const feature of ['mlv-alarm-sound','mlv-alarm-preview','mlv-alarm-custom-file',
-    'customDatabase','saveCustomBlob','indexedDB','installCustomAlarmSound','playPresetSound'])
+    'customDatabase','saveCustomBlob','indexedDB','beginCustomAlarmSound','appendCustomAlarmSound','finishCustomAlarmSound','cancelCustomAlarmSound','playPresetSound'])
     assert.ok(alarms.includes(feature),feature);
-  assert.match(alarms,/file.size>6\*1024\*1024/);
-  assert.match(native,/fun installCustomSound\(context: Context, dataUrl: String\)/);
+  assert.doesNotMatch(alarms,/file\.size\s*>\s*6\*1024\*1024|max 6 MB/);
+  assert.match(alarms,/file\.slice\(offset,Math\.min\(file\.size,offset\+AUDIO_CHUNK_BYTES\)\)/);
+  assert.match(native,/fun beginCustomSound\(context: Context, extension: String, sizeText: String\)/);
+  assert.match(native,/transfer\.file\.appendBytes\(bytes\)/);
+  assert.match(native,/transfer\.written != transfer\.expected/);
+  assert.match(native,/dir\.usableSpace < size/);
+  assert.doesNotMatch(native,/Audio exceeds 6 MB|8_500_000|6 \* 1024 \* 1024/);
   assert.match(native,/Base64\.decode/);
   assert.match(native,/File\(context\.filesDir, "personal-alarm-audio"\)/);
   assert.match(native,/\.put\("sound", sound\)/);
@@ -151,9 +156,11 @@ test('the selector offers preview, imported MP3/WAV/OGG and bounded private nati
   assert.match(native,/fun alarmSoundUri\(context: Context, alarmId: String\)/);
   const bridge=readFileSync('android/app/src/main/java/com/michelslab/michelslife/AndroidBridge.kt','utf8');
   const activity=readFileSync('android/app/src/main/java/com/michelslab/michelslife/MainActivity.kt','utf8');
-  assert.match(bridge,/fun installCustomAlarmSound\(dataUrl: String\)/);
+  for(const name of ['beginCustomAlarmSound','appendCustomAlarmSound','finishCustomAlarmSound','cancelCustomAlarmSound'])assert.ok(bridge.includes('fun '+name+'('));
   assert.match(activity,/override fun onShowFileChooser/);
   assert.match(activity,/ACTION_OPEN_DOCUMENT/);
+  assert.match(activity,/Intent.EXTRA_ALLOW_MULTIPLE, fileChooserParams\?\.mode == FileChooserParams.MODE_OPEN_MULTIPLE/);
+  assert.match(activity,/data\?\.clipData/);
   assert.match(activity,/pendingWebFilePicker\?\.onReceiveValue/);
   assert.match(activity,/NativePersonalAlarms\.alarmSoundUri\(this, id\)/);
   assert.match(overlay,/NativePersonalAlarms\.alarmSoundUri\(context, id\)/);
@@ -201,13 +208,13 @@ test('desktop login startup is enabled once and respects later user opt-out',()=
   assert.match(shell,/CheckOnClick = true/);
 });
 
-test('optional motivational quotes cannot cover Pomodoro timer or primary buttons',()=>{
-  assert.match(focus,/<details class="mlv-focus-motivation-details">/);
-  assert.match(android,/<details class="mlv-focus-motivation-details">/);
-  assert.ok(focus.indexOf('<details class="mlv-focus-motivation-details">')>
-    focus.indexOf('data-focus-action="toggle"'),'desktop quotes appear below controls');
-  assert.ok(android.indexOf('<details class="mlv-focus-motivation-details">')>
-    android.indexOf('data-mobile-focus="toggle"'),'Android quotes appear below controls');
+test('permanent motivational quotes follow the clock and precede the optional sound settings',()=>{
+  assert.doesNotMatch(focus,/<details class="mlv-focus-motivation-details">/);
+  assert.doesNotMatch(android,/<details class="mlv-focus-motivation-details">/);
+  assert.ok(focus.indexOf('id="mlv-desktop-focus-clock"')<focus.indexOf('id="mlv-desktop-focus-motivation"'));
+  assert.ok(focus.indexOf('id="mlv-desktop-focus-motivation"')<focus.indexOf('<select id="mlv-focus-completion-select"'));
+  assert.ok(android.indexOf('id="mlv-android-focus-time"')<android.indexOf('id="mlv-android-focus-motivation"'));
+  assert.ok(android.indexOf('id="mlv-android-focus-motivation"')<android.indexOf('<select data-mobile-focus-completion>'));
   assert.doesNotMatch(focus,/oldDock/);
   assert.doesNotMatch(focus,/backdrop-filter:blur/);
   assert.doesNotMatch(android,/#v30171Sidebar #v30162FocusDock/);
@@ -312,32 +319,21 @@ test('new original soundscapes contain evolving harmonies, resonant melody and s
   assert.equal(hashes.size,6,'all six themes require their own composition');
 });
 
-test('Mozart and Tchaikovsky alarm presets share selectable offline Windows + native Android IDs',()=>{
-  const ids=['mozart_k545','tchaikovsky_op39'];
-  for(const id of ids){
-    assert.ok(alarms.includes("'"+id+"'"),'JS alarm selector missing '+id);
-    assert.ok(alarms.includes(id+':{roots:'),'JS score missing '+id);
-    assert.ok(native.includes('"'+id+'" -> SoundScene'),'Android score missing '+id);
-    assert.ok(native.includes('"'+id+'"'),'Android sound URI missing '+id);
-  }
-  for(const note of ['C5','E5','G5','B4','A4','F#5']){
-    assert.ok(alarms.includes("'"+note+"'"),'Windows note '+note);
-    assert.ok(native.includes('"'+note+'"'),'Android note '+note);
-  }
-  assert.ok(alarms.includes('const phrase=score.phrases?.[bar]'));
-  assert.ok(alarms.includes('phrase.map((note,step)'));
-  assert.ok(native.includes('val phrase = score.phrases?.get(bar)'));
-  assert.ok(native.includes('phrase != null -> pitch(phrase[step])'));
-  assert.ok(alarms.includes('const duration=preview?12:ALARM_SECONDS'));
-  assert.ok(native.includes('Uri.fromFile(file)'));
-  assert.ok(native.includes('preset-v3-$selected.wav'));
+test('Mozart and Tchaikovsky alarms use the bundled human performances on both platforms',()=>{
+ for(const id of ['mozart_k545','tchaikovsky_op39']){
+  assert.ok(alarms.includes("'"+id+"'"));
+  assert.ok(native.includes('R.raw.mlv_focus_'+id));
+  assert.ok(readFileSync('android/app/src/main/res/raw/mlv_focus_'+id+'.mp3').length>500000);
+  assert.ok(!alarms.includes(id+':{roots:'));
+ }
+ assert.ok(alarms.includes("new Audio('assets/audio/classical/'+id+'.mp3')"));
+ assert.ok(native.includes('if (recorded != 0) return Uri.parse'));
 });
-
 test('all ten original Focus motifs are selectable and survive daily alarm reloads',()=>{
   const ids=[
     'focus_moonlight','focus_celestial','focus_orbit','focus_aurora',
     'focus_observatory','focus_library','focus_afterglow','focus_silver',
-    'mozart_k545','tchaikovsky_op39'
+    'mozart_k545','tchaikovsky_op39','sb_meanwhile','sb_moonlight','sb_cobalt','sb_skyward','sb_life_is','sb_first_snow','sb_midsommar','sb_at_the_end_of_all_things','sb_in_this_moment','sb_hyperion','sb_ascension','sb_bring_me_the_sky','debussy_clair_de_lune','chopin_nocturne_op9','satie_gymnopedie_1','bach_prelude_bwv846'
   ];
   const saved=ids.map((sound,i)=>({
     id:'scene-'+i,label:'Audio '+i,time:'09:00',repeat:'daily',date:'',
@@ -353,12 +349,28 @@ test('all ten original Focus motifs are selectable and survive daily alarm reloa
   window.MichelsLifeAlarms.read();
   assert.deepEqual(Array.from(window.MichelsLifeAlarms.records(),x=>x.sound),ids);
   for(const id of ids){
-    assert.ok(alarms.includes(id+':{roots:'),'WebAudio score missing '+id);
-    assert.ok(native.includes('"'+id+'" -> SoundScene'),'native score missing '+id);
+    if(id.startsWith('focus_')){assert.ok(alarms.includes(id+':{roots:'),'WebAudio score missing '+id);assert.ok(native.includes('"'+id+'" -> SoundScene'),'native score missing '+id);}else assert.ok(native.includes('R.raw.mlv_focus_'+id));
     assert.ok(native.includes('"'+id+'"'),'native selection missing '+id);
   }
   assert.ok(alarms.includes('score.ambientNotes[degree]'));
   assert.ok(native.includes('notes[score.pattern[step]]'));
   assert.ok(alarms.includes("preview?12:ALARM_SECONDS"));
   assert.ok(native.includes('preset-v3-$selected.wav'));
+});
+
+
+test('actual import controller streams a 17 MiB MP3 and rolls back incomplete native replacements',async()=>{
+  const begin=alarms.indexOf('function readDataURL(part)'),end=alarms.indexOf("/* Michel's Life exclusive alarm suite",begin);
+  assert.ok(begin>=0&&end>begin);
+  let saved={blob:{old:true},name:'previous.mp3'},alerted=[],length=0,expected=0,parts=0,largest=0,cancelled=0,fail=false;
+  const label={textContent:'previous.mp3'},input={disabled:false},select={value:'gentle'};
+  const native={beginCustomAlarmSound(ext,size){assert.equal(ext,'mp3');expected=Number(size);length=0;parts=0;return JSON.stringify({ok:true,token:'test'});},appendCustomAlarmSound(token,offset,encoded){assert.equal(token,'test');assert.equal(Number(offset),length);const part=Buffer.from(encoded,'base64');largest=Math.max(largest,part.length);length+=part.length;parts++;return JSON.stringify({ok:true});},finishCustomAlarmSound(){assert.equal(length,expected);return JSON.stringify(fail?{error:'storage failure'}:{ok:true});},cancelCustomAlarmSound(){cancelled++;return true;}};
+  class FileReader{readAsDataURL(part){this.result='data:audio/mpeg;base64,'+Buffer.alloc(part.size).toString('base64');this.onload();}}
+  const window={MichelsLifeAndroid:native,alert:m=>alerted.push(m)};
+  const code=alarms.slice(begin,end)+'\nwindow.runImport=importSound;';
+  const context={window,FileReader,screen:{},q:sel=>sel.includes('custom-file')?input:sel.includes('custom-name')?label:select,android:()=>true,tr:(en)=>en,storedCustomBlob:async()=>saved,saveCustomBlob:async(blob,name)=>{saved={blob,name};}};
+  vm.runInNewContext(code,context);
+  const size=17*1024*1024+123,file={name:'long.mp3',size,slice:(a,b)=>({size:b-a})};
+  assert.equal(await window.runImport(file),true);assert.equal(length,size);assert.ok(parts>64);assert.equal(largest,256*1024);assert.equal(saved.blob,file);assert.equal(select.value,'custom');assert.equal(label.textContent,'long.mp3');assert.equal(input.disabled,false);
+  fail=true;const replacement={...file,name:'replacement.mp3'};assert.equal(await window.runImport(replacement),false);assert.equal(saved.blob,file);assert.equal(cancelled,1);assert.ok(alerted.length);assert.equal(input.disabled,false);
 });

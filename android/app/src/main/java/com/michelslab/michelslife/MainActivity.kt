@@ -215,6 +215,7 @@ class MainActivity : Activity() {
                         Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                             addCategory(Intent.CATEGORY_OPENABLE)
                             type = "audio/*"
+                            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, fileChooserParams?.mode == FileChooserParams.MODE_OPEN_MULTIPLE)
                             putExtra(Intent.EXTRA_MIME_TYPES,
                                 arrayOf("audio/mpeg", "audio/wav", "audio/x-wav", "audio/ogg"))
                         }
@@ -340,8 +341,12 @@ class MainActivity : Activity() {
     @Deprecated("Deprecated in Android; retained for Google authorization resolution compatibility.")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == 7942) {
-            val chosen = if (resultCode == Activity.RESULT_OK) data?.data else null
-            pendingWebFilePicker?.onReceiveValue(chosen?.let { arrayOf(it) })
+            val chosen = if (resultCode == Activity.RESULT_OK) {
+                val clips = data?.clipData
+                if (clips != null) (0 until clips.itemCount).mapNotNull { clips.getItemAt(it).uri }.distinct().toTypedArray()
+                else data?.data?.let { arrayOf(it) }
+            } else null
+            pendingWebFilePicker?.onReceiveValue(chosen)
             pendingWebFilePicker = null
             return
         }

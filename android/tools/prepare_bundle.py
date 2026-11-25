@@ -2,6 +2,8 @@
 from pathlib import Path
 from zipfile import ZipFile
 import argparse
+import json
+import hashlib
 import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -40,6 +42,16 @@ def main():
     shutil.copy2(PERSONAL_ALARMS, assets / 'personal-alarms.js')
     shutil.copy2(MOTIVATION, assets / 'motivation-immersive.js')
     shutil.copy2(SETTINGS_COLOR_PREVIEW, assets / 'settings-color-floating-preview.js')
+    for filename in ('mozart_k545.mp3','tchaikovsky_op39.mp3','RECORDINGS.json','LIBRARY.json','sb_meanwhile.mp3', 'sb_moonlight.mp3', 'sb_cobalt.mp3', 'sb_skyward.mp3', 'sb_life_is.mp3', 'sb_first_snow.mp3', 'sb_midsommar.mp3', 'sb_at_the_end_of_all_things.mp3', 'sb_in_this_moment.mp3', 'sb_hyperion.mp3', 'sb_ascension.mp3', 'sb_bring_me_the_sky.mp3','PIANO.json','debussy_clair_de_lune.mp3','chopin_nocturne_op9.mp3','satie_gymnopedie_1.mp3','bach_prelude_bwv846.mp3'):
+        source = FOCUS_IMMERSION.parent / 'assets/audio/classical' / filename
+        target = assets / 'assets/audio/classical' / filename
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+    audio_dir = assets / 'assets/audio/classical'
+    for manifest in ('RECORDINGS.json','LIBRARY.json','PIANO.json'):
+        for record in json.loads((audio_dir / manifest).read_text(encoding='utf-8')):
+            if hashlib.sha256((audio_dir / (record['id']+'.mp3')).read_bytes()).hexdigest() != record['asset_sha256']:
+                raise SystemExit('Android audio integrity mismatch: ' + record['id'])
     text = index.read_text(encoding="utf-8")
     if '<script defer src="settings-color-floating-preview.js"></script>' not in text:
         raise SystemExit("Android source missing Settings preview loader")

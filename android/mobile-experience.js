@@ -137,12 +137,12 @@
       ['[data-mobile-focus="alarms"]','⏰ Alarms','⏰ Alarmas'],
 
        ['[data-mlv-android-classical-heading]','Classical music','Música clásica'],
-       ['[data-mlv-android-classical-note]','Short synthesized excerpts · Not full recordings','Fragmentos breves sintetizados · No son grabaciones completas'],
+       ['[data-mlv-android-classical-note]','Licensed piano recordings · Completion only','Grabaciones de piano con licencia · Solo al terminar'],
        ['.mlv-android-focus-sounds summary','Focus audio · Completion sound & ambience','Audio de enfoque · Sonido final y ambiente'],
        ['.mlv-android-focus-quick-completion label','Completion sound','Sonido al terminar'],
        ['[data-mobile-focus="preview-completion"]','▶ Listen','▶ Escuchar'],
-       ['[data-mobile-ambient-heading]','Ambient music · 8 tracks','Música ambiental · 8 pistas'],
-       ['.mlv-android-focus-audio-grid label:first-of-type','Music · Ambient and classical','Música · Ambiental y clásica'],
+       ['[data-mobile-ambient-heading]','Ambient music','Música ambiental'],
+       ['.mlv-android-focus-audio-grid label:first-of-type','Background music','Música de ambiente'],
        ['#mlv-android-focus-sheet details:has(#mlv-android-focus-work) summary','Custom work / break duration','Duración personalizada de enfoque / descanso'],
       ['.mlv-focus-motivation-details summary','Messages & affirmations','Frases y afirmaciones'],
       ['.mlv-android-focus-compact label:first-child','Work minutes','Minutos de enfoque'],
@@ -1074,6 +1074,7 @@
         font-weight:900!important;line-height:1.06!important;
         min-height:58px!important;color:#fff!important;letter-spacing:-.05em!important
       }
+      #mlv-android-focus-sheet .mlv-focus-motivation-always{flex:0 0 auto;min-width:0}
       #mlv-android-focus-sheet .mlv-focus-motivation-details{order:50;max-height:23vh;overflow:auto;flex:0 0 auto;border:1px solid #ffffff23;border-radius:12px;padding:8px 11px}
       #mlv-android-focus-sheet .mlv-focus-motivation-details summary{min-height:34px;cursor:pointer;font-size:12px;font-weight:700}
       #mlv-android-focus-sheet .mlv-focus-motivation-details:not([open]){max-height:50px}
@@ -1265,29 +1266,6 @@
             <button type="button" class="mlv-android-focus-close" data-mobile-focus="close" aria-label="Close Focus">×</button>
           </div>
           <div class="mlv-focus-session-strip"><span id="mlv-focus-session-meta">WORK SESSION · 25 MIN</span><span id="mlv-focus-session-state">READY</span></div>
-          <div class="mlv-android-classical" role="group" aria-label="Classical music">
-            <strong data-mlv-android-classical-heading>Música clásica</strong>
-            <div class="mlv-android-classical-actions">
-              <button type="button" data-mobile-classical="mozart_k545" aria-pressed="false">▶ Mozart · K.545</button>
-              <button type="button" data-mobile-classical="tchaikovsky_op39" aria-pressed="false">▶ Chaikovski · Oración matinal</button>
-            </div>
-            <strong data-mobile-ambient-heading>Música ambiental · 8 pistas</strong>
-            <div class="mlv-android-ambient-actions" role="group" aria-label="Ambient music">
-              <button type="button" data-mobile-scene="moonlight" aria-pressed="false">▶ moonlight</button>
-              <button type="button" data-mobile-scene="celestial" aria-pressed="false">▶ celestial</button>
-              <button type="button" data-mobile-scene="orbit" aria-pressed="false">▶ orbit</button>
-              <button type="button" data-mobile-scene="aurora" aria-pressed="false">▶ aurora</button>
-              <button type="button" data-mobile-scene="observatory" aria-pressed="false">▶ observatory</button>
-              <button type="button" data-mobile-scene="library" aria-pressed="false">▶ library</button>
-              <button type="button" data-mobile-scene="afterglow" aria-pressed="false">▶ afterglow</button>
-              <button type="button" data-mobile-scene="silver" aria-pressed="false">▶ silver</button>
-            </div>
-            <span class="mlv-android-classical-note" data-mlv-android-classical-note>Fragmentos breves sintetizados</span>
-          </div>
-          <div class="mlv-android-focus-quick-completion" role="group" aria-label="Completion sound">
-            <label>Sonido al terminar<select data-mobile-focus-completion></select></label>
-            <button type="button" data-mobile-focus="preview-completion">▶ Escuchar</button>
-          </div>
           <div class="mlv-android-focus-clock">
             <div id="mlv-android-focus-progress-ring">
               <div class="mlv-android-focus-dial">
@@ -1298,6 +1276,7 @@
             <span id="mlv-android-focus-status">Ready · Work</span>
             <span class="mlv-focus-clock-caption" id="mlv-focus-end-time">Ready when you are</span>
           </div>
+          <div id="mlv-android-focus-motivation" class="mlv-focus-motivation-always" aria-label="Messages and affirmations"></div>
           <div class="mlv-focus-controls-title">Session length</div>
           <div class="mlv-android-focus-presets" aria-label="Focus presets">
             <button type="button" data-mobile-preset="25/5">25 / 5</button>
@@ -1311,16 +1290,27 @@
             <button type="button" data-mobile-focus="settings">Focus settings</button>
           <button type="button" data-mobile-focus="alarms">⏰ Alarms</button>
           </div>
+          <div class="mlv-android-focus-quick-completion" role="group" aria-label="Completion sound">
+            <label>Sonido al terminar<select data-mobile-focus-completion></select></label>
+            <button type="button" data-mobile-focus="preview-completion">▶ Escuchar</button>
+          </div>
           <details class="mlv-android-focus-sounds">
             <summary>Focus audio · Completion sound & ambience</summary>
             <div class="mlv-android-focus-audio-grid">
-              <label>Music · Ambient and classical
+              <label>Background music
                 <select data-mobile-focus-ambience></select>
               </label>
               <button type="button" data-mobile-focus="toggle-ambient">Play</button>
+              <label><span data-mobile-volume-label>Volume</span><input type="range" min="0" max="100" value="35" data-mobile-ambient-volume aria-label="Background music volume" /></label>
+              <div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" data-mobile-focus="previous-ambient" aria-label="Previous track">⏮ Previous</button><button type="button" data-mobile-focus="next-ambient" aria-label="Skip track">Next ⏭</button><button type="button" data-mobile-focus="stop-ambient">Stop</button><select data-mobile-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option><option value="shuffle">Shuffle</option></select><select data-mobile-ambient-collection aria-label="Playlist collection"><option value="all">All recordings</option><option value="Ambient">Ambient</option><option value="Cinematic">Cinematic</option><option value="Classical">Classical piano</option><option value="Personal">My music</option></select></div>
+              <small data-mobile-ambient-progress aria-live="off"></small>
+              <label><span data-mobile-personal-label>Import my music</span><input type="file" multiple accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg" data-mobile-personal-files /></label><small data-mobile-personal-status role="status"></small>
+              <div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" data-mobile-focus="archive-ambient">Archive track</button><select data-mobile-archived-track aria-label="Archived tracks"></select><button type="button" data-mobile-focus="restore-ambient">Restore</button></div>
+              <small style="overflow-wrap:anywhere">Scott Buckley · CC BY 4.0 · www.scottbuckley.com.au · creativecommons.org/licenses/by/4.0/</small>
+              <details><summary>Classical credits / Créditos clásicos</summary><small style="overflow-wrap:anywhere">Claude Debussy · Clair de Lune — Laurens Goedhart (CC BY 3.0; https://creativecommons.org/licenses/by/3.0/; https://commons.wikimedia.org/wiki/File:Clair_de_lune_(Claude_Debussy)_Suite_bergamasque.ogg) | Frédéric Chopin · Nocturne Op. 9 No. 2 — Peter Johnston / Musopen (CC0 1.0; https://creativecommons.org/publicdomain/zero/1.0/; https://commons.wikimedia.org/wiki/File:Chopin_Nocturne_No._2_in_E_Flat_Major%2C_Op._9.ogg) | Erik Satie · Gymnopédie No. 1 — Robin Alciatore / Musopen (Public domain; https://creativecommons.org/publicdomain/mark/1.0/; https://commons.wikimedia.org/wiki/File:Erik_Satie_-_gymnopedies_-_la_1_ere._lent_et_douloureux.ogg) | Johann Sebastian Bach · Prelude in C major, BWV 846 — Kimiko Ishizaka (CC0 1.0; https://creativecommons.org/publicdomain/zero/1.0/; https://commons.wikimedia.org/wiki/File:Kimiko_Ishizaka_-_Bach_-_Well-Tempered_Clavier%2C_Book_1_-_01_Prelude_No._1_in_C_major%2C_BWV_846.ogg) · MP3 conversion only.</small></details>
             </div>
           </details>
-          <details class="mlv-focus-motivation-details"><summary>Messages & affirmations</summary><div id="mlv-android-focus-motivation"></div></details>
+
           <details><summary>Custom work / break duration</summary>
             <div class="mlv-android-focus-compact">
               <label>Work minutes<input type="number" min="1" max="180" id="mlv-android-focus-work" value="25" /></label>
@@ -1348,8 +1338,13 @@
         if(id==='mlv-android-focus-work'||id==='mlv-android-focus-break')
           event.target.dataset.mlvFocusDirty='1';
       });
-      root.addEventListener('change',event=>{
+      root.addEventListener('input',event=>{if(event.target?.matches?.('[data-mobile-ambient-volume]'))window.MichelsLifeFocusAudio?.setAmbientVolume?.(Number(event.target.value)/100,false);});
+      root.addEventListener('change',async event=>{
         const audio=window.MichelsLifeFocusAudio;
+        if(event.target?.matches?.('[data-mobile-personal-files]')){const input=event.target;input.disabled=true;try{await audio?.importPersonalTracks?.(input.files);}finally{input.value='';input.disabled=false;updateFocus();}return;}
+        if(event.target?.matches?.('[data-mobile-ambient-volume]'))audio?.setAmbientVolume?.(Number(event.target.value)/100);
+        if(event.target?.matches?.('[data-mobile-ambient-mode]'))audio?.setAmbientMode?.(event.target.value);
+        if(event.target?.matches?.('[data-mobile-ambient-collection]'))audio?.setAmbientCollection?.(event.target.value);
         if(event.target?.matches?.('[data-mobile-focus-completion]'))
           audio?.selectCompletion?.(event.target.value);
         if(event.target?.matches?.('[data-mobile-focus-ambience]'))
@@ -1388,14 +1383,18 @@
         if(action==='enable-notifications'){requestNativeFocusPermission();updateFocus();return;}
         if(action==='alarms'){close();window.MichelsLifeAlarms?.open?.();return;}
         if(action==='preview-completion'){
+          if(window.MichelsLifeFocusAudio?.recordingActive?.()){window.MichelsLifeFocusAudio.stopClassical();updateFocus();return;}
           window.MichelsLifeFocusAudio?.playCompletion?.(true);return;
         }
         if(action==='toggle-ambient'){
           const sound=window.MichelsLifeFocusAudio;
-          if(sound?.playing?.())sound.stopAmbient();
-          else sound?.startAmbient?.();
+          sound?.toggleAmbientPlayback?.();
           updateFocus();return;
         }
+        if(action==='archive-ambient'){const audio=window.MichelsLifeFocusAudio;audio?.archiveScene?.(audio.playingScene?.()||audio.sceneId?.(),true);updateFocus();return;}
+        if(action==='restore-ambient'){window.MichelsLifeFocusAudio?.archiveScene?.(q('[data-mobile-archived-track]',root)?.value,false);updateFocus();return;}
+        if(action==='stop-ambient'){window.MichelsLifeFocusAudio?.stopAmbient?.();updateFocus();return;}
+        if(action==='previous-ambient'||action==='next-ambient'){window.MichelsLifeFocusAudio?.moveAmbient?.(action==='previous-ambient'?-1:1);updateFocus();return;}
         if(!api){return;}
         if(action==='toggle'){
           if(api.focusState?.().status!=='running')requestNativeFocusPermission();
@@ -1651,10 +1650,26 @@
       }
       if(select.value!==selected)select.value=selected;
     }
-    writeText(q('[data-mobile-focus="toggle-ambient"]',root),
-      audio?.playing?.()?focusText('Stop','Detener'):focusText('Play','Reproducir'));
+    const volume=q('[data-mobile-ambient-volume]',root);if(volume&&document.activeElement!==volume)volume.value=String(Math.round((audio?.ambientVolume?.()??.35)*100));
+    writeText(q('[data-mobile-volume-label]',root),focusText('Volume','Volumen'));
+    const archivedSelect=q('[data-mobile-archived-track]',root),archiveButton=q('[data-mobile-focus="archive-ambient"]',root),restoreButton=q('[data-mobile-focus="restore-ambient"]',root),archived=audio?.archivedOptions?.()||[];
+    writeText(archiveButton,focusText('Archive track','Archivar canción'));if(archiveButton)archiveButton.disabled=!audio?.sceneId?.();
+    if(archivedSelect){const selected=archivedSelect.value;const opts=[{id:'',label:focusText('Archived','Archivadas')+' ('+archived.length+')'},...archived];if(archivedSelect.options.length!==opts.length||opts.some((x,i)=>archivedSelect.options[i]?.value!==x.id||archivedSelect.options[i]?.textContent!==x.label)){archivedSelect.replaceChildren(...opts.map(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.label;return o;}));archivedSelect.value=archived.some(x=>x.id===selected)?selected:'';}archivedSelect.disabled=!archived.length;}
+    writeText(restoreButton,focusText('Restore','Restaurar'));if(restoreButton)restoreButton.disabled=!archivedSelect?.value;
+    writeText(q('[data-mobile-personal-label]',root),focusText('Import my music (local files)','Importar mi música (archivos locales)'));writeText(q('[data-mobile-personal-status]',root),audio?.personalStatus?.()||focusText('MP3, WAV, OGG · available storage','MP3, WAV, OGG · espacio disponible'));
+    const ambientToggle=q('[data-mobile-focus="toggle-ambient"]',root);if(ambientToggle)ambientToggle.disabled=!audio?.sceneId?.();
+    const playback=audio?.ambientPlayback?.(),playMode=q('[data-mobile-ambient-mode]',root);
+    if(playMode){playMode.value=audio?.ambientMode?.()||'repeat';writeText(playMode.options[0],focusText('Repeat track','Repetir pista'));writeText(playMode.options[1],focusText('Continuous playlist','Lista continua'));writeText(playMode.options[2],focusText('Shuffle','Aleatorio'));}
+    const coll=q('[data-mobile-ambient-collection]',root);if(coll){coll.value=audio?.ambientCollection?.()||'all';[focusText('All recordings','Todas las grabaciones'),focusText('Ambient','Ambiental'),focusText('Cinematic','Cinematográfica'),focusText('Classical piano','Piano clásico'),focusText('My music','Mi música')].forEach((name,i)=>writeText(coll.options[i],name));}
+    const fmtAudio=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
+    writeText(q('[data-mobile-ambient-progress]',root),playback&&Number.isFinite(playback.duration)?fmtAudio(playback.currentTime)+' / '+fmtAudio(playback.duration):'');
+    const prevTrack=q('[data-mobile-focus="previous-ambient"]',root),nextTrack=q('[data-mobile-focus="next-ambient"]',root);
+    writeText(prevTrack,focusText('⏮ Previous','⏮ Anterior'));prevTrack?.setAttribute('aria-label',focusText('Previous track','Canción anterior'));
+    writeText(nextTrack,focusText('Next ⏭','Saltar ⏭'));nextTrack?.setAttribute('aria-label',focusText('Skip track','Saltar canción'));
+    writeText(q('[data-mobile-focus="stop-ambient"]',root),focusText('Stop','Detener'));
+    writeText(q('[data-mobile-focus="toggle-ambient"]',root),playback?(playback.paused?focusText('Resume','Reanudar'):focusText('Pause','Pausar')):audio?.playing?.()?focusText('Stop','Detener'):focusText('Play','Reproducir'));
     writeText(q('[data-mobile-focus="preview-completion"]',root),
-      focusText('Preview','Escuchar'));
+      audio?.recordingActive?.()?focusText('Stop recording','Detener grabación'):focusText('Preview','Escuchar'));
     enforceFocusTouchTargets();
     writeText(q('#mlv-android-focus-time',root),left);
     writeText(q('#mlv-android-focus-phase',root),mode.toUpperCase());

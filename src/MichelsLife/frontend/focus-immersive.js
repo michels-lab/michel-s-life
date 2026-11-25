@@ -22,6 +22,24 @@
     observatory:{en:'Observatory Bell',es:'Observatorio',notes:[[0,392,.8,.053],[.5,587,.85,.035],[.9,784,1.05,.027]]},
     midnight:{en:'Midnight Chime',es:'Medianoche',notes:[[0,523,.5,.037],[.34,698,.8,.035],[.66,1047,1.2,.026]]},
     silver:{en:'Silver Echo',es:'Eco plateado',notes:[[0,784,.6,.044],[.36,987,.8,.036],[.75,1175,1.1,.024]]},
+    mozart_k545:{en:'Mozart · Sonata K.545 · recording',es:'Mozart · Sonata K.545 · grabación',classical:true},
+    tchaikovsky_op39:{en:'Tchaikovsky · Morning Prayer · recording',es:'Chaikovski · Oración matinal · grabación',classical:true},
+    sb_meanwhile:{en:"Meanwhile · Scott Buckley",es:"Meanwhile · Scott Buckley",classical:true},
+    sb_moonlight:{en:"Moonlight · Scott Buckley",es:"Moonlight · Scott Buckley",classical:true},
+    sb_cobalt:{en:"Cobalt · Scott Buckley",es:"Cobalt · Scott Buckley",classical:true},
+    sb_skyward:{en:"Skyward · Scott Buckley",es:"Skyward · Scott Buckley",classical:true},
+    sb_life_is:{en:"Life Is · Scott Buckley",es:"Life Is · Scott Buckley",classical:true},
+    sb_first_snow:{en:"First Snow · Scott Buckley",es:"First Snow · Scott Buckley",classical:true},
+    sb_midsommar:{en:"Midsommar · Scott Buckley",es:"Midsommar · Scott Buckley",classical:true},
+    sb_at_the_end_of_all_things:{en:"At The End Of All Things · Scott Buckley",es:"At The End Of All Things · Scott Buckley",classical:true},
+    sb_in_this_moment:{en:"In This Moment · Scott Buckley",es:"In This Moment · Scott Buckley",classical:true},
+    sb_hyperion:{en:"Hyperion · Scott Buckley",es:"Hyperion · Scott Buckley",classical:true},
+    sb_ascension:{en:"Ascension · Scott Buckley",es:"Ascension · Scott Buckley",classical:true},
+    sb_bring_me_the_sky:{en:"Bring Me The Sky · Scott Buckley",es:"Bring Me The Sky · Scott Buckley",classical:true},
+    debussy_clair_de_lune:{en:"Claude Debussy · Clair de Lune · Laurens Goedhart · CC BY 3.0",es:"Claude Debussy · Clair de Lune · Laurens Goedhart · CC BY 3.0",classical:true},
+    chopin_nocturne_op9:{en:"Frédéric Chopin · Nocturne Op. 9 No. 2 · Peter Johnston / Musopen · CC0 1.0",es:"Frédéric Chopin · Nocturne Op. 9 No. 2 · Peter Johnston / Musopen · CC0 1.0",classical:true},
+    satie_gymnopedie_1:{en:"Erik Satie · Gymnopédie No. 1 · Robin Alciatore / Musopen · Public domain",es:"Erik Satie · Gymnopédie No. 1 · Robin Alciatore / Musopen · Public domain",classical:true},
+    bach_prelude_bwv846:{en:"Johann Sebastian Bach · Prelude in C major, BWV 846 · Kimiko Ishizaka · CC0 1.0",es:"Johann Sebastian Bach · Prelude in C major, BWV 846 · Kimiko Ishizaka · CC0 1.0",classical:true},
     off:{en:'No sound',es:'Sin sonido',notes:[]}
   };
   // All sequences are newly composed harmonic pads, not licensed recordings.
@@ -33,28 +51,73 @@
     observatory:{en:'Observatory',es:'Observatorio',group:'C',notes:[146.83,220,293.66,440],pattern:[0,1,3,2,0],beat:1.18},
     library:{en:'Midnight Library',es:'Biblioteca nocturna',group:'C',notes:[130.81,196,261.63,392],pattern:[0,2,1,0,3,1],beat:.84},
     afterglow:{en:'Afterglow',es:'Resplandor',group:'C',notes:[174.61,220,349.23,440],pattern:[2,3,1,0,2],beat:1.02},
-    silver:{en:'Silver Room',es:'Sala plateada',group:'C',notes:[196,246.94,392,493.88],pattern:[3,1,2,0,3,2],beat:.78},
-    // Classical miniatures: public-domain melodic excerpts, synthesized locally.
-    // These are short ambient arrangements, not full scores or recordings.
-    // Mozart K.545 opening: Mutopia 998 (CC BY-SA typesetting; composition public domain).
-    mozart_k545:{en:'Mozart · Sonata K.545 (theme excerpt)',es:'Mozart · Sonata K.545 (fragmento)',
-      group:'CL',notes:[130.81,196,261.63,329.63],beat:.62,
-      phrases:[
-        ['C5','E5','G5','B4','C5','D5','C5'],
-        ['A5','G5','C5','G5','F5','E5','F5','E5'],
-        ['A4','B4','C5','D5','E5','F5','G5','A5'],
-        ['G5','F5','E5','D5','C5','B4','A4','G4']
-      ]},
-    // Tchaikovsky Op.39/1 opening: Mutopia 2032 (public-domain typesetting).
-    tchaikovsky_op39:{en:'Tchaikovsky · Morning Prayer (theme excerpt)',es:'Chaikovski · Oración matinal (fragmento)',
-      group:'CL',notes:[98,146.83,196,246.94],beat:.73,
-      phrases:[
-        ['B4','B4','A4','C5','B4'],
-        ['A4','G4','A4','B4','B4'],
-        ['E5','A4','A4','D5','C5','F#5'],
-        ['G4','G4','E5','A4','A4','F#5','E5','F#5']
-      ]}
+    silver:{en:'Silver Room',es:'Sala plateada',group:'C',notes:[196,246.94,392,493.88],pattern:[3,1,2,0,3,2],beat:.78}
+    ,
+    sb_meanwhile:{en:"Meanwhile · Scott Buckley",es:"Meanwhile · Scott Buckley",group:"Ambient",recorded:true},
+    sb_moonlight:{en:"Moonlight · Scott Buckley",es:"Moonlight · Scott Buckley",group:"Ambient",recorded:true},
+    sb_cobalt:{en:"Cobalt · Scott Buckley",es:"Cobalt · Scott Buckley",group:"Ambient",recorded:true},
+    sb_skyward:{en:"Skyward · Scott Buckley",es:"Skyward · Scott Buckley",group:"Ambient",recorded:true},
+    sb_life_is:{en:"Life Is · Scott Buckley",es:"Life Is · Scott Buckley",group:"Ambient",recorded:true},
+    sb_first_snow:{en:"First Snow · Scott Buckley",es:"First Snow · Scott Buckley",group:"Ambient",recorded:true},
+    sb_midsommar:{en:"Midsommar · Scott Buckley",es:"Midsommar · Scott Buckley",group:"Ambient",recorded:true},
+    sb_at_the_end_of_all_things:{en:"At The End Of All Things · Scott Buckley",es:"At The End Of All Things · Scott Buckley",group:"Ambient",recorded:true},
+    sb_in_this_moment:{en:"In This Moment · Scott Buckley",es:"In This Moment · Scott Buckley",group:"Ambient",recorded:true},
+    sb_hyperion:{en:"Hyperion · Scott Buckley",es:"Hyperion · Scott Buckley",group:"Cinematic",recorded:true},
+    sb_ascension:{en:"Ascension · Scott Buckley",es:"Ascension · Scott Buckley",group:"Cinematic",recorded:true},
+    sb_bring_me_the_sky:{en:"Bring Me The Sky · Scott Buckley",es:"Bring Me The Sky · Scott Buckley",group:"Cinematic",recorded:true}
+    ,
+    debussy_clair_de_lune:{en:"Claude Debussy · Clair de Lune · Laurens Goedhart · CC BY 3.0",es:"Claude Debussy · Clair de Lune · Laurens Goedhart · CC BY 3.0",group:'Classical',recorded:true},
+    chopin_nocturne_op9:{en:"Frédéric Chopin · Nocturne Op. 9 No. 2 · Peter Johnston / Musopen · CC0 1.0",es:"Frédéric Chopin · Nocturne Op. 9 No. 2 · Peter Johnston / Musopen · CC0 1.0",group:'Classical',recorded:true},
+    satie_gymnopedie_1:{en:"Erik Satie · Gymnopédie No. 1 · Robin Alciatore / Musopen · Public domain",es:"Erik Satie · Gymnopédie No. 1 · Robin Alciatore / Musopen · Public domain",group:'Classical',recorded:true},
+    bach_prelude_bwv846:{en:"Johann Sebastian Bach · Prelude in C major, BWV 846 · Kimiko Ishizaka · CC0 1.0",es:"Johann Sebastian Bach · Prelude in C major, BWV 846 · Kimiko Ishizaka · CC0 1.0",group:'Classical',recorded:true}
   };
+  // Licensed human performances, bundled locally. No synthesized fallback.
+  // Personal files stay in the device's IndexedDB. Metadata is separate so
+  // opening the library never materializes every audio Blob in memory.
+  let personalDbPromise=null,personalImporting=false,personalStatus='',personalGeneration=0,personalUrl=null,personalPending=false,pauseOnReady=false;
+  function personalDatabase(){
+    if(!window.indexedDB)return Promise.reject(Error('Local audio storage unavailable'));
+    if(!personalDbPromise)personalDbPromise=new Promise((resolve,reject)=>{
+      const req=window.indexedDB.open('michelsLife.focus.personalAudio.v1',1);
+      req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains('tracks'))db.createObjectStore('tracks',{keyPath:'id'});if(!db.objectStoreNames.contains('blobs'))db.createObjectStore('blobs');};
+      req.onsuccess=()=>{const db=req.result;db.onversionchange=()=>{db.close();personalDbPromise=null;};resolve(db);};
+      req.onerror=()=>{personalDbPromise=null;reject(req.error||Error('Audio storage unavailable'));};
+    });
+    return personalDbPromise;
+  }
+  async function personalRead(store,key){
+    const db=await personalDatabase();
+    return new Promise((resolve,reject)=>{const tx=db.transaction(store,'readonly'),req=key===undefined?tx.objectStore(store).getAll():tx.objectStore(store).get(key);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});
+  }
+  function registerPersonal(item){
+    if(!item||!/^my_[a-f0-9]{32}$/.test(item.id)||typeof item.name!=='string')return false;
+    ambientScenes[item.id]={en:item.name,es:item.name,group:'Personal',recorded:true,personal:true};return true;
+  }
+  async function loadPersonalTracks(){try{for(const item of await personalRead('tracks'))registerPersonal(item);return true;}catch(_){return false;}}
+  async function importPersonalTracks(files){
+    if(personalImporting)return false;personalImporting=true;
+    let added=0,failed=0;const list=Array.from(files||[]);
+    try{
+      const db=await personalDatabase();
+      for(const file of list){
+        if(!file||!Number.isSafeInteger(file.size)||file.size<128||!/\.(mp3|wav|ogg)$/i.test(file.name)){failed++;continue;}
+        personalStatus=lang('Importing ','Importando ')+(added+failed+1)+' / '+list.length+' · '+file.name;
+        try{
+          const bytes=new Uint8Array(16);window.crypto.getRandomValues(bytes);
+          const id='my_'+Array.from(bytes,x=>x.toString(16).padStart(2,'0')).join('');
+          const item={id,name:file.name.slice(0,160),size:file.size,type:file.type||''};
+          await new Promise((resolve,reject)=>{const tx=db.transaction(['tracks','blobs'],'readwrite');tx.objectStore('tracks').add(item);tx.objectStore('blobs').add(file,id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});
+          registerPersonal(item);added++;
+        }catch(_){failed++;}
+      }
+      personalStatus=lang('Imported: ','Importadas: ')+added+' · '+lang('Failed: ','No importadas: ')+failed;
+      if(added&&!ambientScene){const id=Object.keys(ambientScenes).find(id=>ambientScenes[id].personal&&isAvailable(id));if(id){setAmbientCollection('Personal');selectScene(id);}}
+      return added>0;
+    }catch(_){personalStatus=lang('Audio storage unavailable. Check free space.','Almacenamiento no disponible. Revisa el espacio libre.');return false;}
+    finally{personalImporting=false;}
+  }
+
+  let classicalSource=null,previewingId=null,ambientRecording=null,ambientVolume=.35,volumeDraft=null;
   const classicalIds=['mozart_k545','tchaikovsky_op39'];
   let effectContext=null,ambientContext=null,ambientInterval=null,ambientScene=null,ambientStep=0;
   function soundContext(){
@@ -77,13 +140,32 @@
     return selected;
   }
   const finishId=()=>readChoice(completionKey,finishTones,'soft');
-  const sceneId=()=>readChoice(sceneKey,ambientScenes,'moonlight');
+  const archivedIds=()=>{const v=api()?.focusState?.()?.v30165ArchivedAmbient;return new Set(Array.isArray(v)?v.filter(id=>Object.hasOwn(ambientScenes,id)):[]);};
+  const isAvailable=id=>Object.hasOwn(ambientScenes,id)&&!archivedIds().has(id);
+  function activeIds(){const c=ambientCollection();return Object.keys(ambientScenes).filter(id=>isAvailable(id)&&(c==='all'||ambientScenes[id].group===c));}
+  const sceneId=()=>{const selected=readChoice(sceneKey,ambientScenes,'moonlight'),ids=activeIds();return ids.includes(selected)?selected:(ids[0]||'');};
   function unlock(){
     try{return !!soundContext();}catch(_){return false;}
   }
+  function stopClassical(){
+    const source=classicalSource;classicalSource=null;previewingId=null;
+    if(source)try{source.pause();source.currentTime=0;}catch(_){}
+  }
   function playCompletion(preview=false){
     const id=finishId(),score=finishTones[id];
+    stopClassical();
+    // Final audio takes precedence; hear licensed previews in isolation too.
+    if(!preview||score?.classical)stopAmbient();
     if(!score||id==='off')return true;
+    if(score.classical){
+      try{
+        const source=new Audio('assets/audio/classical/'+id+'.mp3');
+        source.loop=false;classicalSource=source;previewingId=preview?id:null;
+        const clear=()=>{if(classicalSource===source){classicalSource=null;previewingId=null;}};
+        source.onended=clear;source.onerror=clear;
+        source.play().catch(clear);return true;
+      }catch(_){return false;}
+    }
     const ctx=soundContext();
     if(!ctx)return false;
     try{
@@ -102,6 +184,10 @@
     }catch(_){return false;}
   }
   function stopAmbient(){
+    personalGeneration++;personalPending=false;pauseOnReady=false;
+    const player=ambientRecording;ambientRecording=null;
+    if(player)try{player.pause();player.currentTime=0;}catch(_){}
+    if(personalUrl){try{URL.revokeObjectURL(personalUrl);}catch(_){}personalUrl=null;}
     if(ambientInterval){window.clearInterval(ambientInterval);ambientInterval=null;}
     const ctx=ambientContext;ambientContext=null;ambientScene=null;
     if(ctx)ctx.close().catch(()=>{});
@@ -116,7 +202,7 @@
       osc.type=i===0?'sine':i===2?'triangle':'sine';
       const rotation=(ambientStep+i)%notes.length;
       osc.frequency.setValueAtTime(notes[rotation]*(i===3?2:1),start+.22*i);
-      const gain=i===0?.012:i===3?.004:.006;
+      const gain=(i===0?.012:i===3?.004:.006)*Math.max(.0001,ambientVolume/.35);
       env.gain.setValueAtTime(.0001,start+.22*i);
       env.gain.linearRampToValueAtTime(gain,start+2+.22*i);
       env.gain.setValueAtTime(gain,start+4.8+.22*i);
@@ -143,26 +229,81 @@
       osc.type=theme?'triangle':ambientScene==='observatory'||ambientScene==='library'?'triangle':'sine';
       osc.frequency.setValueAtTime(frequency,at);
       env.gain.setValueAtTime(.0001,at);
-      env.gain.exponentialRampToValueAtTime(theme?.012:.008,at+.055);
+      env.gain.exponentialRampToValueAtTime((theme?.012:.008)*Math.max(.0001,ambientVolume/.35),at+.055);
       env.gain.exponentialRampToValueAtTime(.0001,at+(theme?.55:.67));
       osc.connect(env);env.connect(ctx.destination);
       osc.start(at);osc.stop(at+(theme?.6:.7));
     });
     ambientStep=(ambientStep+1)%(scene.phrases?.length||scene.notes.length);
   }
+  function savedVolume(){const v=api()?.focusState?.()?.v30165AmbientVolume;return typeof v==='number'&&Number.isFinite(v)?Math.max(0,Math.min(1,v)):.35;}
+  function getVolume(){return volumeDraft??savedVolume();}
+  function setVolume(value,save=true){const n=Number(value);if(!Number.isFinite(n))return getVolume();ambientVolume=Math.max(0,Math.min(1,n));volumeDraft=ambientVolume;if(ambientRecording)ambientRecording.volume=ambientVolume;if(save&&api()?.setAudioPreference?.('ambientVolume',ambientVolume)===true)volumeDraft=null;return ambientVolume;}
+  const ambientMode=()=>{const m=api()?.focusState?.()?.v30165AmbientMode;return ['repeat','playlist','shuffle'].includes(m)?m:'repeat';};
+  const ambientCollection=()=>{const c=api()?.focusState?.()?.v30165AmbientCollection;return ['Ambient','Cinematic','Classical','Personal'].includes(c)?c:'all';};
+  let shuffleHistory=[],shuffleBag=[];
+  function resetShuffle(){shuffleHistory=[];shuffleBag=[];}
+  function collectionIds(){return activeIds().filter(id=>ambientScenes[id].recorded);}
+  function archiveScene(id,archived=true){
+    if(!Object.hasOwn(ambientScenes,id))return false;
+    const old=archivedIds();if(old.has(id)===archived)return true;
+    const selected=sceneId(),wasActive=ambientScene===id,wasPaused=!!ambientRecording?.paused||pauseOnReady;
+    if(archived)old.add(id);else old.delete(id);
+    if(api()?.setAudioPreference?.('archivedAmbient',[...old])!==true)return false;
+    resetShuffle();
+    if(archived&&(wasActive||selected===id)){
+      const next=collectionIds()[0]||activeIds()[0]||'';
+      if(wasActive)stopAmbient();
+      if(next){choice(sceneKey,ambientScenes,next,'moonlight');if(wasActive&&!wasPaused)startAmbient();}
+    }
+    return true;
+  }
+  function setAmbientCollection(value){if(!['all','Ambient','Cinematic','Classical','Personal'].includes(value))return false;api()?.setAudioPreference?.('ambientCollection',value);resetShuffle();const ids=activeIds();const selected=sceneId();if(!ids.length){stopAmbient();return true;}if(ambientScene&&!ids.includes(ambientScene)){const paused=!!ambientRecording?.paused||pauseOnReady;stopAmbient();choice(sceneKey,ambientScenes,selected,'moonlight');if(!paused)startAmbient();}else choice(sceneKey,ambientScenes,selected,'moonlight');return true;}
+  function setAmbientMode(mode){if(!['repeat','playlist','shuffle'].includes(mode))return false;if(mode!==ambientMode())resetShuffle();api()?.setAudioPreference?.('ambientMode',mode);if(ambientRecording)ambientRecording.loop=ambientMode()==='repeat';return true;}
+  function moveAmbient(delta,automatic=false){const ids=collectionIds();if(!ids.length)return false;const current=sceneId(),index=ids.indexOf(current);let next;if(ambientMode()==='shuffle'){
+    shuffleHistory=shuffleHistory.filter(id=>ids.includes(id));if(delta<0&&shuffleHistory.length)next=shuffleHistory.pop();
+    else{shuffleBag=shuffleBag.filter(id=>ids.includes(id)&&id!==current);if(!shuffleBag.length){shuffleBag=ids.filter(id=>id!==current);for(let i=shuffleBag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffleBag[i],shuffleBag[j]]=[shuffleBag[j],shuffleBag[i]];}}next=shuffleBag.pop()||ids[0];if(next!==current&&ids.includes(current))shuffleHistory.push(current);if(shuffleHistory.length>100)shuffleHistory.shift();}
+    }else next=ids[(index<0?(delta<0?ids.length-1:0):(index+delta+ids.length)%ids.length)];const wasPaused=!automatic&&(!!ambientRecording?.paused||pauseOnReady);selectScene(next,true);if(wasPaused){if(ambientRecording)ambientRecording.pause();else if(personalPending)pauseOnReady=true;}return true;}
+  function startRecording(id,src,paused=false){
+    try{
+      const player=new Audio(src);
+      player.loop=ambientMode()==='repeat';player.volume=getVolume();ambientRecording=player;ambientScene=id;
+      const clear=()=>{if(ambientRecording===player)stopAmbient();};
+      const error=()=>{if(ambientScenes[id]?.personal)personalStatus=lang('Audio cannot be played.','No se pudo reproducir el audio.');clear();};
+      player.onerror=error;player.onended=()=>{if(ambientRecording!==player)return;if(ambientMode()!=='repeat'){if(!moveAmbient(1,true))clear();}else clear();};
+      if(!paused)player.play().catch(error);return true;
+    }catch(_){stopAmbient();return false;}
+  }
   function startAmbient(){
     stopAmbient();
+    // Explicit new ambience replaces the recording rather than mixing audio.
+    stopClassical();
+    const id=sceneId();if(!id||!isAvailable(id))return false;ambientVolume=getVolume();
+    if(ambientScenes[id]?.personal){
+      const generation=personalGeneration;personalPending=true;ambientScene=id;
+      personalRead('blobs',id).then(blob=>{
+        if(generation!==personalGeneration)return;
+        if(!blob||!isAvailable(id)){personalStatus=lang('Personal audio is missing.','Falta el archivo de audio personal.');stopAmbient();return;}
+        personalUrl=URL.createObjectURL(blob);personalPending=false;
+        if(!startRecording(id,personalUrl,pauseOnReady)){stopAmbient();}
+      }).catch(()=>{if(generation===personalGeneration){personalStatus=lang('Cannot open personal audio.','No se pudo abrir el audio personal.');stopAmbient();}});
+      return true;
+    }
+    if(ambientScenes[id]?.recorded)return startRecording(id,'assets/audio/classical/'+id+'.mp3');
     const C=window.AudioContext||window.webkitAudioContext;
     if(!C)return false;
     try{
-      ambientScene=sceneId();ambientContext=new C();
+      ambientScene=id;ambientContext=new C();
       ambientContext.resume?.().catch?.(()=>{});
       ambientStep=0;scheduleAmbient();
       ambientInterval=window.setInterval(scheduleAmbient,7200);
       return true;
     }catch(_){stopAmbient();return false;}
   }
-  function selectScene(id){
+  function toggleAmbientPlayback(){if(personalPending){pauseOnReady=!pauseOnReady;return true;}if(ambientRecording){const player=ambientRecording;if(player.paused){player.play().catch(()=>{if(ambientRecording===player)stopAmbient();});}else player.pause();return true;}if(ambientContext)return stopAmbient();return startAmbient();}
+  function selectScene(id,fromPlaylist=false){
+    if(!isAvailable(id))return sceneId();
+    if(!fromPlaylist){resetShuffle();const group=ambientScenes[id]?.group;if(ambientCollection()!=='all'&&group!==ambientCollection())api()?.setAudioPreference?.('ambientCollection','all');}
     const old=ambientScene;choice(sceneKey,ambientScenes,id,'moonlight');
     if(old)startAmbient();
     return sceneId();
@@ -170,29 +311,36 @@
   function toggleScene(id){
     // Every soundtrack shares one canonical persisted choice and scheduler.
     // Reject unknown IDs rather than silently switching to the default.
-    if(!Object.hasOwn(ambientScenes,id))return false;
-    if(ambientContext&&ambientScene===id){stopAmbient();return true;}
-    const wasPlaying=!!ambientContext;
+    if(!isAvailable(id))return false;
+    if((ambientContext||ambientRecording||personalPending)&&ambientScene===id){stopAmbient();return true;}
+    const wasPlaying=!!(ambientContext||ambientRecording||personalPending);
     selectScene(id);
-    return wasPlaying?!!ambientContext:startAmbient();
+    return wasPlaying?!!(ambientContext||ambientRecording||personalPending):startAmbient();
   }
   function toggleClassical(id){
-    return classicalIds.includes(id)?toggleScene(id):false;
+    if(!classicalIds.includes(id))return false;
+    if(previewingId===id){stopClassical();return true;}
+    choice(completionKey,finishTones,id,'soft');return playCompletion(true);
   }
   function textOptions(items,group=false){
     const es=window.MichelsLifeI18n?.language==='es';
-    return Object.entries(items).map(([id,item])=>({id,label:(group?item.group+' · ':'')+(es?item.es:item.en)}));
+    return Object.entries(items).map(([id,item])=>({id,label:(group?({A:lang('Original soundscape','Ambiente original'),C:lang('Original soundscape','Ambiente original'),Ambient:lang('Ambient','Ambiental'),Cinematic:lang('Cinematic','Cinematográfica'),Classical:lang('Classical piano','Piano clásico'),Personal:lang('My music','Mi música')}[item.group]||item.group)+' · ':'')+(es?item.es:item.en)}));
   }
   window.MichelsLifeFocusAudio={
     completionOptions:()=>textOptions(finishTones),
-    sceneOptions:()=>textOptions(ambientScenes,true),
-    classicalOptions:()=>classicalIds.map(id=>({id,label:lang(ambientScenes[id].en,ambientScenes[id].es)})),
+    sceneOptions:()=>textOptions(ambientScenes,true).filter(x=>activeIds().includes(x.id)),
+    archivedOptions:()=>textOptions(ambientScenes,true).filter(x=>archivedIds().has(x.id)),archiveScene,
+    classicalOptions:()=>classicalIds.map(id=>({id,label:lang(finishTones[id].en,finishTones[id].es)})),
     toggleClassical,toggleScene,
-    completionId:finishId,sceneId,selectCompletion:id=>choice(completionKey,finishTones,id,'soft'),
-    selectScene,playCompletion,unlock,startAmbient,stopAmbient,
-    playing:()=>!!ambientContext,playingScene:()=>ambientScene
+    completionId:finishId,sceneId,selectCompletion:id=>{stopClassical();return choice(completionKey,finishTones,id,'soft');},
+    selectScene,playCompletion,stopClassical,previewingCompletion:()=>previewingId,recordingActive:()=>!!classicalSource,recordingPlayback:()=>classicalSource?{paused:classicalSource.paused,currentTime:classicalSource.currentTime,duration:classicalSource.duration,src:classicalSource.src}:null,unlock,startAmbient,stopAmbient,
+    playing:()=>!!(ambientContext||ambientRecording||personalPending),
+    importPersonalTracks,loadPersonalTracks,personalStatus:()=>personalStatus,personalImporting:()=>personalImporting,playingScene:()=>ambientScene,
+    ambientVolume:getVolume,setAmbientVolume:setVolume,ambientMode,setAmbientMode,ambientCollection,setAmbientCollection,moveAmbient,toggleAmbientPlayback,
+    ambientPlayback:()=>ambientRecording?{paused:ambientRecording.paused,currentTime:ambientRecording.currentTime,duration:ambientRecording.duration,loop:ambientRecording.loop,src:ambientRecording.src,volume:ambientRecording.volume}:null
   };
-  window.addEventListener?.('pagehide',stopAmbient);
+  if(window.indexedDB)loadPersonalTracks();
+  window.addEventListener?.('pagehide',()=>{stopAmbient();stopClassical();});
 
   let screen=null,mini=null,launcher=null,lastPhase=null,closedPhase=null,closedMode=null;
   let minimizedLoaded=false;
@@ -295,7 +443,7 @@
       html:not([data-mlv-platform="android"]) #mlv-desktop-focus-immersive{
         position:fixed;inset:0;z-index:2147483500;
         display:grid;grid-template-columns:minmax(0,1fr);place-items:center;box-sizing:border-box;
-        padding:clamp(12px,3.2vw,42px);overflow:auto;
+        padding:clamp(12px,2.4vw,24px);overflow:auto;
         color:#f8fbff;background-color:rgba(4,9,16,.5);
         background-image:linear-gradient(152deg,rgba(3,9,18,.5),rgba(5,13,22,.29) 54%,rgba(2,8,14,.57)),var(--mlv-focus-wallpaper,none);
         background-position:center;background-size:cover;background-repeat:no-repeat
@@ -303,12 +451,12 @@
       #mlv-desktop-focus-stage{
         position:relative;display:flex;flex-direction:column;box-sizing:border-box;
         /* No percentage max-width: grid's intrinsic track was capping this at 467px. */
-        width:min(800px,calc(100vw - 48px))!important;max-width:800px!important;
+        width:min(1040px,calc(100vw - 32px))!important;max-width:1040px!important;
         justify-self:center!important;
-        height:clamp(460px,72dvh,555px)!important;min-height:0!important;
-        max-height:calc(100dvh - 24px)!important;
-        overflow-y:auto!important;overflow-x:hidden!important;
-        gap:clamp(10px,1.9vh,19px)!important;padding:clamp(20px,3vw,34px)!important;
+        height:auto!important;min-height:calc(100dvh - 84px)!important;
+        max-height:none!important;
+        overflow:visible!important;
+        gap:clamp(8px,1.4vh,14px)!important;padding:clamp(14px,2.2vw,25px)!important;
         border:1px solid rgba(213,237,245,.26);border-radius:26px;
         background-color:rgba(7,17,27,.47)!important;
         background-image:linear-gradient(145deg,rgba(9,27,36,.16),rgba(6,16,27,.06))!important;
@@ -329,7 +477,7 @@
         letter-spacing:-.045em!important
       }
       #mlv-desktop-focus-stage>.mlv-focus-center{
-        display:flex;flex:1 0 auto!important;min-height:165px!important;
+        display:flex;flex:1 0 auto!important;min-height:125px!important;
         flex-direction:column;align-items:center;justify-content:center;
         gap:6px!important;padding:7px 0!important;text-align:center
       }
@@ -422,7 +570,11 @@
         cursor:pointer;font:700 12px/1.45 system-ui,sans-serif;
         color:#d9f0f2;padding:2px 0
       }
-      .mlv-focus-motivation{gap:6px;margin:8px auto 0}
+       .mlv-focus-motivation-always{flex:0 0 auto;min-width:0}
+      .mlv-focus-motivation{gap:6px;margin:0 auto!important}
+      #mlv-desktop-focus-stage .mlv-motivation{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:8px;margin:0 auto!important}
+      #mlv-desktop-focus-stage .mlv-motivation-line{padding:8px 12px}
+      @media(max-width:670px){#mlv-desktop-focus-stage .mlv-motivation{grid-template-columns:1fr}}
       .mlv-focus-motivation-copy{
         font-size:clamp(12px,1.35vw,15px);line-height:1.4
       }
@@ -499,24 +651,17 @@
           <div class="mlv-focus-actions"><button type="button" class="mlv-focus-btn" data-focus-action="alarms">⏰ Alarmas</button>
           <button type="button" class="mlv-focus-btn" data-focus-action="minimize" aria-label="Minimize Pomodoro">—</button></div>
         </header>
-        <div class="mlv-focus-classical" role="group" aria-label="Classical music">
-          <strong data-mlv-classical-heading>Música clásica · Classical music</strong>
-          <div class="mlv-focus-classical-actions">
-            <button type="button" data-mlv-classical="mozart_k545" aria-pressed="false">▶ Mozart · Sonata K.545</button>
-            <button type="button" data-mlv-classical="tchaikovsky_op39" aria-pressed="false">▶ Chaikovski · Oración matinal</button>
-          </div>
-          <strong data-mlv-ambient-heading>Ambient music · 8 tracks</strong>
-          <div class="mlv-focus-ambient-actions" role="group" aria-label="Ambient music">
-            <button type="button" data-mlv-scene="moonlight" aria-pressed="false">▶ moonlight</button>
-            <button type="button" data-mlv-scene="celestial" aria-pressed="false">▶ celestial</button>
-            <button type="button" data-mlv-scene="orbit" aria-pressed="false">▶ orbit</button>
-            <button type="button" data-mlv-scene="aurora" aria-pressed="false">▶ aurora</button>
-            <button type="button" data-mlv-scene="observatory" aria-pressed="false">▶ observatory</button>
-            <button type="button" data-mlv-scene="library" aria-pressed="false">▶ library</button>
-            <button type="button" data-mlv-scene="afterglow" aria-pressed="false">▶ afterglow</button>
-            <button type="button" data-mlv-scene="silver" aria-pressed="false">▶ silver</button>
-          </div>
-          <span class="mlv-focus-classical-note" data-mlv-classical-note>Short synthesized excerpts, not complete recordings.</span>
+        <div class="mlv-focus-center">
+          <span class="mlv-focus-mode" id="mlv-desktop-focus-mode">FOCUS</span>
+          <strong class="mlv-focus-clock" role="timer" aria-live="off" id="mlv-desktop-focus-clock">25:00</strong>
+          <p class="mlv-focus-status" id="mlv-desktop-focus-status">Ready to focus</p>
+        </div>
+        <div id="mlv-desktop-focus-motivation" class="mlv-focus-motivation-always" aria-label="Messages and affirmations"></div>
+        <div class="mlv-focus-actions">
+          <button type="button" class="mlv-focus-btn primary" data-focus-action="toggle">Start</button>
+          <button type="button" class="mlv-focus-btn" data-focus-action="skip">Skip phase</button>
+          <button type="button" class="mlv-focus-btn" data-focus-action="reset">Reset</button>
+          <button type="button" class="mlv-focus-btn" data-focus-action="minimize">Navigate the app</button>
         </div>
         <div class="mlv-focus-quick-completion" role="group" aria-label="Completion sound">
           <label for="mlv-focus-completion-select">Completion sound
@@ -524,27 +669,23 @@
           </label>
           <button type="button" class="mlv-focus-btn" data-mlv-audio="preview-completion">▶ Preview completion</button>
         </div>
-        <div class="mlv-focus-center">
-          <span class="mlv-focus-mode" id="mlv-desktop-focus-mode">FOCUS</span>
-          <strong class="mlv-focus-clock" role="timer" aria-live="off" id="mlv-desktop-focus-clock">25:00</strong>
-          <p class="mlv-focus-status" id="mlv-desktop-focus-status">Ready to focus</p>
-        </div>
-        <div class="mlv-focus-actions">
-          <button type="button" class="mlv-focus-btn primary" data-focus-action="toggle">Start</button>
-          <button type="button" class="mlv-focus-btn" data-focus-action="skip">Skip phase</button>
-          <button type="button" class="mlv-focus-btn" data-focus-action="reset">Reset</button>
-          <button type="button" class="mlv-focus-btn" data-focus-action="minimize">Navigate the app</button>
-        </div>
         <details class="mlv-focus-sound-details"><summary>Audio · Completion tone & ambience</summary>
         <div class="mlv-focus-audio-panel" aria-label="Pomodoro audio">
           <div class="mlv-focus-audio-group">
-            <label for="mlv-focus-scene-select">Music · Ambient and Classical
+            <label for="mlv-focus-scene-select">Background music
               <select id="mlv-focus-scene-select" data-mlv-scene-select></select>
             </label>
             <button type="button" class="mlv-focus-btn" data-mlv-audio="toggle-ambient">Play</button>
+            <label><span data-mlv-volume-label>Volume</span><input type="range" min="0" max="100" value="35" data-mlv-ambient-volume aria-label="Background music volume" /></label>
+            <div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="mlv-focus-btn" data-mlv-audio="previous-ambient" aria-label="Previous track">⏮ Previous</button><button type="button" class="mlv-focus-btn" data-mlv-audio="next-ambient" aria-label="Skip track">Next ⏭</button><button type="button" class="mlv-focus-btn" data-mlv-audio="stop-ambient">Stop</button><select data-mlv-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option><option value="shuffle">Shuffle</option></select><select data-mlv-ambient-collection aria-label="Playlist collection"><option value="all">All recordings</option><option value="Ambient">Ambient</option><option value="Cinematic">Cinematic</option><option value="Classical">Classical piano</option><option value="Personal">My music</option></select></div>
+            <small data-mlv-ambient-progress aria-live="off"></small>
+            <label><span data-mlv-personal-label>Import my music</span><input type="file" multiple accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg" data-mlv-personal-files /></label><small data-mlv-personal-status role="status"></small>
+            <div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="mlv-focus-btn" data-mlv-audio="archive-ambient">Archive track</button><select data-mlv-archived-track aria-label="Archived tracks"></select><button type="button" class="mlv-focus-btn" data-mlv-audio="restore-ambient">Restore</button></div>
+            <small style="flex-basis:100%;overflow-wrap:anywhere">Scott Buckley · CC BY 4.0 · www.scottbuckley.com.au · creativecommons.org/licenses/by/4.0/</small>
+            <details><summary>Classical credits / Créditos clásicos</summary><small style="overflow-wrap:anywhere">Claude Debussy · Clair de Lune — Laurens Goedhart (CC BY 3.0; https://creativecommons.org/licenses/by/3.0/; https://commons.wikimedia.org/wiki/File:Clair_de_lune_(Claude_Debussy)_Suite_bergamasque.ogg) | Frédéric Chopin · Nocturne Op. 9 No. 2 — Peter Johnston / Musopen (CC0 1.0; https://creativecommons.org/publicdomain/zero/1.0/; https://commons.wikimedia.org/wiki/File:Chopin_Nocturne_No._2_in_E_Flat_Major%2C_Op._9.ogg) | Erik Satie · Gymnopédie No. 1 — Robin Alciatore / Musopen (Public domain; https://creativecommons.org/publicdomain/mark/1.0/; https://commons.wikimedia.org/wiki/File:Erik_Satie_-_gymnopedies_-_la_1_ere._lent_et_douloureux.ogg) | Johann Sebastian Bach · Prelude in C major, BWV 846 — Kimiko Ishizaka (CC0 1.0; https://creativecommons.org/publicdomain/zero/1.0/; https://commons.wikimedia.org/wiki/File:Kimiko_Ishizaka_-_Bach_-_Well-Tempered_Clavier%2C_Book_1_-_01_Prelude_No._1_in_C_major%2C_BWV_846.ogg) · MP3 conversion only.</small></details>
           </div>
         </div></details>
-        <details class="mlv-focus-motivation-details"><summary>Messages & affirmations</summary><div id="mlv-desktop-focus-motivation"></div></details>
+
       </section>`;
     // Scope layout directly to the canonical stage and use explicit child
     // selectors: a production CSS sanitizer collapsed descendant whitespace,
@@ -562,8 +703,13 @@
         handleAction(button.dataset.focusAction);
       });
     }
-    screen.addEventListener('change',event=>{
-      if(event.target?.matches?.('[data-mlv-completion-sound]'))
+    screen.addEventListener('input',event=>{if(event.target?.matches?.('[data-mlv-ambient-volume]'))window.MichelsLifeFocusAudio?.setAmbientVolume?.(Number(event.target.value)/100,false);});
+    screen.addEventListener('change',async event=>{
+      if(event.target?.matches?.('[data-mlv-personal-files]')){const input=event.target;input.disabled=true;try{await window.MichelsLifeFocusAudio?.importPersonalTracks?.(input.files);}finally{input.value='';input.disabled=false;refresh();}return;}
+      if(event.target?.matches?.('[data-mlv-ambient-volume]'))window.MichelsLifeFocusAudio?.setAmbientVolume?.(Number(event.target.value)/100);
+      else if(event.target?.matches?.('[data-mlv-ambient-mode]'))window.MichelsLifeFocusAudio?.setAmbientMode?.(event.target.value);
+      else if(event.target?.matches?.('[data-mlv-ambient-collection]'))window.MichelsLifeFocusAudio?.setAmbientCollection?.(event.target.value);
+      else if(event.target?.matches?.('[data-mlv-completion-sound]'))
         window.MichelsLifeFocusAudio?.selectCompletion?.(event.target.value);
       else if(event.target?.matches?.('[data-mlv-scene-select]'))
         window.MichelsLifeFocusAudio?.selectScene?.(event.target.value);
@@ -572,13 +718,16 @@
     document.body.append(screen,mini,launcher);
   }
   function handleAction(command){
-    if(command==='preview-completion')return window.MichelsLifeFocusAudio?.playCompletion?.(true)===true;
+    if(command==='preview-completion'){const audio=window.MichelsLifeFocusAudio;if(audio?.recordingActive?.()){audio.stopClassical();refresh();return true;}return audio?.playCompletion?.(true)===true;}
     if(command==='toggle-ambient'){
       const music=window.MichelsLifeFocusAudio;
-      if(music?.playing?.())music.stopAmbient();
-      else music?.startAmbient?.();
+      music?.toggleAmbientPlayback?.();
       refresh();return true;
     }
+    if(command==='archive-ambient'){const audio=window.MichelsLifeFocusAudio;audio?.archiveScene?.(audio.playingScene?.()||audio.sceneId?.(),true);refresh();return true;}
+    if(command==='restore-ambient'){const id=q('[data-mlv-archived-track]',screen)?.value;window.MichelsLifeFocusAudio?.archiveScene?.(id,false);refresh();return true;}
+    if(command==='stop-ambient'){window.MichelsLifeFocusAudio?.stopAmbient?.();refresh();return true;}
+    if(command==='previous-ambient'||command==='next-ambient'){window.MichelsLifeFocusAudio?.moveAmbient?.(command==='previous-ambient'?-1:1);refresh();return true;}
     if(command==='open'){open();return true;}
     if(command==='alarms'){
       minimize();
@@ -690,12 +839,12 @@
     if(classicalHeading&&classicalHeading.textContent!==headingText)
       classicalHeading.textContent=headingText;
     const classicalNote=q('[data-mlv-classical-note]',screen);
-    const noteText=lang('Short synthesized excerpts, not complete recordings.',
-      'Fragmentos breves sintetizados, no grabaciones completas.');
+    const noteText=lang('Licensed piano recordings · completion only.',
+      'Grabaciones de piano con licencia · solo al terminar.');
     if(classicalNote&&classicalNote.textContent!==noteText)
       classicalNote.textContent=noteText;
     const ambientHeading=q('[data-mlv-ambient-heading]',screen);
-    if(ambientHeading)ambientHeading.textContent=lang('Ambient music · 8 tracks','Música ambiental · 8 pistas');
+    if(ambientHeading)ambientHeading.textContent=lang('Ambient music','Música ambiental')+' · '+(audio?.sceneOptions?.().length||0);
     screen.querySelectorAll('[data-mlv-scene]').forEach(button=>{
       const id=button.dataset.mlvScene;
       const option=audio?.sceneOptions?.().find(item=>item.id===id);
@@ -707,8 +856,8 @@
     screen.querySelectorAll('[data-mlv-classical]').forEach(button=>{
       const id=button.dataset.mlvClassical;
       const item=audio?.classicalOptions?.().find(option=>option.id===id);
-      const active=audio?.playing?.()&&audio?.playingScene?.()===id;
-      const text=(active?'■ ':'▶ ')+(item?.label||id);
+      const active=audio?.previewingCompletion?.()===id;
+       const text=(active?'■ ':'▶ ')+(item?.label||id);
       if(button.textContent!==text)button.textContent=text;
       if(button.getAttribute('aria-pressed')!==String(!!active))
         button.setAttribute('aria-pressed',String(!!active));
@@ -728,13 +877,29 @@
       }
       if(select.value!==selected)select.value=selected;
     }
-    const ambientButton=q('[data-mlv-audio="toggle-ambient"]',screen);
-    if(ambientButton)ambientButton.textContent=audio?.playing?.()?lang('Stop','Detener'):lang('Play','Reproducir');
+    const vol=q('[data-mlv-ambient-volume]',screen),volLabel=q('[data-mlv-volume-label]',screen);
+    if(vol&&document.activeElement!==vol)vol.value=String(Math.round((audio?.ambientVolume?.()??.35)*100));
+    if(volLabel)volLabel.textContent=lang('Volume','Volumen');
+    const archivedSelect=q('[data-mlv-archived-track]',screen),archiveButton=q('[data-mlv-audio="archive-ambient"]',screen),restoreButton=q('[data-mlv-audio="restore-ambient"]',screen),archived=audio?.archivedOptions?.()||[];
+    if(archiveButton){archiveButton.textContent=lang('Archive track','Archivar canción');archiveButton.disabled=!audio?.sceneId?.();}
+    if(archivedSelect){const selected=archivedSelect.value;const opts=[{id:'',label:lang('Archived','Archivadas')+' ('+archived.length+')'},...archived];if(archivedSelect.options.length!==opts.length||opts.some((x,i)=>archivedSelect.options[i]?.value!==x.id||archivedSelect.options[i]?.textContent!==x.label)){archivedSelect.replaceChildren(...opts.map(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.label;return o;}));archivedSelect.value=archived.some(x=>x.id===selected)?selected:'';}archivedSelect.disabled=!archived.length;}
+    if(restoreButton){restoreButton.textContent=lang('Restore','Restaurar');restoreButton.disabled=!archivedSelect?.value;}
+    const personalLabel=q('[data-mlv-personal-label]',screen),personalNotice=q('[data-mlv-personal-status]',screen);if(personalLabel)personalLabel.textContent=lang('Import my music (local files)','Importar mi música (archivos locales)');if(personalNotice)personalNotice.textContent=audio?.personalStatus?.()||lang('MP3, WAV, OGG · available storage','MP3, WAV, OGG · espacio disponible');
+    const ambientButton=q('[data-mlv-audio="toggle-ambient"]',screen);if(ambientButton)ambientButton.disabled=!audio?.sceneId?.();
+    const playback=audio?.ambientPlayback?.(),modeSelect=q('[data-mlv-ambient-mode]',screen),progress=q('[data-mlv-ambient-progress]',screen);
+    if(modeSelect){modeSelect.value=audio?.ambientMode?.()||'repeat';modeSelect.options[0].textContent=lang('Repeat track','Repetir pista');modeSelect.options[1].textContent=lang('Continuous playlist','Lista continua');modeSelect.options[2].textContent=lang('Shuffle','Aleatorio');}
+    const coll=q('[data-mlv-ambient-collection]',screen);if(coll){coll.value=audio?.ambientCollection?.()||'all';const names=[lang('All recordings','Todas las grabaciones'),lang('Ambient','Ambiental'),lang('Cinematic','Cinematográfica'),lang('Classical piano','Piano clásico'),lang('My music','Mi música')];names.forEach((name,i)=>coll.options[i].textContent=name);}
+    if(progress)progress.textContent=playback&&Number.isFinite(playback.duration)?time(playback.currentTime*1000)+' / '+time(playback.duration*1000):'';
+    const prevTrack=q('[data-mlv-audio="previous-ambient"]',screen),nextTrack=q('[data-mlv-audio="next-ambient"]',screen);
+    if(prevTrack){prevTrack.textContent=lang('⏮ Previous','⏮ Anterior');prevTrack.setAttribute('aria-label',lang('Previous track','Canción anterior'));}
+    if(nextTrack){nextTrack.textContent=lang('Next ⏭','Saltar ⏭');nextTrack.setAttribute('aria-label',lang('Skip track','Saltar canción'));}
+    const stop=q('[data-mlv-audio="stop-ambient"]',screen);if(stop)stop.textContent=lang('Stop','Detener');
+    if(ambientButton)ambientButton.textContent=playback?(playback.paused?lang('Resume','Reanudar'):lang('Pause','Pausar')):audio?.playing?.()?lang('Stop','Detener'):lang('Play','Reproducir');
     const previewButton=q('[data-mlv-audio="preview-completion"]',screen);
-    if(previewButton)previewButton.textContent=lang('▶ Listen to completion','▶ Escuchar sonido final');
+    if(previewButton)previewButton.textContent=audio?.recordingActive?.()?lang('■ Stop recording','■ Detener grabación'):lang('▶ Listen to completion','▶ Escuchar sonido final');
     const sceneLabel=q('[for="mlv-focus-scene-select"]',screen);
     if(sceneLabel?.firstChild?.nodeType===3)
-      sceneLabel.firstChild.textContent=lang('Music · Ambient and Classical','Música · Ambiental y clásica')+' ';
+      sceneLabel.firstChild.textContent=lang('Background music','Música de ambiente')+' ';
     const completionLabel=q('[for="mlv-focus-completion-select"]',screen);
     if(completionLabel?.firstChild?.nodeType===3)
       completionLabel.firstChild.textContent=lang('Completion sound','Sonido al terminar')+' ';

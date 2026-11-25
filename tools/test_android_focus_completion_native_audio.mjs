@@ -45,3 +45,5 @@ test('six original WAV chimes are 16-bit PCM, distinct, nonempty and referenced 
   assert.equal(hashes.size,6);
 });
 console.log('PASS original Android background Pomodoro completion tone channel and RIFF provenance');
+
+test('native classical notification resources are recorded MP3s',()=>{for(const id of ['mozart_k545','tchaikovsky_op39']){assert.ok(native.includes('R.raw.mlv_focus_'+id));assert.ok(readFileSync('android/app/src/main/res/raw/mlv_focus_'+id+'.mp3').length>500000);}});

@@ -28,6 +28,8 @@ class SettingsBundleTests(unittest.TestCase):
         source.mkdir()
         for filename in SHARED:
             shutil.copy2(FRONTEND / filename, source / filename)
+        # Use the genuine versioned recording resources, not fake empty MP3s.
+        shutil.copytree(FRONTEND / "assets/audio/classical", source / "assets/audio/classical")
         markup = (
             '<!doctype html><html><head><meta charset="UTF-8" /></head>'
             '<body><h1>Michel Life</h1>'
@@ -66,6 +68,10 @@ class SettingsBundleTests(unittest.TestCase):
                 )
                 self.assertIn(LOADER.encode(), z.read("index.html"))
                 self.assertEqual(sum(name.endswith(".jpg") for name in names), 204)
+                for name in sorted(p.name for p in (FRONTEND / 'assets/audio/classical').iterdir() if p.suffix in ('.mp3','.json')):
+                    path = "assets/audio/classical/" + name
+                    self.assertEqual(names.count(path), 1)
+                    self.assertEqual(z.read(path), (FRONTEND / path).read_bytes())
                 self.assertIsNone(z.testzip())
 
     def test_android_assets_ship_same_live_source_and_loader(self):
@@ -83,6 +89,9 @@ class SettingsBundleTests(unittest.TestCase):
                 (assets / "settings-color-floating-preview.js").read_bytes(),
                 (FRONTEND / "settings-color-floating-preview.js").read_bytes()
             )
+            for name in sorted(p.name for p in (FRONTEND / 'assets/audio/classical').iterdir() if p.suffix in ('.mp3','.json')):
+                path = "assets/audio/classical/" + name
+                self.assertEqual((assets / path).read_bytes(), (FRONTEND / path).read_bytes())
             android_html=(assets / "index.html").read_text(encoding="utf-8")
             self.assertIn(LOADER, android_html)
             self.assertIn('data-mlv-android-bridge="v1"', android_html)

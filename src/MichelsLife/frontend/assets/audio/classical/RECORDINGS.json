@@ -1,0 +1,33 @@
+[
+  {
+    "id": "mozart_k545",
+    "title": "Sonata K.545 — I. Allegro",
+    "performer": "Robin Alciatore (recording metadata); Musopen",
+    "license": "Public domain / attribution",
+    "license_url": "https://creativecommons.org/publicdomain/mark/1.0/",
+    "source_page": "https://commons.wikimedia.org/wiki/File:Wolfgang_Amadeus_Mozart_-_sonata_no._16_in_c_major,_k.545_%27sonata_facile%27_-_i._allegro.ogg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/3/38/Wolfgang_Amadeus_Mozart_-_sonata_no._16_in_c_major%2C_k.545_%27sonata_facile%27_-_i._allegro.ogg",
+    "sha1": "5cfa6f8bbc66f151e1f614ede50446b1344e1bb1",
+    "seconds": 133.88,
+    "source_sha256": "27c63f441129af6d244714a2d3fff5a427b5cb46bcf362137ee0fff29bc0fa50",
+    "asset_sha256": "3b4536695dc7613d571fac31013623ced2f5c4e093514fe9cc538114eff28c64",
+    "duration_seconds": 133.877551,
+    "modifications": "MP3 codec conversion only; full performance; no synthesis or edits"
+  },
+  {
+    "id": "tchaikovsky_op39",
+    "title": "Morning Prayer, Op.39 No.1",
+    "performer": "Ramón León Egea, piano (2025)",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "source_page": "https://imslp.org/wiki/Album_pour_Enfants,_Op.39_(Tchaikovsky,_Pyotr_Ilyich)",
+    "url": "https://s9.imslp.org/files/imglnks/usimg/4/40/IMSLP977254-PMLP19418-Tchaikovsky_-_Morning_Prayer_from_Album_for_the_Young_for_piano_performed_by_Ram%C3%B3n_Le%C3%B3n_Egea.mp3",
+    "seconds": 119,
+    "source_id": "IMSLP #977254",
+    "alternate_url": "https://s9.imslp.org/files/imglnks/usimg/d/d9/IMSLP977254-PMLP19418-Tchaikovsky_-_Morning_Prayer_from_Album_for_the_Young_for_piano_performed_by_Ram%C3%B3n_Le%C3%B3n_Egea.mp3",
+    "source_sha256": "d05b283a902a7d78afdd62f23fe4c7f0bc63b4b97e3bf06c83dea52f8499f815",
+    "asset_sha256": "ba064ccb0f22a602a5360303558e7646c49f4d048a03bb44fe51f303a6f60bf1",
+    "duration_seconds": 119.275102,
+    "modifications": "MP3 codec conversion only; full performance; no synthesis or edits"
+  }
+]

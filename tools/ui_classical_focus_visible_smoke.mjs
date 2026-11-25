@@ -51,53 +51,90 @@ try{
     await page.locator('#mlv-desktop-focus-launcher').click();
   }
   assert.equal(await root.isVisible(),true,platform+' immersive focus not opened');
-  const card=root.locator(mobile?'.mlv-android-classical':'.mlv-focus-classical');
-  const mozart=card.locator(mobile?'[data-mobile-classical="mozart_k545"]':'[data-mlv-classical="mozart_k545"]');
-  const tchaikovsky=card.locator(mobile?'[data-mobile-classical="tchaikovsky_op39"]':'[data-mlv-classical="tchaikovsky_op39"]');
-  assert.equal(await card.isVisible(),true,'classical section must be visible by default');
-  const firstViewport=await card.evaluate(el=>{
-    const r=el.getBoundingClientRect();
-    return {top:r.top,bottom:r.bottom,height:window.innerHeight,
-      display:getComputedStyle(el).display,visibility:getComputedStyle(el).visibility};
+  const completion=root.locator(mobile?'[data-mobile-focus-completion]':'[data-mlv-completion-sound]');
+  const preview=root.locator(mobile?'[data-mobile-focus="preview-completion"]':'[data-mlv-audio="preview-completion"]');
+  const clock=root.locator(mobile?'#mlv-android-focus-time':'#mlv-desktop-focus-clock');
+  const motivation=root.locator(mobile?'#mlv-android-focus-motivation':'#mlv-desktop-focus-motivation');
+  await motivation.locator('.mlv-motivation-line').first().waitFor({state:'visible'});
+  const first=await root.evaluate((el,mobile)=>{
+    const c=el.querySelector(mobile?'#mlv-android-focus-time':'#mlv-desktop-focus-clock');
+    const m=el.querySelector(mobile?'#mlv-android-focus-motivation':'#mlv-desktop-focus-motivation');
+    const r=c.getBoundingClientRect(),v=m.getBoundingClientRect();
+    return {clockTop:r.top,clockBottom:r.bottom,motivationTop:v.top,motivationBottom:v.bottom,height:innerHeight,collapsed:!!m.closest('details:not([open])')};
+  },mobile);
+  assert.ok(first.clockTop>=0&&first.clockBottom<=first.height&&first.motivationBottom<=first.height&&!first.collapsed,'clock and phrases must be fully visible at first viewport: '+JSON.stringify(first));
+  assert.equal(await motivation.locator('.mlv-motivation-line:not([hidden])').count(),2);
+  assert.equal(await completion.locator('option').count(),25);
+  assert.match(await completion.locator('option[value="mozart_k545"]').innerText(),/Mozart/);
+  assert.match(await completion.locator('option[value="tchaikovsky_op39"]').innerText(),/Chaikovski/);
+  await page.screenshot({path:out+'/'+platform+'-clock-first.png'});
+  for(const id of ['mozart_k545','tchaikovsky_op39']){
+    await completion.selectOption(id);
+    await preview[mobile?'tap':'click']();
+    await page.waitForFunction(id=>window.MichelsLifeFocusAudio.previewingCompletion()===id,id,{timeout:10000});
+    await page.waitForFunction(()=>{const x=window.MichelsLifeFocusAudio.recordingPlayback();return x&&!x.paused&&x.currentTime>.1&&x.duration>110;},null,{timeout:15000});
+    assert.equal(await page.evaluate(()=>window.MichelsLifeFocusAudio.playing()),false,'classical must not start ambient');
+    assert.equal(await page.evaluate(()=>window.FocusStoryV30162.focusState().v30165CompletionSound),id);
+    await preview[mobile?'tap':'click']();
+    await page.waitForFunction(()=>window.MichelsLifeFocusAudio.previewingCompletion()===null);
+  }
+  // Test actual packaged MP3 playback in the ambient selector, not only JS mocks.
+  const ambient=root.locator(mobile?'[data-mobile-focus-ambience]':'[data-mlv-scene-select]');
+  const audioDetails=ambient.locator('xpath=ancestor::details[1]');
+  if(await audioDetails.count())await audioDetails.evaluate(el=>el.open=true);
+  const ambientToggle=root.locator(mobile?'[data-mobile-focus="toggle-ambient"]':'[data-mlv-audio="toggle-ambient"]');
+  for(const id of ['sb_meanwhile','debussy_clair_de_lune']){
+    await ambient.selectOption(id);await ambientToggle[mobile?'tap':'click']();
+    await page.waitForFunction(id=>{const p=window.MichelsLifeFocusAudio.ambientPlayback();return p&&!p.paused&&p.currentTime>.1&&p.duration>100&&p.src.includes(id+'.mp3');},id,{timeout:15000});
+    await ambientToggle[mobile?'tap':'click']();await page.waitForFunction(()=>window.MichelsLifeFocusAudio.ambientPlayback()?.paused===true);
+    await ambientToggle[mobile?'tap':'click']();await page.waitForFunction(()=>window.MichelsLifeFocusAudio.ambientPlayback()?.paused===false);
+    const next=root.locator(mobile?'[data-mobile-focus="next-ambient"]':'[data-mlv-audio="next-ambient"]');await next[mobile?'tap':'click']();
+    await page.waitForFunction(id=>{const p=window.MichelsLifeFocusAudio.ambientPlayback();return p&&!p.paused&&!p.src.includes(id+'.mp3')&&p.currentTime>.1;},id,{timeout:15000});
+    await root.locator(mobile?'[data-mobile-focus="stop-ambient"]':'[data-mlv-audio="stop-ambient"]')[mobile?'tap':'click']();
+    await page.waitForFunction(()=>!window.MichelsLifeFocusAudio.playing());
+  }
+  // Archive and restore through real controls, without modifying the completion selection.
+  await ambient.selectOption('sb_meanwhile');
+  await root.locator(mobile?'[data-mobile-focus="archive-ambient"]':'[data-mlv-audio="archive-ambient"]')[mobile?'tap':'click']();
+  await page.waitForFunction(()=>window.MichelsLifeFocusAudio.archivedOptions().some(x=>x.id==='sb_meanwhile'));
+  assert.equal(await ambient.locator('option[value="sb_meanwhile"]').count(),0);
+  const archived=root.locator(mobile?'[data-mobile-archived-track]':'[data-mlv-archived-track]');await archived.selectOption('sb_meanwhile');
+  await root.locator(mobile?'[data-mobile-focus="restore-ambient"]':'[data-mlv-audio="restore-ambient"]')[mobile?'tap':'click']();
+  await page.waitForFunction(()=>window.MichelsLifeFocusAudio.sceneOptions().some(x=>x.id==='sb_meanwhile'));
+  // Actual user-selected MP3 import and browser playback, independent of alarms.
+  const fileInput=root.locator(mobile?'[data-mobile-personal-files]':'[data-mlv-personal-files]');
+  await fileInput.setInputFiles(['src/MichelsLife/frontend/assets/audio/classical/sb_meanwhile.mp3','src/MichelsLife/frontend/assets/audio/classical/debussy_clair_de_lune.mp3']);
+  await page.waitForFunction(()=>window.MichelsLifeFocusAudio.sceneOptions().filter(x=>x.id.startsWith('my_')).length===2);
+  const myId=await page.evaluate(()=>window.MichelsLifeFocusAudio.sceneOptions().find(x=>x.id.startsWith('my_')).id);
+  await ambient.selectOption(myId);await ambientToggle[mobile?'tap':'click']();
+  await page.waitForFunction(()=>{const p=window.MichelsLifeFocusAudio.ambientPlayback();return p&&p.src.startsWith('blob:')&&!p.paused&&p.currentTime>.1;},null,{timeout:15000});
+  await root.locator(mobile?'[data-mobile-focus="stop-ambient"]':'[data-mlv-audio="stop-ambient"]')[mobile?'tap':'click']();
+  await root.locator(mobile?'[data-mobile-ambient-collection]':'[data-mlv-ambient-collection]').selectOption('all');
+  // A real timer expiry, not a preview callback: shorten an already running
+  // synthetic QA session's canonical deadline and observe its actual finish.
+  await page.evaluate(()=>{
+    const engine=window.FocusStoryV30162,audio=window.MichelsLifeFocusAudio;
+    engine.applyPreset('qa',1,1);
+    const original=audio.playCompletion;
+    window.__qaCompletionCalls=[];
+    audio.playCompletion=function(preview=false){
+      const ok=original.call(audio,preview);
+      window.__qaCompletionCalls.push({preview,id:audio.completionId(),ok});
+      return ok;
+    };
+    engine.startFocus();
+    engine.focusState().deadlineAt=Date.now()+1600;
   });
-  assert.ok(firstViewport.top>=0 && firstViewport.top < firstViewport.height-50,
-    'classical songs must appear near top of Focus WITHOUT scrolling: '+JSON.stringify(firstViewport));
-  assert.equal(await mozart.count(),1);
-  assert.equal(await tchaikovsky.count(),1);
-  assert.equal(await mozart.getAttribute('aria-pressed'),'false','music must not autoplay');
-  const details=root.locator(mobile?'.mlv-android-focus-sounds':'.mlv-focus-sound-details');
-  assert.equal(await details.getAttribute('open'),null,'hidden audio drawer should stay closed');
-  const title=await card.innerText();
-  assert.match(title,/Música clásica/);
-  assert.match(title,/Mozart/);
-  assert.match(title,/Chaikovski/);
-  await mozart.scrollIntoViewIfNeeded();
-  await page.screenshot({path:out+'/'+platform+'-music-visible.png'});
-  await mozart[mobile?'tap':'click']();
-  await page.waitForFunction(()=>window.MichelsLifeFocusAudio?.playing?.()&&
-    window.MichelsLifeFocusAudio?.playingScene?.()==='mozart_k545',null,{timeout:8000});
-  assert.equal(await mozart.getAttribute('aria-pressed'),'true','Mozart must be indicated playing');
-  await tchaikovsky[mobile?'tap':'click']();
-  await page.waitForFunction(()=>window.MichelsLifeFocusAudio?.playingScene?.()==='tchaikovsky_op39',null,{timeout:8000});
-  assert.equal(await tchaikovsky.getAttribute('aria-pressed'),'true','Tchaikovsky must be indicated playing');
-  const saved=await page.evaluate(()=>{
-    const a=window.MichelsLifeFocusAudio,s=window.FocusStoryV30162.focusState();
-    return {selected:a.sceneId(),persisted:s.v30165Soundscape,
-      oldMozart:a.classicalOptions().length,allScenes:a.sceneOptions().length};
-  });
-  assert.equal(saved.selected,'tchaikovsky_op39');
-  assert.equal(saved.persisted,'tchaikovsky_op39');
-  assert.equal(saved.allScenes,10,'eight original scenes must be preserved');
-  await tchaikovsky[mobile?'tap':'click']();
-  assert.equal(await page.evaluate(()=>window.MichelsLifeFocusAudio.playing()),false,
-    'second press must stop, not leave an ambient interval');
-  assert.equal(await tchaikovsky.getAttribute('aria-pressed'),'false');
+  await page.waitForFunction(()=>window.__qaCompletionCalls?.some(x=>!x.preview&&x.id==='tchaikovsky_op39'&&x.ok),null,{timeout:12000});
+  await page.waitForFunction(()=>{const x=window.MichelsLifeFocusAudio.recordingPlayback();return x&&!x.paused&&x.currentTime>.1&&x.duration>110;},null,{timeout:15000});
+  assert.equal(await page.evaluate(()=>window.FocusStoryV30162.focusState().mode),'break');
+  await page.evaluate(()=>window.MichelsLifeFocusAudio.stopClassical());
+  const scenes=await page.evaluate(()=>window.MichelsLifeFocusAudio.sceneOptions().map(x=>x.id));
+  assert.equal(scenes.length,26);assert.ok(!scenes.includes('mozart_k545'));
   await page.reload({waitUntil:'domcontentloaded',timeout:60000});
-  await page.waitForFunction(()=>!!window.MichelsLifeFocusAudio?.sceneId,null,{timeout:60000});
-  assert.equal(await page.evaluate(()=>window.MichelsLifeFocusAudio.sceneId()),
-    'tchaikovsky_op39','classical choice not persisted across reload');
+  await page.waitForFunction(()=>window.MichelsLifeFocusAudio?.completionId?.()==='tchaikovsky_op39'&&window.MichelsLifeFocusAudio?.sceneOptions?.().filter(x=>x.id.startsWith('my_')).length===2);
   assert.deepEqual(errors,[],
     'real Chromium runtime errors cannot be ignored; sanitized CDP provenance='+
       JSON.stringify(await parserFaults.snapshot()));
-  console.log('PASS real '+platform+' visible classical Mozart/Chaikovski, direct taps, Web Audio state, stop and reload persistence');
+  console.log('PASS real '+platform+' clock-first, visible motivation, classical completion preview, stop and reload persistence');
 }finally{await browser.close();}
