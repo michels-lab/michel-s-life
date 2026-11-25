@@ -93,6 +93,14 @@ try{
     await root.locator(mobile?'[data-mobile-focus="stop-ambient"]':'[data-mlv-audio="stop-ambient"]')[mobile?'tap':'click']();
     await page.waitForFunction(()=>!window.MichelsLifeFocusAudio.playing());
   }
+  // Archive and restore through real controls, without modifying the completion selection.
+  await ambient.selectOption('sb_meanwhile');
+  await root.locator(mobile?'[data-mobile-focus="archive-ambient"]':'[data-mlv-audio="archive-ambient"]')[mobile?'tap':'click']();
+  await page.waitForFunction(()=>window.MichelsLifeFocusAudio.archivedOptions().some(x=>x.id==='sb_meanwhile'));
+  assert.equal(await ambient.locator('option[value="sb_meanwhile"]').count(),0);
+  const archived=root.locator(mobile?'[data-mobile-archived-track]':'[data-mlv-archived-track]');await archived.selectOption('sb_meanwhile');
+  await root.locator(mobile?'[data-mobile-focus="restore-ambient"]':'[data-mlv-audio="restore-ambient"]')[mobile?'tap':'click']();
+  await page.waitForFunction(()=>window.MichelsLifeFocusAudio.sceneOptions().some(x=>x.id==='sb_meanwhile'));
   // A real timer expiry, not a preview callback: shorten an already running
   // synthetic QA session's canonical deadline and observe its actual finish.
   await page.evaluate(()=>{

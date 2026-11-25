@@ -1304,6 +1304,7 @@
               <label><span data-mobile-volume-label>Volume</span><input type="range" min="0" max="100" value="35" data-mobile-ambient-volume aria-label="Background music volume" /></label>
               <div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" data-mobile-focus="previous-ambient" aria-label="Previous track">⏮ Previous</button><button type="button" data-mobile-focus="next-ambient" aria-label="Skip track">Next ⏭</button><button type="button" data-mobile-focus="stop-ambient">Stop</button><select data-mobile-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option><option value="shuffle">Shuffle</option></select><select data-mobile-ambient-collection aria-label="Playlist collection"><option value="all">All recordings</option><option value="Ambient">Ambient</option><option value="Cinematic">Cinematic</option><option value="Classical">Classical piano</option></select></div>
               <small data-mobile-ambient-progress aria-live="off"></small>
+              <div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" data-mobile-focus="archive-ambient">Archive track</button><select data-mobile-archived-track aria-label="Archived tracks"></select><button type="button" data-mobile-focus="restore-ambient">Restore</button></div>
               <small style="overflow-wrap:anywhere">Scott Buckley · CC BY 4.0 · www.scottbuckley.com.au · creativecommons.org/licenses/by/4.0/</small>
               <details><summary>Classical credits / Créditos clásicos</summary><small style="overflow-wrap:anywhere">Claude Debussy · Clair de Lune — Laurens Goedhart (CC BY 3.0; https://creativecommons.org/licenses/by/3.0/; https://commons.wikimedia.org/wiki/File:Clair_de_lune_(Claude_Debussy)_Suite_bergamasque.ogg) | Frédéric Chopin · Nocturne Op. 9 No. 2 — Peter Johnston / Musopen (CC0 1.0; https://creativecommons.org/publicdomain/zero/1.0/; https://commons.wikimedia.org/wiki/File:Chopin_Nocturne_No._2_in_E_Flat_Major%2C_Op._9.ogg) | Erik Satie · Gymnopédie No. 1 — Robin Alciatore / Musopen (Public domain; https://creativecommons.org/publicdomain/mark/1.0/; https://commons.wikimedia.org/wiki/File:Erik_Satie_-_gymnopedies_-_la_1_ere._lent_et_douloureux.ogg) | Johann Sebastian Bach · Prelude in C major, BWV 846 — Kimiko Ishizaka (CC0 1.0; https://creativecommons.org/publicdomain/zero/1.0/; https://commons.wikimedia.org/wiki/File:Kimiko_Ishizaka_-_Bach_-_Well-Tempered_Clavier%2C_Book_1_-_01_Prelude_No._1_in_C_major%2C_BWV_846.ogg) · MP3 conversion only.</small></details>
             </div>
@@ -1388,6 +1389,8 @@
           sound?.toggleAmbientPlayback?.();
           updateFocus();return;
         }
+        if(action==='archive-ambient'){const audio=window.MichelsLifeFocusAudio;audio?.archiveScene?.(audio.playingScene?.()||audio.sceneId?.(),true);updateFocus();return;}
+        if(action==='restore-ambient'){window.MichelsLifeFocusAudio?.archiveScene?.(q('[data-mobile-archived-track]',root)?.value,false);updateFocus();return;}
         if(action==='stop-ambient'){window.MichelsLifeFocusAudio?.stopAmbient?.();updateFocus();return;}
         if(action==='previous-ambient'||action==='next-ambient'){window.MichelsLifeFocusAudio?.moveAmbient?.(action==='previous-ambient'?-1:1);updateFocus();return;}
         if(!api){return;}
@@ -1647,6 +1650,11 @@
     }
     const volume=q('[data-mobile-ambient-volume]',root);if(volume&&document.activeElement!==volume)volume.value=String(Math.round((audio?.ambientVolume?.()??.35)*100));
     writeText(q('[data-mobile-volume-label]',root),focusText('Volume','Volumen'));
+    const archivedSelect=q('[data-mobile-archived-track]',root),archiveButton=q('[data-mobile-focus="archive-ambient"]',root),restoreButton=q('[data-mobile-focus="restore-ambient"]',root),archived=audio?.archivedOptions?.()||[];
+    writeText(archiveButton,focusText('Archive track','Archivar canción'));if(archiveButton)archiveButton.disabled=!audio?.sceneId?.();
+    if(archivedSelect){const selected=archivedSelect.value;const opts=[{id:'',label:focusText('Archived','Archivadas')+' ('+archived.length+')'},...archived];if(archivedSelect.options.length!==opts.length||opts.some((x,i)=>archivedSelect.options[i]?.value!==x.id||archivedSelect.options[i]?.textContent!==x.label)){archivedSelect.replaceChildren(...opts.map(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.label;return o;}));archivedSelect.value=archived.some(x=>x.id===selected)?selected:'';}archivedSelect.disabled=!archived.length;}
+    writeText(restoreButton,focusText('Restore','Restaurar'));if(restoreButton)restoreButton.disabled=!archivedSelect?.value;
+    const ambientToggle=q('[data-mobile-focus="toggle-ambient"]',root);if(ambientToggle)ambientToggle.disabled=!audio?.sceneId?.();
     const playback=audio?.ambientPlayback?.(),playMode=q('[data-mobile-ambient-mode]',root);
     if(playMode){playMode.value=audio?.ambientMode?.()||'repeat';writeText(playMode.options[0],focusText('Repeat track','Repetir pista'));writeText(playMode.options[1],focusText('Continuous playlist','Lista continua'));writeText(playMode.options[2],focusText('Shuffle','Aleatorio'));}
     const coll=q('[data-mobile-ambient-collection]',root);if(coll){coll.value=audio?.ambientCollection?.()||'all';[focusText('All recordings','Todas las grabaciones'),focusText('Ambient','Ambiental'),focusText('Cinematic','Cinematográfica'),focusText('Classical piano','Piano clásico')].forEach((name,i)=>writeText(coll.options[i],name));}

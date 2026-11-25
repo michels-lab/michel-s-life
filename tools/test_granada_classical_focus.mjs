@@ -41,6 +41,7 @@ function harness(persisted={v30165Soundscape:'moonlight',v30165CompletionSound:'
         else if(kind==='ambientVolume')persisted.v30165AmbientVolume=value;
         else if(kind==='ambientMode')persisted.v30165AmbientMode=value;
         else if(kind==='ambientCollection')persisted.v30165AmbientCollection=value;
+        else if(kind==='archivedAmbient')persisted.v30165ArchivedAmbient=Array.from(value);
         return true;
       }
     },
@@ -197,4 +198,18 @@ test('manual next skips an active track in repeat mode without modifying timer o
  const f=harness();f.api.selectScene(library[0]);f.api.selectCompletion(classical[0]);f.api.setAmbientMode('repeat');f.api.startAmbient();
  const first=f.recordings.at(-1);f.api.moveAmbient(1);assert.equal(first.paused,true);assert.equal(f.api.playingScene(),library[1]);assert.equal(f.recordings.at(-1).loop,true);assert.equal(f.api.completionId(),classical[0]);
  f.api.toggleAmbientPlayback();f.api.moveAmbient(1);assert.equal(f.api.playingScene(),library[2]);assert.equal(f.recordings.at(-1).paused,true);f.api.toggleAmbientPlayback();assert.equal(f.recordings.at(-1).paused,false);f.api.stopAmbient();
+});
+
+
+test('archiving excludes songs from manual play, repeat, next and shuffle, persists and restores without changing completion',()=>{
+ const f=harness();f.api.selectScene(library[0]);f.api.selectCompletion(classical[0]);f.api.startAmbient();const first=f.recordings.at(-1);
+ assert.equal(f.api.archiveScene(library[0]),true);assert.equal(first.paused,true);assert.notEqual(f.api.playingScene(),library[0]);assert.equal(f.api.completionId(),classical[0]);assert.equal(f.api.toggleScene(library[0]),false);
+ assert.ok(!f.api.sceneOptions().some(x=>x.id===library[0]));assert.ok(f.api.archivedOptions().some(x=>x.id===library[0]));
+ for(const mode of ['repeat','playlist','shuffle']){f.api.setAmbientMode(mode);for(let i=0;i<30;i++){f.api.moveAmbient(1);assert.notEqual(f.api.sceneId(),library[0]);}}
+ assert.ok(harness(f.persisted).api.archivedOptions().some(x=>x.id===library[0]));assert.equal(f.api.archiveScene(library[0],false),true);assert.ok(f.api.sceneOptions().some(x=>x.id===library[0]));f.api.stopAmbient();
+});
+test('archiving the entire selected collection stops playback and does not fall through to another collection',()=>{
+ const f=harness();f.api.setAmbientCollection('Classical');f.api.startAmbient();for(const id of piano)assert.equal(f.api.archiveScene(id),true);
+ assert.equal(f.api.sceneId(),'');assert.equal(f.api.sceneOptions().length,0);assert.equal(f.api.playing(),false);assert.equal(f.api.startAmbient(),false);assert.equal(f.api.moveAmbient(1),false);assert.equal(f.api.ambientCollection(),'Classical');
+ assert.equal(f.api.archiveScene(piano[0],false),true);assert.equal(f.api.sceneId(),piano[0]);assert.equal(f.api.playing(),false);assert.equal(f.api.startAmbient(),true);f.api.stopAmbient();
 });

@@ -95,7 +95,10 @@
     return selected;
   }
   const finishId=()=>readChoice(completionKey,finishTones,'soft');
-  const sceneId=()=>readChoice(sceneKey,ambientScenes,'moonlight');
+  const archivedIds=()=>{const v=api()?.focusState?.()?.v30165ArchivedAmbient;return new Set(Array.isArray(v)?v.filter(id=>Object.hasOwn(ambientScenes,id)):[]);};
+  const isAvailable=id=>Object.hasOwn(ambientScenes,id)&&!archivedIds().has(id);
+  function activeIds(){const c=ambientCollection();return Object.keys(ambientScenes).filter(id=>isAvailable(id)&&(c==='all'||ambientScenes[id].group===c));}
+  const sceneId=()=>{const selected=readChoice(sceneKey,ambientScenes,'moonlight'),ids=activeIds();return ids.includes(selected)?selected:(ids[0]||'');};
   function unlock(){
     try{return !!soundContext();}catch(_){return false;}
   }
@@ -193,24 +196,38 @@
   const ambientCollection=()=>{const c=api()?.focusState?.()?.v30165AmbientCollection;return ['Ambient','Cinematic','Classical'].includes(c)?c:'all';};
   let shuffleHistory=[],shuffleBag=[];
   function resetShuffle(){shuffleHistory=[];shuffleBag=[];}
-  function collectionIds(){const c=ambientCollection();return Object.keys(ambientScenes).filter(id=>ambientScenes[id].recorded&&(c==='all'||ambientScenes[id].group===c));}
-  function setAmbientCollection(value){if(!['all','Ambient','Cinematic','Classical'].includes(value))return false;api()?.setAudioPreference?.('ambientCollection',value);resetShuffle();const ids=collectionIds();if(ids.length&&!ids.includes(sceneId()))selectScene(ids[0]);return true;}
+  function collectionIds(){return activeIds().filter(id=>ambientScenes[id].recorded);}
+  function archiveScene(id,archived=true){
+    if(!Object.hasOwn(ambientScenes,id))return false;
+    const old=archivedIds();if(old.has(id)===archived)return true;
+    const selected=sceneId(),wasActive=ambientScene===id,wasPaused=!!ambientRecording?.paused;
+    if(archived)old.add(id);else old.delete(id);
+    if(api()?.setAudioPreference?.('archivedAmbient',[...old])!==true)return false;
+    resetShuffle();
+    if(archived&&(wasActive||selected===id)){
+      const next=collectionIds()[0]||activeIds()[0]||'';
+      if(wasActive)stopAmbient();
+      if(next){choice(sceneKey,ambientScenes,next,'moonlight');if(wasActive&&!wasPaused)startAmbient();}
+    }
+    return true;
+  }
+  function setAmbientCollection(value){if(!['all','Ambient','Cinematic','Classical'].includes(value))return false;api()?.setAudioPreference?.('ambientCollection',value);resetShuffle();const ids=activeIds();const selected=sceneId();if(!ids.length){stopAmbient();return true;}if(ambientScene&&!ids.includes(ambientScene)){const paused=!!ambientRecording?.paused;stopAmbient();choice(sceneKey,ambientScenes,selected,'moonlight');if(!paused)startAmbient();}else choice(sceneKey,ambientScenes,selected,'moonlight');return true;}
   function setAmbientMode(mode){if(!['repeat','playlist','shuffle'].includes(mode))return false;if(mode!==ambientMode())resetShuffle();api()?.setAudioPreference?.('ambientMode',mode);if(ambientRecording)ambientRecording.loop=ambientMode()==='repeat';return true;}
   function moveAmbient(delta,automatic=false){const ids=collectionIds();if(!ids.length)return false;const current=sceneId(),index=ids.indexOf(current);let next;if(ambientMode()==='shuffle'){
-    if(delta<0&&shuffleHistory.length)next=shuffleHistory.pop();
+    shuffleHistory=shuffleHistory.filter(id=>ids.includes(id));if(delta<0&&shuffleHistory.length)next=shuffleHistory.pop();
     else{shuffleBag=shuffleBag.filter(id=>ids.includes(id)&&id!==current);if(!shuffleBag.length){shuffleBag=ids.filter(id=>id!==current);for(let i=shuffleBag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffleBag[i],shuffleBag[j]]=[shuffleBag[j],shuffleBag[i]];}}next=shuffleBag.pop()||ids[0];if(next!==current&&ids.includes(current))shuffleHistory.push(current);if(shuffleHistory.length>100)shuffleHistory.shift();}
     }else next=ids[(index<0?(delta<0?ids.length-1:0):(index+delta+ids.length)%ids.length)];const wasPaused=!automatic&&!!ambientRecording?.paused;selectScene(next,true);if(wasPaused&&ambientRecording)ambientRecording.pause();return true;}
   function startAmbient(){
     stopAmbient();
     // Explicit new ambience replaces the recording rather than mixing audio.
     stopClassical();
-    const id=sceneId();ambientVolume=getVolume();
+    const id=sceneId();if(!id||!isAvailable(id))return false;ambientVolume=getVolume();
     if(ambientScenes[id]?.recorded){
       try{
         const player=new Audio('assets/audio/classical/'+id+'.mp3');
         player.loop=ambientMode()==='repeat';player.volume=ambientVolume;ambientRecording=player;ambientScene=id;
         const clear=()=>{if(ambientRecording===player)stopAmbient();};
-        player.onerror=clear;player.onended=()=>{if(ambientRecording!==player)return;if(ambientMode()!=='repeat')moveAmbient(1,true);else clear();};player.play().catch(clear);return true;
+        player.onerror=clear;player.onended=()=>{if(ambientRecording!==player)return;if(ambientMode()!=='repeat'){if(!moveAmbient(1,true))clear();}else clear();};player.play().catch(clear);return true;
       }catch(_){stopAmbient();return false;}
     }
     const C=window.AudioContext||window.webkitAudioContext;
@@ -225,6 +242,7 @@
   }
   function toggleAmbientPlayback(){if(ambientRecording){const player=ambientRecording;if(player.paused){player.play().catch(()=>{if(ambientRecording===player)stopAmbient();});}else player.pause();return true;}if(ambientContext)return stopAmbient();return startAmbient();}
   function selectScene(id,fromPlaylist=false){
+    if(!isAvailable(id))return sceneId();
     if(!fromPlaylist){resetShuffle();const group=ambientScenes[id]?.group;if(ambientCollection()!=='all'&&group!==ambientCollection())api()?.setAudioPreference?.('ambientCollection','all');}
     const old=ambientScene;choice(sceneKey,ambientScenes,id,'moonlight');
     if(old)startAmbient();
@@ -233,7 +251,7 @@
   function toggleScene(id){
     // Every soundtrack shares one canonical persisted choice and scheduler.
     // Reject unknown IDs rather than silently switching to the default.
-    if(!Object.hasOwn(ambientScenes,id))return false;
+    if(!isAvailable(id))return false;
     if((ambientContext||ambientRecording)&&ambientScene===id){stopAmbient();return true;}
     const wasPlaying=!!(ambientContext||ambientRecording);
     selectScene(id);
@@ -250,7 +268,8 @@
   }
   window.MichelsLifeFocusAudio={
     completionOptions:()=>textOptions(finishTones),
-    sceneOptions:()=>textOptions(ambientScenes,true),
+    sceneOptions:()=>textOptions(ambientScenes,true).filter(x=>activeIds().includes(x.id)),
+    archivedOptions:()=>textOptions(ambientScenes,true).filter(x=>archivedIds().has(x.id)),archiveScene,
     classicalOptions:()=>classicalIds.map(id=>({id,label:lang(finishTones[id].en,finishTones[id].es)})),
     toggleClassical,toggleScene,
     completionId:finishId,sceneId,selectCompletion:id=>{stopClassical();return choice(completionKey,finishTones,id,'soft');},
@@ -598,6 +617,7 @@
             <label><span data-mlv-volume-label>Volume</span><input type="range" min="0" max="100" value="35" data-mlv-ambient-volume aria-label="Background music volume" /></label>
             <div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="mlv-focus-btn" data-mlv-audio="previous-ambient" aria-label="Previous track">⏮ Previous</button><button type="button" class="mlv-focus-btn" data-mlv-audio="next-ambient" aria-label="Skip track">Next ⏭</button><button type="button" class="mlv-focus-btn" data-mlv-audio="stop-ambient">Stop</button><select data-mlv-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option><option value="shuffle">Shuffle</option></select><select data-mlv-ambient-collection aria-label="Playlist collection"><option value="all">All recordings</option><option value="Ambient">Ambient</option><option value="Cinematic">Cinematic</option><option value="Classical">Classical piano</option></select></div>
             <small data-mlv-ambient-progress aria-live="off"></small>
+            <div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="mlv-focus-btn" data-mlv-audio="archive-ambient">Archive track</button><select data-mlv-archived-track aria-label="Archived tracks"></select><button type="button" class="mlv-focus-btn" data-mlv-audio="restore-ambient">Restore</button></div>
             <small style="flex-basis:100%;overflow-wrap:anywhere">Scott Buckley · CC BY 4.0 · www.scottbuckley.com.au · creativecommons.org/licenses/by/4.0/</small>
             <details><summary>Classical credits / Créditos clásicos</summary><small style="overflow-wrap:anywhere">Claude Debussy · Clair de Lune — Laurens Goedhart (CC BY 3.0; https://creativecommons.org/licenses/by/3.0/; https://commons.wikimedia.org/wiki/File:Clair_de_lune_(Claude_Debussy)_Suite_bergamasque.ogg) | Frédéric Chopin · Nocturne Op. 9 No. 2 — Peter Johnston / Musopen (CC0 1.0; https://creativecommons.org/publicdomain/zero/1.0/; https://commons.wikimedia.org/wiki/File:Chopin_Nocturne_No._2_in_E_Flat_Major%2C_Op._9.ogg) | Erik Satie · Gymnopédie No. 1 — Robin Alciatore / Musopen (Public domain; https://creativecommons.org/publicdomain/mark/1.0/; https://commons.wikimedia.org/wiki/File:Erik_Satie_-_gymnopedies_-_la_1_ere._lent_et_douloureux.ogg) | Johann Sebastian Bach · Prelude in C major, BWV 846 — Kimiko Ishizaka (CC0 1.0; https://creativecommons.org/publicdomain/zero/1.0/; https://commons.wikimedia.org/wiki/File:Kimiko_Ishizaka_-_Bach_-_Well-Tempered_Clavier%2C_Book_1_-_01_Prelude_No._1_in_C_major%2C_BWV_846.ogg) · MP3 conversion only.</small></details>
           </div>
@@ -640,6 +660,8 @@
       music?.toggleAmbientPlayback?.();
       refresh();return true;
     }
+    if(command==='archive-ambient'){const audio=window.MichelsLifeFocusAudio;audio?.archiveScene?.(audio.playingScene?.()||audio.sceneId?.(),true);refresh();return true;}
+    if(command==='restore-ambient'){const id=q('[data-mlv-archived-track]',screen)?.value;window.MichelsLifeFocusAudio?.archiveScene?.(id,false);refresh();return true;}
     if(command==='stop-ambient'){window.MichelsLifeFocusAudio?.stopAmbient?.();refresh();return true;}
     if(command==='previous-ambient'||command==='next-ambient'){window.MichelsLifeFocusAudio?.moveAmbient?.(command==='previous-ambient'?-1:1);refresh();return true;}
     if(command==='open'){open();return true;}
@@ -794,7 +816,11 @@
     const vol=q('[data-mlv-ambient-volume]',screen),volLabel=q('[data-mlv-volume-label]',screen);
     if(vol&&document.activeElement!==vol)vol.value=String(Math.round((audio?.ambientVolume?.()??.35)*100));
     if(volLabel)volLabel.textContent=lang('Volume','Volumen');
-    const ambientButton=q('[data-mlv-audio="toggle-ambient"]',screen);
+    const archivedSelect=q('[data-mlv-archived-track]',screen),archiveButton=q('[data-mlv-audio="archive-ambient"]',screen),restoreButton=q('[data-mlv-audio="restore-ambient"]',screen),archived=audio?.archivedOptions?.()||[];
+    if(archiveButton){archiveButton.textContent=lang('Archive track','Archivar canción');archiveButton.disabled=!audio?.sceneId?.();}
+    if(archivedSelect){const selected=archivedSelect.value;const opts=[{id:'',label:lang('Archived','Archivadas')+' ('+archived.length+')'},...archived];if(archivedSelect.options.length!==opts.length||opts.some((x,i)=>archivedSelect.options[i]?.value!==x.id||archivedSelect.options[i]?.textContent!==x.label)){archivedSelect.replaceChildren(...opts.map(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.label;return o;}));archivedSelect.value=archived.some(x=>x.id===selected)?selected:'';}archivedSelect.disabled=!archived.length;}
+    if(restoreButton){restoreButton.textContent=lang('Restore','Restaurar');restoreButton.disabled=!archivedSelect?.value;}
+    const ambientButton=q('[data-mlv-audio="toggle-ambient"]',screen);if(ambientButton)ambientButton.disabled=!audio?.sceneId?.();
     const playback=audio?.ambientPlayback?.(),modeSelect=q('[data-mlv-ambient-mode]',screen),progress=q('[data-mlv-ambient-progress]',screen);
     if(modeSelect){modeSelect.value=audio?.ambientMode?.()||'repeat';modeSelect.options[0].textContent=lang('Repeat track','Repetir pista');modeSelect.options[1].textContent=lang('Continuous playlist','Lista continua');modeSelect.options[2].textContent=lang('Shuffle','Aleatorio');}
     const coll=q('[data-mlv-ambient-collection]',screen);if(coll){coll.value=audio?.ambientCollection?.()||'all';const names=[lang('All recordings','Todas las grabaciones'),lang('Ambient','Ambiental'),lang('Cinematic','Cinematográfica'),lang('Classical piano','Piano clásico')];names.forEach((name,i)=>coll.options[i].textContent=name);}

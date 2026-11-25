@@ -27614,6 +27614,10 @@ function setAudioPreference(kind,value){
  }else if(kind==='ambientCollection'){
    if(!['all','Ambient','Cinematic','Classical'].includes(value))return false;
    f.v30165AmbientCollection=value;
+ }else if(kind==='archivedAmbient'){
+   if(!Array.isArray(value))return false;
+   const valid=['moonlight','celestial','orbit','aurora','observatory','library','afterglow','silver','sb_meanwhile','sb_moonlight','sb_cobalt','sb_skyward','sb_life_is','sb_first_snow','sb_midsommar','sb_at_the_end_of_all_things','sb_in_this_moment','sb_hyperion','sb_ascension','sb_bring_me_the_sky','debussy_clair_de_lune','chopin_nocturne_op9','satie_gymnopedie_1','bach_prelude_bwv846'];
+   f.v30165ArchivedAmbient=[...new Set(value.filter(id=>valid.includes(id)))];
  }else return false;
  // Canonical persistence and recovery: never store competing audio preferences
  // in the immersive view or overwrite mission/session history.
