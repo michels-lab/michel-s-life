@@ -134,7 +134,7 @@
   "active_candidate": {
     "block": "4A",
     "pr": "https://github.com/michels-lab/michel-s-life/pull/239",
-    "head": "c5d681f7850e383ab3995826945cc19103ba078a",
+    "head": "dd3f74c63815e8b3caba60c157013e6204523006",
     "status": "implementation_committed_ci_and_owner_acceptance_pending",
     "baseline": "3.0.230",
     "changes": [
@@ -142,15 +142,33 @@
       "compact startup icon",
       "carryover banner and chapter aura layout",
       "discrete About credits and grouped music controls",
-      "paused original/recorded audio continuity"
+      "paused original/recorded audio continuity",
+      "consistent original ambience pause/resume/stop, disabled unavailable skip controls, bilingual All audio label"
     ],
     "remaining": [
       "exact candidate CI",
       "installed dashboard visual comparison",
       "owner acceptance",
-      "stable publication"
+      "stable publication",
+      "resolve reported PR mergeability against current main"
     ],
     "overlapping_pr": "https://github.com/michels-lab/michel-s-life/pull/237",
-    "optional_audio_pr": "https://github.com/michels-lab/michel-s-life/pull/238"
+    "optional_audio_pr": "https://github.com/michels-lab/michel-s-life/pull/238",
+    "targeted_v8": {
+      "passed": 3,
+      "total": 3,
+      "scope": "existing mocked Focus harness; not Node suite, real audio, browser or native QA"
+    },
+    "optional_pack_01": {
+      "verified_workflow": 45580451197,
+      "artifact": 15007050100,
+      "tracks": 8,
+      "expired": false,
+      "distribution": "Actions artifact, not stable release"
+    },
+    "optional_pack_02": {
+      "tracks": 8,
+      "status": "catalog and build workflow candidate, artifact not verified"
+    }
   }
 }
