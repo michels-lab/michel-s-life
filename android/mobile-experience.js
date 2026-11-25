@@ -1670,7 +1670,7 @@
     if(playMode){playMode.value=audio?.ambientMode?.()||'repeat';writeText(playMode.options[0],focusText('Repeat track','Repetir pista'));writeText(playMode.options[1],focusText('Continuous playlist','Lista continua'));writeText(playMode.options[2],focusText('Shuffle','Aleatorio'));}
     const coll=q('[data-mobile-ambient-collection]',root);if(coll){coll.value=audio?.ambientCollection?.()||'all';[focusText('All audio','Todo el audio'),focusText('Ambient','Ambiental'),focusText('Cinematic','Cinematográfica'),focusText('Classical piano','Piano clásico'),focusText('My music','Mi música')].forEach((name,i)=>writeText(coll.options[i],name));}
     const fmtAudio=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
-    writeText(q('[data-mobile-ambient-progress]',root),playback&&Number.isFinite(playback.duration)?fmtAudio(playback.currentTime)+' / '+fmtAudio(playback.duration):'');
+    writeText(q('[data-mobile-ambient-progress]',root),playback?.loading?focusText('Loading local audio…','Cargando audio local…'):playback&&Number.isFinite(playback.duration)?fmtAudio(playback.currentTime)+' / '+fmtAudio(playback.duration):'');
     const prevTrack=q('[data-mobile-focus="previous-ambient"]',root),nextTrack=q('[data-mobile-focus="next-ambient"]',root);
     if(prevTrack)prevTrack.disabled=!audio?.canNavigateAmbient?.();if(nextTrack)nextTrack.disabled=!audio?.canNavigateAmbient?.();
     writeText(prevTrack,focusText('⏮ Previous','⏮ Anterior'));prevTrack?.setAttribute('aria-label',focusText('Previous track','Canción anterior'));
