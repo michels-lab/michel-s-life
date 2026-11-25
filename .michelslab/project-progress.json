@@ -1,6 +1,6 @@
 {
   "schema": "michels-lab-product-progress-v1",
-  "as_of": "2026-11-24",
+  "as_of": "2026-11-25",
   "repository": "michels-lab/michel-s-life",
   "scope": "Cierre funcional y aceptación de la siguiente estable unificada Windows/Android Michel's Life; pruebas de fuente y CI separadas de aceptación física",
   "state": "measured",
@@ -24,7 +24,7 @@
     "verified",
     "pending"
   ],
-  "current_phase": "PUBLIC stable Windows 3.0.233 / Android Direct 0.2.22 code24; 13 assets, 11/11 exact gates, signed native Android15 and independent release verifier SUCCESS; physical owner acceptance pending",
+  "current_phase": "Stable 3.0.233 / 0.2.22 published; Block 4A visual restoration and lifecycle candidate #239 open, not released",
   "source_prs": [
     "https://github.com/michels-lab/michel-s-life/pull/225",
     "https://github.com/michels-lab/michel-s-life/pull/226",
@@ -68,10 +68,10 @@
     "limitations": "Android14/16 debug failures remain recorded; signed Android15 screenshot-only native pass does not prove private-state retention."
   },
   "note": "53%=8/15 bounded acceptance milestones; #14 root cause fixed, exact runtime checks verified, integrated and published. Physical QA and real accounts are not proven by CI.",
-  "latest_public_release_source_sha": "d82359c010ece7fc0f12d2dcc8238d718093ad22",
-  "latest_public_release_source_run": 45478901654,
-  "latest_public_release_publisher_run": 45485082290,
-  "latest_public_release_utc": "2026-11-24T20:52:21Z",
+  "latest_public_release_source_sha": "cc446a3f00200ceadaf5fa8776f372ef6639bfc4",
+  "latest_public_release_source_run": 45540789141,
+  "latest_public_release_publisher_run": 45540970195,
+  "latest_public_release_utc": "2026-11-25T03:46:24Z",
   "next_release_acceptance_hold": true,
   "active_development": {
     "status": "released_verified_owner_acceptance_pending",
@@ -130,5 +130,27 @@
     "verified_milestones": 8,
     "total_milestones": 15
   },
-  "next_audit": "Probar Pomodoro, importación personal y archivo en Windows/Galaxy físicos, comprobar sonido final y alarma bloqueada; preservar datos al actualizar."
+  "next_audit": "Probar Pomodoro, importación personal y archivo en Windows/Galaxy físicos, comprobar sonido final y alarma bloqueada; preservar datos al actualizar.",
+  "active_candidate": {
+    "block": "4A",
+    "pr": "https://github.com/michels-lab/michel-s-life/pull/239",
+    "head": "c5d681f7850e383ab3995826945cc19103ba078a",
+    "status": "implementation_committed_ci_and_owner_acceptance_pending",
+    "baseline": "3.0.230",
+    "changes": [
+      "Windows minimize and single-instance restore",
+      "compact startup icon",
+      "carryover banner and chapter aura layout",
+      "discrete About credits and grouped music controls",
+      "paused original/recorded audio continuity"
+    ],
+    "remaining": [
+      "exact candidate CI",
+      "installed dashboard visual comparison",
+      "owner acceptance",
+      "stable publication"
+    ],
+    "overlapping_pr": "https://github.com/michels-lab/michel-s-life/pull/237",
+    "optional_audio_pr": "https://github.com/michels-lab/michel-s-life/pull/238"
+  }
 }
