@@ -291,7 +291,7 @@
       return true;
     }
     if(ambientScenes[id]?.recorded)return startRecording(id,'assets/audio/classical/'+id+'.mp3',paused);
-    if(paused)return true;
+    if(paused){ambientScene=id;pauseOnReady=true;return true;}
     const C=window.AudioContext||window.webkitAudioContext;
     if(!C)return false;
     try{
@@ -314,10 +314,10 @@
     // Every soundtrack shares one canonical persisted choice and scheduler.
     // Reject unknown IDs rather than silently switching to the default.
     if(!isAvailable(id))return false;
-    if((ambientContext||ambientRecording||personalPending)&&ambientScene===id){stopAmbient();return true;}
-    const wasPlaying=!!(ambientContext||ambientRecording||personalPending);
+    if(ambientScene===id){stopAmbient();return true;}
+    const wasPlaying=!!ambientScene;
     selectScene(id,false,false);
-    return wasPlaying?!!(ambientContext||ambientRecording||personalPending):startAmbient();
+    return wasPlaying?!!ambientScene:startAmbient();
   }
   function toggleClassical(id){
     if(!classicalIds.includes(id))return false;
@@ -336,10 +336,10 @@
     toggleClassical,toggleScene,
     completionId:finishId,sceneId,selectCompletion:id=>{stopClassical();return choice(completionKey,finishTones,id,'soft');},
     selectScene,playCompletion,stopClassical,previewingCompletion:()=>previewingId,recordingActive:()=>!!classicalSource,recordingPlayback:()=>classicalSource?{paused:classicalSource.paused,currentTime:classicalSource.currentTime,duration:classicalSource.duration,src:classicalSource.src}:null,unlock,startAmbient,stopAmbient,
-    playing:()=>!!(ambientContext||ambientRecording||personalPending),
+    playing:()=>!!ambientScene,
     importPersonalTracks,loadPersonalTracks,personalStatus:()=>personalStatus,personalImporting:()=>personalImporting,playingScene:()=>ambientScene,
     ambientVolume:getVolume,setAmbientVolume:setVolume,ambientMode,setAmbientMode,ambientCollection,setAmbientCollection,moveAmbient,toggleAmbientPlayback,
-    ambientPlayback:()=>ambientRecording?{paused:ambientRecording.paused,currentTime:ambientRecording.currentTime,duration:ambientRecording.duration,loop:ambientRecording.loop,src:ambientRecording.src,volume:ambientRecording.volume}:null
+    ambientPlayback:()=>ambientRecording?{paused:ambientRecording.paused,currentTime:ambientRecording.currentTime,duration:ambientRecording.duration,loop:ambientRecording.loop,src:ambientRecording.src,volume:ambientRecording.volume}:ambientScene&&pauseOnReady?{paused:true,currentTime:0,duration:NaN,loop:false,src:null,volume:getVolume()}:null
   };
   if(window.indexedDB)loadPersonalTracks();
   window.addEventListener?.('pagehide',()=>{stopAmbient();stopClassical();});
