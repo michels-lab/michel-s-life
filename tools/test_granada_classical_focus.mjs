@@ -244,3 +244,20 @@ test('paused recorded-to-original transitions retain the selection and never aut
  assert.equal(f.contexts.length,contexts+1);assert.equal(f.timers.size,1);
  f.api.stopAmbient();assert.equal(f.api.playing(),false);assert.equal(f.api.ambientPlayback(),null);
 });
+
+
+test('original soundscapes expose actual paused state, resume explicitly and stop independently',()=>{
+ const f=harness();f.api.selectScene('moonlight');assert.equal(f.api.startAmbient(),true);
+ assert.equal(f.api.ambientPlayback().paused,false);const first=f.contexts.at(-1);
+ f.api.toggleAmbientPlayback();assert.equal(first.closed,true);assert.equal(f.timers.size,0);
+ assert.equal(f.api.playingScene(),'moonlight');assert.equal(f.api.playing(),true);assert.equal(f.api.ambientPlayback().paused,true);
+ f.api.toggleAmbientPlayback();assert.equal(f.api.ambientPlayback().paused,false);assert.equal(f.timers.size,1);
+ f.api.stopAmbient();assert.equal(f.api.playing(),false);assert.equal(f.api.ambientPlayback(),null);
+});
+test('track navigation is disabled for empty and single-track collections',()=>{
+ const f=harness();f.api.setAmbientCollection('Classical');assert.equal(f.api.canNavigateAmbient(),true);
+ for(const id of piano.slice(1))f.api.archiveScene(id);
+ assert.equal(f.api.canNavigateAmbient(),false);f.api.archiveScene(piano[0]);
+ assert.equal(f.api.canNavigateAmbient(),false);f.api.setAmbientCollection('all');
+ assert.equal(f.api.canNavigateAmbient(),true);
+});
