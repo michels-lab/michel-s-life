@@ -125,6 +125,14 @@ try{
   // Real browser interaction, not a static API test: open the collapsed audio
   // panel, choose an end chime, preview it, and play/stop the A+C atmosphere.
   await page.locator('.mlv-focus-sound-details > summary').click();
+  const audioLayout=await page.locator('.mlv-focus-audio-panel').evaluate(panel=>{
+    const [playback,library]=Array.from(panel.children);
+    if(!playback||!library)return null;
+    const a=playback.getBoundingClientRect(),b=library.getBoundingClientRect();
+    return {columns:panel.children.length,playbackWidth:a.width,libraryWidth:b.width,separate:b.left>=a.right,topGap:Math.abs(a.top-b.top),overflow:panel.scrollWidth>panel.clientWidth+2};
+  });
+  ok(audioLayout&&audioLayout.columns===2&&audioLayout.playbackWidth>0&&audioLayout.libraryWidth>0&&audioLayout.separate&&audioLayout.topGap<3&&!audioLayout.overflow,
+    'Desktop audio columns are not both usable: '+JSON.stringify(audioLayout));
   ok(await page.locator('[data-mlv-completion-sound] option').count()===25,
     'End-of-Pomodoro selector is not populated');
   const scenes=await page.locator('[data-mlv-scene-select] option').evaluateAll(options=>
