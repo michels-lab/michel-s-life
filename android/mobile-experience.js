@@ -1310,7 +1310,7 @@
              <div class="mlv-audio-controls"><button type="button" data-mobile-focus="toggle-ambient">Play</button><button type="button" data-mobile-focus="previous-ambient" aria-label="Previous track">⏮ Previous</button><button type="button" data-mobile-focus="next-ambient" aria-label="Skip track">Next ⏭</button><button type="button" data-mobile-focus="stop-ambient">Stop</button></div>
              <small data-mobile-ambient-progress aria-live="off"></small>
              <label><span data-mobile-volume-label>Volume</span><input type="range" min="0" max="100" value="35" data-mobile-ambient-volume aria-label="Background music volume" /></label>
-             <div class="mlv-audio-settings"><select data-mobile-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option><option value="shuffle">Shuffle</option></select><select data-mobile-ambient-collection aria-label="Playlist collection"><option value="all">All recordings</option><option value="Ambient">Ambient</option><option value="Cinematic">Cinematic</option><option value="Classical">Classical piano</option><option value="Personal">My music</option></select></div>
+             <div class="mlv-audio-settings"><select data-mobile-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option><option value="shuffle">Shuffle</option></select><select data-mobile-ambient-collection aria-label="Playlist collection"><option value="all">All audio</option><option value="Ambient">Ambient</option><option value="Cinematic">Cinematic</option><option value="Classical">Classical piano</option><option value="Personal">My music</option></select></div>
              <div class="mlv-audio-library"><label><span data-mobile-personal-label>Import my music</span><input type="file" multiple accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg" data-mobile-personal-files /></label><small data-mobile-personal-status role="status"></small><div class="mlv-audio-archive"><button type="button" data-mobile-focus="archive-ambient">Archive track</button><select data-mobile-archived-track aria-label="Archived tracks"></select><button type="button" data-mobile-focus="restore-ambient">Restore</button></div></div>
             </div>
           </details>
@@ -1664,13 +1664,14 @@
     const ambientToggle=q('[data-mobile-focus="toggle-ambient"]',root);if(ambientToggle)ambientToggle.disabled=!audio?.sceneId?.();
     const playback=audio?.ambientPlayback?.(),playMode=q('[data-mobile-ambient-mode]',root);
     if(playMode){playMode.value=audio?.ambientMode?.()||'repeat';writeText(playMode.options[0],focusText('Repeat track','Repetir pista'));writeText(playMode.options[1],focusText('Continuous playlist','Lista continua'));writeText(playMode.options[2],focusText('Shuffle','Aleatorio'));}
-    const coll=q('[data-mobile-ambient-collection]',root);if(coll){coll.value=audio?.ambientCollection?.()||'all';[focusText('All recordings','Todas las grabaciones'),focusText('Ambient','Ambiental'),focusText('Cinematic','Cinematográfica'),focusText('Classical piano','Piano clásico'),focusText('My music','Mi música')].forEach((name,i)=>writeText(coll.options[i],name));}
+    const coll=q('[data-mobile-ambient-collection]',root);if(coll){coll.value=audio?.ambientCollection?.()||'all';[focusText('All audio','Todo el audio'),focusText('Ambient','Ambiental'),focusText('Cinematic','Cinematográfica'),focusText('Classical piano','Piano clásico'),focusText('My music','Mi música')].forEach((name,i)=>writeText(coll.options[i],name));}
     const fmtAudio=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
     writeText(q('[data-mobile-ambient-progress]',root),playback&&Number.isFinite(playback.duration)?fmtAudio(playback.currentTime)+' / '+fmtAudio(playback.duration):'');
     const prevTrack=q('[data-mobile-focus="previous-ambient"]',root),nextTrack=q('[data-mobile-focus="next-ambient"]',root);
+    if(prevTrack)prevTrack.disabled=!audio?.canNavigateAmbient?.();if(nextTrack)nextTrack.disabled=!audio?.canNavigateAmbient?.();
     writeText(prevTrack,focusText('⏮ Previous','⏮ Anterior'));prevTrack?.setAttribute('aria-label',focusText('Previous track','Canción anterior'));
     writeText(nextTrack,focusText('Next ⏭','Saltar ⏭'));nextTrack?.setAttribute('aria-label',focusText('Skip track','Saltar canción'));
-    writeText(q('[data-mobile-focus="stop-ambient"]',root),focusText('Stop','Detener'));
+    const stopAudio=q('[data-mobile-focus="stop-ambient"]',root);writeText(stopAudio,focusText('Stop','Detener'));if(stopAudio)stopAudio.disabled=!audio?.playing?.();
     writeText(q('[data-mobile-focus="toggle-ambient"]',root),playback?(playback.paused?focusText('Resume','Reanudar'):focusText('Pause','Pausar')):audio?.playing?.()?focusText('Stop','Detener'):focusText('Play','Reproducir'));
     writeText(q('[data-mobile-focus="preview-completion"]',root),
       audio?.recordingActive?.()?focusText('Stop recording','Detener grabación'):focusText('Preview','Escuchar'));
