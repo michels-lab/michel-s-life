@@ -18,6 +18,7 @@ on:
     branches: [main]
     paths:
       - '.michelslab/release-intents/unified-v3232-a0221.txt'
+      - '.michelslab/release-intents/unified-v3233-a0222.txt'
   workflow_dispatch:
 
 permissions:
