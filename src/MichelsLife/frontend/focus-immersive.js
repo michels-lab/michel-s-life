@@ -196,10 +196,10 @@
   function collectionIds(){const c=ambientCollection();return Object.keys(ambientScenes).filter(id=>ambientScenes[id].recorded&&(c==='all'||ambientScenes[id].group===c));}
   function setAmbientCollection(value){if(!['all','Ambient','Cinematic','Classical'].includes(value))return false;api()?.setAudioPreference?.('ambientCollection',value);resetShuffle();const ids=collectionIds();if(ids.length&&!ids.includes(sceneId()))selectScene(ids[0]);return true;}
   function setAmbientMode(mode){if(!['repeat','playlist','shuffle'].includes(mode))return false;if(mode!==ambientMode())resetShuffle();api()?.setAudioPreference?.('ambientMode',mode);if(ambientRecording)ambientRecording.loop=ambientMode()==='repeat';return true;}
-  function moveAmbient(delta){const ids=collectionIds();if(!ids.length)return false;const current=sceneId(),index=ids.indexOf(current);let next;if(ambientMode()==='shuffle'){
+  function moveAmbient(delta,automatic=false){const ids=collectionIds();if(!ids.length)return false;const current=sceneId(),index=ids.indexOf(current);let next;if(ambientMode()==='shuffle'){
     if(delta<0&&shuffleHistory.length)next=shuffleHistory.pop();
     else{shuffleBag=shuffleBag.filter(id=>ids.includes(id)&&id!==current);if(!shuffleBag.length){shuffleBag=ids.filter(id=>id!==current);for(let i=shuffleBag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffleBag[i],shuffleBag[j]]=[shuffleBag[j],shuffleBag[i]];}}next=shuffleBag.pop()||ids[0];if(next!==current&&ids.includes(current))shuffleHistory.push(current);if(shuffleHistory.length>100)shuffleHistory.shift();}
-    }else next=ids[(index<0?(delta<0?ids.length-1:0):(index+delta+ids.length)%ids.length)];const wasPaused=!!ambientRecording?.paused;selectScene(next,true);if(wasPaused&&ambientRecording)ambientRecording.pause();return true;}
+    }else next=ids[(index<0?(delta<0?ids.length-1:0):(index+delta+ids.length)%ids.length)];const wasPaused=!automatic&&!!ambientRecording?.paused;selectScene(next,true);if(wasPaused&&ambientRecording)ambientRecording.pause();return true;}
   function startAmbient(){
     stopAmbient();
     // Explicit new ambience replaces the recording rather than mixing audio.
@@ -210,7 +210,7 @@
         const player=new Audio('assets/audio/classical/'+id+'.mp3');
         player.loop=ambientMode()==='repeat';player.volume=ambientVolume;ambientRecording=player;ambientScene=id;
         const clear=()=>{if(ambientRecording===player)stopAmbient();};
-        player.onerror=clear;player.onended=()=>{if(ambientRecording!==player)return;if(ambientMode()!=='repeat')moveAmbient(1);else clear();};player.play().catch(clear);return true;
+        player.onerror=clear;player.onended=()=>{if(ambientRecording!==player)return;if(ambientMode()!=='repeat')moveAmbient(1,true);else clear();};player.play().catch(clear);return true;
       }catch(_){stopAmbient();return false;}
     }
     const C=window.AudioContext||window.webkitAudioContext;

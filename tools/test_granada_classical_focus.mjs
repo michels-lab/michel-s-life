@@ -169,7 +169,7 @@ test('playlist, pause/resume, track navigation and saved volume preserve the can
  assert.equal(harness(f.persisted).api.ambientVolume(),.17);assert.equal(harness(f.persisted).api.ambientMode(),'playlist');
  f.api.startAmbient();const first=f.recordings.at(-1);assert.equal(first.loop,false);assert.equal(first.volume,.17);
  first.currentTime=12;f.api.toggleAmbientPlayback();assert.equal(first.paused,true);f.api.toggleAmbientPlayback();assert.equal(first.paused,false);assert.equal(first.currentTime,12);
- first.onended();const second=f.recordings.at(-1);assert.equal(f.api.playingScene(),library[1]);assert.equal(first.paused,true);
+ first.paused=true;first.onended();const second=f.recordings.at(-1);assert.equal(second.paused,false,'natural end must auto-play next');assert.equal(f.api.playingScene(),library[1]);assert.equal(first.paused,true);
  f.api.moveAmbient(-1);assert.equal(second.paused,true);assert.equal(f.api.playingScene(),library[0]);
  f.api.setAmbientMode('repeat');assert.equal(f.recordings.at(-1).loop,true);
  f.api.stopAmbient();assert.equal(f.api.playing(),false);assert.equal(f.timers.size,0);

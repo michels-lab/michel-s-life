@@ -355,3 +355,20 @@ test('all ten original Focus motifs are selectable and survive daily alarm reloa
   assert.ok(alarms.includes("preview?12:ALARM_SECONDS"));
   assert.ok(native.includes('preset-v3-$selected.wav'));
 });
+
+
+test('actual import controller streams a 17 MiB MP3 and rolls back incomplete native replacements',async()=>{
+  const begin=alarms.indexOf('function readDataURL(part)'),end=alarms.indexOf("/* Michel's Life exclusive alarm suite",begin);
+  assert.ok(begin>=0&&end>begin);
+  let saved={blob:{old:true},name:'previous.mp3'},alerted=[],length=0,expected=0,parts=0,largest=0,cancelled=0,fail=false;
+  const label={textContent:'previous.mp3'},input={disabled:false},select={value:'gentle'};
+  const native={beginCustomAlarmSound(ext,size){assert.equal(ext,'mp3');expected=Number(size);length=0;parts=0;return JSON.stringify({ok:true,token:'test'});},appendCustomAlarmSound(token,offset,encoded){assert.equal(token,'test');assert.equal(Number(offset),length);const part=Buffer.from(encoded,'base64');largest=Math.max(largest,part.length);length+=part.length;parts++;return JSON.stringify({ok:true});},finishCustomAlarmSound(){assert.equal(length,expected);return JSON.stringify(fail?{error:'storage failure'}:{ok:true});},cancelCustomAlarmSound(){cancelled++;return true;}};
+  class FileReader{readAsDataURL(part){this.result='data:audio/mpeg;base64,'+Buffer.alloc(part.size).toString('base64');this.onload();}}
+  const window={MichelsLifeAndroid:native,alert:m=>alerted.push(m)};
+  const code=alarms.slice(begin,end)+'\nwindow.runImport=importSound;';
+  const context={window,FileReader,screen:{},q:sel=>sel.includes('custom-file')?input:sel.includes('custom-name')?label:select,android:()=>true,tr:(en)=>en,storedCustomBlob:async()=>saved,saveCustomBlob:async(blob,name)=>{saved={blob,name};}};
+  vm.runInNewContext(code,context);
+  const size=17*1024*1024+123,file={name:'long.mp3',size,slice:(a,b)=>({size:b-a})};
+  assert.equal(await window.runImport(file),true);assert.equal(length,size);assert.ok(parts>64);assert.equal(largest,256*1024);assert.equal(saved.blob,file);assert.equal(select.value,'custom');assert.equal(label.textContent,'long.mp3');assert.equal(input.disabled,false);
+  fail=true;const replacement={...file,name:'replacement.mp3'};assert.equal(await window.runImport(replacement),false);assert.equal(saved.blob,file);assert.equal(cancelled,1);assert.ok(alerted.length);assert.equal(input.disabled,false);
+});
