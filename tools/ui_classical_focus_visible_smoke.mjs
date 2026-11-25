@@ -85,11 +85,11 @@ try{
   const ambientToggle=root.locator(mobile?'[data-mobile-focus="toggle-ambient"]':'[data-mlv-audio="toggle-ambient"]');
   for(const id of ['sb_meanwhile','debussy_clair_de_lune']){
     await ambient.selectOption(id);await ambientToggle[mobile?'tap':'click']();
-    await page.waitForFunction(id=>{const p=window.MichelsLifeFocusAudio.ambientPlayback();return p&&!p.paused&&p.currentTime>.1&&p.duration>100&&p.src.includes(id+'.mp3');},id,{timeout:15000});
+    await page.waitForFunction(id=>{const p=window.MichelsLifeFocusAudio.ambientPlayback();return p&&!p.paused&&p.currentTime>.1&&p.duration>100&&typeof p.src==='string'&&p.src.includes(id+'.mp3');},id,{timeout:15000});
     await ambientToggle[mobile?'tap':'click']();await page.waitForFunction(()=>window.MichelsLifeFocusAudio.ambientPlayback()?.paused===true);
     await ambientToggle[mobile?'tap':'click']();await page.waitForFunction(()=>window.MichelsLifeFocusAudio.ambientPlayback()?.paused===false);
     const next=root.locator(mobile?'[data-mobile-focus="next-ambient"]':'[data-mlv-audio="next-ambient"]');await next[mobile?'tap':'click']();
-    await page.waitForFunction(id=>{const p=window.MichelsLifeFocusAudio.ambientPlayback();return p&&!p.paused&&!p.src.includes(id+'.mp3')&&p.currentTime>.1;},id,{timeout:15000});
+    await page.waitForFunction(id=>{const p=window.MichelsLifeFocusAudio.ambientPlayback();return p&&!p.paused&&typeof p.src==='string'&&!p.src.includes(id+'.mp3')&&p.currentTime>.1;},id,{timeout:15000});
     await root.locator(mobile?'[data-mobile-focus="stop-ambient"]':'[data-mlv-audio="stop-ambient"]')[mobile?'tap':'click']();
     await page.waitForFunction(()=>!window.MichelsLifeFocusAudio.playing());
   }
@@ -107,7 +107,7 @@ try{
   await page.waitForFunction(()=>window.MichelsLifeFocusAudio.sceneOptions().filter(x=>x.id.startsWith('my_')).length===2);
   const myId=await page.evaluate(()=>window.MichelsLifeFocusAudio.sceneOptions().find(x=>x.id.startsWith('my_')).id);
   await ambient.selectOption(myId);await ambientToggle[mobile?'tap':'click']();
-  await page.waitForFunction(()=>{const p=window.MichelsLifeFocusAudio.ambientPlayback();return p&&p.src.startsWith('blob:')&&!p.paused&&p.currentTime>.1;},null,{timeout:15000});
+  await page.waitForFunction(()=>{const p=window.MichelsLifeFocusAudio.ambientPlayback();return p&&typeof p.src==='string'&&p.src.startsWith('blob:')&&!p.paused&&p.currentTime>.1;},null,{timeout:15000});
   await root.locator(mobile?'[data-mobile-focus="stop-ambient"]':'[data-mlv-audio="stop-ambient"]')[mobile?'tap':'click']();
   await root.locator(mobile?'[data-mobile-ambient-collection]':'[data-mlv-ambient-collection]').selectOption('all');
   // A real timer expiry, not a preview callback: shorten an already running
