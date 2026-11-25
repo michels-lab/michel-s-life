@@ -582,7 +582,7 @@
         font-size:clamp(12px,1.35vw,15px);line-height:1.4
       }
       .mlv-focus-audio-panel{
-        display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
+        display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);align-items:start;gap:16px;
         margin-top:8px;padding:10px;border:1px solid rgba(205,239,250,.12);
         border-radius:12px;background:rgba(3,15,26,.4)
       }
@@ -598,10 +598,15 @@
         background:#102c35;border:1px solid rgba(146,202,212,.35);
         font:600 12px system-ui,sans-serif
       }
-      #mlv-desktop-focus-stage .mlv-audio-controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+      #mlv-desktop-focus-stage .mlv-audio-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
        #mlv-desktop-focus-stage .mlv-audio-settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-       #mlv-desktop-focus-stage .mlv-audio-library{display:grid;gap:8px;border-top:1px solid rgba(205,239,250,.14);padding-top:10px}
-       #mlv-desktop-focus-stage .mlv-audio-archive{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px}
+       #mlv-desktop-focus-stage .mlv-audio-library{display:grid;align-content:start;gap:10px;min-width:0;border-left:1px solid rgba(205,239,250,.14);padding-left:14px}
+       #mlv-desktop-focus-stage .mlv-audio-heading{margin:0;color:#dceef4;font:750 13px/1.4 system-ui,sans-serif}
+       #mlv-desktop-focus-stage .mlv-audio-controls>button,#mlv-desktop-focus-stage .mlv-audio-archive>button{min-width:0;white-space:normal;overflow-wrap:anywhere;padding-inline:7px}
+       #mlv-desktop-focus-stage .mlv-audio-archive{align-items:center}
+       @media(max-width:670px){#mlv-desktop-focus-stage .mlv-audio-library{border-left:0;border-top:1px solid rgba(205,239,250,.14);padding-left:0;padding-top:10px}}
+       #mlv-desktop-focus-stage .mlv-audio-archive{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px}
+       #mlv-desktop-focus-stage .mlv-audio-archive select{grid-column:1/-1;grid-row:1}
        #mlv-desktop-focus-stage .mlv-audio-library input,#mlv-desktop-focus-stage .mlv-audio-settings select,#mlv-desktop-focus-stage .mlv-audio-archive select{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
        @media(max-width:550px){#mlv-desktop-focus-stage .mlv-audio-controls{grid-template-columns:repeat(2,minmax(0,1fr))}#mlv-desktop-focus-stage .mlv-audio-settings,#mlv-desktop-focus-stage .mlv-audio-archive{grid-template-columns:1fr}}
        .mlv-focus-audio-group>button{
@@ -681,6 +686,7 @@
         <details class="mlv-focus-sound-details"><summary>Audio · Completion tone & ambience</summary>
         <div class="mlv-focus-audio-panel" aria-label="Pomodoro audio">
           <div class="mlv-focus-audio-group">
+            <h3 class="mlv-audio-heading" data-mlv-audio-heading>Playback</h3>
             <label for="mlv-focus-scene-select">Background music
               <select id="mlv-focus-scene-select" data-mlv-scene-select></select>
             </label>
@@ -688,8 +694,8 @@
              <small data-mlv-ambient-progress aria-live="off"></small>
              <label><span data-mlv-volume-label>Volume</span><input type="range" min="0" max="100" value="35" data-mlv-ambient-volume aria-label="Background music volume" /></label>
              <div class="mlv-audio-settings"><select data-mlv-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option><option value="shuffle">Shuffle</option></select><select data-mlv-ambient-collection aria-label="Playlist collection"><option value="all">All audio</option><option value="Ambient">Ambient</option><option value="Cinematic">Cinematic</option><option value="Classical">Classical piano</option><option value="Personal">My music</option></select></div>
-             <div class="mlv-audio-library"><label><span data-mlv-personal-label>Import my music</span><input type="file" multiple accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg" data-mlv-personal-files /></label><small data-mlv-personal-status role="status"></small><div class="mlv-audio-archive"><button type="button" class="mlv-focus-btn" data-mlv-audio="archive-ambient">Archive track</button><select data-mlv-archived-track aria-label="Archived tracks"></select><button type="button" class="mlv-focus-btn" data-mlv-audio="restore-ambient">Restore</button></div></div>
           </div>
+          <div class="mlv-audio-library"><h3 class="mlv-audio-heading" data-mlv-library-heading>Music library</h3><label><span data-mlv-personal-label>Import my music</span><input type="file" multiple accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg" data-mlv-personal-files /></label><small data-mlv-personal-status role="status"></small><div class="mlv-audio-archive"><button type="button" class="mlv-focus-btn" data-mlv-audio="archive-ambient">Archive track</button><select data-mlv-archived-track aria-label="Archived tracks"></select><button type="button" class="mlv-focus-btn" data-mlv-audio="restore-ambient">Restore</button></div></div>
         </div></details>
 
       </section>`;
@@ -883,6 +889,8 @@
       }
       if(select.value!==selected)select.value=selected;
     }
+    const audioHeading=q('[data-mlv-audio-heading]',screen),libraryHeading=q('[data-mlv-library-heading]',screen);
+    if(audioHeading)audioHeading.textContent=lang('Playback','Reproducción');if(libraryHeading)libraryHeading.textContent=lang('Music library','Biblioteca musical');
     const vol=q('[data-mlv-ambient-volume]',screen),volLabel=q('[data-mlv-volume-label]',screen);
     if(vol&&document.activeElement!==vol)vol.value=String(Math.round((audio?.ambientVolume?.()??.35)*100));
     if(volLabel)volLabel.textContent=lang('Volume','Volumen');
