@@ -1,29 +1,29 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 465,
-  "classified_files_total": 461,
-  "docs_content_inspected": 112,
+  "tracked_files_total": 512,
+  "classified_files_total": 508,
+  "docs_content_inspected": 114,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
   "roles": {
     "agent": 9,
-    "asset": 12,
+    "asset": 48,
     "bitacora": 4,
     "build_script": 6,
-    "config": 25,
+    "config": 28,
     "database_migration": 3,
-    "document": 104,
+    "document": 106,
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
     "release_intent": 22,
-    "source": 135,
+    "source": 138,
     "test": 63,
     "text_metadata": 1,
     "unknown": 6,
     "web_ui": 3,
-    "workflow": 61
+    "workflow": 64
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
@@ -31,8 +31,8 @@
     "UNKNOWN_PURPOSE": 6
   },
   "finding_total": 12,
-  "inventory_fingerprint": "83418ca88451588a43c1e5f15b38dcc2325a1e0cc6bfe0614a4709a32f8ae1b9",
-  "evidence_fingerprint": "f9c7055fe08c179487a80cd310813f110c2670f17673b2c4f065a8acec8bbcb1",
+  "inventory_fingerprint": "b26259c0400ca68eb86b97551b1af1e22e590318f7e7f909fe8eae4461ab9a83",
+  "evidence_fingerprint": "58990371f401f0f0acfc65f86c23688857118a46a700bb1be7dbeb945de22b4d",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -329,6 +329,27 @@
       "blob": "4921052a6bad72270f45b605dd33b9b48758d855"
     },
     {
+      "path": ".github/workflows/import-cinematic-audio.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "054765011b42b6b2c18facc460f9fc92062cbb60"
+    },
+    {
+      "path": ".github/workflows/import-licensed-classical-recordings.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "d79f5bb8546d77011a582cb3591eafd30dbb3abb"
+    },
+    {
+      "path": ".github/workflows/import-piano-collection.yml",
+      "role": "workflow",
+      "purpose": "GitHub Actions automation",
+      "certainty": "rule",
+      "blob": "7eed065cd2f7166ca4c426fd9d5ccec579d17088"
+    },
+    {
       "path": ".github/workflows/privacy-pages.yml",
       "role": "workflow",
       "purpose": "GitHub Actions automation",
@@ -564,7 +585,7 @@
       "role": "config",
       "purpose": "machine-readable configuration",
       "certainty": "rule",
-      "blob": "7ad9d161aee32f935fdc0604a1aed442a2ab6018"
+      "blob": "07e7858e2d5936be5ce079e3eb32682153eb0ae1"
     },
     {
       "path": ".michelslab/project.yml",
@@ -865,7 +886,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "ab508fad915b93710db5ae7a0ea50a01b357dfee"
+      "blob": "803acd4b52acf7532c7121ae290260554122faa9"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/AndroidCalendarConsent.kt",
@@ -949,21 +970,21 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "2a20e3dd410b7f6a71d777a22e23c9f423d63d85"
+      "blob": "6b90a926553cc2cda275f564d3c05f5a976c0fec"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt",
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "0b3bf64a817d2dae5f132c1b1edc7dfe320bf43d"
+      "blob": "c4dc3849e7ebaf7fccb291ea4340f5fc77dc0200"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/NativePersonalAlarms.kt",
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "c2bca1e86bb85bd14d50f4843deb6768e0629acf"
+      "blob": "12f957693e9597970ba12661339da0d6a44f2d46"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/PersonalAlarmOverlay.kt",
@@ -1043,6 +1064,27 @@
       "blob": "d717e41005b55b7298921f095391e743b00eb6eb"
     },
     {
+      "path": "android/app/src/main/res/raw/mlv_focus_bach_prelude_bwv846.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "c89a6f582183eaf389ac04aca30c7c3229e1a3a2"
+    },
+    {
+      "path": "android/app/src/main/res/raw/mlv_focus_chopin_nocturne_op9.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "701078e0e30f3aa92648a7a1eb89c7ffe9f8c47d"
+    },
+    {
+      "path": "android/app/src/main/res/raw/mlv_focus_debussy_clair_de_lune.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "0ea318fdf096f3be8e918caf04b0f2037d365c80"
+    },
+    {
       "path": "android/app/src/main/res/raw/mlv_focus_glass.wav",
       "role": "unknown",
       "purpose": "function unknown: owner classification required",
@@ -1057,11 +1099,109 @@
       "blob": "e3299186da4951da3fb4a598a97e80345300d096"
     },
     {
+      "path": "android/app/src/main/res/raw/mlv_focus_mozart_k545.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "7134f7d8d1ba69d699f826e4c8e7e453cfa340f3"
+    },
+    {
       "path": "android/app/src/main/res/raw/mlv_focus_observatory.wav",
       "role": "unknown",
       "purpose": "function unknown: owner classification required",
       "certainty": "unknown",
       "blob": "c6bd0aa1125dd4ecf4f77abd9c05bfe3780f0c93"
+    },
+    {
+      "path": "android/app/src/main/res/raw/mlv_focus_satie_gymnopedie_1.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "bddc276b6173c831c3d5260a037fb9c812798c2c"
+    },
+    {
+      "path": "android/app/src/main/res/raw/mlv_focus_sb_ascension.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "b08142365fb29ac33c7971c7f46ca238427c329c"
+    },
+    {
+      "path": "android/app/src/main/res/raw/mlv_focus_sb_at_the_end_of_all_things.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "3e24ea5e22a7b7c8b899e15e9578bb9d3472dc75"
+    },
+    {
+      "path": "android/app/src/main/res/raw/mlv_focus_sb_bring_me_the_sky.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "7f706d152ab85994b5233d872107b58ff15d8bbb"
+    },
+    {
+      "path": "android/app/src/main/res/raw/mlv_focus_sb_cobalt.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "27340b678c1f5a1381f141a22fc832f740ded06b"
+    },
+    {
+      "path": "android/app/src/main/res/raw/mlv_focus_sb_first_snow.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "8a9d90615b5e59c3d9e05c3cbab1fe502cec117c"
+    },
+    {
+      "path": "android/app/src/main/res/raw/mlv_focus_sb_hyperion.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "bb6b0216617f48b1774a7ae48c188a09f4504751"
+    },
+    {
+      "path": "android/app/src/main/res/raw/mlv_focus_sb_in_this_moment.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "c6dacc43c13f6e0e2400fee304815bb5e8d6efda"
+    },
+    {
+      "path": "android/app/src/main/res/raw/mlv_focus_sb_life_is.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "41abbc80dee8d2e3623c1a1af4ea53e4a55241ee"
+    },
+    {
+      "path": "android/app/src/main/res/raw/mlv_focus_sb_meanwhile.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "3b015d615f978bb02b2e09a379cb641a5bfc037b"
+    },
+    {
+      "path": "android/app/src/main/res/raw/mlv_focus_sb_midsommar.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "75fae18d026dfa36198d7203f23b7edb850a94ad"
+    },
+    {
+      "path": "android/app/src/main/res/raw/mlv_focus_sb_moonlight.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "018d7599b2e886f6d3987079f4888fc98d6edcd2"
+    },
+    {
+      "path": "android/app/src/main/res/raw/mlv_focus_sb_skyward.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "cbbce6d89b0db16424ae9cb148cff682d3a3e987"
     },
     {
       "path": "android/app/src/main/res/raw/mlv_focus_silver.wav",
@@ -1076,6 +1216,13 @@
       "purpose": "function unknown: owner classification required",
       "certainty": "unknown",
       "blob": "27e5449c1365bb7501c82eb3532f8ce0232eb1c2"
+    },
+    {
+      "path": "android/app/src/main/res/raw/mlv_focus_tchaikovsky_op39.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "0ed3561ddd8d55c259069392b007d20284797aec"
     },
     {
       "path": "android/app/src/main/res/values-v31/styles.xml",
@@ -1369,7 +1516,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "1e4cf20725a65e06da157821eb6dd5cad401705c"
+      "blob": "7135f280fa69a074fb74cb6c1374740382cffc93"
     },
     {
       "path": "android/mobile-sections.js",
@@ -1425,7 +1572,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "33ebd04f43765284b0a251e318d27726f735ba75"
+      "blob": "50be1d68e971002af0702498e86bde51fd5b10c4"
     },
     {
       "path": "android/tools/smoke_candidate_apk_install.sh",
@@ -1635,7 +1782,7 @@
       "role": "document",
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
-      "blob": "dabbb5d57edb6306abcab808edeb8655a2cb4b06"
+      "blob": "25bf1f370a7c2dca1dee2c111986b313a01790e1"
     },
     {
       "path": "docs/RECOVERY_LOSS_TRIAGE.md",
@@ -1659,11 +1806,25 @@
       "blob": "129f8dcf63bed1893c18c9c22abeff91eb1c6540"
     },
     {
+      "path": "docs/audio/CINEMATIC_LIBRARY_RIGHTS.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "6f6095a3f077926800a4d2502e52b041af711775"
+    },
+    {
       "path": "docs/audio/CLASSICAL_FOCUS_RIGHTS.md",
       "role": "document",
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
-      "blob": "870a7a5e4f385a10abfd9709079b32544886c4e7"
+      "blob": "6932d89d7278970947a7a534b4e74efaaf586940"
+    },
+    {
+      "path": "docs/audio/PIANO_COLLECTION_RIGHTS.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "f8c1b7ba2d77d11a7956d54fab2fdd98819ef546"
     },
     {
       "path": "docs/audit/2026-10-12-release-baseline-drift.md",
@@ -2013,7 +2174,7 @@
       "role": "document",
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
-      "blob": "82ff17328a7c922ff011106406dd1b9956ae1a8f"
+      "blob": "de64f4d36fc22aba8168e5198fd0e156c183034a"
     },
     {
       "path": "installer/MichelsLife.iss",
@@ -2100,11 +2261,158 @@
       "blob": "b25fff46baca1e2584f88bb67ab238157a3b0cad"
     },
     {
+      "path": "src/MichelsLife/frontend/assets/audio/classical/LIBRARY.json",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "9604670f7b0d70612cbafad06aabfe40ab4e8ed9"
+    },
+    {
+      "path": "src/MichelsLife/frontend/assets/audio/classical/PIANO.json",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "a378cc1974962bb01ae7559688ed0149f54f4653"
+    },
+    {
+      "path": "src/MichelsLife/frontend/assets/audio/classical/RECORDINGS.json",
+      "role": "config",
+      "purpose": "machine-readable configuration",
+      "certainty": "rule",
+      "blob": "c91dec6172fa4ba6bdea49bbfec7be24482d4786"
+    },
+    {
+      "path": "src/MichelsLife/frontend/assets/audio/classical/bach_prelude_bwv846.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "c89a6f582183eaf389ac04aca30c7c3229e1a3a2"
+    },
+    {
+      "path": "src/MichelsLife/frontend/assets/audio/classical/chopin_nocturne_op9.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "701078e0e30f3aa92648a7a1eb89c7ffe9f8c47d"
+    },
+    {
+      "path": "src/MichelsLife/frontend/assets/audio/classical/debussy_clair_de_lune.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "0ea318fdf096f3be8e918caf04b0f2037d365c80"
+    },
+    {
+      "path": "src/MichelsLife/frontend/assets/audio/classical/mozart_k545.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "7134f7d8d1ba69d699f826e4c8e7e453cfa340f3"
+    },
+    {
+      "path": "src/MichelsLife/frontend/assets/audio/classical/satie_gymnopedie_1.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "bddc276b6173c831c3d5260a037fb9c812798c2c"
+    },
+    {
+      "path": "src/MichelsLife/frontend/assets/audio/classical/sb_ascension.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "b08142365fb29ac33c7971c7f46ca238427c329c"
+    },
+    {
+      "path": "src/MichelsLife/frontend/assets/audio/classical/sb_at_the_end_of_all_things.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "3e24ea5e22a7b7c8b899e15e9578bb9d3472dc75"
+    },
+    {
+      "path": "src/MichelsLife/frontend/assets/audio/classical/sb_bring_me_the_sky.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "7f706d152ab85994b5233d872107b58ff15d8bbb"
+    },
+    {
+      "path": "src/MichelsLife/frontend/assets/audio/classical/sb_cobalt.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "27340b678c1f5a1381f141a22fc832f740ded06b"
+    },
+    {
+      "path": "src/MichelsLife/frontend/assets/audio/classical/sb_first_snow.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "8a9d90615b5e59c3d9e05c3cbab1fe502cec117c"
+    },
+    {
+      "path": "src/MichelsLife/frontend/assets/audio/classical/sb_hyperion.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "bb6b0216617f48b1774a7ae48c188a09f4504751"
+    },
+    {
+      "path": "src/MichelsLife/frontend/assets/audio/classical/sb_in_this_moment.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "c6dacc43c13f6e0e2400fee304815bb5e8d6efda"
+    },
+    {
+      "path": "src/MichelsLife/frontend/assets/audio/classical/sb_life_is.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "41abbc80dee8d2e3623c1a1af4ea53e4a55241ee"
+    },
+    {
+      "path": "src/MichelsLife/frontend/assets/audio/classical/sb_meanwhile.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "3b015d615f978bb02b2e09a379cb641a5bfc037b"
+    },
+    {
+      "path": "src/MichelsLife/frontend/assets/audio/classical/sb_midsommar.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "75fae18d026dfa36198d7203f23b7edb850a94ad"
+    },
+    {
+      "path": "src/MichelsLife/frontend/assets/audio/classical/sb_moonlight.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "018d7599b2e886f6d3987079f4888fc98d6edcd2"
+    },
+    {
+      "path": "src/MichelsLife/frontend/assets/audio/classical/sb_skyward.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "cbbce6d89b0db16424ae9cb148cff682d3a3e987"
+    },
+    {
+      "path": "src/MichelsLife/frontend/assets/audio/classical/tchaikovsky_op39.mp3",
+      "role": "asset",
+      "purpose": "visual/audio/font asset",
+      "certainty": "rule",
+      "blob": "0ed3561ddd8d55c259069392b007d20284797aec"
+    },
+    {
       "path": "src/MichelsLife/frontend/focus-immersive.js",
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "a441d0f28d2d5fe23a48c8d262d7ed27b64a5290"
+      "blob": "e91ac440a4ee8c87d248202d031940ec9d670a90"
     },
     {
       "path": "src/MichelsLife/frontend/i18n.js",
@@ -2118,21 +2426,21 @@
       "role": "web_ui",
       "purpose": "local HTML documentation or web interface",
       "certainty": "inferred",
-      "blob": "7b987bb6f731ee7eac3cae277ce2b5fbaae54326"
+      "blob": "b2f59f734a78f428820276a56cb91ce672311772"
     },
     {
       "path": "src/MichelsLife/frontend/motivation-immersive.js",
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "4a3a444ca823137e3ec2e0d20389360750fa0f14"
+      "blob": "b11da3c2dfd9939b2565ad2d42c1b9524f42fe6f"
     },
     {
       "path": "src/MichelsLife/frontend/personal-alarms.js",
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "4a80679dcd03ab6a476101c850c81bae1ba42228"
+      "blob": "42278f30173ff6211f1879fda4dba87e156ae2bf"
     },
     {
       "path": "src/MichelsLife/frontend/settings-color-floating-preview.js",
@@ -2373,6 +2681,27 @@
       "blob": "a7ce521f982d3bcce261253cbe134be0cd364f32"
     },
     {
+      "path": "tools/import_cinematic_audio.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "6399de3437a02efa6c95a7864e66caadd470e405"
+    },
+    {
+      "path": "tools/import_classical_recordings.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "b403444bfc3b8b036341d367d8c79dde98de0da0"
+    },
+    {
+      "path": "tools/import_piano_collection.py",
+      "role": "source",
+      "purpose": "code/test implementation",
+      "certainty": "rule",
+      "blob": "3ec3b7e5e200a91810e5cef63cef9ebd15ad327e"
+    },
+    {
       "path": "tools/inject_bundle_asset.py",
       "role": "source",
       "purpose": "code/test implementation",
@@ -2412,7 +2741,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "520431213bd38e7fd9f2a260cf791eb5104453fb"
+      "blob": "db141dc15376b8cea259ea8980f03f82d495da3e"
     },
     {
       "path": "tools/repository_file_auditor.py",
@@ -2510,7 +2839,7 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "069ad5cf344dadfb6f84858d54289408a02ee9db"
+      "blob": "d1fdc1c124da1fa34073164ed9c862bc19d53d00"
     },
     {
       "path": "tools/test_android_focus_notification_ui.mjs",
@@ -2636,7 +2965,7 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "ee510b2bb9737ae5bfa9edf196cf4d4c74ccab1b"
+      "blob": "9e8c8e1910790bafdb30706a915c1d992fd8dca1"
     },
     {
       "path": "tools/test_granada_cross_provider_restore_review.mjs",
@@ -2657,7 +2986,7 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "9d50c3ba739e0ecc800f66804478a9c3729c9fe0"
+      "blob": "42b719584840c56465013bc3c03dd00c5669203d"
     },
     {
       "path": "tools/test_granada_focus_evidence_contract.mjs",
@@ -2783,7 +3112,7 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "f17ad9666f0300099d5c80a0d24dccedf9a9fbe3"
+      "blob": "f592f269548edd4fab4a44bb47e628291bd3caaa"
     },
     {
       "path": "tools/test_repository_file_auditor.py",
@@ -2804,7 +3133,7 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "11d292d26a104fc20ba3a1f4b4d5d69f64c738f9"
+      "blob": "ac2b569bca48f6762482b01a1dd4bfbac96f91b1"
     },
     {
       "path": "tools/test_settings_color_preview_granada.mjs",
@@ -2916,7 +3245,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "b917b387ea846abae2682f9b94cfe80d6a204e93"
+      "blob": "fa1fa810b5d139f673c94d0ecf88ffffe8ced705"
     },
     {
       "path": "tools/ui_android_google_calendar_truth_smoke.mjs",
@@ -3000,7 +3329,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "4429b5268a3dce1331fd6a3325badfd5d281564b"
+      "blob": "836b56cb433f2783bc64cf6a209a7f2032d9762d"
     },
     {
       "path": "tools/ui_cloud_device_boundary_granada_smoke.mjs",
@@ -3014,7 +3343,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "0b51508350c969a0ae07025769e9206a6276285b"
+      "blob": "7982a198622c8d30e70879e1afe4ec36b2c8e438"
     },
     {
       "path": "tools/ui_desktop_experience_smoke.mjs",
@@ -3028,7 +3357,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "7df7b869556e7ecc271f5c8353f2f3195db756ad"
+      "blob": "d3e428db8dee6aa40cfd52a9726f6bc9bb26793f"
     },
     {
       "path": "tools/ui_granada_account_boundary_crash_browser.mjs",
@@ -3300,20 +3629,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "c695e5cf3b3165f3",
+      "id": "73df71dda176744e",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "22 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/ci.yml, .github/workflows/release-unified-v3232-a0221.yml, .michelslab/project-progress.json, .michelslab/release-intents/unified-v3232-a0221.txt, android/android-bridge.js",
+      "observation": "46 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/ci.yml, .github/workflows/import-cinematic-audio.yml, .github/workflows/import-licensed-classical-recordings.yml, .github/workflows/import-piano-collection.yml, .github/workflows/release-unified-v3232-a0221.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "54e2ff71603bb94e",
+      "id": "4b8f01bac3b631cd",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "72 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml",
+      "observation": "85 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
