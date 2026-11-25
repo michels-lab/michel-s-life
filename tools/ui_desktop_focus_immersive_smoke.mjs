@@ -139,8 +139,14 @@ try{
   ok(await page.evaluate(()=>window.MichelsLifeFocusAudio.playing()),
     'Soundscape Play did not start the actual Web Audio scheduler');
   await page.locator('[data-mlv-audio="toggle-ambient"]').click();
-  ok(await page.evaluate(()=>!window.MichelsLifeFocusAudio.playing()),
-    'Soundscape Stop left an active audio context');
+  ok(await page.evaluate(()=>{const a=window.MichelsLifeFocusAudio;return a.playing()&&a.playingScene()==='library'&&a.ambientPlayback()?.paused===true;}),
+    'Soundscape Pause did not preserve the active selection');
+  await page.locator('[data-mlv-audio="toggle-ambient"]').click();
+  ok(await page.evaluate(()=>window.MichelsLifeFocusAudio.ambientPlayback()?.paused===false),
+    'Soundscape Resume did not resume the scheduler');
+  await page.locator('[data-mlv-audio="stop-ambient"]').click();
+  ok(await page.evaluate(()=>{const a=window.MichelsLifeFocusAudio;return !a.playing()&&a.playingScene()===null&&a.ambientPlayback()===null;}),
+    'Soundscape Stop left an active audio session');
   const soundPrefs=await page.evaluate(()=>window.FocusStoryV30162.focusState());
   ok(soundPrefs.v30165CompletionSound==='glass'&&soundPrefs.v30165Soundscape==='library',
     'End chime and soundscape were not saved by the canonical FocusStory owner');
