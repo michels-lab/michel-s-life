@@ -134,8 +134,8 @@
   "active_candidate": {
     "block": "4A",
     "pr": "https://github.com/michels-lab/michel-s-life/pull/239",
-    "head": "dd3f74c63815e8b3caba60c157013e6204523006",
-    "status": "implementation_committed_ci_and_owner_acceptance_pending",
+    "head": "520c88a9fcc336ec5cd50022a4b957137c06ded8",
+    "status": "implementation_committed_browser_contract_updated_exact_ci_pending",
     "baseline": "3.0.230",
     "changes": [
       "Windows minimize and single-instance restore",
@@ -143,14 +143,16 @@
       "carryover banner and chapter aura layout",
       "discrete About credits and grouped music controls",
       "paused original/recorded audio continuity",
-      "consistent original ambience pause/resume/stop, disabled unavailable skip controls, bilingual All audio label"
+      "consistent original ambience pause/resume/stop, disabled unavailable skip controls, bilingual All audio label",
+      "two populated desktop audio columns, stacked compact layout, bilingual section headings on both platforms"
     ],
     "remaining": [
       "exact candidate CI",
       "installed dashboard visual comparison",
       "owner acceptance",
       "stable publication",
-      "resolve reported PR mergeability against current main"
+      "resolve reported PR mergeability against current main",
+      "validate new two-column audio layout and dedicated Pause/Resume/Stop browser contract"
     ],
     "overlapping_pr": "https://github.com/michels-lab/michel-s-life/pull/237",
     "optional_audio_pr": "https://github.com/michels-lab/michel-s-life/pull/238",
@@ -169,6 +171,15 @@
     "optional_pack_02": {
       "tracks": 8,
       "status": "catalog and build workflow candidate, artifact not verified"
+    },
+    "previous_head_ci": {
+      "head": "dd3f74c63815e8b3caba60c157013e6204523006",
+      "windows_native_launch": "success",
+      "windows_run": 45586983962,
+      "focus_classical": "success",
+      "focus_run": 45586981925,
+      "ui_smoke": "failure: old Stop expectation after Pause",
+      "ui_run": 45586980843
     }
   }
 }
