@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 514,
-  "classified_files_total": 510,
-  "docs_content_inspected": 114,
+  "tracked_files_total": 515,
+  "classified_files_total": 511,
+  "docs_content_inspected": 115,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
   "roles": {
@@ -13,7 +13,7 @@
     "build_script": 6,
     "config": 28,
     "database_migration": 3,
-    "document": 106,
+    "document": 107,
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
@@ -31,8 +31,8 @@
     "UNKNOWN_PURPOSE": 6
   },
   "finding_total": 12,
-  "inventory_fingerprint": "fd70b29b7e98103abe8139ea5c9b42b994819a25f650df2b625a39562e24b5ee",
-  "evidence_fingerprint": "d7a9203a5761065c6216b1abecd6f5d1ac6e704f552fff8d7d0da74cfd48baa3",
+  "inventory_fingerprint": "ae2d7e5292ea19fdfcba68a14c275ed21b80c9fce54f68e0a7241958be363b2b",
+  "evidence_fingerprint": "8e2537832e8d0393f15b5bfd3d064c77eddaebdc975b2ad025edb4bac413515f",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -865,14 +865,14 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "e5c0f3cee9402e8a72a7dd798c4e89877f807265"
+      "blob": "514b845e405e2455a1275b59ff2eec2f0c035001"
     },
     {
       "path": "android/app/build.gradle.kts",
       "role": "build_script",
       "purpose": "platform build/project/installer script",
       "certainty": "inferred",
-      "blob": "5a68e9b47bff505e513e252c6bd64d092aac6c81"
+      "blob": "4c365bf26ec36e0e477d19611cc17dc4331d1b32"
     },
     {
       "path": "android/app/src/directRelease/AndroidManifest.xml",
@@ -935,7 +935,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "be1bf9a8fe4d3d00494c83bf066b87dbfd353bbc"
+      "blob": "70ee08eb2f2cfe0a19749f3fac31d9e42b3381c1"
     },
     {
       "path": "android/app/src/main/java/com/michelslab/michelslife/DirectUpdatePolicy.java",
@@ -1789,7 +1789,7 @@
       "role": "document",
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
-      "blob": "25bf1f370a7c2dca1dee2c111986b313a01790e1"
+      "blob": "f79887fdc2a2952e710ca4e89c7e797768159b32"
     },
     {
       "path": "docs/RECOVERY_LOSS_TRIAGE.md",
@@ -2184,6 +2184,13 @@
       "blob": "de64f4d36fc22aba8168e5198fd0e156c183034a"
     },
     {
+      "path": "docs/releases/v3.0.233.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "51a18ace016d4e518018174e3dd236eaf7b07f79"
+    },
+    {
       "path": "installer/MichelsLife.iss",
       "role": "build_script",
       "purpose": "platform build/project/installer script",
@@ -2237,7 +2244,7 @@
       "role": "build_script",
       "purpose": "platform build/project/installer script",
       "certainty": "inferred",
-      "blob": "6d5bd084d00ebcde3bc35ea8b261da42f3710f7a"
+      "blob": "51d58d01a095f982fc03ead8b3e33ef538b99c7a"
     },
     {
       "path": "src/MichelsLife/Program.cs.gz.b64",
@@ -2580,7 +2587,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "4f9ffca70798f29e42d0dd926d0256ad3c5fa720"
+      "blob": "6ba5b5c74d7390b2c58c60bc49c9bbbb68974b50"
     },
     {
       "path": "tools/ci_publish_file_steward.py",
@@ -2727,14 +2734,14 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "34731b957d52c9317d30f05852de61279567eef3"
+      "blob": "2796a4374d3e4d1aff2875f1903dcaf06f11acba"
     },
     {
       "path": "tools/release_smoke_test.py",
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "952c406032e482ff3d52e328806e01a9256f8c05"
+      "blob": "f563012ddc968e2dd390faf4ed692d5aa581c4f7"
     },
     {
       "path": "tools/render_store_manifest.py",
@@ -3560,7 +3567,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "c2ff5667eae9a3fcfaf766cfda787dcf1fc14589"
+      "blob": "96f1a2cb8bf3ea1575c226c712a33a448a57a76a"
     },
     {
       "path": "tools/validate_external_ui_design.py",
@@ -3574,7 +3581,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "16cc688e340f04818bb733519ff0736f86dec5eb"
+      "blob": "441aa5bf503dad6c8b8584df475b77480ae30cb4"
     },
     {
       "path": "tools/validate_granada_inline_scripts.mjs",
@@ -3643,11 +3650,11 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "4cbd6438d9fb7ea3",
+      "id": "fb6d6fec6d40cebb",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "58 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-classical-focus.yml, .github/workflows/granada-data-health.yml",
+      "observation": "60 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-classical-focus.yml, .github/workflows/granada-data-health.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
