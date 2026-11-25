@@ -1,0 +1,27 @@
+name: Import licensed piano collection
+on:
+  push:
+    branches:
+      - granada/focus-clock-first-classical-completion-20261124
+    paths:
+      - 'tools/import_piano_collection.py'
+      - '.github/workflows/import-piano-collection.yml'
+permissions:
+  contents: write
+jobs:
+  import:
+    if: github.repository == 'michels-lab/michel-s-life'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: python3 tools/import_piano_collection.py
+      - run: node --test tools/test_granada_classical_focus.mjs
+      - name: Commit verified piano recordings only
+        run: |
+          git config user.name "Michel's Life Recording Import"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/MichelsLife/frontend/assets/audio/classical/PIANO.json src/MichelsLife/frontend/assets/audio/classical/debussy_clair_de_lune.mp3 android/app/src/main/res/raw/mlv_focus_debussy_clair_de_lune.mp3 src/MichelsLife/frontend/assets/audio/classical/chopin_nocturne_op9.mp3 android/app/src/main/res/raw/mlv_focus_chopin_nocturne_op9.mp3 src/MichelsLife/frontend/assets/audio/classical/satie_gymnopedie_1.mp3 android/app/src/main/res/raw/mlv_focus_satie_gymnopedie_1.mp3 src/MichelsLife/frontend/assets/audio/classical/bach_prelude_bwv846.mp3 android/app/src/main/res/raw/mlv_focus_bach_prelude_bwv846.mp3
+          git commit -m "assets(audio): bundle four verified classical piano recordings"
+          git push origin HEAD:refs/heads/granada/focus-clock-first-classical-completion-20261124

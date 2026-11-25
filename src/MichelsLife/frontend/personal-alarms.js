@@ -13,7 +13,7 @@ const validDate=x=>/^\d{4}-\d{2}-\d{2}$/.test(x)&&!Number.isNaN(new Date(x+'T12:
 const days=['Su','Mo','Tu','We','Th','Fr','Sa'];
 const SOUNDS=['system','classic','soft','digital','gentle','pulse','radar',
  'focus_moonlight','focus_celestial','focus_orbit','focus_aurora','focus_observatory','focus_library','focus_afterglow','focus_silver',
- 'mozart_k545','tchaikovsky_op39','sb_meanwhile','sb_moonlight','sb_cobalt','sb_skyward','sb_life_is','sb_first_snow','sb_midsommar','sb_at_the_end_of_all_things','sb_in_this_moment','sb_hyperion','sb_ascension','sb_bring_me_the_sky','custom'];
+ 'mozart_k545','tchaikovsky_op39','sb_meanwhile','sb_moonlight','sb_cobalt','sb_skyward','sb_life_is','sb_first_snow','sb_midsommar','sb_at_the_end_of_all_things','sb_in_this_moment','sb_hyperion','sb_ascension','sb_bring_me_the_sky','debussy_clair_de_lune','chopin_nocturne_op9','satie_gymnopedie_1','bach_prelude_bwv846','custom'];
 const SOUND_NAMES={system:['System default','Sistema'],classic:['Velvet Dawn · cinematic bells','Alba de terciopelo · campanas'],
  soft:['Glass Garden · dream chimes','Jardín de cristal · campanillas'],digital:['Neon Orbit · ambient synth','Órbita neón · sintetizador'],gentle:['First Light · gentle sunrise','Primera luz · amanecer'],
  pulse:['Inner Pulse · warm heartbeat','Pulso interior · latido cálido'],radar:['Celestial Tide · atmospheric','Marea celeste · atmosférico'],
@@ -37,7 +37,10 @@ const SOUND_NAMES={system:['System default','Sistema'],classic:['Velvet Dawn · 
  sb_in_this_moment:["In This Moment · Scott Buckley · CC BY 4.0","In This Moment · Scott Buckley · CC BY 4.0"],
  sb_hyperion:["Hyperion · Scott Buckley · CC BY 4.0","Hyperion · Scott Buckley · CC BY 4.0"],
  sb_ascension:["Ascension · Scott Buckley · CC BY 4.0","Ascension · Scott Buckley · CC BY 4.0"],
- sb_bring_me_the_sky:["Bring Me The Sky · Scott Buckley · CC BY 4.0","Bring Me The Sky · Scott Buckley · CC BY 4.0"],custom:['My MP3 / audio','Mi MP3 / audio']};
+ sb_bring_me_the_sky:["Bring Me The Sky · Scott Buckley · CC BY 4.0","Bring Me The Sky · Scott Buckley · CC BY 4.0"],debussy_clair_de_lune:["Claude Debussy · Clair de Lune · Laurens Goedhart · CC BY 3.0","Claude Debussy · Clair de Lune · Laurens Goedhart · CC BY 3.0"],
+ chopin_nocturne_op9:["Frédéric Chopin · Nocturne Op. 9 No. 2 · Peter Johnston / Musopen · CC0 1.0","Frédéric Chopin · Nocturne Op. 9 No. 2 · Peter Johnston / Musopen · CC0 1.0"],
+ satie_gymnopedie_1:["Erik Satie · Gymnopédie No. 1 · Robin Alciatore / Musopen · Public domain","Erik Satie · Gymnopédie No. 1 · Robin Alciatore / Musopen · Public domain"],
+ bach_prelude_bwv846:["Johann Sebastian Bach · Prelude in C major, BWV 846 · Kimiko Ishizaka · CC0 1.0","Johann Sebastian Bach · Prelude in C major, BWV 846 · Kimiko Ishizaka · CC0 1.0"],custom:['My MP3 / audio','Mi MP3 / audio']};
 const soundName=id=>tr(...(SOUND_NAMES[id]||SOUND_NAMES.system));
 let customAudio=null,previewAudio=null,customAudioUrl=null,previewAudioUrl=null;
 let previewGeneration=0;
@@ -228,7 +231,7 @@ function stopPresetAudio(){
 }
 function playPresetSound(id,preview=false){
  stopRecording(preview);
- if(['mozart_k545','tchaikovsky_op39','sb_meanwhile','sb_moonlight','sb_cobalt','sb_skyward','sb_life_is','sb_first_snow','sb_midsommar','sb_at_the_end_of_all_things','sb_in_this_moment','sb_hyperion','sb_ascension','sb_bring_me_the_sky'].includes(id)){
+ if(['mozart_k545','tchaikovsky_op39','sb_meanwhile','sb_moonlight','sb_cobalt','sb_skyward','sb_life_is','sb_first_snow','sb_midsommar','sb_at_the_end_of_all_things','sb_in_this_moment','sb_hyperion','sb_ascension','sb_bring_me_the_sky','debussy_clair_de_lune','chopin_nocturne_op9','satie_gymnopedie_1','bach_prelude_bwv846'].includes(id)){
   if(!preview)stopPresetAudio();
   if(preview&&previewPresetContext){previewPresetContext.close().catch(()=>{});previewPresetContext=null;}
   try{const audio=new Audio('assets/audio/classical/'+id+'.mp3');audio.loop=!preview;if(preview)previewRecording=audio;else liveRecording=audio;audio.play().catch(()=>{if((preview?previewRecording:liveRecording)===audio)stopRecording(preview);});return true;}catch(_){return false;}
@@ -562,6 +565,7 @@ function create(){
  }
  const soundSelect=q('#mlv-alarm-sound',screen);
  const musicCredits=document.createElement('small');musicCredits.textContent="Scott Buckley · CC BY 4.0 · www.scottbuckley.com.au · creativecommons.org/licenses/by/4.0/";musicCredits.style.overflowWrap='anywhere';soundSelect.parentElement?.appendChild(musicCredits);
+ const pianoCredits=document.createElement('details');const pianoSummary=document.createElement('summary');pianoSummary.textContent='Classical credits / Créditos clásicos';pianoCredits.appendChild(pianoSummary);const pianoText=document.createElement('small');pianoText.textContent="Claude Debussy · Clair de Lune — Laurens Goedhart (CC BY 3.0; https://creativecommons.org/licenses/by/3.0/; https://commons.wikimedia.org/wiki/File:Clair_de_lune_(Claude_Debussy)_Suite_bergamasque.ogg) | Frédéric Chopin · Nocturne Op. 9 No. 2 — Peter Johnston / Musopen (CC0 1.0; https://creativecommons.org/publicdomain/zero/1.0/; https://commons.wikimedia.org/wiki/File:Chopin_Nocturne_No._2_in_E_Flat_Major%2C_Op._9.ogg) | Erik Satie · Gymnopédie No. 1 — Robin Alciatore / Musopen (Public domain; https://creativecommons.org/publicdomain/mark/1.0/; https://commons.wikimedia.org/wiki/File:Erik_Satie_-_gymnopedies_-_la_1_ere._lent_et_douloureux.ogg) | Johann Sebastian Bach · Prelude in C major, BWV 846 — Kimiko Ishizaka (CC0 1.0; https://creativecommons.org/publicdomain/zero/1.0/; https://commons.wikimedia.org/wiki/File:Kimiko_Ishizaka_-_Bach_-_Well-Tempered_Clavier%2C_Book_1_-_01_Prelude_No._1_in_C_major%2C_BWV_846.ogg) · MP3 conversion only.";pianoText.style.overflowWrap='anywhere';pianoCredits.appendChild(pianoText);soundSelect.parentElement?.appendChild(pianoCredits);
  for(const sound of SOUNDS){const option=document.createElement('option');option.value=sound;option.textContent=soundName(sound);soundSelect.appendChild(option);}
  soundSelect.value='gentle';
  q('#mlv-alarm-preview',screen).addEventListener('click',()=>previewSound(soundSelect.value));

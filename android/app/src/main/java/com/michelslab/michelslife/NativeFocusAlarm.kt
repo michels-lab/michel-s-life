@@ -38,7 +38,7 @@ internal object NativeFocusAlarm {
     private const val NOTIFICATION_ID = 4705
     private const val MAX_FUTURE_MS = 4 * 60 * 60 * 1000L
     private fun completionSound(raw: String?): String =
-        if (raw in listOf("soft", "glass", "aurora", "observatory", "midnight", "silver", "mozart_k545", "tchaikovsky_op39", "sb_meanwhile", "sb_moonlight", "sb_cobalt", "sb_skyward", "sb_life_is", "sb_first_snow", "sb_midsommar", "sb_at_the_end_of_all_things", "sb_in_this_moment", "sb_hyperion", "sb_ascension", "sb_bring_me_the_sky", "off"))
+        if (raw in listOf("soft", "glass", "aurora", "observatory", "midnight", "silver", "mozart_k545", "tchaikovsky_op39", "sb_meanwhile", "sb_moonlight", "sb_cobalt", "sb_skyward", "sb_life_is", "sb_first_snow", "sb_midsommar", "sb_at_the_end_of_all_things", "sb_in_this_moment", "sb_hyperion", "sb_ascension", "sb_bring_me_the_sky", "debussy_clair_de_lune", "chopin_nocturne_op9", "satie_gymnopedie_1", "bach_prelude_bwv846", "off"))
             raw ?: "soft"
         else "soft"
 
@@ -67,6 +67,10 @@ internal object NativeFocusAlarm {
             "sb_hyperion" to "Hyperion · Scott Buckley",
             "sb_ascension" to "Ascension · Scott Buckley",
             "sb_bring_me_the_sky" to "Bring Me The Sky · Scott Buckley",
+            "debussy_clair_de_lune" to "Claude Debussy · Clair de Lune",
+            "chopin_nocturne_op9" to "Frédéric Chopin · Nocturne Op. 9 No. 2",
+            "satie_gymnopedie_1" to "Erik Satie · Gymnopédie No. 1",
+            "bach_prelude_bwv846" to "Johann Sebastian Bach · Prelude in C major, BWV 846",
             "off" to "No sound"
         )
         val channel = NotificationChannel(
@@ -97,6 +101,10 @@ internal object NativeFocusAlarm {
                     "sb_hyperion" -> R.raw.mlv_focus_sb_hyperion
                     "sb_ascension" -> R.raw.mlv_focus_sb_ascension
                     "sb_bring_me_the_sky" -> R.raw.mlv_focus_sb_bring_me_the_sky
+                    "debussy_clair_de_lune" -> R.raw.mlv_focus_debussy_clair_de_lune
+                    "chopin_nocturne_op9" -> R.raw.mlv_focus_chopin_nocturne_op9
+                    "satie_gymnopedie_1" -> R.raw.mlv_focus_satie_gymnopedie_1
+                    "bach_prelude_bwv846" -> R.raw.mlv_focus_bach_prelude_bwv846
                     else -> R.raw.mlv_focus_soft
                 }
                 val uri = Uri.parse("android.resource://" + context.packageName + "/" + tone)

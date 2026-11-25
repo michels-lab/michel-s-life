@@ -36,6 +36,10 @@
     sb_hyperion:{en:"Hyperion · Scott Buckley",es:"Hyperion · Scott Buckley",classical:true},
     sb_ascension:{en:"Ascension · Scott Buckley",es:"Ascension · Scott Buckley",classical:true},
     sb_bring_me_the_sky:{en:"Bring Me The Sky · Scott Buckley",es:"Bring Me The Sky · Scott Buckley",classical:true},
+    debussy_clair_de_lune:{en:"Claude Debussy · Clair de Lune · Laurens Goedhart · CC BY 3.0",es:"Claude Debussy · Clair de Lune · Laurens Goedhart · CC BY 3.0",classical:true},
+    chopin_nocturne_op9:{en:"Frédéric Chopin · Nocturne Op. 9 No. 2 · Peter Johnston / Musopen · CC0 1.0",es:"Frédéric Chopin · Nocturne Op. 9 No. 2 · Peter Johnston / Musopen · CC0 1.0",classical:true},
+    satie_gymnopedie_1:{en:"Erik Satie · Gymnopédie No. 1 · Robin Alciatore / Musopen · Public domain",es:"Erik Satie · Gymnopédie No. 1 · Robin Alciatore / Musopen · Public domain",classical:true},
+    bach_prelude_bwv846:{en:"Johann Sebastian Bach · Prelude in C major, BWV 846 · Kimiko Ishizaka · CC0 1.0",es:"Johann Sebastian Bach · Prelude in C major, BWV 846 · Kimiko Ishizaka · CC0 1.0",classical:true},
     off:{en:'No sound',es:'Sin sonido',notes:[]}
   };
   // All sequences are newly composed harmonic pads, not licensed recordings.
@@ -61,6 +65,11 @@
     sb_hyperion:{en:"Hyperion · Scott Buckley",es:"Hyperion · Scott Buckley",group:"Cinematic",recorded:true},
     sb_ascension:{en:"Ascension · Scott Buckley",es:"Ascension · Scott Buckley",group:"Cinematic",recorded:true},
     sb_bring_me_the_sky:{en:"Bring Me The Sky · Scott Buckley",es:"Bring Me The Sky · Scott Buckley",group:"Cinematic",recorded:true}
+    ,
+    debussy_clair_de_lune:{en:"Claude Debussy · Clair de Lune · Laurens Goedhart · CC BY 3.0",es:"Claude Debussy · Clair de Lune · Laurens Goedhart · CC BY 3.0",group:'Classical',recorded:true},
+    chopin_nocturne_op9:{en:"Frédéric Chopin · Nocturne Op. 9 No. 2 · Peter Johnston / Musopen · CC0 1.0",es:"Frédéric Chopin · Nocturne Op. 9 No. 2 · Peter Johnston / Musopen · CC0 1.0",group:'Classical',recorded:true},
+    satie_gymnopedie_1:{en:"Erik Satie · Gymnopédie No. 1 · Robin Alciatore / Musopen · Public domain",es:"Erik Satie · Gymnopédie No. 1 · Robin Alciatore / Musopen · Public domain",group:'Classical',recorded:true},
+    bach_prelude_bwv846:{en:"Johann Sebastian Bach · Prelude in C major, BWV 846 · Kimiko Ishizaka · CC0 1.0",es:"Johann Sebastian Bach · Prelude in C major, BWV 846 · Kimiko Ishizaka · CC0 1.0",group:'Classical',recorded:true}
   };
   // Licensed human performances, bundled locally. No synthesized fallback.
   let classicalSource=null,previewingId=null,ambientRecording=null,ambientVolume=.35,volumeDraft=null;
@@ -581,6 +590,7 @@
             <div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="mlv-focus-btn" data-mlv-audio="previous-ambient" aria-label="Previous track">⏮</button><button type="button" class="mlv-focus-btn" data-mlv-audio="next-ambient" aria-label="Next track">⏭</button><button type="button" class="mlv-focus-btn" data-mlv-audio="stop-ambient">Stop</button><select data-mlv-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option></select></div>
             <small data-mlv-ambient-progress aria-live="off"></small>
             <small style="flex-basis:100%;overflow-wrap:anywhere">Scott Buckley · CC BY 4.0 · www.scottbuckley.com.au · creativecommons.org/licenses/by/4.0/</small>
+            <details><summary>Classical credits / Créditos clásicos</summary><small style="overflow-wrap:anywhere">Claude Debussy · Clair de Lune — Laurens Goedhart (CC BY 3.0; https://creativecommons.org/licenses/by/3.0/; https://commons.wikimedia.org/wiki/File:Clair_de_lune_(Claude_Debussy)_Suite_bergamasque.ogg) | Frédéric Chopin · Nocturne Op. 9 No. 2 — Peter Johnston / Musopen (CC0 1.0; https://creativecommons.org/publicdomain/zero/1.0/; https://commons.wikimedia.org/wiki/File:Chopin_Nocturne_No._2_in_E_Flat_Major%2C_Op._9.ogg) | Erik Satie · Gymnopédie No. 1 — Robin Alciatore / Musopen (Public domain; https://creativecommons.org/publicdomain/mark/1.0/; https://commons.wikimedia.org/wiki/File:Erik_Satie_-_gymnopedies_-_la_1_ere._lent_et_douloureux.ogg) | Johann Sebastian Bach · Prelude in C major, BWV 846 — Kimiko Ishizaka (CC0 1.0; https://creativecommons.org/publicdomain/zero/1.0/; https://commons.wikimedia.org/wiki/File:Kimiko_Ishizaka_-_Bach_-_Well-Tempered_Clavier%2C_Book_1_-_01_Prelude_No._1_in_C_major%2C_BWV_846.ogg) · MP3 conversion only.</small></details>
           </div>
         </div></details>
 

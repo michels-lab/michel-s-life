@@ -9,7 +9,8 @@ const html=readFileSync('src/MichelsLife/frontend/index.html','utf8');
 const legacy=['moonlight','celestial','orbit','aurora','observatory','library','afterglow','silver'];
 const classical=['mozart_k545','tchaikovsky_op39'];
 const library=['sb_meanwhile','sb_moonlight','sb_cobalt','sb_skyward','sb_life_is','sb_first_snow','sb_midsommar','sb_at_the_end_of_all_things','sb_in_this_moment','sb_hyperion','sb_ascension','sb_bring_me_the_sky'];
-const all=new Set([...legacy,...library]);
+const piano=['debussy_clair_de_lune','chopin_nocturne_op9','satie_gymnopedie_1','bach_prelude_bwv846'];
+const all=new Set([...legacy,...library,...piano]);
 
 function harness(persisted={v30165Soundscape:'moonlight',v30165CompletionSound:'soft'}){
   const frequencies=[],startTimes=[],contexts=[],timers=new Map(),buffers=[],sources=[];
@@ -55,8 +56,8 @@ function harness(persisted={v30165Soundscape:'moonlight',v30165CompletionSound:'
 
 test('classical music is exclusively a completion sound, all eight original ambience choices remain',()=>{
  const f=harness();
- assert.deepEqual(Array.from(f.api.sceneOptions(),o=>o.id),[...legacy,...library]);
- assert.equal(f.api.completionOptions().length,21);
+ assert.deepEqual(Array.from(f.api.sceneOptions(),o=>o.id),[...legacy,...library,...piano]);
+ assert.equal(f.api.completionOptions().length,25);
  for(const id of classical){
    assert.ok(f.api.completionOptions().some(o=>o.id===id));
    assert.equal(f.api.toggleScene(id),false);
@@ -171,4 +172,12 @@ test('playlist, pause/resume, track navigation and saved volume preserve the can
  f.api.moveAmbient(-1);assert.equal(second.paused,true);assert.equal(f.api.playingScene(),library[0]);
  f.api.setAmbientMode('repeat');assert.equal(f.recordings.at(-1).loop,true);
  f.api.stopAmbient();assert.equal(f.api.playing(),false);assert.equal(f.timers.size,0);
+});
+
+
+test('piano collection supports ambience, completion and verified native assets',()=>{
+ const f=harness(),folder='src/MichelsLife/frontend/assets/audio/classical/';
+ const manifest=JSON.parse(readFileSync(folder+'PIANO.json','utf8'));
+ assert.deepEqual(manifest.map(x=>x.id),piano);
+ for(const item of manifest){const id=item.id,bytes=readFileSync(folder+id+'.mp3');assert.equal(createHash('sha256').update(bytes).digest('hex'),item.asset_sha256);assert.deepEqual(bytes,readFileSync('android/app/src/main/res/raw/mlv_focus_'+id+'.mp3'));assert.ok(item.performer&&item.license_url&&item.source_page);assert.equal(f.api.selectScene(id),id);assert.equal(f.api.startAmbient(),true);assert.equal(f.recordings.at(-1).loop,true);assert.equal(f.api.selectCompletion(id),id);assert.equal(f.api.playCompletion(),true);assert.equal(f.recordings.at(-1).loop,false);}
 });

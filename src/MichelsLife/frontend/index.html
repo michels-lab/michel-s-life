@@ -27600,10 +27600,10 @@ function focusState(){
 function setAudioPreference(kind,value){
  const f=focusState();
  if(kind==='completion'){
-   const valid=['soft','glass','aurora','observatory','midnight','silver','mozart_k545','tchaikovsky_op39','sb_meanwhile','sb_moonlight','sb_cobalt','sb_skyward','sb_life_is','sb_first_snow','sb_midsommar','sb_at_the_end_of_all_things','sb_in_this_moment','sb_hyperion','sb_ascension','sb_bring_me_the_sky','off'];
+   const valid=['soft','glass','aurora','observatory','midnight','silver','mozart_k545','tchaikovsky_op39','sb_meanwhile','sb_moonlight','sb_cobalt','sb_skyward','sb_life_is','sb_first_snow','sb_midsommar','sb_at_the_end_of_all_things','sb_in_this_moment','sb_hyperion','sb_ascension','sb_bring_me_the_sky','debussy_clair_de_lune','chopin_nocturne_op9','satie_gymnopedie_1','bach_prelude_bwv846','off'];
    f.v30165CompletionSound=valid.includes(value)?value:'soft';
  }else if(kind==='scene'){
-   const valid=['moonlight','celestial','orbit','aurora','observatory','library','afterglow','silver','sb_meanwhile','sb_moonlight','sb_cobalt','sb_skyward','sb_life_is','sb_first_snow','sb_midsommar','sb_at_the_end_of_all_things','sb_in_this_moment','sb_hyperion','sb_ascension','sb_bring_me_the_sky'];
+   const valid=['moonlight','celestial','orbit','aurora','observatory','library','afterglow','silver','sb_meanwhile','sb_moonlight','sb_cobalt','sb_skyward','sb_life_is','sb_first_snow','sb_midsommar','sb_at_the_end_of_all_things','sb_in_this_moment','sb_hyperion','sb_ascension','sb_bring_me_the_sky','debussy_clair_de_lune','chopin_nocturne_op9','satie_gymnopedie_1','bach_prelude_bwv846'];
    f.v30165Soundscape=valid.includes(value)?value:'moonlight';
  }else if(kind==='ambientVolume'){
    if(typeof value!=='number'||!Number.isFinite(value))return false;

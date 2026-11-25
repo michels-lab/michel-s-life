@@ -189,6 +189,10 @@ internal object NativePersonalAlarms {
             "sb_hyperion" -> R.raw.mlv_focus_sb_hyperion
             "sb_ascension" -> R.raw.mlv_focus_sb_ascension
             "sb_bring_me_the_sky" -> R.raw.mlv_focus_sb_bring_me_the_sky
+            "debussy_clair_de_lune" -> R.raw.mlv_focus_debussy_clair_de_lune
+            "chopin_nocturne_op9" -> R.raw.mlv_focus_chopin_nocturne_op9
+            "satie_gymnopedie_1" -> R.raw.mlv_focus_satie_gymnopedie_1
+            "bach_prelude_bwv846" -> R.raw.mlv_focus_bach_prelude_bwv846
             else -> 0
         }
         if (recorded != 0) return Uri.parse("android.resource://" + context.packageName + "/" + recorded)
