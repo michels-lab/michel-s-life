@@ -125,6 +125,14 @@ try{
   // Real browser interaction, not a static API test: open the collapsed audio
   // panel, choose an end chime, preview it, and play/stop the A+C atmosphere.
   await page.locator('.mlv-focus-sound-details > summary').click();
+  const audioLayout=await page.locator('.mlv-focus-audio-panel').evaluate(panel=>{
+    const [playback,library]=Array.from(panel.children);
+    if(!playback||!library)return null;
+    const a=playback.getBoundingClientRect(),b=library.getBoundingClientRect();
+    return {columns:panel.children.length,playbackWidth:a.width,libraryWidth:b.width,separate:b.left>=a.right,topGap:Math.abs(a.top-b.top),overflow:panel.scrollWidth>panel.clientWidth+2};
+  });
+  ok(audioLayout&&audioLayout.columns===2&&audioLayout.playbackWidth>0&&audioLayout.libraryWidth>0&&audioLayout.separate&&audioLayout.topGap<3&&!audioLayout.overflow,
+    'Desktop audio columns are not both usable: '+JSON.stringify(audioLayout));
   ok(await page.locator('[data-mlv-completion-sound] option').count()===25,
     'End-of-Pomodoro selector is not populated');
   const scenes=await page.locator('[data-mlv-scene-select] option').evaluateAll(options=>
@@ -139,8 +147,14 @@ try{
   ok(await page.evaluate(()=>window.MichelsLifeFocusAudio.playing()),
     'Soundscape Play did not start the actual Web Audio scheduler');
   await page.locator('[data-mlv-audio="toggle-ambient"]').click();
-  ok(await page.evaluate(()=>!window.MichelsLifeFocusAudio.playing()),
-    'Soundscape Stop left an active audio context');
+  ok(await page.evaluate(()=>{const a=window.MichelsLifeFocusAudio;return a.playing()&&a.playingScene()==='library'&&a.ambientPlayback()?.paused===true;}),
+    'Soundscape Pause did not preserve the active selection');
+  await page.locator('[data-mlv-audio="toggle-ambient"]').click();
+  ok(await page.evaluate(()=>window.MichelsLifeFocusAudio.ambientPlayback()?.paused===false),
+    'Soundscape Resume did not resume the scheduler');
+  await page.locator('[data-mlv-audio="stop-ambient"]').click();
+  ok(await page.evaluate(()=>{const a=window.MichelsLifeFocusAudio;return !a.playing()&&a.playingScene()===null&&a.ambientPlayback()===null;}),
+    'Soundscape Stop left an active audio session');
   const soundPrefs=await page.evaluate(()=>window.FocusStoryV30162.focusState());
   ok(soundPrefs.v30165CompletionSound==='glass'&&soundPrefs.v30165Soundscape==='library',
     'End chime and soundscape were not saved by the canonical FocusStory owner');

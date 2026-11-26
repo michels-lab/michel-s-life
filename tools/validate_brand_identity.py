@@ -30,7 +30,7 @@ for label,path in required.items():
 expected_git_blobs={
     ROOT/'branding/michels_life_app_icon.svg':'169c62ccb7dfc7fc25532925932cde0818d7fe13',
     ROOT/'branding/michels_life_mark.svg':'420a506ecffcebd3fc1cf6dbb8875168c039abfd',
-    ROOT/'branding/michels_life_lockup.svg':'edfa6026bfabbbe852d3cad8aa385de53b65775b',
+    ROOT/'branding/michels_life_lockup.svg':'d9101edf4de944a74fb845d9c1cb453268f71362',
     ROOT/'branding/michel_duarte_avatar.jpg':'18fe1a68722850c3d8f918dc0799f46ffeb6dbaf',
     ROOT/'branding/michels_lab_mark.png':'f205c15c3b6bd7fe676ced83fd1ea2ae24c25586',
     ROOT/'branding/michels_lab_lockup.png':'7fd48093968b31ddacd3098f5b15d962de580652',

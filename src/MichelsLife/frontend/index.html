@@ -60,14 +60,12 @@ html.v3084-start-cover::after{
   top:50%;
   z-index:2147483647;
   pointer-events:none;
-  width:min(620px,82vw);
-  aspect-ratio:1600/600;
+  width:clamp(72px,12vw,132px);
+  aspect-ratio:1;
   transform:translate(-50%,-50%);
-  border:1px solid rgba(var(--ui-accent-rgb,117,228,255),.24);
-  border-radius:28px;
-  background:url("assets/michels_life_lockup.svg") center/92% auto no-repeat,linear-gradient(145deg,rgba(249,252,255,.94),rgba(224,236,248,.90));
-  box-shadow:0 24px 74px rgba(0,0,0,.40),inset 0 1px 0 rgba(255,255,255,.72);
-  backdrop-filter:blur(18px);
+  border:0;
+  background:url("assets/michels_life_app_icon.svg") center/contain no-repeat;
+  filter:drop-shadow(0 12px 28px rgba(0,0,0,.42));
 }
 html.v3084-start-cover *,html.v3084-start-cover *::before,html.v3084-start-cover *::after{
   animation:none!important;
@@ -14004,22 +14002,20 @@ body.v255-render-lock #tab-missions{
       root.querySelectorAll('.banner,.modal,.dialog,.card,section,aside,.panel,.modal-backdrop,.modal-overlay,[role="dialog"]').forEach(el=>{
         if(seen.has(el)) return;
         seen.add(el);
-        if(isPanelText(el.textContent||'')) out.push(el);
+        // Only the actual carryover notice owns the dismissal controls.
+        // A parent card containing Today, missions and a nested notice is not
+        // itself a notice and must never inherit the banner styling or hide.
+        const action=el.querySelector('[data-action="move-all-carry"]');
+        const exactBanner=el.matches('.banner')&&action&&action.closest('.banner')===el;
+        const directDialog=el.matches('.modal,.dialog,[role="dialog"]')&&action&&action.closest('.modal,.dialog,[role="dialog"],.banner')===el;
+        if((exactBanner||directDialog)&&isPanelText(el.textContent||''))out.push(el);
       });
     });
 
     return out.filter(el=>!el.closest('.v169-weekly-planner'));
   }
   function bestPanelFromButton(btn){
-    let el=btn;
-    while(el && el!==document.body){
-      if(el.id==='tab-dashboard') break;
-      if(isPanelText(el.textContent||'') && el.matches('.banner,.modal,.dialog,.card,section,aside,.panel,.modal-backdrop,.modal-overlay,[role="dialog"],div')){
-        return el;
-      }
-      el=el.parentElement;
-    }
-    return btn.closest('.banner,.modal,.dialog,.card,section,aside,.panel,.modal-backdrop,.modal-overlay,[role="dialog"]');
+    return candidates().find(panel=>panel.contains(btn))||null;
   }
   function hidePanel(panel){
     if(!panel) return;
@@ -14036,7 +14032,7 @@ body.v255-render-lock #tab-missions{
       return;
     }
 
-    const target=panel.closest('.banner,.card,section,aside,.panel') || panel;
+    const target=panel;
     target.style.setProperty('display','none','important');
     target.setAttribute('hidden','hidden');
     target.setAttribute('aria-hidden','true');
@@ -22256,7 +22252,7 @@ html body .v169-day-btn{
     (function waitForStableBackground(){
       const root=document.getElementById('v30103Background');
       const ready=!!(root&&root.classList.contains('ready')&&root.querySelector('img.v30113-bg-active'));
-      if(ready||Date.now()-started>1800){revealFast();return;}
+      if(ready||Date.now()-started>900){revealFast();return;}
       setTimeout(waitForStableBackground,35);
     })();
   }
@@ -29156,7 +29152,7 @@ body.mlv184-background-owned #v25-sky-layer,body.mlv184-background-owned #v27-sk
 #v176StatusPanel>.mlv184-chapter-root #mlv184ChapterArt{z-index:1!important}
 #v176StatusPanel>.mlv184-chapter-root #mlv184ChapterShade{z-index:2!important}
 #v176StatusPanel>.mlv184-chapter-root #mlv184ChapterAtmosphere{z-index:3!important}
-#v176StatusPanel>.mlv184-chapter-root>*:not(#mlv184ChapterArt):not(#mlv184ChapterShade):not(#mlv184ChapterAtmosphere):not(#mlv184ChapterRecovery){z-index:4!important;position:relative!important}
+#v176StatusPanel>.mlv184-chapter-root>*:not(#mlv184ChapterArt):not(#mlv184ChapterShade):not(#mlv184ChapterAtmosphere):not(#mlv184ChapterRecovery):not(.v30165-hero-aura){z-index:4!important;position:relative!important}
 #v176StatusPanel>.mlv184-chapter-root[data-mlv189-art="recovery"] #mlv184ChapterArt{visibility:hidden!important}
 
 #mlv184ChapterArt{z-index:0!important;left:-5%!important;top:-5%!important;right:auto!important;bottom:auto!important;width:110%!important;height:110%!important;max-width:none!important;object-fit:cover!important;object-position:center!important;opacity:1!important;transform-origin:50% 50%!important;animation:mlv189ChapterCamera 12s cubic-bezier(.42,0,.58,1) infinite alternate!important;animation-play-state:running!important;will-change:transform!important}
@@ -29167,7 +29163,7 @@ body.mlv184-background-owned #v25-sky-layer,body.mlv184-background-owned #v27-sk
 #mlv184FogB{right:-30%!important;top:-12%!important;animation:mlv186FogRight 14s ease-in-out infinite alternate!important;background:radial-gradient(ellipse,rgba(255,223,165,.29),rgba(167,121,255,.11) 42%,transparent 74%)!important}
 #mlv184Dust{display:none!important;visibility:hidden!important;opacity:0!important;animation:none!important;background:none!important}
 #mlv184Beam{position:absolute!important;left:-38%!important;top:-55%!important;width:42%!important;height:210%!important;background:linear-gradient(90deg,transparent,rgba(255,247,220,.17),rgba(255,255,255,.08),transparent)!important;filter:blur(9px)!important;transform:rotate(17deg)!important;animation:mlv186LightSweep 9s ease-in-out infinite!important;animation-play-state:running!important;display:block!important;visibility:visible!important}
-#v176StatusPanel>.v30165-rpg-chapter-hero.mlv184-chapter-root>*:not(#mlv184ChapterArt):not(#mlv184ChapterShade):not(#mlv184ChapterAtmosphere):not(#mlv184ChapterRecovery){position:relative!important;z-index:4!important}
+#v176StatusPanel>.v30165-rpg-chapter-hero.mlv184-chapter-root>*:not(#mlv184ChapterArt):not(#mlv184ChapterShade):not(#mlv184ChapterAtmosphere):not(#mlv184ChapterRecovery):not(.v30165-hero-aura){position:relative!important;z-index:4!important}
 @keyframes mlv189ChapterCamera{0%{transform:scale(1.025) translate3d(-2.2%,.7%,0)}48%{transform:scale(1.065) translate3d(.3%,-.9%,0)}100%{transform:scale(1.105) translate3d(2.5%,-1.6%,0)}}
 @keyframes mlv186FogLeft{0%{transform:translate3d(-9%,5%,0) scale(.94);opacity:.18}100%{transform:translate3d(38%,-10%,0) scale(1.18);opacity:.40}}
 @keyframes mlv186FogRight{0%{transform:translate3d(13%,-8%,0) scale(.91);opacity:.15}100%{transform:translate3d(-37%,17%,0) scale(1.15);opacity:.36}}

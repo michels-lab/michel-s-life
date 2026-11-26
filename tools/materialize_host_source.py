@@ -34,6 +34,10 @@ for name in ('Program.cs','GoogleCalendarService.cs'):
     text=text.replace('MichelsLife-v','MichelsLife-Portable-v')
 
     if name=='Program.cs':
+        single_instance_anchor='Application.Run(new MainForm());'
+        if text.count(single_instance_anchor)!=1:
+            raise SystemExit('Expected exactly one Windows application entry point')
+        text=text.replace(single_instance_anchor,'MichelsLife.DesktopShell.RunSingleInstance(() => new MainForm());')
         webview_anchor='            await _webView.EnsureCoreWebView2Async(env);'
         if text.count(webview_anchor)!=1:
             raise SystemExit(f'Program.cs expected exactly one WebView2 initialization anchor, found {text.count(webview_anchor)}')

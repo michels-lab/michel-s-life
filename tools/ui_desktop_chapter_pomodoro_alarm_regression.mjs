@@ -35,6 +35,26 @@ try{
    chapter.position==='absolute'&&chapter.background!=='none'&&chapter.background.length>30,
    'Chapter art recovery absent / black: '+JSON.stringify(chapter));
 
+ // An active chapter's aura is decorative, never a 210px layout row.
+ await page.evaluate(()=>{
+   const api=window.FocusStoryV30162;
+   if(!api.activeChapter?.()){
+     const result=api.createChapter('Granada visual chapter','Fixed visual fixture',new Date().toISOString().slice(0,10));
+     if(!result?.ok)throw Error('Chapter fixture rejected: '+JSON.stringify(result));
+   }
+   if(!api.activeChapter?.())throw Error('Active chapter fixture not persisted');
+   window.renderAll?.();
+   window.ChapterHomeNavV30163?.renderChapterCard?.();
+ });
+ await page.waitForFunction(()=>!!document.querySelector('#v176StatusPanel .v30165-hero-aura'),null,{timeout:15000});
+ const layout=await page.evaluate(()=>{
+   const hero=document.querySelector('#v176StatusPanel>.v30165-rpg-chapter-hero');
+   const aura=hero?.querySelector('.v30165-hero-aura');
+   const content=hero?.querySelector('.v30165-hero-content');
+   return {active:!!content,auraPosition:aura?getComputedStyle(aura).position:null};
+ });
+ assert(layout.active&&layout.auraPosition==='absolute','Chapter decoration occupies the layout: '+JSON.stringify(layout));
+
  // Reject real image requests during this failure scenario. Otherwise the
  // normal chapter refresh can replace the deliberately broken preview with
  // a previously cached successful image, making the test nondeterministic.

@@ -25,6 +25,18 @@ internal static class DesktopShell
     private static bool _focusNotificationPollBusy;
     private static bool _exitRequested;
     private static bool _attached;
+    private static System.Threading.EventWaitHandle? _activationEvent;
+
+    public static void RunSingleInstance(Func<Form> createForm)
+    {
+        var scope = @"Local\MichelsLab.MichelsLife." + System.Security.Principal.WindowsIdentity.GetCurrent().User?.Value;
+        using var activation = new System.Threading.EventWaitHandle(false, System.Threading.EventResetMode.AutoReset, scope + ".Activate");
+        using var instance = new System.Threading.Mutex(true, scope + ".Instance", out var primary);
+        if (!primary) { activation.Set(); return; }
+        _activationEvent = activation;
+        try { Application.Run(createForm()); }
+        finally { _activationEvent = null; }
+    }
 
     public static void Attach(Form form, WebView2 webView)
     {
@@ -77,28 +89,18 @@ internal static class DesktopShell
         _trayIcon.BalloonTipClicked += (_, _) => RestoreWindow();
 
         form.FormClosing += OnFormClosing;
-        form.Resize += (_, _) =>
-        {
-            if (form.WindowState == FormWindowState.Minimized)
-                form.Hide();
-        };
+        // Standard Windows minimize retains the taskbar entry and live WebView.
 
         _hotKeyWindow = new TrayHotKeyWindow();
         _hotKeyWindow.HotKeyPressed += async (_, _) => await ShowQuickCaptureAsync();
-        if (!_hotKeyWindow.Register(HotKeyId, ModControl | ModShift, VkSpace))
-        {
-            _trayIcon.ShowBalloonTip(
-                5000,
-                "Michel's Life",
-                spanish
-                    ? "Ctrl + Shift + Espacio ya está en uso por Windows u otra aplicación. Captura rápida sigue disponible desde la bandeja."
-                    : "Ctrl + Shift + Space is already in use by Windows or another app. Quick Capture remains available from the tray.",
-                ToolTipIcon.Warning
-            );
-        }
+        var hotKeyRegistered = _hotKeyWindow.Register(HotKeyId, ModControl | ModShift, VkSpace);
+        quickCaptureItem.ToolTipText = hotKeyRegistered
+            ? "Ctrl + Shift + Space"
+            : spanish ? "Atajo ocupado; captura disponible aquí." : "Shortcut occupied; capture is available here.";
 
         _taskbarProgress = new TaskbarProgress(form.Handle);
         _taskbarTimer = new System.Windows.Forms.Timer { Interval = 1500 };
+        _taskbarTimer.Tick += (_, _) => { if (_activationEvent?.WaitOne(0) == true) RestoreWindow(); };
         _taskbarTimer.Tick += async (_, _) => await RefreshTaskbarMissionAsync();
         _taskbarTimer.Tick += async (_, _) => await PollWindowsAlarmsAsync();
         _taskbarTimer.Tick += async (_, _) => await PollWindowsFocusAsync();

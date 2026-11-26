@@ -47,8 +47,13 @@ if 'MichelsLife-Portable-v' not in update_host_sources:
     print('INFO: updater host uses no fixed Michel\'s Life portable filename; release packaging compatibility controls naming.', diagnostic)
 assert 'MichelsLife.DesktopShell.Attach(this, _webView);' in program, 'desktop shell is not attached to the Windows host'
 desktop_shell=read(DESKTOP_SHELL)
-for marker in ('NotifyIcon','RegisterHotKey','CloseReason.UserClosing','MLV216QuickCapture','Quick Capture','Current Mission','Sync Now','GoogleCloudV30192','Start with Windows','StartupRegistryPath','already in use by Windows or another app','RefreshTrayLanguageAsync','Captura rápida','Misión actual','Sincronizar ahora','Iniciar con Windows','TaskbarProgress','ITaskbarList3','SetProgressState','RefreshTaskbarMissionAsync','Salir','Exit'):
+for marker in ('NotifyIcon','RegisterHotKey','CloseReason.UserClosing','MLV216QuickCapture','Quick Capture','Current Mission','Sync Now','GoogleCloudV30192','Start with Windows','StartupRegistryPath','Shortcut occupied; capture is available here.','RefreshTrayLanguageAsync','Captura rápida','Misión actual','Sincronizar ahora','Iniciar con Windows','TaskbarProgress','ITaskbarList3','SetProgressState','RefreshTaskbarMissionAsync','Salir','Exit'):
     assert marker in desktop_shell, f'missing desktop shell behavior: {marker}'
+assert 'DesktopShell.RunSingleInstance(() => new MainForm());' in program
+assert 'if (!primary) { activation.Set(); return; }' in desktop_shell
+assert '_activationEvent?.WaitOne(0) == true' in desktop_shell
+assert 'form.Resize +=' not in desktop_shell, 'Minimize must preserve native taskbar and WebView'
+assert 'already in use by Windows or another app' not in desktop_shell
 assert '__BUILD_SECRET_GOOGLE__' in read(SECRETS)
 assert 'NormalizeGoogleClientSecret' in read(SECRETS)
 assert 'JsonDocument.Parse' in read(SECRETS)

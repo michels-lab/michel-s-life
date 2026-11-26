@@ -104,6 +104,46 @@ try {
         throw "$exeName exited during the minimum alive interval with code $($process.ExitCode)."
     }
 
+    # Owner regression: minimizing used to hide the form and relaunching
+    # the EXE created another process/document. Exercise the actual HWND.
+    Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+public static class MlvWindowSmoke {
+    [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr hwnd, int cmd);
+    [DllImport("user32.dll")] public static extern bool IsIconic(IntPtr hwnd);
+    [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr hwnd);
+}
+'@
+    $originalHandle = $process.MainWindowHandle
+    $originalId = $process.Id
+    [void][MlvWindowSmoke]::ShowWindow($originalHandle, 6)
+    Start-Sleep -Milliseconds 700
+    $process.Refresh()
+    if ($process.HasExited -or -not [MlvWindowSmoke]::IsIconic($originalHandle) -or -not [MlvWindowSmoke]::IsWindowVisible($originalHandle)) {
+        throw "Minimize regression: original window exited or was hidden from taskbar."
+    }
+    $second = Start-Process -FilePath $exe -PassThru
+    try {
+        if (-not $second.WaitForExit(12000)) { throw "Relaunch created a second persistent instance." }
+        if ($second.ExitCode -ne 0) { throw "Second launcher exited with code $($second.ExitCode)." }
+        $restoreDeadline = (Get-Date).AddSeconds(12)
+        do {
+            Start-Sleep -Milliseconds 300
+            $process.Refresh()
+            if ($process.HasExited) { throw "Original process exited during restore." }
+            $restored = (-not [MlvWindowSmoke]::IsIconic($originalHandle)) -and [MlvWindowSmoke]::IsWindowVisible($originalHandle)
+        } until ($restored -or (Get-Date) -ge $restoreDeadline)
+        if (-not $restored -or $process.Id -ne $originalId -or $process.MainWindowHandle -ne $originalHandle) {
+            throw "Relaunch did not restore the exact original window/process."
+        }
+    } finally {
+        if (-not $second.HasExited) { $second.Kill($true); $second.WaitForExit(5000) | Out-Null }
+        $second.Dispose()
+    }
+    $restoreEvidence = "MINIMIZE/RELAUNCH PASS: original PID=$originalId HWND=$originalHandle restored without second persistent process."
+    Write-Host $restoreEvidence
+
     $message = "LAUNCH PASS: $exeName remained alive for at least $MinimumAliveSeconds seconds and exposed MainWindowHandle=$($process.MainWindowHandle)."
     Write-Host $message
 
@@ -114,6 +154,7 @@ try {
         }
         @(
             $message
+            $restoreEvidence
             "Executable: $exe"
             "ValidatedAt: $((Get-Date).ToString('o'))"
             "ProcessId: $($process.Id)"
