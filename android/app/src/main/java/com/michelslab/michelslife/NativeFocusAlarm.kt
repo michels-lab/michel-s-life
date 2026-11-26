@@ -37,10 +37,9 @@ internal object NativeFocusAlarm {
     private const val REQUEST_CODE = 4705
     private const val NOTIFICATION_ID = 4705
     private const val MAX_FUTURE_MS = 4 * 60 * 60 * 1000L
+    // Pomodoro uses only fixed bells. Personal alarms retain their own full catalog.
     private fun completionSound(raw: String?): String =
-        if (raw in listOf("soft", "glass", "aurora", "observatory", "midnight", "silver", "mozart_k545", "tchaikovsky_op39", "sb_meanwhile", "sb_moonlight", "sb_cobalt", "sb_skyward", "sb_life_is", "sb_first_snow", "sb_midsommar", "sb_at_the_end_of_all_things", "sb_in_this_moment", "sb_hyperion", "sb_ascension", "sb_bring_me_the_sky", "debussy_clair_de_lune", "chopin_nocturne_op9", "satie_gymnopedie_1", "bach_prelude_bwv846", "off"))
-            raw ?: "soft"
-        else "soft"
+        if (raw == "observatory") "observatory" else "soft"
 
     private fun channelIdForSound(sound: String): String =
         CHANNEL_ID + "-select-v2-" + completionSound(sound)
@@ -245,7 +244,7 @@ internal object NativeFocusAlarm {
         val language = if (state.optString("language") == "es") "es" else "en"
         val now = System.currentTimeMillis()
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        val tone = completionSound(state.optString(KEY_SOUND, "soft"))
+        val tone = if (mode == "break") "observatory" else "soft"
         prefs.edit().putString(KEY_SOUND, tone).apply()
         createSelectedCompletionChannel(context, tone)
 
