@@ -24,7 +24,7 @@
     "verified",
     "pending"
   ],
-  "current_phase": "Stable 3.0.233 / 0.2.22 published; Block 4A visual restoration and lifecycle candidate #239 open, not released",
+  "current_phase": "Block 4A merged; stable 3.0.234 / Android 0.2.23 release staging PR #240, exact release gates pending",
   "source_prs": [
     "https://github.com/michels-lab/michel-s-life/pull/225",
     "https://github.com/michels-lab/michel-s-life/pull/226",
@@ -135,7 +135,7 @@
     "block": "4A",
     "pr": "https://github.com/michels-lab/michel-s-life/pull/239",
     "head": "490bf37dbc1e0e366fbc6d0b49c06bf1da320b42",
-    "status": "implementation_committed_exact_candidate_ci_queued",
+    "status": "merged_main_release_staging",
     "baseline": "3.0.230",
     "changes": [
       "Windows minimize and single-instance restore",
@@ -190,7 +190,21 @@
       "windows": "3.0.234",
       "android_direct": "0.2.23",
       "version_code": 25,
-      "status": "planned_not_bumped_or_published"
+      "status": "version_and_workflow_staged_not_published",
+      "pr": "https://github.com/michels-lab/michel-s-life/pull/240",
+      "head": "8e1c1bdc237ba1d13c1d55fdc1d774f4a45788eb"
+    },
+    "merged_sha": "f4ef9c2172b7e2d3e2a9c439f2a3a6b1c3a7e3bb",
+    "exact_head_ci": {
+      "head": "490bf37dbc1e0e366fbc6d0b49c06bf1da320b42",
+      "success": 21,
+      "total": 22,
+      "desktop_ui": 45695741723,
+      "android_ui": 45695742136,
+      "windows_build": 45695741950,
+      "android_build": 45695741792,
+      "android15_native": "success",
+      "android14_16": "failed ADB/native evidence"
     }
   }
 }
