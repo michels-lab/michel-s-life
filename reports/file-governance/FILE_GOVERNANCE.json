@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "audit_kind": "deterministic_full_tracked_tree",
-  "tracked_files_total": 516,
-  "classified_files_total": 512,
-  "docs_content_inspected": 115,
+  "tracked_files_total": 518,
+  "classified_files_total": 514,
+  "docs_content_inspected": 117,
   "large_docs_skipped": 0,
   "excluded_reports": 4,
   "roles": {
@@ -13,7 +13,7 @@
     "build_script": 6,
     "config": 28,
     "database_migration": 3,
-    "document": 107,
+    "document": 109,
     "encoded_source": 2,
     "index": 4,
     "installer_metadata": 1,
@@ -31,8 +31,8 @@
     "UNKNOWN_PURPOSE": 6
   },
   "finding_total": 12,
-  "inventory_fingerprint": "2828a97072d37a194d7039078d8d922ab24126d6e0142cc2f7aa5c23a951e985",
-  "evidence_fingerprint": "26c16f5b0ce5db1c7afcaace76e6a0b5e21440d16acd703aae3165121c4a7012",
+  "inventory_fingerprint": "67d445009bd4f7508806ed6accaa7409ffaa33d18158d28a9af769916ffc0063",
+  "evidence_fingerprint": "c3e3c2b8c6b15881c37044bf94f0835bf78945c890a648e5fbc3d9e41e5ac3d7",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -592,7 +592,7 @@
       "role": "config",
       "purpose": "machine-readable configuration",
       "certainty": "rule",
-      "blob": "07e7858e2d5936be5ce079e3eb32682153eb0ae1"
+      "blob": "84b9cd28a59c37f72ed7335599179a46634f0ff8"
     },
     {
       "path": ".michelslab/project.yml",
@@ -1530,7 +1530,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "7135f280fa69a074fb74cb6c1374740382cffc93"
+      "blob": "dcb726fc4c6cc76ce8ea87fa301bffdebeae6a30"
     },
     {
       "path": "android/mobile-sections.js",
@@ -1684,7 +1684,7 @@
       "role": "asset",
       "purpose": "visual/audio/font asset",
       "certainty": "rule",
-      "blob": "edfa6026bfabbbe852d3cad8aa385de53b65775b"
+      "blob": "d9101edf4de944a74fb845d9c1cb453268f71362"
     },
     {
       "path": "branding/michels_life_logo.jpg",
@@ -1796,7 +1796,7 @@
       "role": "document",
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
-      "blob": "f79887fdc2a2952e710ca4e89c7e797768159b32"
+      "blob": "f302098096a58182f3618724175884bb2192928c"
     },
     {
       "path": "docs/RECOVERY_LOSS_TRIAGE.md",
@@ -2030,6 +2030,20 @@
       "blob": "91c885dc703fee38184c861cf520a25d85d7050d"
     },
     {
+      "path": "docs/audit/2026-11-25-focus-audio-transport.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "617b5c1d7e4bdbd93d6c7919c08d8dca6a754554"
+    },
+    {
+      "path": "docs/audit/2026-11-25-visual-baseline-3230.md",
+      "role": "document",
+      "purpose": "manual/decision/report/historical note",
+      "certainty": "inferred",
+      "blob": "ff787d391460103cd22b99aa80c9dadffaacda60"
+    },
+    {
       "path": "docs/audit/HANDOFF_LEGACY_2026-10-05.md",
       "role": "document",
       "purpose": "manual/decision/report/historical note",
@@ -2230,7 +2244,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "77c6127b16e4b9222c9f0a359742220fcfe73e48"
+      "blob": "92362912ba69edcf87516a535c7ca741e277951a"
     },
     {
       "path": "src/MichelsLife/GoogleCalendarService.cs.gz.b64",
@@ -2433,7 +2447,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "e91ac440a4ee8c87d248202d031940ec9d670a90"
+      "blob": "0723bb1335eab6275d6b5fab710e1001cbdd1b16"
     },
     {
       "path": "src/MichelsLife/frontend/i18n.js",
@@ -2447,7 +2461,7 @@
       "role": "web_ui",
       "purpose": "local HTML documentation or web interface",
       "certainty": "inferred",
-      "blob": "b2f59f734a78f428820276a56cb91ce672311772"
+      "blob": "ddc7f12cccec04cff4f8995c8c064262b973788e"
     },
     {
       "path": "src/MichelsLife/frontend/motivation-immersive.js",
@@ -2461,7 +2475,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "42278f30173ff6211f1879fda4dba87e156ae2bf"
+      "blob": "995363611136144fe62b57100d23c871112f3eee"
     },
     {
       "path": "src/MichelsLife/frontend/settings-color-floating-preview.js",
@@ -2741,14 +2755,14 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "2796a4374d3e4d1aff2875f1903dcaf06f11acba"
+      "blob": "05e45f2a436a228d9fe96fa208a6df6663136772"
     },
     {
       "path": "tools/release_smoke_test.py",
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "f563012ddc968e2dd390faf4ed692d5aa581c4f7"
+      "blob": "dae19b313490e38f91850ee64ac227b72e5ef2e9"
     },
     {
       "path": "tools/render_store_manifest.py",
@@ -2895,7 +2909,7 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "4fe79b15d66ce3b2378d9a43d8268e78b187c367"
+      "blob": "45bdd8f8cd66e90c1f4b9f37acc4daf00c5311ad"
     },
     {
       "path": "tools/test_ci_publish_file_steward.py",
@@ -2986,7 +3000,7 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "9e8c8e1910790bafdb30706a915c1d992fd8dca1"
+      "blob": "5cc321dac2c14d28203bfb6bce6e9ceba7d543e5"
     },
     {
       "path": "tools/test_granada_cross_provider_restore_review.mjs",
@@ -3357,7 +3371,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "836b56cb433f2783bc64cf6a209a7f2032d9762d"
+      "blob": "c6b610a0bb5ccb25a3032d3ad8c44b1aa9eece65"
     },
     {
       "path": "tools/ui_cloud_device_boundary_granada_smoke.mjs",
@@ -3371,7 +3385,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "7982a198622c8d30e70879e1afe4ec36b2c8e438"
+      "blob": "94805cbaf5a4634cbdabb8413c9090da35778861"
     },
     {
       "path": "tools/ui_desktop_experience_smoke.mjs",
@@ -3385,7 +3399,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "d3e428db8dee6aa40cfd52a9726f6bc9bb26793f"
+      "blob": "2950353c6e7bf760a603f853d5d0209d7cf49746"
     },
     {
       "path": "tools/ui_granada_account_boundary_crash_browser.mjs",
@@ -3574,7 +3588,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "96f1a2cb8bf3ea1575c226c712a33a448a57a76a"
+      "blob": "0c53cf4c4c270b4ad02410b83d9f29282f80fe06"
     },
     {
       "path": "tools/validate_external_ui_design.py",
@@ -3616,7 +3630,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "bf77d7abeed70a61ee3e829877b0d72100a925d2"
+      "blob": "a4c6b1e3e9366cd98532bfe2ffcbd9218ab60a02"
     }
   ],
   "findings": [
@@ -3657,20 +3671,20 @@
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "d87c3133ccf085b7",
+      "id": "d15e4a1069ca773a",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "GIT_AUDIT_LOG.md",
-      "observation": "61 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-classical-focus.yml, .github/workflows/granada-data-health.yml",
+      "observation": "64 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-classical-focus.yml, .github/workflows/granada-data-health.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {
-      "id": "515fe9f3d1774c22",
+      "id": "b16f4d8f82d9d093",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
       "severity": "review",
       "path": "android/ANDROID_AUDIT_LOG.md",
-      "observation": "88 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml",
+      "observation": "90 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml",
       "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
