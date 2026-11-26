@@ -133,15 +133,10 @@ try{
   });
   ok(audioLayout&&audioLayout.columns===2&&audioLayout.playbackWidth>0&&audioLayout.libraryWidth>0&&audioLayout.separate&&audioLayout.topGap<3&&!audioLayout.overflow,
     'Desktop audio columns are not both usable: '+JSON.stringify(audioLayout));
-  ok(await page.locator('[data-mlv-completion-sound] option').count()===25,
-    'End-of-Pomodoro selector is not populated');
-  const scenes=await page.locator('[data-mlv-scene-select] option').evaluateAll(options=>
-    options.map(option=>({value:option.value,label:option.textContent.trim()})));
-  ok(scenes.length===24&&['moonlight','celestial','orbit','aurora','observatory','library','afterglow','silver']
-    .every(id=>scenes.some(scene=>scene.value===id)),
-    'Eight original ambient soundscape selections are not populated: '+JSON.stringify(scenes));
-  await page.locator('[data-mlv-completion-sound]').selectOption('glass');
-  await page.locator('[data-mlv-audio="preview-completion"]').click();
+  ok(await page.locator('[data-mlv-completion-sound]').count()===0,'Legacy completion picker still visible');
+  ok(await page.locator('[data-mlv-audio="toggle-ambient"]').evaluate(el=>!el.closest('details')),'Ambient play must stay outside drawer');
+  const scenes=await page.locator('[data-mlv-scene-select] option').evaluateAll(options=>options.map(o=>o.value));
+  ok(scenes.length===26&&['moonlight','celestial','orbit','aurora','observatory','library','afterglow','silver','mozart_k545','tchaikovsky_op39'].every(id=>scenes.includes(id)),'Ambient catalog missing tracks');
   await page.locator('[data-mlv-scene-select]').selectOption('library');
   await page.locator('[data-mlv-audio="toggle-ambient"]').click();
   ok(await page.evaluate(()=>window.MichelsLifeFocusAudio.playing()),
@@ -156,7 +151,7 @@ try{
   ok(await page.evaluate(()=>{const a=window.MichelsLifeFocusAudio;return !a.playing()&&a.playingScene()===null&&a.ambientPlayback()===null;}),
     'Soundscape Stop left an active audio session');
   const soundPrefs=await page.evaluate(()=>window.FocusStoryV30162.focusState());
-  ok(soundPrefs.v30165CompletionSound==='glass'&&soundPrefs.v30165Soundscape==='library',
+  ok(soundPrefs.v30165Soundscape==='library',
     'End chime and soundscape were not saved by the canonical FocusStory owner');
   await page.locator('.mlv-focus-sound-details > summary').click();
 
