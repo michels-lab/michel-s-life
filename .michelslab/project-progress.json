@@ -24,7 +24,7 @@
     "verified",
     "pending"
   ],
-  "current_phase": "Block 4A merged; stable 3.0.234 / Android 0.2.23 release staging PR #240, exact release gates pending",
+  "current_phase": "Block 4A integrated; stable 3.0.234 / Android 0.2.23 source intent committed, awaiting source run ID and destination publication intent",
   "source_prs": [
     "https://github.com/michels-lab/michel-s-life/pull/225",
     "https://github.com/michels-lab/michel-s-life/pull/226",
@@ -135,7 +135,7 @@
     "block": "4A",
     "pr": "https://github.com/michels-lab/michel-s-life/pull/239",
     "head": "490bf37dbc1e0e366fbc6d0b49c06bf1da320b42",
-    "status": "merged_main_release_staging",
+    "status": "merged_main_release_intent",
     "baseline": "3.0.230",
     "changes": [
       "Windows minimize and single-instance restore",
@@ -190,9 +190,20 @@
       "windows": "3.0.234",
       "android_direct": "0.2.23",
       "version_code": 25,
-      "status": "version_and_workflow_staged_not_published",
+      "status": "source_intent_committed_awaiting_run_id_destination_intent",
       "pr": "https://github.com/michels-lab/michel-s-life/pull/240",
-      "head": "8e1c1bdc237ba1d13c1d55fdc1d774f4a45788eb"
+      "head": "8e1c1bdc237ba1d13c1d55fdc1d774f4a45788eb",
+      "merge_sha": "9ceb06628b59217258c5901f31515cff7bedaec8",
+      "candidate_ci": {
+        "success": 15,
+        "total": 16,
+        "android15_debug": "success",
+        "android14_16": "native checks failed"
+      },
+      "source_intent_sha": "632f84e6345c4eb1cb44d669837edd854d399464",
+      "destination_workflow_sha": "0d99e0f17e7d89300e65eed302ded77520c032bd",
+      "source_run": null,
+      "publication": "not published; require source run identifier and destination intent, all 11 exact SHA checks plus signed Android15 and Windows native launch"
     },
     "merged_sha": "f4ef9c2172b7e2d3e2a9c439f2a3a6b1c3a7e3bb",
     "exact_head_ci": {
