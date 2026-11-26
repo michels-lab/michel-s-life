@@ -120,7 +120,7 @@
 
   let classicalSource=null,previewingId=null,ambientRecording=null,ambientVolume=.35,volumeDraft=null;
   const classicalIds=['mozart_k545','tchaikovsky_op39'];
-  let effectContext=null,ambientContext=null,ambientInterval=null,ambientScene=null,ambientStep=0;
+  let effectContext=null,ambientContext=null,ambientBus=null,ambientInterval=null,ambientScene=null,ambientStep=0;
   function soundContext(){
     const C=window.AudioContext||window.webkitAudioContext;
     if(!C)return null;
@@ -157,7 +157,7 @@
     const ctx=soundContext();if(!ctx)return false;
     try{const start=ctx.currentTime+.03;const notes=phase==='break'?[523.25,659.25,783.99]:[783.99,659.25,523.25];
       notes.forEach((freq,i)=>{const at=start+i*.55;[1,2.01,2.76,4.08].forEach((ratio,j)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.setValueAtTime(freq*ratio,at);g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime([.14,.045,.024,.012][j],at+.018);g.gain.exponentialRampToValueAtTime(.0001,at+2.3-j*.22);o.connect(g);g.connect(ctx.destination);o.start(at);o.stop(at+2.4);});});
-      bellDuck=.24;if(ambientRecording)ambientRecording.volume=getVolume()*bellDuck;if(bellRestore!==null)window.clearTimeout?.(bellRestore);bellRestore=window.setTimeout(()=>{bellDuck=1;bellRestore=null;if(ambientRecording)ambientRecording.volume=getVolume();},3600);return true;
+      bellDuck=.24;if(ambientRecording)ambientRecording.volume=getVolume()*bellDuck;if(ambientBus&&ambientContext)ambientBus.gain.setValueAtTime(bellDuck,ambientContext.currentTime);if(bellRestore!==null)window.clearTimeout?.(bellRestore);bellRestore=window.setTimeout(()=>{bellDuck=1;bellRestore=null;if(ambientRecording)ambientRecording.volume=getVolume();if(ambientBus&&ambientContext)ambientBus.gain.setValueAtTime(1,ambientContext.currentTime);},3600);return true;
     }catch(_){return false;}
   }
   function playCompletion(preview=false,phase='work'){
@@ -199,7 +199,7 @@
     if(player)try{player.pause();player.currentTime=0;}catch(_){}
     if(personalUrl){try{URL.revokeObjectURL(personalUrl);}catch(_){}personalUrl=null;}
     if(ambientInterval){window.clearInterval(ambientInterval);ambientInterval=null;}
-    const ctx=ambientContext;ambientContext=null;ambientScene=null;
+    const ctx=ambientContext;ambientContext=null;ambientBus=null;ambientScene=null;
     if(ctx)ctx.close().catch(()=>{});
     return true;
   }
@@ -217,7 +217,7 @@
       env.gain.linearRampToValueAtTime(gain,start+2+.22*i);
       env.gain.setValueAtTime(gain,start+4.8+.22*i);
       env.gain.exponentialRampToValueAtTime(.0001,start+8.5+.22*i);
-      osc.connect(env);env.connect(ctx.destination);
+      osc.connect(env);env.connect(ambientBus||ctx.destination);
       osc.start(start+.22*i);osc.stop(start+8.55+.22*i);
     }
     // Each soundscape has its own original melodic motif (not eight copies
@@ -241,7 +241,7 @@
       env.gain.setValueAtTime(.0001,at);
       env.gain.exponentialRampToValueAtTime((theme?.012:.008)*Math.max(.0001,ambientVolume/.35),at+.055);
       env.gain.exponentialRampToValueAtTime(.0001,at+(theme?.55:.67));
-      osc.connect(env);env.connect(ctx.destination);
+      osc.connect(env);env.connect(ambientBus||ctx.destination);
       osc.start(at);osc.stop(at+(theme?.6:.7));
     });
     ambientStep=(ambientStep+1)%(scene.phrases?.length||scene.notes.length);
@@ -305,7 +305,7 @@
     const C=window.AudioContext||window.webkitAudioContext;
     if(!C)return false;
     try{
-      ambientScene=id;ambientContext=new C();
+      ambientScene=id;ambientContext=new C();ambientBus=ambientContext.createGain();ambientBus.gain.setValueAtTime(bellDuck,ambientContext.currentTime);ambientBus.connect(ambientContext.destination);
       ambientContext.resume?.().catch?.(()=>{});
       ambientStep=0;scheduleAmbient();
       ambientInterval=window.setInterval(scheduleAmbient,7200);
@@ -899,6 +899,7 @@
       }
       if(select.value!==selected)select.value=selected;
     }
+    const audioSummary=q('.mlv-focus-sound-details>summary',screen);if(audioSummary)audioSummary.textContent=lang('Advanced audio options','Opciones avanzadas de audio');
     const nowPlaying=q('[data-mlv-now-playing]',screen);if(nowPlaying)nowPlaying.textContent=audio?.sceneOptions?.().find(x=>x.id===audio?.sceneId?.())?.label||lang('No track selected','Sin pista seleccionada');
     const audioHeading=q('[data-mlv-audio-heading]',screen),libraryHeading=q('[data-mlv-library-heading]',screen);
     if(audioHeading)audioHeading.textContent=lang('Playback','Reproducción');if(libraryHeading)libraryHeading.textContent=lang('Music library','Biblioteca musical');
