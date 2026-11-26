@@ -1,0 +1,29 @@
+{
+  "schema": "michelslab.unified-stable-release-intent.v1",
+  "request": "operacion-granada-stable-release",
+  "product": "Michel's Life",
+  "change": "PR #239 integrated: baseline 3.0.230 restored outside Focus; minimize and same-instance activation, discreet credits, chapter aura and carryover repair, organized audio library, local MP3 loading, pause/resume/stop.",
+  "source_base_sha": "9ceb06628b59217258c5901f31515cff7bedaec8",
+  "windows_version": "3.0.234",
+  "android_direct_version": "0.2.23",
+  "android_version_code": 25,
+  "stable_only": true,
+  "required_checks": [
+    "Source validation",
+    "UI smoke",
+    "Android UI smoke",
+    "GRANADA - Story Focus touch provenance",
+    "GRANADA Data Health and recovery safety",
+    "GRANADA Android Direct safe update discovery",
+    "GRANADA Quick Mission and original Pomodoro audio",
+    "GRANADA cross-platform immersive Focus",
+    "GRANADA personal alarms — Windows and Android contracts",
+    "GRANADA Settings live color persistence",
+    "GRANADA classical Focus excerpts"
+  ],
+  "require_signed_android15_native_install_and_relaunch": true,
+  "require_windows_installer_and_portable_launch": true,
+  "publication": "destination-owned only after exact-SHA successful source workflow, production-signed Android15 real native QA, Windows binaries and all 13 assets verified; no overwrite",
+  "validation": "PR #239 exact 490bf37: 21/22; PR #240 exact 8e1c1bd: 15/16; all eleven exact candidate gates green, Windows and Android15 debug native pass; Android14/16 native lanes remain unverified. Require new exact intent gates and signed native API35.",
+  "supersedes_source_intent_sha": "cc446a3f00200ceadaf5fa8776f372ef6639bfc4"
+}
