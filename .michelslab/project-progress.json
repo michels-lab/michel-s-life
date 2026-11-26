@@ -24,7 +24,7 @@
     "verified",
     "pending"
   ],
-  "current_phase": "Block 4A integrated; stable 3.0.234 / Android 0.2.23 source intent committed, awaiting source run ID and destination publication intent",
+  "current_phase": "Block 4A integrated; 3.0.234 / Android 0.2.23 source build and native release gates green; destination publication intent committed",
   "source_prs": [
     "https://github.com/michels-lab/michel-s-life/pull/225",
     "https://github.com/michels-lab/michel-s-life/pull/226",
@@ -190,7 +190,7 @@
       "windows": "3.0.234",
       "android_direct": "0.2.23",
       "version_code": 25,
-      "status": "source_intent_committed_awaiting_run_id_destination_intent",
+      "status": "source_verified_destination_intent_committed",
       "pr": "https://github.com/michels-lab/michel-s-life/pull/240",
       "head": "8e1c1bdc237ba1d13c1d55fdc1d774f4a45788eb",
       "merge_sha": "9ceb06628b59217258c5901f31515cff7bedaec8",
@@ -202,8 +202,22 @@
       },
       "source_intent_sha": "632f84e6345c4eb1cb44d669837edd854d399464",
       "destination_workflow_sha": "0d99e0f17e7d89300e65eed302ded77520c032bd",
-      "source_run": null,
-      "publication": "not published; require source run identifier and destination intent, all 11 exact SHA checks plus signed Android15 and Windows native launch"
+      "source_run": 45741133970,
+      "publication": "destination intent committed, release not yet verified public",
+      "source_result": "success",
+      "exact_source_gates": {
+        "passed": 11,
+        "total": 11
+      },
+      "required_build_jobs": {
+        "passed": 4,
+        "total": 4
+      },
+      "signed_android15_native": "success",
+      "windows_artifact": 15080783142,
+      "android_direct_artifact": 15080882726,
+      "signed_native_evidence": 15081946819,
+      "destination_intent_sha": "352a8743a837cf8bbc8e748193a0ccb27c55c027"
     },
     "merged_sha": "f4ef9c2172b7e2d3e2a9c439f2a3a6b1c3a7e3bb",
     "exact_head_ci": {
