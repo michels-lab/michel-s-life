@@ -24,7 +24,7 @@
     "verified",
     "pending"
   ],
-  "current_phase": "Block 4A integrated; 3.0.234 / Android 0.2.23 source build and native release gates green; destination publication intent committed",
+  "current_phase": "Block 4B owner feedback after stable 3.0.234 published; candidate surface-role repair, fixed bells, visible ambient transport",
   "source_prs": [
     "https://github.com/michels-lab/michel-s-life/pull/225",
     "https://github.com/michels-lab/michel-s-life/pull/226",
@@ -231,5 +231,27 @@
       "android15_native": "success",
       "android14_16": "failed ADB/native evidence"
     }
+  },
+  "owner_feedback_4b": {
+    "release": "v3.0.234-android-v0.2.23",
+    "published_at": "2026-11-26T03:05:02Z",
+    "publisher_run": 45746499113,
+    "pr": 241,
+    "head": "c2e4065cf750175852a670ffb9c02d8e97734af4",
+    "implemented": [
+      "six tab CSS selectors restricted to button",
+      "sidebar selected text and scrollbars",
+      "always visible ambient play/pause, title and progress",
+      "fixed phase bells, ducking, 18 recordings in ambience",
+      "Android native bell-only policy"
+    ],
+    "targeted_mocked_checks": "6/6 pass",
+    "remaining": [
+      "full browser and native tests",
+      "inspect all pages and transparency settings",
+      "Coming Next and floating dock overlaps",
+      "physical owner visual and audio acceptance",
+      "stable release"
+    ]
   }
 }
