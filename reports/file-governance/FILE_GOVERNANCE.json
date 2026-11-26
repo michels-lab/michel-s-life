@@ -31,7 +31,7 @@
     "UNKNOWN_PURPOSE": 6
   },
   "finding_total": 12,
-  "inventory_fingerprint": "8d0404dd541eadf9da133d76d5947cfec08d5d67ccb1914377cf327c19803f59",
+  "inventory_fingerprint": "8865cf2c93b1658d47576146f347b840f73a4370609f8010d6ba657742558095",
   "evidence_fingerprint": "c30af38e8a1671311ecd4ec350e53c3cc65f923c25d990df3785b742ed047fd5",
   "files": [
     {
@@ -599,7 +599,7 @@
       "role": "config",
       "purpose": "machine-readable configuration",
       "certainty": "rule",
-      "blob": "7a59a1844372f538daec0695f014342ccba085df"
+      "blob": "e69c3fc79255afd20551e5c48f773965f7885b97"
     },
     {
       "path": ".michelslab/project.yml",
