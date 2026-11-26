@@ -50,7 +50,7 @@
     const deadline=Number(state.deadlineAt)||0;
     const mode=state.mode==='break'?'break':'work';
     const language=window.MichelsLifeI18n?.language==='es'?'es':'en';
-    const completionSound=String(state.v30165CompletionSound||'soft');
+    const completionSound='soft';
     const key=running?'running:'+mode+':'+deadline+':'+language+':'+completionSound:
       'inactive:'+state.status+':'+completionSound;
     if(key===lastNativeAlarmKey)return;
@@ -138,7 +138,7 @@
 
        ['[data-mlv-android-classical-heading]','Classical music','Música clásica'],
        ['[data-mlv-android-classical-note]','Licensed piano recordings · Completion only','Grabaciones de piano con licencia · Solo al terminar'],
-       ['.mlv-android-focus-sounds summary','Focus audio · Completion sound & ambience','Audio de enfoque · Sonido final y ambiente'],
+       ['.mlv-android-focus-sounds summary','Advanced audio options','Opciones avanzadas de audio'],
        ['.mlv-android-focus-quick-completion label','Completion sound','Sonido al terminar'],
        ['[data-mobile-focus="preview-completion"]','▶ Listen','▶ Escuchar'],
        ['[data-mobile-ambient-heading]','Ambient music','Música ambiental'],
@@ -1000,6 +1000,7 @@
         background:rgba(6,20,33,.72);border:1px solid rgba(208,237,255,.22);
         border-radius:14px
       }
+      #mlv-android-focus-sheet .mlv-android-focus-quick-completion [data-mobile-now-playing]{min-width:0;overflow-wrap:anywhere;font-weight:700}
       #mlv-android-focus-sheet .mlv-android-focus-quick-completion label{
         display:block;min-width:0;font:650 12px/1.4 system-ui,sans-serif;color:#e4f2fa
       }
@@ -1299,19 +1300,20 @@
             <button type="button" data-mobile-focus="settings">Focus settings</button>
           <button type="button" data-mobile-focus="alarms">⏰ Alarms</button>
           </div>
-          <div class="mlv-android-focus-quick-completion" role="group" aria-label="Completion sound">
-            <label>Sonido al terminar<select data-mobile-focus-completion></select></label>
-            <button type="button" data-mobile-focus="preview-completion">▶ Escuchar</button>
+          <div class="mlv-android-focus-quick-completion" role="group" aria-label="Ambient music">
+            <span data-mobile-now-playing></span>
+            <button type="button" data-mobile-focus="toggle-ambient">Play</button>
+            <small data-mobile-ambient-progress></small>
           </div>
           <details class="mlv-android-focus-sounds">
-            <summary>Focus audio · Completion sound & ambience</summary>
+            <summary>Advanced audio options</summary>
             <div class="mlv-android-focus-audio-grid">
               <h3 class="mlv-audio-heading" data-mobile-audio-heading>Playback</h3>
               <label>Background music
                 <select data-mobile-focus-ambience></select>
               </label>
-             <div class="mlv-audio-controls"><button type="button" data-mobile-focus="toggle-ambient">Play</button><button type="button" data-mobile-focus="previous-ambient" aria-label="Previous track">⏮ Previous</button><button type="button" data-mobile-focus="next-ambient" aria-label="Skip track">Next ⏭</button><button type="button" data-mobile-focus="stop-ambient">Stop</button></div>
-             <small data-mobile-ambient-progress aria-live="off"></small>
+             <div class="mlv-audio-controls"><button type="button" data-mobile-focus="previous-ambient" aria-label="Previous track">⏮ Previous</button><button type="button" data-mobile-focus="next-ambient" aria-label="Skip track">Next ⏭</button><button type="button" data-mobile-focus="stop-ambient">Stop</button></div>
+
              <label><span data-mobile-volume-label>Volume</span><input type="range" min="0" max="100" value="35" data-mobile-ambient-volume aria-label="Background music volume" /></label>
              <div class="mlv-audio-settings"><select data-mobile-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option><option value="shuffle">Shuffle</option></select><select data-mobile-ambient-collection aria-label="Playlist collection"><option value="all">All audio</option><option value="Ambient">Ambient</option><option value="Cinematic">Cinematic</option><option value="Classical">Classical piano</option><option value="Personal">My music</option></select></div>
              <div class="mlv-audio-library"><h3 class="mlv-audio-heading" data-mobile-library-heading>Music library</h3><label><span data-mobile-personal-label>Import my music</span><input type="file" multiple accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg" data-mobile-personal-files /></label><small data-mobile-personal-status role="status"></small><div class="mlv-audio-archive"><button type="button" data-mobile-focus="archive-ambient">Archive track</button><select data-mobile-archived-track aria-label="Archived tracks"></select><button type="button" data-mobile-focus="restore-ambient">Restore</button></div></div>
@@ -1657,6 +1659,7 @@
       }
       if(select.value!==selected)select.value=selected;
     }
+    writeText(q('[data-mobile-now-playing]',root),audio?.sceneOptions?.().find(x=>x.id===audio?.sceneId?.())?.label||focusText('No track selected','Sin pista seleccionada'));
     const volume=q('[data-mobile-ambient-volume]',root);if(volume&&document.activeElement!==volume)volume.value=String(Math.round((audio?.ambientVolume?.()??.35)*100));
     writeText(q('[data-mobile-volume-label]',root),focusText('Volume','Volumen'));
     const archivedSelect=q('[data-mobile-archived-track]',root),archiveButton=q('[data-mobile-focus="archive-ambient"]',root),restoreButton=q('[data-mobile-focus="restore-ambient"]',root),archived=audio?.archivedOptions?.()||[];
