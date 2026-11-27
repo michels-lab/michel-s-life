@@ -267,8 +267,13 @@ class DriveCloudEngine(
     }
 
     fun restoreCloudBackup(accessToken: String, fileId: String): JSONObject {
+        require(fileId.matches(Regex("^[A-Za-z0-9_-]{1,256}$"))) { "Invalid cloud backup identifier." }
         val info = getFileById(accessToken, fileId) ?: throw IllegalArgumentException("Cloud backup not found.")
+        require(info.id == fileId && info.name.startsWith(CLOUD_BACKUP_PREFIX) &&
+            info.name.endsWith(".json")) { "Selected file is not a Michel's Life recovery backup." }
         val content = downloadText(accessToken, info.id)
+        if (info.contentHash.isNotBlank() && !info.contentHash.equals(hashText(content), true))
+            throw IOException("Cloud recovery backup failed integrity verification.")
         // Legacy Drive files may contain token/device keys; preserve mission
         // content but strip unauthorized keys before giving JSON to WebView.
         val safeContent = validateBackup(content, forUpload = false)
@@ -365,6 +370,10 @@ class DriveCloudEngine(
     private fun downloadCloudFile(accessToken: String, remote: CloudFileInfo): Pair<String, String> {
         val content = downloadText(accessToken, remote.id)
         val safeContent = validateBackup(content, forUpload = false)
+        // Verify the raw remote bytes before exposing a restore candidate.
+        // Legacy metadata may omit the hash; modern mismatches are errors.
+        if (remote.contentHash.isNotBlank() && !remote.contentHash.equals(hashText(content), true))
+            throw IOException("Cloud contents changed or failed integrity verification; refresh before restoring.")
         // Identity is the raw remote object. Restorable JSON is always sanitized.
         return safeContent to hashText(content)
     }
