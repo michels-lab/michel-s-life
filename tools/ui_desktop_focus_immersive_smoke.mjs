@@ -176,6 +176,31 @@ try{
   ok(await page.evaluate(()=>!document.getElementById('mlv-desktop-mini-focus').hidden),
     'Desktop mini Pomodoro disappeared during Missions navigation');
 
+  // The same active-page class belongs to multiple pages, never to a primary button.
+  await page.setViewportSize({width:1440,height:900});
+  for(const route of ['dashboard','settings','missions']){
+    await page.evaluate(route=>window.LeftNavV30171.route(route),route);
+    await page.waitForSelector('#tab-'+route+'.active',{state:'visible',timeout:15000});
+    const role=await page.evaluate(route=>{
+      const el=document.getElementById('tab-'+route),style=getComputedStyle(el),theme=getComputedStyle(document.body);
+      const accent=theme.getPropertyValue('--ui-accent').trim(),accent2=theme.getPropertyValue('--ui-accent2').trim();
+      const probe=document.createElement('span');document.body.append(probe);
+      probe.style.color=accent;const first=getComputedStyle(probe).color;
+      probe.style.color=accent2;const second=getComputedStyle(probe).color;probe.remove();
+      const gradient=style.backgroundImage;
+      return {gradient,first,second,solidAccent:gradient.includes('linear-gradient(135deg, '+first+', '+second+')')||style.backgroundColor===first};
+    },route);
+    ok(!role.solidAccent,'Page received solid button accent: '+route+' '+JSON.stringify(role));
+  }
+  await page.waitForFunction(()=>{
+    const mini=document.getElementById('mlv-desktop-mini-focus'),alarm=document.getElementById('mlv-alarm-launcher'),dock=document.getElementById('v3099NextUpDock');
+    if(!mini||mini.hidden)return false;
+    const m=mini.getBoundingClientRect();
+    if(alarm&&!alarm.hidden&&getComputedStyle(alarm).display!=='none'&&alarm.getBoundingClientRect().bottom>m.top)return false;
+    if(dock&&getComputedStyle(dock).display!=='none'&&dock.getBoundingClientRect().right>m.left)return false;
+    return true;
+  },null,{timeout:10000});
+  await page.screenshot({path:'artifacts/ui-smoke/desktop-floating-control-lanes.png'});
   await page.locator('#mlv-desktop-mini-focus [data-focus-action="toggle"]').click();
   await page.waitForFunction(()=>window.FocusStoryV30162.focusState().status==='paused');
   await page.locator('#mlv-desktop-mini-focus [data-focus-action="toggle"]').click();
