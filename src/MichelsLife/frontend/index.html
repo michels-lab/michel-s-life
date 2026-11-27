@@ -31775,6 +31775,53 @@ window.MLVGranadaDataHealth=Object.freeze({inspect,compare,getSaved,mount:render
 <style id="granada-surface-role-fix">
 body.ml-theme-ui #v30171Sidebar .v30171-nav-btn.active,body.ml-theme-ui #v30171Sidebar .v30171-parent-active{color:var(--text,#eef6ff)!important;-webkit-text-fill-color:var(--text,#eef6ff)!important}
 html,body,#v30171PrimaryNav,.v30171-settings-nav{scrollbar-width:thin;scrollbar-color:rgba(var(--ui-accent-rgb,117,228,255),.38) transparent}
+/* Only desktop floating controls. Keep layout and user transparency settings. */
+html:not([data-mlv-platform="android"]) #v3099NextUpDock .v3099-dock-title{flex:1 1 auto;min-width:0}
+html:not([data-mlv-platform="android"]) #v3099NextUpDock .v3099-collapsed-row{min-width:0;overflow:hidden}
+html:not([data-mlv-platform="android"]) #v3099NextUpDock .v3099-collapsed-row b{min-width:0;flex:1 1 auto}
+html:not([data-mlv-platform="android"]) #v3099NextUpDock .v3099-collapsed-row span{flex:0 0 auto}
+html:not([data-mlv-platform="android"]) #v3099NextUpDock .v3099-dock-head-actions{flex:0 0 auto}
+@media(min-width:961px){
+ html:not([data-mlv-platform="android"]) #v3099NextUpDock{left:calc(var(--v30171-nav-w,226px) + 38px)!important;right:calc(var(--mlv-granada-right-controls,290px) + 30px)!important;width:auto!important;max-width:none!important;transform:none!important;animation:none!important;bottom:20px!important}
+ html:not([data-mlv-platform="android"]) #mlv-alarm-launcher{right:22px!important;bottom:calc(var(--mlv-granada-focus-height,48px) + 34px)!important}
+ html:not([data-mlv-platform="android"]) #mlv-desktop-focus-launcher{right:22px!important;bottom:22px!important}
+ html:not([data-mlv-platform="android"]) body{padding-bottom:max(var(--v3099-dock-space,0px),var(--mlv-granada-footer-space,124px))!important}
+ html:not([data-mlv-platform="android"]) #v30171PrimaryNav{padding-bottom:84px!important}
+ html:not([data-mlv-platform="android"]) #v3099NextUpDock .v3099-dock-grid{max-height:min(40vh,320px);overflow-y:auto}
+}
+@media(min-width:961px) and (max-width:1150px){
+ html:not([data-mlv-platform="android"]) #v3099NextUpDock .v3099-collapsed-row{display:grid;gap:2px}
+ html:not([data-mlv-platform="android"]) #v3099NextUpDock .v3099-dock-count{display:none}
+}
+@media(max-width:960px){
+ html:not([data-mlv-platform="android"]) #mlv-desktop-mini-focus,html:not([data-mlv-platform="android"]) #mlv-desktop-focus-launcher{bottom:calc(var(--v3099-dock-space,0px) + 16px)!important;right:12px!important}
+ html:not([data-mlv-platform="android"]) #mlv-alarm-launcher{bottom:calc(var(--v3099-dock-space,0px) + var(--mlv-granada-focus-height,48px) + 28px)!important;right:12px!important}
+ html:not([data-mlv-platform="android"]) body{padding-bottom:calc(var(--v3099-dock-space,0px) + var(--mlv-granada-footer-space,124px))!important}
+}
 </style>
+<script id="granada-desktop-footer-measure">
+(function(){
+ const root=document.documentElement;
+ if(root.dataset.mlvPlatform==='android'||window.MichelsLifeAndroid||window.__MICHELSLIFE_PLATFORM__==='android')return;
+ const ids=['mlv-desktop-mini-focus','mlv-desktop-focus-launcher','mlv-alarm-launcher'];
+ const observed=new WeakSet();
+ let queued=false;
+ function measure(){queued=false;let width=0,focusHeight=0,alarmHeight=0;
+  for(const id of ids){const el=document.getElementById(id);if(!el)continue;if(!observed.has(el)){observed.add(el);resize?.observe(el);changes.observe(el,{attributes:true,attributeFilter:['hidden']});}
+   if(el.hidden||getComputedStyle(el).display==='none')continue;const b=el.getBoundingClientRect();width=Math.max(width,b.width);
+   if(id==='mlv-alarm-launcher')alarmHeight=b.height;else focusHeight=Math.max(focusHeight,b.height);
+  }
+  root.style.setProperty('--mlv-granada-right-controls',Math.ceil(width||0)+'px');
+  root.style.setProperty('--mlv-granada-focus-height',Math.ceil(focusHeight||0)+'px');
+  root.style.setProperty('--mlv-granada-footer-space',Math.ceil(focusHeight+alarmHeight+64)+'px');
+ }
+ function schedule(){if(!queued){queued=true;requestAnimationFrame(measure)}}
+ const resize=typeof ResizeObserver==='function'?new ResizeObserver(schedule):null;
+ const changes=new MutationObserver(schedule);
+ const mount=new MutationObserver(()=>{if(ids.some(id=>{const e=document.getElementById(id);return e&&!observed.has(e)}))schedule()});
+ mount.observe(document.body,{childList:true});
+ window.addEventListener('resize',schedule,{passive:true});schedule();
+})();
+</script>
 </body>
 </html>
