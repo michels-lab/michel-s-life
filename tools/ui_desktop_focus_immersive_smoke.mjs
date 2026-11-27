@@ -207,7 +207,7 @@ try{
       return {on,background,zero,zeroBackground};
     }finally{v.setTransparency(original);}
   });
-  ok(!surface.missing&&surface.on==='blur(10px)'&&surface.background.includes('0.500')&&surface.zero==='none'&&surface.zeroBackground==='transparent','Custom glass opacity/blur contract failed: '+JSON.stringify(surface));
+  ok(!surface.missing&&surface.on==='blur(10px)'&&/0\.5(?:0+)?\)/.test(surface.background)&&surface.zero==='none'&&surface.zeroBackground==='transparent','Custom glass opacity/blur contract failed: '+JSON.stringify(surface));
   await page.waitForFunction(()=>{
     const mini=document.getElementById('mlv-desktop-mini-focus'),alarm=document.getElementById('mlv-alarm-launcher'),dock=document.getElementById('v3099NextUpDock');
     if(!mini||mini.hidden)return false;
