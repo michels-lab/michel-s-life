@@ -424,6 +424,17 @@
     }catch(_){playbackError=lang('Could not start audio engine.','No se pudo iniciar el motor de audio.');stopAmbient();return false;}
   }
   function toggleAmbientPlayback(){if(personalPending){pauseOnReady=!pauseOnReady;return true;}if(ambientRecording){const player=ambientRecording;if(player.paused){playbackError='';player.play().catch(()=>{if(ambientRecording===player){playbackError=lang('Could not resume audio.','No se pudo reanudar el audio.');}});}else player.pause();return true;}if(ambientContext)return startAmbient(true);return startAmbient();}
+  function seekAmbient(seconds,expectedGeneration){
+    const player=ambientRecording;
+    if(!player||String(expectedGeneration)!==String(personalGeneration)||
+       !Number.isFinite(seconds)||!Number.isFinite(player.duration)||player.duration<=0)return false;
+    try{
+      // Stay inside the playable range; seeking to the exact end can
+      // automatically advance the playlist and surprise a paused listener.
+      player.currentTime=Math.max(0,Math.min(seconds,Math.max(0,player.duration-.05)));
+      return true;
+    }catch(_){playbackError=lang('Could not seek in this recording.','No se pudo cambiar la posición de esta grabación.');return false;}
+  }
   function selectScene(id,fromPlaylist=false,paused=!!ambientRecording?.paused||pauseOnReady){
     if(!isAvailable(id))return sceneId();
     const previous=ambientCollection(),save=api()?.setAudioPreference;
@@ -471,9 +482,9 @@
     selectScene,playCompletion,playPhaseBells,stopClassical,previewingCompletion:()=>previewingId,recordingActive:()=>!!classicalSource,recordingPlayback:()=>classicalSource?{paused:classicalSource.paused,currentTime:classicalSource.currentTime,duration:classicalSource.duration,src:classicalSource.src}:null,unlock,startAmbient,stopAmbient,
     playing:()=>!!ambientScene,
     importPersonalTracks,loadPersonalTracks,cancelPersonalImport,personalLibraryLoading:()=>!!personalLoadPromise,personalLibraryFailed:()=>personalLoadFailed,personalStatus:()=>personalImporting?personalStatus:playbackError||personalStatus,personalImporting:()=>personalImporting,personalCancelPending:()=>personalCancel,playingScene:()=>ambientScene,
-    ambientVolume:getVolume,setAmbientVolume:setVolume,ambientMode,setAmbientMode,ambientCollection,setAmbientCollection,moveAmbient,toggleAmbientPlayback,
+    ambientVolume:getVolume,setAmbientVolume:setVolume,ambientMode,setAmbientMode,ambientCollection,setAmbientCollection,moveAmbient,toggleAmbientPlayback,seekAmbient,
     canNavigateAmbient:()=>collectionIds().length>1||(collectionIds().length===1&&!collectionIds().includes(sceneId())),
-    ambientPlayback:()=>ambientRecording?{paused:ambientRecording.paused,currentTime:ambientRecording.currentTime,duration:ambientRecording.duration,loop:ambientRecording.loop,src:ambientRecording.src,volume:ambientRecording.volume,loading:false}:ambientScene?{paused:pauseOnReady,currentTime:0,duration:NaN,loop:false,src:null,volume:getVolume(),loading:personalPending}:null
+    ambientPlayback:()=>ambientRecording?{generation:String(personalGeneration),paused:ambientRecording.paused,currentTime:ambientRecording.currentTime,duration:ambientRecording.duration,loop:ambientRecording.loop,src:ambientRecording.src,volume:ambientRecording.volume,loading:false}:ambientScene?{paused:pauseOnReady,currentTime:0,duration:NaN,loop:false,src:null,volume:getVolume(),loading:personalPending}:null
   };
   if(window.indexedDB)loadPersonalTracks();
   window.addEventListener?.('pagehide',()=>{stopAmbient();stopClassical();});
@@ -825,6 +836,7 @@
             </label>
              <div class="mlv-audio-controls"><button type="button" class="mlv-focus-btn" data-mlv-audio="previous-ambient" aria-label="Previous track">⏮ Previous</button><button type="button" class="mlv-focus-btn" data-mlv-audio="next-ambient" aria-label="Skip track">Next ⏭</button><button type="button" class="mlv-focus-btn" data-mlv-audio="stop-ambient">Stop</button></div>
 
+             <label data-mlv-seek-wrap hidden><span data-mlv-seek-label>Track position</span><input type="range" min="0" max="1" step="0.1" value="0" data-mlv-ambient-seek aria-label="Track position" disabled /></label>
              <label><span data-mlv-volume-label>Volume</span><input type="range" min="0" max="100" value="35" data-mlv-ambient-volume aria-label="Background music volume" /></label>
              <div class="mlv-audio-settings"><select data-mlv-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option><option value="shuffle">Shuffle</option></select><select data-mlv-ambient-collection aria-label="Playlist collection"><option value="all">All audio</option><option value="Ambient">Ambient</option><option value="Cinematic">Cinematic</option><option value="Classical">Classical piano</option><option value="Personal">My music</option></select></div>
           </div>
@@ -851,6 +863,7 @@
     screen.addEventListener('input',event=>{if(event.target?.matches?.('[data-mlv-ambient-volume]'))window.MichelsLifeFocusAudio?.setAmbientVolume?.(Number(event.target.value)/100,false);});
     screen.addEventListener('change',async event=>{
       if(event.target?.matches?.('[data-mlv-personal-files]')){const input=event.target;input.disabled=true;try{await window.MichelsLifeFocusAudio?.importPersonalTracks?.(input.files);}finally{input.value='';input.disabled=false;refresh();}return;}
+      if(event.target?.matches?.('[data-mlv-ambient-seek]')){const input=event.target;window.MichelsLifeFocusAudio?.seekAmbient?.(Number(input.value),input.dataset.audioGeneration);input.blur();refresh();return;}
       if(event.target?.matches?.('[data-mlv-ambient-volume]'))window.MichelsLifeFocusAudio?.setAmbientVolume?.(Number(event.target.value)/100);
       else if(event.target?.matches?.('[data-mlv-ambient-mode]'))window.MichelsLifeFocusAudio?.setAmbientMode?.(event.target.value);
       else if(event.target?.matches?.('[data-mlv-ambient-collection]'))window.MichelsLifeFocusAudio?.setAmbientCollection?.(event.target.value);
@@ -1040,6 +1053,14 @@
     const retryLibrary=q('[data-mlv-audio="retry-library"]',screen);if(retryLibrary){retryLibrary.hidden=!(audio?.personalLibraryFailed?.()||audio?.personalLibraryLoading?.());retryLibrary.disabled=!!(audio?.personalLibraryLoading?.()||audio?.personalImporting?.());retryLibrary.textContent=audio?.personalLibraryLoading?.()?lang('Loading library…','Cargando biblioteca…'):lang('Retry library','Reintentar biblioteca');}
     const ambientButton=q('[data-mlv-audio="toggle-ambient"]',screen);if(ambientButton)ambientButton.disabled=!audio?.sceneId?.();
     const playback=audio?.ambientPlayback?.(),modeSelect=q('[data-mlv-ambient-mode]',screen),progress=q('[data-mlv-ambient-progress]',screen);
+    const seek=q('[data-mlv-ambient-seek]',screen),seekWrap=q('[data-mlv-seek-wrap]',screen),seekLabel=q('[data-mlv-seek-label]',screen);
+    const seekable=!!playback&&typeof playback.generation==='string'&&Number.isFinite(playback.duration)&&playback.duration>0;
+    if(seekWrap)seekWrap.hidden=!seekable;
+    if(seekLabel)seekLabel.textContent=lang('Track position','Posición de la canción');
+    if(seek){seek.disabled=!seekable;seek.setAttribute('aria-label',lang('Track position','Posición de la canción'));
+      if(seekable&&document.activeElement!==seek){seek.max=String(playback.duration);seek.value=String(playback.currentTime);seek.dataset.audioGeneration=playback.generation;}
+      if(!seekable)delete seek.dataset.audioGeneration;
+    }
     if(modeSelect){modeSelect.value=audio?.ambientMode?.()||'repeat';modeSelect.options[0].textContent=lang('Repeat track','Repetir pista');modeSelect.options[1].textContent=lang('Continuous playlist','Lista continua');modeSelect.options[2].textContent=lang('Shuffle','Aleatorio');}
     const coll=q('[data-mlv-ambient-collection]',screen);if(coll){coll.value=audio?.ambientCollection?.()||'all';const names=[lang('All audio','Todo el audio'),lang('Ambient','Ambiental'),lang('Cinematic','Cinematográfica'),lang('Classical piano','Piano clásico'),lang('My music','Mi música')];names.forEach((name,i)=>coll.options[i].textContent=name);}
     if(progress)progress.textContent=playback?.loading?lang('Loading local audio…','Cargando audio local…'):playback&&Number.isFinite(playback.duration)?time(playback.currentTime*1000)+' / '+time(playback.duration*1000):'';

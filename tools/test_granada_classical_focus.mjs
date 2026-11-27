@@ -372,3 +372,26 @@ test('failed volume persistence retains session volume and exposes warning',()=>
  assert.match(f.api.personalStatus(),/session only/);f.window.FocusStoryV30162.setAudioPreference=save;
  f.api.setAmbientVolume(.5);assert.equal(f.persisted.v30165AmbientVolume,.5);assert.equal(f.api.personalStatus(),'');
 });
+
+test('seek recorded music without changing pause state or Focus preferences',()=>{
+ const f=harness();f.api.selectScene(library[0]);f.api.startAmbient();const p=f.recordings.at(-1);p.duration=200;
+ const generation=f.api.ambientPlayback().generation;f.api.toggleAmbientPlayback();
+ const saved=JSON.stringify(f.persisted);
+ assert.equal(f.api.seekAmbient(50,generation),true);assert.equal(p.currentTime,50);assert.equal(p.paused,true);
+ assert.equal(f.api.seekAmbient(-50,generation),true);assert.equal(p.currentTime,0);
+ assert.equal(f.api.seekAmbient(999,generation),true);assert.equal(p.currentTime,199.95);
+ assert.equal(f.api.seekAmbient(NaN,generation),false);assert.equal(JSON.stringify(f.persisted),saved);
+});
+test('stale seek gestures cannot affect a replacement recording or generated soundtrack',()=>{
+ const f=harness();f.api.selectScene(library[0]);f.api.startAmbient();f.recordings.at(-1).duration=120;
+ const old=f.api.ambientPlayback().generation;f.api.selectScene(library[1]);const p=f.recordings.at(-1);p.duration=160;
+ assert.equal(f.api.seekAmbient(90,old),false);assert.equal(p.currentTime,0);
+ f.api.selectScene('moonlight');assert.equal(f.api.seekAmbient(30,old),false);
+});
+test('seek control is in advanced options and not the timer controls on either platform',()=>{
+ const mobile=readFileSync('android/mobile-experience.js','utf8');
+ for(const [src,key,drawer] of [[focusSource,'mlv','<details class="mlv-focus-sound-details"'],[mobile,'mobile','<details class="mlv-android-focus-sounds"']]){
+   assert.ok(src.indexOf(drawer)<src.indexOf('data-'+key+'-ambient-seek'));
+   assert.ok(src.includes('input.dataset.audioGeneration'));
+ }
+});
