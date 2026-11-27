@@ -189,9 +189,17 @@
   function unlock(){
     try{return !!soundContext();}catch(_){return false;}
   }
+  function releaseAudio(player){
+    if(!player)return;
+    try{player.pause();}catch(_){}
+    try{player.currentTime=0;}catch(_){}
+    // Disconnect the media resource, not just the playback clock. A revoked
+    // object URL alone need not release the decoder's reference to a big Blob.
+    try{player.removeAttribute?.('src');player.load?.();}catch(_){}
+  }
   function stopClassical(){
     const source=classicalSource;classicalSource=null;previewingId=null;
-    if(source)try{source.pause();source.currentTime=0;}catch(_){}
+    releaseAudio(source);
   }
   let bellDuck=1,bellRestore=null;
   function applyAmbientVolume(){const volume=getVolume();if(ambientRecording)ambientRecording.volume=volume*bellDuck;if(ambientBus&&ambientContext)ambientBus.gain.setValueAtTime(volume/.35*bellDuck,ambientContext.currentTime);}
@@ -213,7 +221,7 @@
       try{
         const source=new Audio('assets/audio/classical/'+id+'.mp3');
         source.loop=false;classicalSource=source;previewingId=preview?id:null;
-        const clear=()=>{if(classicalSource===source){classicalSource=null;previewingId=null;}};
+        const clear=()=>{if(classicalSource===source){classicalSource=null;previewingId=null;releaseAudio(source);}};
         source.onended=clear;source.onerror=clear;
         source.play().catch(clear);return true;
       }catch(_){return false;}
@@ -238,7 +246,7 @@
   function stopAmbient(){
     personalGeneration++;personalPending=false;pauseOnReady=false;
     const player=ambientRecording;ambientRecording=null;
-    if(player)try{player.pause();player.currentTime=0;}catch(_){}
+    releaseAudio(player);
     if(personalUrl){try{URL.revokeObjectURL(personalUrl);}catch(_){}personalUrl=null;}
     if(ambientInterval){window.clearInterval(ambientInterval);ambientInterval=null;}
     const ctx=ambientContext;ambientContext=null;ambientBus=null;ambientScene=null;
@@ -353,24 +361,29 @@
       const generation=personalGeneration;personalPending=true;pauseOnReady=paused;ambientScene=id;
       personalRead('blobs',id).then(blob=>{
         if(generation!==personalGeneration)return;
-        if(!blob||!isAvailable(id)){personalStatus=lang('Personal audio is missing.','Falta el archivo de audio personal.');stopAmbient();return;}
+        if(!blob||!isAvailable(id)){playbackError=lang('Personal audio is missing.','Falta el archivo de audio personal.');stopAmbient();return;}
         personalUrl=URL.createObjectURL(blob);personalPending=false;
         const startPaused=pauseOnReady;pauseOnReady=false;
         if(!startRecording(id,personalUrl,startPaused)){stopAmbient();}
-      }).catch(()=>{if(generation===personalGeneration){personalStatus=lang('Cannot open personal audio.','No se pudo abrir el audio personal.');stopAmbient();}});
+      }).catch(()=>{if(generation===personalGeneration){playbackError=lang('Cannot open personal audio.','No se pudo abrir el audio personal.');stopAmbient();}});
       return true;
     }
     if(ambientScenes[id]?.recorded)return startRecording(id,'assets/audio/classical/'+id+'.mp3',paused);
     if(paused){ambientScene=id;pauseOnReady=true;return true;}
     const C=window.AudioContext||window.webkitAudioContext;
-    if(!C)return false;
+    if(!C){playbackError=lang('Audio engine unavailable.','Motor de audio no disponible.');return false;}
     try{
-      ambientScene=id;ambientContext=new C();ambientBus=ambientContext.createGain();applyAmbientVolume();ambientBus.connect(ambientContext.destination);
-      ambientContext.resume?.().catch?.(()=>{});
+      ambientScene=id;ambientContext=new C();const context=ambientContext;
+      ambientBus=context.createGain();applyAmbientVolume();ambientBus.connect(context.destination);
+      context.resume?.().catch?.(()=>{
+        if(ambientContext!==context)return;
+        playbackError=lang('Could not start audio engine.','No se pudo iniciar el motor de audio.');
+        stopAmbient();
+      });
       ambientStep=0;scheduleAmbient();
       ambientInterval=window.setInterval(scheduleAmbient,7200);
       return true;
-    }catch(_){stopAmbient();return false;}
+    }catch(_){playbackError=lang('Could not start audio engine.','No se pudo iniciar el motor de audio.');stopAmbient();return false;}
   }
   function toggleAmbientPlayback(){if(personalPending){pauseOnReady=!pauseOnReady;return true;}if(ambientRecording){const player=ambientRecording;if(player.paused){playbackError='';player.play().catch(()=>{if(ambientRecording===player){playbackError=lang('Could not resume audio.','No se pudo reanudar el audio.');}});}else player.pause();return true;}if(ambientContext)return startAmbient(true);return startAmbient();}
   function selectScene(id,fromPlaylist=false,paused=!!ambientRecording?.paused||pauseOnReady){

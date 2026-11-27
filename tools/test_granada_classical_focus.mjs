@@ -31,7 +31,7 @@ function harness(persisted={v30165Soundscape:'moonlight',v30165CompletionSound:'
     }
   }
   const recordings=[];
-  class Audio{constructor(src){this.src=src;this.paused=true;this.currentTime=0;this.playCalls=0;recordings.push(this);}play(){this.playCalls++;this.paused=false;return Promise.resolve();}pause(){this.paused=true;}}
+  class Audio{constructor(src){this.src=src;this.paused=true;this.currentTime=0;this.playCalls=0;recordings.push(this);}play(){this.playCalls++;this.paused=false;return Promise.resolve();}pause(){this.paused=true;}removeAttribute(name){if(name==='src')this.src='';}load(){this.released=true;}}
   const window={
     AudioContext,Audio,
     FocusStoryV30162:{
@@ -315,4 +315,27 @@ test('cancel import is available only in expanded library on desktop and Android
  for(const [source,attr] of [[focusSource,'data-mlv-audio'],[mobile,'data-mobile-focus']]){
   assert.ok(source.includes(attr+'="cancel-import" hidden'));assert.ok(source.includes('cancelPersonalImport'));
  }
+});
+
+test('replacing or stopping recorded audio releases decoder resources',()=>{
+ const f=harness();f.api.selectScene(library[0]);f.api.startAmbient();const first=f.recordings.at(-1);
+ f.api.selectScene(library[1]);const second=f.recordings.at(-1);assert.equal(first.released,true);assert.equal(first.src,'');
+ assert.equal(second.released,undefined);f.api.stopAmbient();assert.equal(second.released,true);
+});
+test('stale personal Blob read cannot play after switching to another track',async()=>{
+ const f=harness(),store=fakePersonalStorage(f);const id='my_'+'b'.repeat(32);
+ store.tracks.set(id,{id,name:'personal.mp3'});store.blobs.set(id,{name:'personal.mp3',size:200});
+ assert.equal(await f.api.loadPersonalTracks(),true);let created=0;
+ f.window.URL={createObjectURL(){created++;return 'blob:test';},revokeObjectURL(){}};
+ f.api.selectScene(id);f.api.startAmbient();f.api.selectScene(library[0]);
+ for(let i=0;i<20;i++)await Promise.resolve();
+ assert.equal(created,0);assert.equal(f.api.playingScene(),library[0]);assert.equal(f.recordings.length,1);
+});
+test('personal Blob URL is revoked after decoder release when stopping',async()=>{
+ const f=harness(),store=fakePersonalStorage(f);const id='my_'+'c'.repeat(32);
+ store.tracks.set(id,{id,name:'song.mp3'});store.blobs.set(id,{name:'song.mp3',size:300});
+ await f.api.loadPersonalTracks();const revoked=[];
+ f.window.URL={createObjectURL(){return 'blob:test';},revokeObjectURL(url){assert.equal(f.recordings.at(-1).released,true);revoked.push(url);}};
+ f.api.selectScene(id);f.api.startAmbient();for(let i=0;i<20&&!f.recordings.length;i++)await Promise.resolve();
+ assert.equal(f.recordings.at(-1).src,'blob:test');f.api.stopAmbient();assert.deepEqual(revoked,['blob:test']);
 });
