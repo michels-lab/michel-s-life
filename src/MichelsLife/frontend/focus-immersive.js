@@ -270,7 +270,25 @@
     }
     return true;
   }
-  function setAmbientCollection(value){if(!['all','Ambient','Cinematic','Classical','Personal'].includes(value))return false;if(api()?.setAudioPreference?.('ambientCollection',value)!==true)return false;resetShuffle();const ids=activeIds();const selected=sceneId();if(!ids.length){stopAmbient();return true;}if(ambientScene&&!ids.includes(ambientScene)){const paused=!!ambientRecording?.paused||pauseOnReady;stopAmbient();choice(sceneKey,ambientScenes,selected,'moonlight');startAmbient(paused);}else choice(sceneKey,ambientScenes,selected,'moonlight');return true;}
+  function setAmbientCollection(value){
+    if(!['all','Ambient','Cinematic','Classical','Personal'].includes(value))return false;
+    const previous=ambientCollection(),save=api()?.setAudioPreference;
+    if(value===previous)return true;
+    if(save?.('ambientCollection',value)!==true){playbackError=lang('Collection was not saved.','No se guardó la colección.');return false;}
+    const ids=activeIds(),selected=sceneId();
+    if(ids.length&&save?.(sceneKey,selected)!==true){
+      save?.('ambientCollection',previous);
+      playbackError=lang('Collection selection was not saved.','No se guardó la selección de colección.');
+      // Keep the existing player if rollback succeeded; never play an
+      // unintended track on a partially saved preference.
+      if(ambientScene&&!activeIds().includes(ambientScene))stopAmbient();
+      return false;
+    }
+    resetShuffle();playbackError='';
+    if(!ids.length){stopAmbient();return true;}
+    if(ambientScene&&!ids.includes(ambientScene)){const paused=!!ambientRecording?.paused||pauseOnReady;startAmbient(paused);}
+    return true;
+  }
   function setAmbientMode(mode){if(!['repeat','playlist','shuffle'].includes(mode))return false;const previous=ambientMode();if(api()?.setAudioPreference?.('ambientMode',mode)!==true)return false;if(mode!==previous)resetShuffle();if(ambientRecording)ambientRecording.loop=ambientMode()==='repeat';return true;}
   function moveAmbient(delta,automatic=false){const ids=collectionIds();if(!ids.length)return false;const current=sceneId(),index=ids.indexOf(current);let next;if(ambientMode()==='shuffle'){
     shuffleHistory=shuffleHistory.filter(id=>ids.includes(id));if(delta<0&&shuffleHistory.length)next=shuffleHistory.pop();
@@ -317,9 +335,20 @@
   function toggleAmbientPlayback(){if(personalPending){pauseOnReady=!pauseOnReady;return true;}if(ambientRecording){const player=ambientRecording;if(player.paused){playbackError='';player.play().catch(()=>{if(ambientRecording===player){playbackError=lang('Could not resume audio.','No se pudo reanudar el audio.');}});}else player.pause();return true;}if(ambientContext)return startAmbient(true);return startAmbient();}
   function selectScene(id,fromPlaylist=false,paused=!!ambientRecording?.paused||pauseOnReady){
     if(!isAvailable(id))return sceneId();
-    if(!fromPlaylist){resetShuffle();const group=ambientScenes[id]?.group;if(ambientCollection()!=='all'&&group!==ambientCollection())api()?.setAudioPreference?.('ambientCollection','all');}
+    const previous=ambientCollection(),save=api()?.setAudioPreference;
+    const changeCollection=!fromPlaylist&&previous!=='all'&&ambientScenes[id]?.group!==previous;
+    if(changeCollection&&save?.('ambientCollection','all')!==true){
+      playbackError=lang('Collection was not saved.','No se guardó la colección.');return sceneId();
+    }
     const old=ambientScene;
-    if(api()?.setAudioPreference?.(sceneKey,id)!==true){playbackError=lang('Track selection was not saved.','No se guardó la selección.');return sceneId();}
+    if(save?.(sceneKey,id)!==true){
+      if(changeCollection)save?.('ambientCollection',previous);
+      playbackError=lang('Track selection was not saved.','No se guardó la selección.');
+      if(old&&!activeIds().includes(old))stopAmbient();
+      return sceneId();
+    }
+    if(!fromPlaylist)resetShuffle();
+    playbackError='';
     if(old&&(old!==sceneId()||fromPlaylist))startAmbient(paused);
     return sceneId();
   }

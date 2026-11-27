@@ -242,3 +242,16 @@ test('a playlist with one remaining recording restarts on natural end',()=>{
  f.api.setAmbientMode('playlist');f.api.startAmbient();const first=f.recordings.at(-1);first.onended();
  assert.equal(f.recordings.length,2);assert.equal(f.api.playingScene(),piano[0]);assert.equal(f.recordings.at(-1).paused,false);
 });
+
+test('failed collection selection rolls back the collection and retains existing recording',()=>{
+ const f=harness();f.api.setAmbientCollection('Ambient');f.api.startAmbient();const p=f.recordings.at(-1);
+ const save=f.window.FocusStoryV30162.setAudioPreference;f.window.FocusStoryV30162.setAudioPreference=(kind,value)=>kind==='scene'?false:save(kind,value);
+ assert.equal(f.api.setAmbientCollection('Classical'),false);assert.equal(f.api.ambientCollection(),'Ambient');
+ assert.equal(f.api.playingScene(),library[0]);assert.equal(p.paused,false);assert.equal(f.recordings.length,1);
+});
+test('failed cross-collection track selection does not alter the existing collection',()=>{
+ const f=harness();f.api.setAmbientCollection('Classical');f.api.startAmbient();const p=f.recordings.at(-1);
+ const save=f.window.FocusStoryV30162.setAudioPreference;f.window.FocusStoryV30162.setAudioPreference=(kind,value)=>kind==='scene'?false:save(kind,value);
+ assert.equal(f.api.selectScene(library[0]),piano[0]);assert.equal(f.api.ambientCollection(),'Classical');
+ assert.equal(f.api.playingScene(),piano[0]);assert.equal(p.paused,false);assert.equal(f.recordings.length,1);
+});
