@@ -161,8 +161,9 @@ class GuardTests(unittest.TestCase):
 
     def test_early_screenshot_recovery_requires_real_app_pid(self):
         script = (ROOT / "android/tools/smoke_candidate_apk_install.sh").read_text()
-        self.assertEqual(script.count("granada_relaunch_transport_guard.py"), 2)
-        self.assertIn('granada-capture-transport-$attempt.json', script)
+        self.assertEqual(script.count("granada_relaunch_transport_guard.py"), 1)
+        self.assertIn('verify_native_process "capture-$(basename "$dest" .png)-$attempt"', script)
+        self.assertIn('granada-transport-$stage.json', script)
         self.assertIn("Native screenshot transport or real Android app process lost", script)
         self.assertIn("::error::Missing real native Android pixels", script)
         self.assertIn('return 1', script)
@@ -172,6 +173,13 @@ class GuardTests(unittest.TestCase):
         self.assertIn("granada_relaunch_transport_guard.py", script)
         self.assertIn("native-state-after.json", script)
         self.assertIn("capture_native_state after", script)
+        self.assertIn("verify_native_process initial-launch", script)
+        self.assertIn("verify_native_process first-relaunch", script)
+        self.assertIn("verify_native_process second-relaunch", script)
+        self.assertIn('verify_native_process "state-$stage" || return 1', script)
+        self.assertIn("MLV_REQUIRE_PROTECTED_SIGNED", script)
+        self.assertIn("native-canonical-consecutive-relaunch-comparison.json", script)
+        self.assertIn('tmp="$1.partial"', script)
         self.assertIn("::error::Cannot verify native Android process after relaunch", script)
         self.assertNotIn("continue-on-error", script)
 
