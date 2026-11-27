@@ -95,6 +95,7 @@ jobs:
         run: |
           python android/tools/validate_sync_contract.py
           node tools/test_cloud_restore_storage.mjs
+          python3 tools/test_cloud_meta_store_behavior.py
 
       - name: Validate Android version metadata
         run: python android/tools/validate_android_version.py

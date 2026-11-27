@@ -211,13 +211,21 @@ class AndroidBridge(
                 respondOk(requestId, cloud.status(account))
             }
             "disconnect" -> {
-                meta.resetForDisconnect()
-                respondOk(requestId, cloud.status(""))
+                try {
+                    meta.resetForDisconnect()
+                    respondOk(requestId, cloud.status(""))
+                } catch (e: Exception) {
+                    respondError(requestId, e.message ?: "Cloud disconnect failed.")
+                }
             }
             "cloudDirty" -> {
                 val at = parseInstant(payload.optString("changedAt")) ?: Instant.now()
-                meta.markDirty(at)
-                respondOk(requestId, JSONObject().put("marked", true).put("changedAt", at.toString()))
+                try {
+                    meta.markDirty(at)
+                    respondOk(requestId, JSONObject().put("marked", true).put("changedAt", at.toString()))
+                } catch (e: Exception) {
+                    respondError(requestId, e.message ?: "Cloud change could not be recorded.")
+                }
             }
             "cloudAccept" -> {
                 val hash = payload.optString("hash", "")
@@ -230,7 +238,7 @@ class AndroidBridge(
                 }
             }
             "cloudSync" -> {
-              val generation = meta.currentGeneration()
+              val requestMeta = meta.load()
               authorizeFor(requestId, false) { token, account ->
                 executor.execute {
                     try {
@@ -240,7 +248,7 @@ class AndroidBridge(
                             payload.optString("backupJson", ""),
                             payload.optString("localChangedAt", ""),
                             payload.optString("mode", "auto"),
-                            generation
+                            requestMeta.generation, requestMeta.dirtyRevision
                         )
                         respondOk(requestId, result)
                     } catch (e: Exception) {
@@ -256,14 +264,14 @@ class AndroidBridge(
                 }
             }
             "cloudRestoreBackup" -> {
-              val generation = meta.currentGeneration()
+              val requestMeta = meta.load()
               authorizeFor(requestId, false) { token, account ->
                 executor.execute {
                     try {
                         payload.optString("backupJson", "").takeIf { it.isNotBlank() }?.let {
                             createRestorePoint(it, "before_cloud_history_restore")
                         }
-                        respondOk(requestId, cloud.restoreCloudBackup(token, payload.optString("fileId"), account, generation))
+                        respondOk(requestId, cloud.restoreCloudBackup(token, payload.optString("fileId"), account, requestMeta.generation, requestMeta.dirtyRevision))
                     } catch (e: Exception) {
                         respondError(requestId, e.message ?: "Cloud backup restore failed.")
                     }

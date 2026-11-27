@@ -125,7 +125,7 @@ class NativeGoogleDriveBoundaryTests(unittest.TestCase):
         store=segment("fun beginSync(", "private fun requireCurrentLocked(")
         self.assertLess(store.index("meta = CloudMeta("),
                         store.index("meta.lastLocalDirtyAt = localChangedAt"))
-        self.assertIn("metaStore.beginSync(account, localChangedAt, expectedGeneration)",source)
+        self.assertIn("metaStore.beginSync(account, localChangedAt, expectedGeneration, expectedDirtyRevision)",source)
         self.assertLess(source.index('require(mode in setOf("auto", "upload", "download"))'),
                         source.index("findCloudFile(accessToken)"))
 
@@ -165,7 +165,9 @@ class NativeGoogleDriveBoundaryTests(unittest.TestCase):
         store=segment("fun resetForDisconnect()", "private fun parseInstant")
         self.assertIn("previous.generation + 1",store)
         self.assertIn("pendingRestore = null",store)
-        self.assertEqual(ANDROID_BRIDGE.count("val generation = meta.currentGeneration()"),2)
+        self.assertEqual(ANDROID_BRIDGE.count("val requestMeta = meta.load()"),2)
+        self.assertEqual(ANDROID_BRIDGE.count("requestMeta.generation, requestMeta.dirtyRevision"),2)
+        self.assertIn("meta.dirtyRevision == expectedDirtyRevision",NATIVE)
         source=segment("fun sync(accessToken: String, account: String, backupJson: String", "\n    fun overview(")
         self.assertEqual(source.count("metaStore.requireCurrent(meta)"),4)
         self.assertNotIn("metaStore.save(",source)

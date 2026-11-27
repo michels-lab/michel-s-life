@@ -75,13 +75,13 @@ class CloudMetaStore(context: Context) {
             .commit()) { "Cloud metadata persistence failed." }
     }
 
-    fun currentGeneration(): Long = synchronized(lock) { loadLocked().generation }
-
-    fun beginSync(account: String, localChangedAt: Instant?, expectedGeneration: Long): CloudMeta =
+    fun beginSync(account: String, localChangedAt: Instant?, expectedGeneration: Long,
+                  expectedDirtyRevision: Long): CloudMeta =
         synchronized(lock) {
             require(account.isNotBlank()) { "Cloud account is required." }
             var meta = loadLocked()
             check(meta.generation == expectedGeneration) { "Cloud account changed; retry." }
+            check(meta.dirtyRevision == expectedDirtyRevision) { "Local edits changed before cloud sync; retry." }
             pendingRestore = null
             if (meta.account.isNotBlank() && !meta.account.equals(account, true)) {
                 meta = CloudMeta(deviceId = UUID.randomUUID().toString().replace("-", ""),
@@ -105,6 +105,8 @@ class CloudMetaStore(context: Context) {
     }
 
     fun requireCurrent(expected: CloudMeta) = synchronized(lock) { requireCurrentLocked(expected); Unit }
+
+    fun snapshotIfCurrent(expected: CloudMeta): CloudMeta = synchronized(lock) { requireCurrentLocked(expected) }
 
     fun markDirty(at: Instant) = synchronized(lock) {
         val meta = loadLocked()
@@ -202,7 +204,7 @@ class DriveCloudEngine(
     }
 
     fun sync(accessToken: String, account: String, backupJson: String, localChangedAtRaw: String?, modeRaw: String,
-             expectedGeneration: Long): JSONObject {
+             expectedGeneration: Long, expectedDirtyRevision: Long): JSONObject {
         // Never allow a native bridge caller to upload credentials, provider
         // permissions, another device's identity or an unknown localStorage key.
         // The shared WebView allowlist is useful UX; this native guard is an
@@ -213,7 +215,7 @@ class DriveCloudEngine(
         require(account.isNotBlank()) { "Cloud account is required." }
         val localChangedAt = parseInstant(localChangedAtRaw)
 
-        val meta = metaStore.beginSync(account, localChangedAt, expectedGeneration)
+        val meta = metaStore.beginSync(account, localChangedAt, expectedGeneration, expectedDirtyRevision)
 
         val localHash = hashText(backupJson)
         val remote = findCloudFile(accessToken)
@@ -330,9 +332,10 @@ class DriveCloudEngine(
             .put("currentDeviceName", deviceName())
     }
 
-    fun restoreCloudBackup(accessToken: String, fileId: String, account: String, expectedGeneration: Long): JSONObject {
+    fun restoreCloudBackup(accessToken: String, fileId: String, account: String, expectedGeneration: Long,
+                           expectedDirtyRevision: Long): JSONObject {
         require(fileId.matches(Regex("^[A-Za-z0-9_-]{1,256}$"))) { "Invalid cloud backup identifier." }
-        val meta = metaStore.beginSync(account, null, expectedGeneration)
+        val meta = metaStore.beginSync(account, null, expectedGeneration, expectedDirtyRevision)
         val info = getFileById(accessToken, fileId) ?: throw IllegalArgumentException("Cloud backup not found.")
         require(info.id == fileId && info.name.startsWith(CLOUD_BACKUP_PREFIX) &&
             info.name.endsWith(".json")) { "Selected file is not a Michel's Life recovery backup." }
@@ -548,14 +551,15 @@ class DriveCloudEngine(
 
     private fun touchDevice(accessToken: String, meta: CloudMeta, action: String) {
         try {
-            val fileName = DEVICE_FILE_PREFIX + meta.deviceId + ".json"
+            val current = metaStore.snapshotIfCurrent(meta)
+            val fileName = DEVICE_FILE_PREFIX + current.deviceId + ".json"
             val existing = listFiles(accessToken, "name='" + fileName + "'", 10).firstOrNull()
             val now = Instant.now()
             val json = JSONObject()
                 .put("DeviceId", meta.deviceId)
                 .put("DeviceName", deviceName())
                 .put("LastSeenAt", now.toString())
-                .put("LastSyncAt", (meta.lastSyncedAt ?: now).toString())
+                .put("LastSyncAt", current.lastSyncedAt?.toString() ?: "")
                 .put("LastAction", action)
                 .put("AppVersion", "android-" + ANDROID_VERSION)
             val props = JSONObject()
@@ -564,6 +568,7 @@ class DriveCloudEngine(
                 .put("michelsLifeDeviceName", deviceName())
                 .put("michelsLifeLastSeen", now.toString())
                 .put("michelsLifeVersion", "android-" + ANDROID_VERSION)
+            metaStore.requireCurrent(meta)
             uploadJson(accessToken, existing?.id, fileName, json.toString(), props)
         } catch (_: Exception) { }
     }
