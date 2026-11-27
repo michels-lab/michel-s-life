@@ -35,6 +35,7 @@ on:
       - '.michelslab/release-intents/unified-v3232-a0221.txt'
       - '.michelslab/release-intents/unified-v3233-a0222.txt'
       - '.michelslab/release-intents/unified-v3234-a0223.txt'
+      - '.michelslab/release-intents/unified-v3235-a0224.txt'
   workflow_dispatch:
 
 permissions:
