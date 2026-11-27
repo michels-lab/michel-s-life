@@ -24,7 +24,7 @@
     "verified",
     "pending"
   ],
-  "current_phase": "Blocks 6–8 consolidated PR #244; alarm registry/snooze ownership, isolated native validation and Drive metadata revision candidate unmerged. Exact local Kotlin 7/7, transport suite green; full CI/native and physical acceptance pending.",
+  "current_phase": "Blocks 6–8: multi-alarm transaction, Android Calendar/Journal accessibility convergence, and Activity alarm FIFO implemented on #244; CI queued, no product merge.",
   "source_prs": [
     "https://github.com/michels-lab/michel-s-life/pull/225",
     "https://github.com/michels-lab/michel-s-life/pull/226",
@@ -48,29 +48,34 @@
     "progress_after": 53,
     "verified": 8,
     "total": 15,
-    "source_status": "candidate_unmerged_native_gates_pending",
+    "source_status": "candidate_unmerged_exact_head_ci_pending",
     "source_pr": "https://github.com/michels-lab/michel-s-life/pull/244",
-    "candidate_sha": "a9ed0ff92c748a74cf273e6e517a7d7c4ba01be4",
+    "candidate_sha": "4081d027b47c161f857c9d22b673b9775b73df45",
     "commits": [
-      "2741eaad2a5b32a41daef56c67d5c7781caea32b",
-      "d555fe32eff248d6c79f17319b062c52cafa0e09",
-      "16e4ccf97ff8de43a876c207b7fee9cbcfba063d",
-      "a9ed0ff92c748a74cf273e6e517a7d7c4ba01be4"
+      "9047a9286afe3c5d5b012b0b019bf1ec9929b7b6",
+      "9f3810172c2cf0fdf83964a313d92452ddefc961",
+      "e14037f394dc5619b451e72d7220dda6347db114",
+      "4081d027b47c161f857c9d22b673b9775b73df45"
     ],
-    "prior_head": "59e0518f5f4a8f7fc5db8c37415f369d5c42acb4",
-    "prior_ci_success": 15,
-    "prior_ci_total": 17,
-    "prior_android_compile": "success",
-    "prior_android_native": "failure",
-    "latest_exact_transport_run": 46048108628,
-    "local_cloud_meta_behavior": "7/7 PASS, exact extracted production Kotlin and repository test SHA verified; SharedPreferences stub only",
+    "changed_files": 8,
+    "prior_head": "a9ed0ff92c748a74cf273e6e517a7d7c4ba01be4",
+    "prior_ci_success": 5,
+    "prior_ci_total": 18,
+    "latest_ci_total": 18,
+    "latest_ci_success": 0,
+    "latest_ci_pending": 18,
+    "latest_native_build_run": 46049029633,
+    "latest_alarm_contract_run": 46049029454,
+    "latest_android_ui_run": 46049029568,
+    "convergence": "#135 accessibility implementation and original browser scenario ported; PR remains open pending exact validation; #190/#181/#166/#62 not yet reconciled",
     "new_release_published": false,
     "remaining": [
-      "full exact-head CI incl. alarm registry/snooze and Drive contract",
-      "native emulator screenshots and persistence",
+      "exact candidate Android build and browser accessibility/alarms",
+      "native Android execution QEMU/UIAutomator failure",
+      "alarm transaction process death and physical simultaneous notifications",
       "physical Windows/Galaxy acceptance",
-      "real Supabase/Google Calendar/Drive OAuth",
-      "ordinary alarm multi-record scheduling failure rollback and remote Drive write race"
+      "real Supabase/Calendar/Drive OAuth",
+      "remote Drive non-atomic write race"
     ]
   },
   "note": "53%=8/15 bounded acceptance milestones; #14 root cause fixed, exact runtime checks verified, integrated and published. Physical QA and real accounts are not proven by CI.",
@@ -135,20 +140,22 @@
     "verified_milestones": 8,
     "total_milestones": 15
   },
-  "next_audit": "Verify #244 exact candidate CI, native runtime gates and safe alarm persistence; then physical/real-provider acceptance. Preserve stable 3.0.235/0.2.24.",
+  "next_audit": "Verify #244 exact candidate alarm/Calendar/Android CI, retire #135 only when verified, reconcile #190/#181/#166/#62, and resolve native gates. Stable 3.0.235/0.2.24 unchanged.",
   "active_candidate": {
     "pr": "https://github.com/michels-lab/michel-s-life/pull/244",
-    "head": "a9ed0ff92c748a74cf273e6e517a7d7c4ba01be4",
+    "head": "4081d027b47c161f857c9d22b673b9775b73df45",
     "status": "implementation_candidate_unmerged",
     "progress_percent": 53,
-    "local_cloud_meta_behavior": "7/7 PASS, exact extracted production Kotlin and repository test SHA verified; SharedPreferences stub only",
-    "transport_run": 46048108628,
+    "build_run": 46049029633,
+    "alarm_run": 46049029454,
+    "android_ui_run": 46049029568,
     "remaining": [
-      "full exact-head CI incl. alarm registry/snooze and Drive contract",
-      "native emulator screenshots and persistence",
+      "exact candidate Android build and browser accessibility/alarms",
+      "native Android execution QEMU/UIAutomator failure",
+      "alarm transaction process death and physical simultaneous notifications",
       "physical Windows/Galaxy acceptance",
-      "real Supabase/Google Calendar/Drive OAuth",
-      "ordinary alarm multi-record scheduling failure rollback and remote Drive write race"
+      "real Supabase/Calendar/Drive OAuth",
+      "remote Drive non-atomic write race"
     ]
   },
   "owner_feedback_4b": {
@@ -354,5 +361,36 @@
       "android15_native": "success",
       "android14_16": "failed ADB/native evidence"
     }
+  },
+  "previous_granada_extended": {
+    "date": "2026-11-27",
+    "progress_before": 53,
+    "progress_after": 53,
+    "verified": 8,
+    "total": 15,
+    "source_status": "candidate_unmerged_native_gates_pending",
+    "source_pr": "https://github.com/michels-lab/michel-s-life/pull/244",
+    "candidate_sha": "a9ed0ff92c748a74cf273e6e517a7d7c4ba01be4",
+    "commits": [
+      "2741eaad2a5b32a41daef56c67d5c7781caea32b",
+      "d555fe32eff248d6c79f17319b062c52cafa0e09",
+      "16e4ccf97ff8de43a876c207b7fee9cbcfba063d",
+      "a9ed0ff92c748a74cf273e6e517a7d7c4ba01be4"
+    ],
+    "prior_head": "59e0518f5f4a8f7fc5db8c37415f369d5c42acb4",
+    "prior_ci_success": 15,
+    "prior_ci_total": 17,
+    "prior_android_compile": "success",
+    "prior_android_native": "failure",
+    "latest_exact_transport_run": 46048108628,
+    "local_cloud_meta_behavior": "7/7 PASS, exact extracted production Kotlin and repository test SHA verified; SharedPreferences stub only",
+    "new_release_published": false,
+    "remaining": [
+      "full exact-head CI incl. alarm registry/snooze and Drive contract",
+      "native emulator screenshots and persistence",
+      "physical Windows/Galaxy acceptance",
+      "real Supabase/Google Calendar/Drive OAuth",
+      "ordinary alarm multi-record scheduling failure rollback and remote Drive write race"
+    ]
   }
 }
