@@ -404,8 +404,9 @@ test('failed snooze keeps the ringing overlay active and failed native save reta
   assert.match(snooze,/\.putString\(KEY_ALARMS, originalRaw\)/);
   assert.match(snooze,/\.putLong\(deliveryKey, deliveredAt\)/);
   const save=native.slice(native.indexOf('fun sync(context:'),native.indexOf('fun recover(context:'));
-  assert.ok(save.indexOf('if (!prefs(context).edit()')>=0);
-  assert.ok(save.indexOf('Could not persist alarms')<save.indexOf('cancel(context, it)'));
+  assert.ok(save.indexOf('armOccurrence(context, id, date)')<save.indexOf('if (!edit.commit())'));
+  assert.ok(save.indexOf('if (!edit.commit())')<save.indexOf('for ((id, previous) in oldOccurrences)'));
+  assert.match(save,/for \(\(id, date\) in armed\) retireOccurrence\(context, id, date\)/);
   assert.match(overlay,/if \(NativePersonalAlarms.snooze\(app, id\)\) \{\s*NativePersonalAlarms.dismiss\(app, id\)/);
   const start=overlay.slice(overlay.indexOf('private fun startAttention'),overlay.indexOf('fun stop(context:'));
   assert.ok(start.indexOf('player = sound')<start.indexOf('sound.setDataSource'));
@@ -435,9 +436,9 @@ test('a second native overlay queues without replacing the first and advances on
 test('occurrence identity uses immutable data and unrelated edits preserve delayed delivery',()=>{
   assert.match(native,/michelslife:\/\/personal-alarm\/\$id\/\$occurrence/);
   assert.match(native,/PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE/);
-  assert.match(native,/if \(previous != date\) cancelOccurrence\(context, id, previous\)/);
-  assert.match(native,/if \(current == null \|\| !sameSchedule\(old, current\)\)/);
-  assert.match(native,/if \(old != null && sameSchedule\(old, item\) &&\s*prefs\(context\).getLong\(SCHEDULED_PREFIX \+ id, 0L\) > 0L\) continue/);
+  assert.match(native,/if \(previous != date\) retireOccurrence\(context, id, previous\)/);
+  assert.match(native,/if \(previous != newOccurrences\[id\]\) retireOccurrence\(context, id, previous\)/);
+  assert.match(native,/if \(old != null && sameSchedule\(old, item\) && previous > 0L\) previous/);
 });
 test('recent unacknowledged alarms restore from persistent delivery records and notification tags are unique',()=>{
   assert.match(native,/fun recentDelivered\(context: Context\): List<JSONObject>/);
@@ -494,4 +495,15 @@ test('lockscreen audio ownership and pending notification are not overwritten by
   assert.match(activity,/stopAlarmAttention\(id\)/);
   assert.match(bridge,/activity.completePersonalAlarm\(id\)/);
   assert.match(alarms,/if\(android\(\)&&ringingId&&ringingId!==id&&!ring.hidden\)return false/);
+});
+
+test('multi-alarm scheduling stages replacements before committing registry and retires old alarms only afterwards',()=>{
+  const sync=native.slice(native.indexOf('fun sync(context:'),native.indexOf('fun recover(context:'));
+  assert.ok(sync.indexOf('An enabled alarm has no future occurrence')<sync.indexOf('armOccurrence(context, id, date)'));
+  assert.ok(sync.indexOf('armed.add(id to date)')<sync.indexOf('armOccurrence(context, id, date)'));
+  assert.ok(sync.indexOf('armOccurrence(context, id, date)')<sync.indexOf('putString(KEY_ALARMS, cleanList.toString())'));
+  assert.match(sync,/rollback.putLong\(SCHEDULED_PREFIX \+ id, date\)/);
+  assert.match(sync,/rollback.remove\(SCHEDULED_PREFIX \+ id\)/);
+  assert.match(sync,/for \(\(id, date\) in armed\) retireOccurrence\(context, id, date\)/);
+  assert.ok(sync.indexOf('if (!edit.commit())')<sync.indexOf('if (previous != newOccurrences[id])'));
 });

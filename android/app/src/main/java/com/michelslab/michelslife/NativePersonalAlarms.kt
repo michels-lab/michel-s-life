@@ -689,42 +689,44 @@ internal object NativePersonalAlarms {
         listOf("enabled", "time", "repeat", "date", "days", "dueAt")
             .all { previous.optString(it) == current.optString(it) }
 
+    private fun armOccurrence(context: Context, id: String, date: Long) {
+        val manager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val pending = deliveryIntent(context, id, date)
+        var exactScheduled = false
+        if (Build.VERSION.SDK_INT < 31 || manager.canScheduleExactAlarms()) {
+            try {
+                manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, date, pending)
+                exactScheduled = true
+            } catch (_: SecurityException) { }
+        }
+        if (!exactScheduled) manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, date, pending)
+    }
+
+    private fun retireOccurrence(context: Context, id: String, date: Long) {
+        try { cancelOccurrence(context, id, date) }
+        catch (e: Exception) { android.util.Log.w("MLVPersonalAlarms", "Could not retire stale occurrence", e) }
+    }
+
     private fun schedule(context: Context, item: JSONObject) {
         if (!item.optBoolean("enabled")) return
         val date = timestamp(item, System.currentTimeMillis())
         if (date <= 0L) return
-        val manager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val id = item.getString("id")
         val key = SCHEDULED_PREFIX + id
         val previous = prefs(context).getLong(key, 0L)
-        if (!prefs(context).edit().putLong(key, date).commit()) {
-            val restore = prefs(context).edit()
-            if (previous > 0L) restore.putLong(key, previous) else restore.remove(key)
-            restore.commit()
-            throw IllegalStateException("Could not persist alarm occurrence")
-        }
         try {
-            val pending = deliveryIntent(context, id, date)
-            // Exact timing requires user-granted exact-alarm access on Android 12+.
-            // Always fall back to an inexact wake-up, never falsely claim exact delivery.
-            var exactScheduled = false
-            if (Build.VERSION.SDK_INT < 31 || manager.canScheduleExactAlarms()) {
-                try {
-                    manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, date, pending)
-                    exactScheduled = true
-                } catch (_: SecurityException) { }
-            }
-            if (!exactScheduled) manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, date, pending)
+            armOccurrence(context, id, date)
+            if (!prefs(context).edit().putLong(key, date).commit())
+                throw IllegalStateException("Could not persist alarm occurrence")
         } catch (e: Exception) {
+            if (previous != date) retireOccurrence(context, id, date)
             val restore = prefs(context).edit()
             if (previous > 0L) restore.putLong(key, previous) else restore.remove(key)
             restore.commit()
-            if (previous != date) cancelOccurrence(context, id, date)
             throw e
         }
-        // Retire the old PendingIntent only after the replacement is armed.
-        if (previous != date) cancelOccurrence(context, id, previous)
-        if (previous > 0L) cancelOccurrence(context, id, 0L)
+        if (previous != date) retireOccurrence(context, id, previous)
+        if (previous > 0L) retireOccurrence(context, id, 0L)
     }
 
     fun status(context: Context): JSONObject {
@@ -754,37 +756,64 @@ internal object NativePersonalAlarms {
             cleanList.put(normalized)
         }
         val existing = readRegistry(context)
-        // A failed write must not cancel the previously scheduled alarms.
-        if (!prefs(context).edit().putString(KEY_ALARMS, cleanList.toString()).commit()) {
-            prefs(context).edit().putString(KEY_ALARMS, existing.toString()).commit()
-            return JSONObject().put("error", "Could not persist alarms")
-        }
         val previousById = (0 until existing.length()).mapNotNull { existing.optJSONObject(it) }
             .associateBy { it.optString("id") }
         val currentById = (0 until cleanList.length()).map { cleanList.getJSONObject(it) }
             .associateBy { it.optString("id") }
-        for ((id, old) in previousById) {
-            if (!idPattern.matches(id)) continue
-            val current = currentById[id]
-            if (current == null || !sameSchedule(old, current)) id.let { cancel(context, it) }
-        }
-        createChannel(context)
-        var failed = 0
+        val ids = (previousById.keys + currentById.keys).filter { idPattern.matches(it) }
+        val oldOccurrences = ids.associateWith { prefs(context).getLong(SCHEDULED_PREFIX + it, 0L) }
+        val newOccurrences = linkedMapOf<String, Long>()
+        val now = System.currentTimeMillis()
+        // Plan every occurrence before touching AlarmManager or preferences.
         for ((id, item) in currentById) {
+            if (!item.optBoolean("enabled")) continue
             val old = previousById[id]
-            // Editing a label or adding another alarm must not replace a due
-            // occurrence that Android has delayed while idle.
-            if (old != null && sameSchedule(old, item) &&
-                prefs(context).getLong(SCHEDULED_PREFIX + id, 0L) > 0L) continue
-            try { schedule(context, item) } catch (e: Exception) {
-                failed++
-                android.util.Log.w("MLVPersonalAlarms", "Could not schedule one alarm", e)
-            }
+            val previous = oldOccurrences[id] ?: 0L
+            val next = if (old != null && sameSchedule(old, item) && previous > 0L) previous
+                else timestamp(item, now)
+            if (next <= 0L)
+                return JSONObject().put("error", "An enabled alarm has no future occurrence")
+            newOccurrences[id] = next
         }
-        val result = status(context).put("count", cleanList.length())
+        val armed = mutableListOf<Pair<String, Long>>()
+        try {
+            createChannel(context)
+            // Stage only changed PendingIntents. The receiver is synchronized
+            // with this transaction and ignores any uncommitted occurrence.
+            for ((id, date) in newOccurrences) {
+                if (oldOccurrences[id] == date) continue
+                armed.add(id to date)
+                armOccurrence(context, id, date)
+            }
+            val edit = prefs(context).edit().putString(KEY_ALARMS, cleanList.toString())
+            for (id in ids) {
+                val date = newOccurrences[id]
+                if (date != null) edit.putLong(SCHEDULED_PREFIX + id, date)
+                else edit.remove(SCHEDULED_PREFIX + id)
+            }
+            if (!edit.commit()) {
+                // SharedPreferences may update memory even when disk commit fails.
+                val rollback = prefs(context).edit().putString(KEY_ALARMS, existing.toString())
+                for ((id, date) in oldOccurrences) {
+                    if (date > 0L) rollback.putLong(SCHEDULED_PREFIX + id, date)
+                    else rollback.remove(SCHEDULED_PREFIX + id)
+                }
+                rollback.commit()
+                throw IllegalStateException("Could not persist alarms")
+            }
+        } catch (e: Exception) {
+            for ((id, date) in armed) retireOccurrence(context, id, date)
+            android.util.Log.w("MLVPersonalAlarms", "Alarm transaction not committed", e)
+            return JSONObject().put("error", "Could not schedule alarms; previous list retained")
+        }
+        // Commit is complete: retire only replaced or removed identities.
+        // A stale OS broadcast cannot ring because its stored marker differs.
+        for ((id, previous) in oldOccurrences) {
+            if (previous != newOccurrences[id]) retireOccurrence(context, id, previous)
+            if (previous > 0L) retireOccurrence(context, id, 0L)
+        }
+        return status(context).put("count", cleanList.length())
             .put("registry", registrySnapshot(context))
-        if (failed > 0) result.put("error", "Could not schedule $failed alarm(s)")
-        return result
     }
 
     @Synchronized
