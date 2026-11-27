@@ -11,7 +11,6 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 import java.security.MessageDigest
-import java.time.Duration
 import java.time.Instant
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -138,22 +137,25 @@ class DriveCloudEngine(
         // The shared WebView allowlist is useful UX; this native guard is an
         // independent fail-closed defense before ANY Google network request.
         validateBackup(backupJson, forUpload = true)
+        val mode = modeRaw.trim().lowercase()
+        require(mode in setOf("auto", "upload", "download")) { "Unsupported cloud sync mode." }
+        require(account.isNotBlank()) { "Cloud account is required." }
         val localChangedAt = parseInstant(localChangedAtRaw)
-        if (localChangedAt != null) metaStore.markDirty(localChangedAt)
 
         var meta = metaStore.load()
         if (meta.account.isNotBlank() && account.isNotBlank() && !meta.account.equals(account, true)) {
             meta = CloudMeta(deviceId = UUID.randomUUID().toString().replace("-", ""), account = account)
         }
         if (account.isNotBlank()) meta.account = account
+        // Apply the current edit after resetting another account's baseline.
+        if (localChangedAt != null) meta.lastLocalDirtyAt = localChangedAt
         metaStore.save(meta)
 
         val localHash = hashText(backupJson)
         val remote = findCloudFile(accessToken)
-        val mode = modeRaw.trim().lowercase()
 
         if (mode == "upload") {
-            if (remote != null && !remote.contentHash.equals(localHash, true)) {
+            if (remote != null) {
                 createHistoryBackup(accessToken, remote, "before_manual_upload")
             }
             val uploaded = uploadCloudFile(accessToken, remote?.id, backupJson, localHash, meta.deviceId, Instant.now())
@@ -182,6 +184,14 @@ class DriveCloudEngine(
             val downloaded = downloadCloudFile(accessToken, remote)
             remoteContent = downloaded.first
             remoteHash = downloaded.second
+        }
+
+        // Identical copies converge even when both devices changed since the
+        // last baseline or this is the first sync on the device.
+        if (localHash.equals(remoteHash, true)) {
+            commitUploaded(meta, localHash, remote)
+            touchDevice(accessToken, meta, "noop")
+            return result("noop", localHash, remote, null, false, "Android and Google Drive are already identical.")
         }
 
         if (meta.lastSyncedHash.isBlank()) {
@@ -217,23 +227,9 @@ class DriveCloudEngine(
             return result("downloaded", remoteHash, remote, remoteContent, true, "Newer cloud changes found and ready to restore.")
         }
 
-        val localWhen = meta.lastLocalDirtyAt
-        val remoteWhen = remote.sourceUpdatedAt ?: remote.modifiedTime
-        if (localWhen != null && remoteWhen != null) {
-            if (localWhen.isAfter(remoteWhen.plusSeconds(3))) {
-                createHistoryBackup(accessToken, remote, "before_newer_local_upload")
-                val uploaded = uploadCloudFile(accessToken, remote.id, backupJson, localHash, meta.deviceId, Instant.now())
-                commitUploaded(meta, localHash, uploaded)
-                touchDevice(accessToken, metaStore.load(), "uploaded")
-                return result("uploaded", localHash, uploaded, null, false, "Both copies changed; Android was newer and was uploaded.")
-            }
-            if (remoteWhen.isAfter(localWhen.plusSeconds(3))) {
-                if (remoteContent == null) remoteContent = downloadCloudFile(accessToken, remote).first
-                return result("downloaded", remoteHash, remote, remoteContent, true, "Both copies changed; Google Drive was newer and is ready to restore.")
-            }
-        }
-
-        return conflict(localHash, remoteHash, remote, localWhen,
+        // Both copies changed: wall-clock order cannot establish which edits
+        // are disposable, especially across offline devices. Do not auto-win.
+        return conflict(localHash, remoteHash, remote, meta.lastLocalDirtyAt,
             "Both Android and Google Drive changed. Choose Keep this device or Use cloud.")
     }
 
@@ -271,8 +267,13 @@ class DriveCloudEngine(
     }
 
     fun restoreCloudBackup(accessToken: String, fileId: String): JSONObject {
+        require(fileId.matches(Regex("^[A-Za-z0-9_-]{1,256}$"))) { "Invalid cloud backup identifier." }
         val info = getFileById(accessToken, fileId) ?: throw IllegalArgumentException("Cloud backup not found.")
+        require(info.id == fileId && info.name.startsWith(CLOUD_BACKUP_PREFIX) &&
+            info.name.endsWith(".json")) { "Selected file is not a Michel's Life recovery backup." }
         val content = downloadText(accessToken, info.id)
+        if (info.contentHash.isNotBlank() && !info.contentHash.equals(hashText(content), true))
+            throw IOException("Cloud recovery backup failed integrity verification.")
         // Legacy Drive files may contain token/device keys; preserve mission
         // content but strip unauthorized keys before giving JSON to WebView.
         val safeContent = validateBackup(content, forUpload = false)
@@ -320,9 +321,10 @@ class DriveCloudEngine(
     }
 
     private fun findCloudFile(accessToken: String): CloudFileInfo? {
-        return listFiles(accessToken, "name='" + CLOUD_FILE_NAME + "'", 10)
-            .sortedByDescending { it.modifiedTime ?: Instant.EPOCH }
-            .firstOrNull()
+        val matches = listFiles(accessToken, "name='" + CLOUD_FILE_NAME + "'", 10)
+        if (matches.size > 1)
+            throw IOException("Multiple cloud saves found; resolve duplicates before synchronizing.")
+        return matches.firstOrNull()
     }
 
     private fun getFileById(accessToken: String, fileId: String): CloudFileInfo? {
@@ -368,6 +370,10 @@ class DriveCloudEngine(
     private fun downloadCloudFile(accessToken: String, remote: CloudFileInfo): Pair<String, String> {
         val content = downloadText(accessToken, remote.id)
         val safeContent = validateBackup(content, forUpload = false)
+        // Verify the raw remote bytes before exposing a restore candidate.
+        // Legacy metadata may omit the hash; modern mismatches are errors.
+        if (remote.contentHash.isNotBlank() && !remote.contentHash.equals(hashText(content), true))
+            throw IOException("Cloud contents changed or failed integrity verification; refresh before restoring.")
         // Identity is the raw remote object. Restorable JSON is always sanitized.
         return safeContent to hashText(content)
     }
@@ -393,7 +399,12 @@ class DriveCloudEngine(
             .put("michelsLifeDevice", deviceId)
             .put("michelsLifeUpdatedAt", sourceUpdatedAt.toString())
             .put("michelsLifeVersion", "android-" + ANDROID_VERSION)
-        return uploadJson(accessToken, fileId, CLOUD_FILE_NAME, backupJson, props)
+        val uploaded = uploadJson(accessToken, fileId, CLOUD_FILE_NAME, backupJson, props)
+        require(uploaded.contentHash.equals(contentHash, true) &&
+            (fileId == null || uploaded.id == fileId)) {
+            "Google Drive did not confirm the expected cloud save."
+        }
+        return uploaded
     }
 
     private fun uploadJson(accessToken: String, fileId: String?, fileName: String, json: String, props: JSONObject): CloudFileInfo {
@@ -432,12 +443,10 @@ class DriveCloudEngine(
         // A failed history read/upload must STOP the destructive overwrite,
         // never be silently swallowed and then report "Uploaded" as success.
             val now = Instant.now()
-            if (reason.contains("auto", true) || reason.contains("newer_local", true)) {
-                val latest = listFiles(accessToken, "name contains '" + CLOUD_BACKUP_PREFIX + "'", 5)
-                    .maxByOrNull { it.modifiedTime ?: Instant.EPOCH }
-                if (latest?.modifiedTime != null && Duration.between(latest.modifiedTime, now) < Duration.ofMinutes(5)) return
-            }
+            // A recent backup is not proof it contains this exact revision.
             val current = downloadCloudFile(accessToken, remote)
+            if (remote.contentHash.isNotBlank() && !remote.contentHash.equals(current.second, true))
+                throw IOException("Cloud contents changed or failed integrity verification; refresh before uploading.")
             val name = CLOUD_BACKUP_PREFIX + now.toString().replace(":", "").replace("-", "").replace(".", "_") + ".json"
             val props = JSONObject()
                 .put("michelsLifeType", "history")
@@ -447,8 +456,17 @@ class DriveCloudEngine(
                 .put("michelsLifeReason", reason)
                 .put("michelsLifeSourceDevice", remote.sourceDeviceId)
                 .put("michelsLifeVersion", "android-" + ANDROID_VERSION)
-            uploadJson(accessToken, null, name, current.first, props)
+            val saved = uploadJson(accessToken, null, name, current.first, props)
+            require(saved.contentHash.equals(hashText(current.first), true)) {
+                "Google Drive did not confirm the recovery backup hash."
+            }
             pruneBackups(accessToken)
+            // Recheck after the backup network calls. This detects many races,
+            // but is not a provider-side atomic compare-and-swap.
+            val latest = findCloudFile(accessToken)
+            if (latest == null || latest.id != remote.id ||
+                latest.modifiedTime != remote.modifiedTime || latest.contentHash != remote.contentHash)
+                throw IOException("Cloud save changed during backup; refresh before uploading.")
     }
 
     private fun pruneBackups(accessToken: String) {
@@ -558,8 +576,11 @@ class DriveCloudEngine(
 
     private fun execute(request: Request, allowEmpty: Boolean = false): String {
         http.newCall(request).execute().use { response ->
-            val text = response.body?.string().orEmpty()
-            if (!response.isSuccessful) throw IOException("Google API " + response.code + ": " + text.take(600))
+            if (!response.isSuccessful) throw IOException("Google API HTTP " + response.code)
+            val source = response.body?.source()
+            if (source?.request(10L * 1024 * 1024 + 1L) == true)
+                throw IOException("Google API response exceeds the safe size limit.")
+            val text = source?.readUtf8().orEmpty()
             if (!allowEmpty && text.isBlank()) throw IOException("Google API returned an empty response.")
             return text
         }

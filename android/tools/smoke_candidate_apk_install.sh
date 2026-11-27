@@ -7,12 +7,38 @@ PKG="com.michelslab.michelslife"
 APK="${APK:-artifacts/candidate/MichelsLife-Android-TEST-v${ANDROID_VERSION}.apk}"
 OUT="artifacts/candidate-install"
 mkdir -p "$OUT"
+# GRANADA #139: host-only observer catches QEMU disappearance or runner OOM.
+# It never touches ADB, device storage, account information, or app state.
+# The EXIT trap preserves observer evidence on ALL script failures without
+# changing the original native test result or its exit code.
+python3 android/tools/granada_emulator_host_watch.py \
+    --out "$OUT" --interval 3 --samples 240 \
+    >"$OUT/granada-host-watch-summary.log" 2>&1 &
+GRANADA_WATCH_PID=$!
+cleanup_granada_host_watch() {
+  if kill -0 "$GRANADA_WATCH_PID" 2>/dev/null; then
+    kill -TERM "$GRANADA_WATCH_PID" 2>/dev/null || true
+    wait "$GRANADA_WATCH_PID" 2>/dev/null || true
+  fi
+}
+trap cleanup_granada_host_watch EXIT
 test -s "$APK"
+# Hosted CI only: explicit emulator identity and bounded, non-destructive ADB repair.
+# The guard never restarts the app or emulator and cannot certify persistence.
+verify_native_process(){
+  local stage="$1"
+  if ! python3 android/tools/granada_relaunch_transport_guard.py \
+      --serial emulator-5554 --package "$PKG" \
+      --output "$OUT/granada-transport-$stage.json" --attempts 5 --delay 3; then
+    echo "::error::Cannot verify native Android process ($stage)"
+    return 1
+  fi
+}
 # Native WebView captures can fail with "error: closed" during adb transport
 # reconnects on hosted Android 16 emulators. Retry the exact native screenshot
 # command and validate the PNG; never replace missing pixels with browser mocks.
 capture_png(){
-  local dest="$1" attempt tmp="1.partial" remote="/sdcard/mlv-ci-native-capture.png"
+  local dest="$1" attempt tmp="$1.partial" remote="/sdcard/mlv-ci-native-capture.png"
   for attempt in 1 2 3 4 5; do
     # First use Android's raw PNG stdout. If an API 36 ADB transport drops
     # during exec-out, use a separate on-device screenshot + pull route.
@@ -39,11 +65,9 @@ capture_png(){
     cat "$OUT/adb-shell-screencap-last.txt" "$OUT/adb-pull-screencap-last.txt" 2>/dev/null || true
     # Repair only the CI runner's isolated adb transport, not the app. Keep
     # camera/screenframe assertions fail-closed if Android really died.
-    timeout 10s adb devices -l >"$OUT/adb-device-retry-state.txt" 2>&1 || true
-    if ! grep -q $'\tdevice' "$OUT/adb-device-retry-state.txt"; then
-      timeout 8s adb kill-server || true
-      timeout 12s adb start-server || true
-      timeout 20s adb wait-for-device || true
+    if ! verify_native_process "capture-$(basename "$dest" .png)-$attempt"; then
+      echo "::error::Native screenshot transport or real Android app process lost"
+      break
     fi
     sleep 3
   done
@@ -56,6 +80,7 @@ capture_png(){
 # Never expose Chrome DevTools on signed Direct/Play APKs.
 capture_native_state(){
   local stage="$1" pid
+  verify_native_process "state-$stage" || return 1
   pid="$(timeout 15s adb shell pidof "$PKG" | tr -d '\r\n ')"
   if [[ ! "$pid" =~ ^[0-9]+$ ]]; then
     echo "::error::Cannot identify native WebView process for $stage"
@@ -104,6 +129,7 @@ adb shell dumpsys package "$PKG" >"$OUT/package-info.txt"
 grep -F "versionName=${ANDROID_VERSION}" "$OUT/package-info.txt"
 adb shell am start -W -n "$PKG/.MainActivity" | tee "$OUT/launch-result.txt"
 sleep 10
+verify_native_process initial-launch
 adb shell pidof "$PKG" | tee "$OUT/process-id.txt"
 # Do not override emulator WM size/density: physical native WebView surface may
 # go blank after a forced display configuration change on API 36.
@@ -193,21 +219,11 @@ if [[ "$DEVICE_SIZE" =~ ^([0-9]+)x([0-9]+)$ ]]; then
   adb shell am force-stop "$PKG"
   adb shell am start -W -n "$PKG/.MainActivity" | tee "$OUT/relaunch-result.txt"
   sleep 20
-  RELAUNCH_PID_OK=0
-  for attempt in 1 2 3 4 5; do
-    if timeout 15s adb shell pidof "$PKG" >"$OUT/relaunch-process-id.txt" 2>"$OUT/adb-relaunch-last-error.txt" &&
-       test -s "$OUT/relaunch-process-id.txt"; then
-      RELAUNCH_PID_OK=1
-      break
-    fi
-    echo "::warning::Waiting for relaunched Android process and adb ($attempt/5)"
-    timeout 12s adb wait-for-device || true
-    sleep 3
-  done
-  if [ "$RELAUNCH_PID_OK" -ne 1 ]; then
+  if ! verify_native_process first-relaunch; then
     echo "::error::Cannot verify native Android process after relaunch"
     exit 1
   fi
+  timeout 15s adb shell pidof "$PKG" >"$OUT/relaunch-process-id.txt"
   capture_png "$OUT/step5-after-relaunch.png"
   # WebView can still be mid-paint even after PackageManager / ActivityManager
   # have reported success. Keep time-separated same-process evidence rather
@@ -227,6 +243,7 @@ if [[ "$DEVICE_SIZE" =~ ^([0-9]+)x([0-9]+)$ ]]; then
     adb shell am force-stop "$PKG"
     adb shell am start -W -n "$PKG/.MainActivity" | tee "$OUT/second-relaunch-result.txt"
     sleep 20
+    verify_native_process second-relaunch
     capture_native_state after-second-relaunch
     python3 android/tools/native_webview_state_probe.py compare \
       --before "$OUT/native-state-before.json" \

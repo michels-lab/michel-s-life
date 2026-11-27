@@ -1,21 +1,24 @@
 #!/usr/bin/env python3
-"""Drive actual installed debuggable WebView onboarding using real ADB touches.
+"""Native Android onboarding driver: real ADB touch, real WebView geometry.
 
-Read-only CDP is used ONLY to locate/verify the current native WebView step.
-Every transition is performed by adb shell input tap on the real emulator.
-Fail closed if a visual overlay intercepts the button, or the step does not
-advance. Never store user names, mission text, journal data or storage values.
-Signed Direct APKs never enable WebView DevTools; use the legacy native path.
+Dismiss ONLY an Android system dialog explicitly naming Pixel Launcher. Never
+dismiss Michel's Life / WebView ANRs and never use a synthetic JavaScript click.
+Use a read-only Chrome DevTools query to locate the canonical HTML button, then
+send the actual touch through adb and verify that native WebView state advanced.
+No user content, credentials or raw page state is written to disk.
 """
+from __future__ import annotations
+
 import argparse
 import json
+import os
 import re
 import subprocess
 import time
+import uuid
+import xml.etree.ElementTree as ET
 from pathlib import Path
-from native_webview_state_probe import read_webview
-
-PKG = "com.michelslab.michelslife"
+from urllib.request import urlopen
 
 STEP_JS = r"""(() => {
   const root=document.getElementById('mlv200Onboarding');
@@ -43,105 +46,320 @@ STEP_JS = r"""(() => {
     button:{width:b.width,height:b.height},points};
 })()"""
 
-def adb(*args, timeout=20):
-    return subprocess.run(["adb", *map(str, args)], check=True, text=True,
-                          stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                          timeout=timeout).stdout.strip()
+
+PKG = "com.michelslab.michelslife"
+SERIAL = "emulator-5554"
+BOUNDS = re.compile(r"^\[(\d+),(\d+)\]\[(\d+),(\d+)\]$")
+PAGE_URL = "https://appassets.androidplatform.net/assets/app/index.html"
+UI_XML = "/sdcard/mlv-native-onboarding-accessibility.xml"
+GEOMETRY_CACHE = Path("artifacts/candidate-install/native-accessibility-webview-geometry.json")
 
 
-def attach(port):
-    pid = adb("shell", "pidof", PKG)
+def bounds(text):
+    match = BOUNDS.fullmatch(str(text))
+    if not match:
+        raise RuntimeError("invalid_native_accessibility_bounds")
+    x1, y1, x2, y2 = map(int, match.groups())
+    if x2 <= x1 or y2 <= y1:
+        raise RuntimeError("invalid_native_accessibility_rectangle")
+    return x1, y1, x2, y2
+
+
+def xml_nodes(xml):
+    try:
+        return list(ET.fromstring(xml).iter("node"))
+    except ET.ParseError as error:
+        raise RuntimeError("invalid_native_accessibility_xml") from error
+
+
+def launcher_anr_button(xml):
+    nodes = xml_nodes(xml)
+    alert = next((n for n in nodes if n.get("resource-id") == "android:id/alertTitle"), None)
+    if alert is None:
+        return None
+    title = str(alert.get("text") or "")
+    if alert.get("package") != "android":
+        raise RuntimeError("unverified_system_alert_must_not_be_dismissed")
+    if title != "Pixel Launcher isn't responding":
+        if "isn't responding" in title or "not responding" in title:
+            raise RuntimeError("other_app_anr_must_not_be_dismissed")
+        return None
+    button = next((n for n in nodes if n.get("resource-id") == "android:id/aerr_close"
+                   and n.get("text") == "Close app" and n.get("package") == "android"), None)
+    if button is None:
+        raise RuntimeError("pixel_launcher_anr_has_no_system_close_button")
+    return bounds(button.get("bounds"))
+
+
+def webview_bounds(xml):
+    nodes = xml_nodes(xml)
+    candidates = [n for n in nodes if n.get("class") == "android.webkit.WebView"
+                  and n.get("package") == PKG]
+    if len(candidates) != 1:
+        raise RuntimeError("expected_one_real_android_webview_accessibility_bounds")
+    return bounds(candidates[0].get("bounds"))
+
+
+
+def physical_display(serial):
+    """Read CURRENT physical/override Android display dimensions, not guesses."""
+    output = adb(serial, "shell", "wm", "size")
+    sizes = re.findall(r"(?:Physical|Override) size:\s*(\d+)x(\d+)", output)
+    if not sizes:
+        raise RuntimeError("native_display_dimensions_unavailable")
+    width, height = map(int, sizes[-1])
+    if not 320 <= width <= 10000 or not 320 <= height <= 10000:
+        raise RuntimeError("native_display_dimensions_invalid")
+    return width, height
+
+
+def verified_webview_bounds(xml, display, pid, stage, cache=GEOMETRY_CACHE):
+    """Re-use a prior REAL Android WebView rect only in the same live process.
+
+    UIAutomator occasionally returns a hierarchy containing no WebView class
+    after the first onboarding screen, despite a running PID, actual page and
+    real screenshots. Our source is the earlier stage's UIAutomator rectangle,
+    never a hardcoded coordinate or synthetic DOM click. Android screen
+    resolution and process identity must be unchanged.
+    """
+    if launcher_anr_button(xml) is not None:
+        raise RuntimeError("launcher_anr_still_occludes_onboarding")
+    width, height = display
+
+    def valid(rect):
+        return (len(rect) == 4 and 0 <= rect[0] < rect[2] <= width
+                and 0 <= rect[1] < rect[3] <= height
+                and rect[2] - rect[0] >= width * .6
+                and rect[3] - rect[1] >= height * .35)
+
+    try:
+        rect = webview_bounds(xml)
+        if not valid(rect):
+            raise RuntimeError("native_webview_rectangle_outside_display")
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        blob = {"source": "real_android_uiautomator_webview",
+                "rect": list(rect), "screen": list(display), "pid": pid}
+        temp = cache.with_name(cache.name + ".tmp")
+        temp.write_text(json.dumps(blob), encoding="utf-8")
+        os.replace(temp, cache)
+        return rect
+    except RuntimeError as error:
+        if str(error) != "expected_one_real_android_webview_accessibility_bounds":
+            raise
+        if stage == 0:
+            raise
+        try:
+            saved = json.loads(cache.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as failure:
+            raise RuntimeError("native_prior_verified_webview_geometry_missing") from failure
+        raw_rect = saved.get("rect")
+        if (saved.get("source") != "real_android_uiautomator_webview"
+                or saved.get("screen") != list(display)
+                or saved.get("pid") != pid
+                or not isinstance(raw_rect, list)
+                or len(raw_rect) != 4
+                or not all(type(n) is int for n in raw_rect)
+                or not valid(raw_rect)):
+            raise RuntimeError("native_previous_webview_geometry_stale_or_invalid")
+        print("Reused preceding stage's REAL UIAutomator WebView bounds: same live app PID and screen size")
+        return tuple(raw_rect)
+
+def native_point(rect, fraction_x, fraction_y):
+    if any(not isinstance(f, (float, int)) or isinstance(f, bool) or
+           not 0 < f < 1 for f in (fraction_x, fraction_y)):
+        raise RuntimeError("button_not_inside_visible_webview")
+    l, t, r, b = rect
+    return round(l + (r-l) * fraction_x), round(t + (b-t) * fraction_y)
+
+
+def adb(serial, *arguments, timeout=35):
+    result = subprocess.run(["adb", "-s", serial, *arguments],
+                            capture_output=True, text=True, timeout=timeout)
+    if result.returncode:
+        raise RuntimeError("native_adb_command_failed")
+    return result.stdout
+
+
+def accessibility_xml(serial):
+    # After emulator boot, UIAutomator may temporarily return nonzero while
+    # the system launcher is unresponsive. Do not treat that as app failure.
+    # Never proceed to a tap without a REAL current accessibility hierarchy.
+    for attempt in range(5):
+        # A failed dump may leave yesterday's XML at a fixed path; never
+        # accept a stale hierarchy as proof that a system dialog is absent.
+        fresh = UI_XML.replace(".xml", f"-{uuid.uuid4().hex}.xml")
+        try:
+            adb(serial, "shell", "uiautomator", "dump", "--compressed", fresh, timeout=40)
+            raw = adb(serial, "shell", "cat", fresh)
+            pos = raw.find("<?xml")
+            if pos >= 0:
+                xml_nodes(raw[pos:])  # Require well-formed real Android XML.
+                return raw[pos:]
+        except (RuntimeError, subprocess.TimeoutExpired):
+            pass
+        finally:
+            try:
+                adb(serial, "shell", "rm", "-f", fresh, timeout=8)
+            except (RuntimeError, subprocess.TimeoutExpired):
+                pass
+        if attempt < 4:
+            time.sleep(3)
+    raise RuntimeError("native_accessibility_unavailable_after_bounded_retries")
+
+
+def dismiss_launcher(serial):
+    for attempt in range(3):
+        xml = accessibility_xml(serial)
+        rect = launcher_anr_button(xml)
+        if rect is None:
+            return xml
+        x, y = native_point(rect, 0.5, 0.5)
+        adb(serial, "shell", "input", "tap", str(x), str(y))
+        print(f"Native Pixel Launcher SYSTEM ANR dismissed via real accessibility touch ({attempt+1})")
+        time.sleep(2)
+    xml = accessibility_xml(serial)
+    if launcher_anr_button(xml) is not None:
+        raise RuntimeError("pixel_launcher_anr_reappeared_after_bounded_dismissals")
+    return xml
+
+
+def cdp_expression(stage):
+    # Read only: HTML button rectangle and stage; no synthetic JS click.
+    action = "finish" if stage == 3 else "next"
+    script = r"""(() => {
+      const stage = Number((document.querySelector('#mlv200Onboarding .mlv200-step-pill')
+        ?.textContent || '').match(/^\s*(\d+)\s*\//)?.[1] || 0);
+      const done = localStorage.getItem('michelsLife.onboarding.v30200') === 'done';
+      const target = document.querySelector('#mlv200Onboarding [data-mlv200-onboard="__ACTION__"]');
+      if (!target || !target.getClientRects().length)
+        return {stage, done, visible: false};
+      const box = target.getBoundingClientRect();
+      const x = box.left + box.width / 2, y = box.top + box.height / 2;
+      const topmost = document.elementFromPoint(x, y);
+      return {stage, done, visible: box.width >= 35 && box.height >= 35
+        && !!topmost && (target === topmost || target.contains(topmost)),
+        x: x / window.innerWidth, y: y / window.innerHeight};
+    })()"""
+    return script.replace("__ACTION__", action)
+
+
+def read_native_webview(port, expression):
+    from websocket import create_connection
+    with urlopen(f"http://127.0.0.1:{port}/json/list", timeout=8) as response:
+        pages = json.load(response)
+    matches = [p for p in pages if p.get("type") == "page" and
+               str(p.get("url", "")).startswith(PAGE_URL)]
+    if len(matches) != 1:
+        raise RuntimeError("expected_one_installed_native_webview_page")
+    ws = create_connection(matches[0]["webSocketDebuggerUrl"],
+                           timeout=15, suppress_origin=True)
+    try:
+        ws.send(json.dumps({"id": 1, "method": "Runtime.evaluate",
+                            "params": {"expression": expression, "returnByValue": True}}))
+        until = time.monotonic() + 15
+        while time.monotonic() < until:
+            msg = json.loads(ws.recv())
+            if msg.get("id") != 1:
+                continue
+            if msg.get("error") or msg.get("result", {}).get("exceptionDetails"):
+                raise RuntimeError("native_read_only_dom_query_failed")
+            return msg.get("result", {}).get("result", {}).get("value") or {}
+        raise RuntimeError("native_cdp_query_timed_out")
+    finally:
+        ws.close()
+
+
+def touch_stage(port, expected, output, serial=SERIAL):
+    pid = adb(serial, "shell", "pidof", PKG).strip()
     if not re.fullmatch(r"[0-9]+", pid):
-        raise RuntimeError("Cannot identify exactly one installed Michel's Life process")
-    adb("forward", f"tcp:{port}", f"localabstract:webview_devtools_remote_{pid}")
-
-
-def screen_size():
-    raw=adb("shell","wm","size")
-    m=re.search(r"Physical size:\s*([0-9]+)x([0-9]+)",raw)
-    if not m:
-        raise RuntimeError("Cannot resolve actual native device geometry")
-    return int(m.group(1)),int(m.group(2))
-
-
-def safe_stage(port):
-    result=read_webview(port,STEP_JS)
-    if not isinstance(result,dict):
-        raise RuntimeError("Native WebView onboarding DOM did not return a stage")
-    step=result.get("step")
-    if step not in (1,2,3,"done","missing"):
-        raise RuntimeError("Native WebView returned an invalid onboarding step")
-    return result
-
-
-def touch_stage(port, expected, output):
-    attach(port)
-    size=screen_size()
-    actual=safe_stage(port)
-    if actual["step"]!=expected:
-        raise RuntimeError(f"Expected native onboarding step {expected}; actual={actual['step']}")
-    if not actual.get("enabled"):
-        raise RuntimeError(f"Native onboarding step {expected} has a disabled action")
-    viewport=actual.get("viewport",{})
-    vw,vh=viewport.get("width"),viewport.get("height")
-    if not all(isinstance(x,(int,float)) and 200<=x<=2600 for x in (vw,vh)):
-        raise RuntimeError("Invalid real WebView viewport; cannot derive native tap coordinates")
-    goal=expected+1 if expected<3 else "done"
-    attempts=[]
-    for point in actual.get("points",[]):
-        if not point.get("topmost"):
-            continue
-        x=round(float(point["x"])*size[0]/vw)
-        y=round(float(point["y"])*size[1]/vh)
-        if not (0<x<size[0] and 0<y<size[1]):
-            continue
-        adb("shell","input","tap",x,y)
-        time.sleep(0.7)
-        current=None
-        for _ in range(14):
-            current=safe_stage(port)
-            if current["step"]==goal:
-                Path(output).write_text(json.dumps({
-                    "native":True,"completed":True,"before":expected,
-                    "after":goal,"action":actual["action"],
-                    "devicePixels":{"width":size[0],"height":size[1]},
-                    "touch":{"x":x,"y":y},"attempts":attempts+[{"x":x,"y":y,"after":goal}]
-                },indent=2)+"\n",encoding="utf-8")
-                print(f"PASS: actual ADB touch moved installed WebView {expected} -> {goal} at {x},{y}")
+        raise RuntimeError("native_app_process_missing")
+    adb(serial, "forward", f"tcp:{port}", f"localabstract:webview_devtools_remote_{pid}")
+    attempts = []
+    report = {"native": True, "completed": False, "before": expected,
+              "after": expected, "attempts": attempts}
+    try:
+        goal = expected + 1 if expected < 3 else "done"
+        for index in range(3):
+            # Read the actual system window each time. Never scale CSS against
+            # the entire display: status/navigation bars offset the WebView.
+            xml = dismiss_launcher(serial)
+            if adb(serial, "shell", "pidof", PKG).strip() != pid:
+                raise RuntimeError("native_app_process_changed_during_onboarding")
+            display = physical_display(serial)
+            rect = verified_webview_bounds(xml, display, pid, expected-1)
+            actual = read_native_webview(port, STEP_JS)
+            step = actual.get("step")
+            if step == goal and attempts:
+                report.update(completed=True, after=goal)
                 return
-            if current["step"]!=expected:
-                raise RuntimeError(f"Native onboarding changed unexpectedly to {current['step']}")
-            time.sleep(0.55)
-        attempts.append({"x":x,"y":y,"after":current["step"] if current else "unavailable"})
-    Path(output).write_text(json.dumps({
-        "native":True,"completed":False,"before":expected,
-        "after":actual["step"],"attempts":attempts
-    },indent=2)+"\n",encoding="utf-8")
-    raise RuntimeError(f"Native onboarding step {expected} did not advance after {len(attempts)} verified real taps")
+            if step != expected or not actual.get("enabled"):
+                raise RuntimeError(f"native_onboarding_step_{expected}_not_ready_or_occluded")
+            viewport = actual.get("viewport", {})
+            vw, vh = viewport.get("width"), viewport.get("height")
+            if not all(type(n) in (int, float) and 200 <= n <= 2600 for n in (vw,vh)):
+                raise RuntimeError("invalid_real_webview_viewport")
+            points = actual.get("points", [])
+            if index >= len(points) or not points[index].get("topmost"):
+                continue
+            point = points[index]
+            x, y = native_point(rect, point["x"]/vw, point["y"]/vh)
+            adb(serial, "shell", "input", "tap", str(x), str(y))
+            attempt = {"x": x, "y": y, "after": expected}
+            attempts.append(attempt)
+            for _ in range(14):
+                time.sleep(.55)
+                after = read_native_webview(port, STEP_JS).get("step")
+                attempt["after"] = after
+                report["after"] = after
+                if after == goal:
+                    report.update(completed=True, action=actual["action"],
+                                  devicePixels={"width": display[0], "height": display[1]},
+                                  touch={"x": x, "y": y})
+                    print(f"PASS: actual ADB touch moved installed WebView {expected} -> {goal}")
+                    return
+                if after != expected:
+                    raise RuntimeError("native_onboarding_changed_unexpectedly")
+        raise RuntimeError(f"native_onboarding_step_{expected}_did_not_advance")
+    finally:
+        target = Path(output)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(report, indent=2)+"\n", encoding="utf-8")
+        adb(serial, "forward", "--remove", f"tcp:{port}", timeout=12)
 
 
 def self_test():
-    # Conversion is proportional to the REAL WebView viewport, never a
-    # fixed Pixel6 screenshot percentage; no external emulator is needed here.
-    for css_w,css_h,device_w,device_h in ((360,800,1080,2400),(393,873,1179,2619)):
-        x,y=round(300*device_w/css_w),round(670*device_h/css_h)
-        assert 0<x<device_w and 0<y<device_h
-    assert "data-mlv200-onboard" in STEP_JS
+    assert native_point((0,78,1080,2335), .8,.8) == (864,1884)
     assert "elementFromPoint" in STEP_JS
-    assert "michelsLife.onboarding.v30200" in STEP_JS
-    print("PASS: native onboarding step probe uses actual DOM + real ADB input, no fixture taps")
+    assert ".click(" not in STEP_JS
+    print("PASS: native geometry includes system insets; read-only DOM and actual ADB touch")
 
 
-if __name__=="__main__":
-    parser=argparse.ArgumentParser()
-    parser.add_argument("--step",type=int,choices=[1,2,3])
-    parser.add_argument("--port",type=int,default=9222)
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("action", nargs="?", choices=("dismiss", "tap"))
+    parser.add_argument("--serial", default=SERIAL)
+    parser.add_argument("--stage", type=int, choices=(0,1,2))
+    parser.add_argument("--step", type=int, choices=(1,2,3))
+    parser.add_argument("--port", type=int, default=9222)
     parser.add_argument("--output")
-    parser.add_argument("--self-test",action="store_true")
-    args=parser.parse_args()
+    parser.add_argument("--self-test", action="store_true")
+    args = parser.parse_args()
+    if not re.fullmatch(r"emulator-\d+", args.serial):
+        raise RuntimeError("unsafe_android_serial")
     if args.self_test:
         self_test()
+    elif args.action == "dismiss":
+        dismiss_launcher(args.serial)
     else:
-        if args.step is None or not args.output:
-            parser.error("Native onboarding touch requires --step and --output")
-        touch_stage(args.port,args.step,args.output)
+        expected = args.step if args.step is not None else (args.stage+1 if args.stage is not None else None)
+        if expected is None:
+            parser.error("--step or --stage required")
+        output = args.output or f"artifacts/candidate-install/onboarding-real-touch-step{expected}.json"
+        touch_stage(args.port, expected, output, args.serial)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (RuntimeError, OSError, ValueError, TimeoutError, subprocess.TimeoutExpired) as error:
+        raise SystemExit("NATIVE_ONBOARDING_FAIL: " + str(error))

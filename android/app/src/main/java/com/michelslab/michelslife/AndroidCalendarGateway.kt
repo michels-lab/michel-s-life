@@ -29,7 +29,7 @@ internal class AndroidCalendarGateway(
     private val jsonType = "application/json; charset=utf-8".toMediaType()
     private val maxPages = 20
     private val maxEvents = 3000
-    private val maxResponseChars = 2_000_000
+    private val maxResponseBytes = 2_000_000L
 
     private class HttpFailure(val status: Int) :
         IOException("Google Calendar request failed (HTTP " + status + ").")
@@ -66,10 +66,13 @@ internal class AndroidCalendarGateway(
             else -> throw IllegalArgumentException("Unsupported Calendar operation.")
         }.build()
         http.newCall(req).execute().use { response ->
-            val content = response.body?.string().orEmpty()
             if (!response.isSuccessful) throw HttpFailure(response.code)
-            if (content.length > maxResponseChars)
+            // Bound bytes before allocating the response string, including
+            // chunked/transparent-gzip responses with unknown content length.
+            val source = response.body?.source()
+            if (source?.request(maxResponseBytes + 1L) == true)
                 throw IOException("Google Calendar response exceeded the safe size limit.")
+            val content = source?.readUtf8().orEmpty()
             if (content.isBlank()) {
                 if (response.code == 204) return JSONObject()
                 throw IOException("Google Calendar returned an empty response.")
@@ -168,7 +171,9 @@ internal class AndroidCalendarGateway(
 
     private fun detail(accessToken: String, eventId: String): JSONObject? =
         try {
-            request(accessToken, "GET", endpoint("calendars", "primary", "events", eventId))
+            request(accessToken, "GET", endpoint("calendars", "primary", "events", eventId)).also {
+                CalendarSyncRules.verifyResponseId(eventId, it.optString("id"))
+            }
         } catch (e: HttpFailure) {
             if (e.status == 404) null else throw e
         }
@@ -219,7 +224,9 @@ internal class AndroidCalendarGateway(
             try {
                 val created = request(accessToken, "POST",
                     endpoint("calendars", "primary", "events"), body)
-                return JSONObject().put("action", "created").put("eventId", created.optString("id"))
+                requireOwned(created, mission)
+                return JSONObject().put("action", "created")
+                    .put("eventId", CalendarSyncRules.verifyResponseId(rule.second, created.optString("id")))
             } catch (e: HttpFailure) {
                 if (e.status != 409) throw e
                 existing = detail(accessToken, rule.second)
@@ -235,9 +242,14 @@ internal class AndroidCalendarGateway(
         // omission of an ETag must fail closed instead of overwriting concurrent edits.
         val etag = managedEvent.optString("etag")
         if (etag.isBlank()) throw IOException("Calendar event has no ETag; refresh before editing.")
+        // The POST-only deterministic identifier must not leak into a PATCH
+        // when a concurrent create returned HTTP 409.
+        body.remove("id")
         val updated = request(accessToken, "PATCH",
             endpoint("calendars", "primary", "events", id), body, etag)
-        return JSONObject().put("action", "updated").put("eventId", updated.optString("id"))
+        requireOwned(updated, mission)
+        return JSONObject().put("action", "updated")
+            .put("eventId", CalendarSyncRules.verifyResponseId(id, updated.optString("id")))
     }
 
     /**
@@ -249,8 +261,8 @@ internal class AndroidCalendarGateway(
         val plan = CalendarSyncRules.plan(mission, matches.map {
             CalendarSyncRules.ManagedRemote(it.optString("id"), properties(it))
         })
-        if (plan.first == CalendarSyncRules.Operation.CREATE)
-            return JSONObject().put("action", "already-absent").put("removed", false)
+        // A filtered list can lag a concurrent deterministic create. Verify
+        // the canonical ID directly, even when the list returned no matches.
         val remote = detail(accessToken, plan.second)
             ?: return JSONObject().put("action", "already-absent").put("removed", false)
         requireOwned(remote, mission)
