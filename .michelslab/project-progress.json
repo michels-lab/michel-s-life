@@ -24,7 +24,7 @@
     "verified",
     "pending"
   ],
-  "current_phase": "Blocks 6–8: previous candidate 18/20 CI green, 50/50 alarm tests, #135 verified and closed as superseded; new exact-source APK provenance and foreground-safe native touch candidate pending CI.",
+  "current_phase": "Consolidation #244: exact prior 18/20 workflows, 53/53 transport checks, merge main docs and strict coherent native persistence report; #190 superseded. Native gates remain red.",
   "source_prs": [
     "https://github.com/michels-lab/michel-s-life/pull/225",
     "https://github.com/michels-lab/michel-s-life/pull/226",
@@ -50,31 +50,32 @@
     "total": 15,
     "source_status": "candidate_unmerged_exact_head_ci_pending",
     "source_pr": "https://github.com/michels-lab/michel-s-life/pull/244",
-    "candidate_sha": "25fa4067f7ff9a3c8739d651e87f889a509b7b20",
+    "candidate_sha": "b1de24ae3af9991b9a5f5caa68e3c2e62b4d2a43",
     "commits": [
-      "50da15d70b5538f0842d18e1321d67e471554a60",
-      "25fa4067f7ff9a3c8739d651e87f889a509b7b20"
+      "f70a81e027a34df47c0c29364d8ab6806922bcb8",
+      "b1de24ae3af9991b9a5f5caa68e3c2e62b4d2a43"
     ],
-    "prior_head": "cb4b87369eea0856cfc38403e79c91ff29b0721e",
+    "prior_head": "25fa4067f7ff9a3c8739d651e87f889a509b7b20",
     "prior_ci_success": 18,
     "prior_ci_total": 20,
-    "prior_android_compile": "success",
-    "prior_native": "failure: API34 initial transport; API35 accessibility; API36 first 30s transport; three A/B arms fail",
-    "prior_alarm_contract": "50/50 PASS",
-    "prior_accessibility": "360/412 Enter/Space persisted; Journal live region PASS",
+    "prior_android_compile": "success (both)",
+    "prior_native": "failure: API34 initial transport; API35 foreground after accessibility retries; API36 first 30s transport; all A/B arms fail",
+    "prior_transport": "53/53 PASS",
+    "prior_apk_sha256": "680e8107fda9bf8695ad101e2039f865d38a3d594497c21bf202cf281fd77377",
     "closed_superseded": [
-      135
+      190
     ],
+    "open_prs": 4,
     "latest_ci_total": 20,
-    "latest_ci_pending": 20,
-    "latest_native_build_run": 46058548104,
-    "latest_transport_run": 46058548080,
+    "latest_ci_success": 1,
+    "latest_native_build_run": 46062840828,
+    "latest_matrix_run": 46062840885,
     "new_release_published": false,
     "remaining": [
-      "exact candidate compile and native tests",
-      "QEMU/Android accessibility availability; no proven root cause",
-      "historical #190/#181/#166/#62 semantic reconciliation",
-      "physical Windows/Galaxy acceptance and real OAuth",
+      "exact candidate strict evidence and native runtime",
+      "QEMU and native accessibility/foreground; cause unproven",
+      "historical #181/#166/#62 unique changes",
+      "physical Windows/Galaxy and real OAuth",
       "alarm process-death rollback and remote Drive CAS"
     ]
   },
@@ -140,19 +141,19 @@
     "verified_milestones": 8,
     "total_milestones": 15
   },
-  "next_audit": "Verify exact candidate CI without repeated speculative edits; resolve native infrastructure and reconcile remaining historical PRs. Stable 3.0.235/0.2.24 unchanged.",
+  "next_audit": "Check exact new candidate evidence tests and native result; reconcile historical PRs without repeating QEMU experiments. Stable 3.0.235/0.2.24 unchanged.",
   "active_candidate": {
     "pr": "https://github.com/michels-lab/michel-s-life/pull/244",
-    "head": "25fa4067f7ff9a3c8739d651e87f889a509b7b20",
+    "head": "b1de24ae3af9991b9a5f5caa68e3c2e62b4d2a43",
     "status": "implementation_candidate_unmerged",
     "progress_percent": 53,
-    "build_run": 46058548104,
-    "transport_run": 46058548080,
+    "build_run": 46062840828,
+    "matrix_run": 46062840885,
     "remaining": [
-      "exact candidate compile and native tests",
-      "QEMU/Android accessibility availability; no proven root cause",
-      "historical #190/#181/#166/#62 semantic reconciliation",
-      "physical Windows/Galaxy acceptance and real OAuth",
+      "exact candidate strict evidence and native runtime",
+      "QEMU and native accessibility/foreground; cause unproven",
+      "historical #181/#166/#62 unique changes",
+      "physical Windows/Galaxy and real OAuth",
       "alarm process-death rollback and remote Drive CAS"
     ]
   },
@@ -368,32 +369,32 @@
     "total": 15,
     "source_status": "candidate_unmerged_exact_head_ci_pending",
     "source_pr": "https://github.com/michels-lab/michel-s-life/pull/244",
-    "candidate_sha": "4081d027b47c161f857c9d22b673b9775b73df45",
+    "candidate_sha": "25fa4067f7ff9a3c8739d651e87f889a509b7b20",
     "commits": [
-      "9047a9286afe3c5d5b012b0b019bf1ec9929b7b6",
-      "9f3810172c2cf0fdf83964a313d92452ddefc961",
-      "e14037f394dc5619b451e72d7220dda6347db114",
-      "4081d027b47c161f857c9d22b673b9775b73df45"
+      "50da15d70b5538f0842d18e1321d67e471554a60",
+      "25fa4067f7ff9a3c8739d651e87f889a509b7b20"
     ],
-    "changed_files": 8,
-    "prior_head": "a9ed0ff92c748a74cf273e6e517a7d7c4ba01be4",
-    "prior_ci_success": 5,
-    "prior_ci_total": 18,
-    "latest_ci_total": 18,
-    "latest_ci_success": 0,
-    "latest_ci_pending": 18,
-    "latest_native_build_run": 46049029633,
-    "latest_alarm_contract_run": 46049029454,
-    "latest_android_ui_run": 46049029568,
-    "convergence": "#135 accessibility implementation and original browser scenario ported; PR remains open pending exact validation; #190/#181/#166/#62 not yet reconciled",
+    "prior_head": "cb4b87369eea0856cfc38403e79c91ff29b0721e",
+    "prior_ci_success": 18,
+    "prior_ci_total": 20,
+    "prior_android_compile": "success",
+    "prior_native": "failure: API34 initial transport; API35 accessibility; API36 first 30s transport; three A/B arms fail",
+    "prior_alarm_contract": "50/50 PASS",
+    "prior_accessibility": "360/412 Enter/Space persisted; Journal live region PASS",
+    "closed_superseded": [
+      135
+    ],
+    "latest_ci_total": 20,
+    "latest_ci_pending": 20,
+    "latest_native_build_run": 46058548104,
+    "latest_transport_run": 46058548080,
     "new_release_published": false,
     "remaining": [
-      "exact candidate Android build and browser accessibility/alarms",
-      "native Android execution QEMU/UIAutomator failure",
-      "alarm transaction process death and physical simultaneous notifications",
-      "physical Windows/Galaxy acceptance",
-      "real Supabase/Calendar/Drive OAuth",
-      "remote Drive non-atomic write race"
+      "exact candidate compile and native tests",
+      "QEMU/Android accessibility availability; no proven root cause",
+      "historical #190/#181/#166/#62 semantic reconciliation",
+      "physical Windows/Galaxy acceptance and real OAuth",
+      "alarm process-death rollback and remote Drive CAS"
     ]
   }
 }
