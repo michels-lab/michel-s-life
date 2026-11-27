@@ -20,16 +20,18 @@ def sha256(path: Path) -> str:
     return h.hexdigest()
 
 
-def payload(directory: Path, commit: str) -> dict:
+def payload(directory: Path, commit: str, filename: str = NAME) -> dict:
     if not re.fullmatch(r"[0-9a-f]{40}", commit):
         raise ValueError("invalid_source_sha")
-    apk = directory / NAME
+    if not re.fullmatch(r'MichelsLife-Android-TEST(?:-v[0-9]+\.[0-9]+\.[0-9]+)?\.apk', filename):
+        raise ValueError("invalid_candidate_filename")
+    apk = directory / filename
     if not apk.is_file() or apk.stat().st_size < 1024:
         raise ValueError("missing_or_tiny_apk")
     return {
         "schema": SCHEMA,
         "source_checkout_sha": commit,
-        "candidate_apk_filename": NAME,
+        "candidate_apk_filename": filename,
         "candidate_apk_sha256": sha256(apk),
         "candidate_apk_bytes": apk.stat().st_size,
         "candidate_kind": "debug_ci_only",
@@ -38,14 +40,20 @@ def payload(directory: Path, commit: str) -> dict:
     }
 
 
-def verify(directory: Path, commit: str) -> dict:
+def verify_sidecar(directory: Path, actual: dict) -> None:
+    name = actual["candidate_apk_filename"]
+    sidecar = (directory / (name + ".sha256")).read_text().strip().split()
+    allowed = {name, "artifacts/android/" + name}
+    if len(sidecar) != 2 or sidecar[0] != actual["candidate_apk_sha256"] or sidecar[1].lstrip("*") not in allowed:
+        raise ValueError("apk_sha256_sidecar_mismatch")
+
+
+def verify(directory: Path, commit: str, filename: str = NAME) -> dict:
     expected = json.loads((directory / "candidate-provenance.json").read_text())
-    actual = payload(directory, commit)
+    actual = payload(directory, commit, filename)
     if expected != actual:
         raise ValueError("apk_digest_or_checkout_mismatch")
-    sidecar = (directory / (NAME + ".sha256")).read_text().strip().split()
-    if len(sidecar) != 2 or sidecar[0] != actual["candidate_apk_sha256"] or sidecar[1].lstrip("*") != NAME:
-        raise ValueError("apk_sha256_sidecar_mismatch")
+    verify_sidecar(directory, actual)
     return actual
 
 
@@ -53,6 +61,7 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dir", required=True)
     parser.add_argument("--source-sha", required=True)
+    parser.add_argument("--filename", default=NAME)
     parser.add_argument("--create", action="store_true")
     parser.add_argument("--verify", action="store_true")
     args = parser.parse_args(argv)
@@ -61,13 +70,15 @@ def main(argv=None) -> int:
     directory = Path(args.dir)
     try:
         if args.create:
-            result = payload(directory, args.source_sha)
+            result = payload(directory, args.source_sha, args.filename)
+            sidecar = directory / (args.filename + ".sha256")
+            if sidecar.exists():
+                verify_sidecar(directory, result)
+            else:
+                sidecar.write_text(result["candidate_apk_sha256"] + "  " + args.filename + "\n")
             (directory / "candidate-provenance.json").write_text(json.dumps(result, indent=2) + "\n")
-            (directory / (NAME + ".sha256")).write_text(
-                result["candidate_apk_sha256"] + "  " + NAME + "\n"
-            )
         else:
-            result = verify(directory, args.source_sha)
+            result = verify(directory, args.source_sha, args.filename)
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         print("GRANADA_CANDIDATE_PROVENANCE FAIL " + type(exc).__name__, file=sys.stderr)
         return 1

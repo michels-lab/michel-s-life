@@ -76,6 +76,30 @@ class SameCandidateTests(unittest.TestCase):
         self.assertIn("APK: artifacts/candidate/"+NAME,wf)
         self.assertNotIn("$GITHUB_SHA",wf)
 
+    def test_versioned_artifact_preserves_sidecar_and_rejects_path_traversal(self):
+        with tempfile.TemporaryDirectory() as d:
+            name="MichelsLife-Android-TEST-v0.2.24.apk"
+            apk=Path(d)/name
+            apk.write_bytes(b"x"*2048)
+            sidecar=Path(d)/(name+".sha256")
+            original=mod.sha256(apk)+"  artifacts/android/"+name+"\n"
+            sidecar.write_text(original)
+            args=["--dir",d,"--source-sha",SHA,"--filename",name]
+            self.assertEqual(mod.main(args+["--create"]),0)
+            self.assertEqual(sidecar.read_text(),original)
+            self.assertEqual(mod.main(args+["--verify"]),0)
+            self.assertEqual(mod.main(["--dir",d,"--source-sha",SHA,"--filename","../"+name,"--verify"]),1)
+            sidecar.write_text(mod.sha256(apk)+"  ../"+name+"\n")
+            self.assertEqual(mod.main(args+["--verify"]),1)
+            self.assertEqual(mod.main(args+["--create"]),1)
+
+    def test_main_build_verifies_exact_head_and_all_native_arms(self):
+        wf=(ROOT/".github/workflows/android-build.yml").read_text()
+        self.assertEqual(wf.count("ref: ${{ env.CANDIDATE_SHA }}"),4)
+        self.assertEqual(wf.count('test "$(git rev-parse HEAD)" = "$CANDIDATE_SHA"'),4)
+        self.assertEqual(wf.count('tools/granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha "$CANDIDATE_SHA"'),3)
+        self.assertEqual(wf.count("cp artifacts/candidate/candidate-provenance.json"),3)
+
     def test_no_windows_or_main_android_build_changes(self):
         wf=(ROOT/".github/workflows/granada-native-candidate-ram-matrix.yml").read_text()
         self.assertIn("native-default:",wf)
