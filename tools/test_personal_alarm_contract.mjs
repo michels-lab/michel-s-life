@@ -429,3 +429,20 @@ test('a second native overlay queues without replacing the first and advances on
   assert.match(native,/PersonalAlarmOverlay.dismiss\(context, id\)/);
   assert.match(native,/if \(!PersonalAlarmOverlay.isQueued\(id\) &&/);
 });
+
+test('occurrence identity uses immutable data and unrelated edits preserve delayed delivery',()=>{
+  assert.match(native,/michelslife:\/\/personal-alarm\/\$id\/\$occurrence/);
+  assert.match(native,/PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE/);
+  assert.match(native,/if \(previous != date\) cancelOccurrence\(context, id, previous\)/);
+  assert.match(native,/if \(current == null \|\| !sameSchedule\(old, current\)\)/);
+  assert.match(native,/if \(old != null && sameSchedule\(old, item\) &&\s*prefs\(context\).getLong\(SCHEDULED_PREFIX \+ id, 0L\) > 0L\) continue/);
+});
+test('recent unacknowledged alarms restore from persistent delivery records and notification tags are unique',()=>{
+  assert.match(native,/fun recentDelivered\(context: Context\): List<JSONObject>/);
+  assert.match(native,/\.filter \{ wasDelivered\(context, it.optString\("id"\)\) \}/);
+  assert.match(native,/\.sortedBy \{ prefs\(context\).getLong\(LAST_DELIVERED_PREFIX/);
+  assert.match(overlay,/for \(item in NativePersonalAlarms.recentDelivered\(context\)\)/);
+  assert.match(native,/PersonalAlarmOverlay.dismiss\(context, id\)\s*PersonalAlarmOverlay.restoreRecent\(context\)/);
+  assert.match(native,/manager.notify\(notificationTag\(id\), NOTIFICATION_ID,/);
+  assert.match(native,/manager.cancel\(notificationTag\(id\), NOTIFICATION_ID\)/);
+});
