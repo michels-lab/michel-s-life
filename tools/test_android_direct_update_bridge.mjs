@@ -63,3 +63,6 @@ assert.match(checker,/signing\.apkContentsSigners/);
 assert.doesNotMatch(checker,/signing\.signingCertificateHistory/);
 assert.match(checker,/resolved\.port != 443/);
 assert.match(checker,/resolved\.username\.isNotEmpty\(\)/);
+
+assert.match(checker,/installedVersion != DriveCloudEngine\.ANDROID_VERSION/);
+assert.match(checker,/DirectUpdatePolicy\.compare\(\s*installedVersion, installedCode\(context\)/);

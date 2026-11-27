@@ -55,6 +55,15 @@ internal object AndroidDirectUpdateChecker {
     }
 
     @Suppress("DEPRECATION")
+    private fun installedVersion(context: Context): String {
+        val info = if (Build.VERSION.SDK_INT >= 33)
+            context.packageManager.getPackageInfo(context.packageName,
+                PackageManager.PackageInfoFlags.of(0L))
+        else context.packageManager.getPackageInfo(context.packageName, 0)
+        return info.versionName ?: throw IllegalStateException("Installed version is unavailable.")
+    }
+
+    @Suppress("DEPRECATION")
     private fun installedCode(context: Context): Long {
         val info = if (Build.VERSION.SDK_INT >= 33)
             context.packageManager.getPackageInfo(context.packageName,
@@ -212,8 +221,11 @@ internal object AndroidDirectUpdateChecker {
             if (notesCode != null && notesCode != remoteCode)
                 throw IllegalStateException("Release notes and Android manifest disagree.")
 
+            val installedVersion = installedVersion(context)
+            if (installedVersion != DriveCloudEngine.ANDROID_VERSION)
+                throw IllegalStateException("Installed package and application version disagree.")
             val decision = DirectUpdatePolicy.compare(
-                DriveCloudEngine.ANDROID_VERSION, installedCode(context),
+                installedVersion, installedCode(context),
                 version, remoteCode, stable, attested, official)
             if (decision == DirectUpdatePolicy.Status.UNVERIFIED)
                 return result.put("status",

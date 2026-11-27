@@ -135,6 +135,14 @@ assert.match(installer,/if \(!handedToUi\) staging\.set\(false\)/);
 assert.match(installer,/activity\.isFinishing \|\| activity\.isDestroyed/);
 assert.match(native,/synchronized\(operationLock\) \{\s*if \(!downloadActive\)/);
 assert.match(native,/synchronized\(operationLock\) \{\s*if \(cancelRequested\.get\(\)\)/);
-assert.match(native,/marker\.writeText\(receipt\.toString\(\), Charsets\.UTF_8\)[\s\S]{0,250}downloadActive = false/);
+assert.match(native,/!markerPart\.renameTo\(marker\)[\s\S]{0,350}downloadActive = false/);
 assert.match(native,/resolved\.port != 443/);
 assert.match(native,/uri\.userInfo != null/);
+
+assert.match(native,/receiptFile\.length\(\) !in 1L\.\.MAX_RECEIPT_BYTES/);
+assert.match(native,/receipt\.keys\(\)\.asSequence\(\)\.toSet\(\) != keys/);
+assert.match(native,/receipt\.opt\(it\) !is Int && receipt\.opt\(it\) !is Long/);
+assert.match(native,/stream\.fd\.sync\(\)/);
+assert.match(native,/File\(dir, MARKER_PART\)/);
+assert.match(native,/DirectUpdatePolicy\.compare\(installedVersion, installedCode,\s*version, code, true, true, true\) != DirectUpdatePolicy\.Status\.NEWER/);
+assert.ok(native.indexOf('stream.fd.sync()')<native.indexOf('!markerPart.renameTo(marker)'));

@@ -28,6 +28,8 @@ import java.util.concurrent.atomic.AtomicReference
 internal object VerifiedDirectApk {
     private const val PENDING_APK = "verified-direct.apk"
     private const val MARKER = "verified-direct.json"
+    private const val MARKER_PART = "verified-direct.json.part"
+    private const val MAX_RECEIPT_BYTES = 4096L
     private const val MAX_APK_BYTES = 188_743_680L
     private const val MIN_APK_BYTES = 1_048_576L
     // Prevent concurrent Downloads or cache deletion while a hash is being staged.
@@ -205,11 +207,13 @@ internal object VerifiedDirectApk {
         val candidate = File(dir, "download.part")
         val ready = File(dir, PENDING_APK)
         val marker = File(dir, MARKER)
-        // An old candidate must never look ready after network interruption.
-        marker.delete()
-        ready.delete()
-        candidate.delete()
+        val markerPart = File(dir, MARKER_PART)
+        // Invalidate the previous receipt before opening the network. Do
+        // not proceed if any old cache file cannot actually be removed.
         try {
+            for (file in listOf(marker, markerPart, ready, candidate))
+                if (file.exists() && !file.delete())
+                    throw IllegalStateException("Could not clear the previous update cache.")
             val metadata = AndroidDirectUpdateChecker.check(activity)
             if (!metadata.optBoolean("checked") || !metadata.optBoolean("updateAvailable"))
                 throw IllegalStateException("No verified newer Direct release available.")
@@ -244,7 +248,15 @@ internal object VerifiedDirectApk {
             synchronized(operationLock) {
                 if (cancelRequested.get())
                     throw java.util.concurrent.CancellationException("APK download cancelled.")
-                marker.writeText(receipt.toString(), Charsets.UTF_8)
+                val bytesToWrite = receipt.toString().toByteArray(Charsets.UTF_8)
+                if (bytesToWrite.size.toLong() > MAX_RECEIPT_BYTES)
+                    throw IllegalStateException("Update receipt exceeds size limit.")
+                markerPart.outputStream().use { stream ->
+                    stream.write(bytesToWrite)
+                    stream.fd.sync()
+                }
+                if (marker.exists() || !markerPart.renameTo(marker))
+                    throw IllegalStateException("Could not publish the verified update receipt.")
                 // After publishing a verified receipt, Cancel must no longer
                 // claim it can cancel the completed download.
                 downloadActive = false
@@ -255,6 +267,7 @@ internal object VerifiedDirectApk {
         } catch (error: Exception) {
             // Never leave behind an unverified APK or a false-ready receipt.
             marker.delete()
+            markerPart.delete()
             ready.delete()
             // OkHttp Call.cancel() interrupts execute/read with IOException,
             // not CancellationException. Treat an explicit user-requested
@@ -263,10 +276,11 @@ internal object VerifiedDirectApk {
                 error is java.util.concurrent.CancellationException
             return JSONObject().put("staged", false).put("cancelled", cancelled)
                 .put("status", if (cancelled)
-                    "APK download cancelled. Partial files removed; your data is unchanged."
+                    "APK download cancelled. No installation was started."
                     else "Could not verify a signed APK. Nothing was installed; your app data is unchanged.")
         } finally {
             candidate.delete()
+            markerPart.delete()
         }
     }
 
@@ -276,9 +290,14 @@ internal object VerifiedDirectApk {
         val dir = folder(activity)
         val ready = File(dir, PENDING_APK)
         val receiptFile = File(dir, MARKER)
-        if (!ready.isFile || !receiptFile.isFile) return null
+        if (!ready.isFile || !receiptFile.isFile ||
+            receiptFile.length() !in 1L..MAX_RECEIPT_BYTES) return null
         return try {
             val receipt = JSONObject(receiptFile.readText(Charsets.UTF_8))
+            val keys = setOf("version", "versionCode", "sha256", "bytes", "filename", "source")
+            if (receipt.keys().asSequence().toSet() != keys) return null
+            if (listOf("version", "sha256", "filename", "source").any { receipt.opt(it) !is String }) return null
+            if (listOf("versionCode", "bytes").any { receipt.opt(it) !is Int && receipt.opt(it) !is Long }) return null
             val version = receipt.optString("version")
             val code = receipt.optLong("versionCode")
             val expectedBytes = receipt.optLong("bytes")
@@ -287,19 +306,22 @@ internal object VerifiedDirectApk {
             val tag = receipt.optString("source").substringAfterLast('/')
             val url = "https://github.com/michels-lab/michel-s-life-releases/releases/download/" +
                 tag + "/" + filename
-            val installedCode = if (Build.VERSION.SDK_INT >= 33)
+            @Suppress("DEPRECATION")
+            val installedInfo = if (Build.VERSION.SDK_INT >= 33)
                 activity.packageManager.getPackageInfo(activity.packageName,
-                    PackageManager.PackageInfoFlags.of(0L)).longVersionCode
-            else {
-                @Suppress("DEPRECATION")
-                val info = activity.packageManager.getPackageInfo(activity.packageName, 0)
-                if (Build.VERSION.SDK_INT >= 28) info.longVersionCode else info.versionCode.toLong()
-            }
+                    PackageManager.PackageInfoFlags.of(0L))
+            else activity.packageManager.getPackageInfo(activity.packageName, 0)
+            @Suppress("DEPRECATION")
+            val installedCode = if (Build.VERSION.SDK_INT >= 28) installedInfo.longVersionCode
+                else installedInfo.versionCode.toLong()
+            val installedVersion = installedInfo.versionName ?: return null
             if (!DirectUpdatePolicy.validVersion(version) ||
                 !DirectUpdatePolicy.officialReleaseUrl(receipt.optString("source"), tag) ||
                 !DirectUpdatePolicy.officialAssetUrl(url, tag, filename) ||
                 filename != "MichelsLife-Android-Direct-v" + version + ".apk" ||
-                code <= installedCode || expectedBytes !in MIN_APK_BYTES..MAX_APK_BYTES ||
+                code <= installedCode || DirectUpdatePolicy.compare(installedVersion, installedCode,
+                    version, code, true, true, true) != DirectUpdatePolicy.Status.NEWER ||
+                expectedBytes !in MIN_APK_BYTES..MAX_APK_BYTES ||
                 ready.length() != expectedBytes || !expectedHash.matches(Regex("[0-9a-f]{64}")) ||
                 digestOf(ready) != expectedHash || !archiveVerified(activity, ready, version, code))
                 null else Pair(ready, receipt)
@@ -347,7 +369,7 @@ internal object VerifiedDirectApk {
         if (candidate == null) {
             val dir = folder(activity)
             val cached = File(dir, PENDING_APK).exists() ||
-                File(dir, MARKER).exists() || File(dir, "download.part").exists()
+                File(dir, MARKER).exists() || File(dir, MARKER_PART).exists() || File(dir, "download.part").exists()
             return JSONObject().put("ready", false)
                 .put("hasCached", cached)
                 .put("status", if (cached)
@@ -383,7 +405,7 @@ internal object VerifiedDirectApk {
     private fun discardInternal(activity: Activity): JSONObject {
         val dir = folder(activity)
         val targets = listOf(File(dir, MARKER), File(dir, PENDING_APK),
-            File(dir, "download.part"))
+            File(dir, MARKER_PART), File(dir, "download.part"))
         // Delete receipt first so no half-deleted file can ever be offered.
         for (file in targets) {
             if (file.exists() && !file.delete())

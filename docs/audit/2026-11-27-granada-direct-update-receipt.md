@@ -1,0 +1,3 @@
+# Granada — durable Direct update receipt and installed identity
+
+Fail closed on stale cache deletion errors; write and sync a bounded receipt part, then rename only after APK verification. Reject malformed/oversized/extra-field receipts and numeric strings, require both versionName and versionCode increase against PackageManager, and reject discovery when the compiled and actual installed version names disagree. Remove receipt part on cleanup/discard and report leftover cache. No automatic install, no new network endpoint or certificate change. Structural contract extended, real compilation/installer validation pending. No guarantee of OS installer read lifetime after handoff or filesystem durability after power loss; no release.
