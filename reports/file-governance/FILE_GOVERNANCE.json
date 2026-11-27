@@ -26,13 +26,12 @@
     "workflow": 68
   },
   "finding_counts": {
-    "BROKEN_RELATIVE_LINK": 4,
     "POTENTIAL_UNLOGGED_CHANGES": 1,
     "UNKNOWN_PURPOSE": 6
   },
-  "finding_total": 11,
-  "inventory_fingerprint": "09f138b93b1e51d8474857b4e01e44369431c0b37f83034be3a70940fbf5e7d2",
-  "evidence_fingerprint": "051671cce99c7776ed26c2bece24b21c6c8fef6cff20c7df7d01e94331cf6859",
+  "finding_total": 7,
+  "inventory_fingerprint": "4ba2c0610fb189fd8d907710581536be5383008e6e859acf790cba9ba986a59a",
+  "evidence_fingerprint": "4940a7d1f883e932f2bf58465e88bfd003e9f9de3a2352292aea7b9431d80f50",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -1789,7 +1788,7 @@
       "role": "document",
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
-      "blob": "ccbee90258af85a0b2ba4a0208482f95bd1579d9"
+      "blob": "5395a41c0e296774d5e1b4d9bd87c4358842a346"
     },
     {
       "path": "docs/DEVELOPER_BRANDING.md",
@@ -2048,7 +2047,7 @@
       "role": "document",
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
-      "blob": "845ad2988226c4ee4eda00e7dd5b433177dbceaa"
+      "blob": "b9ada3c759cae01994e019c3ee2c10651c01da5f"
     },
     {
       "path": "docs/audit/2026-10-23-granada-canonical-design-reference.md",
@@ -3739,42 +3738,6 @@
     }
   ],
   "findings": [
-    {
-      "id": "41ca2b94e805646f",
-      "code": "BROKEN_RELATIVE_LINK",
-      "severity": "confirmed",
-      "path": "docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md",
-      "observation": "Missing: docs/src/MichelsLife/frontend/index.html",
-      "recommendation": "Fix link or restore target",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "7a232f866547f4b1",
-      "code": "BROKEN_RELATIVE_LINK",
-      "severity": "confirmed",
-      "path": "docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md",
-      "observation": "Missing: docs/AGENTS.md",
-      "recommendation": "Fix link or restore target",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "c9b0ed37825bd396",
-      "code": "BROKEN_RELATIVE_LINK",
-      "severity": "confirmed",
-      "path": "docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md",
-      "observation": "Missing: docs/tools/ui_android_section_design_smoke.mjs",
-      "recommendation": "Fix link or restore target",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "55915b207228a042",
-      "code": "BROKEN_RELATIVE_LINK",
-      "severity": "confirmed",
-      "path": "docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md",
-      "observation": "Missing: docs/android/audit/2026-10-12-ui-screenshot-gallery.md",
-      "recommendation": "Fix link or restore target",
-      "state": "REVIEW_REQUIRED"
-    },
     {
       "id": "f4d85d2478b3d839",
       "code": "POTENTIAL_UNLOGGED_CHANGES",
