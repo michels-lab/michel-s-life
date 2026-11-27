@@ -71,6 +71,7 @@
     satie_gymnopedie_1:{en:"Erik Satie · Gymnopédie No. 1",es:"Erik Satie · Gymnopédie No. 1",group:'Classical',recorded:true},
     bach_prelude_bwv846:{en:"Johann Sebastian Bach · Prelude in C major, BWV 846",es:"Johann Sebastian Bach · Prelude in C major, BWV 846",group:'Classical',recorded:true}
   };
+  Object.assign(ambientScenes,{mozart_k545:{...finishTones.mozart_k545,group:'Classical',recorded:true},tchaikovsky_op39:{...finishTones.tchaikovsky_op39,group:'Classical',recorded:true}});
   // Licensed human performances, bundled locally. No synthesized fallback.
   // Personal files stay in the device's IndexedDB. Metadata is separate so
   // opening the library never materializes every audio Blob in memory.
@@ -119,7 +120,7 @@
 
   let classicalSource=null,previewingId=null,ambientRecording=null,ambientVolume=.35,volumeDraft=null;
   const classicalIds=['mozart_k545','tchaikovsky_op39'];
-  let effectContext=null,ambientContext=null,ambientInterval=null,ambientScene=null,ambientStep=0;
+  let effectContext=null,ambientContext=null,ambientBus=null,ambientInterval=null,ambientScene=null,ambientStep=0;
   function soundContext(){
     const C=window.AudioContext||window.webkitAudioContext;
     if(!C)return null;
@@ -151,7 +152,16 @@
     const source=classicalSource;classicalSource=null;previewingId=null;
     if(source)try{source.pause();source.currentTime=0;}catch(_){}
   }
-  function playCompletion(preview=false){
+  let bellDuck=1,bellRestore=null;
+  function playPhaseBells(phase='work'){
+    const ctx=soundContext();if(!ctx)return false;
+    try{const start=ctx.currentTime+.03;const notes=phase==='break'?[523.25,659.25,783.99]:[783.99,659.25,523.25];
+      notes.forEach((freq,i)=>{const at=start+i*.55;[1,2.01,2.76,4.08].forEach((ratio,j)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.setValueAtTime(freq*ratio,at);g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime([.14,.045,.024,.012][j],at+.018);g.gain.exponentialRampToValueAtTime(.0001,at+2.3-j*.22);o.connect(g);g.connect(ctx.destination);o.start(at);o.stop(at+2.4);});});
+      bellDuck=.24;if(ambientRecording)ambientRecording.volume=getVolume()*bellDuck;if(ambientBus&&ambientContext)ambientBus.gain.setValueAtTime(bellDuck,ambientContext.currentTime);if(bellRestore!==null)window.clearTimeout?.(bellRestore);bellRestore=window.setTimeout(()=>{bellDuck=1;bellRestore=null;if(ambientRecording)ambientRecording.volume=getVolume();if(ambientBus&&ambientContext)ambientBus.gain.setValueAtTime(1,ambientContext.currentTime);},3600);return true;
+    }catch(_){return false;}
+  }
+  function playCompletion(preview=false,phase='work'){
+    if(!preview)return playPhaseBells(phase);
     const id=finishId(),score=finishTones[id];
     stopClassical();
     // Final audio takes precedence; hear licensed previews in isolation too.
@@ -189,7 +199,7 @@
     if(player)try{player.pause();player.currentTime=0;}catch(_){}
     if(personalUrl){try{URL.revokeObjectURL(personalUrl);}catch(_){}personalUrl=null;}
     if(ambientInterval){window.clearInterval(ambientInterval);ambientInterval=null;}
-    const ctx=ambientContext;ambientContext=null;ambientScene=null;
+    const ctx=ambientContext;ambientContext=null;ambientBus=null;ambientScene=null;
     if(ctx)ctx.close().catch(()=>{});
     return true;
   }
@@ -207,7 +217,7 @@
       env.gain.linearRampToValueAtTime(gain,start+2+.22*i);
       env.gain.setValueAtTime(gain,start+4.8+.22*i);
       env.gain.exponentialRampToValueAtTime(.0001,start+8.5+.22*i);
-      osc.connect(env);env.connect(ctx.destination);
+      osc.connect(env);env.connect(ambientBus||ctx.destination);
       osc.start(start+.22*i);osc.stop(start+8.55+.22*i);
     }
     // Each soundscape has its own original melodic motif (not eight copies
@@ -231,14 +241,14 @@
       env.gain.setValueAtTime(.0001,at);
       env.gain.exponentialRampToValueAtTime((theme?.012:.008)*Math.max(.0001,ambientVolume/.35),at+.055);
       env.gain.exponentialRampToValueAtTime(.0001,at+(theme?.55:.67));
-      osc.connect(env);env.connect(ctx.destination);
+      osc.connect(env);env.connect(ambientBus||ctx.destination);
       osc.start(at);osc.stop(at+(theme?.6:.7));
     });
     ambientStep=(ambientStep+1)%(scene.phrases?.length||scene.notes.length);
   }
   function savedVolume(){const v=api()?.focusState?.()?.v30165AmbientVolume;return typeof v==='number'&&Number.isFinite(v)?Math.max(0,Math.min(1,v)):.35;}
   function getVolume(){return volumeDraft??savedVolume();}
-  function setVolume(value,save=true){const n=Number(value);if(!Number.isFinite(n))return getVolume();ambientVolume=Math.max(0,Math.min(1,n));volumeDraft=ambientVolume;if(ambientRecording)ambientRecording.volume=ambientVolume;if(save&&api()?.setAudioPreference?.('ambientVolume',ambientVolume)===true)volumeDraft=null;return ambientVolume;}
+  function setVolume(value,save=true){const n=Number(value);if(!Number.isFinite(n))return getVolume();ambientVolume=Math.max(0,Math.min(1,n));volumeDraft=ambientVolume;if(ambientRecording)ambientRecording.volume=ambientVolume*bellDuck;if(save&&api()?.setAudioPreference?.('ambientVolume',ambientVolume)===true)volumeDraft=null;return ambientVolume;}
   const ambientMode=()=>{const m=api()?.focusState?.()?.v30165AmbientMode;return ['repeat','playlist','shuffle'].includes(m)?m:'repeat';};
   const ambientCollection=()=>{const c=api()?.focusState?.()?.v30165AmbientCollection;return ['Ambient','Cinematic','Classical','Personal'].includes(c)?c:'all';};
   let shuffleHistory=[],shuffleBag=[];
@@ -267,7 +277,7 @@
   function startRecording(id,src,paused=false){
     try{
       const player=new Audio(src);
-      player.loop=ambientMode()==='repeat';player.volume=getVolume();ambientRecording=player;ambientScene=id;
+      player.loop=ambientMode()==='repeat';player.volume=getVolume()*bellDuck;ambientRecording=player;ambientScene=id;
       const clear=()=>{if(ambientRecording===player)stopAmbient();};
       const error=()=>{if(ambientScenes[id]?.personal)personalStatus=lang('Audio cannot be played.','No se pudo reproducir el audio.');clear();};
       player.onerror=error;player.onended=()=>{if(ambientRecording!==player)return;if(ambientMode()!=='repeat'){if(!moveAmbient(1,true))clear();}else clear();};
@@ -295,7 +305,7 @@
     const C=window.AudioContext||window.webkitAudioContext;
     if(!C)return false;
     try{
-      ambientScene=id;ambientContext=new C();
+      ambientScene=id;ambientContext=new C();ambientBus=ambientContext.createGain();ambientBus.gain.setValueAtTime(bellDuck,ambientContext.currentTime);ambientBus.connect(ambientContext.destination);
       ambientContext.resume?.().catch?.(()=>{});
       ambientStep=0;scheduleAmbient();
       ambientInterval=window.setInterval(scheduleAmbient,7200);
@@ -335,7 +345,7 @@
     classicalOptions:()=>classicalIds.map(id=>({id,label:lang(finishTones[id].en,finishTones[id].es)})),
     toggleClassical,toggleScene,
     completionId:finishId,sceneId,selectCompletion:id=>{stopClassical();return choice(completionKey,finishTones,id,'soft');},
-    selectScene,playCompletion,stopClassical,previewingCompletion:()=>previewingId,recordingActive:()=>!!classicalSource,recordingPlayback:()=>classicalSource?{paused:classicalSource.paused,currentTime:classicalSource.currentTime,duration:classicalSource.duration,src:classicalSource.src}:null,unlock,startAmbient,stopAmbient,
+    selectScene,playCompletion,playPhaseBells,stopClassical,previewingCompletion:()=>previewingId,recordingActive:()=>!!classicalSource,recordingPlayback:()=>classicalSource?{paused:classicalSource.paused,currentTime:classicalSource.currentTime,duration:classicalSource.duration,src:classicalSource.src}:null,unlock,startAmbient,stopAmbient,
     playing:()=>!!ambientScene,
     importPersonalTracks,loadPersonalTracks,personalStatus:()=>personalStatus,personalImporting:()=>personalImporting,playingScene:()=>ambientScene,
     ambientVolume:getVolume,setAmbientVolume:setVolume,ambientMode,setAmbientMode,ambientCollection,setAmbientCollection,moveAmbient,toggleAmbientPlayback,
@@ -541,6 +551,7 @@
         border:1px solid rgba(199,239,245,.17);border-radius:12px;
         background:rgba(3,14,23,.36)
       }
+      .mlv-focus-quick-completion [data-mlv-now-playing]{min-width:0;overflow-wrap:anywhere;font-weight:700}
       .mlv-focus-quick-completion label{display:flex;align-items:center;gap:8px;font:700 12px system-ui,sans-serif}
       .mlv-focus-quick-completion select{max-width:230px;min-height:42px;border-radius:8px;
         background:#152637;color:#fff;border:1px solid rgba(200,238,245,.32)}
@@ -677,21 +688,20 @@
           <button type="button" class="mlv-focus-btn" data-focus-action="reset">Reset</button>
           <button type="button" class="mlv-focus-btn" data-focus-action="minimize">Navigate the app</button>
         </div>
-        <div class="mlv-focus-quick-completion" role="group" aria-label="Completion sound">
-          <label for="mlv-focus-completion-select">Completion sound
-            <select id="mlv-focus-completion-select" data-mlv-completion-sound></select>
-          </label>
-          <button type="button" class="mlv-focus-btn" data-mlv-audio="preview-completion">▶ Preview completion</button>
+        <div class="mlv-focus-quick-completion" role="group" aria-label="Ambient music">
+          <span data-mlv-now-playing></span>
+          <button type="button" class="mlv-focus-btn" data-mlv-audio="toggle-ambient">Play</button>
+          <small data-mlv-ambient-progress></small>
         </div>
-        <details class="mlv-focus-sound-details"><summary>Audio · Completion tone & ambience</summary>
+        <details class="mlv-focus-sound-details"><summary>Advanced audio options</summary>
         <div class="mlv-focus-audio-panel" aria-label="Pomodoro audio">
           <div class="mlv-focus-audio-group">
             <h3 class="mlv-audio-heading" data-mlv-audio-heading>Playback</h3>
             <label for="mlv-focus-scene-select">Background music
               <select id="mlv-focus-scene-select" data-mlv-scene-select></select>
             </label>
-             <div class="mlv-audio-controls"><button type="button" class="mlv-focus-btn" data-mlv-audio="toggle-ambient">Play</button><button type="button" class="mlv-focus-btn" data-mlv-audio="previous-ambient" aria-label="Previous track">⏮ Previous</button><button type="button" class="mlv-focus-btn" data-mlv-audio="next-ambient" aria-label="Skip track">Next ⏭</button><button type="button" class="mlv-focus-btn" data-mlv-audio="stop-ambient">Stop</button></div>
-             <small data-mlv-ambient-progress aria-live="off"></small>
+             <div class="mlv-audio-controls"><button type="button" class="mlv-focus-btn" data-mlv-audio="previous-ambient" aria-label="Previous track">⏮ Previous</button><button type="button" class="mlv-focus-btn" data-mlv-audio="next-ambient" aria-label="Skip track">Next ⏭</button><button type="button" class="mlv-focus-btn" data-mlv-audio="stop-ambient">Stop</button></div>
+
              <label><span data-mlv-volume-label>Volume</span><input type="range" min="0" max="100" value="35" data-mlv-ambient-volume aria-label="Background music volume" /></label>
              <div class="mlv-audio-settings"><select data-mlv-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option><option value="shuffle">Shuffle</option></select><select data-mlv-ambient-collection aria-label="Playlist collection"><option value="all">All audio</option><option value="Ambient">Ambient</option><option value="Cinematic">Cinematic</option><option value="Classical">Classical piano</option><option value="Personal">My music</option></select></div>
           </div>
@@ -889,6 +899,8 @@
       }
       if(select.value!==selected)select.value=selected;
     }
+    const audioSummary=q('.mlv-focus-sound-details>summary',screen);if(audioSummary)audioSummary.textContent=lang('Advanced audio options','Opciones avanzadas de audio');
+    const nowPlaying=q('[data-mlv-now-playing]',screen);if(nowPlaying)nowPlaying.textContent=audio?.sceneOptions?.().find(x=>x.id===audio?.sceneId?.())?.label||lang('No track selected','Sin pista seleccionada');
     const audioHeading=q('[data-mlv-audio-heading]',screen),libraryHeading=q('[data-mlv-library-heading]',screen);
     if(audioHeading)audioHeading.textContent=lang('Playback','Reproducción');if(libraryHeading)libraryHeading.textContent=lang('Music library','Biblioteca musical');
     const vol=q('[data-mlv-ambient-volume]',screen),volLabel=q('[data-mlv-volume-label]',screen);

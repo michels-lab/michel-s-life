@@ -133,15 +133,10 @@ try{
   });
   ok(audioLayout&&audioLayout.columns===2&&audioLayout.playbackWidth>0&&audioLayout.libraryWidth>0&&audioLayout.separate&&audioLayout.topGap<3&&!audioLayout.overflow,
     'Desktop audio columns are not both usable: '+JSON.stringify(audioLayout));
-  ok(await page.locator('[data-mlv-completion-sound] option').count()===25,
-    'End-of-Pomodoro selector is not populated');
-  const scenes=await page.locator('[data-mlv-scene-select] option').evaluateAll(options=>
-    options.map(option=>({value:option.value,label:option.textContent.trim()})));
-  ok(scenes.length===24&&['moonlight','celestial','orbit','aurora','observatory','library','afterglow','silver']
-    .every(id=>scenes.some(scene=>scene.value===id)),
-    'Eight original ambient soundscape selections are not populated: '+JSON.stringify(scenes));
-  await page.locator('[data-mlv-completion-sound]').selectOption('glass');
-  await page.locator('[data-mlv-audio="preview-completion"]').click();
+  ok(await page.locator('[data-mlv-completion-sound]').count()===0,'Legacy completion picker still visible');
+  ok(await page.locator('[data-mlv-audio="toggle-ambient"]').evaluate(el=>!el.closest('details')),'Ambient play must stay outside drawer');
+  const scenes=await page.locator('[data-mlv-scene-select] option').evaluateAll(options=>options.map(o=>o.value));
+  ok(scenes.length===26&&['moonlight','celestial','orbit','aurora','observatory','library','afterglow','silver','mozart_k545','tchaikovsky_op39'].every(id=>scenes.includes(id)),'Ambient catalog missing tracks');
   await page.locator('[data-mlv-scene-select]').selectOption('library');
   await page.locator('[data-mlv-audio="toggle-ambient"]').click();
   ok(await page.evaluate(()=>window.MichelsLifeFocusAudio.playing()),
@@ -156,7 +151,7 @@ try{
   ok(await page.evaluate(()=>{const a=window.MichelsLifeFocusAudio;return !a.playing()&&a.playingScene()===null&&a.ambientPlayback()===null;}),
     'Soundscape Stop left an active audio session');
   const soundPrefs=await page.evaluate(()=>window.FocusStoryV30162.focusState());
-  ok(soundPrefs.v30165CompletionSound==='glass'&&soundPrefs.v30165Soundscape==='library',
+  ok(soundPrefs.v30165Soundscape==='library',
     'End chime and soundscape were not saved by the canonical FocusStory owner');
   await page.locator('.mlv-focus-sound-details > summary').click();
 
@@ -181,6 +176,47 @@ try{
   ok(await page.evaluate(()=>!document.getElementById('mlv-desktop-mini-focus').hidden),
     'Desktop mini Pomodoro disappeared during Missions navigation');
 
+  // The same active-page class belongs to multiple pages, never to a primary button.
+  await page.setViewportSize({width:1440,height:900});
+  for(const route of ['dashboard','contracts','calendar','journal','stats','projects','achievements','affirmations','story','settings','missions']){
+    await page.evaluate(route=>window.LeftNavV30171.route(route),route);
+    await page.waitForSelector('#tab-'+route+'.active',{state:'visible',timeout:15000});
+    const role=await page.evaluate(route=>{
+      const el=document.getElementById('tab-'+route),style=getComputedStyle(el),theme=getComputedStyle(document.body);
+      const accent=theme.getPropertyValue('--ui-accent').trim(),accent2=theme.getPropertyValue('--ui-accent2').trim();
+      const probe=document.createElement('span');document.body.append(probe);
+      probe.style.color=accent;const first=getComputedStyle(probe).color;
+      probe.style.color=accent2;const second=getComputedStyle(probe).color;probe.remove();
+      const gradient=style.backgroundImage;
+      return {gradient,first,second,solidAccent:gradient.includes('linear-gradient(135deg, '+first+', '+second+')')||style.backgroundColor===first};
+    },route);
+    ok(!role.solidAccent,'Page received solid button accent: '+route+' '+JSON.stringify(role));
+  }
+  // Explicitly exercise saved custom glass values; restore the original configuration afterwards.
+  const surface=await page.evaluate(()=>{
+    const v=window.VisualSystemV30189,original=v.transparency();
+    const target=document.querySelector('#tab-missions .card,#tab-missions .v132-panel');
+    if(!target)return {missing:true};
+    try{
+      v.setTransparency({...original,enabled:true,header:50,panel:50,card:25});
+      const outer=[...document.querySelectorAll('#tab-missions [data-mlv184-surface]')].find(e=>['main','header'].includes(e.dataset.mlv184Surface));
+      if(!outer)return {missing:true};
+      const on=getComputedStyle(outer).backdropFilter,background=outer.style.background;
+      v.setTransparency({...original,enabled:true,header:0,panel:0,card:0});
+      const zeroStyle=getComputedStyle(outer),zero=zeroStyle.backdropFilter,zeroBackground=zeroStyle.backgroundColor,zeroImage=zeroStyle.backgroundImage;
+      return {on,background,zero,zeroBackground,zeroImage};
+    }finally{v.setTransparency(original);}
+  });
+  ok(!surface.missing&&surface.on==='blur(10px)'&&/0\.5(?:0+)?\)/.test(surface.background)&&surface.zero==='none'&&['transparent','rgba(0, 0, 0, 0)'].includes(surface.zeroBackground)&&surface.zeroImage==='none','Custom glass opacity/blur contract failed: '+JSON.stringify(surface));
+  await page.waitForFunction(()=>{
+    const mini=document.getElementById('mlv-desktop-mini-focus'),alarm=document.getElementById('mlv-alarm-launcher'),dock=document.getElementById('v3099NextUpDock');
+    if(!mini||mini.hidden)return false;
+    const m=mini.getBoundingClientRect();
+    if(alarm&&!alarm.hidden&&getComputedStyle(alarm).display!=='none'&&alarm.getBoundingClientRect().bottom>m.top)return false;
+    if(dock&&getComputedStyle(dock).display!=='none'&&dock.getBoundingClientRect().right>m.left)return false;
+    return true;
+  },null,{timeout:10000});
+  await page.screenshot({path:'artifacts/ui-smoke/desktop-floating-control-lanes.png'});
   await page.locator('#mlv-desktop-mini-focus [data-focus-action="toggle"]').click();
   await page.waitForFunction(()=>window.FocusStoryV30162.focusState().status==='paused');
   await page.locator('#mlv-desktop-mini-focus [data-focus-action="toggle"]').click();
@@ -226,8 +262,8 @@ try{
     !restored.full&&restored.mini,
     'Desktop reload ignored intentional minimized Break: '+JSON.stringify(restored));
   const afterReloadSound=await page.evaluate(()=>window.FocusStoryV30162.focusState());
-  ok(afterReloadSound.v30165CompletionSound==='glass'&&afterReloadSound.v30165Soundscape==='library',
-    'End sound and selected A+C soundtrack were lost after reload');
+  ok(afterReloadSound.v30165Soundscape==='library',
+    'Selected ambient soundtrack was lost after reload');
   await page.evaluate(()=>window.FocusStoryV30162?.resetFocus?.());
 
 

@@ -616,6 +616,8 @@ try{
   // picker must be horizontally scrollable, and actual Sync/Google sections
   // must be reachable by a vertical document scroll above Android navigation.
   await page.waitForSelector('#tab-settings .v30171-settings-nav [data-v30171-setting="sync"]',{state:'visible',timeout:5000});
+  ok(await page.evaluate(()=>getComputedStyle(document.getElementById('v176StatusPanel')).display==='none'),
+    'Mobile Settings must not reserve the cinematic dashboard Chapter header');
   const settingsPhoneGeometry=await page.evaluate(()=>{
     const nav=document.querySelector('#tab-settings .v30171-settings-nav');
     const sync=nav?.querySelector('[data-v30171-setting="sync"]');

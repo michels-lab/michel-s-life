@@ -14565,7 +14565,7 @@ body.ml-theme-ui .main,
 body.ml-theme-ui .side,
 body.ml-theme-ui #main,
 body.ml-theme-ui #side,
-body.ml-theme-ui .tab,
+body.ml-theme-ui button.tab,
 body.ml-theme-ui .grid,
 body.ml-theme-ui .kpis,
 body.ml-theme-ui .actions,
@@ -14883,7 +14883,7 @@ body.ml-theme-ui .main,
 body.ml-theme-ui .side,
 body.ml-theme-ui #main,
 body.ml-theme-ui #side,
-body.ml-theme-ui .tab,
+body.ml-theme-ui button.tab,
 body.ml-theme-ui .grid,
 body.ml-theme-ui .kpis,
 body.ml-theme-ui .actions,
@@ -16631,7 +16631,7 @@ body.ml-theme-ui textarea:focus{
 }
 body.ml-theme-ui button,
 body.ml-theme-ui .btn,
-body.ml-theme-ui .tab,
+body.ml-theme-ui button.tab,
 body.ml-theme-ui .tab-btn,
 body.ml-theme-ui .v135-action,
 body.ml-theme-ui .v133-switch button{
@@ -16644,7 +16644,7 @@ body.ml-theme-ui .v133-switch button{
 }
 body.ml-theme-ui button:hover,
 body.ml-theme-ui .btn:hover,
-body.ml-theme-ui .tab:hover,
+body.ml-theme-ui button.tab:hover,
 body.ml-theme-ui .tab-btn:hover,
 body.ml-theme-ui .v135-action:hover,
 body.ml-theme-ui .v133-switch button:hover{
@@ -16656,7 +16656,7 @@ body.ml-theme-ui .btn.primary,
 body.ml-theme-ui .btn.green,
 body.ml-theme-ui button.primary,
 body.ml-theme-ui .v135-action.primary,
-body.ml-theme-ui .tab.active,
+body.ml-theme-ui button.tab.active,
 body.ml-theme-ui .tab-btn.active,
 body.ml-theme-ui .v133-switch button.active,
 body.ml-theme-ui #tab-settings .v133-switch [data-action="v133-preset"].ml-preset-active,
@@ -16965,7 +16965,7 @@ body.ml-theme-ui .v133-switch button:not(.active){
 
 /* Active filters/tabs/switchers. */
 body.ml-theme-ui .tab-btn.active,
-body.ml-theme-ui .tab.active,
+body.ml-theme-ui button.tab.active,
 body.ml-theme-ui .v133-switch button.active,
 body.ml-theme-ui .filter-chip.active,
 body.ml-theme-ui .v168-tools button.active,
@@ -27586,11 +27586,8 @@ function focusState(){
   if(!['ready','running','paused'].includes(f.status))f.status='ready';if(!['compact','mini'].includes(f.dockMode))f.dockMode='compact';if(f.dockMode==='mini')f.expanded=false;
   const total=(f.mode==='work'?f.workMin:f.breakMin)*60000;f.phaseTotalMs=clamp(f.phaseTotalMs,1000,180*60000,total);f.remainingMs=clamp(f.remainingMs,0,f.phaseTotalMs,f.phaseTotalMs);
   if(f.status==='running'&&!Number.isFinite(Number(f.deadlineAt)))f.deadlineAt=Date.now()+f.remainingMs;
-  // Migrate the mistakenly saved classical ambience choice to completion once.
-  if(['mozart_k545','tchaikovsky_op39'].includes(f.v30165Soundscape)){
-    if(!f.v30165CompletionSound||f.v30165CompletionSound==='soft')f.v30165CompletionSound=f.v30165Soundscape;
-    f.v30165Soundscape='moonlight';
-  }
+  // Classical recordings are now available as ambience; preserve existing choices.
+  // Timer completion is a fixed bell, independent of legacy sound preferences.
   return f;
 }
 function setAudioPreference(kind,value){
@@ -27599,7 +27596,7 @@ function setAudioPreference(kind,value){
    const valid=['soft','glass','aurora','observatory','midnight','silver','mozart_k545','tchaikovsky_op39','sb_meanwhile','sb_moonlight','sb_cobalt','sb_skyward','sb_life_is','sb_first_snow','sb_midsommar','sb_at_the_end_of_all_things','sb_in_this_moment','sb_hyperion','sb_ascension','sb_bring_me_the_sky','debussy_clair_de_lune','chopin_nocturne_op9','satie_gymnopedie_1','bach_prelude_bwv846','off'];
    f.v30165CompletionSound=valid.includes(value)?value:'soft';
  }else if(kind==='scene'){
-   const valid=['moonlight','celestial','orbit','aurora','observatory','library','afterglow','silver','sb_meanwhile','sb_moonlight','sb_cobalt','sb_skyward','sb_life_is','sb_first_snow','sb_midsommar','sb_at_the_end_of_all_things','sb_in_this_moment','sb_hyperion','sb_ascension','sb_bring_me_the_sky','debussy_clair_de_lune','chopin_nocturne_op9','satie_gymnopedie_1','bach_prelude_bwv846'];
+   const valid=['moonlight','celestial','orbit','aurora','observatory','library','afterglow','silver','sb_meanwhile','sb_moonlight','sb_cobalt','sb_skyward','sb_life_is','sb_first_snow','sb_midsommar','sb_at_the_end_of_all_things','sb_in_this_moment','sb_hyperion','sb_ascension','sb_bring_me_the_sky','debussy_clair_de_lune','chopin_nocturne_op9','satie_gymnopedie_1','bach_prelude_bwv846','mozart_k545','tchaikovsky_op39'];
    f.v30165Soundscape=valid.includes(value)||(typeof value==='string'&&/^my_[a-f0-9]{32}$/.test(value))?value:'moonlight';
  }else if(kind==='ambientVolume'){
    if(typeof value!=='number'||!Number.isFinite(value))return false;
@@ -27612,7 +27609,7 @@ function setAudioPreference(kind,value){
    f.v30165AmbientCollection=value;
  }else if(kind==='archivedAmbient'){
    if(!Array.isArray(value))return false;
-   const valid=['moonlight','celestial','orbit','aurora','observatory','library','afterglow','silver','sb_meanwhile','sb_moonlight','sb_cobalt','sb_skyward','sb_life_is','sb_first_snow','sb_midsommar','sb_at_the_end_of_all_things','sb_in_this_moment','sb_hyperion','sb_ascension','sb_bring_me_the_sky','debussy_clair_de_lune','chopin_nocturne_op9','satie_gymnopedie_1','bach_prelude_bwv846'];
+   const valid=['moonlight','celestial','orbit','aurora','observatory','library','afterglow','silver','sb_meanwhile','sb_moonlight','sb_cobalt','sb_skyward','sb_life_is','sb_first_snow','sb_midsommar','sb_at_the_end_of_all_things','sb_in_this_moment','sb_hyperion','sb_ascension','sb_bring_me_the_sky','debussy_clair_de_lune','chopin_nocturne_op9','satie_gymnopedie_1','bach_prelude_bwv846','mozart_k545','tchaikovsky_op39'];
    f.v30165ArchivedAmbient=[...new Set(value.filter(id=>valid.includes(id)||(typeof id==='string'&&/^my_[a-f0-9]{32}$/.test(id))))];
  }else return false;
  // Canonical persistence and recovery: never store competing audio preferences
@@ -27637,7 +27634,7 @@ function finishPhase(){if(finishing)return;finishing=true;try{const f=focusState
 function applyPreset(name,w,b){const f=focusState();if(f.status==='running'&&!confirm('Reset the running Focus block and change preset?'))return false;if(f.mode==='work'&&f.linkedMissionId)ensureCurrentPaused(f.linkedMissionId);f.preset=name;f.workMin=clamp(w,1,180,25);f.breakMin=clamp(b,1,60,5);f.mode='work';f.status='ready';f.deadlineAt=null;f.phaseTotalMs=f.workMin*60000;f.remainingMs=f.phaseTotalMs;f.linkedMissionId='';persist();renderFocusDock();return true}
 function todayFocusStats(){const arr=focusSessions().filter(s=>String(s.date||'').slice(0,10)===today()),ms=arr.reduce((a,s)=>a+Number(s.elapsedMs||0),0),blocks=arr.filter(s=>s.status==='completed').length;return {ms,blocks,sessions:arr.length}}
 function chimeSoft(){try{if(focusState().v30165Sound===false)return;const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const c=new C(),o=c.createOscillator(),g=c.createGain();o.frequency.value=620;g.gain.setValueAtTime(.025,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.08);o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.09);setTimeout(()=>c.close(),150)}catch(_){}}
-function chime(){try{window.MichelsLifeFocusAudio?.stopAmbient?.();if(focusState().v30165Sound===false)return;if(window.MichelsLifeFocusAudio?.playCompletion?.()===true)return;const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const c=new C();[0,0.14].forEach((d,i)=>{const o=c.createOscillator(),g=c.createGain();o.frequency.value=i?880:660;g.gain.setValueAtTime(.045,c.currentTime+d);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d+.18);o.connect(g);g.connect(c.destination);o.start(c.currentTime+d);o.stop(c.currentTime+d+.2)});setTimeout(()=>c.close(),500)}catch(_){}}
+function chime(){try{if(window.MichelsLifeFocusAudio?.playCompletion?.(false,focusState().mode==='break'?'work':'break')===true)return;const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const c=new C();[0,0.14].forEach((d,i)=>{const o=c.createOscillator(),g=c.createGain();o.frequency.value=i?880:660;g.gain.setValueAtTime(.045,c.currentTime+d);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d+.18);o.connect(g);g.connect(c.destination);o.start(c.currentTime+d);o.stop(c.currentTime+d+.2)});setTimeout(()=>c.close(),500)}catch(_){}}
 // The legacy sidebar Focus dock has been deleted at source; the engine remains for all clients.
 function renderFocusDock(){return focusState();}
 // Backward-compatible entrypoint: old callers now operate the ONE immersive UI.
@@ -28666,7 +28663,7 @@ function focusPane(){
    '</div>'+
    '<div class="mlv304-focus-fields"><label><span>Work minutes</span><input type="number" min="1" max="180" step="1" value="'+work+'" data-mlv-focus-work></label><label><span>Break minutes</span><input type="number" min="1" max="60" step="1" value="'+rest+'" data-mlv-focus-break></label></div>'+
    '<div class="mlv304-focus-options">'+
-      '<label><input type="checkbox" data-v30165-focus-toggle="sound" '+(f?.v30165Sound!==false?'checked':'')+'> Timer sounds</label>'+
+      '<span>Phase completion always uses bells.</span>'+
       '<label><input type="checkbox" data-v30165-focus-toggle="autobreak" '+(f?.v30165AutoBreak===true?'checked':'')+'> Auto-start break</label>'+
     '</div>'+
    '<div class="mlv304-focus-summary"><div><small>CURRENT PHASE</small><b>'+esc(mode)+'</b></div><div><small>STATUS</small><b>'+esc(status)+'</b></div><div><small>PRESET</small><b>'+esc(preset==='custom'?'Custom':preset)+'</b></div></div>'+
@@ -29375,7 +29372,7 @@ let chapterSig='';function applyChapter(force){
 }
 
 function clearSurface(el){if(!el)return;for(const p of ['background','background-image','box-shadow','backdrop-filter','-webkit-backdrop-filter'])el.style.removeProperty(p);delete el.dataset.mlv184Surface}
-function paint(el,a,kind){if(!el)return;const alpha=Math.max(0,Math.min(1,a/100));el.dataset.mlv184Surface=kind;if(alpha===0){el.style.setProperty('background','transparent','important');el.style.setProperty('background-image','none','important');el.style.setProperty('box-shadow','none','important');el.style.setProperty('backdrop-filter','none','important');el.style.setProperty('-webkit-backdrop-filter','none','important');return}const base=kind==='card'?'--ui-card-rgb':'--ui-panel-rgb';const low=Math.max(0,alpha*.62).toFixed(3);el.style.setProperty('background',`linear-gradient(180deg,rgba(var(${base},10,18,28),${alpha.toFixed(3)}),rgba(var(--ui-card-rgb,10,18,28),${low}))`,'important');el.style.setProperty('box-shadow','0 14px 34px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.028)','important');el.style.setProperty('backdrop-filter','none','important');el.style.setProperty('-webkit-backdrop-filter','none','important')}
+function paint(el,a,kind){if(!el)return;const alpha=Math.max(0,Math.min(1,a/100));el.dataset.mlv184Surface=kind;if(alpha===0){el.style.setProperty('background','transparent','important');el.style.setProperty('background-image','none','important');el.style.setProperty('box-shadow','none','important');el.style.setProperty('backdrop-filter','none','important');el.style.setProperty('-webkit-backdrop-filter','none','important');return}const base=kind==='card'?'--ui-card-rgb':'--ui-panel-rgb';const low=Math.max(0,alpha*.62).toFixed(3);el.style.setProperty('background',`linear-gradient(180deg,rgba(var(${base},10,18,28),${alpha.toFixed(3)}),rgba(var(--ui-card-rgb,10,18,28),${low}))`,'important');el.style.setProperty('box-shadow','0 14px 34px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.028)','important');const desktop=document.documentElement.dataset.mlvPlatform!=='android'&&!window.MichelsLifeAndroid;const blur=desktop&&kind!=='card'&&alpha<1?'blur(10px)':'none';el.style.setProperty('backdrop-filter',blur,'important');el.style.setProperty('-webkit-backdrop-filter',blur,'important')}
 function visibleSurfaceCandidates(){const root=document.querySelector('#main>.tab.active,#main .tab.active,#main>#tab-settings,#main>#tab-story')||document.getElementById('main');if(!root)return[];const sel='.card,.v132-panel,.v131-hero,.banner,.stat-hero,.v131-kpi,.v132-stat,.v132-mission,.v137-mission,.v132-contract,.v133-ach,.v30134-kpi,.chart-card,.quest-card,.v169-weekly-planner,.v30134-agenda-day';return [...root.querySelectorAll(sel)].filter(el=>!el.closest('[data-mlv184-theme-card],[data-mlv184-chapter-card],.mlv184-journal-sheet,.mlv184-journal-history')&&!el.matches('[data-mlv184-theme-card],[data-mlv184-chapter-card]'))}
 function applyTransparency(v=transparency()){
  const L=heroLayers();if(L){chapterSig='';applyChapter(true)}
@@ -31775,5 +31772,56 @@ window.MLVGranadaDataHealth=Object.freeze({inspect,compare,getSaved,mount:render
 </script>
 
 <script defer src="settings-color-floating-preview.js"></script>
+<style id="granada-surface-role-fix">
+body.ml-theme-ui #v30171Sidebar .v30171-nav-btn.active,body.ml-theme-ui #v30171Sidebar .v30171-parent-active{color:var(--text,#eef6ff)!important;-webkit-text-fill-color:var(--text,#eef6ff)!important}
+html,body,#v30171PrimaryNav,.v30171-settings-nav{scrollbar-width:thin;scrollbar-color:rgba(var(--ui-accent-rgb,117,228,255),.38) transparent}
+/* Only desktop floating controls. Keep layout and user transparency settings. */
+html:not([data-mlv-platform="android"]) #v3099NextUpDock .v3099-dock-title{flex:1 1 auto;min-width:0}
+html:not([data-mlv-platform="android"]) #v3099NextUpDock .v3099-collapsed-row{min-width:0;overflow:hidden}
+html:not([data-mlv-platform="android"]) #v3099NextUpDock .v3099-collapsed-row b{min-width:0;flex:1 1 auto}
+html:not([data-mlv-platform="android"]) #v3099NextUpDock .v3099-collapsed-row span{flex:0 0 auto}
+html:not([data-mlv-platform="android"]) #v3099NextUpDock .v3099-dock-head-actions{flex:0 0 auto}
+@media(min-width:961px){
+ html:not([data-mlv-platform="android"]) #v3099NextUpDock{left:calc(var(--v30171-nav-w,226px) + 38px)!important;right:calc(var(--mlv-granada-right-controls,290px) + 30px)!important;width:auto!important;max-width:none!important;transform:none!important;animation:none!important;bottom:20px!important}
+ html:not([data-mlv-platform="android"]) #mlv-alarm-launcher{right:22px!important;bottom:calc(var(--mlv-granada-focus-height,48px) + 34px)!important}
+ html:not([data-mlv-platform="android"]) #mlv-desktop-focus-launcher{right:22px!important;bottom:22px!important}
+ html:not([data-mlv-platform="android"]) body{padding-bottom:max(var(--v3099-dock-space,0px),var(--mlv-granada-footer-space,124px))!important}
+ html:not([data-mlv-platform="android"]) #v30171PrimaryNav{padding-bottom:84px!important}
+ html:not([data-mlv-platform="android"]) #v3099NextUpDock .v3099-dock-grid{max-height:min(40vh,320px);overflow-y:auto}
+}
+@media(min-width:961px) and (max-width:1150px){
+ html:not([data-mlv-platform="android"]) #v3099NextUpDock .v3099-collapsed-row{display:grid;gap:2px}
+ html:not([data-mlv-platform="android"]) #v3099NextUpDock .v3099-dock-count{display:none}
+}
+@media(max-width:960px){
+ html:not([data-mlv-platform="android"]) #mlv-desktop-mini-focus,html:not([data-mlv-platform="android"]) #mlv-desktop-focus-launcher{bottom:calc(var(--v3099-dock-space,0px) + 16px)!important;right:12px!important}
+ html:not([data-mlv-platform="android"]) #mlv-alarm-launcher{bottom:calc(var(--v3099-dock-space,0px) + var(--mlv-granada-focus-height,48px) + 28px)!important;right:12px!important}
+ html:not([data-mlv-platform="android"]) body{padding-bottom:calc(var(--v3099-dock-space,0px) + var(--mlv-granada-footer-space,124px))!important}
+}
+</style>
+<script id="granada-desktop-footer-measure">
+(function(){
+ const root=document.documentElement;
+ if(root.dataset.mlvPlatform==='android'||window.MichelsLifeAndroid||window.__MICHELSLIFE_PLATFORM__==='android')return;
+ const ids=['mlv-desktop-mini-focus','mlv-desktop-focus-launcher','mlv-alarm-launcher'];
+ const observed=new WeakSet();
+ let queued=false;
+ function measure(){queued=false;let width=0,focusHeight=0,alarmHeight=0;
+  for(const id of ids){const el=document.getElementById(id);if(!el)continue;if(!observed.has(el)){observed.add(el);resize?.observe(el);changes.observe(el,{attributes:true,attributeFilter:['hidden']});}
+   if(el.hidden||getComputedStyle(el).display==='none')continue;const b=el.getBoundingClientRect();width=Math.max(width,b.width);
+   if(id==='mlv-alarm-launcher')alarmHeight=b.height;else focusHeight=Math.max(focusHeight,b.height);
+  }
+  root.style.setProperty('--mlv-granada-right-controls',Math.ceil(width||0)+'px');
+  root.style.setProperty('--mlv-granada-focus-height',Math.ceil(focusHeight||0)+'px');
+  root.style.setProperty('--mlv-granada-footer-space',Math.ceil(focusHeight+alarmHeight+64)+'px');
+ }
+ function schedule(){if(!queued){queued=true;requestAnimationFrame(measure)}}
+ const resize=typeof ResizeObserver==='function'?new ResizeObserver(schedule):null;
+ const changes=new MutationObserver(schedule);
+ const mount=new MutationObserver(()=>{if(ids.some(id=>{const e=document.getElementById(id);return e&&!observed.has(e)}))schedule()});
+ mount.observe(document.body,{childList:true});
+ window.addEventListener('resize',schedule,{passive:true});schedule();
+})();
+</script>
 </body>
 </html>

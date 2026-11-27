@@ -1,7 +1,7 @@
 (function(){
   'use strict';
   if(window.__MICHELSLIFE_ANDROID_BRIDGE__) return;
-  window.__MICHELSLIFE_ANDROID_BRIDGE__='0.2.23';
+  window.__MICHELSLIFE_ANDROID_BRIDGE__='0.2.24';
   window.__MICHELSLIFE_PLATFORM__='android';
 
   const listeners=new Set();
@@ -815,6 +815,10 @@
         #fixedStatusBar,.status-strip{display:none!important;height:0!important;min-height:0!important;max-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
         #v176StatusPanel{position:relative!important;top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;width:calc(100% - 16px)!important;max-width:none!important;height:auto!important;min-height:0!important;max-height:none!important;margin:6px 8px!important;padding:7px!important;border-radius:14px!important;overflow:visible!important;contain:none!important;transform:none!important}
         #v176StatusPanel .v176-card:not(.v30165-rpg-chapter-hero){display:none!important}
+        /* Settings has its own compact fixed title. The cinematic Chapter
+           header belongs to the dashboard, not the mobile settings viewport. */
+        html[data-mlv-platform="android"] body:has(#tab-settings.active) #v176StatusPanel{display:none!important}
+
         #v176StatusPanel>.v176-card.v30165-rpg-chapter-hero{display:block!important;position:relative!important;visibility:visible!important;pointer-events:auto!important;min-height:238px!important;width:100%!important;overflow:hidden!important}
         #v176StatusPanel .v176-time{flex:0 0 auto!important;font-size:18px!important;line-height:1!important;letter-spacing:-.03em!important}
         #v176StatusPanel .v176-small{min-width:0!important;margin:0!important;font-size:9px!important;line-height:1.2!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}

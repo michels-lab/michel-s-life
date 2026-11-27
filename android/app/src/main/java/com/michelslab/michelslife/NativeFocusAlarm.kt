@@ -37,83 +37,33 @@ internal object NativeFocusAlarm {
     private const val REQUEST_CODE = 4705
     private const val NOTIFICATION_ID = 4705
     private const val MAX_FUTURE_MS = 4 * 60 * 60 * 1000L
+    // Pomodoro uses only fixed bells. Personal alarms retain their own full catalog.
     private fun completionSound(raw: String?): String =
-        if (raw in listOf("soft", "glass", "aurora", "observatory", "midnight", "silver", "mozart_k545", "tchaikovsky_op39", "sb_meanwhile", "sb_moonlight", "sb_cobalt", "sb_skyward", "sb_life_is", "sb_first_snow", "sb_midsommar", "sb_at_the_end_of_all_things", "sb_in_this_moment", "sb_hyperion", "sb_ascension", "sb_bring_me_the_sky", "debussy_clair_de_lune", "chopin_nocturne_op9", "satie_gymnopedie_1", "bach_prelude_bwv846", "off"))
-            raw ?: "soft"
-        else "soft"
+        if (raw == "observatory") "observatory" else "soft"
 
     private fun channelIdForSound(sound: String): String =
         CHANNEL_ID + "-select-v2-" + completionSound(sound)
 
-    // Notification channels have immutable sounds after first creation.
-    // Use a channel for each original ringtone, not a fake JS-only preview.
+    private fun phaseBell(mode: String): String = if (mode == "break") "observatory" else "soft"
+
+    // Keep the two existing bell channels and their Android user settings.
+    // No music or silent channel is eligible for Pomodoro completion.
     private fun createSelectedCompletionChannel(context: Context, raw: String) {
         val chosen = completionSound(raw)
-        val names = mapOf(
-            "soft" to "Soft Bell", "glass" to "Glass Chime",
-            "aurora" to "Aurora Tone", "observatory" to "Observatory Bell",
-            "midnight" to "Midnight Chime", "silver" to "Silver Echo",
-            "mozart_k545" to "Mozart · Sonata K.545",
-            "tchaikovsky_op39" to "Tchaikovsky · Morning Prayer",
-            "sb_meanwhile" to "Meanwhile · Scott Buckley",
-            "sb_moonlight" to "Moonlight · Scott Buckley",
-            "sb_cobalt" to "Cobalt · Scott Buckley",
-            "sb_skyward" to "Skyward · Scott Buckley",
-            "sb_life_is" to "Life Is · Scott Buckley",
-            "sb_first_snow" to "First Snow · Scott Buckley",
-            "sb_midsommar" to "Midsommar · Scott Buckley",
-            "sb_at_the_end_of_all_things" to "At The End Of All Things · Scott Buckley",
-            "sb_in_this_moment" to "In This Moment · Scott Buckley",
-            "sb_hyperion" to "Hyperion · Scott Buckley",
-            "sb_ascension" to "Ascension · Scott Buckley",
-            "sb_bring_me_the_sky" to "Bring Me The Sky · Scott Buckley",
-            "debussy_clair_de_lune" to "Claude Debussy · Clair de Lune",
-            "chopin_nocturne_op9" to "Frédéric Chopin · Nocturne Op. 9 No. 2",
-            "satie_gymnopedie_1" to "Erik Satie · Gymnopédie No. 1",
-            "bach_prelude_bwv846" to "Johann Sebastian Bach · Prelude in C major, BWV 846",
-            "off" to "No sound"
-        )
+        val tone = if (chosen == "observatory") R.raw.mlv_focus_observatory else R.raw.mlv_focus_soft
+        val name = if (chosen == "observatory") "Observatory Bell" else "Soft Bell"
         val channel = NotificationChannel(
-            channelIdForSound(chosen), "Pomodoro · " + (names[chosen] ?: "Soft Bell"),
+            channelIdForSound(chosen), "Pomodoro · " + name,
             NotificationManager.IMPORTANCE_HIGH
         ).apply {
-            description = "Michel's Life Pomodoro completion · original selected ringtone"
-            enableVibration(chosen != "off")
-            if (chosen == "off") setSound(null, null)
-            else {
-                val tone = when (chosen) {
-                    "glass" -> R.raw.mlv_focus_glass
-                    "aurora" -> R.raw.mlv_focus_aurora
-                    "observatory" -> R.raw.mlv_focus_observatory
-                    "midnight" -> R.raw.mlv_focus_midnight
-                    "silver" -> R.raw.mlv_focus_silver
-                    "mozart_k545" -> R.raw.mlv_focus_mozart_k545
-                    "tchaikovsky_op39" -> R.raw.mlv_focus_tchaikovsky_op39
-                    "sb_meanwhile" -> R.raw.mlv_focus_sb_meanwhile
-                    "sb_moonlight" -> R.raw.mlv_focus_sb_moonlight
-                    "sb_cobalt" -> R.raw.mlv_focus_sb_cobalt
-                    "sb_skyward" -> R.raw.mlv_focus_sb_skyward
-                    "sb_life_is" -> R.raw.mlv_focus_sb_life_is
-                    "sb_first_snow" -> R.raw.mlv_focus_sb_first_snow
-                    "sb_midsommar" -> R.raw.mlv_focus_sb_midsommar
-                    "sb_at_the_end_of_all_things" -> R.raw.mlv_focus_sb_at_the_end_of_all_things
-                    "sb_in_this_moment" -> R.raw.mlv_focus_sb_in_this_moment
-                    "sb_hyperion" -> R.raw.mlv_focus_sb_hyperion
-                    "sb_ascension" -> R.raw.mlv_focus_sb_ascension
-                    "sb_bring_me_the_sky" -> R.raw.mlv_focus_sb_bring_me_the_sky
-                    "debussy_clair_de_lune" -> R.raw.mlv_focus_debussy_clair_de_lune
-                    "chopin_nocturne_op9" -> R.raw.mlv_focus_chopin_nocturne_op9
-                    "satie_gymnopedie_1" -> R.raw.mlv_focus_satie_gymnopedie_1
-                    "bach_prelude_bwv846" -> R.raw.mlv_focus_bach_prelude_bwv846
-                    else -> R.raw.mlv_focus_soft
-                }
-                val uri = Uri.parse("android.resource://" + context.packageName + "/" + tone)
-                val attributes = AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .build()
-                setSound(uri, attributes)
-            }
+            description = "Michel's Life Pomodoro phase completion bell"
+            enableVibration(true)
+            val uri = Uri.parse("android.resource://" + context.packageName + "/" + tone)
+            val attributes = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION_EVENT)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
+            setSound(uri, attributes)
         }
         (context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
             .createNotificationChannel(channel)
@@ -130,7 +80,8 @@ internal object NativeFocusAlarm {
         }
         manager.createNotificationChannel(channel)
         val settings = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        createSelectedCompletionChannel(context, settings.getString(KEY_SOUND, "soft") ?: "soft")
+        createSelectedCompletionChannel(context, "soft")
+        createSelectedCompletionChannel(context, "observatory")
         manager.createNotificationChannel(NotificationChannel(
             ACTIVE_CHANNEL_ID, "Running Pomodoro", NotificationManager.IMPORTANCE_LOW
         ).apply {
@@ -245,9 +196,6 @@ internal object NativeFocusAlarm {
         val language = if (state.optString("language") == "es") "es" else "en"
         val now = System.currentTimeMillis()
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        val tone = completionSound(state.optString(KEY_SOUND, "soft"))
-        prefs.edit().putString(KEY_SOUND, tone).apply()
-        createSelectedCompletionChannel(context, tone)
 
         // Idle, paused or invalid states must remove the previous notification.
         if (phaseStatus != "running" || deadline <= 0L || deadline > now + MAX_FUTURE_MS) {
@@ -278,6 +226,9 @@ internal object NativeFocusAlarm {
             return status(context).put("scheduled", true)
         }
 
+        val tone = phaseBell(mode)
+        prefs.edit().putString(KEY_SOUND, tone).apply()
+        createSelectedCompletionChannel(context, tone)
         val token = "$mode:$deadline"
         if (prefs.getString(KEY_TOKEN, "") == token &&
             prefs.getLong(KEY_DEADLINE, 0L) == deadline) {
@@ -350,7 +301,7 @@ internal object NativeFocusAlarm {
         if (deadline <= 0L || deadline > System.currentTimeMillis() + 5_000L) return
         val mode = prefs.getString(KEY_MODE, "work") ?: "work"
         val language = prefs.getString(KEY_LANGUAGE, "en") ?: "en"
-        val tone = completionSound(prefs.getString(KEY_SOUND, "soft"))
+        val tone = phaseBell(mode)
         // Clearing before notification means duplicate/stale receiver events
         // cannot double-send after reset or an overlapping phase transition.
         prefs.edit().remove(KEY_TOKEN).remove(KEY_DEADLINE).remove(KEY_MODE)
@@ -401,9 +352,7 @@ internal object NativeFocusAlarm {
             }
         } else if (es) "Te avisaremos de nuevo en 5 minutos"
         else "Another reminder in 5 minutes"
-        val tone = completionSound(
-            context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY_SOUND, "soft")
-        )
+        val tone = phaseBell(mode)
         val notification = Notification.Builder(context, channelIdForSound(tone))
             .setSmallIcon(R.drawable.ic_stat_michels_focus)
             .setContentTitle(title)

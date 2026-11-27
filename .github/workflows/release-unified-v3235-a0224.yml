@@ -1,0 +1,165 @@
+name: Build verified Michel's Life 3.0.235 + Android Direct 0.2.24 for destination-owned publication
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.michelslab/release-intents/unified-v3235-a0224.txt'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: michel-life-stable-3235-0224-final
+  cancel-in-progress: true
+
+jobs:
+  exact-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Verify isolated owner release intent, version and exact SHA checks
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git diff --name-only HEAD^ HEAD)" = '.michelslab/release-intents/unified-v3235-a0224.txt'
+          grep -q '<Version>3.0.235</Version>' src/MichelsLife/MichelsLife.csproj
+          grep -q 'versionName = "0.2.24"' android/app/build.gradle.kts
+          grep -q 'versionCode = 26' android/app/build.gradle.kts
+          for n in $(seq 1 100); do
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$GITHUB_SHA&per_page=100" > runs.json
+            if jq -e --arg sha "$GITHUB_SHA" '
+              .workflow_runs as $runs |
+              all(["Source validation", "UI smoke", "Android UI smoke", "GRANADA - Story Focus touch provenance", "GRANADA Data Health and recovery safety", "GRANADA Android Direct safe update discovery", "GRANADA Quick Mission and original Pomodoro audio", "GRANADA cross-platform immersive Focus", "GRANADA personal alarms — Windows and Android contracts", "GRANADA Settings live color persistence", "GRANADA classical Focus excerpts"][];
+                . as $name | any($runs[]; .head_sha==$sha and .name==$name and .conclusion=="success"))
+              ' runs.json > /dev/null; then
+              echo "EXACT_SHA_ALL_GREEN: $GITHUB_SHA"; exit 0
+            fi
+            sleep 15
+          done
+          echo "::error::Required exact-SHA source/UI checks incomplete or failing"; exit 1
+
+  windows:
+    uses: ./.github/workflows/release-windows.yml
+    with:
+      publish: false
+    secrets: inherit
+
+  android:
+    uses: ./.github/workflows/android-build.yml
+    with:
+      build_direct: true
+    secrets: inherit
+
+  # The production-signed Direct artifact, not the debug APK, is the actual
+  # release candidate. Never let a debug-only ADB crash veto a signed test;
+  # require real signed installation + relaunch on at least one fresh API35 AVD.
+  signed-native-android15:
+    needs: [android]
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    env:
+      ANDROID_VERSION: '0.2.24'
+      APK: artifacts/candidate/MichelsLife-Android-Direct-v0.2.24.apk
+      MLV_REQUIRE_PROTECTED_SIGNED: '1'
+      MLV_REQUIRE_NATIVE_STATE_PROBE: '0'
+      DIRECT_CERT_SHA256: ${{ vars.ANDROID_DIRECT_CERT_SHA256 }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: MichelsLife-Android-Direct-v0.2.24
+          path: artifacts/candidate
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Require exact production signer, version and source before AVD
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "$APK"
+          (cd artifacts/candidate && sha256sum -c MichelsLife-Android-Direct-v0.2.24.apk.sha256)
+          test -n "$DIRECT_CERT_SHA256"
+          jq -e --arg cert "$DIRECT_CERT_SHA256" --arg sha "$GITHUB_SHA" '
+            .sourceSha==$sha and .signerCertSha256==$cert and
+            .versionName=="0.2.24" and .versionCode==26 and
+            .package=="com.michelslab.michelslife" and
+            .distribution=="production-signed"
+          ' artifacts/candidate/direct-release-manifest.json
+      - name: Enable hardware virtualization if available
+        run: if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
+      - name: Fresh Android 15 signed APK real install, onboarding, relaunch
+        id: primary
+        continue-on-error: true
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          avd-name: mlv-0224-signed-primary
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu software -feature -Vulkan
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash android/tools/smoke_candidate_apk_install.sh
+      - name: Isolate failed AVD evidence and reset the ADB transport
+        if: steps.primary.outcome != 'success'
+        shell: bash
+        run: |
+          if [ -d artifacts/candidate-install ]; then
+            mv artifacts/candidate-install artifacts/primary-native-failed
+          fi
+          adb kill-server || true
+          sleep 3
+          adb start-server || true
+      - name: Independent Android 15 signed APK retry with alternate GPU
+        id: fallback
+        if: steps.primary.outcome != 'success'
+        continue-on-error: true
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          avd-name: mlv-0224-signed-alternate
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu swiftshader -feature -Vulkan
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash android/tools/smoke_candidate_apk_install.sh
+      - name: REQUIRE native install and actual screen captures for signed APK
+        if: always()
+        env:
+          PRIMARY: ${{ steps.primary.outcome }}
+          FALLBACK: ${{ steps.fallback.outcome }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$PRIMARY" != success ] && [ "$FALLBACK" != success ]; then
+            echo "::error::Both independent signed Android15 native install/relaunch attempts failed"
+            exit 1
+          fi
+          for file in step0.png step4-after-native-finish.png step5-after-relaunch.png; do
+            test -s "artifacts/candidate-install/$file" || {
+              echo "::error::Signed native QA did not retain actual $file"
+              exit 1
+            }
+          done
+          echo "SIGNED_DIRECT_NATIVE_API35_PASS: primary=$PRIMARY fallback=$FALLBACK"
+      - name: Preserve actual device evidence, including failed first run
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MichelsLife-v0.2.24-Direct-signed-native-Android15
+          path: |
+            artifacts/candidate-install/
+            artifacts/primary-native-failed/
+          if-no-files-found: warn
+          retention-days: 30
+

@@ -75,10 +75,10 @@ try{
     samples.push(take('skip-to-break',()=>api.skipFocus()));
     samples.push(take('break-start',()=>api.startFocus()));
     samples.push(take('reset-break',()=>api.resetFocus()));
-    failNext=true;
     samples.push(take('work-prepare-retry',()=>api.skipFocus()));
-    // The current phase is now ready for work. First native arm fails, the
-    // next canonical tick must retry rather than caching a false success.
+    // Fail precisely the first RUNNING arm, not the preceding READY cancel.
+    // With distinct phase bells, that READY transition legitimately posts.
+    failNext=true;
     samples.push(take('work-failed-arm',()=>api.startFocus()));
     const failedArms=activity.filter(x=>x.failed).length;
     const attemptsBeforeRetry=activity.length;
@@ -121,6 +121,7 @@ try{
   assertPhase('work-prepare-retry','ready','work');
   assertPhase('work-failed-arm','running','work');
   assert.equal(result.failedArms,1,'Synthetic native arm failure not exercised exactly once');
+  assert.equal(steps['work-failed-arm'].recent.failed,true,'The failed transport must be the running arm, not the preceding cancel');
   assert.equal(result.attemptsAfterRetry,result.attemptsBeforeRetry+1,
     'Failed native alarm transport did not retry on the next live Focus tick');
   assert.equal(result.attemptsAfterRetryTicks,result.attemptsAfterRetry,
@@ -169,27 +170,16 @@ try{
   });
   assert.ok(scene.alpha>0&&scene.alpha<0.65&&scene.backdrop==='none',
     'Android sheet obscures the selected wallpaper or blurs timer: '+JSON.stringify(scene));
-   // The completion picker moved outside the collapsed Audio drawer: check
-   // actual visible UI, ES/EN localization and canonical preference persistence.
-   const completionLabel=page.locator('.mlv-android-focus-quick-completion label');
-   const completionSelect=completionLabel.locator('select[data-mobile-focus-completion]');
-   assert.equal(await completionLabel.count(),1,'One direct completion selector is required');
-   assert.equal(await completionSelect.count(),1,'Completion select must survive localization');
-   assert.match(await completionLabel.innerText(),
-     /Sonido al terminar/,'Visible completion label must be localized in Spanish');
-   assert.equal(await completionSelect.isVisible(),true,
-     'Completion picker must be visible without opening audio');
-   assert.equal(await page.locator('[data-mobile-focus="preview-completion"]').isVisible(),true,
-     'Preview button must be visible without opening audio');
-   const originalCompletion=await completionSelect.inputValue();
-   const nextCompletion=originalCompletion==='glass'?'soft':'glass';
-   await completionSelect.selectOption(nextCompletion);
-   assert.equal(await page.evaluate(()=>window.MichelsLifeFocusAudio.completionId()),nextCompletion,
-     'Visible completion picker must write the canonical FocusStory preference');
+   const ambientToggle=page.locator('[data-mobile-focus="toggle-ambient"]');
+   assert.equal(await ambientToggle.count(),1);
+   assert.equal(await ambientToggle.isVisible(),true);
+   assert.equal(await ambientToggle.evaluate(el=>!!el.closest('details')),false);
+   assert.match(await ambientToggle.innerText(),/Reproducir/);
+   assert.equal(await page.locator('[data-mobile-focus-completion]').count(),0);
    const audioDetails=page.locator('.mlv-android-focus-sounds');
    const audioSummary=audioDetails.locator(':scope > summary');
    assert.match(await audioSummary.innerText(),
-     /Audio de enfoque/,'Spanish locale must not label audio as custom work duration');
+     /Opciones avanzadas de audio/,'Spanish locale must not label audio as custom work duration');
    await audioSummary.click();
    assert.equal(await audioDetails.getAttribute('open'),'',
      'Advanced ambient control must become visible when expanded');
@@ -217,11 +207,8 @@ try{
   await page.waitForFunction(()=>document.querySelector('[data-mobile-focus="reset"]')?.textContent==='Reset',
     null,{timeout:12000});
   assert.equal(await page.locator('[data-mobile-focus="skip"]').textContent(),'Skip phase');
-  assert.match(await completionLabel.innerText(),/Completion sound/,
-    'Completion label must translate to English without removing the nested picker');
-  assert.equal(await completionSelect.count(),1,'English locale removed the completion select');
-  assert.equal(await completionSelect.inputValue(),nextCompletion,
-    'Locale round trip discarded canonical completion sound selection');
+  assert.match(await ambientToggle.innerText(),/Play/);
+  assert.equal(await page.locator('[data-mobile-focus-completion]').count(),0);
   assert.equal(await workInput.inputValue(),'37','Returning to English discarded typed duration');
 
   // Regression: the old sidebar Focus dock has actually been deleted. Touch

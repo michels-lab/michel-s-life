@@ -212,9 +212,9 @@ test('permanent motivational quotes follow the clock and precede the optional so
   assert.doesNotMatch(focus,/<details class="mlv-focus-motivation-details">/);
   assert.doesNotMatch(android,/<details class="mlv-focus-motivation-details">/);
   assert.ok(focus.indexOf('id="mlv-desktop-focus-clock"')<focus.indexOf('id="mlv-desktop-focus-motivation"'));
-  assert.ok(focus.indexOf('id="mlv-desktop-focus-motivation"')<focus.indexOf('<select id="mlv-focus-completion-select"'));
+  assert.ok(focus.indexOf('id="mlv-desktop-focus-motivation"')<focus.indexOf('data-mlv-audio="toggle-ambient">Play'));
   assert.ok(android.indexOf('id="mlv-android-focus-time"')<android.indexOf('id="mlv-android-focus-motivation"'));
-  assert.ok(android.indexOf('id="mlv-android-focus-motivation"')<android.indexOf('<select data-mobile-focus-completion>'));
+  assert.ok(android.indexOf('id="mlv-android-focus-motivation"')<android.indexOf('data-mobile-focus="toggle-ambient">Play'));
   assert.doesNotMatch(focus,/oldDock/);
   assert.doesNotMatch(focus,/backdrop-filter:blur/);
   assert.doesNotMatch(android,/#v30171Sidebar #v30162FocusDock/);
@@ -236,7 +236,7 @@ test('legacy sidebar Pomodoro presentation is deleted at source',()=>{
   assert.equal(core.includes("f.expanded=!!open"),false);
   assert.ok(core.includes('data-mlv-focus-preset="90/15"'));
   assert.ok(core.includes("if(preset==='90/15'){work=90;rest=15}"));
-  assert.ok(core.includes('data-v30165-focus-toggle="sound"'));
+  assert.ok(core.includes('Phase completion always uses bells.'));
   assert.ok(core.includes('data-v30165-focus-toggle="autobreak"'));
   assert.equal(core.includes('function applyDeep()'),false);
   assert.ok(core.includes('augmentFocus:ensureFocusPreferences'));
