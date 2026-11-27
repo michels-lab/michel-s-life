@@ -488,21 +488,22 @@ internal object NativePersonalAlarms {
         file.writeBytes(buffer.array())
     }
 
-    fun snooze(context: Context, id: String) {
+    @Synchronized
+    fun snooze(context: Context, id: String): Boolean {
         val original = list(context)
         var selected: JSONObject? = null
         for (index in 0 until original.length()) {
             val entry = original.optJSONObject(index)
             if (entry?.optString("id") == id) { selected = entry;break }
         }
-        if (selected == null) return
+        if (selected == null) return false
         // A five-minute snooze is an exact epoch deadline. HH:mm is only a
         // display field; rounding it forward used to delay alarms by ~6 min.
         val dueAt = System.currentTimeMillis() + 5L * 60_000L
         val next = LocalDateTime.ofInstant(
             java.time.Instant.ofEpochMilli(dueAt), ZoneId.systemDefault())
         val replacement = JSONObject()
-            .put("id", "s" + System.currentTimeMillis().toString(36))
+            .put("id", "s" + java.util.UUID.randomUUID().toString())
             .put("label", selected.optString("label"))
             .put("time", next.format(DateTimeFormatter.ofPattern("HH:mm")))
             .put("date", next.toLocalDate().toString())
@@ -511,9 +512,9 @@ internal object NativePersonalAlarms {
             .put("sound", selected.optString("sound", "system"))
             .put("days", JSONArray())
             .put("enabled", true)
-        if (original.length() >= 80) return
+        if (original.length() >= 80) return false
         original.put(replacement)
-        sync(context, original)
+        return try { !sync(context, original).has("error") } catch (_: Exception) { false }
     }
 
     private fun notificationAllowed(context: Context): Boolean =
@@ -660,6 +661,7 @@ internal object NativePersonalAlarms {
             .put("fullScreen", Build.VERSION.SDK_INT < 34 || nm.canUseFullScreenIntent())
     }
 
+    @Synchronized
     fun sync(context: Context, input: JSONArray): JSONObject {
         if (input.length() > 80) return JSONObject().put("error", "Too many alarms")
         val cleanList = JSONArray()
@@ -669,12 +671,15 @@ internal object NativePersonalAlarms {
             if (unique.add(normalized.getString("id"))) cleanList.put(normalized)
         }
         val existing = list(context)
+        // A failed write must not cancel the previously scheduled alarms.
+        if (!prefs(context).edit().putString(KEY_ALARMS, cleanList.toString()).commit()) {
+            prefs(context).edit().putString(KEY_ALARMS, existing.toString()).commit()
+            return JSONObject().put("error", "Could not persist alarms")
+        }
         for (i in 0 until existing.length()) {
             val old = existing.optJSONObject(i) ?: continue
             old.optString("id").takeIf { idPattern.matches(it) }?.let { cancel(context, it) }
         }
-        // Commit before re-arming: a receiver can then validate the new configuration.
-        prefs(context).edit().putString(KEY_ALARMS, cleanList.toString()).commit()
         createChannel(context)
         for (i in 0 until cleanList.length()) schedule(context, cleanList.getJSONObject(i))
         return status(context).put("count", cleanList.length())
@@ -697,6 +702,7 @@ internal object NativePersonalAlarms {
         prefs(context).edit().remove(LAST_DELIVERED_PREFIX + id).apply()
     }
 
+    @Synchronized
     fun deliver(context: Context, id: String) {
         if (!idPattern.matches(id)) return
         val all = list(context)
