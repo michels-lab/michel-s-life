@@ -146,6 +146,10 @@ class MainActivity : Activity() {
         if (!::webView.isInitialized || !acceptsWebViewCallbacks(webView)) return
         val id = intent.getStringExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM) ?: return
         if (!id.matches(Regex("^[A-Za-z0-9_-]{1,64}$"))) return
+        if (!NativePersonalAlarms.wasDelivered(this, id)) {
+            intent.removeExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM)
+            return
+        }
         beginAlarmAttention(id)
         attemptPersonalAlarmOpen(alarmOpenGeneration, id, 0)
     }

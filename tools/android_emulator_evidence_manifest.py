@@ -39,6 +39,7 @@ def png_shape(path):
     offset = 8
     shape = None
     seen_end = False
+    image_data = False
     while offset < len(data):
         if offset + 12 > len(data):
             raise ValueError("truncated PNG chunk")
@@ -52,6 +53,8 @@ def png_shape(path):
         expected_crc = binascii.crc32(typ + payload) & 0xffffffff
         if observed_crc != expected_crc:
             raise ValueError("PNG chunk CRC mismatch")
+        if offset == 8 and typ != b"IHDR":
+            raise ValueError("PNG header is not first")
         if typ == b"IHDR":
             if shape is not None or n != 13:
                 raise ValueError("invalid/duplicated PNG header")
@@ -59,13 +62,15 @@ def png_shape(path):
             if width < 300 or height < 400:
                 raise ValueError("native screenshot too small")
             shape = (width, height)
+        elif typ == b"IDAT":
+            image_data = image_data or n > 0
         elif typ == b"IEND":
             if n != 0 or end != len(data):
                 raise ValueError("PNG contains unexpected bytes after end")
             seen_end = True
         offset = end
-    if shape is None or not seen_end:
-        raise ValueError("missing PNG header or terminal chunk")
+    if shape is None or not seen_end or not image_data:
+        raise ValueError("missing PNG header, image data or terminal chunk")
     return shape
 
 

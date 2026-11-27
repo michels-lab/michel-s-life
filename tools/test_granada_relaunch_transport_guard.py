@@ -33,7 +33,7 @@ class SimulatedADB:
             if row.get("transport") == "error":
                 return 127, "SECRET ADAPTER ERROR PASSWORD"
             state = row.get("transport", "device")
-            return 0, "List of devices attached\n" + SERIAL + "\t" + state + " product:emulator\n"
+            return 0, "List of devices attached\n" + SERIAL + "\t" + state + " product:emulator\n" + row.get("other", "")
         if argv == ("-s", SERIAL, "shell", "getprop", "sys.boot_completed"):
             return 0, row.get("boot", "1")
         if argv == ("-s", SERIAL, "shell", "pidof", PKG):
@@ -48,7 +48,7 @@ class GuardTests(unittest.TestCase):
     def apply(self, cases, **kwargs):
         stub = SimulatedADB(cases)
         result = guard.recover(stub, SERIAL, PKG, delay_seconds=0,
-                               sleep=lambda _: None, **kwargs)
+                               sleep=lambda _: None, **({"allow_restart": True} | kwargs))
         return result, stub
 
     def test_clean_real_pid_immediately(self):
@@ -91,6 +91,31 @@ class GuardTests(unittest.TestCase):
         self.assertTrue(all("force-stop" not in " ".join(cmd) and
                             "am" not in cmd and "install" not in cmd
                             for cmd in stub.actions))
+
+    def test_shared_host_never_restarts_adb(self):
+        result, stub = self.apply([{"transport":"offline","other":"physical-device\tdevice\n"}, {}])
+        self.assertEqual(result["status"],"pass")
+        self.assertEqual(result["adb_resets"],0)
+        self.assertFalse(stub.has(("kill-server",)))
+
+    def test_manual_or_unknown_inventory_never_restarts_adb(self):
+        for rows, options in [([{"transport":"offline"},{}],{"allow_restart":False}),
+                              ([{"transport":"error"},{}],{})]:
+            result, stub = self.apply(rows, **options)
+            self.assertEqual(result["status"],"pass")
+            self.assertFalse(stub.has(("kill-server",)))
+
+    def test_multiple_or_zero_pid_does_not_certify_app(self):
+        for pid in ("0","123 456"):
+            result, _ = self.apply([{"pid":pid}],max_attempts=1)
+            self.assertEqual(result["code"],"app_process_missing")
+
+    def test_debug_missing_all_comparisons_cannot_fall_back_to_signed_mode(self):
+        script=(ROOT/"android/tools/smoke_candidate_apk_install.sh").read_text()
+        self.assertIn('if os.environ["NATIVE_STATE_TEST"] == "1" or any(',script)
+        self.assertIn('png_shape(frame)',script)
+        self.assertIn('GITHUB_ACTIONS:-',script)
+        self.assertIn('--allow-hosted-restart',script)
 
     def test_bad_pid_must_not_be_treated_as_alive(self):
         result, _ = self.apply([{"pid": "1234 SECRET_ACCESS_TOKEN"}])

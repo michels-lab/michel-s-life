@@ -11,12 +11,16 @@ mkdir -p "$OUT"
 # It never touches ADB, device storage, account information, or app state.
 # The EXIT trap preserves observer evidence on ALL script failures without
 # changing the original native test result or its exit code.
-python3 android/tools/granada_emulator_host_watch.py \
+GRANADA_WATCH_PID=""
+if [[ "${GITHUB_ACTIONS:-}" == "true" && "${ANDROID_SERIAL:-emulator-5554}" == "emulator-5554" ]]; then
+  export ANDROID_SERIAL=emulator-5554
+  python3 android/tools/granada_emulator_host_watch.py \
     --out "$OUT" --interval 3 --samples 240 \
     >"$OUT/granada-host-watch-summary.log" 2>&1 &
-GRANADA_WATCH_PID=$!
+  GRANADA_WATCH_PID=$!
+fi
 cleanup_granada_host_watch() {
-  if kill -0 "$GRANADA_WATCH_PID" 2>/dev/null; then
+  if [[ -n "$GRANADA_WATCH_PID" ]] && kill -0 "$GRANADA_WATCH_PID" 2>/dev/null; then
     kill -TERM "$GRANADA_WATCH_PID" 2>/dev/null || true
     wait "$GRANADA_WATCH_PID" 2>/dev/null || true
   fi
@@ -26,24 +30,42 @@ test -s "$APK"
 # Hosted CI only: explicit emulator identity and bounded, non-destructive ADB repair.
 # The guard never restarts the app or emulator and cannot certify persistence.
 verify_native_process(){
-  local stage="$1"
-  if ! python3 android/tools/granada_relaunch_transport_guard.py \
-      --serial emulator-5554 --package "$PKG" \
+  local stage="$1" pid
+  if [[ "${GITHUB_ACTIONS:-}" == "true" && "${ANDROID_SERIAL:-}" == "emulator-5554" ]]; then
+    if ! python3 android/tools/granada_relaunch_transport_guard.py \
+      --serial emulator-5554 --package "$PKG" --allow-hosted-restart \
       --output "$OUT/granada-transport-$stage.json" --attempts 5 --delay 3; then
-    echo "::error::Cannot verify native Android process ($stage)"
-    return 1
+      echo "::error::Cannot verify native Android process ($stage)"
+      return 1
+    fi
+  else
+    # Manual/physical-device runs must never restart the shared host ADB server.
+    pid="$(timeout 15s adb shell pidof "$PKG" | tr -d '\r')" || return 1
+    [[ "$pid" =~ ^[1-9][0-9]*$ ]] || return 1
   fi
 }
 # Native WebView captures can fail with "error: closed" during adb transport
 # reconnects on hosted Android 16 emulators. Retry the exact native screenshot
 # command and validate the PNG; never replace missing pixels with browser mocks.
+validate_png(){
+  python3 - "$1" <<'PY'
+import sys
+from pathlib import Path
+sys.path.insert(0, "tools")
+from android_emulator_evidence_manifest import png_shape
+p = Path(sys.argv[1])
+if p.stat().st_size < 30000:
+    raise SystemExit("Native PNG too small")
+png_shape(p)
+PY
+}
 capture_png(){
-  local dest="$1" attempt tmp="$1.partial" remote="/sdcard/mlv-ci-native-capture.png"
+  local dest="$1" attempt tmp="$1.partial" remote="/sdcard/mlv-ci-native-capture-$-$RANDOM.png"
   for attempt in 1 2 3 4 5; do
     # First use Android's raw PNG stdout. If an API 36 ADB transport drops
     # during exec-out, use a separate on-device screenshot + pull route.
     if timeout 25s adb exec-out screencap -p > "$tmp" 2>"$OUT/adb-screencap-last-error.txt" &&
-       python3 -c 'import pathlib,sys;d=pathlib.Path(sys.argv[1]).read_bytes();sys.exit(0 if d.startswith(bytes.fromhex("89504e470d0a1a0a")) and len(d)>30000 else 1)' "$tmp"; then
+       validate_png "$tmp"; then
       mv "$tmp" "$dest"
       return 0
     fi
@@ -54,13 +76,14 @@ capture_png(){
     # the actual emulator framebuffer, just through a different ADB transport.
     if timeout 25s adb shell screencap -p "$remote" >"$OUT/adb-shell-screencap-last.txt" 2>&1 &&
        timeout 25s adb pull "$remote" "$tmp" >"$OUT/adb-pull-screencap-last.txt" 2>&1 &&
-       python3 -c 'import pathlib,sys;d=pathlib.Path(sys.argv[1]).read_bytes();sys.exit(0 if d.startswith(bytes.fromhex("89504e470d0a1a0a")) and len(d)>30000 else 1)' "$tmp"; then
+       validate_png "$tmp"; then
       mv "$tmp" "$dest"
       timeout 8s adb shell rm -f "$remote" || true
       echo "Native screenshot recovered via on-device capture and ADB pull (attempt $attempt)"
       return 0
     fi
     rm -f "$tmp"
+    timeout 8s adb shell rm -f "$remote" >/dev/null 2>&1 || true
     echo "::warning::Native on-device screencap also unavailable ($attempt/5)"
     cat "$OUT/adb-shell-screencap-last.txt" "$OUT/adb-pull-screencap-last.txt" 2>/dev/null || true
     # Repair only the CI runner's isolated adb transport, not the app. Keep
@@ -81,8 +104,8 @@ capture_png(){
 capture_native_state(){
   local stage="$1" pid
   verify_native_process "state-$stage" || return 1
-  pid="$(timeout 15s adb shell pidof "$PKG" | tr -d '\r\n ')"
-  if [[ ! "$pid" =~ ^[0-9]+$ ]]; then
+  pid="$(timeout 15s adb shell pidof "$PKG" | tr -d '\r')"
+  if [[ ! "$pid" =~ ^[1-9][0-9]*$ ]]; then
     echo "::error::Cannot identify native WebView process for $stage"
     return 1
   fi
@@ -137,7 +160,7 @@ adb shell pidof "$PKG" | tee "$OUT/process-id.txt"
 RENDERED=0
 for attempt in 1 2 3 4 5 6 7 8; do
   capture_png "$OUT/step0.png"
-  if python3 -c 'import pathlib,sys; p=pathlib.Path(sys.argv[1]);d=p.read_bytes();sys.exit(0 if d.startswith(bytes.fromhex("89504e470d0a1a0a")) and len(d)>30000 else 1)' "$OUT/step0.png"; then
+  if validate_png "$OUT/step0.png"; then
     echo "Native Android pixels present at screenshot attempt $attempt"
     RENDERED=1
     break
@@ -160,7 +183,7 @@ capture_png "$OUT/step0-after-30s.png"
 sleep 25
 capture_png "$OUT/step0-after-55s.png"
 for frame in "$OUT/step0-after-30s.png" "$OUT/step0-after-55s.png"; do
-  python3 -c 'import pathlib,sys;d=pathlib.Path(sys.argv[1]).read_bytes();sys.exit(0 if d.startswith(bytes.fromhex("89504e470d0a1a0a")) and len(d)>30000 else 1)' "$frame"
+  validate_png "$frame"
 done
 # Exercise the real packaged WebView at its first-run Continue button,
 # following the fully rendered reference frame on this fixed Pixel 6 AVD.
@@ -255,32 +278,34 @@ if [[ "$DEVICE_SIZE" =~ ^([0-9]+)x([0-9]+)$ ]]; then
       --output "$OUT/native-canonical-consecutive-relaunch-comparison.json"
   fi
 else
-  echo "::warning::Could not resolve native device dimensions: $DEVICE_SIZE; touch step not verified"
+  echo "::error::Could not resolve native device dimensions; touch step not verified"
+  exit 1
 fi
 # Native WebView accessibility may expose only a WebView container rather than
 # HTML controls. Save the real tree; do not fabricate button-press or completion
 # evidence when the actual native accessibility nodes are missing.
 adb shell uiautomator dump --compressed /sdcard/michel-candidate-ui.xml >"$OUT/accessibility-dump-output.txt" 2>&1 || true
 adb shell cat /sdcard/michel-candidate-ui.xml >"$OUT/step5-hierarchy.xml" 2>/dev/null || true
-python3 - <<'PY'
+NATIVE_STATE_TEST="$NATIVE_STATE_TEST" python3 - <<'PY'
 from pathlib import Path
+import os
+import sys
+sys.path.insert(0,"tools")
+from android_emulator_evidence_manifest import png_shape
 p=Path("artifacts/candidate-install")
-s=(p/"step0.png").read_bytes()
-if not s.startswith(bytes.fromhex("89504e470d0a1a0a")) or len(s)<10000:
-    raise SystemExit("Failed to capture real Android candidate app screenshot")
-for name in ("step2-after-native-continue.png", "step3-after-native-continue.png", "step4-after-native-finish.png", "step4-after-native-finish-30s.png", "step5-after-relaunch.png", "step5-after-relaunch-30s.png", "step5-after-relaunch-60s.png"):
+for name in ("step0.png", "step0-after-30s.png", "step0-after-55s.png", "step2-after-native-continue.png", "step3-after-native-continue.png", "step4-after-native-finish.png", "step4-after-native-finish-30s.png", "step5-after-relaunch.png", "step5-after-relaunch-30s.png", "step5-after-relaunch-60s.png"):
     frame = p/name
     if not frame.exists():
         raise SystemExit(f"Required native onboarding capture missing: {name}")
-    data = frame.read_bytes()
-    if not data.startswith(bytes.fromhex("89504e470d0a1a0a")) or len(data) < 30000:
+    if frame.stat().st_size < 30000:
         raise SystemExit(f"Native onboarding screenshot is not a valid nontrivial PNG: {name}")
+    png_shape(frame)
 reports = [
     "native-canonical-persistence-comparison.json",
     "native-canonical-second-relaunch-comparison.json",
     "native-canonical-consecutive-relaunch-comparison.json",
 ]
-if any((p/name).exists() for name in reports):
+if os.environ["NATIVE_STATE_TEST"] == "1" or any((p/name).exists() for name in reports):
     import json
     if not all((p/name).exists() for name in reports):
         raise SystemExit("Native persistence evidence incomplete: require both consecutive relaunch comparisons")

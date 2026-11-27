@@ -23,7 +23,7 @@ from typing import Callable
 
 SERIAL_RE = re.compile(r"^emulator-[0-9]+$")
 PACKAGE_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)+$")
-PID_RE = re.compile(r"^[0-9]+(?:[ \t]+[0-9]+)*$")
+PID_RE = re.compile(r"^[1-9][0-9]*$")
 ALLOWED = {"verified", "recovered", "transport_unavailable", "boot_unavailable",
            "app_process_missing", "invalid_input", "adb_unavailable"}
 Runner = Callable[[tuple[str, ...]], tuple[int, str]]
@@ -53,17 +53,21 @@ def device_state(stdout: str, serial: str) -> str:
     return matches[0] if len(matches) == 1 else "missing"
 
 
-def check_once(run: Runner, serial: str, package: str) -> str:
+def check_once(run: Runner, serial: str, package: str) -> tuple[str, bool]:
     rc, stdout = run(("devices", "-l"))
+    rows = [line.split() for line in stdout.splitlines()
+            if line.strip() and not line.startswith("List of devices attached")]
+    # A global ADB reset is authorized only by a positive, isolated inventory.
+    isolated = rc == 0 and len(rows) == 1 and len(rows[0]) >= 2 and rows[0][0] == serial
     if rc != 0 or device_state(stdout, serial) != "device":
-        return "transport_unavailable"
+        return "transport_unavailable", isolated
     rc, boot = run(("-s", serial, "shell", "getprop", "sys.boot_completed"))
     if rc != 0 or boot.strip() != "1":
-        return "boot_unavailable"
+        return "boot_unavailable", isolated
     rc, pid = run(("-s", serial, "shell", "pidof", package))
     if rc != 0 or not PID_RE.fullmatch(pid.strip()):
-        return "app_process_missing"
-    return "verified"
+        return "app_process_missing", isolated
+    return "verified", isolated
 
 
 def recover(
@@ -73,6 +77,7 @@ def recover(
     max_attempts: int = 5,
     delay_seconds: float = 3,
     sleep: Callable[[float], None] = time.sleep,
+    allow_restart: bool = False,
 ) -> dict:
     if (not SERIAL_RE.fullmatch(serial) or not PACKAGE_RE.fullmatch(package)
             or not 1 <= max_attempts <= 8 or not 0 <= delay_seconds <= 8):
@@ -83,14 +88,14 @@ def recover(
     # A reconnect is not enough: every success still requires actual pidof
     # of the exact package and Android boot on the exact named emulator.
     for attempt in range(1, max_attempts + 1):
-        code = check_once(run, serial, package)
+        code, isolated = check_once(run, serial, package)
         if code == "verified":
             return {"status": "pass",
                     "code": "verified" if attempt == 1 else "recovered",
                     "attempts": attempt, "adb_resets": resets}
         if first_error is None:
             first_error = code
-        if code == "transport_unavailable" and resets < 2:
+        if code == "transport_unavailable" and resets < 2 and allow_restart and isolated:
             # Restart ONLY adb server, never app, emulator, or its device data.
             run(("kill-server",))
             run(("start-server",))
@@ -128,9 +133,13 @@ def main(argv=None) -> int:
     p.add_argument("--serial", default="emulator-5554")
     p.add_argument("--attempts", type=int, default=5)
     p.add_argument("--delay", type=float, default=3)
+    p.add_argument("--allow-hosted-restart", action="store_true")
     args = p.parse_args(argv)
+    hosted = (args.allow_hosted_restart and os.environ.get("GITHUB_ACTIONS") == "true"
+              and args.serial == "emulator-5554"
+              and os.environ.get("ANDROID_SERIAL", args.serial) == args.serial)
     result = recover(default_runner, args.serial, args.package,
-                     args.attempts, args.delay)
+                     args.attempts, args.delay, allow_restart=hosted)
     safe_write(Path(args.output), result)
     print("GRANADA_NATIVE_TRANSPORT " + json.dumps(
         {k: result[k] for k in ("status", "code", "attempts", "adb_resets")},

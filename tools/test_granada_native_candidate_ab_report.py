@@ -69,6 +69,23 @@ class EvidenceSummaryTests(unittest.TestCase):
             self.assertFalse(r["both_native_gates_pass"])
             self.assertIn("missing_or_invalid_native_png",r["arms"][1]["failure_codes"])
 
+    def test_crc_valid_png_without_image_data_cannot_pass(self):
+        with tempfile.TemporaryDirectory() as d:
+            path=populate(d,"default")
+            png=valid_png()
+            off=8
+            pieces=[png[:8]]
+            while off<len(png):
+                n=struct.unpack(">I",png[off:off+4])[0]
+                end=off+12+n
+                if png[off+4:off+8]!=b"IDAT":
+                    pieces.append(png[off:end])
+                off=end
+            (path/native.FRAMES[0]).write_bytes(b"".join(pieces))
+            report=native.arm_report(path,"default","success")
+            self.assertFalse(report["native_gate_accepted"])
+            self.assertIn("missing_or_invalid_native_png",report["failure_codes"])
+
     def test_incomplete_relaunch_comparison_never_passes(self):
         with tempfile.TemporaryDirectory() as d:
             populate(d,"default")
