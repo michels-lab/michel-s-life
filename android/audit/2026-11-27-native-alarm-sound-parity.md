@@ -1,0 +1,7 @@
+# Granada — native alarm sound parity (2026-11-27)
+
+Baseline main a9414349dcbff9d9733f735598b9c5a4c7af7eaa. Android clean() permitted only eight of 34 selector IDs even though soundUri already supported all 34. Therefore 26 valid selections (eight generated Focus themes and 18 recordings) were normalized to system during native save and snooze. Existing tests checked JS persistence and native resource presence independently, not the native save filter.
+
+Regression a9101a73a27a24ac2feb8c50a72f896f6fc290aa; source correction f6bad418a3a5c3dea8c6c7452b0ffbc9ec520dc6. The actual native recorded resource resolver and generated sound set now also drive normalization. Invalid IDs still fall back to system. Existing snooze preserves selected sound and uses the same normalization. No theme, audio file, distribution or permission changes.
+
+Executed source contract assertions against old and new code: baseline fails, candidate passes all 34 selector identities, resource identity, cleaner and snooze linkage. Full Node suite, Android compile, physical Galaxy locked-screen audio and existing alarms already overwritten by old versions remain unverified. Already overwritten sound IDs cannot be inferred; user must select intended sound again. No release, no percentage increase. Separate audit file avoids modifying shared Android audit log owned by PR #181. Orca's optional catalog claim and PR #243 untouched.
