@@ -155,7 +155,7 @@ class DriveCloudEngine(
         val remote = findCloudFile(accessToken)
 
         if (mode == "upload") {
-            if (remote != null && !remote.contentHash.equals(localHash, true)) {
+            if (remote != null) {
                 createHistoryBackup(accessToken, remote, "before_manual_upload")
             }
             val uploaded = uploadCloudFile(accessToken, remote?.id, backupJson, localHash, meta.deviceId, Instant.now())
