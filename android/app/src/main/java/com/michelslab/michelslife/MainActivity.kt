@@ -48,6 +48,10 @@ class MainActivity : Activity() {
     private var pendingNotificationOpen: Runnable? = null
     private var alarmOpenGeneration = 0
     private var pendingAlarmOpen: Runnable? = null
+    private val pendingPersonalAlarmIds = linkedSetOf<String>()
+    private var activePersonalAlarmId: String? = null
+    private var personalAlarmScreenOpened = false
+    private val personalAlarmQueueKey = "mlv.personalAlarmQueue"
     private var pendingWebFilePicker: ValueCallback<Array<Uri>>? = null
     private var playingAlarm: MediaPlayer? = null
     private var attentionAlarmId: String? = null
@@ -135,49 +139,76 @@ class MainActivity : Activity() {
     internal fun completePersonalAlarm(id: String) {
         NativePersonalAlarms.dismiss(this, id)
         stopAlarmAttention(id)
-        // A second notification can have arrived while the first is visible.
-        if (intent.getStringExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM) == id)
-            intent.removeExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM)
-        openPersonalAlarmFromNotification()
+        pendingPersonalAlarmIds.remove(id)
+        if (activePersonalAlarmId == id) {
+            stopPendingPersonalAlarm()
+            activePersonalAlarmId = null
+            personalAlarmScreenOpened = false
+        }
+        if (::webView.isInitialized && acceptsWebViewCallbacks(webView)) {
+            // Let the current JS dismiss handler finish before showing the next.
+            webView.post { openPersonalAlarmFromNotification() }
+        }
+    }
+
+    private fun enqueuePersonalAlarm(id: String?) {
+        if (id == null || !id.matches(Regex("^[A-Za-z0-9_-]{1,64}$"))) return
+        if (id != activePersonalAlarmId && NativePersonalAlarms.wasDelivered(this, id))
+            pendingPersonalAlarmIds.add(id)
     }
 
     private fun openPersonalAlarmFromNotification() {
-        stopPendingPersonalAlarm()
+        enqueuePersonalAlarm(intent.getStringExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM))
+        intent.removeExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM)
         if (!::webView.isInitialized || !acceptsWebViewCallbacks(webView)) return
-        val id = intent.getStringExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM) ?: return
-        if (!id.matches(Regex("^[A-Za-z0-9_-]{1,64}$"))) return
+        if (activePersonalAlarmId == null) {
+            val next = pendingPersonalAlarmIds.firstOrNull()
+            if (next == null) return
+            pendingPersonalAlarmIds.remove(next)
+            activePersonalAlarmId = next
+            personalAlarmScreenOpened = false
+        }
+        val id = activePersonalAlarmId ?: return
         if (!NativePersonalAlarms.wasDelivered(this, id)) {
-            intent.removeExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM)
+            stopPendingPersonalAlarm()
+            stopAlarmAttention(id)
+            activePersonalAlarmId = null
+            personalAlarmScreenOpened = false
+            webView.post { openPersonalAlarmFromNotification() }
             return
         }
+        if (personalAlarmScreenOpened) return
+        stopPendingPersonalAlarm()
         beginAlarmAttention(id)
         attemptPersonalAlarmOpen(alarmOpenGeneration, id, 0)
     }
 
     private fun attemptPersonalAlarmOpen(generation: Int, id: String, retries: Int) {
         if (generation != alarmOpenGeneration || !acceptsWebViewCallbacks(webView) ||
-            intent.getStringExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM) != id) return
-        // Only acknowledge the OS alarm after the themed screen actually opened.
+            activePersonalAlarmId != id) return
         webView.evaluateJavascript(
             "(function(){try{return window.MichelsLifeAlarms?.ringAlarm?.('" + id + "')===true;}" +
                 "catch(_){return false;}})();"
         ) { opened ->
             if (generation != alarmOpenGeneration || !acceptsWebViewCallbacks(webView) ||
-                intent.getStringExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM) != id) return@evaluateJavascript
+                activePersonalAlarmId != id) return@evaluateJavascript
             if (opened == "true") {
-                beginAlarmAttention(id)
-                intent.removeExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM)
+                personalAlarmScreenOpened = true
                 pendingAlarmOpen = null
             } else if (retries < 40) {
                 val retry = Runnable { attemptPersonalAlarmOpen(generation, id, retries + 1) }
                 pendingAlarmOpen = retry
                 webView.postDelayed(retry, 250L)
+            } else {
+                pendingAlarmOpen = null
+                // Keep this alarm active; onResume/onPageFinished can retry.
             }
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        savedInstanceState?.getStringArrayList(personalAlarmQueueKey)?.forEach { enqueuePersonalAlarm(it) }
 
         NativeFocusAlarm.createChannel(this)
         NativePersonalAlarms.createChannel(this)
@@ -307,6 +338,7 @@ class MainActivity : Activity() {
     private fun showRendererRecovery(view: WebView) {
         stopPendingNotificationOpen()
         stopPendingPersonalAlarm()
+        personalAlarmScreenOpened = false
         rendererGone = true
         pendingWebFilePicker?.onReceiveValue(null)
         pendingWebFilePicker = null
@@ -373,6 +405,14 @@ class MainActivity : Activity() {
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        val queue = ArrayList<String>()
+        activePersonalAlarmId?.let { queue.add(it) }
+        queue.addAll(pendingPersonalAlarmIds)
+        outState.putStringArrayList(personalAlarmQueueKey, queue)
+        super.onSaveInstanceState(outState)
+    }
+
     override fun onNewIntent(newIntent: Intent) {
         super.onNewIntent(newIntent)
         setIntent(newIntent)
@@ -405,6 +445,7 @@ class MainActivity : Activity() {
 
     override fun onPause() {
         stopPendingNotificationOpen()
+        stopPendingPersonalAlarm()
         if (::webView.isInitialized && !rendererGone) webView.onPause()
         super.onPause()
     }

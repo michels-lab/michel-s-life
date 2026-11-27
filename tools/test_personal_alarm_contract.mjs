@@ -507,3 +507,14 @@ test('multi-alarm scheduling stages replacements before committing registry and 
   assert.match(sync,/for \(\(id, date\) in armed\) retireOccurrence\(context, id, date\)/);
   assert.ok(sync.indexOf('if (!edit.commit())')<sync.indexOf('if (previous != newOccurrences[id])'));
 });
+
+test('Android Activity queues multiple notification opens and preserves them on Activity recreation',()=>{
+  const activity=readFileSync('android/app/src/main/java/com/michelslab/michelslife/MainActivity.kt','utf8');
+  assert.match(activity,/private val pendingPersonalAlarmIds = linkedSetOf<String>\(\)/);
+  assert.match(activity,/if \(id != activePersonalAlarmId && NativePersonalAlarms.wasDelivered\(this, id\)\)/);
+  assert.match(activity,/activePersonalAlarmId != id\) return@evaluateJavascript/);
+  assert.match(activity,/activePersonalAlarmId\?\.let \{ queue.add\(it\) \}/);
+  assert.match(activity,/queue.addAll\(pendingPersonalAlarmIds\)/);
+  assert.match(activity,/getStringArrayList\(personalAlarmQueueKey\)\?\.forEach/);
+  assert.match(activity,/webView.post \{ openPersonalAlarmFromNotification\(\) \}/);
+});
