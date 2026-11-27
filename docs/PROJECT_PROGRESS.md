@@ -1,5 +1,9 @@
 # Michel's Life — avance funcional y puertas de aceptación
 
+## 27-nov — Block 4B publicado y verificado: Windows 3.0.235 / Android Direct 0.2.24
+
+[Estable oficial](https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.235-android-v0.2.24), code26, publicada 2026-11-27 09:33:26 UTC, 13 assets, draft=false, prerelease=false. Fuente exacta `f215871229b262abe79b86efa87131692f25e0eb`, [build #45972159767](https://github.com/michels-lab/michel-s-life/actions/runs/45972159767) SUCCESS, 11/11 gates exact SHA, Windows y producción firmada Android15 instalación/relaunch SUCCESS. Publicador #45972226615 y verificador #45972226623 SUCCESS. PR #241 integrado. Vidrio, controles flotantes, Play/Pause ambiental siempre visible, campanas de fase, Settings móvil compacto, 18 grabaciones preservadas. Aceptación física y API34/36 pendientes. Avance 8/15=53%. Siguiente bloque: biblioteca opcional separada de la app y aceptación del propietario, sin alterar diseño ni audio de la estable.
+
 ## 27-nov — Block 4B integrado y publicación 3.0.235 / 0.2.24 activada
 
 PR #241 fusionado `6f93a41519707973bd47e1d728483a7c83b168c7`; verificación PR incompleta al integrar. Intent fuente `f215871229b262abe79b86efa87131692f25e0eb`, [build exacto #45972159767](https://github.com/michels-lab/michel-s-life/actions/runs/45972159767) en cola; preflight destino #45972087208 SUCCESS, intent destino `8077bb23f4bec76018b8f1be4e1f52e6915f166c` activado. Publicación condicionada a once checks exactos y cuatro jobs de fuente, firma Android Direct code26, instaladores Windows y trece assets. Estable vigente 3.0.234 / 0.2.23; no se afirma publicación nueva. 8/15 hitos (53%).
