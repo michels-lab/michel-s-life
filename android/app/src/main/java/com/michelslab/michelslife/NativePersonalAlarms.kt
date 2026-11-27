@@ -664,25 +664,34 @@ internal object NativePersonalAlarms {
         val id = item.getString("id")
         val key = SCHEDULED_PREFIX + id
         val previous = prefs(context).getLong(key, 0L)
-        if (previous != date) cancelOccurrence(context, id, previous)
-        if (previous > 0L) cancelOccurrence(context, id, 0L)
-        if (!prefs(context).edit().putLong(key, date).commit())
+        if (!prefs(context).edit().putLong(key, date).commit()) {
+            val restore = prefs(context).edit()
+            if (previous > 0L) restore.putLong(key, previous) else restore.remove(key)
+            restore.commit()
             throw IllegalStateException("Could not persist alarm occurrence")
-        val pending = deliveryIntent(context, id, date)
+        }
         try {
+            val pending = deliveryIntent(context, id, date)
             // Exact timing requires user-granted exact-alarm access on Android 12+.
             // Always fall back to an inexact wake-up, never falsely claim exact delivery.
+            var exactScheduled = false
             if (Build.VERSION.SDK_INT < 31 || manager.canScheduleExactAlarms()) {
                 try {
                     manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, date, pending)
-                    return
+                    exactScheduled = true
                 } catch (_: SecurityException) { }
             }
-            manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, date, pending)
+            if (!exactScheduled) manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, date, pending)
         } catch (e: Exception) {
-            prefs(context).edit().remove(key).apply()
+            val restore = prefs(context).edit()
+            if (previous > 0L) restore.putLong(key, previous) else restore.remove(key)
+            restore.commit()
+            if (previous != date) cancelOccurrence(context, id, date)
             throw e
         }
+        // Retire the old PendingIntent only after the replacement is armed.
+        if (previous != date) cancelOccurrence(context, id, previous)
+        if (previous > 0L) cancelOccurrence(context, id, 0L)
     }
 
     fun status(context: Context): JSONObject {
