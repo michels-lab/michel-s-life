@@ -55,6 +55,16 @@ internal object PersonalAlarmOverlay {
             if (show(context, next.id, next.title, next.time)) break
         }
     }
+    // Reconstruct a bounded recent queue from the native registry, not
+    // WebView storage. A locked/unauthorized device keeps its OS fallback.
+    fun restoreRecent(context: Context) {
+        for (item in NativePersonalAlarms.recentDelivered(context)) {
+            val id = item.optString("id")
+            if (!isRinging(id) && !isQueued(id))
+                show(context, id, item.optString("label"), item.optString("time"))
+        }
+    }
+
     private var player: MediaPlayer? = null
     private var vibrator: Vibrator? = null
 
