@@ -374,3 +374,24 @@ test('actual import controller streams a 17 MiB MP3 and rolls back incomplete na
   assert.equal(await window.runImport(file),true);assert.equal(length,size);assert.ok(parts>64);assert.equal(largest,256*1024);assert.equal(saved.blob,file);assert.equal(select.value,'custom');assert.equal(label.textContent,'long.mp3');assert.equal(input.disabled,false);
   fail=true;const replacement={...file,name:'replacement.mp3'};assert.equal(await window.runImport(replacement),false);assert.equal(saved.blob,file);assert.equal(cancelled,1);assert.ok(alerted.length);assert.equal(input.disabled,false);
 });
+
+
+test('Android persistence accepts every alarm selector sound, including snoozed recordings',()=>{
+  const ids=[...alarms.match(/const SOUNDS=\[([\s\S]*?)\];/)[1].matchAll(/'([^']+)'/g)].map(m=>m[1]);
+  const recorded=native.match(/private fun recordedResource\(selected: String\): Int = when \(selected\) \{([\s\S]*?)\n    \}/);
+  const presets=native.match(/private val generatedSounds = setOf\(([\s\S]*?)\)/);
+  assert.ok(recorded&&presets,'native validation must reuse the actual playback catalog');
+  const recordingIds=[...recorded[1].matchAll(/"([^"]+)"\s*->\s*R\.raw\.mlv_focus_([a-z0-9_]+)/g)].map(m=>{
+    assert.equal(m[1],m[2],'resource identity must match');return m[1];
+  });
+  const presetIds=[...presets[1].matchAll(/"([^"]+)"/g)].map(m=>m[1]);
+  assert.deepEqual([...new Set(['system','custom',...recordingIds,...presetIds])].sort(),[...ids].sort());
+  const cleaner=native.slice(native.indexOf('private fun clean('),native.indexOf('private fun deliveryIntent('));
+  assert.match(cleaner,/val sound = normalizeSound\(input\.optString\("sound", "system"\)\)/);
+  assert.match(native,/private fun normalizeSound\(selected: String\): String =\s*if \(selected == "system" \|\| selected == "custom" \|\|\s*selected in generatedSounds \|\| recordedResource\(selected\) != 0\) selected else "system"/);
+  assert.match(native,/val recorded = recordedResource\(selected\)/);
+  assert.match(native,/if \(selected in generatedSounds\)/);
+  const snooze=native.slice(native.indexOf('fun snooze(context:'),native.indexOf('private fun notificationAllowed'));
+  assert.match(snooze,/\.put\("sound", selected\.optString\("sound", "system"\)\)/);
+  assert.match(snooze,/sync\(context, original\)/);
+});
