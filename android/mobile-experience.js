@@ -50,7 +50,7 @@
     const deadline=Number(state.deadlineAt)||0;
     const mode=state.mode==='break'?'break':'work';
     const language=window.MichelsLifeI18n?.language==='es'?'es':'en';
-    const completionSound='soft';
+    const completionSound=mode==='break'?'observatory':'soft';
     const key=running?'running:'+mode+':'+deadline+':'+language+':'+completionSound:
       'inactive:'+state.status+':'+completionSound;
     if(key===lastNativeAlarmKey)return;
