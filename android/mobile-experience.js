@@ -1052,6 +1052,7 @@
        #mlv-android-focus-sheet .mlv-audio-archive{display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
        #mlv-android-focus-sheet .mlv-audio-library input,#mlv-android-focus-sheet .mlv-audio-settings select,#mlv-android-focus-sheet .mlv-audio-archive select{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
        @media(max-width:550px){#mlv-android-focus-sheet .mlv-audio-controls{grid-template-columns:repeat(2,minmax(0,1fr))}#mlv-android-focus-sheet .mlv-audio-settings,#mlv-android-focus-sheet .mlv-audio-archive{grid-template-columns:1fr}}
+       #mlv-android-focus-sheet [data-mobile-seek-wrap][hidden]{display:none!important}
        #mlv-android-focus-sheet .mlv-android-focus-audio-grid label{
         display:block;min-width:0;color:#d2e7e8;font:650 12px/1.4 system-ui,sans-serif
       }
@@ -1352,7 +1353,14 @@
       root.addEventListener('change',async event=>{
         const audio=window.MichelsLifeFocusAudio;
         if(event.target?.matches?.('[data-mobile-personal-files]')){const input=event.target;input.disabled=true;try{await audio?.importPersonalTracks?.(input.files);}finally{input.value='';input.disabled=false;updateFocus();}return;}
-        if(event.target?.matches?.('[data-mobile-ambient-seek]')){const input=event.target;audio?.seekAmbient?.(Number(input.value),input.dataset.audioGeneration);input.blur();updateFocus();return;}
+        if(event.target?.matches?.('[data-mobile-ambient-seek]')){
+          const input=event.target;audio?.seekAmbient?.(Number(input.value),input.dataset.audioGeneration);
+          const current=audio?.ambientPlayback?.();
+          if(current?.generation&&Number.isFinite(current.duration)&&current.duration>0){
+            input.max=String(current.duration);input.value=String(current.currentTime);input.dataset.audioGeneration=current.generation;
+          }
+          updateFocus();return;
+        }
         if(event.target?.matches?.('[data-mobile-ambient-volume]'))audio?.setAmbientVolume?.(Number(event.target.value)/100);
         if(event.target?.matches?.('[data-mobile-ambient-mode]'))audio?.setAmbientMode?.(event.target.value);
         if(event.target?.matches?.('[data-mobile-ambient-collection]'))audio?.setAmbientCollection?.(event.target.value);

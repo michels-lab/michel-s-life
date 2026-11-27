@@ -734,6 +734,7 @@
       .mlv-focus-audio-group{
         display:grid;grid-template-columns:minmax(0,1fr);gap:12px;min-width:0
       }
+      #mlv-desktop-focus-stage [data-mlv-seek-wrap][hidden]{display:none!important}
       .mlv-focus-audio-group>label{
         flex:1;min-width:0;color:#dceef4;font:650 12px/1.4 system-ui,sans-serif
       }
@@ -863,7 +864,15 @@
     screen.addEventListener('input',event=>{if(event.target?.matches?.('[data-mlv-ambient-volume]'))window.MichelsLifeFocusAudio?.setAmbientVolume?.(Number(event.target.value)/100,false);});
     screen.addEventListener('change',async event=>{
       if(event.target?.matches?.('[data-mlv-personal-files]')){const input=event.target;input.disabled=true;try{await window.MichelsLifeFocusAudio?.importPersonalTracks?.(input.files);}finally{input.value='';input.disabled=false;refresh();}return;}
-      if(event.target?.matches?.('[data-mlv-ambient-seek]')){const input=event.target;window.MichelsLifeFocusAudio?.seekAmbient?.(Number(input.value),input.dataset.audioGeneration);input.blur();refresh();return;}
+      if(event.target?.matches?.('[data-mlv-ambient-seek]')){
+        const input=event.target,audio=window.MichelsLifeFocusAudio;
+        audio?.seekAmbient?.(Number(input.value),input.dataset.audioGeneration);
+        const current=audio?.ambientPlayback?.();
+        if(current?.generation&&Number.isFinite(current.duration)&&current.duration>0){
+          input.max=String(current.duration);input.value=String(current.currentTime);input.dataset.audioGeneration=current.generation;
+        }
+        refresh();return;
+      }
       if(event.target?.matches?.('[data-mlv-ambient-volume]'))window.MichelsLifeFocusAudio?.setAmbientVolume?.(Number(event.target.value)/100);
       else if(event.target?.matches?.('[data-mlv-ambient-mode]'))window.MichelsLifeFocusAudio?.setAmbientMode?.(event.target.value);
       else if(event.target?.matches?.('[data-mlv-ambient-collection]'))window.MichelsLifeFocusAudio?.setAmbientCollection?.(event.target.value);

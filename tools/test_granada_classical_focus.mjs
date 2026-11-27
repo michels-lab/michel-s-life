@@ -395,3 +395,12 @@ test('seek control is in advanced options and not the timer controls on either p
    assert.ok(src.includes('input.dataset.audioGeneration'));
  }
 });
+
+test('seek uses native range keyboard focus and explicit hidden styles',()=>{
+ const mobile=readFileSync('android/mobile-experience.js','utf8');
+ for(const [src,key] of [[focusSource,'mlv'],[mobile,'mobile']]){
+   assert.ok(src.includes('[data-'+key+'-seek-wrap][hidden]{display:none!important}'));
+   const handler=src.slice(src.indexOf("matches?.('[data-"+key+"-ambient-seek]')"),src.indexOf("matches?.('[data-"+key+"-ambient-seek]')")+700);
+   assert.ok(handler.includes('seekAmbient'));assert.doesNotMatch(handler,/input\.blur\(/);
+ }
+});
