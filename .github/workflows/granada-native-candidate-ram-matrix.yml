@@ -17,7 +17,8 @@ permissions:
   contents: read
 
 env:
-  ANDROID_VERSION: '0.2.9'
+  CANDIDATE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  APK: artifacts/candidate/MichelsLife-Android-TEST.apk
 
 jobs:
   compile:
@@ -26,6 +27,10 @@ jobs:
     timeout-minutes: 28
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CANDIDATE_SHA }}
+      - name: Assert exact candidate checkout
+        run: test "$(git rev-parse HEAD)" = "$CANDIDATE_SHA"
       - uses: actions/setup-java@v5
         with:
           distribution: temurin
@@ -81,9 +86,12 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p artifacts/candidate
-          cp android/app/build/outputs/apk/debug/app-debug.apk artifacts/candidate/MichelsLife-Android-TEST-v0.2.9.apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk artifacts/candidate/MichelsLife-Android-TEST.apk
           python3 tools/granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha "$(git rev-parse HEAD)" --create
-          python3 tools/granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha "$GITHUB_SHA" --verify
+          python3 tools/granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha "$CANDIDATE_SHA" --verify
+          VERSION="$(python3 android/tools/validate_android_version.py | sed -n 's/^OK: Android version metadata aligned at \([^ ]*\) .*/\1/p')"
+          test -n "$VERSION"
+          echo "ANDROID_VERSION=$VERSION" >> "$GITHUB_ENV"
       - name: Upload one SHA-pinned candidate for BOTH independent emulator jobs
         uses: actions/upload-artifact@v4
         with:
@@ -101,6 +109,10 @@ jobs:
       MLV_REQUIRE_NATIVE_STATE_PROBE: '1'
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CANDIDATE_SHA }}
+      - name: Assert exact candidate checkout
+        run: test "$(git rev-parse HEAD)" = "$CANDIDATE_SHA"
       - name: Initialize fail-closed artifact even if Android SDK download fails
         run: |
           mkdir -p artifacts/candidate-install
@@ -116,7 +128,10 @@ jobs:
         shell: bash
         run: |
           python3 tools/granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha "$(git rev-parse HEAD)" --verify
-          python3 tools/granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha "$GITHUB_SHA" --verify
+          python3 tools/granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha "$CANDIDATE_SHA" --verify
+          VERSION="$(python3 android/tools/validate_android_version.py | sed -n 's/^OK: Android version metadata aligned at \([^ ]*\) .*/\1/p')"
+          test -n "$VERSION"
+          echo "ANDROID_VERSION=$VERSION" >> "$GITHUB_ENV"
       - name: Install pinned CI WebView probe
         run: python3 -m pip install --disable-pip-version-check websocket-client==1.8.0
       - name: Enable Android emulator acceleration
@@ -154,6 +169,10 @@ jobs:
       MLV_REQUIRE_NATIVE_STATE_PROBE: '1'
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CANDIDATE_SHA }}
+      - name: Assert exact candidate checkout
+        run: test "$(git rev-parse HEAD)" = "$CANDIDATE_SHA"
       - name: Initialize fail-closed artifact even if Android SDK download fails
         run: |
           mkdir -p artifacts/candidate-install
@@ -169,7 +188,10 @@ jobs:
         shell: bash
         run: |
           python3 tools/granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha "$(git rev-parse HEAD)" --verify
-          python3 tools/granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha "$GITHUB_SHA" --verify
+          python3 tools/granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha "$CANDIDATE_SHA" --verify
+          VERSION="$(python3 android/tools/validate_android_version.py | sed -n 's/^OK: Android version metadata aligned at \([^ ]*\) .*/\1/p')"
+          test -n "$VERSION"
+          echo "ANDROID_VERSION=$VERSION" >> "$GITHUB_ENV"
       - name: Install pinned CI WebView probe
         run: python3 -m pip install --disable-pip-version-check websocket-client==1.8.0
       - name: Enable Android emulator acceleration
@@ -208,6 +230,10 @@ jobs:
       MLV_REQUIRE_NATIVE_STATE_PROBE: '1'
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CANDIDATE_SHA }}
+      - name: Assert exact candidate checkout
+        run: test "$(git rev-parse HEAD)" = "$CANDIDATE_SHA"
       - name: Initialize fail-closed artifact even if Android SDK download fails
         run: |
           mkdir -p artifacts/candidate-install
@@ -223,7 +249,10 @@ jobs:
         shell: bash
         run: |
           python3 tools/granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha "$(git rev-parse HEAD)" --verify
-          python3 tools/granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha "$GITHUB_SHA" --verify
+          python3 tools/granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha "$CANDIDATE_SHA" --verify
+          VERSION="$(python3 android/tools/validate_android_version.py | sed -n 's/^OK: Android version metadata aligned at \([^ ]*\) .*/\1/p')"
+          test -n "$VERSION"
+          echo "ANDROID_VERSION=$VERSION" >> "$GITHUB_ENV"
       - name: Install pinned CI WebView probe
         run: python3 -m pip install --disable-pip-version-check websocket-client==1.8.0
       - name: Enable Android emulator acceleration
@@ -261,6 +290,10 @@ jobs:
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CANDIDATE_SHA }}
+      - name: Assert exact candidate checkout
+        run: test "$(git rev-parse HEAD)" = "$CANDIDATE_SHA"
       - name: Gather BOTH original native evidence bundles from this run
         uses: actions/download-artifact@v4
         with:

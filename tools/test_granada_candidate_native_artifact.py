@@ -66,6 +66,16 @@ class SameCandidateTests(unittest.TestCase):
             self.assertEqual(x["candidate_kind"],"debug_ci_only")
             self.assertNotIn("password",str(x))
 
+    def test_matrix_uses_exact_head_and_current_version(self):
+        wf=(ROOT/".github/workflows/granada-native-candidate-ram-matrix.yml").read_text()
+        self.assertNotIn("0.2.9",wf)
+        self.assertIn("github.event.pull_request.head.sha || github.sha",wf)
+        self.assertEqual(wf.count("ref: ${{ env.CANDIDATE_SHA }}"),5)
+        self.assertEqual(wf.count('test "$(git rev-parse HEAD)" = "$CANDIDATE_SHA"'),5)
+        self.assertEqual(wf.count('echo "ANDROID_VERSION=$VERSION" >> "$GITHUB_ENV"'),4)
+        self.assertIn("APK: artifacts/candidate/"+NAME,wf)
+        self.assertNotIn("$GITHUB_SHA",wf)
+
     def test_no_windows_or_main_android_build_changes(self):
         wf=(ROOT/".github/workflows/granada-native-candidate-ram-matrix.yml").read_text()
         self.assertIn("native-default:",wf)

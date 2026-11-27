@@ -8,7 +8,7 @@ from pathlib import Path
 import re
 import sys
 
-NAME = "MichelsLife-Android-TEST-v0.2.9.apk"
+NAME = "MichelsLife-Android-TEST.apk"
 SCHEMA = "mlv.granada.single-candidate-ram-ab.v1"
 
 
