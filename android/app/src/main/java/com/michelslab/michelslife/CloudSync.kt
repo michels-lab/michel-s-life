@@ -32,15 +32,23 @@ data class CloudMeta(
     var lastSyncedHash: String = "",
     var lastSyncedAt: Instant? = null,
     var lastCloudModifiedAt: Instant? = null,
-    var lastLocalDirtyAt: Instant? = null
+    var lastLocalDirtyAt: Instant? = null,
+    var generation: Long = 0L,
+    var dirtyRevision: Long = 0L
 )
 
 class CloudMetaStore(context: Context) {
     private val prefs = context.getSharedPreferences("michels_life_cloud_meta", Context.MODE_PRIVATE)
+    // Activity recreation can create another store over the same preferences.
+    companion object { private val lock = Any() }
+    private data class PendingRestore(val owner: CloudMeta, val hash: String, val modified: Instant?)
+    private var pendingRestore: PendingRestore? = null
 
-    fun load(): CloudMeta {
+    fun load(): CloudMeta = synchronized(lock) { loadLocked() }
+
+    private fun loadLocked(): CloudMeta {
         val device = prefs.getString("deviceId", null) ?: UUID.randomUUID().toString().replace("-", "").also {
-            prefs.edit().putString("deviceId", it).apply()
+            check(prefs.edit().putString("deviceId", it).commit()) { "Cloud identity persistence failed." }
         }
         return CloudMeta(
             deviceId = device,
@@ -48,39 +56,100 @@ class CloudMetaStore(context: Context) {
             lastSyncedHash = prefs.getString("lastSyncedHash", "") ?: "",
             lastSyncedAt = parseInstant(prefs.getString("lastSyncedAt", null)),
             lastCloudModifiedAt = parseInstant(prefs.getString("lastCloudModifiedAt", null)),
-            lastLocalDirtyAt = parseInstant(prefs.getString("lastLocalDirtyAt", null))
+            lastLocalDirtyAt = parseInstant(prefs.getString("lastLocalDirtyAt", null)),
+            generation = prefs.getLong("generation", 0L),
+            dirtyRevision = prefs.getLong("dirtyRevision", 0L)
         )
     }
 
-    fun save(meta: CloudMeta) {
-        prefs.edit()
+    private fun saveLocked(meta: CloudMeta) {
+        check(prefs.edit()
             .putString("deviceId", meta.deviceId)
             .putString("account", meta.account)
             .putString("lastSyncedHash", meta.lastSyncedHash)
             .putString("lastSyncedAt", meta.lastSyncedAt?.toString())
             .putString("lastCloudModifiedAt", meta.lastCloudModifiedAt?.toString())
             .putString("lastLocalDirtyAt", meta.lastLocalDirtyAt?.toString())
-            .apply()
+            .putLong("generation", meta.generation)
+            .putLong("dirtyRevision", meta.dirtyRevision)
+            .commit()) { "Cloud metadata persistence failed." }
     }
 
-    fun markDirty(at: Instant) {
-        val meta = load()
-        meta.lastLocalDirtyAt = at
-        save(meta)
+    fun currentGeneration(): Long = synchronized(lock) { loadLocked().generation }
+
+    fun beginSync(account: String, localChangedAt: Instant?, expectedGeneration: Long): CloudMeta =
+        synchronized(lock) {
+            require(account.isNotBlank()) { "Cloud account is required." }
+            var meta = loadLocked()
+            check(meta.generation == expectedGeneration) { "Cloud account changed; retry." }
+            pendingRestore = null
+            if (meta.account.isNotBlank() && !meta.account.equals(account, true)) {
+                meta = CloudMeta(deviceId = UUID.randomUUID().toString().replace("-", ""),
+                    account = account, generation = meta.generation + 1)
+            }
+            meta.account = account
+            if (localChangedAt != null &&
+                (meta.lastLocalDirtyAt == null || localChangedAt.isAfter(meta.lastLocalDirtyAt))) {
+                meta.lastLocalDirtyAt = localChangedAt
+                meta.dirtyRevision++
+            }
+            saveLocked(meta)
+            meta
+        }
+
+    private fun requireCurrentLocked(expected: CloudMeta): CloudMeta {
+        val current = loadLocked()
+        check(current.generation == expected.generation && current.deviceId == expected.deviceId &&
+            current.account.equals(expected.account, true)) { "Cloud account changed; retry." }
+        return current
     }
 
-    fun acceptRestore(hash: String, remoteModifiedAt: Instant?) {
-        val meta = load()
-        meta.lastSyncedHash = hash
-        meta.lastSyncedAt = Instant.now()
-        meta.lastCloudModifiedAt = remoteModifiedAt
-        meta.lastLocalDirtyAt = null
-        save(meta)
+    fun requireCurrent(expected: CloudMeta) = synchronized(lock) { requireCurrentLocked(expected); Unit }
+
+    fun markDirty(at: Instant) = synchronized(lock) {
+        val meta = loadLocked()
+        if (meta.lastLocalDirtyAt == null || at.isAfter(meta.lastLocalDirtyAt))
+            meta.lastLocalDirtyAt = at
+        meta.dirtyRevision++
+        saveLocked(meta)
     }
 
-    fun resetForDisconnect() {
-        val device = load().deviceId
-        prefs.edit().clear().putString("deviceId", device).apply()
+    fun commitUploaded(expected: CloudMeta, hash: String, remoteModifiedAt: Instant?) = synchronized(lock) {
+        val current = requireCurrentLocked(expected)
+        current.lastSyncedHash = hash
+        current.lastSyncedAt = Instant.now()
+        current.lastCloudModifiedAt = remoteModifiedAt
+        // A completed upload acknowledges only the snapshot it actually sent.
+        if (current.dirtyRevision == expected.dirtyRevision) current.lastLocalDirtyAt = null
+        saveLocked(current)
+    }
+
+    fun registerRestore(expected: CloudMeta, hash: String, modified: Instant?) = synchronized(lock) {
+        val current = requireCurrentLocked(expected)
+        check(current.dirtyRevision == expected.dirtyRevision) { "Local edits changed during cloud read; retry." }
+        check(hash.matches(Regex("^[a-fA-F0-9]{64}$"))) { "Invalid cloud snapshot hash." }
+        pendingRestore = PendingRestore(expected.copy(), hash, modified)
+    }
+
+    fun acceptRestore(hash: String, remoteModifiedAt: Instant?) = synchronized(lock) {
+        val pending = pendingRestore ?: throw IllegalStateException("No verified cloud restore is pending.")
+        val current = requireCurrentLocked(pending.owner)
+        check(pending.hash.equals(hash, true) && pending.modified == remoteModifiedAt) {
+            "Cloud restore does not match the reviewed snapshot."
+        }
+        current.lastSyncedHash = hash
+        current.lastSyncedAt = Instant.now()
+        current.lastCloudModifiedAt = remoteModifiedAt
+        if (current.dirtyRevision == pending.owner.dirtyRevision) current.lastLocalDirtyAt = null
+        saveLocked(current)
+        pendingRestore = null
+    }
+
+    fun resetForDisconnect() = synchronized(lock) {
+        val previous = loadLocked()
+        pendingRestore = null
+        check(prefs.edit().clear().putString("deviceId", previous.deviceId)
+            .putLong("generation", previous.generation + 1).commit()) { "Cloud disconnect persistence failed." }
     }
 
     private fun parseInstant(raw: String?): Instant? = try {
@@ -126,12 +195,14 @@ class DriveCloudEngine(
             .put("account", account)
             .put("credentialProject", "Michel's Life Android")
             .put("storageFolder", "Google Drive appDataFolder")
-            .put("cloudLastSync", meta.lastSyncedAt?.toString() ?: "")
+            .put("cloudLastSync", if (account.isNotBlank() && meta.account.equals(account, true))
+                meta.lastSyncedAt?.toString() ?: "" else "")
             .put("deviceId", meta.deviceId)
             .put("deviceName", deviceName())
     }
 
-    fun sync(accessToken: String, account: String, backupJson: String, localChangedAtRaw: String?, modeRaw: String): JSONObject {
+    fun sync(accessToken: String, account: String, backupJson: String, localChangedAtRaw: String?, modeRaw: String,
+             expectedGeneration: Long): JSONObject {
         // Never allow a native bridge caller to upload credentials, provider
         // permissions, another device's identity or an unknown localStorage key.
         // The shared WebView allowlist is useful UX; this native guard is an
@@ -142,39 +213,36 @@ class DriveCloudEngine(
         require(account.isNotBlank()) { "Cloud account is required." }
         val localChangedAt = parseInstant(localChangedAtRaw)
 
-        var meta = metaStore.load()
-        if (meta.account.isNotBlank() && account.isNotBlank() && !meta.account.equals(account, true)) {
-            meta = CloudMeta(deviceId = UUID.randomUUID().toString().replace("-", ""), account = account)
-        }
-        if (account.isNotBlank()) meta.account = account
-        // Apply the current edit after resetting another account's baseline.
-        if (localChangedAt != null) meta.lastLocalDirtyAt = localChangedAt
-        metaStore.save(meta)
+        val meta = metaStore.beginSync(account, localChangedAt, expectedGeneration)
 
         val localHash = hashText(backupJson)
         val remote = findCloudFile(accessToken)
+        metaStore.requireCurrent(meta)
 
         if (mode == "upload") {
             if (remote != null) {
                 createHistoryBackup(accessToken, remote, "before_manual_upload")
             }
+            metaStore.requireCurrent(meta)
             val uploaded = uploadCloudFile(accessToken, remote?.id, backupJson, localHash, meta.deviceId, Instant.now())
             commitUploaded(meta, localHash, uploaded)
-            touchDevice(accessToken, metaStore.load(), "uploaded")
+            touchDevice(accessToken, meta, "uploaded")
             return result("uploaded", localHash, uploaded, null, false, "This device was uploaded to Google Drive.")
         }
 
         if (mode == "download") {
             if (remote == null) throw IllegalStateException("No Michel's Life cloud save exists in this Google account yet.")
             val downloaded = downloadCloudFile(accessToken, remote)
+            metaStore.registerRestore(meta, downloaded.second, remote.modifiedTime)
             touchDevice(accessToken, meta, "download_requested")
             return result("downloaded", downloaded.second, remote, downloaded.first, true, "Cloud data is ready to restore on Android.")
         }
 
         if (remote == null) {
+            metaStore.requireCurrent(meta)
             val created = uploadCloudFile(accessToken, null, backupJson, localHash, meta.deviceId, Instant.now())
             commitUploaded(meta, localHash, created)
-            touchDevice(accessToken, metaStore.load(), "created")
+            touchDevice(accessToken, meta, "created")
             return result("created", localHash, created, null, false, "First cloud save created from Android.")
         }
 
@@ -200,6 +268,7 @@ class DriveCloudEngine(
                     "This Android device has unsynced edits and an existing cloud save was found. Choose Keep this device or Use cloud.")
             }
             if (remoteContent == null) remoteContent = downloadCloudFile(accessToken, remote).first
+            metaStore.registerRestore(meta, remoteHash, remote.modifiedTime)
             return result("downloaded", remoteHash, remote, remoteContent, true,
                 "Existing cloud save found. Android will restore it before uploading anything.")
         }
@@ -207,23 +276,18 @@ class DriveCloudEngine(
         val localChanged = !localHash.equals(meta.lastSyncedHash, true)
         val remoteChanged = !remoteHash.equals(meta.lastSyncedHash, true)
 
-        if (!localChanged && !remoteChanged) {
-            meta.lastSyncedAt = Instant.now()
-            metaStore.save(meta)
-            touchDevice(accessToken, meta, "noop")
-            return result("noop", localHash, remote, null, false, "Android and Google Drive are already identical.")
-        }
-
         if (localChanged && !remoteChanged) {
             createHistoryBackup(accessToken, remote, "before_auto_upload")
+            metaStore.requireCurrent(meta)
             val uploaded = uploadCloudFile(accessToken, remote.id, backupJson, localHash, meta.deviceId, Instant.now())
             commitUploaded(meta, localHash, uploaded)
-            touchDevice(accessToken, metaStore.load(), "uploaded")
+            touchDevice(accessToken, meta, "uploaded")
             return result("uploaded", localHash, uploaded, null, false, "Android changes uploaded to Google Drive.")
         }
 
         if (!localChanged && remoteChanged) {
             if (remoteContent == null) remoteContent = downloadCloudFile(accessToken, remote).first
+            metaStore.registerRestore(meta, remoteHash, remote.modifiedTime)
             return result("downloaded", remoteHash, remote, remoteContent, true, "Newer cloud changes found and ready to restore.")
         }
 
@@ -266,8 +330,9 @@ class DriveCloudEngine(
             .put("currentDeviceName", deviceName())
     }
 
-    fun restoreCloudBackup(accessToken: String, fileId: String): JSONObject {
+    fun restoreCloudBackup(accessToken: String, fileId: String, account: String, expectedGeneration: Long): JSONObject {
         require(fileId.matches(Regex("^[A-Za-z0-9_-]{1,256}$"))) { "Invalid cloud backup identifier." }
+        val meta = metaStore.beginSync(account, null, expectedGeneration)
         val info = getFileById(accessToken, fileId) ?: throw IllegalArgumentException("Cloud backup not found.")
         require(info.id == fileId && info.name.startsWith(CLOUD_BACKUP_PREFIX) &&
             info.name.endsWith(".json")) { "Selected file is not a Michel's Life recovery backup." }
@@ -278,6 +343,7 @@ class DriveCloudEngine(
         // content but strip unauthorized keys before giving JSON to WebView.
         val safeContent = validateBackup(content, forUpload = false)
         val hash = hashText(content)
+        metaStore.registerRestore(meta, hash, info.modifiedTime)
         return JSONObject()
             .put("backupJson", safeContent)
             .put("localHash", hash)
@@ -313,11 +379,7 @@ class DriveCloudEngine(
     }
 
     private fun commitUploaded(meta: CloudMeta, hash: String, remote: CloudFileInfo) {
-        meta.lastSyncedHash = hash
-        meta.lastSyncedAt = Instant.now()
-        meta.lastCloudModifiedAt = remote.modifiedTime
-        meta.lastLocalDirtyAt = null
-        metaStore.save(meta)
+        metaStore.commitUploaded(meta, hash, remote.modifiedTime)
     }
 
     private fun findCloudFile(accessToken: String): CloudFileInfo? {

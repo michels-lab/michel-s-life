@@ -222,10 +222,16 @@ class AndroidBridge(
             "cloudAccept" -> {
                 val hash = payload.optString("hash", "")
                 val modified = parseInstant(payload.optString("remoteModifiedAt"))
-                meta.acceptRestore(hash, modified)
-                respondOk(requestId, JSONObject().put("accepted", true))
+                try {
+                    meta.acceptRestore(hash, modified)
+                    respondOk(requestId, JSONObject().put("accepted", true))
+                } catch (e: Exception) {
+                    respondError(requestId, e.message ?: "Cloud restore confirmation failed.")
+                }
             }
-            "cloudSync" -> authorizeFor(requestId, false) { token, account ->
+            "cloudSync" -> {
+              val generation = meta.currentGeneration()
+              authorizeFor(requestId, false) { token, account ->
                 executor.execute {
                     try {
                         val result = cloud.sync(
@@ -233,13 +239,15 @@ class AndroidBridge(
                             account,
                             payload.optString("backupJson", ""),
                             payload.optString("localChangedAt", ""),
-                            payload.optString("mode", "auto")
+                            payload.optString("mode", "auto"),
+                            generation
                         )
                         respondOk(requestId, result)
                     } catch (e: Exception) {
                         respondError(requestId, e.message ?: "Cloud sync failed.")
                     }
                 }
+              }
             }
             "cloudOverview" -> authorizeFor(requestId, false) { token, account ->
                 executor.execute {
@@ -247,17 +255,20 @@ class AndroidBridge(
                     catch (e: Exception) { respondError(requestId, e.message ?: "Cloud overview failed.") }
                 }
             }
-            "cloudRestoreBackup" -> authorizeFor(requestId, false) { token, account ->
+            "cloudRestoreBackup" -> {
+              val generation = meta.currentGeneration()
+              authorizeFor(requestId, false) { token, account ->
                 executor.execute {
                     try {
                         payload.optString("backupJson", "").takeIf { it.isNotBlank() }?.let {
                             createRestorePoint(it, "before_cloud_history_restore")
                         }
-                        respondOk(requestId, cloud.restoreCloudBackup(token, payload.optString("fileId")))
+                        respondOk(requestId, cloud.restoreCloudBackup(token, payload.optString("fileId"), account, generation))
                     } catch (e: Exception) {
                         respondError(requestId, e.message ?: "Cloud backup restore failed.")
                     }
                 }
+              }
             }
             "createRestorePoint" -> {
                 try {
