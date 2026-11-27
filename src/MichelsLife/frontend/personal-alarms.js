@@ -382,10 +382,10 @@ function createQuickAlarm(minutes){
  const item=normal({id:'q'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
   label:tr('Quick alarm','Alarma rápida')+' · '+(minutes>=60?minutes/60+'h':minutes+'min'),
   ...dt,dueAt,repeat:'once',days:[],sound:screen?.querySelector('#mlv-alarm-sound')?.value||'gentle',enabled:true});
- if(!item)return false;records.push(item);store();return true;
+ if(!item)return false;records.push(item);return store();
 }
 
-let records=[],screen=null,ring=null,launcher=null,editing=null,lastTick=Date.now(),shown=new Set(),pendingDueRings=[],nativeError='',nativeCache='',ready=false;
+let records=[],screen=null,ring=null,launcher=null,editing=null,lastTick=Date.now(),shown=new Set(),pendingDueRings=[],nativeError='',nativeCache='',nativeSnapshot=null,ready=false;
 let windowsRingtone=null;
 const windowsNotifications=[];
 function normal(item){
@@ -402,41 +402,51 @@ function normal(item){
 function localRead(){
   try{const data=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(data)?data.slice(0,80).map(normal).filter(Boolean):[];}catch(_){return [];}
 }
+function hasNativeRegistry(){return typeof window.MichelsLifeAndroid?.getPersonalAlarms==='function';}
 function store(){
-  try{localStorage.setItem(KEY,JSON.stringify(records));}catch(e){console.warn('Alarm save unavailable',e);}
-  nativeCache='';
-  syncNative();
-  renderList();
+  if(hasNativeRegistry()&&!syncNative()){
+    const failure=nativeError;
+    // The native registry is authoritative; never pretend a failed write saved.
+    read();nativeError=failure;renderList();
+    window.alert(tr('Alarm change not confirmed. Review the list and try again.','No se confirmó el cambio. Revisa la lista y vuelve a intentarlo.'));
+    return false;
+  }
+  try{localStorage.setItem(KEY,JSON.stringify(records));}catch(e){console.warn('Alarm save unavailable',e);if(!hasNativeRegistry()){records=localRead();renderList();return false;}}
+  renderList();return true;
 }
 function read(){
   const native=window.MichelsLifeAndroid;
-  if(android()&&typeof native?.getPersonalAlarms==='function'){
+  if(hasNativeRegistry()){
     try{
-      const result=JSON.parse(native.getPersonalAlarms()||'[]');
-      if(Array.isArray(result)){
-        const saved=result.map(normal).filter(Boolean);
-        // Android's OS alarm registry is the authoritative source after an alarm rings.
-        // It must not be silently rearmed from stale WebView storage on restart.
-        records=saved;
-        try{localStorage.setItem(KEY,JSON.stringify(records));}catch(_){}
-        nativeCache=JSON.stringify(records);
-        return;
-      }
-    }catch(e){nativeError=String(e);}
+      const raw=native.getPersonalAlarms(),result=JSON.parse(raw);
+      if(!Array.isArray(result)||result.length>80)throw Error('Alarm registry unavailable');
+      const saved=result.map(normal);
+      if(saved.some(x=>!x)||new Set(saved.map(x=>x.id)).size!==saved.length)throw Error('Invalid alarm registry');
+      // Keep the exact native bytes as a compare-and-set token.
+      records=saved;nativeSnapshot=raw;nativeCache=JSON.stringify(records);nativeError='';
+      try{localStorage.setItem(KEY,nativeCache);}catch(_){}
+      return true;
+    }catch(e){
+      nativeError=String(e);nativeSnapshot=null;nativeCache='';records=localRead();
+      return false; // Cached data is display-only until a fresh native read.
+    }
   }
-  records=localRead();
-  syncNative();
+  records=localRead();return true;
 }
 function syncNative(){
-  const native=window.MichelsLifeAndroid;
-  if(typeof native?.syncPersonalAlarms!=='function')return;
-  const raw=JSON.stringify(records);
-  if(nativeCache===raw)return;
+  if(!hasNativeRegistry())return true;
+  const native=window.MichelsLifeAndroid,raw=JSON.stringify(records);
   try{
-    const result=JSON.parse(native.syncPersonalAlarms(raw)||'{}');
-    if(result.error)throw Error(result.error);
-    nativeCache=raw;nativeError='';
-  }catch(e){nativeError=String(e);nativeCache='';console.warn('Android alarms unavailable',e);}
+    if(nativeSnapshot===null||typeof native.syncPersonalAlarmsIfUnchanged!=='function')throw Error('Native alarm registry not verified');
+    if(nativeCache===raw)return true;
+    const result=JSON.parse(native.syncPersonalAlarmsIfUnchanged(raw,nativeSnapshot)||'{}');
+    if(result.error||typeof result.registry!=='string')throw Error(result.error||'Alarm update not verified');
+    const saved=JSON.parse(result.registry);
+    if(!Array.isArray(saved))throw Error('Alarm registry unavailable');
+    const normalized=saved.map(normal);
+    if(normalized.some(x=>!x)||new Set(normalized.map(x=>x.id)).size!==normalized.length)throw Error('Invalid alarm registry');
+    records=normalized;nativeSnapshot=result.registry;nativeCache=JSON.stringify(records);nativeError='';return true;
+  }catch(e){nativeError=String(e);nativeSnapshot=null;nativeCache='';console.warn('Android alarms unavailable',e);return false;}
 }
 function localAt(item){
   const due=item.dueAt||new Date(item.date+'T'+item.time+':00').getTime();
@@ -687,7 +697,7 @@ function create(){
   if(base)records=records.map(x=>x.id===base.id?item:x);
   else if(records.length<80)records.push(item);
   else{window.alert(tr('Maximum 80 alarms.','Máximo 80 alarmas.'));return;}
-  store();resetForm();
+  if(store())resetForm();
  });
  q('[data-ring-dismiss]',ring).addEventListener('click',()=>dismissRing(false));
  q('[data-ring-snooze]',ring).addEventListener('click',()=>dismissRing(true));
@@ -820,11 +830,13 @@ function close(){
 let ringingId=null;
 function ringAlarm(id,{notify=true}={}){
  create();
+ if(android()&&ringingId&&ringingId!==id&&!ring.hidden)return false;
+ if(hasNativeRegistry()&&!read())return false;
  const item=records.find(x=>x.id===id);
  if(!item)return false;
  ringingId=id;
  if(!android()&&notify)windowsNotifications.push({id:item.id,label:item.label||tr('Alarm','Alarma'),time:item.time,sound:item.sound});
- if(item.repeat==='once'&&item.enabled){item.enabled=false;store();}
+ if(!hasNativeRegistry()&&item.repeat==='once'&&item.enabled){item.enabled=false;store();}
  screen.hidden=true;ring.hidden=false;useWallpaper(ring);
  document.body.classList.add('mlv-alarm-visible');
  q('#mlv-alarm-ring-title',ring).textContent=tr('ALARM','ALARMA');
@@ -867,13 +879,20 @@ function ringAlarm(id,{notify=true}={}){
 }
 function dismissRing(snooze){
  if(!ring||ring.hidden)return;
+ const nativeAlarm=hasNativeRegistry();
  if(snooze&&(!records.some(x=>x.id===ringingId)||records.length>=80)){
   window.alert(tr('Could not snooze. The alarm is still active.','No se pudo posponer. La alarma sigue activa.'));return;
+ }
+ if(snooze&&nativeAlarm){
+  try{
+   if(window.MichelsLifeAndroid.snoozePersonalAlarm?.(ringingId)!==true)throw Error('Native snooze failed');
+  }catch(_){window.alert(tr('Could not snooze. The alarm is still active.','No se pudo posponer. La alarma sigue activa.'));return;}
+  read();renderList();
  }
  if(windowsRingtone){window.clearInterval(windowsRingtone);windowsRingtone=null;}
  stopPresetAudio();
  stopCustomAudio(false);
- if(snooze&&ringingId){
+ if(snooze&&ringingId&&!nativeAlarm){
   const item=records.find(x=>x.id===ringingId);
   if(item){
    const dueAt=Date.now()+5*60000,when=new Date(dueAt);
@@ -884,7 +903,7 @@ function dismissRing(snooze){
    records.push(snoozed);store();
   }
  }
- try{window.MichelsLifeAndroid?.dismissPersonalAlarm?.(ringingId||'');}catch(_){}
+ if(!(snooze&&nativeAlarm))try{window.MichelsLifeAndroid?.dismissPersonalAlarm?.(ringingId||'');}catch(_){}
  if(ringingId){for(let i=windowsNotifications.length-1;i>=0;i--)if(windowsNotifications[i].id===ringingId)windowsNotifications.splice(i,1)}
  ring.hidden=true;ringingId=null;document.body.classList.remove('mlv-alarm-visible');
  // Present any simultaneous alarm after this one is dismissed without dropping it.
@@ -958,7 +977,7 @@ function boot(){
  rememberWallpaper();window.addEventListener('load',rememberWallpaper,{once:true});
  // Android receives a system notification; the page timer is only a foreground mirror.
  window.setInterval(tick,900);
- window.addEventListener('focus',()=>{syncNative();renderList();});
+ window.addEventListener('focus',()=>{if(hasNativeRegistry())read();renderList();});
  window.addEventListener('michelslife:languagechange',()=>{localize();renderList();});
  // If installer language is reconciled after a first paint, refresh accessibility copy.
  const observer=new MutationObserver(()=>{if(screen)localize();});

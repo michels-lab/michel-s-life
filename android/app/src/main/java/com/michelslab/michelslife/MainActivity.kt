@@ -50,6 +50,7 @@ class MainActivity : Activity() {
     private var pendingAlarmOpen: Runnable? = null
     private var pendingWebFilePicker: ValueCallback<Array<Uri>>? = null
     private var playingAlarm: MediaPlayer? = null
+    private var attentionAlarmId: String? = null
     private var vibratingAlarm: Vibrator? = null
 
     // The notification can cold-start this Activity before the canonical
@@ -74,7 +75,8 @@ class MainActivity : Activity() {
     private fun beginAlarmAttention(id: String) {
         if (!id.matches(Regex("^[A-Za-z0-9_-]{1,64}$")) || !NativePersonalAlarms.wasDelivered(this, id)) return
         if (PersonalAlarmOverlay.isRinging(id)) return
-        stopAlarmAttention()
+        if (attentionAlarmId != null) return
+        attentionAlarmId = id
         // Wake and show an eligible alarm above the lock screen without unlocking it.
         if (Build.VERSION.SDK_INT >= 27) {
             setShowWhenLocked(true)
@@ -88,6 +90,7 @@ class MainActivity : Activity() {
             val uri = NativePersonalAlarms.alarmSoundUri(this, id)
                 ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
             val player = MediaPlayer()
+            playingAlarm = player
             player.setAudioAttributes(AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_ALARM)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build())
@@ -95,9 +98,8 @@ class MainActivity : Activity() {
             player.isLooping = true
             player.prepare()
             player.start()
-            playingAlarm = player
         } catch (_: Exception) {
-            playingAlarm?.release()
+            try { playingAlarm?.release() } catch (_: Exception) { }
             playingAlarm = null
             // The notification channel still provides a system alarm sound.
         }
@@ -112,7 +114,9 @@ class MainActivity : Activity() {
         } catch (_: Exception) { }
     }
 
-    fun stopAlarmAttention() {
+    fun stopAlarmAttention(id: String? = null) {
+        if (id != null && attentionAlarmId != id) return
+        attentionAlarmId = null
         try { playingAlarm?.stop() } catch (_: Exception) { }
         try { playingAlarm?.release() } catch (_: Exception) { }
         playingAlarm = null
@@ -126,6 +130,15 @@ class MainActivity : Activity() {
             window.clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
                 WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
         }
+    }
+
+    internal fun completePersonalAlarm(id: String) {
+        NativePersonalAlarms.dismiss(this, id)
+        stopAlarmAttention(id)
+        // A second notification can have arrived while the first is visible.
+        if (intent.getStringExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM) == id)
+            intent.removeExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM)
+        openPersonalAlarmFromNotification()
     }
 
     private fun openPersonalAlarmFromNotification() {
@@ -148,6 +161,7 @@ class MainActivity : Activity() {
             if (generation != alarmOpenGeneration || !acceptsWebViewCallbacks(webView) ||
                 intent.getStringExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM) != id) return@evaluateJavascript
             if (opened == "true") {
+                beginAlarmAttention(id)
                 intent.removeExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM)
                 pendingAlarmOpen = null
             } else if (retries < 40) {

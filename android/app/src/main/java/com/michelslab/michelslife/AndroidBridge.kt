@@ -59,7 +59,25 @@ class AndroidBridge(
 
     /** Android alarm registry is authoritative after recurring/one-time delivery. */
     @JavascriptInterface
-    fun getPersonalAlarms(): String = NativePersonalAlarms.list(activity).toString()
+    fun getPersonalAlarms(): String = try {
+        NativePersonalAlarms.registrySnapshot(activity)
+    } catch (_: Exception) {
+        JSONObject().put("error", "Alarm registry unavailable").toString()
+    }
+
+    @JavascriptInterface
+    fun syncPersonalAlarmsIfUnchanged(raw: String, expected: String): String = try {
+        NativePersonalAlarms.syncIfUnchanged(activity, JSONArray(raw), expected).toString()
+    } catch (_: Exception) {
+        JSONObject().put("error", "Personal alarm scheduling failed").toString()
+    }
+
+    @JavascriptInterface
+    fun snoozePersonalAlarm(id: String): Boolean {
+        if (!NativePersonalAlarms.snooze(activity, id)) return false
+        activity.runOnUiThread { activity.completePersonalAlarm(id) }
+        return true
+    }
 
     @JavascriptInterface
     fun syncPersonalAlarms(raw: String): String = try {
@@ -123,8 +141,7 @@ class AndroidBridge(
     @JavascriptInterface
     fun dismissPersonalAlarm(id: String) {
         activity.runOnUiThread {
-            NativePersonalAlarms.dismiss(activity, id)
-            activity.stopAlarmAttention()
+            activity.completePersonalAlarm(id)
         }
     }
 

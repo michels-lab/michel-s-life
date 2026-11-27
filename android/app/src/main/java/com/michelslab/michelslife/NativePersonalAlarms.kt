@@ -57,9 +57,23 @@ internal object NativePersonalAlarms {
     private fun prefs(context: Context) =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
+    private fun readRegistry(context: Context): JSONArray =
+        JSONArray(prefs(context).getString(KEY_ALARMS, "[]") ?: "[]")
+
     fun list(context: Context): JSONArray =
-        try { JSONArray(prefs(context).getString(KEY_ALARMS, "[]") ?: "[]") }
-        catch (_: Exception) { JSONArray() }
+        try { readRegistry(context) } catch (_: Exception) { JSONArray() }
+
+    @Synchronized
+    fun registrySnapshot(context: Context): String = readRegistry(context).toString()
+
+    @Synchronized
+    fun syncIfUnchanged(context: Context, input: JSONArray, expected: String): JSONObject {
+        // Delivery may disable a one-time alarm while the WebView is editing.
+        // Do not overwrite a newer native registry with an old whole-list copy.
+        if (registrySnapshot(context) != expected)
+            return JSONObject().put("error", "Alarm list changed; reload before editing")
+        return sync(context, input)
+    }
 
     fun wasDelivered(context: Context, id: String): Boolean {
         if (!idPattern.matches(id)) return false
@@ -492,7 +506,11 @@ internal object NativePersonalAlarms {
 
     @Synchronized
     fun snooze(context: Context, id: String): Boolean {
-        val original = list(context)
+        if (!wasDelivered(context, id)) return false
+        val original = try { readRegistry(context) } catch (_: Exception) { return false }
+        val originalRaw = original.toString()
+        val deliveryKey = LAST_DELIVERED_PREFIX + id
+        val deliveredAt = prefs(context).getLong(deliveryKey, 0L)
         var selected: JSONObject? = null
         for (index in 0 until original.length()) {
             val entry = original.optJSONObject(index)
@@ -516,7 +534,22 @@ internal object NativePersonalAlarms {
             .put("enabled", true)
         if (original.length() >= 80) return false
         original.put(replacement)
-        return try { !sync(context, original).has("error") } catch (_: Exception) { false }
+        // Claim this delivered occurrence once and persist only the new snooze.
+        // Scheduling a snooze must not touch unrelated delayed alarms.
+        val replacementId = replacement.getString("id")
+        val saved = prefs(context).edit().putString(KEY_ALARMS, original.toString())
+            .remove(deliveryKey).commit()
+        if (saved) {
+            try {
+                schedule(context, replacement)
+                if (prefs(context).getLong(SCHEDULED_PREFIX + replacementId, 0L) == dueAt)
+                    return true
+            } catch (_: Exception) { }
+        }
+        try { cancel(context, replacementId) } catch (_: Exception) { }
+        prefs(context).edit().putString(KEY_ALARMS, originalRaw)
+            .putLong(deliveryKey, deliveredAt).commit()
+        return false
     }
 
     private fun notificationAllowed(context: Context): Boolean =
@@ -712,10 +745,15 @@ internal object NativePersonalAlarms {
         val cleanList = JSONArray()
         val unique = mutableSetOf<String>()
         for (i in 0 until input.length()) {
-            val normalized = clean(input.optJSONObject(i) ?: continue) ?: continue
-            if (unique.add(normalized.getString("id"))) cleanList.put(normalized)
+            val row = input.optJSONObject(i)
+                ?: return JSONObject().put("error", "Invalid alarm record")
+            val normalized = clean(row)
+                ?: return JSONObject().put("error", "Invalid alarm record")
+            if (!unique.add(normalized.getString("id")))
+                return JSONObject().put("error", "Duplicate alarm identifier")
+            cleanList.put(normalized)
         }
-        val existing = list(context)
+        val existing = readRegistry(context)
         // A failed write must not cancel the previously scheduled alarms.
         if (!prefs(context).edit().putString(KEY_ALARMS, cleanList.toString()).commit()) {
             prefs(context).edit().putString(KEY_ALARMS, existing.toString()).commit()
@@ -744,6 +782,7 @@ internal object NativePersonalAlarms {
             }
         }
         val result = status(context).put("count", cleanList.length())
+            .put("registry", registrySnapshot(context))
         if (failed > 0) result.put("error", "Could not schedule $failed alarm(s)")
         return result
     }
@@ -775,6 +814,7 @@ internal object NativePersonalAlarms {
             .sortedBy { prefs(context).getLong(LAST_DELIVERED_PREFIX + it.optString("id"), 0L) }
     }
 
+    @Synchronized
     fun dismiss(context: Context, id: String) {
         if (!idPattern.matches(id)) return
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
