@@ -19,6 +19,33 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from urllib.request import urlopen
 
+STEP_JS = r"""(() => {
+  const root=document.getElementById('mlv200Onboarding');
+  if(!root)return {step:localStorage.getItem('michelsLife.onboarding.v30200')==='done'?'done':'missing'};
+  const visible=el=>{
+    if(!el||!el.getClientRects().length)return false;
+    const style=getComputedStyle(el);
+    return style.display!=='none'&&style.visibility!=='hidden';
+  };
+  const finish=root.querySelector('[data-mlv200-onboard="finish"]');
+  const next=root.querySelector('[data-mlv200-onboard="next"]');
+  const onFocus=root.querySelector('.mlv200-focus input[type="checkbox"]');
+  const step=visible(finish)?3:visible(onFocus)?2:1;
+  const target=step===3?finish:next;
+  if(!visible(target))return {step,reason:'native continue or finish button not visible'};
+  const b=target.getBoundingClientRect();
+  const action=step===3?'finish':'next';
+  const points=[0.20,0.83,0.50].map(position=>{
+    const x=b.left+b.width*position,y=b.top+b.height*0.5;
+    const hit=document.elementFromPoint(x,y);
+    return {x,y,topmost:!!hit&&hit.closest('[data-mlv200-onboard="'+action+'"]')===target};
+  });
+  return {step,action,enabled:!target.disabled,
+    viewport:{width:innerWidth,height:innerHeight},
+    button:{width:b.width,height:b.height},points};
+})()"""
+
+
 PKG = "com.michelslab.michelslife"
 SERIAL = "emulator-5554"
 BOUNDS = re.compile(r"^\[(\d+),(\d+)\]\[(\d+),(\d+)\]$")
@@ -229,53 +256,94 @@ def read_native_webview(port, expression):
         ws.close()
 
 
-def actual_tap(serial, stage):
-    # Stage 0/1/2 maps to visible 1/3, 2/3, 3/3.
+def touch_stage(port, expected, output, serial=SERIAL):
     dismiss_launcher(serial)
     pid = adb(serial, "shell", "pidof", PKG).strip()
-    if not re.fullmatch(r"\d+", pid):
+    if not re.fullmatch(r"[0-9]+", pid):
         raise RuntimeError("native_app_process_missing")
-    port = 9223
     adb(serial, "forward", f"tcp:{port}", f"localabstract:webview_devtools_remote_{pid}")
+    attempts = []
+    report = {"native": True, "completed": False, "before": expected,
+              "after": expected, "attempts": attempts}
     try:
-        current = read_native_webview(port, cdp_expression(stage+1))
-        if current.get("stage") != stage+1 or not current.get("visible"):
-            raise RuntimeError(f"native_onboarding_step_{stage+1}_not_ready_or_occluded")
-        # Read accessibility live each stage. When the class is omitted by
-        # UIAutomator, only a verified bound from THIS app process may be reused.
-        rect = verified_webview_bounds(accessibility_xml(serial), physical_display(serial),
-                                       pid, stage)
-        x, y = native_point(rect, current.get("x"), current.get("y"))
-        adb(serial, "shell", "input", "tap", str(x), str(y))
-        # Check the actual installed WebView after a native touchscreen event.
-        for _ in range(12):
-            time.sleep(1)
-            after = read_native_webview(port, cdp_expression(min(stage+2, 3)))
-            if stage < 2 and after.get("stage") == stage+2:
-                print(f"Native ADB touch advanced actual onboarding to {stage+2}/3")
+        goal = expected + 1 if expected < 3 else "done"
+        for index in range(3):
+            # Read the actual system window each time. Never scale CSS against
+            # the entire display: status/navigation bars offset the WebView.
+            dismiss_launcher(serial)
+            if adb(serial, "shell", "pidof", PKG).strip() != pid:
+                raise RuntimeError("native_app_process_changed_during_onboarding")
+            display = physical_display(serial)
+            rect = verified_webview_bounds(accessibility_xml(serial), display, pid, expected-1)
+            actual = read_native_webview(port, STEP_JS)
+            step = actual.get("step")
+            if step == goal and attempts:
+                report.update(completed=True, after=goal)
                 return
-            if stage == 2 and after.get("done"):
-                print("Native ADB touch completed and persisted onboarding")
-                return
-        raise RuntimeError(f"native_onboarding_touch_did_not_advance_stage_{stage+1}")
+            if step != expected or not actual.get("enabled"):
+                raise RuntimeError(f"native_onboarding_step_{expected}_not_ready_or_occluded")
+            viewport = actual.get("viewport", {})
+            vw, vh = viewport.get("width"), viewport.get("height")
+            if not all(type(n) in (int, float) and 200 <= n <= 2600 for n in (vw,vh)):
+                raise RuntimeError("invalid_real_webview_viewport")
+            points = actual.get("points", [])
+            if index >= len(points) or not points[index].get("topmost"):
+                continue
+            point = points[index]
+            x, y = native_point(rect, point["x"]/vw, point["y"]/vh)
+            adb(serial, "shell", "input", "tap", str(x), str(y))
+            attempt = {"x": x, "y": y, "after": expected}
+            attempts.append(attempt)
+            for _ in range(14):
+                time.sleep(.55)
+                after = read_native_webview(port, STEP_JS).get("step")
+                attempt["after"] = after
+                report["after"] = after
+                if after == goal:
+                    report.update(completed=True, action=actual["action"],
+                                  devicePixels={"width": display[0], "height": display[1]},
+                                  touch={"x": x, "y": y})
+                    print(f"PASS: actual ADB touch moved installed WebView {expected} -> {goal}")
+                    return
+                if after != expected:
+                    raise RuntimeError("native_onboarding_changed_unexpectedly")
+        raise RuntimeError(f"native_onboarding_step_{expected}_did_not_advance")
     finally:
+        target = Path(output)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(report, indent=2)+"\n", encoding="utf-8")
         adb(serial, "forward", "--remove", f"tcp:{port}", timeout=12)
+
+
+def self_test():
+    assert native_point((0,78,1080,2335), .8,.8) == (864,1884)
+    assert "elementFromPoint" in STEP_JS
+    assert ".click(" not in STEP_JS
+    print("PASS: native geometry includes system insets; read-only DOM and actual ADB touch")
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("action", choices=("dismiss", "tap"))
+    parser.add_argument("action", nargs="?", choices=("dismiss", "tap"))
     parser.add_argument("--serial", default=SERIAL)
     parser.add_argument("--stage", type=int, choices=(0,1,2))
+    parser.add_argument("--step", type=int, choices=(1,2,3))
+    parser.add_argument("--port", type=int, default=9222)
+    parser.add_argument("--output")
+    parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
     if not re.fullmatch(r"emulator-\d+", args.serial):
         raise RuntimeError("unsafe_android_serial")
-    if args.action == "tap":
-        if args.stage is None:
-            parser.error("--stage required for tap")
-        actual_tap(args.serial, args.stage)
-    else:
+    if args.self_test:
+        self_test()
+    elif args.action == "dismiss":
         dismiss_launcher(args.serial)
+    else:
+        expected = args.step if args.step is not None else (args.stage+1 if args.stage is not None else None)
+        if expected is None:
+            parser.error("--step or --stage required")
+        output = args.output or f"artifacts/candidate-install/onboarding-real-touch-step{expected}.json"
+        touch_stage(args.port, expected, output, args.serial)
 
 
 if __name__ == "__main__":
