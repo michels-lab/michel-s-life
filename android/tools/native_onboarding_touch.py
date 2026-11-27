@@ -19,6 +19,7 @@ import uuid
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from urllib.request import urlopen
+from urllib.parse import urlsplit
 
 STEP_JS = r"""(() => {
   const root=document.getElementById('mlv200Onboarding');
@@ -189,14 +190,17 @@ def accessibility_xml(serial):
         # accept a stale hierarchy as proof that a system dialog is absent.
         fresh = UI_XML.replace(".xml", f"-{uuid.uuid4().hex}.xml")
         try:
-            adb(serial, "shell", "uiautomator", "dump", "--compressed", fresh, timeout=40)
+            # Alternate two real accessibility tree modes; a failed dump
+            # must never stand in for an unobstructed native window.
+            mode = ("--compressed",) if attempt % 2 == 0 else ()
+            adb(serial, "shell", "uiautomator", "dump", *mode, fresh, timeout=40)
             raw = adb(serial, "shell", "cat", fresh)
             pos = raw.find("<?xml")
             if pos >= 0:
                 xml_nodes(raw[pos:])  # Require well-formed real Android XML.
                 return raw[pos:]
-        except (RuntimeError, subprocess.TimeoutExpired):
-            pass
+        except (RuntimeError, subprocess.TimeoutExpired) as error:
+            print(f"Native accessibility attempt {attempt+1}/5 failed: {type(error).__name__}")
         finally:
             try:
                 adb(serial, "shell", "rm", "-f", fresh, timeout=8)
@@ -213,6 +217,13 @@ def dismiss_launcher(serial):
         rect = launcher_anr_button(xml)
         if rect is None:
             return xml
+        if os.environ.get("GITHUB_ACTIONS") != "true" or serial != SERIAL:
+            raise RuntimeError("launcher_dismissal_requires_isolated_hosted_emulator")
+        inventory = adb(serial, "devices", "-l")
+        rows = [line.split() for line in inventory.splitlines()
+                if line.strip() and not line.startswith("List of devices attached")]
+        if len(rows) != 1 or rows[0][:2] != [serial, "device"]:
+            raise RuntimeError("launcher_dismissal_requires_isolated_hosted_emulator")
         x, y = native_point(rect, 0.5, 0.5)
         adb(serial, "shell", "input", "tap", str(x), str(y))
         print(f"Native Pixel Launcher SYSTEM ANR dismissed via real accessibility touch ({attempt+1})")
@@ -247,12 +258,18 @@ def read_native_webview(port, expression):
     from websocket import create_connection
     with urlopen(f"http://127.0.0.1:{port}/json/list", timeout=8) as response:
         pages = json.load(response)
-    matches = [p for p in pages if p.get("type") == "page" and
-               str(p.get("url", "")).startswith(PAGE_URL)]
+    if not isinstance(pages, list):
+        raise RuntimeError("invalid_native_devtools_page_list")
+    matches = [p for p in pages if isinstance(p, dict) and p.get("type") == "page" and
+               isinstance(p.get("url"), str) and
+               p["url"].split("#", 1)[0].split("?", 1)[0] == PAGE_URL]
     if len(matches) != 1:
         raise RuntimeError("expected_one_installed_native_webview_page")
-    ws = create_connection(matches[0]["webSocketDebuggerUrl"],
-                           timeout=15, suppress_origin=True)
+    endpoint = matches[0].get("webSocketDebuggerUrl", "")
+    parsed = urlsplit(endpoint)
+    if parsed.scheme != "ws" or parsed.hostname not in ("localhost", "127.0.0.1") or parsed.port != port:
+        raise RuntimeError("invalid_local_native_devtools_endpoint")
+    ws = create_connection(endpoint, timeout=15, suppress_origin=True)
     try:
         ws.send(json.dumps({"id": 1, "method": "Runtime.evaluate",
                             "params": {"expression": expression, "returnByValue": True}}))
@@ -263,15 +280,28 @@ def read_native_webview(port, expression):
                 continue
             if msg.get("error") or msg.get("result", {}).get("exceptionDetails"):
                 raise RuntimeError("native_read_only_dom_query_failed")
-            return msg.get("result", {}).get("result", {}).get("value") or {}
+            value = msg.get("result", {}).get("result", {}).get("value")
+            if not isinstance(value, dict):
+                raise RuntimeError("invalid_native_read_only_dom_result")
+            return value
         raise RuntimeError("native_cdp_query_timed_out")
     finally:
         ws.close()
 
 
+def require_focused_app(serial):
+    # A live PID or CDP connection alone does not prove Android will route
+    # the native touch to the target window. Never retain other window titles.
+    raw = adb(serial, "shell", "dumpsys", "window", "windows", timeout=12)
+    focus = re.findall(r"(?m)^\s*mCurrentFocus\s*=\s*(.+)$", raw)
+    component = re.escape(PKG) + r"/(?:" + re.escape(PKG) + r")?\.MainActivity"
+    if len(focus) != 1 or not re.search(r"(?<![\w.])" + component + r"(?:\s|\})", focus[0]):
+        raise RuntimeError("native_app_window_not_focused")
+
+
 def touch_stage(port, expected, output, serial=SERIAL):
     pid = adb(serial, "shell", "pidof", PKG).strip()
-    if not re.fullmatch(r"[0-9]+", pid):
+    if not re.fullmatch(r"[1-9][0-9]*", pid):
         raise RuntimeError("native_app_process_missing")
     adb(serial, "forward", f"tcp:{port}", f"localabstract:webview_devtools_remote_{pid}")
     attempts = []
@@ -285,12 +315,17 @@ def touch_stage(port, expected, output, serial=SERIAL):
             xml = dismiss_launcher(serial)
             if adb(serial, "shell", "pidof", PKG).strip() != pid:
                 raise RuntimeError("native_app_process_changed_during_onboarding")
+            require_focused_app(serial)
             display = physical_display(serial)
             rect = verified_webview_bounds(xml, display, pid, expected-1)
             actual = read_native_webview(port, STEP_JS)
             step = actual.get("step")
             if step == goal and attempts:
-                report.update(completed=True, after=goal)
+                last = attempts[-1]
+                last["after"] = goal
+                report.update(completed=True, after=goal, action="finish" if expected == 3 else "next",
+                              devicePixels={"width": display[0], "height": display[1]},
+                              touch={"x": last["x"], "y": last["y"]})
                 return
             if step != expected or not actual.get("enabled"):
                 raise RuntimeError(f"native_onboarding_step_{expected}_not_ready_or_occluded")
@@ -303,6 +338,7 @@ def touch_stage(port, expected, output, serial=SERIAL):
                 continue
             point = points[index]
             x, y = native_point(rect, point["x"]/vw, point["y"]/vh)
+            require_focused_app(serial)
             adb(serial, "shell", "input", "tap", str(x), str(y))
             attempt = {"x": x, "y": y, "after": expected}
             attempts.append(attempt)
@@ -324,7 +360,10 @@ def touch_stage(port, expected, output, serial=SERIAL):
         target = Path(output)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(json.dumps(report, indent=2)+"\n", encoding="utf-8")
-        adb(serial, "forward", "--remove", f"tcp:{port}", timeout=12)
+        try:
+            adb(serial, "forward", "--remove", f"tcp:{port}", timeout=12)
+        except (RuntimeError, subprocess.TimeoutExpired):
+            print("Native CDP cleanup unavailable; original result retained")
 
 
 def self_test():

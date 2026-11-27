@@ -149,6 +149,7 @@ class NativeOnboardingTouchTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             output = Path(d)/"report.json"
             with patch.object(mod, "dismiss_launcher"), \
+                    patch.object(mod, "require_focused_app"), \
                     patch.object(mod, "adb", return_value="1234") as command, \
                     patch.object(mod, "physical_display", return_value=(1080,2400)), \
                     patch.object(mod, "accessibility_xml", return_value="<hierarchy/>"), \
@@ -166,6 +167,7 @@ class NativeOnboardingTouchTests(unittest.TestCase):
                   "points": [{"x":288,"y":640,"topmost":False}]*3}
         with tempfile.TemporaryDirectory() as d:
             with patch.object(mod, "dismiss_launcher"), \
+                    patch.object(mod, "require_focused_app"), \
                     patch.object(mod, "adb", return_value="1234") as command, \
                     patch.object(mod, "physical_display", return_value=(1080,2400)), \
                     patch.object(mod, "accessibility_xml", return_value="<hierarchy/>"), \
@@ -199,6 +201,38 @@ class NativeOnboardingTouchTests(unittest.TestCase):
                                   'package="com.example" resource-id="android:id/alertTitle"')
         with self.assertRaisesRegex(RuntimeError, "unverified_system_alert"):
             mod.launcher_anr_button(xml)
+
+    def test_focus_requires_exact_app_activity(self):
+        for raw in ("  mCurrentFocus=Window{abc u0 "+mod.PKG+"/.MainActivity}",
+                    "  mCurrentFocus=Window{abc u0 "+mod.PKG+"/"+mod.PKG+".MainActivity}"):
+            with patch.object(mod,"adb",return_value=raw):
+                mod.require_focused_app(mod.SERIAL)
+        for raw in ("mCurrentFocus=null","mCurrentFocus=Window{abc u0 android/com.android.Alert}",
+                    "mCurrentFocus=Window{abc u0 "+mod.PKG+".other/.MainActivity}",
+                    "mCurrentFocus=Window{abc u0 "+mod.PKG+"/.OtherActivity}"):
+            with patch.object(mod,"adb",return_value=raw), self.assertRaisesRegex(RuntimeError,"not_focused"):
+                mod.require_focused_app(mod.SERIAL)
+
+    def test_launcher_never_closed_on_manual_or_shared_host(self):
+        with patch.object(mod,"accessibility_xml",return_value=hierarchy()), \
+             patch.object(mod.os,"environ",{}), patch.object(mod,"adb") as cmd:
+            with self.assertRaisesRegex(RuntimeError,"isolated_hosted"):
+                mod.dismiss_launcher(mod.SERIAL)
+            cmd.assert_not_called()
+        with patch.object(mod,"accessibility_xml",return_value=hierarchy()), \
+             patch.object(mod.os,"environ",{"GITHUB_ACTIONS":"true"}), \
+             patch.object(mod,"adb",return_value=mod.SERIAL+" device\nphysical device") as cmd:
+            with self.assertRaisesRegex(RuntimeError,"isolated_hosted"):
+                mod.dismiss_launcher(mod.SERIAL)
+            self.assertFalse(any("tap" in call.args for call in cmd.call_args_list))
+
+    def test_full_tree_fallback_retries_real_native_dump(self):
+        xml='<?xml version="1.0"?><hierarchy />'
+        with patch.object(mod,"adb",side_effect=[RuntimeError("idle"),"", "dump",xml,""]) as cmd, \
+             patch.object(mod.time,"sleep"):
+            self.assertEqual(mod.accessibility_xml(mod.SERIAL),xml)
+        self.assertIn("--compressed",cmd.call_args_list[0].args)
+        self.assertNotIn("--compressed",cmd.call_args_list[2].args)
 
     def test_current_probe_is_read_only(self):
         self.assertIn("elementFromPoint", mod.STEP_JS)
