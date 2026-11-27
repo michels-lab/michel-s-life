@@ -15,6 +15,7 @@ import os
 import re
 import subprocess
 import time
+import uuid
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from urllib.request import urlopen
@@ -77,6 +78,8 @@ def launcher_anr_button(xml):
     if alert is None:
         return None
     title = str(alert.get("text") or "")
+    if alert.get("package") != "android":
+        raise RuntimeError("unverified_system_alert_must_not_be_dismissed")
     if title != "Pixel Launcher isn't responding":
         if "isn't responding" in title or "not responding" in title:
             raise RuntimeError("other_app_anr_must_not_be_dismissed")
@@ -182,15 +185,23 @@ def accessibility_xml(serial):
     # the system launcher is unresponsive. Do not treat that as app failure.
     # Never proceed to a tap without a REAL current accessibility hierarchy.
     for attempt in range(5):
+        # A failed dump may leave yesterday's XML at a fixed path; never
+        # accept a stale hierarchy as proof that a system dialog is absent.
+        fresh = UI_XML.replace(".xml", f"-{uuid.uuid4().hex}.xml")
         try:
-            adb(serial, "shell", "uiautomator", "dump", "--compressed", UI_XML, timeout=40)
-            raw = adb(serial, "shell", "cat", UI_XML)
+            adb(serial, "shell", "uiautomator", "dump", "--compressed", fresh, timeout=40)
+            raw = adb(serial, "shell", "cat", fresh)
             pos = raw.find("<?xml")
             if pos >= 0:
                 xml_nodes(raw[pos:])  # Require well-formed real Android XML.
                 return raw[pos:]
         except (RuntimeError, subprocess.TimeoutExpired):
             pass
+        finally:
+            try:
+                adb(serial, "shell", "rm", "-f", fresh, timeout=8)
+            except (RuntimeError, subprocess.TimeoutExpired):
+                pass
         if attempt < 4:
             time.sleep(3)
     raise RuntimeError("native_accessibility_unavailable_after_bounded_retries")
@@ -201,13 +212,15 @@ def dismiss_launcher(serial):
         xml = accessibility_xml(serial)
         rect = launcher_anr_button(xml)
         if rect is None:
-            return
+            return xml
         x, y = native_point(rect, 0.5, 0.5)
         adb(serial, "shell", "input", "tap", str(x), str(y))
         print(f"Native Pixel Launcher SYSTEM ANR dismissed via real accessibility touch ({attempt+1})")
         time.sleep(2)
-    if launcher_anr_button(accessibility_xml(serial)) is not None:
+    xml = accessibility_xml(serial)
+    if launcher_anr_button(xml) is not None:
         raise RuntimeError("pixel_launcher_anr_reappeared_after_bounded_dismissals")
+    return xml
 
 
 def cdp_expression(stage):
@@ -257,7 +270,6 @@ def read_native_webview(port, expression):
 
 
 def touch_stage(port, expected, output, serial=SERIAL):
-    dismiss_launcher(serial)
     pid = adb(serial, "shell", "pidof", PKG).strip()
     if not re.fullmatch(r"[0-9]+", pid):
         raise RuntimeError("native_app_process_missing")
@@ -270,11 +282,11 @@ def touch_stage(port, expected, output, serial=SERIAL):
         for index in range(3):
             # Read the actual system window each time. Never scale CSS against
             # the entire display: status/navigation bars offset the WebView.
-            dismiss_launcher(serial)
+            xml = dismiss_launcher(serial)
             if adb(serial, "shell", "pidof", PKG).strip() != pid:
                 raise RuntimeError("native_app_process_changed_during_onboarding")
             display = physical_display(serial)
-            rect = verified_webview_bounds(accessibility_xml(serial), display, pid, expected-1)
+            rect = verified_webview_bounds(xml, display, pid, expected-1)
             actual = read_native_webview(port, STEP_JS)
             step = actual.get("step")
             if step == goal and attempts:
