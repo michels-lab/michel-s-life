@@ -30,7 +30,7 @@
     "UNKNOWN_PURPOSE": 6
   },
   "finding_total": 7,
-  "inventory_fingerprint": "4ba2c0610fb189fd8d907710581536be5383008e6e859acf790cba9ba986a59a",
+  "inventory_fingerprint": "5568d717afc76dc1b6994d0d07c323a2a122992901bb6df3ba91a053ebffd18b",
   "evidence_fingerprint": "4940a7d1f883e932f2bf58465e88bfd003e9f9de3a2352292aea7b9431d80f50",
   "files": [
     {
@@ -612,7 +612,7 @@
       "role": "config",
       "purpose": "machine-readable configuration",
       "certainty": "rule",
-      "blob": "6865ae884659490871a7118f841fcaaafe4f04b1"
+      "blob": "d96e28e3619060aa6fe4b3985f85154eaac9e67f"
     },
     {
       "path": ".michelslab/project.yml",
@@ -836,7 +836,7 @@
       "role": "bitacora",
       "purpose": "technical/audit change history",
       "certainty": "rule",
-      "blob": "80e727df75f9019704778bd2fd9dfb6b238998f2"
+      "blob": "981b3988618b5e970c473fb010c5ad4c08d00b7a"
     },
     {
       "path": "LICENSE.txt",
@@ -1830,7 +1830,7 @@
       "role": "document",
       "purpose": "manual/decision/report/historical note",
       "certainty": "inferred",
-      "blob": "843141b0f397ba25e0fa61e7afdac3bad0a9e529"
+      "blob": "cf0c14b5df88015c747b0ea54025aa8bd231b312"
     },
     {
       "path": "docs/RECOVERY_LOSS_TRIAGE.md",
