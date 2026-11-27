@@ -867,6 +867,9 @@ function ringAlarm(id,{notify=true}={}){
 }
 function dismissRing(snooze){
  if(!ring||ring.hidden)return;
+ if(snooze&&(!records.some(x=>x.id===ringingId)||records.length>=80)){
+  window.alert(tr('Could not snooze. The alarm is still active.','No se pudo posponer. La alarma sigue activa.'));return;
+ }
  if(windowsRingtone){window.clearInterval(windowsRingtone);windowsRingtone=null;}
  stopPresetAudio();
  stopCustomAudio(false);
@@ -878,7 +881,7 @@ function dismissRing(snooze){
    const time=String(when.getHours()).padStart(2,'0')+':'+String(when.getMinutes()).padStart(2,'0');
    const snoozed={id:'s'+Date.now().toString(36),label:item.label||tr('Snoozed alarm','Alarma pospuesta'),
      date,time,dueAt,repeat:'once',days:[],sound:item.sound||'system',enabled:true};
-   if(records.length<80)records.push(snoozed);store();
+   records.push(snoozed);store();
   }
  }
  try{window.MichelsLifeAndroid?.dismissPersonalAlarm?.(ringingId||'');}catch(_){}
