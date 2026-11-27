@@ -37,7 +37,7 @@ function harness(persisted={v30165Soundscape:'moonlight',v30165CompletionSound:'
     FocusStoryV30162:{
       focusState:()=>persisted,
       setAudioPreference(kind,value){
-        if(kind==='scene')persisted.v30165Soundscape=all.has(value)?value:'moonlight';
+        if(kind==='scene')persisted.v30165Soundscape=all.has(value)||/^my_[a-f0-9]{32}$/.test(value)?value:'moonlight';
         else if(kind==='completion')persisted.v30165CompletionSound=value;
         else if(kind==='ambientVolume')persisted.v30165AmbientVolume=value;
         else if(kind==='ambientMode')persisted.v30165AmbientMode=value;
@@ -254,4 +254,65 @@ test('failed cross-collection track selection does not alter the existing collec
  const save=f.window.FocusStoryV30162.setAudioPreference;f.window.FocusStoryV30162.setAudioPreference=(kind,value)=>kind==='scene'?false:save(kind,value);
  assert.equal(f.api.selectScene(library[0]),piano[0]);assert.equal(f.api.ambientCollection(),'Classical');
  assert.equal(f.api.playingScene(),piano[0]);assert.equal(p.paused,false);assert.equal(f.recordings.length,1);
+});
+
+function fakePersonalStorage(f,{failBlob=false}={}){
+ const tracks=new Map(),blobs=new Map(),pending=[];
+ let counter=0,opens=0;
+ const db={close(){},transaction(names,mode){
+   const tx={error:null,aborted:false,staged:[],abort(){this.aborted=true;this.onabort?.();},
+     objectStore(name){const store=name==='tracks'?tracks:blobs;return {
+       add(value,key){if(failBlob&&name==='blobs')throw Error('quota');tx.staged.push([store,key??value.id,value]);},
+       getAll(){const req={result:[...store.values()]};queueMicrotask(()=>{req.onsuccess?.();tx.oncomplete?.();});return req;},
+       get(key){const req={result:store.get(key)};queueMicrotask(()=>{req.onsuccess?.();tx.oncomplete?.();});return req;}
+     };}
+   };
+   if(mode==='readwrite')pending.push(()=>{if(!tx.aborted){for(const [store,key,value] of tx.staged)store.set(key,value);tx.oncomplete?.();}});
+   return tx;
+ }};
+ f.window.crypto={getRandomValues(bytes){bytes.fill(++counter);return bytes;}};
+ f.window.indexedDB={open(){opens++;const req={result:db};queueMicrotask(()=>req.onsuccess?.());return req;}};
+ return {tracks,blobs,pending,db,opens:()=>opens};
+}
+async function waitPending(store){for(let i=0;i<20&&!store.pending.length;i++)await Promise.resolve();assert.ok(store.pending.length);}
+test('cancel personal import commits current file and skips remaining files without changing music',async()=>{
+ const f=harness(),store=fakePersonalStorage(f);f.api.setAmbientCollection('Classical');f.api.startAmbient();const p=f.recordings.at(-1);
+ const result=f.api.importPersonalTracks([{name:'one.mp3',size:200},{name:'two.wav',size:300}]);
+ await waitPending(store);assert.equal(f.api.cancelPersonalImport(),true);assert.equal(f.api.personalCancelPending(),true);
+ store.pending.shift()();assert.equal(await result,true);
+ assert.equal(store.tracks.size,1);assert.equal(store.blobs.size,1);
+ assert.equal(f.api.personalImporting(),false);assert.equal(f.api.personalCancelPending(),false);
+ assert.equal(f.api.ambientCollection(),'Classical');assert.equal(f.api.playingScene(),piano[0]);assert.equal(p.paused,false);
+ assert.match(f.api.personalStatus(),/Skipped: 1/);
+});
+test('synchronous Blob write failure aborts metadata and leaves no orphan song',async()=>{
+ const f=harness(),store=fakePersonalStorage(f,{failBlob:true});
+ assert.equal(await f.api.importPersonalTracks([{name:'broken.mp3',size:300}]),false);
+ store.pending.shift()();assert.equal(store.tracks.size,0);assert.equal(store.blobs.size,0);
+ assert.match(f.api.personalStatus(),/Failed: 1/);
+});
+test('blocked database open releases import state and late success closes abandoned handle',async()=>{
+ const f=harness();let req,closed=0;
+ f.window.indexedDB={open(){req={result:{close(){closed++;}}};queueMicrotask(()=>req.onblocked());return req;}};
+ assert.equal(await f.api.importPersonalTracks([{name:'song.mp3',size:200}]),false);
+ assert.equal(f.api.personalImporting(),false);req.onsuccess();assert.equal(closed,1);
+ const store=fakePersonalStorage(f);const result=f.api.importPersonalTracks([{name:'song.mp3',size:200}]);await waitPending(store);store.pending.shift()();
+ assert.equal(await result,true);assert.equal(store.opens(),1);
+});
+test('synchronous database open exception is retryable',async()=>{
+ const f=harness();f.window.indexedDB={open(){throw Error('denied');}};
+ assert.equal(await f.api.loadPersonalTracks(),false);
+ const store=fakePersonalStorage(f);assert.equal(await f.api.loadPersonalTracks(),true);assert.equal(store.opens(),1);
+});
+test('large personal files are accepted without a hard size cap and without autoplay',async()=>{
+ const f=harness(),store=fakePersonalStorage(f);
+ const result=f.api.importPersonalTracks([{name:'long.mp3',size:8*1024*1024*1024}]);await waitPending(store);store.pending.shift()();
+ assert.equal(await result,true);assert.equal(store.tracks.size,1);assert.equal(f.api.playing(),false);assert.equal(f.api.ambientCollection(),'all');
+ assert.ok(f.api.sceneOptions().some(o=>o.label.includes('long.mp3')));
+});
+test('cancel import is available only in expanded library on desktop and Android',()=>{
+ const mobile=readFileSync('android/mobile-experience.js','utf8');
+ for(const [source,attr] of [[focusSource,'data-mlv-audio'],[mobile,'data-mobile-focus']]){
+  assert.ok(source.includes(attr+'="cancel-import" hidden'));assert.ok(source.includes('cancelPersonalImport'));
+ }
 });

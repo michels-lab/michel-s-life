@@ -76,46 +76,86 @@
   // Personal files stay in the device's IndexedDB. Metadata is separate so
   // opening the library never materializes every audio Blob in memory.
   let personalDbPromise=null,personalImporting=false,personalStatus='',personalGeneration=0,personalUrl=null,personalPending=false,pauseOnReady=false;
+  let personalCancel=false;
   function personalDatabase(){
     if(!window.indexedDB)return Promise.reject(Error('Local audio storage unavailable'));
-    if(!personalDbPromise)personalDbPromise=new Promise((resolve,reject)=>{
-      const req=window.indexedDB.open('michelsLife.focus.personalAudio.v1',1);
-      req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains('tracks'))db.createObjectStore('tracks',{keyPath:'id'});if(!db.objectStoreNames.contains('blobs'))db.createObjectStore('blobs');};
-      req.onsuccess=()=>{const db=req.result;db.onversionchange=()=>{db.close();personalDbPromise=null;};resolve(db);};
-      req.onerror=()=>{personalDbPromise=null;reject(req.error||Error('Audio storage unavailable'));};
+    if(personalDbPromise)return personalDbPromise;
+    let abandoned=false,request;
+    const pending=new Promise((resolve,reject)=>{
+      try{request=window.indexedDB.open('michelsLife.focus.personalAudio.v1',1);}
+      catch(error){reject(error);return;}
+      request.onupgradeneeded=()=>{const db=request.result;if(!db.objectStoreNames.contains('tracks'))db.createObjectStore('tracks',{keyPath:'id'});if(!db.objectStoreNames.contains('blobs'))db.createObjectStore('blobs');};
+      request.onblocked=()=>{abandoned=true;reject(Error('Audio database is busy. Close another app window and retry.'));};
+      request.onsuccess=()=>{
+        const db=request.result;
+        if(abandoned){db.close();return;}
+        const invalidate=()=>{if(personalDbPromise===pending)personalDbPromise=null;};
+        db.onversionchange=()=>{db.close();invalidate();};
+        db.onclose=invalidate;
+        resolve(db);
+      };
+      request.onerror=()=>reject(request.error||Error('Audio storage unavailable'));
     });
-    return personalDbPromise;
+    personalDbPromise=pending;
+    // Also clears synchronously rejected opens, unlike assignment inside the executor.
+    pending.catch(()=>{if(personalDbPromise===pending)personalDbPromise=null;});
+    return pending;
   }
   async function personalRead(store,key){
     const db=await personalDatabase();
-    return new Promise((resolve,reject)=>{const tx=db.transaction(store,'readonly'),req=key===undefined?tx.objectStore(store).getAll():tx.objectStore(store).get(key);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});
+    return new Promise((resolve,reject)=>{
+      const tx=db.transaction(store,'readonly'),req=key===undefined?tx.objectStore(store).getAll():tx.objectStore(store).get(key);
+      let result;
+      req.onsuccess=()=>{result=req.result;};
+      tx.oncomplete=()=>resolve(result);
+      tx.onerror=()=>reject(tx.error||Error('Audio read failed'));
+      tx.onabort=()=>reject(tx.error||Error('Audio read interrupted'));
+    });
   }
   function registerPersonal(item){
-    if(!item||!/^my_[a-f0-9]{32}$/.test(item.id)||typeof item.name!=='string')return false;
+    if(!item||!/^my_[a-f0-9]{32}$/.test(item.id)||typeof item.name!=='string'||!item.name.trim())return false;
     ambientScenes[item.id]={en:item.name,es:item.name,group:'Personal',recorded:true,personal:true};return true;
   }
-  async function loadPersonalTracks(){try{for(const item of await personalRead('tracks'))registerPersonal(item);return true;}catch(_){return false;}}
+  async function loadPersonalTracks(){
+    try{for(const item of await personalRead('tracks'))registerPersonal(item);return true;}
+    catch(_){personalStatus=lang('Music library unavailable. Close other app windows and retry.','Biblioteca no disponible. Cierra otras ventanas de la app e inténtalo de nuevo.');return false;}
+  }
+  function cancelPersonalImport(){
+    if(!personalImporting||personalCancel)return false;
+    personalCancel=true;personalStatus=lang('Finishing current file before stopping…','Terminando el archivo actual antes de detener…');return true;
+  }
   async function importPersonalTracks(files){
-    if(personalImporting)return false;personalImporting=true;
-    let added=0,failed=0;const list=Array.from(files||[]);
+    if(personalImporting)return false;
+    const list=Array.from(files||[]);if(!list.length)return false;
+    personalImporting=true;personalCancel=false;playbackError='';
+    let added=0,failed=0;
     try{
       const db=await personalDatabase();
       for(const file of list){
-        if(!file||!Number.isSafeInteger(file.size)||file.size<128||!/\.(mp3|wav|ogg)$/i.test(file.name)){failed++;continue;}
-        personalStatus=lang('Importing ','Importando ')+(added+failed+1)+' / '+list.length+' · '+file.name;
+        if(personalCancel)break;
+        if(!file||typeof file.name!=='string'||!Number.isSafeInteger(file.size)||file.size<128||!/\.(mp3|wav|ogg)$/i.test(file.name)){failed++;continue;}
+        personalStatus=lang('Importing ','Importando ')+(added+failed+1)+' / '+list.length+' · '+file.name.slice(0,160);
         try{
           const bytes=new Uint8Array(16);window.crypto.getRandomValues(bytes);
           const id='my_'+Array.from(bytes,x=>x.toString(16).padStart(2,'0')).join('');
           const item={id,name:file.name.slice(0,160),size:file.size,type:file.type||''};
-          await new Promise((resolve,reject)=>{const tx=db.transaction(['tracks','blobs'],'readwrite');tx.objectStore('tracks').add(item);tx.objectStore('blobs').add(file,id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});
+          // Metadata and Blob commit together. Abort explicitly if the second
+          // put throws synchronously; never publish metadata for a missing file.
+          await new Promise((resolve,reject)=>{
+            const tx=db.transaction(['tracks','blobs'],'readwrite');
+            tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||Error('Audio write failed'));tx.onabort=()=>reject(tx.error||Error('Audio write interrupted'));
+            try{tx.objectStore('tracks').add(item);tx.objectStore('blobs').add(file,id);}
+            catch(error){try{tx.abort();}catch(_){}reject(error);}
+          });
           registerPersonal(item);added++;
         }catch(_){failed++;}
       }
       personalStatus=lang('Imported: ','Importadas: ')+added+' · '+lang('Failed: ','No importadas: ')+failed;
-      if(added&&!ambientScene){const id=Object.keys(ambientScenes).find(id=>ambientScenes[id].personal&&isAvailable(id));if(id){setAmbientCollection('Personal');selectScene(id);}}
+      if(personalCancel)personalStatus+=' · '+lang('Skipped: ','Omitidas: ')+(list.length-added-failed);
+      // Importing files must not change the selected collection or start music.
       return added>0;
-    }catch(_){personalStatus=lang('Audio storage unavailable. Check free space.','Almacenamiento no disponible. Revisa el espacio libre.');return false;}
-    finally{personalImporting=false;}
+    }catch(_){personalStatus=lang('Audio storage unavailable. Check free space or close other app windows.','Almacenamiento no disponible. Revisa el espacio libre o cierra otras ventanas de la app.');return added>0;}
+    finally{personalImporting=false;personalCancel=false;}
   }
 
   let classicalSource=null,previewingId=null,ambientRecording=null,ambientVolume=.35,volumeDraft=null;
@@ -379,7 +419,7 @@
     completionId:finishId,sceneId,selectCompletion:id=>{stopClassical();return choice(completionKey,finishTones,id,'soft');},
     selectScene,playCompletion,playPhaseBells,stopClassical,previewingCompletion:()=>previewingId,recordingActive:()=>!!classicalSource,recordingPlayback:()=>classicalSource?{paused:classicalSource.paused,currentTime:classicalSource.currentTime,duration:classicalSource.duration,src:classicalSource.src}:null,unlock,startAmbient,stopAmbient,
     playing:()=>!!ambientScene,
-    importPersonalTracks,loadPersonalTracks,personalStatus:()=>playbackError||personalStatus,personalImporting:()=>personalImporting,playingScene:()=>ambientScene,
+    importPersonalTracks,loadPersonalTracks,cancelPersonalImport,personalStatus:()=>personalImporting?personalStatus:playbackError||personalStatus,personalImporting:()=>personalImporting,personalCancelPending:()=>personalCancel,playingScene:()=>ambientScene,
     ambientVolume:getVolume,setAmbientVolume:setVolume,ambientMode,setAmbientMode,ambientCollection,setAmbientCollection,moveAmbient,toggleAmbientPlayback,
     canNavigateAmbient:()=>collectionIds().length>1||(collectionIds().length===1&&!collectionIds().includes(sceneId())),
     ambientPlayback:()=>ambientRecording?{paused:ambientRecording.paused,currentTime:ambientRecording.currentTime,duration:ambientRecording.duration,loop:ambientRecording.loop,src:ambientRecording.src,volume:ambientRecording.volume,loading:false}:ambientScene?{paused:pauseOnReady,currentTime:0,duration:NaN,loop:false,src:null,volume:getVolume(),loading:personalPending}:null
@@ -737,7 +777,7 @@
              <label><span data-mlv-volume-label>Volume</span><input type="range" min="0" max="100" value="35" data-mlv-ambient-volume aria-label="Background music volume" /></label>
              <div class="mlv-audio-settings"><select data-mlv-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option><option value="shuffle">Shuffle</option></select><select data-mlv-ambient-collection aria-label="Playlist collection"><option value="all">All audio</option><option value="Ambient">Ambient</option><option value="Cinematic">Cinematic</option><option value="Classical">Classical piano</option><option value="Personal">My music</option></select></div>
           </div>
-          <div class="mlv-audio-library"><h3 class="mlv-audio-heading" data-mlv-library-heading>Music library</h3><label><span data-mlv-personal-label>Import my music</span><input type="file" multiple accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg" data-mlv-personal-files /></label><small data-mlv-personal-status role="status"></small><div class="mlv-audio-archive"><button type="button" class="mlv-focus-btn" data-mlv-audio="archive-ambient">Archive track</button><select data-mlv-archived-track aria-label="Archived tracks"></select><button type="button" class="mlv-focus-btn" data-mlv-audio="restore-ambient">Restore</button></div></div>
+          <div class="mlv-audio-library"><h3 class="mlv-audio-heading" data-mlv-library-heading>Music library</h3><label><span data-mlv-personal-label>Import my music</span><input type="file" multiple accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg" data-mlv-personal-files /></label><small data-mlv-personal-status role="status"></small><button type="button" class="mlv-focus-btn" data-mlv-audio="cancel-import" hidden>Cancel import</button><div class="mlv-audio-archive"><button type="button" class="mlv-focus-btn" data-mlv-audio="archive-ambient">Archive track</button><select data-mlv-archived-track aria-label="Archived tracks"></select><button type="button" class="mlv-focus-btn" data-mlv-audio="restore-ambient">Restore</button></div></div>
         </div></details>
 
       </section>`;
@@ -778,6 +818,7 @@
       music?.toggleAmbientPlayback?.();
       refresh();return true;
     }
+    if(command==='cancel-import'){window.MichelsLifeFocusAudio?.cancelPersonalImport?.();refresh();return true;}
     if(command==='archive-ambient'){const audio=window.MichelsLifeFocusAudio;audio?.archiveScene?.(audio.playingScene?.()||audio.sceneId?.(),true);refresh();return true;}
     if(command==='restore-ambient'){const id=q('[data-mlv-archived-track]',screen)?.value;window.MichelsLifeFocusAudio?.archiveScene?.(id,false);refresh();return true;}
     if(command==='stop-ambient'){window.MichelsLifeFocusAudio?.stopAmbient?.();refresh();return true;}
@@ -943,6 +984,7 @@
     if(archivedSelect){const selected=archivedSelect.value;const opts=[{id:'',label:lang('Archived','Archivadas')+' ('+archived.length+')'},...archived];if(archivedSelect.options.length!==opts.length||opts.some((x,i)=>archivedSelect.options[i]?.value!==x.id||archivedSelect.options[i]?.textContent!==x.label)){archivedSelect.replaceChildren(...opts.map(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.label;return o;}));archivedSelect.value=archived.some(x=>x.id===selected)?selected:'';}archivedSelect.disabled=!archived.length;}
     if(restoreButton){restoreButton.textContent=lang('Restore','Restaurar');restoreButton.disabled=!archivedSelect?.value;}
     const personalLabel=q('[data-mlv-personal-label]',screen),personalNotice=q('[data-mlv-personal-status]',screen);if(personalLabel)personalLabel.textContent=lang('Import my music (local files)','Importar mi música (archivos locales)');if(personalNotice)personalNotice.textContent=audio?.personalStatus?.()||lang('MP3, WAV, OGG · available storage','MP3, WAV, OGG · espacio disponible');
+    const cancelImport=q('[data-mlv-audio="cancel-import"]',screen);if(cancelImport){cancelImport.hidden=!audio?.personalImporting?.();cancelImport.disabled=!!audio?.personalCancelPending?.();cancelImport.textContent=lang('Cancel import','Cancelar importación');}
     const ambientButton=q('[data-mlv-audio="toggle-ambient"]',screen);if(ambientButton)ambientButton.disabled=!audio?.sceneId?.();
     const playback=audio?.ambientPlayback?.(),modeSelect=q('[data-mlv-ambient-mode]',screen),progress=q('[data-mlv-ambient-progress]',screen);
     if(modeSelect){modeSelect.value=audio?.ambientMode?.()||'repeat';modeSelect.options[0].textContent=lang('Repeat track','Repetir pista');modeSelect.options[1].textContent=lang('Continuous playlist','Lista continua');modeSelect.options[2].textContent=lang('Shuffle','Aleatorio');}
