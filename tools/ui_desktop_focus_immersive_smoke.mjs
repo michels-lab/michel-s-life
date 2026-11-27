@@ -178,7 +178,7 @@ try{
 
   // The same active-page class belongs to multiple pages, never to a primary button.
   await page.setViewportSize({width:1440,height:900});
-  for(const route of ['dashboard','settings','missions']){
+  for(const route of ['dashboard','contracts','calendar','journal','stats','projects','achievements','affirmations','story','settings','missions']){
     await page.evaluate(route=>window.LeftNavV30171.route(route),route);
     await page.waitForSelector('#tab-'+route+'.active',{state:'visible',timeout:15000});
     const role=await page.evaluate(route=>{
@@ -192,6 +192,22 @@ try{
     },route);
     ok(!role.solidAccent,'Page received solid button accent: '+route+' '+JSON.stringify(role));
   }
+  // Explicitly exercise saved custom glass values; restore the original configuration afterwards.
+  const surface=await page.evaluate(()=>{
+    const v=window.VisualSystemV30189,original=v.transparency();
+    const target=document.querySelector('#tab-missions .card,#tab-missions .v132-panel');
+    if(!target)return {missing:true};
+    try{
+      v.setTransparency({...original,enabled:true,header:50,panel:50,card:25});
+      const outer=[...document.querySelectorAll('#tab-missions [data-mlv184-surface]')].find(e=>['main','header'].includes(e.dataset.mlv184Surface));
+      if(!outer)return {missing:true};
+      const on=getComputedStyle(outer).backdropFilter,background=outer.style.background;
+      v.setTransparency({...original,enabled:true,header:0,panel:0,card:0});
+      const zero=getComputedStyle(outer).backdropFilter,zeroBackground=outer.style.background;
+      return {on,background,zero,zeroBackground};
+    }finally{v.setTransparency(original);}
+  });
+  ok(!surface.missing&&surface.on==='blur(10px)'&&surface.background.includes('0.500')&&surface.zero==='none'&&surface.zeroBackground==='transparent','Custom glass opacity/blur contract failed: '+JSON.stringify(surface));
   await page.waitForFunction(()=>{
     const mini=document.getElementById('mlv-desktop-mini-focus'),alarm=document.getElementById('mlv-alarm-launcher'),dock=document.getElementById('v3099NextUpDock');
     if(!mini||mini.hidden)return false;
