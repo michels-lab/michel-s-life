@@ -20,7 +20,8 @@ internal object AndroidDirectUpdateChecker {
     private val client = OkHttpClient.Builder()
         .connectTimeout(8, TimeUnit.SECONDS)
         .readTimeout(8, TimeUnit.SECONDS)
-        .followRedirects(false).build()
+        .callTimeout(15, TimeUnit.SECONDS)
+        .followRedirects(false).followSslRedirects(false).build()
     private val apkPattern = Regex("""^MichelsLife-Android-Direct-v([0-9]+\.[0-9]+\.[0-9]+)\.apk$""")
 
     @Suppress("DEPRECATION")
@@ -34,14 +35,15 @@ internal object AndroidDirectUpdateChecker {
         val debuggable =
             (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
         val signer = try {
-            val info = if (Build.VERSION.SDK_INT >= 33)
-                pm.getPackageInfo(context.packageName,
-                    PackageManager.PackageInfoFlags.of(PackageManager.GET_SIGNING_CERTIFICATES.toLong()))
-            else pm.getPackageInfo(context.packageName, PackageManager.GET_SIGNING_CERTIFICATES)
             val certificates = if (Build.VERSION.SDK_INT >= 28) {
+                val info = if (Build.VERSION.SDK_INT >= 33)
+                    pm.getPackageInfo(context.packageName,
+                        PackageManager.PackageInfoFlags.of(PackageManager.GET_SIGNING_CERTIFICATES.toLong()))
+                else pm.getPackageInfo(context.packageName, PackageManager.GET_SIGNING_CERTIFICATES)
                 val signing = info.signingInfo ?: return "test"
-                if (signing.hasMultipleSigners()) signing.apkContentsSigners
-                else signing.signingCertificateHistory
+                // Only the actual current signer is authority. Do not use
+                // signing history as a substitute for installed identity.
+                signing.apkContentsSigners
             } else {
                 pm.getPackageInfo(context.packageName, PackageManager.GET_SIGNATURES).signatures
             }
@@ -81,7 +83,8 @@ internal object AndroidDirectUpdateChecker {
                         ?: throw IllegalStateException("GitHub asset redirect missing.")
                     val resolved = response.request.url.resolve(location)
                         ?: throw IllegalStateException("GitHub asset redirect invalid.")
-                    if (resolved.scheme != "https" || resolved.host !in allowedHosts)
+                    if (resolved.scheme != "https" || resolved.host !in allowedHosts ||
+                        resolved.port != 443 || resolved.username.isNotEmpty() || resolved.password.isNotEmpty())
                         throw IllegalStateException("GitHub asset redirected outside trusted HTTPS.")
                     current = resolved.toString()
                 } else {

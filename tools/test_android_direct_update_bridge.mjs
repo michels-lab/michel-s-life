@@ -56,3 +56,10 @@ for(const [name,source] of [['checker',checker],['policy',policy]]){
 }
 assert.ok(!checker.includes('http://'),'Only HTTPS official release lookup allowed');
 console.log('PASS Android Direct: official read-only metadata, installer separation, expiry/downgrade gates, no automatic install');
+
+assert.match(checker,/\.callTimeout\(15, TimeUnit\.SECONDS\)/);
+assert.match(checker,/\.followSslRedirects\(false\)/);
+assert.match(checker,/signing\.apkContentsSigners/);
+assert.doesNotMatch(checker,/signing\.signingCertificateHistory/);
+assert.match(checker,/resolved\.port != 443/);
+assert.match(checker,/resolved\.username\.isNotEmpty\(\)/);

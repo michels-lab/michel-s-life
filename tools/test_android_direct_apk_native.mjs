@@ -106,7 +106,7 @@ assert.match(native,/latest\.optString\("verifiedApkSha256"\) == receipt\.optStr
 assert.match(native,/if \(!matchesCurrentOfficialRelease\(activity, candidate\.second\)\)/);
 assert.match(native,/\.put\("stale", true\)/);
 assert.match(native,/listOf\(File\(dir, MARKER\), File\(dir, PENDING_APK\),/);
-assert.match(native,/if \(staging\.get\(\)\)/);
+assert.match(native,/if \(!staging\.compareAndSet\(false, true\)\)/);
 assert.match(checker,/verifiedApkSha256/);
 assert.match(checker,/verifiedApkUrl/);
 assert.match(checker,/verifiedApkSize/);
@@ -126,3 +126,15 @@ assert.doesNotMatch(native,/\.installPackage\(|PackageInstaller\.Session|pm\.ins
 assert.doesNotMatch(native,/localStorage|SharedPreferences|DATABASE|supabase|cloud\.delete/i);
 assert.doesNotMatch(native,/http:\/\//i);
 console.log('PASS Direct APK native contract: independent re-attestation, digest, package, signer, size, scoped FileProvider and explicit OS-gated taps');
+
+const installer=native.slice(native.indexOf('fun requestInstaller('),native.indexOf('fun openPermissionSettings('));
+assert.ok(installer.indexOf('staging.compareAndSet(false, true)')<installer.indexOf('validatedCandidate(activity)'));
+assert.ok(installer.indexOf('matchesCurrentOfficialRelease(activity, candidate.second)')<installer.indexOf('activity.runOnUiThread'));
+assert.match(installer,/finally\s*\{\s*staging\.set\(false\)/);
+assert.match(installer,/if \(!handedToUi\) staging\.set\(false\)/);
+assert.match(installer,/activity\.isFinishing \|\| activity\.isDestroyed/);
+assert.match(native,/synchronized\(operationLock\) \{\s*if \(!downloadActive\)/);
+assert.match(native,/synchronized\(operationLock\) \{\s*if \(cancelRequested\.get\(\)\)/);
+assert.match(native,/marker\.writeText\(receipt\.toString\(\), Charsets\.UTF_8\)[\s\S]{0,250}downloadActive = false/);
+assert.match(native,/resolved\.port != 443/);
+assert.match(native,/uri\.userInfo != null/);
