@@ -36,7 +36,15 @@ try{
   });
   const page=await context.newPage();
   const errors=[];
-  page.on('pageerror',e=>errors.push(e.message));
+  // Preserve the original failure and its actual browser stack/URL. A naked
+  // "Unexpected token" message cannot distinguish inline script vs injection.
+  page.on('pageerror',e=>{
+    errors.push({
+      message:String(e.message||e),
+      stack:String(e.stack||'').slice(0,6000),
+      pageUrl:page.url()
+    });
+  });
   await mkdir(out,{recursive:true});
   await page.goto(url,{waitUntil:'domcontentloaded',timeout:60000});
   await page.waitForFunction(()=>!!window.__mlvAndroidFastRoute &&
@@ -175,6 +183,16 @@ try{
   await page.waitForFunction(()=>getComputedStyle(
     document.getElementById('mlv-android-bottom-nav')).display!=='none',
     null,{timeout:5000});
+  // Alarm navigation is structurally inside the top bar. This guarantees
+  // the floating alarm cannot block the chapter button at any scroll offset.
+  const alarm=page.locator('#mlv-android-topbar > #mlv-alarm-launcher');
+  await alarm.waitFor({state:'visible',timeout:5000});
+  await alarm.tap();
+  await page.waitForSelector('#mlv-alarm-screen:not([hidden])',{state:'visible'});
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('#mlv-alarm-screen',{state:'hidden'});
+  assert(await nameField.inputValue()===chapterName,'Alarm navigation discarded the Story draft');
+  assert(await mottoField.inputValue()===chapterMotto,'Alarm navigation discarded the Story motto');
   await start.scrollIntoViewIfNeeded();
   const touchTarget=await start.evaluate(button=>{
     const bar=document.getElementById('mlv-android-bottom-nav');
@@ -182,7 +200,8 @@ try{
     const cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
     const hit=document.elementFromPoint(cx,cy);
     return {buttonBottom:rect.bottom,barTop:barRect.top,
-      centerIsButton:hit===button||button.contains(hit),inViewport:cy>0&&cy<innerHeight};
+      centerIsButton:hit===button||button.contains(hit),inViewport:cy>0&&cy<innerHeight,
+      hitTag:hit?.tagName||null,hitId:hit?.id||null,hitClass:typeof hit?.className==='string'?hit.className.slice(0,180):null};
   });
   assert(touchTarget.buttonBottom<=touchTarget.barTop-5&&
     touchTarget.centerIsButton&&touchTarget.inViewport,
@@ -190,7 +209,7 @@ try{
   await start.tap({timeout:12000});
   await page.waitForFunction(name=>document.querySelector('#tab-story')
     ?.textContent?.includes(name),chapterName,{timeout:12000});
-  assert(errors.length===0,'Android Story/Pomodoro navigation page errors: '+errors.join(' | '));
+  assert(errors.length===0,'Android Story/Pomodoro navigation page errors: '+JSON.stringify(errors));
   await page.screenshot({path:out+'/04-chapter-started.png'});
   console.log('PASS: Story form -> Settings -> Pomodoro continuous countdown -> Story arrows -> Today; draft survived real tab switches and chapter submit persisted');
 }finally{await browser.close();}

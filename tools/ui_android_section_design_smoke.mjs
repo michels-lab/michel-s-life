@@ -372,9 +372,9 @@ try{
     screenshots.push(file);
   }
 
-  // Android OAuth has Drive/email scopes but not Calendar provider grants.
-  // Its Google Settings must never present the synthetic zero-event success as
-  // a live synchronization or expose an enabled misleading Sync button.
+  // Browser-run Android UI has no native Calendar bridge. It must correctly
+  // show an unavailable read action, never a synthetic zero-event success.
+  // The separate native-bridge fixture tests the enabled Read button.
   for(const width of [412,360]){
     await route('settings',width);
     await page.locator('#tab-settings .v30171-settings-nav [data-v30171-setting="google"]').click();
@@ -392,10 +392,10 @@ try{
       };
     });
     assert(calendar.buttonExists&&calendar.disabled&&
-      /sync unavailable/i.test(calendar.label)&&
-      /not available on Android/i.test(calendar.help)&&
+      /sync unavailable|read unavailable/i.test(calendar.label)&&
+      /cannot access Google Calendar|not available on Android/i.test(calendar.help)&&
       calendar.right<=width+3,
-      'Android Google Calendar shows a misleading successful/available sync: '+
+      'Android browser fixture falsely promises a Calendar read without a native provider: '+
       JSON.stringify({width,calendar}));
     audit.push({id:'android-google-calendar-truthful-state',width,calendar});
   }
@@ -646,8 +646,21 @@ try{
     x.valueTop>=x.titleBottom-1),
     'Focus session labels overlap values: '+JSON.stringify(focusStats));
   await page.evaluate(()=>window.MichelsLifeMobileExperience.closeFocus());
-  const miniAndToast=await page.evaluate(()=>{
+  // User contract: a newly started Work/Break phase fills the application.
+  // The mini timer is only visible after EXPLICIT user minimization; older
+  // layout tests expected it to appear immediately on start.
+  const startImmersion=await page.evaluate(()=>{
     window.FocusStoryV30162?.toggleFocus?.();
+    window.MichelsLifeMobileExperience?.updateFocus?.();
+    return {
+      active:window.FocusStoryV30162?.focusState?.()?.status==='running',
+      overlayVisible:!document.getElementById('mlv-android-focus-overlay')?.hidden
+    };
+  });
+  assert(startImmersion.active&&startImmersion.overlayVisible,
+    'Android work/break no longer auto-expands fullscreen: '+JSON.stringify(startImmersion));
+  await page.evaluate(()=>window.MichelsLifeMobileExperience.closeFocus());
+  const miniAndToast=await page.evaluate(()=>{
     window.MichelsLifeMobileExperience?.updateFocus?.();
     window.toast?.('Layout smoke','Toast must not block navigation');
     const min=document.getElementById('mlv-android-mini-focus');

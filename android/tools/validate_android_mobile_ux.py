@@ -14,8 +14,12 @@ adaptive_round_icon = ROOT / "app/src/main/res/mipmap-anydpi-v26/ic_launcher_rou
 launcher_foreground = ROOT / "app/src/main/res/drawable/ic_launcher_foreground.xml"
 focus_alarm = (ROOT / "app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt").read_text(encoding="utf-8")
 
+gradle_version = (ROOT / "app/build.gradle.kts").read_text(encoding="utf-8")
+version_match = re.search(r'versionName\s*=\s*"([^"]+)"', gradle_version)
+if not version_match:
+    raise SystemExit("Android mobile UX contract cannot resolve Gradle version")
 required_bridge = [
-    "window.__MICHELSLIFE_ANDROID_BRIDGE__='0.2.9'",
+    f"window.__MICHELSLIFE_ANDROID_BRIDGE__='{version_match.group(1)}'",
     "const MOBILE_BREAKPOINT=4096;",
     "@media(min-width:900px) and (max-width:${MOBILE_BREAKPOINT}px)",
     "mlv-android-topbar",
@@ -51,7 +55,6 @@ required_bridge = [
     "width:22px!important",
     "#v30175ActionDock{position:sticky",
     "#v30106QuickFab",
-    "#v30162FocusDock",
     "#v176StatusPanel{position:relative",
     "v176-card.v30165-rpg-chapter-hero",
     "setImportantOnce(status,'max-height','none')",
@@ -59,6 +62,14 @@ required_bridge = [
     "mlv-android-drawer-hint",
     "data-mlv-platform",
 ]
+# The legacy Focus dock was deliberately DELETED, not hidden with CSS.
+# Reintroducing its selector or a click handler targeting it is a regression.
+for source_name, source in (("android-bridge.js", bridge), ("mobile-experience.js", mobile_experience)):
+    if "v30162FocusDock" in source or "v30175FocusFab" in source:
+        raise SystemExit(f"Obsolete Pomodoro sidebar dependency reintroduced in {source_name}")
+if "v30175ActionDock" not in bridge or "v30106QuickFab" not in bridge:
+    raise SystemExit("Quick Capture dock must remain operational after deleting Focus dock")
+
 missing = [needle for needle in required_bridge if needle not in bridge]
 if missing:
     raise SystemExit("Android mobile UX contract missing: " + ", ".join(missing))
@@ -75,6 +86,18 @@ required_mobile_experience = [
     "env(safe-area-inset-bottom,0px)",
     "window.__mlvAndroidHandleBack=function()",
 ]
+# Actual Android presets must drive the persisted FocusStory engine without
+# clicking invisible desktop inputs. Keep touch controls and custom durations.
+for action in (
+    "api.applyPreset(preset,selected[0],selected[1])",
+    "api.applyPreset('custom',work,rest)",
+    'data-mobile-preset="25/5"',
+    'data-mobile-preset="50/10"',
+    'data-mobile-preset="90/15"',
+    'window.MichelsLifeMobileExperience={openFocus:open',
+):
+    if action not in mobile_experience:
+        raise SystemExit("Canonical immersive Pomodoro Android action missing: " + action)
 missing_mobile_experience = [needle for needle in required_mobile_experience if needle not in mobile_experience]
 if missing_mobile_experience:
     raise SystemExit("Android mobile experience missing: " + ", ".join(missing_mobile_experience))
@@ -132,13 +155,16 @@ if "Story still uses desktop multi-column edit geometry" not in phone_test or \
     raise SystemExit("Android Story/About real viewport regression assertions missing")
 
 native_required = [
-    "setLayerType(View.LAYER_TYPE_HARDWARE",
     "setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_BOUND",
-    "offscreenPreRaster = true",
+    "offscreenPreRaster = false",
 ]
 missing_native = [needle for needle in native_required if needle not in main]
 if missing_native:
-    raise SystemExit("Android native performance contract missing: " + ", ".join(missing_native))
+    raise SystemExit("Android native startup memory policy missing: " + ", ".join(missing_native))
+if "setLayerType(View.LAYER_TYPE_HARDWARE" in main or "offscreenPreRaster = true" in main:
+    raise SystemExit("Android WebView must avoid double hardware-layer caching and offscreen rasterization")
+if 'android:hardwareAccelerated="true"' not in manifest:
+    raise SystemExit("Android WebView must retain hardware acceleration for visible UI")
 
 if "__mlvAndroidHandleBack" not in main:
     raise SystemExit("MainActivity does not delegate Android back handling to the web UI")
@@ -180,7 +206,7 @@ for token in (
     'setWhen(deadline)',
     'setOngoing(true)',
     'setVisibility(Notification.VISIBILITY_PUBLIC)',
-    'showRunning(context, mode, deadline)',
+    'showRunning(context, mode, deadline, language)',
     'hideRunning(context)',
 ):
     if token not in focus_alarm:

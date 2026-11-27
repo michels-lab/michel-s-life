@@ -1,0 +1,8 @@
+Michel's Life stable Windows 3.0.222 — explicit owner Operación Granada release intent — 2026-11-12
+
+The owner requested continued Windows work after showing that the previous 3.0.221 application still presented the obsolete floating Pomodoro popup covering the Current Chapter and sidebar.
+This release must include the merged PR #202 fullscreen immersive Pomodoro bug fix: no old floating Focus dock, theme wallpaper behind Focus, fullscreen Work/Break, deliberate mini mode for navigation, and persisted canonical timer.
+Build a real Windows 3.0.222 portable EXE and Setup installer, prove the exact source has Source validation, UI smoke and Android UI smoke all green; launch the portable executable; install, launch and uninstall the real Setup on Windows; verify the packaged focus-immersive.js and that legacy dock is hidden.
+Preserve ANDROID DIRECT 0.2.11 production-signed APK, versionCode 13, signer certificate and manifest BYTE-FOR-BYTE from the already published v3.0.221-android-v0.2.11 tag. No Android re-sign, new APK version, app data migration or reinstallation.
+Create a separate immutable unified tag v3.0.222-android-v0.2.11 with 13 integrity-checked assets; validate uploaded/downloaded checksums and release provenance BEFORE making it public. No RC.
+Never overwrite the old stable release. Fail closed if any check, auth, install smoke or checksum fails.

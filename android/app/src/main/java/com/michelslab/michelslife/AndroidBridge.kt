@@ -15,10 +15,14 @@ class AndroidBridge(
     private val activity: MainActivity,
     private val webView: WebView,
     private val auth: GoogleAuthorizationCoordinator,
+    private val calendarConsent: AndroidCalendarConsent,
+    private val calendarWriteConsent: AndroidCalendarWriteConsent,
     private val cloud: DriveCloudEngine,
     private val meta: CloudMetaStore,
     private val executor: ExecutorService
 ) {
+    private val calendarGateway = AndroidCalendarGateway()
+
     companion object {
         private const val CHANNEL = "michels-life-google-calendar"
         private const val RESPONSE = "michels-life-google-calendar-response"
@@ -34,6 +38,94 @@ class AndroidBridge(
     } catch (e: Exception) {
         JSONObject().put("scheduled", false)
             .put("error", e.message ?: "Could not schedule Focus notification.").toString()
+    }
+
+    /** Copies validated user audio into private files, not WebView storage only. */
+    @JavascriptInterface
+    fun beginCustomAlarmSound(extension: String, size: String): String =
+        NativePersonalAlarms.beginCustomSound(activity, extension, size).toString()
+
+    @JavascriptInterface
+    fun appendCustomAlarmSound(token: String, offset: String, encoded: String): String =
+        NativePersonalAlarms.appendCustomSound(token, offset, encoded).toString()
+
+    @JavascriptInterface
+    fun finishCustomAlarmSound(token: String): String =
+        NativePersonalAlarms.finishCustomSound(activity, token).toString()
+
+    @JavascriptInterface
+    fun cancelCustomAlarmSound(token: String): Boolean =
+        NativePersonalAlarms.cancelCustomSound(token)
+
+    /** Android alarm registry is authoritative after recurring/one-time delivery. */
+    @JavascriptInterface
+    fun getPersonalAlarms(): String = NativePersonalAlarms.list(activity).toString()
+
+    @JavascriptInterface
+    fun syncPersonalAlarms(raw: String): String = try {
+        NativePersonalAlarms.sync(activity, JSONArray(raw)).toString()
+    } catch (e: Exception) {
+        JSONObject().put("error", e.message ?: "Personal alarm scheduling failed").toString()
+    }
+
+    @JavascriptInterface
+    fun personalAlarmStatus(): String = NativePersonalAlarms.status(activity).toString()
+
+    /** Only cached display text, not credentials, board data, or personal files. */
+    @JavascriptInterface
+    fun rememberAlarmMotivation(raw: String): Boolean =
+        NativePersonalAlarms.rememberMotivation(activity, raw)
+
+    @JavascriptInterface
+    fun rememberAlarmWallpaper(path: String): Boolean =
+        NativePersonalAlarms.rememberWallpaper(activity, path)
+
+    @JavascriptInterface
+    fun openPersonalAlarmPermissionSettings() {
+        activity.runOnUiThread {
+            val status = NativePersonalAlarms.status(activity)
+            try {
+                if (!status.optBoolean("notificationsGranted") ||
+                    !status.optBoolean("channelEnabled")) {
+                    activity.startActivity(
+                        Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                            putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, activity.packageName)
+                        }
+                    )
+                } else if (!status.optBoolean("overlayGranted")) {
+                    activity.startActivity(
+                        Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION).apply {
+                            data = android.net.Uri.parse("package:" + activity.packageName)
+                        }
+                    )
+                } else if (!status.optBoolean("exact") &&
+                    android.os.Build.VERSION.SDK_INT >= 31) {
+                    activity.startActivity(
+                        Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                            data = android.net.Uri.parse("package:" + activity.packageName)
+                        }
+                    )
+                } else if (!status.optBoolean("fullScreen") &&
+                    android.os.Build.VERSION.SDK_INT >= 34) {
+                    activity.startActivity(
+                        Intent(android.provider.Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT).apply {
+                            data = android.net.Uri.parse("package:" + activity.packageName)
+                        }
+                    )
+                }
+            } catch (_: Exception) {
+                // UI re-checks real status when app resumes; never claim permission granted.
+            }
+        }
+    }
+
+
+    @JavascriptInterface
+    fun dismissPersonalAlarm(id: String) {
+        activity.runOnUiThread {
+            NativePersonalAlarms.dismiss(activity, id)
+            activity.stopAlarmAttention()
+        }
     }
 
     @JavascriptInterface
@@ -52,6 +144,34 @@ class AndroidBridge(
         }
         return NativeFocusAlarm.status(activity).toString()
     }
+
+    /** When the user disabled just the Focus notification channel, a new
+     * POST_NOTIFICATIONS permission dialog cannot restore that channel.
+     * Open the genuine Android app-notification settings instead. */
+    @JavascriptInterface
+    fun openFocusNotificationSettings() {
+        activity.runOnUiThread {
+            try {
+                activity.startActivity(
+                    Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                        putExtra(
+                            android.provider.Settings.EXTRA_APP_PACKAGE,
+                            activity.packageName
+                        )
+                    }
+                )
+            } catch (_: Exception) {
+                // OS settings are not guaranteed on every manufacturer.
+                // Do not claim notification delivery was enabled.
+            }
+        }
+    }
+
+    @JavascriptInterface
+    fun calendarReadAvailable(): Boolean = true
+
+    @JavascriptInterface
+    fun calendarMissionWriteAvailable(): Boolean = true
 
     @JavascriptInterface
     fun postMessage(raw: String) {
@@ -152,31 +272,172 @@ class AndroidBridge(
                     respondError(requestId, e.message ?: "Could not open Calendar.")
                 }
             }
-            // Android OAuth currently has Drive app-folder/email grants, not
-            // the Calendar read/write grants or Calendar provider implementation.
-            // Never report an empty successful sync or a fictional timestamp.
+            // Explicit Android-only Calendar read. Uses an independent
+            // read-only consent token, never the Drive app-folder credential.
+            // No mission, XP, Supabase or cloud backup is mutated here.
+            "calendarRead" -> activity.runOnUiThread {
+                calendarConsent.authorize(true) { result ->
+                    result.onFailure {
+                        respondError(requestId, "Google Calendar permission was not granted or is unavailable.")
+                    }
+                    result.onSuccess { authorized ->
+                        if (authorized == null) {
+                            respondError(requestId, "Google Calendar permission is required.")
+                            return@onSuccess
+                        }
+                        executor.execute {
+                            try {
+                                val email = cloud.fetchUserEmail(authorized.accessToken)
+                                if (email.isBlank()) throw SecurityException("Google Calendar account identity is unavailable.")
+                                val events = calendarGateway.readEvents(
+                                    authorized.accessToken,
+                                    payload.optString("timeMin"),
+                                    payload.optString("timeMax")
+                                )
+                                respondOk(requestId, events.put("account", email))
+                            } catch (_: Exception) {
+                                // Never echo provider JSON, bearer credentials
+                                // or account identifiers into errors/logs.
+                                respondError(requestId, "Google Calendar could not be read. Check the connection and permissions.")
+                            }
+                        }
+                    }
+                }
+            }
+            // A calendar write is a distinct user-confirmed operation.
+            // Never reuse the read-only or Drive credentials, and never allow
+            // bulk publishing via the old desktop 'sync' action.
+            "calendarMissionUpsert", "calendarMissionRemove" -> {
+                if (!payload.optBoolean("confirmed", false)) {
+                    respondError(requestId, "Review and confirm the individual Calendar mission first.")
+                    return
+                }
+                val mission = payload.optString("missionId")
+                val remove = action == "calendarMissionRemove"
+                val summary = payload.optString("summary")
+                val start = payload.optString("start")
+                val end = payload.optString("end")
+                val allDay = payload.optBoolean("allDay", false)
+                try {
+                    CalendarSyncRules.missionId(mission)
+                    if (!remove) {
+                        CalendarSyncRules.title(summary)
+                        CalendarSyncRules.validateTiming(start, end, allDay)
+                    }
+                } catch (_: Exception) {
+                    respondError(requestId, "The selected Calendar mission or schedule is invalid.")
+                    return
+                }
+                activity.runOnUiThread {
+                    calendarWriteConsent.authorize(true) { result ->
+                        result.onFailure {
+                            respondError(requestId, "Google Calendar write permission was declined or unavailable.")
+                        }
+                        result.onSuccess { authorized ->
+                            if (authorized == null ||
+                                !authorized.grantedScopes.contains(CalendarSyncRules.EVENTS_SCOPE)) {
+                                respondError(requestId, "Google Calendar write permission is required.")
+                                return@onSuccess
+                            }
+                            executor.execute {
+                                try {
+                                    // User-visible account identity is returned, but never its token.
+                                    val email = cloud.fetchUserEmail(authorized.accessToken)
+                                    if (email.isBlank()) throw SecurityException("No Google account identity.")
+                                    val resultBody = if (remove) {
+                                        calendarGateway.removeMission(authorized.accessToken, mission)
+                                    } else {
+                                        calendarGateway.upsertMission(authorized.accessToken,
+                                            mission, summary, start, end, allDay)
+                                    }
+                                    respondOk(requestId, resultBody
+                                        .put("account", email)
+                                        .put("provider", "google-calendar")
+                                        .put("missionId", mission))
+                                } catch (_: Exception) {
+                                    // An error response must not contain provider body, token,
+                                    // private event details or account credentials.
+                                    respondError(requestId,
+                                        "Google Calendar did not confirm the mission change. Check Calendar before retrying.")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            // The original desktop 'sync' can publish missions in bulk.
+            // Native Android does not do that without per-action write consent.
             "sync" -> respondError(
                 requestId,
-                "Google Calendar sync is not available on Android yet. No calendar events were read or written."
+                "Google Calendar publishing is not enabled on Android. No events were written."
             )
             "diagnostics" -> respondOk(requestId, JSONObject()
                 .put("platform", "Android")
                 .put("version", DriveCloudEngine.ANDROID_VERSION)
                 .put("status", "ok"))
             "updateStatus" -> {
-                val channel = installChannel()
-                respondOk(requestId, JSONObject()
-                    .put("updateAvailable", false)
-                    .put("managedExternally", true)
-                    .put("channel", channel)
-                    .put("version", DriveCloudEngine.ANDROID_VERSION)
-                    .put(
-                        "status",
-                        if (channel == "google-play")
-                            "Updates are managed by Google Play."
-                        else
-                            "Test build. Production updates are delivered through Google Play."
-                    ))
+                // Read-only discovery uses the installed signing certificate,
+                // not a missing installer label, to recognize real Direct APKs.
+                // Network requests must never run on the Activity/UI thread.
+                when (AndroidDirectUpdateChecker.channel(activity)) {
+                    "android-direct" -> executor.execute {
+                        respondOk(requestId, AndroidDirectUpdateChecker.check(activity))
+                    }
+                    "google-play" -> respondOk(requestId, JSONObject()
+                        .put("updateAvailable", false)
+                        .put("checked", false)
+                        .put("managedExternally", true)
+                        .put("channel", "google-play")
+                        .put("version", DriveCloudEngine.ANDROID_VERSION)
+                        .put("status", "Updates for this installation are managed by Google Play."))
+                    else -> respondOk(requestId, JSONObject()
+                        .put("updateAvailable", false)
+                        .put("checked", false)
+                        .put("managedExternally", false)
+                        .put("channel", "test")
+                        .put("version", DriveCloudEngine.ANDROID_VERSION)
+                        .put("status", "Unrecognized or debug signer. No production update offered; protect local data."))
+                }
+            }
+            "updateReady" -> executor.execute {
+                // Resume verified local APK after Activity/WebView recreation,
+                // even offline. Re-hashes the package and checks pinned signer.
+                respondOk(requestId, VerifiedDirectApk.readiness(activity))
+            }
+            "updateDiscard" -> executor.execute {
+                // User explicitly removes ONLY the private updater cache.
+                respondOk(requestId, VerifiedDirectApk.discard(activity))
+            }
+            "updateStage" -> executor.execute {
+                // The JS payload cannot choose URLs/hashes. The owner-pinned
+                // release is rechecked, and progress exposes only byte counts.
+                respondOk(requestId, VerifiedDirectApk.stage(activity) { bytes, total ->
+                    send(JSONObject()
+                        .put("channel", RESPONSE)
+                        .put("requestId", requestId)
+                        .put("progress", true)
+                        .put("bytes", bytes)
+                        .put("total", total))
+                })
+            }
+            "updateCancel" -> {
+                // Must NOT queue on the serial downloader executor: the
+                // cancellation flag has to reach a running download.
+                respondOk(requestId, VerifiedDirectApk.cancel(activity))
+            }
+            "updateInstall" -> executor.execute {
+                // A SECOND explicit user action. The Android installer still
+                // requires OS-level confirmation; never claim installed.
+                VerifiedDirectApk.requestInstaller(activity) {
+                    respondOk(requestId, it)
+                }
+            }
+            "updatePermissionSettings" -> executor.execute {
+                // A THIRD explicit action if the OS denies installation
+                // permission. Opening settings never proceeds to install.
+                VerifiedDirectApk.openPermissionSettings(activity) {
+                    respondOk(requestId, it)
+                }
             }
             else -> respondError(requestId, "This Michel's Life desktop action is not available on Android yet: " + action)
         }

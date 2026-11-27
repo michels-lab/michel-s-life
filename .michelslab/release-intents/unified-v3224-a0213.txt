@@ -1,0 +1,34 @@
+Michel's Life GRANADA — final stable release intent — 2026-11-16.
+
+The owner repeatedly requested Operación Granada and final stable releases for Michel's Life.
+This intent is an isolated single-file main commit; it must not be combined with
+version-source edits or documentation changes.
+
+Publish only after the official workflow validates the exact source commit:
+  Windows 3.0.224 (Setup, Portable and compatibility alias).
+  Android Direct 0.2.13 / versionCode 15, package com.michelslab.michelslife.
+  Pinned permanent owner signing certificate, NOT the CI debug key.
+
+Included already-merged product work:
+  - PR #207: allowlisted atomic Google Drive/Supabase/Timeline/portable restore,
+    rollback and account-boundary review; never transfer device/session tokens.
+  - PR #208: real Android Direct stable GitHub-release lookup, checksum and
+    signer-pinned APK verification, user-approved install and cancellation.
+  - PR #209: coordinated stable version source, exact-SHA UI + updater policy
+    and Android signed native installation/relaunch publication requirements.
+  - Preserve earlier Pomodoro, Story/Missions wallpapers, scheduled alarms
+    with sound/vibration/permission controls, and personal affirmations.
+
+FAIL CLOSED if any of these conditions does not hold on this precise SHA:
+  Source validation; Windows UI smoke; Android UI smoke;
+  Android Direct safe update discovery; Windows Setup and Portable launch;
+  signed Android Direct certificate, manifest/code and checksum;
+  production-signed APK installed and relaunched with actual PNGs on
+  fresh Android15, with independent GPU fallback if needed;
+  13 immutable release assets downloaded and SHA-verified; public tag
+  v3.0.224-android-v0.2.13 confirmed as latest.
+
+No release candidate, no separate Developer/Twin edition, no unsigned/debug
+Android build masquerading as public production. Do not overwrite existing
+v3.0.223-android-v0.2.12, do not claim physical Galaxy or live Supabase/Drive
+acceptance based only on emulated/mock tests.

@@ -4,6 +4,9 @@ import fs from 'node:fs';
 const url=process.env.MLV_UI_URL||'http://127.0.0.1:4173';
 const out=process.env.MLV_UI_SCREENSHOTS||'artifacts/ui-smoke';
 fs.mkdirSync(out,{recursive:true});
+// Candidate version comes from build metadata, never a hard-coded prior tag.
+const appVersion=fs.readFileSync('src/MichelsLife/MichelsLife.csproj','utf8').match(/<Version>(\d+\.\d+\.\d+)<\/Version>/)?.[1];
+if(!appVersion)throw new Error('Missing project build version');
 
 function ok(value,message){if(!value)throw new Error(message)}
 
@@ -153,13 +156,13 @@ try{
 
   await page.click('[data-v30171-setting="about"]');
   await page.waitForSelector('[data-v30171-pane="about"].active .mlvdev-avatar',{timeout:10000});
-  const aboutBrand=await page.evaluate(()=>{
+  const aboutBrand=await page.evaluate((expectedVersion)=>{
     const avatar=document.querySelector('.mlvdev-avatar');
     const product=document.querySelector('[data-mlv-product-brand="canonical"] img');
     const author=document.querySelector('[data-mlv-author-brand="canonical"]');
     const lab=document.querySelector('.mlvdev-studio-lockup img');
     const socials=[...document.querySelectorAll('.mlvdev-social')];
-    const version=[...document.querySelectorAll('.mlvdev-meta b')].map(x=>(x.textContent||'').trim()).find(x=>/^v3\.0\.221$/.test(x))||'';
+    const version=[...document.querySelectorAll('.mlvdev-meta b')].map(x=>(x.textContent||'').trim()).find(x=>x===`v${expectedVersion}`)||'';
     return {
       avatar:{w:avatar?.naturalWidth||0,h:avatar?.naturalHeight||0,cw:avatar?.getBoundingClientRect().width||0,ch:avatar?.getBoundingClientRect().height||0,src:avatar?.getAttribute('src')||''},
       productSrc:product?.getAttribute('src')||'',productWidth:product?.naturalWidth||0,
@@ -167,7 +170,7 @@ try{
       socialCount:socials.length,socialNames:socials.map(x=>x.querySelector('strong')?.textContent?.trim()||''),
       socialIcons:socials.filter(x=>x.querySelector('svg.mlvdev-social-icon')).length,version
     };
-  });
+  },appVersion);
   ok(aboutBrand.avatar.src==='assets/michel_duarte_avatar.jpg','About is not using the canonical developer portrait');
   ok(aboutBrand.avatar.w===1440&&aboutBrand.avatar.h===1920&&aboutBrand.avatar.cw>=170&&aboutBrand.avatar.ch>=220,'About canonical portrait is missing or incorrectly rendered: '+JSON.stringify(aboutBrand.avatar));
   ok(aboutBrand.productSrc==='assets/michels_life_lockup.svg'&&aboutBrand.productWidth>100,'About product identity is not using the canonical Michel’s Life lockup');
@@ -175,7 +178,7 @@ try{
   ok(aboutBrand.labSrc==='assets/michels_lab_lockup.png'&&aboutBrand.labWidth>100,'About parent brand is not using the canonical Michel’s Lab lockup: '+JSON.stringify(aboutBrand));
   ok(aboutBrand.socialCount===5&&aboutBrand.socialIcons===5,'About socials must expose five visible icon+name links: '+JSON.stringify(aboutBrand));
   ok(JSON.stringify(aboutBrand.socialNames)===JSON.stringify(['Instagram','Facebook','LinkedIn','GitHub','Email']),'About social order/names drifted: '+JSON.stringify(aboutBrand.socialNames));
-  ok(aboutBrand.version==='v3.0.221','About does not show the current build version: '+JSON.stringify(aboutBrand));
+  ok(aboutBrand.version===`v${appVersion}`,'About does not show the current build version: '+JSON.stringify({expected:appVersion,...aboutBrand}));
   await page.screenshot({path:`${out}/03-about.png`,fullPage:true});
 
   await page.evaluate(()=>{
@@ -185,12 +188,22 @@ try{
   });
   await page.click('[data-v30171-setting="chapters"]');
   await page.waitForSelector('[data-v30171-pane="chapters"].active [data-mlv184-chapter]',{timeout:10000});
+  // Scene cards are populated asynchronously after the Chapters pane opens.
+  // Require a genuinely distinct, visible scene before clicking; do not
+  // classify an incomplete first render as a missing feature.
+  await page.waitForFunction(()=>{
+    const current=window.FocusStoryV30162?.activeChapter?.()?.scenePack||'dark_kingdom';
+    return [...document.querySelectorAll('[data-v30171-pane="chapters"].active [data-mlv184-chapter]')]
+      .some(el=>el.dataset.mlv184Chapter&&el.dataset.mlv184Chapter!==current&&
+        el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden');
+  },null,{timeout:15000});
   const chapterData=await page.evaluate(()=>({
     current:window.FocusStoryV30162?.activeChapter?.()?.scenePack||'dark_kingdom',
-    options:[...document.querySelectorAll('[data-v30171-pane="chapters"].active [data-mlv184-chapter]')].map(x=>x.dataset.mlv184Chapter)
+    options:[...document.querySelectorAll('[data-v30171-pane="chapters"].active [data-mlv184-chapter]')]
+      .filter(el=>el.getClientRects().length).map(el=>el.dataset.mlv184Chapter)
   }));
   const target=chapterData.options.find(x=>x&&x!==chapterData.current);
-  ok(!!target,'No alternate Chapter Scene option available for interaction test');
+  ok(!!target,'No distinct visible Chapter Scene option after waiting: '+JSON.stringify(chapterData));
   await page.click(`[data-v30171-pane="chapters"].active [data-mlv184-chapter="${target}"]`);
   await page.waitForFunction(t=>window.FocusStoryV30162?.activeChapter?.()?.scenePack===t,target,{timeout:10000});
   await page.waitForSelector(`[data-v30171-pane="chapters"].active [data-mlv184-chapter="${target}"].active`,{timeout:10000});

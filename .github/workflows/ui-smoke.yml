@@ -18,7 +18,24 @@ on:
       - '.michelslab/release-intents/unified-v3219-a027.txt'
       - '.michelslab/release-intents/unified-v3220-a028.txt'
       - '.michelslab/release-intents/unified-v3221-a029.txt'
+      - '.michelslab/release-intents/android-direct-v0210.txt'
+      - '.michelslab/release-intents/android-direct-v0211.txt'
+      - '.michelslab/release-intents/windows-v3222-a0211.txt'
+      # A release-intent commit changes no UI files but must re-run exact-SHA UI checks.
+      - '.michelslab/release-intents/unified-v3223-a0212.txt'
+      - '.michelslab/release-intents/unified-v3224-a0213.txt'
+      - '.michelslab/release-intents/unified-v3225-a0214.txt'
+      - '.michelslab/release-intents/unified-v3226-a0215.txt'
+      - '.michelslab/release-intents/unified-v3227-a0216.txt'
+      - '.michelslab/release-intents/unified-v3228-a0217.txt'
+      - '.michelslab/release-intents/unified-v3229-a0218.txt'
       - '.github/workflows/ui-smoke.yml'
+      - '.michelslab/release-intents/unified-v3230-a0219.txt'
+      - '.michelslab/release-intents/unified-v3231-a0220.txt'
+      - '.michelslab/release-intents/unified-v3232-a0221.txt'
+      - '.michelslab/release-intents/unified-v3233-a0222.txt'
+      - '.michelslab/release-intents/unified-v3234-a0223.txt'
+      - '.michelslab/release-intents/unified-v3235-a0224.txt'
   workflow_dispatch:
 
 permissions:
@@ -29,7 +46,7 @@ env:
 
 jobs:
   ui-smoke:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -42,7 +59,12 @@ jobs:
           node-version: '22'
 
       - name: Audit shared backup restore and device isolation
-        run: node tools/test_cloud_restore_storage.mjs
+        run: |
+          node tools/test_cloud_restore_storage.mjs
+          node tools/test_google_calendar_capture_stability.mjs
+
+      - name: Test resilient bootstrap download before browser packaging
+        run: python -m unittest discover -s tools -p 'test_michels_life_bootstrap.py' -v
 
       - name: Build browser-test bundle from canonical frontend
         env:
@@ -72,7 +94,7 @@ jobs:
 
       - name: Install Chromium test runtime
         run: |
-          npm install --no-save playwright
+          npm install --no-save --no-package-lock playwright@1.58.2
           npx playwright install --with-deps chromium
 
       - name: Render and test critical UI
@@ -81,6 +103,22 @@ jobs:
           export MLV_UI_URL=http://127.0.0.1:4173
           export MLV_UI_SCREENSHOTS=artifacts/ui-smoke
           node tools/ui_smoke_v303.mjs
+
+      - name: Verify real Windows-style immersive Pomodoro and minimized Missions navigation
+        run: |
+          export MLV_UI_URL=http://127.0.0.1:4173
+          node tools/ui_desktop_focus_immersive_smoke.mjs
+
+      - name: Real desktop Mozart and Chaikovski must be VISIBLE and playable without opening audio drawer
+        run: |
+          export MLV_UI_URL=http://127.0.0.1:4173
+          MLV_CLASSICAL_PLATFORM=desktop node tools/ui_classical_focus_visible_smoke.mjs
+
+      - name: Reproduce and verify Chapter artwork, actual Pomodoro and Alarms clicks
+        run: |
+          export MLV_UI_URL=http://127.0.0.1:4173
+          node --check tools/ui_desktop_chapter_pomodoro_alarm_regression.mjs
+          node tools/ui_desktop_chapter_pomodoro_alarm_regression.mjs
 
       - name: Verify candidate-bound browser Home/About screenshots using studio visual gate
         run: |
@@ -95,6 +133,17 @@ jobs:
             --source-sha "$GITHUB_SHA" \
             --platforms desktop-browser --surfaces home,about
           echo "Browser rendered-UI PASS only; Windows installed and Android APK need independent candidate evidence."
+
+      - name: Export real canonical desktop layout reference for external design tools
+        run: |
+          python tools/build_canonical_design_reference.py --self-test
+          python tools/build_canonical_design_reference.py \
+            --platform desktop-browser \
+            --directory artifacts/ui-smoke \
+            --bundle artifacts/AppBundle.zip \
+            --commit "$GITHUB_SHA"
+          echo "Actual current UI screenshots: artifacts/ui-smoke/design-baseline.html"
+          echo "Design baseline is not a visual approval or installed Windows evidence."
 
       - name: Audit automatic desktop update detection
         run: |
@@ -127,16 +176,23 @@ jobs:
           export MLV_UI_URL=http://127.0.0.1:4173
           node tools/ui_supabase_android_sync_smoke.mjs
 
+      - name: Protect weekly Premium targets and exact-once rewards through Android reloads
+        run: |
+          export MLV_UI_URL=http://127.0.0.1:4173
+          node --check tools/ui_weekly_premium_progress_roundtrip_smoke.mjs
+          node tools/ui_weekly_premium_progress_roundtrip_smoke.mjs
+
       - name: Audit canonical Android Focus alarm lifecycle, retry and de-duplication
         run: |
           export MLV_UI_URL=http://127.0.0.1:4173
           node --check tools/ui_android_focus_alarm_lifecycle_smoke.mjs
           node tools/ui_android_focus_alarm_lifecycle_smoke.mjs
 
-      - name: Require honest Android Google Calendar provider-unavailable status
+      - name: Verify Android Calendar fallback and real Read button via synthetic native response
         run: |
           export MLV_UI_URL=http://127.0.0.1:4173
           node tools/ui_android_google_calendar_truth_smoke.mjs
+          node tools/ui_android_calendar_read_smoke.mjs
 
       - name: Audit Supabase cross-device Windows Android sync
         run: |
@@ -208,7 +264,7 @@ jobs:
         if: always()
         continue-on-error: true
         with:
-          name: ui-smoke-v3.0.221
+          name: ui-smoke-v3.0.222
           path: |
             artifacts/ui-smoke
             /tmp/mlv-http.log

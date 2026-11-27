@@ -4,6 +4,9 @@ import argparse
 import re
 
 LOADER_MARKER = '<script src="i18n.js" data-mlv-i18n="v1"></script>'
+FOCUS_LOADER_MARKER = '<script src="focus-immersive.js" data-mlv-focus-immersive="v1"></script>'
+ALARM_LOADER_MARKER = '<script src="personal-alarms.js" data-mlv-personal-alarms="v1"></script>'
+MOTIVATION_LOADER_MARKER = '<script src="motivation-immersive.js" data-mlv-motivation="v1"></script>'
 GUARD_ATTR = 'data-mlv-language-guard="v1"'
 GUARD_SCRIPT = r'''<script data-mlv-language-guard="v1">
 (function(){
@@ -62,9 +65,24 @@ def main():
         match = re.search(r'<head\b[^>]*>', text, flags=re.I)
         if not match:
             raise SystemExit('index.html has no <head> marker for early language guard')
-        pos = match.end()
+        # Keep the document encoding declaration first. A late <meta charset>
+        # after executing JS can provoke a browser encoding reparse while
+        # consuming this 2 MB legacy inline-script document.
+        charset = re.search(r'<meta\s+charset\s*=\s*["\']?utf-?8["\']?\s*/?>', text, flags=re.I)
+        if not charset or charset.start() < match.end():
+            raise SystemExit('canonical index must declare UTF-8 in <head>')
+        if re.search(r'<(?:script|style)\b', text[match.end():charset.start()], flags=re.I):
+            raise SystemExit('UTF-8 declaration must precede scripts and styles')
+        pos = charset.end()
         text = text[:pos] + '\n' + GUARD_SCRIPT + text[pos:]
         changed = True
+
+    # Shared immersion is present in Windows and Android AppBundles.
+    # Its Android entrypoint exports wallpaper selection, while mobile-experience.js
+    # owns Android interactions. Keep one loader even across repeated packaging.
+    text = text.replace(FOCUS_LOADER_MARKER, '')
+    text = text.replace(ALARM_LOADER_MARKER, '')
+    text = text.replace(MOTIVATION_LOADER_MARKER, '')
 
     # i18n must be available before inline UI renderers execute. Keep a
     # single synchronous loader in <head>; a body-end loader causes first-paint
@@ -75,7 +93,7 @@ def main():
     head_close = re.search(r'</head\s*>', text, flags=re.I)
     if not head_close:
         raise SystemExit('index.html has no </head> marker for i18n loader')
-    text = text[:head_close.start()] + LOADER_MARKER + '\n' + text[head_close.start():]
+    text = text[:head_close.start()] + LOADER_MARKER + '\n' + MOTIVATION_LOADER_MARKER + '\n' + FOCUS_LOADER_MARKER + '\n' + ALARM_LOADER_MARKER + '\n' + text[head_close.start():]
     changed = True
 
     if changed:

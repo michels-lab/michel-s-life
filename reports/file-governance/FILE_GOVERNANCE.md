@@ -1,0 +1,44 @@
+# File steward: repository file audit
+
+All tracked files classified; Markdown/text docs inspected with size cap. Binary/research-content validity and untracked files not assessed.
+No file is auto-deleted or declared unused.
+
+## Coverage
+
+Tracked: 533; classified: 529; readable documents: 121; above read cap: 0; findings: 7.
+
+## File roles
+
+| Role | Count |
+|---|---:|
+| agent | 9 |
+| asset | 48 |
+| bitacora | 4 |
+| build_script | 6 |
+| config | 30 |
+| database_migration | 3 |
+| document | 113 |
+| encoded_source | 2 |
+| index | 4 |
+| installer_metadata | 1 |
+| release_intent | 25 |
+| source | 139 |
+| test | 67 |
+| text_metadata | 1 |
+| unknown | 6 |
+| web_ui | 3 |
+| workflow | 68 |
+
+## Findings (human review required)
+
+- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** android/ANDROID_AUDIT_LOG.md: 101 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID f4d85d2478b3d839)
+- **REVIEW / UNKNOWN_PURPOSE** android/app/src/main/res/raw/mlv_focus_aurora.wav: No reliable purpose category from path. Next: Declare role after reviewing usage (ID 5f24662c6e85f329)
+- **REVIEW / UNKNOWN_PURPOSE** android/app/src/main/res/raw/mlv_focus_glass.wav: No reliable purpose category from path. Next: Declare role after reviewing usage (ID a3f98f17133ad740)
+- **REVIEW / UNKNOWN_PURPOSE** android/app/src/main/res/raw/mlv_focus_midnight.wav: No reliable purpose category from path. Next: Declare role after reviewing usage (ID f071b77e97a69cec)
+- **REVIEW / UNKNOWN_PURPOSE** android/app/src/main/res/raw/mlv_focus_observatory.wav: No reliable purpose category from path. Next: Declare role after reviewing usage (ID 586c00d31d4ac5b9)
+- **REVIEW / UNKNOWN_PURPOSE** android/app/src/main/res/raw/mlv_focus_silver.wav: No reliable purpose category from path. Next: Declare role after reviewing usage (ID bd129d6ef59f9598)
+- **REVIEW / UNKNOWN_PURPOSE** android/app/src/main/res/raw/mlv_focus_soft.wav: No reliable purpose category from path. Next: Declare role after reviewing usage (ID e343c98421a4c10a)
+
+Complete path → purpose/role/certainty list lives in FILE_GOVERNANCE.json. SUMMARY.json has counts only for master polling.
+A dated file, duplicate, or suspicious name is an **investigation candidate**, not unwanted material.
+No historical science cases, audit logs or evidence may be deleted automatically.

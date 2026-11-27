@@ -1,0 +1,82 @@
+[
+  {
+    "id": "sb_the_long_dark",
+    "title": "The Long Dark",
+    "group": "Ambient",
+    "artist": "Scott Buckley",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "source_page": "https://www.scottbuckley.com.au/library/the-long-dark/",
+    "url": "https://www.scottbuckley.com.au/library/wp-content/uploads/2023/01/TheLongDark.mp3"
+  },
+  {
+    "id": "sb_hiraeth",
+    "title": "Hiraeth",
+    "group": "Cinematic",
+    "artist": "Scott Buckley",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "source_page": "https://www.scottbuckley.com.au/library/hiraeth/",
+    "url": "https://www.scottbuckley.com.au/library/wp-content/uploads/2020/06/sb_hiraeth.mp3"
+  },
+  {
+    "id": "sb_the_climb",
+    "title": "The Climb",
+    "group": "Cinematic",
+    "artist": "Scott Buckley",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "source_page": "https://www.scottbuckley.com.au/library/the-climb/",
+    "url": "https://www.scottbuckley.com.au/library/wp-content/uploads/2021/02/sb_theclimb.mp3"
+  },
+  {
+    "id": "sb_intervention",
+    "title": "Intervention",
+    "group": "Ambient",
+    "artist": "Scott Buckley",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "source_page": "https://www.scottbuckley.com.au/library/intervention/",
+    "url": "https://www.scottbuckley.com.au/library/wp-content/uploads/2019/01/sb_intervention.mp3"
+  },
+  {
+    "id": "sb_sleep",
+    "title": "Sleep",
+    "group": "Ambient",
+    "artist": "Scott Buckley",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "source_page": "https://www.scottbuckley.com.au/library/sleep/",
+    "url": "https://www.scottbuckley.com.au/library/wp-content/uploads/2019/08/sb_sleep.mp3"
+  },
+  {
+    "id": "sb_there_is_a_place",
+    "title": "There Is a Place",
+    "group": "Ambient",
+    "artist": "Scott Buckley",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "source_page": "https://www.scottbuckley.com.au/library/there-is-a-place/",
+    "url": "https://www.scottbuckley.com.au/library/wp-content/uploads/2019/04/sb_thereisaplace.mp3"
+  },
+  {
+    "id": "sb_incredulity",
+    "title": "Incredulity",
+    "group": "Cinematic",
+    "artist": "Scott Buckley",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "source_page": "https://www.scottbuckley.com.au/library/incredulity/",
+    "url": "https://www.scottbuckley.com.au/library/wp-content/uploads/2025/04/Incredulity.mp3"
+  },
+  {
+    "id": "sb_discovery",
+    "title": "Discovery",
+    "group": "Cinematic",
+    "artist": "Scott Buckley",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "source_page": "https://www.scottbuckley.com.au/library/discovery/",
+    "url": "https://www.scottbuckley.com.au/library/wp-content/uploads/2020/01/sb_discovery.mp3"
+  }
+]

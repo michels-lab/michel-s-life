@@ -1,0 +1,34 @@
+name: Build optional licensed audio pack
+on:
+  push:
+    branches:
+      - granada/optional-recording-pack-20261125
+    paths:
+      - 'tools/build_optional_audio_pack.py'
+      - 'tools/test_optional_audio_pack.py'
+      - 'docs/audio/OPTIONAL_PACK_01.json'
+      - 'docs/audio/OPTIONAL_PACK_02.json'
+      - '.github/workflows/optional-audio-pack.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        pack: ['01', '02']
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: python3 -m unittest discover -s tools -p test_optional_audio_pack.py
+      - run: python3 tools/build_optional_audio_pack.py --pack ${{ matrix.pack }} --output out/MichelsLife-Optional-Music-Pack-${{ matrix.pack }}.zip
+      - run: sha256sum out/MichelsLife-Optional-Music-Pack-${{ matrix.pack }}.zip > out/MichelsLife-Optional-Music-Pack-${{ matrix.pack }}.zip.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MichelsLife-Optional-Music-Pack-${{ matrix.pack }}
+          path: out/
+          if-no-files-found: error
+          retention-days: 30

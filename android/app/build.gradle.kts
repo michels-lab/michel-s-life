@@ -22,8 +22,8 @@ android {
         applicationId = "com.michelslab.michelslife"
         minSdk = 26
         targetSdk = 36
-        versionCode = 11
-        versionName = "0.2.9"
+        versionCode = 26
+        versionName = "0.2.24"
     }
 
     signingConfigs {
@@ -74,6 +74,7 @@ android {
 }
 
 dependencies {
+    implementation("androidx.core:core:1.16.0")
     implementation("androidx.webkit:webkit:1.16.0")
     implementation("com.google.android.gms:play-services-auth:22.0.0")
     implementation("com.squareup.okhttp3:okhttp:5.4.0")

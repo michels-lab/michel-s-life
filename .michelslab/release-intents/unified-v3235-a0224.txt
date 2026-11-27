@@ -1,0 +1,29 @@
+{
+  "schema": "michelslab.unified-stable-release-intent.v1",
+  "request": "operacion-granada-stable-release",
+  "product": "Michel's Life",
+  "change": "PR #241 integrated: global glass surface role fix, visible ambient controls, fixed phase bells, floating controls separated, compact Android Settings; preserve all 18 recordings and dashboard design.",
+  "source_base_sha": "6f93a41519707973bd47e1d728483a7c83b168c7",
+  "windows_version": "3.0.235",
+  "android_direct_version": "0.2.24",
+  "android_version_code": 26,
+  "stable_only": true,
+  "required_checks": [
+    "Source validation",
+    "UI smoke",
+    "Android UI smoke",
+    "GRANADA - Story Focus touch provenance",
+    "GRANADA Data Health and recovery safety",
+    "GRANADA Android Direct safe update discovery",
+    "GRANADA Quick Mission and original Pomodoro audio",
+    "GRANADA cross-platform immersive Focus",
+    "GRANADA personal alarms — Windows and Android contracts",
+    "GRANADA Settings live color persistence",
+    "GRANADA classical Focus excerpts"
+  ],
+  "require_signed_android15_native_install_and_relaunch": true,
+  "require_windows_installer_and_portable_launch": true,
+  "publication": "destination-owned only after exact-SHA successful source workflow, production-signed Android15 real native QA, Windows binaries and all 13 assets verified; no overwrite",
+  "validation": "Previous candidate 21/24 gates passed, common retry fixture repaired; staged PR merged before all PR checks completed to advance exact source validation. All eleven exact-SHA source gates, Windows launch and signed API35 native evidence mandatory. API34/36 and physical owner acceptance remain open.",
+  "supersedes_source_intent_sha": "632f84e6345c4eb1cb44d669837edd854d399464"
+}

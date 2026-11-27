@@ -41,7 +41,7 @@ try{
       syncFocusAlarm(raw){
         const packet=JSON.parse(raw);
         const key=packet.status+':'+packet.mode+':'+packet.deadlineAt;
-        activity.push({status:packet.status,mode:packet.mode,
+        activity.push({status:packet.status,mode:packet.mode,language:packet.language,
           deadline:packet.deadlineAt,key,failed:failNext});
         if(failNext){failNext=false;return JSON.stringify({error:'synthetic alarm transport outage'});}
         return JSON.stringify({scheduled:packet.status==='running',
@@ -75,10 +75,10 @@ try{
     samples.push(take('skip-to-break',()=>api.skipFocus()));
     samples.push(take('break-start',()=>api.startFocus()));
     samples.push(take('reset-break',()=>api.resetFocus()));
-    failNext=true;
     samples.push(take('work-prepare-retry',()=>api.skipFocus()));
-    // The current phase is now ready for work. First native arm fails, the
-    // next canonical tick must retry rather than caching a false success.
+    // Fail precisely the first RUNNING arm, not the preceding READY cancel.
+    // With distinct phase bells, that READY transition legitimately posts.
+    failNext=true;
     samples.push(take('work-failed-arm',()=>api.startFocus()));
     const failedArms=activity.filter(x=>x.failed).length;
     const attemptsBeforeRetry=activity.length;
@@ -99,7 +99,7 @@ try{
   const assertPhase=(label,status,mode)=>{
     assert.equal(steps[label].state,status,label+' changed canonical state unexpectedly');
     assert.equal(steps[label].mode,mode,label+' changed Focus phase');
-    assert.equal(steps[label].recent.status,status==='running'?'running':'paused',
+    assert.equal(steps[label].recent.status,status,
       label+' mirrored wrong native alarm state');
     if(status==='running'){
       assert.ok(steps[label].recent.deadline>Date.now() && steps[label].recent.deadline<Date.now()+4*3600_000,
@@ -121,6 +121,7 @@ try{
   assertPhase('work-prepare-retry','ready','work');
   assertPhase('work-failed-arm','running','work');
   assert.equal(result.failedArms,1,'Synthetic native arm failure not exercised exactly once');
+  assert.equal(steps['work-failed-arm'].recent.failed,true,'The failed transport must be the running arm, not the preceding cancel');
   assert.equal(result.attemptsAfterRetry,result.attemptsBeforeRetry+1,
     'Failed native alarm transport did not retry on the next live Focus tick');
   assert.equal(result.attemptsAfterRetryTicks,result.attemptsAfterRetry,
@@ -129,6 +130,8 @@ try{
   assert.equal(result.before.xp,result.after.xp,'Focus native bridge changed canonical XP');
   assert.deepEqual(result.before.missionIds,result.after.missionIds,
     'Focus native bridge changed canonical missions');
+  assert.ok(activity.every(x=>x.language==='en'||x.language==='es'),
+    'Native Focus alarm mirror lacks explicit notification language');
   assert.ok(activity.filter(x=>x.status==='running').every(x=>x.deadline>0),
     'Alarm bridge sent running with empty deadline');
   assert.ok(activity.filter(x=>x.status!=='running').every(x=>x.deadline===0),
@@ -137,6 +140,100 @@ try{
       event.key!==activity[i-1].key||event.failed||activity[i-1].failed),
     'Focus native bridge sent duplicate consecutive alarm updates');
   console.log('PASS: Focus uses canonical deadline for native work/break, cancels on pause/skip/reset, de-duplicates ticks and retries transient failure');
+
+  // Real canonical touch/browser UI: changing locale must update an existing
+  // Focus workspace in place, preserving the clock, mission/XP and input node.
+  const beforeLocale=await page.evaluate(()=>({
+    xp:state.xp,
+    focus:window.FocusStoryV30162.focusState()
+  }));
+  await page.evaluate(()=>{
+    window.MichelsLifeI18n.setLanguage('es');
+    window.MichelsLifeMobileExperience.openFocus();
+    window.MichelsLifeMobileExperience.updateFocus();
+  });
+  await page.waitForFunction(()=>document.querySelector('[data-mobile-focus="reset"]')?.textContent==='Reiniciar',
+    null,{timeout:12000});
+  assert.equal(await page.locator('[data-mobile-focus="skip"]').textContent(),'Saltar fase');
+  assert.equal(await page.locator('.mlv-focus-controls-title').textContent(),'Duración de la sesión');
+  assert.equal(await page.locator('.mlv-focus-notification-copy strong').textContent(),
+    'Cuenta regresiva en pantalla bloqueada');
+  assert.equal(await page.locator('[data-mobile-focus="close"]').getAttribute('aria-label'),'Cerrar Pomodoro');
+  const brandDot=page.locator('.mlv-android-focus-eyebrow .mlv-focus-brand-dot');
+  assert.equal(await brandDot.count(),1,'Spanish copy removed the Focus brand dot');
+  const scene=await page.locator('#mlv-android-focus-sheet').evaluate(el=>{
+    const style=getComputedStyle(el);
+    return {
+      alpha:Number(style.backgroundColor.match(/,\s*([\d.]+)\)$/)?.[1]),
+      backdrop:style.backdropFilter
+    };
+  });
+  assert.ok(scene.alpha>0&&scene.alpha<0.65&&scene.backdrop==='none',
+    'Android sheet obscures the selected wallpaper or blurs timer: '+JSON.stringify(scene));
+   const ambientToggle=page.locator('[data-mobile-focus="toggle-ambient"]');
+   assert.equal(await ambientToggle.count(),1);
+   assert.equal(await ambientToggle.isVisible(),true);
+   assert.equal(await ambientToggle.evaluate(el=>!!el.closest('details')),false);
+   assert.match(await ambientToggle.innerText(),/Reproducir/);
+   assert.equal(await page.locator('[data-mobile-focus-completion]').count(),0);
+   const audioDetails=page.locator('.mlv-android-focus-sounds');
+   const audioSummary=audioDetails.locator(':scope > summary');
+   assert.match(await audioSummary.innerText(),
+     /Opciones avanzadas de audio/,'Spanish locale must not label audio as custom work duration');
+   await audioSummary.click();
+   assert.equal(await audioDetails.getAttribute('open'),'',
+     'Advanced ambient control must become visible when expanded');
+   assert.equal(await audioDetails.locator('select[data-mobile-focus-ambience]').count(),1,
+     'Advanced music control should retain its full A+C selection');
+   assert.equal(await audioDetails.locator('select[data-mobile-focus-completion]').count(),0,
+     'No duplicate completion picker should remain inside the drawer');
+   await audioSummary.click();
+   await page.locator('#mlv-android-focus-sheet details:has(#mlv-android-focus-work) summary').click();
+  const workInput=page.locator('#mlv-android-focus-work');
+  await workInput.fill('37');
+  await page.evaluate(()=>window.MichelsLifeMobileExperience.updateFocus());
+  assert.equal(await workInput.inputValue(),'37','Spanish tick reset an unsaved work duration');
+  const afterSpanish=await page.evaluate(()=>({
+    xp:state.xp,
+    focus:window.FocusStoryV30162.focusState()
+  }));
+  assert.equal(afterSpanish.xp,beforeLocale.xp,'Locale switch changed canonical XP');
+  assert.equal(afterSpanish.focus.deadlineAt,beforeLocale.focus.deadlineAt,
+    'Locale switch restarted the canonical Pomodoro');
+  await page.evaluate(()=>{
+    window.MichelsLifeI18n.setLanguage('en');
+    window.MichelsLifeMobileExperience.updateFocus();
+  });
+  await page.waitForFunction(()=>document.querySelector('[data-mobile-focus="reset"]')?.textContent==='Reset',
+    null,{timeout:12000});
+  assert.equal(await page.locator('[data-mobile-focus="skip"]').textContent(),'Skip phase');
+  assert.match(await ambientToggle.innerText(),/Play/);
+  assert.equal(await page.locator('[data-mobile-focus-completion]').count(),0);
+  assert.equal(await workInput.inputValue(),'37','Returning to English discarded typed duration');
+
+  // Regression: the old sidebar Focus dock has actually been deleted. Touch
+  // real preset and custom buttons; they must write to the single canonical
+  // timer instead of clicking selectors for ghost DOM elements.
+  await page.locator('#mlv-android-focus-break').fill('8');
+  await page.locator('#mlv-android-focus-apply').click();
+  const custom=await page.evaluate(()=>window.FocusStoryV30162.focusState());
+  assert.equal(custom.workMin,37,'Custom Focus button did not persist work duration');
+  assert.equal(custom.breakMin,8,'Custom Focus button did not persist break duration');
+  assert.equal(custom.preset,'custom');
+  for(const [preset,work,rest] of [['50/10',50,10],['90/15',90,15],['25/5',25,5]]){
+    await page.locator('#mlv-android-focus-sheet [data-mobile-preset="'+preset+'"]').click();
+    const after=await page.evaluate(()=>({
+      focus:window.FocusStoryV30162.focusState(),
+      ghost:document.querySelector('#v30162FocusDock, #v30175FocusFab'),
+      xp:state.xp
+    }));
+    assert.equal(after.focus.preset,preset,'Android real-touch preset was not saved: '+preset);
+    assert.equal(after.focus.workMin,work,'Android work length incorrect: '+preset);
+    assert.equal(after.focus.breakMin,rest,'Android break length incorrect: '+preset);
+    assert.equal(after.ghost,null,'Old sidebar Focus controls were recreated');
+    assert.equal(after.xp,beforeLocale.xp,'Focus preset touched XP');
+  }
+  console.log('PASS: real Android browser Focus ES/EN, custom 37/8, touch presets 50/10, 90/15, 25/5, no ghost sidebar, XP preserved');
   await context.close();
 }finally{
   await browser.close();

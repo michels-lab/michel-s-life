@@ -1,0 +1,39 @@
+Michel's Life — Operación Granada: explicit owner-authorized stable release — 2026-11-17.
+
+User instruction: "op granada y release". Publish the latest integrated main
+source ONLY after the official immutable production pipeline passes every gate.
+
+New final stable versions:
+  Windows 3.0.225 (Setup, Portable, compatibility alias).
+  Android Direct 0.2.14 (versionCode 16), package com.michelslab.michelslife.
+
+Version-source commit: e2a8cc93ffe56e4d1f932157257b60b936199088
+Release-intent file must be the ONLY change in this precise main commit.
+Release pipeline: .github/workflows/release-unified-v3225-a0214.yml
+Public destination: michels-lab/michel-s-life-releases
+Immutable tag: v3.0.225-android-v0.2.14
+
+Shipping integrated functional work after previous stable 3.0.224/0.2.13:
+  - Android Google Calendar explicit consent and single mission event write/remove
+    (#210), without turning on unsafe bulk synchronization.
+  - Android WebView memory/rendering startup adjustment and deterministic real
+    Chapter artwork recovery (PR #211).
+  - The immersive Pomodoro, scheduled personal alarms, affirmations, approved
+    Story backgrounds and Windows notification shell are preserved.
+  - Account A/B/C fail-closed local-edit Supabase download protection and
+    improved Chapter/Focus/Alarm E2E gate (#212).
+  - Canonical stable packaging/signer/version/publisher alignment (#213).
+
+Do not publish if exact-SHA Source validation, UI smoke, Android UI smoke, Direct
+updater safety, production signer SHA-256, Windows installed Setup/Portable
+launch, Android 15 *signed Direct APK* install/relaunch and real PNG captures,
+release provenance and 13 downloadable SHA-checked assets are not verified.
+No debug or unsigned Android masquerading as production. No RC or Developer
+Edition. Never replace previous releases.
+
+The intermittent browser SyntaxError (issue #168), other debug emulator ADB
+issues (#139), real Google Calendar OAuth/provider tests, Galaxy lock-screen
+alarms, live account migration, Android 14/16 native device parity and full
+physical-owner acceptance remain separate, OPEN gates and are not claimed
+resolved by the release. If any required RELEASE gate fails, leave the stable
+public tag unissued/draft and report the failure truthfully.

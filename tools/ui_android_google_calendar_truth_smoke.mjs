@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 
-// Issue #110 — fail closed rather than asserting Google Calendar is synced.
-// Real Android OAuth/provider parity is NOT implemented here. This smoke guards
-// against a fabricated 0-events "success" and accidental writes to local data.
+// Issue #110 — fail closed when the native Calendar read provider is absent.
+// Real native Calendar reads require explicit consent and a separate bridge;
+// without one the UI must refuse fake success, leave user data unchanged.
 const url=process.env.MLV_UI_URL||'http://127.0.0.1:4173';
 const browser=await chromium.launch({headless:true});
 try{
@@ -31,8 +31,8 @@ try{
     });
     const bridgeCalls=[];
     const oldChrome=window.chrome;
-    // The runtime must NOT reach a fake successful native sync even if an
-    // installed bridge is nominally present.
+    // A browser fixture has NO native Calendar Java interface. The app must
+    // not manufacture a successful read because Drive is connected.
     try{
       window.chrome={webview:{postMessage(message){bridgeCalls.push(message)}}};
     }catch(_){}
@@ -46,8 +46,8 @@ try{
       xp:state.xp,missionIds:state.missions.map(m=>m.id)
     });
     // Test the render contract at the most permissive Google-login status:
-    // Calendar sync is still disabled on Android; it must not be relabeled
-    // successful just because a connected Google account exists.
+    // Calendar reading must stay unavailable in this browser-only fixture;
+    // a Drive session does not supply native Calendar consent.
     state.activeTab='settings';window.renderAll();
     window.LeftNavV30171.buildSettings();
     window.LeftNavV30171.activateSetting('google');
@@ -69,22 +69,21 @@ try{
   assert.equal(result.answer,null,'Android Calendar returned fictitious successful provider data');
   assert.equal(result.before,result.after,'Unsupported sync changed event/XP/progress state');
   assert.equal(result.bridgeSyncCalls,0,'Unsupported Calendar sync invoked fake native provider');
-  assert.match(result.error,/not available on Android|no events were read or written/i,
+  assert.match(result.error,/does not support Google Calendar reading/i,
     'Android Calendar did not disclose lack of provider read/write');
-  assert.match(result.notice,/not available on Android|no events were read or written/i,
-    'Interactive Calendar sync did not announce unsupported result');
+  assert.equal(result.lastResult,null,'Unavailable bridge manufactured a successful result');
 
   const button=page.locator('[data-v30171-pane="google"] [data-mlv190-google="sync"]');
   await button.waitFor({state:'visible',timeout:10000});
   assert.equal(await button.isDisabled(),true,
-    'Android Google Calendar Sync button is enabled despite missing provider');
+    'Android Calendar Read is enabled despite missing native provider');
   assert.match((await button.innerText()).trim(),/unavailable/i,
     'Android Google Calendar button appears to promise working sync');
   const warning=page.locator('[data-v30171-pane="google"] .mlv190-google-error[role="status"]');
   await warning.waitFor({state:'visible',timeout:10000});
-  assert.match(await warning.innerText(),/not available on Android|no events/i,
+  assert.match(await warning.innerText(),/cannot access Google Calendar/i,
     'Android Settings does not visibly disclose unsupported provider');
-  console.log('PASS: Android Google Calendar UI cannot claim success, mutate user events/XP or call native sync before real provider support');
+  console.log('PASS: Android browser fallback refuses fake Calendar reads without a real native provider and preserves XP/missions');
 }finally{
   await browser.close();
 }

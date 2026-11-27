@@ -3,6 +3,8 @@ name: GRANADA native Android relaunch transport guard
 on:
   pull_request:
     paths:
+      - 'android/tools/native_onboarding_touch.py'
+      - 'tools/test_native_onboarding_touch.py'
       - 'android/tools/granada_relaunch_transport_guard.py'
       - 'android/tools/smoke_candidate_apk_install.sh'
       - 'tools/test_granada_relaunch_transport_guard.py'
@@ -31,9 +33,9 @@ jobs:
           python3 -m py_compile android/tools/granada_emulator_host_watch.py
           python3 -m py_compile tools/test_granada_emulator_host_watch.py
           bash -n android/tools/smoke_candidate_apk_install.sh
-      - name: Run 25 synthetic transport recovery and host VM diagnosis regressions
+      - name: Run synthetic transport, host VM and onboarding regressions
         run: |
-          python3 -m unittest -v tools/test_granada_relaunch_transport_guard.py tools/test_granada_emulator_host_watch.py
+          python3 -m unittest -v tools/test_granada_relaunch_transport_guard.py tools/test_granada_emulator_host_watch.py tools/test_native_onboarding_touch.py
       - name: Assert native persistence gate is still fail-closed
         run: |
           python3 - <<'PY'

@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
+import {normalizeError} from './granada_story_diagnostic_core.mjs';
+import {createBrowserScriptFaultTracker} from './browser_script_fault_provenance.mjs';
 
 /**
  * GRANADA GRANDE: REAL canonical Android Project+Chapter form -> authenticated
@@ -111,13 +113,18 @@ async function device(platform){
     localStorage.setItem('michelsLife.language.userOverrideBase.v1','en');
   },platform);
   const page=await context.newPage(),errors=[];
-  page.on('pageerror',e=>errors.push(e.message));
+  // Record Chromium parser evidence; never log raw source or account data.
+  const cdp=await context.newCDPSession(page);
+  const provenance=createBrowserScriptFaultTracker(cdp);
+  await cdp.send('Debugger.enable');
+  await cdp.send('Runtime.enable');
+  page.on('pageerror',e=>errors.push(normalizeError(e,'bootstrap')));
   await page.goto(APP_URL,{waitUntil:'domcontentloaded',timeout:60000});
   await page.waitForFunction(()=>typeof state!=='undefined'&&
     !!window.SupabaseSyncV30216?.signIn&&
     !!window.MLVCloudSharedStorageV30216?.capture&&
     !!window.JournalV30189?.save,null,{timeout:60000});
-  return {context,page,errors,platform};
+  return {context,page,errors,platform,provenance};
 }
 
 async function snap(dev){
@@ -168,6 +175,53 @@ async function revisionAdvanced(before,label){
     ', actual revision '+backend.remote?.revision);
 }
 
+/** Wait for the actual shareable board to settle before a *user initiated*
+ * cloud adoption. Sign-in can finish while a startup save is still pending.
+ * Never switch off pull()'s concurrent-write guard or discard a changed board.
+ */
+async function waitForBoardQuiescence(dev,label,{timeoutMs=12000,quietMs=1250}={}){
+  let previous=null,steadySince=Date.now(),observations=0;
+  const started=Date.now();
+  while(Date.now()-started<timeoutMs){
+    const now=await dev.page.evaluate(()=>{
+      const sync=window.SupabaseSyncV30216;
+      return {board:sync.capture(),cloudBusy:!!sync.runtime.cloudBusy};
+    });
+    if(!now.cloudBusy&&now.board===previous){
+      observations++;
+      if(Date.now()-steadySince>=quietMs&&observations>=4)return now.board;
+    }else{
+      previous=now.board;steadySince=Date.now();observations=0;
+    }
+    await new Promise(r=>setTimeout(r,200));
+  }
+  throw Error(label+': local board never became quiescent; refused unsafe download');
+}
+
+async function verifiedCloudChoice(dev,label){
+  for(let attempt=0;attempt<3;attempt++){
+    const before=await waitForBoardQuiescence(dev,label);
+    try{
+      return await dev.page.evaluate(async()=>
+        window.SupabaseSyncV30216.pull({reload:false}));
+    }catch(error){
+      if(!String(error?.message||error).includes('Local data changed during cloud download'))
+        throw error;
+      const after=await dev.page.evaluate(()=>window.SupabaseSyncV30216.capture());
+      // The product intentionally refused to overwrite a newer local save.
+      // This is an *explicit new user choice*, never automatic app retry.
+      if(attempt===2)throw Error(label+': repeated concurrent local edits; '+
+        'download correctly blocked without overwriting them');
+      if(after===before)throw Error(label+
+        ': download rejected but no observable board mutation; inspect guard');
+      // Only report whether a local edit happened; never log private board,
+      // mission contents, Journal or provider data.
+      console.log('GRANADA_CLOUD_DOWNLOAD_BLOCKED_EDIT '+label+
+        ' attempt '+(attempt+1)+'; local board preserved for explicit retry');
+    }
+  }
+}
+
 async function routeAndroid(id){
   const done=await android.page.evaluate(id=>window.__mlvAndroidFastRoute?.(id),id);
   assert.notEqual(done,false,'Android route refused '+id);
@@ -182,9 +236,16 @@ try{
   // under account isolation. Both runtimes now use the SAME synthetic account.
   await android.page.evaluate(async()=>window.SupabaseSyncV30216.signIn(
     'granada@example.com','synthetic-password'));
-  const baseline=Number(backend.remote?.revision||0);
-  ok(baseline>=1,'Android authenticated first master missing');
+  // P0 #108: authentication MUST NOT create a cloud master automatically.
+  ok(backend.remote===null,'Sign-in silently created a cloud master');
   ok((await snap(android)).token,'Android did not establish its synthetic session');
+  // Model the explicit owner action through the production API. This does NOT
+  // grant consent to overwrite a nonempty remote account or transfer guest data.
+  const created=await android.page.evaluate(async()=>
+    window.SupabaseSyncV30216.sync('upload',{silent:true}));
+  const baseline=Number(backend.remote?.revision||0);
+  ok(baseline>=1&&created?.revision===baseline,
+    'Explicit owner action did not create account-scoped first master');
   // Authentication may quarantine a pre-login guest board (correct account
   // isolation). Create the linked mission INSIDE the authenticated account,
   // never assume a previous guest mission survived login.
@@ -251,7 +312,7 @@ try{
     'New Windows client silently adopted Android cloud authority');
   ok(Number(backend.remote.revision)===androidRevision,
     'Windows sign-in overwrote Android Project/Story without consent');
-  await desktop.page.evaluate(async()=>window.SupabaseSyncV30216.pull({reload:false}));
+  await verifiedCloudChoice(desktop,'Windows first cloud adoption');
   await desktop.page.reload({waitUntil:'domcontentloaded',timeout:60000});
   await desktop.page.waitForFunction(()=>!!window.JournalV30189?.entry&&
     !!window.SupabaseSyncV30216?.runtime,null,{timeout:60000});
@@ -293,7 +354,34 @@ try{
     window.SupabaseSyncV30216.runtime.cloudConflict))?.remoteRevision,
     'Account conflict not surfaced to user state');
 
-  await android.page.evaluate(async()=>window.SupabaseSyncV30216.pull({reload:false}));
+  // The app's autosave/reconciliation tick may still be finishing the local
+  // offline edit. A real user who chooses Use Cloud after seeing a conflict
+  // waits for that in-flight write to settle. Test the same sequential flow:
+  // do NOT bypass the production concurrent-edit guard in pull().
+  await android.page.waitForTimeout(3200);
+  const settled=await snap(android);
+  ok(settled.journal===OFFLINE_JOURNAL&&Number(settled.xp)===119&&
+     backend.writes===beforeConflictWrites&&Number(backend.remote.revision)===winner,
+     'Offline local edit was altered or remotely uploaded before explicit Use Cloud');
+
+  const beforePull=await android.page.evaluate(()=>window.SupabaseSyncV30216.capture());
+  try {
+    await android.page.evaluate(async()=>window.SupabaseSyncV30216.pull({reload:false}));
+  } catch (error) {
+    const afterPull=await android.page.evaluate(()=>window.SupabaseSyncV30216.capture());
+    const before=JSON.parse(beforePull),after=JSON.parse(afterPull);
+    const changed=(a,b)=>[...new Set([...Object.keys(a||{}),...Object.keys(b||{})])]
+      .filter(key=>JSON.stringify(a?.[key])!==JSON.stringify(b?.[key]));
+    // Names only, never export the Journal, mission body, credentials or state.
+    console.error('GRANADA_CLOUD_DOWNLOAD_CONCURRENT_FIELDS',
+      JSON.stringify({
+        stateFields:changed(before.state,after.state).slice(0,35),
+        storageKeys:changed(before.localStorage,after.localStorage).slice(0,35),
+        offlineJournalPreserved:(await snap(android)).journal===OFFLINE_JOURNAL,
+        remoteRevisionUnchanged:Number(backend.remote.revision)===winner
+      }));
+    throw error;
+  }
   const safety=backend.history.filter(h=>
     h.reason==='before_download_local'&&h.source_platform==='android'&&
     JSON.stringify(h.snapshot).includes(OFFLINE_JOURNAL)&&
@@ -327,6 +415,15 @@ try{
     mockSupabase:true,physicalGalaxy:false,publicRelease:false
   }));
 }finally{
+  // Distinguish a failed script from a stackless error, even when an earlier
+  // assertion aborts before the final runtime-exception check.
+  for(const dev of [android,desktop]){
+    if(!dev?.errors?.length)continue;
+    console.error('GRANADA_BROWSER_SCRIPT_PROVENANCE '+JSON.stringify({
+      platform:dev.platform,errors:dev.errors.slice(0,8),
+      failedScripts:await dev.provenance.snapshot()
+    }));
+  }
   await Promise.allSettled([android?.context?.close(),desktop?.context?.close()]);
   await browser.close();
 }

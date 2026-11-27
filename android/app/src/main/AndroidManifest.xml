@@ -2,6 +2,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
@@ -22,8 +26,24 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.verifiedupdates"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/verified_direct_update_paths" />
+        </provider>
+        <receiver
+            android:name=".PersonalAlarmReceiver"
+            android:exported="false" />
         <receiver
             android:name=".FocusAlarmReceiver"
+            android:exported="false" />
+        <!-- Private OS notification action, never a second Focus timer. -->
+        <receiver
+            android:name=".FocusSnoozeReceiver"
             android:exported="false" />
         <!-- System boot/package-replacement broadcasts restore a still-active
              Focus alarm without exporting app-specific alarm endpoints. -->

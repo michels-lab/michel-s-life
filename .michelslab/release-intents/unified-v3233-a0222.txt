@@ -1,0 +1,29 @@
+{
+  "schema": "michelslab.unified-stable-release-intent.v1",
+  "request": "operacion-granada-stable-release",
+  "product": "Michel's Life",
+  "change": "PR #236 integrated: immersive clock first, always-visible motivation, 18 licensed full recordings, personal multi-file music, archive/restore, skip, shuffle, volume and uncapped chunked alarm audio.",
+  "source_base_sha": "87c9b7c7541075bb88e157fd9ef7dddbab53ecd7",
+  "windows_version": "3.0.233",
+  "android_direct_version": "0.2.22",
+  "android_version_code": 24,
+  "stable_only": true,
+  "required_checks": [
+    "Source validation",
+    "UI smoke",
+    "Android UI smoke",
+    "GRANADA - Story Focus touch provenance",
+    "GRANADA Data Health and recovery safety",
+    "GRANADA Android Direct safe update discovery",
+    "GRANADA Quick Mission and original Pomodoro audio",
+    "GRANADA cross-platform immersive Focus",
+    "GRANADA personal alarms — Windows and Android contracts",
+    "GRANADA Settings live color persistence",
+    "GRANADA classical Focus excerpts"
+  ],
+  "require_signed_android15_native_install_and_relaunch": true,
+  "require_windows_installer_and_portable_launch": true,
+  "publication": "destination-owned only after exact-SHA successful source workflow, production-signed Android15 real native QA, Windows binaries and all 13 assets verified; no overwrite",
+  "validation": "Exact PR #236 head ccd19837115e47717a351b02003900506c8e5b6e: 22/23 workflows green; Windows build and Android API35 debug native install/relaunch passed, Android14/16 emulator ADB failures retained; require all eleven exact release-intent gates and signed native API35.",
+  "supersedes_source_intent_sha": "d82359c010ece7fc0f12d2dcc8238d718093ad22"
+}

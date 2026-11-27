@@ -1,0 +1,28 @@
+Michel's Life — owner-authorized Operación Granada stable unified release, 2026-11-17.
+
+Explicit continuing request: "op granada" after owner previously instructed
+"op granada y release" for this same development and release workflow.
+
+Stable Windows 3.0.226 and Android Direct 0.2.15 / versionCode 17.
+Source version PR #215 squash SHA 1edb857982edad811a5b6d1fd6566952519e2817
+Functionality source PR #214 squash SHA 171ce86b68f003a3c027b1d37018d49ce50fd802
+Tag: v3.0.226-android-v0.2.15
+Pipeline: .github/workflows/release-unified-v3226-a0215.yml
+Destination: michels-lab/michel-s-life-releases
+Do not overwrite prior public stable 3.0.225/0.2.14.
+
+Ship Windows autostart once with permanent opt-out, +5/+10/+15/+30/+60/+120
+min Quick Alarms, per-alarm sound selection and local MP3/WAV/OGG up to
+6MiB via Android native system picker/private storage or Windows IndexedDB,
+and readable Pomodoro clock/button ordering with collapsed optional affirmations.
+
+Use permanent existing Android Direct signing identity; never debug or unsigned
+APK or Developer Edition/RC. Release only after exact source SHA Source, Windows
+UI, Android UI and updater CI passes, Windows Setup + Portable launch passes,
+signed Direct APK installation and relaunch in Android 15 passes, and all
+13 public downloadable assets with checksums and source provenance verify.
+Do not skip critical gates. Preserve personal missions, journal, XP and backups.
+
+Known unresolved intermittent JavaScript issue #168 is not claimed fixed by this
+release, and real Galaxy lockscreen/Doze/audio, system permissions, OAuth and
+in-place upgrade data safety require owner physical acceptance.

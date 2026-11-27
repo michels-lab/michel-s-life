@@ -1,0 +1,46 @@
+name: External UI Design Baseline Guard
+
+on:
+  pull_request:
+    paths:
+      - 'tools/validate_external_ui_design.py'
+      - 'docs/ux/**'
+      - '.github/workflows/external-ui-baseline-guard.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'tools/validate_external_ui_design.py'
+      - 'docs/ux/**'
+      - '.github/workflows/external-ui-baseline-guard.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  baseline-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Check out exact source
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify guard syntax
+        run: python -m py_compile tools/validate_external_ui_design.py
+      - name: Run positive and negative design-gate regressions
+        run: python tools/validate_external_ui_design.py --self-test
+      - name: Validate submitted external UI comparisons, if any
+        shell: bash
+        run: |
+          shopt -s nullglob
+          manifests=(docs/ux/*/evidence.json)
+          if (( ${#manifests[@]} == 0 )); then
+            echo "No external UI candidate evidence submitted. No design is approved by this job."
+            exit 0
+          fi
+          for manifest in "${manifests[@]}"; do
+            python tools/validate_external_ui_design.py --manifest "$manifest"
+          done

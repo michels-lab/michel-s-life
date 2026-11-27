@@ -11,6 +11,10 @@ on:
       - 'android/mobile-sections.js'
       - 'android/tools/prepare_bundle.py'
       - 'tools/ui_android_mobile_smoke.mjs'
+      - 'tools/ui_classical_focus_visible_smoke.mjs'
+      - 'tools/ui_android_focus_alarm_lifecycle_smoke.mjs'
+      - 'tools/ui_granada_transactional_restore_smoke.mjs'
+      - 'tools/ui_android_quest_chain_guard_smoke.mjs'
       - 'tools/ui_android_story_navigation_smoke.mjs'
       - 'tools/ui_android_onboarding_persistence_smoke.mjs'
       - 'tools/ui_android_section_design_smoke.mjs'
@@ -24,6 +28,8 @@ on:
       - 'tools/ui_supabase_android_sync_smoke.mjs'
       - 'src/MichelsLife/frontend/**'
       - 'branding/**'
+      - 'tools/download_latest_michels_life_bundle.py'
+      - 'tools/test_michels_life_bootstrap.py'
       - 'tools/bump_frontend_version.py'
       - 'tools/enable_i18n.py'
       - 'tools/validate_generated_index.py'
@@ -37,7 +43,24 @@ on:
       - '.michelslab/release-intents/unified-v3219-a027.txt'
       - '.michelslab/release-intents/unified-v3220-a028.txt'
       - '.michelslab/release-intents/unified-v3221-a029.txt'
+      - '.michelslab/release-intents/android-direct-v0210.txt'
+      - '.michelslab/release-intents/android-direct-v0211.txt'
+      - '.michelslab/release-intents/windows-v3222-a0211.txt'
+      # Required native/mobile UI evidence must run for the actual release-intent SHA.
+      - '.michelslab/release-intents/unified-v3223-a0212.txt'
+      - '.michelslab/release-intents/unified-v3224-a0213.txt'
+      - '.michelslab/release-intents/unified-v3225-a0214.txt'
+      - '.michelslab/release-intents/unified-v3226-a0215.txt'
+      - '.michelslab/release-intents/unified-v3227-a0216.txt'
+      - '.michelslab/release-intents/unified-v3228-a0217.txt'
+      - '.michelslab/release-intents/unified-v3229-a0218.txt'
       - '.github/workflows/android-ui-smoke.yml'
+      - '.michelslab/release-intents/unified-v3230-a0219.txt'
+      - '.michelslab/release-intents/unified-v3231-a0220.txt'
+      - '.michelslab/release-intents/unified-v3232-a0221.txt'
+      - '.michelslab/release-intents/unified-v3233-a0222.txt'
+      - '.michelslab/release-intents/unified-v3234-a0223.txt'
+      - '.michelslab/release-intents/unified-v3235-a0224.txt'
 
 permissions:
   contents: read
@@ -47,7 +70,7 @@ env:
 
 jobs:
   android-ui-smoke:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -59,6 +82,9 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Test resilient bootstrap download before packaging
+        run: python -m unittest discover -s tools -p 'test_michels_life_bootstrap.py' -v
+
       - name: Download current Michel's Life AppBundle
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -68,8 +94,11 @@ jobs:
 
       - name: Install Chromium test runtime
         run: |
-          npm install --no-save playwright
+          npm install --no-save --no-package-lock playwright@1.58.2
           npx playwright install --with-deps chromium
+
+      - name: Test keyboard-aware Story and Focus clearance
+        run: node --test tools/story_focus_visual_viewport.test.mjs
 
       - name: Overlay canonical Michel's Life frontend
         run: |
@@ -97,6 +126,26 @@ jobs:
           export MLV_ANDROID_UI_URL=http://127.0.0.1:4174
           export MLV_ANDROID_UI_SCREENSHOT=artifacts/android-ui-smoke/android-mobile.png
           node tools/ui_android_mobile_smoke.mjs
+
+      - name: Real Android 412px touch must expose and play Mozart and Chaikovski directly in Focus
+        run: |
+          export MLV_ANDROID_UI_URL=http://127.0.0.1:4174
+          MLV_CLASSICAL_PLATFORM=android node tools/ui_classical_focus_visible_smoke.mjs
+
+      - name: Real Android touch must respect Current Mission Quest Chain locks
+        run: |
+          export MLV_ANDROID_UI_URL=http://127.0.0.1:4174
+          node tools/ui_android_quest_chain_guard_smoke.mjs
+
+      - name: Verify canonical Focus notification start pause ready and retry lifecycle
+        run: |
+          export MLV_UI_URL=http://127.0.0.1:4174
+          node tools/ui_android_focus_alarm_lifecycle_smoke.mjs
+
+      - name: Verify real Android browser backup rollback and cross-device isolation
+        run: |
+          export MLV_ANDROID_UI_URL=http://127.0.0.1:4174
+          node tools/ui_granada_transactional_restore_smoke.mjs
 
       - name: Verify visible full-size Current Chapter image, fog and light animation after scene selection
         run: |
@@ -145,6 +194,18 @@ jobs:
         run: |
           export MLV_UI_URL=http://127.0.0.1:4174
           node tools/ui_supabase_android_sync_smoke.mjs
+
+      - name: Export real canonical Android browser UI reference for external design tools
+        if: success()
+        run: |
+          python tools/build_canonical_design_reference.py --self-test
+          python tools/build_canonical_design_reference.py \
+            --platform android-browser \
+            --directory artifacts/android-ui-smoke \
+            --bundle artifacts/AppBundle-android.zip \
+            --commit "$GITHUB_SHA"
+          echo "Current mobile layout comparison: artifacts/android-ui-smoke/design-baseline.html"
+          echo "This is NOT evidence of native installed Android/Galaxy runtime."
 
       - name: Build offline Android screenshot gallery (even after earlier failures)
         if: always()

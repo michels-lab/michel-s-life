@@ -1,0 +1,82 @@
+[
+  {
+    "id": "sb_reverie",
+    "title": "Reverie",
+    "group": "Ambient",
+    "artist": "Scott Buckley",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "source_page": "https://www.scottbuckley.com.au/library/reverie/",
+    "url": "https://www.scottbuckley.com.au/library/wp-content/uploads/2020/03/sb_reverie.mp3"
+  },
+  {
+    "id": "sb_sanctuary",
+    "title": "Sanctuary",
+    "group": "Cinematic",
+    "artist": "Scott Buckley",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "source_page": "https://www.scottbuckley.com.au/library/sanctuary/",
+    "url": "https://www.scottbuckley.com.au/library/wp-content/uploads/2021/07/sb_sanctuary.mp3"
+  },
+  {
+    "id": "sb_passage_of_time",
+    "title": "Passage of Time",
+    "group": "Cinematic",
+    "artist": "Scott Buckley",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "source_page": "https://www.scottbuckley.com.au/library/passage-of-time/",
+    "url": "https://www.scottbuckley.com.au/library/wp-content/uploads/2022/01/PassageOfTime.mp3"
+  },
+  {
+    "id": "sb_a_kind_of_hope",
+    "title": "A Kind Of Hope",
+    "group": "Ambient",
+    "artist": "Scott Buckley",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "source_page": "https://www.scottbuckley.com.au/library/a-kind-of-hope/",
+    "url": "https://www.scottbuckley.com.au/library/wp-content/uploads/2022/10/AKindOfHope.mp3"
+  },
+  {
+    "id": "sb_with_these_hands",
+    "title": "With These Hands",
+    "group": "Ambient",
+    "artist": "Scott Buckley",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "source_page": "https://www.scottbuckley.com.au/library/with-these-hands/",
+    "url": "https://www.scottbuckley.com.au/library/wp-content/uploads/2026/06/WithTheseHands.mp3"
+  },
+  {
+    "id": "sb_filaments",
+    "title": "Filaments",
+    "group": "Cinematic",
+    "artist": "Scott Buckley",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "source_page": "https://www.scottbuckley.com.au/library/filaments/",
+    "url": "https://www.scottbuckley.com.au/library/wp-content/uploads/2019/10/sb_filaments.mp3"
+  },
+  {
+    "id": "sb_home_was_you",
+    "title": "Home Was You",
+    "group": "Ambient",
+    "artist": "Scott Buckley",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "source_page": "https://www.scottbuckley.com.au/library/home-was-you/",
+    "url": "https://www.scottbuckley.com.au/library/wp-content/uploads/2026/07/HomeWasYou.mp3"
+  },
+  {
+    "id": "sb_solace",
+    "title": "Solace",
+    "group": "Ambient",
+    "artist": "Scott Buckley",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "source_page": "https://www.scottbuckley.com.au/library/solace/",
+    "url": "https://www.scottbuckley.com.au/library/wp-content/uploads/2020/05/sb_solace.mp3"
+  }
+]

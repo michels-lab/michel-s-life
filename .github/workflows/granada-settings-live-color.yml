@@ -1,0 +1,113 @@
+name: GRANADA Settings live color persistence
+
+on:
+  pull_request:
+    paths:
+      - 'src/MichelsLife/frontend/settings-color-floating-preview.js'
+      - 'src/MichelsLife/frontend/index.html'
+      - 'tools/test_settings_color_preview_granada.mjs'
+      - 'tools/ui_granada_settings_color_preview.mjs'
+      - 'tools/test_settings_color_bundle.py'
+      - 'tools/replace_bundle_index.py'
+      - 'android/tools/prepare_bundle.py'
+      - '.github/workflows/granada-settings-live-color.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/MichelsLife/frontend/settings-color-floating-preview.js'
+      - 'src/MichelsLife/frontend/index.html'
+      - 'tools/test_settings_color_preview_granada.mjs'
+      - 'tools/ui_granada_settings_color_preview.mjs'
+      - 'tools/test_settings_color_bundle.py'
+      - 'tools/replace_bundle_index.py'
+      - 'android/tools/prepare_bundle.py'
+      - '.github/workflows/granada-settings-live-color.yml'
+      - '.michelslab/release-intents/unified-v3230-a0219.txt'
+      - '.michelslab/release-intents/unified-v3231-a0220.txt'
+      - '.michelslab/release-intents/unified-v3232-a0221.txt'
+      - '.michelslab/release-intents/unified-v3233-a0222.txt'
+      - '.michelslab/release-intents/unified-v3234-a0223.txt'
+      - '.michelslab/release-intents/unified-v3235-a0224.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  RELEASES_REPO: michels-lab/michel-s-life-releases
+
+jobs:
+  settings-color-unit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Source syntax must be valid
+        run: |
+          node --check src/MichelsLife/frontend/settings-color-floating-preview.js
+          node --check tools/test_settings_color_preview_granada.mjs
+          node --check tools/ui_granada_settings_color_preview.mjs
+      - name: Verify persistence, visual semantics, contrast and isolated undo
+        run: node --test tools/test_settings_color_preview_granada.mjs
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Offline release packaging regression — real Windows ZIP and Android WebView assets
+        run: python -m unittest discover -s tools -p 'test_settings_color_bundle.py' -v
+
+  settings-color-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    needs: settings-color-unit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reuse stable bundle without creating a release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p artifacts
+          python tools/download_latest_michels_life_bundle.py \
+            --repo "$RELEASES_REPO" --output artifacts/settings-color-bundle.zip
+      - name: Overlay current canonical source and new color module
+        run: |
+          python tools/bump_frontend_version.py --index src/MichelsLife/frontend/index.html
+          python tools/enable_i18n.py --index src/MichelsLife/frontend/index.html
+          python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
+          python tools/replace_bundle_index.py \
+            --bundle artifacts/settings-color-bundle.zip \
+            --index src/MichelsLife/frontend/index.html
+          python tools/inject_bundle_asset.py \
+            --bundle artifacts/settings-color-bundle.zip \
+            --source src/MichelsLife/frontend/i18n.js --arcname i18n.js
+          python android/tools/prepare_bundle.py \
+            --bundle artifacts/settings-color-bundle.zip \
+            --assets artifacts/settings-color-android
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Serve synthetic browser fixture
+        run: |
+          python -m http.server 4173 --directory artifacts/settings-color-android \
+            >/tmp/mlv-settings-color.log 2>&1 &
+      - name: Change real color input, navigate and reload at 1450px and 360px
+        env:
+          MLV_UI_URL: http://127.0.0.1:4173
+        run: node tools/ui_granada_settings_color_preview.mjs
+      - name: Retain non-personal browser fixture log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: settings-color-granada-browser-log
+          path: /tmp/mlv-settings-color.log
+          retention-days: 5
+          if-no-files-found: warn

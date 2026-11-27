@@ -1,0 +1,33 @@
+name: File Steward - tracked-tree audit
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 8 * * 2'
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'reports/file-governance/**'
+      - 'docs/audits/FILE_GOVERNANCE_LOG.md'
+permissions:
+  contents: write
+concurrency:
+  group: file-steward-main
+  cancel-in-progress: false
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Prove audit safety on synthetic git fixture
+        run: python3 tools/test_repository_file_auditor.py
+      - name: Reproduce real Git remote-race and denial safety on isolated clones
+        run: python3 tools/test_ci_publish_file_steward.py
+      - name: Refresh current main, rescan and publish ONLY generated reports
+        run: python3 tools/ci_publish_file_steward.py --repo . --max-attempts 6

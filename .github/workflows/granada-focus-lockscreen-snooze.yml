@@ -1,0 +1,46 @@
+name: GRANADA Android Focus lock-screen snooze
+on:
+  pull_request:
+    paths:
+      - 'android/app/src/main/java/com/michelslab/michelslife/FocusSnoozePolicy.java'
+      - 'android/app/src/main/java/com/michelslab/michelslife/FocusSnoozeReminder.kt'
+      - 'android/app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt'
+      - 'android/app/src/main/AndroidManifest.xml'
+      - 'android/mobile-experience.js'
+      - 'tools/FocusSnoozePolicyTest.java'
+      - 'tools/ui_android_focus_alarm_lifecycle_smoke.mjs'
+      - 'tools/test_android_focus_notification_ui.mjs'
+      - '.github/workflows/granada-focus-lockscreen-snooze.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  focus-snooze-policy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JVM snooze policy, replay, ownership and reboot regression
+        run: |
+          mkdir -p /tmp/mlv-focus-snooze-classes
+          javac -d /tmp/mlv-focus-snooze-classes \
+            android/app/src/main/java/com/michelslab/michelslife/FocusSnoozePolicy.java \
+            tools/FocusSnoozePolicyTest.java
+          java -cp /tmp/mlv-focus-snooze-classes FocusSnoozePolicyTest
+      - name: Native notification policy and Android runtime source checks
+        run: |
+          javac -d /tmp/mlv-focus-snooze-classes \
+            android/app/src/main/java/com/michelslab/michelslife/FocusDeliveryPolicy.java \
+            tools/FocusDeliveryPolicyTest.java
+          java -cp /tmp/mlv-focus-snooze-classes FocusDeliveryPolicyTest
+          node --check android/mobile-experience.js
+          node --check tools/ui_android_focus_alarm_lifecycle_smoke.mjs
+          node tools/test_android_focus_notification_ui.mjs
+          python -c 'import xml.etree.ElementTree as E; E.parse("android/app/src/main/AndroidManifest.xml")'

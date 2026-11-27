@@ -11,6 +11,8 @@ internal static class DesktopShell
     private const uint VkSpace = 0x20;
     private const string StartupRegistryPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
     private const string StartupValueName = "MichelsLife";
+    private const string PreferencesRegistryPath = @"Software\MichelsLab\MichelsLife";
+    private const string StartupChoiceValue = "StartupPreferenceConfigured";
 
     private static Form? _form;
     private static WebView2? _webView;
@@ -19,8 +21,22 @@ internal static class DesktopShell
     private static System.Windows.Forms.Timer? _taskbarTimer;
     private static TaskbarProgress? _taskbarProgress;
     private static bool _taskbarPollBusy;
+    private static bool _alarmPollBusy;
+    private static bool _focusNotificationPollBusy;
     private static bool _exitRequested;
     private static bool _attached;
+    private static System.Threading.EventWaitHandle? _activationEvent;
+
+    public static void RunSingleInstance(Func<Form> createForm)
+    {
+        var scope = @"Local\MichelsLab.MichelsLife." + System.Security.Principal.WindowsIdentity.GetCurrent().User?.Value;
+        using var activation = new System.Threading.EventWaitHandle(false, System.Threading.EventResetMode.AutoReset, scope + ".Activate");
+        using var instance = new System.Threading.Mutex(true, scope + ".Instance", out var primary);
+        if (!primary) { activation.Set(); return; }
+        _activationEvent = activation;
+        try { Application.Run(createForm()); }
+        finally { _activationEvent = null; }
+    }
 
     public static void Attach(Form form, WebView2 webView)
     {
@@ -28,6 +44,9 @@ internal static class DesktopShell
         _attached = true;
         _form = form;
         _webView = webView;
+        // This release opts into opening with Windows on first native launch;
+        // subsequent manual opt-out persists. Never re-enable after opt-out.
+        EnsureStartupPreferenceOnce();
 
         var menu = new ContextMenuStrip();
         var spanish = IsInstalledLanguageSpanish();
@@ -44,6 +63,8 @@ internal static class DesktopShell
         {
             if (!SetStartWithWindows(startupItem.Checked))
                 startupItem.Checked = IsStartWithWindowsEnabled();
+            else
+                MarkStartupPreferenceConfigured();
         };
         menu.Items.Add(startupItem);
         menu.Items.Add(new ToolStripSeparator());
@@ -65,31 +86,24 @@ internal static class DesktopShell
             Visible = true
         };
         _trayIcon.DoubleClick += (_, _) => RestoreWindow();
+        _trayIcon.BalloonTipClicked += (_, _) => RestoreWindow();
 
         form.FormClosing += OnFormClosing;
-        form.Resize += (_, _) =>
-        {
-            if (form.WindowState == FormWindowState.Minimized)
-                form.Hide();
-        };
+        // Standard Windows minimize retains the taskbar entry and live WebView.
 
         _hotKeyWindow = new TrayHotKeyWindow();
         _hotKeyWindow.HotKeyPressed += async (_, _) => await ShowQuickCaptureAsync();
-        if (!_hotKeyWindow.Register(HotKeyId, ModControl | ModShift, VkSpace))
-        {
-            _trayIcon.ShowBalloonTip(
-                5000,
-                "Michel's Life",
-                spanish
-                    ? "Ctrl + Shift + Espacio ya está en uso por Windows u otra aplicación. Captura rápida sigue disponible desde la bandeja."
-                    : "Ctrl + Shift + Space is already in use by Windows or another app. Quick Capture remains available from the tray.",
-                ToolTipIcon.Warning
-            );
-        }
+        var hotKeyRegistered = _hotKeyWindow.Register(HotKeyId, ModControl | ModShift, VkSpace);
+        quickCaptureItem.ToolTipText = hotKeyRegistered
+            ? "Ctrl + Shift + Space"
+            : spanish ? "Atajo ocupado; captura disponible aquí." : "Shortcut occupied; capture is available here.";
 
         _taskbarProgress = new TaskbarProgress(form.Handle);
         _taskbarTimer = new System.Windows.Forms.Timer { Interval = 1500 };
+        _taskbarTimer.Tick += (_, _) => { if (_activationEvent?.WaitOne(0) == true) RestoreWindow(); };
         _taskbarTimer.Tick += async (_, _) => await RefreshTaskbarMissionAsync();
+        _taskbarTimer.Tick += async (_, _) => await PollWindowsAlarmsAsync();
+        _taskbarTimer.Tick += async (_, _) => await PollWindowsFocusAsync();
         _taskbarTimer.Start();
         _ = RefreshTaskbarMissionAsync();
 
@@ -201,6 +215,106 @@ internal static class DesktopShell
         }
     }
 
+    // The Windows tray timer stays active when the form is hidden. A background
+    // WebView2 can throttle JavaScript intervals, so explicitly poll the same
+    // alarm owner here; each due alarm is removed from its one-shot queue.
+    // No second persistent alarm registry is created in the native shell.
+    private static async Task PollWindowsAlarmsAsync()
+    {
+        if (_alarmPollBusy || _form is null || _form.IsDisposed || _webView?.CoreWebView2 is null) return;
+        _alarmPollBusy = true;
+        try
+        {
+            var raw = await _webView.CoreWebView2.ExecuteScriptAsync(
+                "(()=>{try{return window.MichelsLifeAlarms?.takeWindowsNotification?.()||null}catch(_){return null}})()"
+            );
+            using var json = System.Text.Json.JsonDocument.Parse(raw);
+            var info = json.RootElement;
+            if (info.ValueKind != System.Text.Json.JsonValueKind.Object) return;
+            var label = info.TryGetProperty("label", out var l) && l.ValueKind == System.Text.Json.JsonValueKind.String
+                ? l.GetString() ?? "Alarma" : "Alarma";
+            var time = info.TryGetProperty("time", out var t) && t.ValueKind == System.Text.Json.JsonValueKind.String
+                ? t.GetString() ?? string.Empty : string.Empty;
+            if (label.Length > 140) label = label[..140];
+            RestoreWindow(); // The immersive alarm is now visible even after minimizing to tray.
+            // Do NOT overlay the original cinematic alarm with a Windows 2000s
+            // system beep. The native system cue remains only if Web Audio or the
+            // user's imported MP3 cannot actually play in the active alarm UI.
+            var audibleRaw = "false";
+            try
+            {
+                audibleRaw = await _webView.CoreWebView2.ExecuteScriptAsync(
+                    "(()=>{try{return window.MichelsLifeAlarms?.isAudible?.()===true}catch(_){return false}})()"
+                );
+            }
+            catch
+            {
+                // Failed WebView/audio handshake still gets an OS audible cue.
+            }
+            if (!string.Equals(audibleRaw, "true", StringComparison.OrdinalIgnoreCase))
+            {
+                try { System.Media.SystemSounds.Exclamation.Play(); } catch { }
+            }
+            _trayIcon?.ShowBalloonTip(
+                12000, "Michel's Life · Alarma",
+                string.IsNullOrWhiteSpace(time) ? label : $"{time} · {label}",
+                ToolTipIcon.Info
+            );
+        }
+        catch
+        {
+            // A navigation/reload can temporarily remove the JS owner.
+            // Do not modify or re-create saved alarm schedules here.
+        }
+        finally
+        {
+            _alarmPollBusy = false;
+        }
+    }
+
+    // Windows desktop notifications: native tray balloon messages remain
+    // available while Michel's Life is minimized to its background tray.
+    // FocusStory is the single timer owner; native polling drains only events
+    // and asks the JS clock to reconcile expiry after WebView2 throttling.
+    private static async Task PollWindowsFocusAsync()
+    {
+        if (_focusNotificationPollBusy || _form is null || _form.IsDisposed ||
+            _webView?.CoreWebView2 is null) return;
+        _focusNotificationPollBusy = true;
+        try
+        {
+            var raw = await _webView.CoreWebView2.ExecuteScriptAsync(
+                "(()=>{try{return window.FocusStoryV30162?.takeWindowsNotification?.()||null}catch(_){return null}})()"
+            );
+            using var json = System.Text.Json.JsonDocument.Parse(raw);
+            var root = json.RootElement;
+            if (root.ValueKind != System.Text.Json.JsonValueKind.Object) return;
+            var type = root.TryGetProperty("type", out var t) &&
+                t.ValueKind == System.Text.Json.JsonValueKind.String
+                ? t.GetString() ?? string.Empty : string.Empty;
+            var detail = root.TryGetProperty("detail", out var d) &&
+                d.ValueKind == System.Text.Json.JsonValueKind.String
+                ? d.GetString() ?? string.Empty : string.Empty;
+            var spanish = IsInstalledLanguageSpanish();
+            var title = type switch
+            {
+                "started" => spanish ? "Michel's Life · Pomodoro iniciado" : "Michel's Life · Focus started",
+                "paused" => spanish ? "Michel's Life · Pomodoro pausado" : "Michel's Life · Focus paused",
+                "completed" => spanish ? "Michel's Life · Tiempo cumplido" : "Michel's Life · Focus complete",
+                _ => spanish ? "Michel's Life · Pomodoro" : "Michel's Life · Focus timer"
+            };
+            if (detail.Length > 140) detail = detail[..140];
+            _trayIcon?.ShowBalloonTip(type == "completed" ? 12000 : 5500,
+                title, detail, ToolTipIcon.Info);
+        }
+        catch
+        {
+            // A navigation may temporarily make the JS timer unavailable;
+            // never create a duplicate native timer or erase session data.
+        }
+        finally { _focusNotificationPollBusy = false; }
+    }
+
     private static void ClearTaskbarMission()
     {
         _taskbarProgress?.Clear();
@@ -270,6 +384,39 @@ internal static class DesktopShell
         syncItem.Text = spanish ? "Sincronizar ahora" : "Sync Now";
         startupItem.Text = spanish ? "Iniciar con Windows" : "Start with Windows";
         exitItem.Text = spanish ? "Salir" : "Exit";
+    }
+
+    private static void MarkStartupPreferenceConfigured()
+    {
+        try
+        {
+            using var settings = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(PreferencesRegistryPath, writable: true);
+            settings?.SetValue(StartupChoiceValue, 1, Microsoft.Win32.RegistryValueKind.DWord);
+        }
+        catch { /* Registry can be restricted by enterprise policy. */ }
+    }
+
+    private static void EnsureStartupPreferenceOnce()
+    {
+        try
+        {
+            // Do not silently register transient build/test hosts as login apps.
+            if (!string.Equals(Path.GetFileNameWithoutExtension(Application.ExecutablePath),
+                    "MichelsLife", StringComparison.OrdinalIgnoreCase)) return;
+            using var settings = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(PreferencesRegistryPath, writable: true);
+            if (settings?.GetValue(StartupChoiceValue) is not null)
+            {
+                // Keep the opted-in startup target fresh after installer updates.
+                if (IsStartWithWindowsEnabled()) return;
+                return; // Manual opt-out remains off; never override it.
+            }
+            // Existing startup is an earlier explicit opt-in; leave it unchanged.
+            using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(StartupRegistryPath, writable: false);
+            if (key?.GetValue(StartupValueName) is string) return;
+            if (SetStartWithWindows(true))
+                settings?.SetValue(StartupChoiceValue, 1, Microsoft.Win32.RegistryValueKind.DWord);
+        }
+        catch { /* No startup access must never prevent Michel's Life boot. */ }
     }
 
     private static bool IsStartWithWindowsEnabled()

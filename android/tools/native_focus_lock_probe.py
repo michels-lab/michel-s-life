@@ -104,13 +104,39 @@ def main():
         raise RuntimeError("Native app did not pause canonical Pomodoro")
     if not poll_notification(False):
         raise RuntimeError("Paused Pomodoro left stale ongoing Android notification")
+
+    # Real Activity cold start with the EXACT extra carried by its OS
+    # notification PendingIntent. Only ADB opens the Activity; CDP reads the
+    # resulting UI and MUST NOT call openFocus() or manipulate localStorage.
+    adb("shell", "am", "force-stop", PKG)
+    adb("shell", "am", "start", "-W", "-f", "0x24000000",
+        "-n", PKG + "/.MainActivity", "--ez",
+        "com.michelslab.michelslife.OPEN_FOCUS", "true")
+    opened = False
+    for _ in range(30):
+        try:
+            observed = run_js("""(() => {
+              const el=document.getElementById('mlv-android-focus-overlay');
+              return !!el && !el.hidden && !!el.getClientRects().length &&
+                !!window.MichelsLifeMobileExperience?.isFocusOpen?.();
+            })()""")
+            if observed is True:
+                opened = True
+                break
+        except (OSError, RuntimeError, ValueError, TimeoutError):
+            pass  # A real WebView can lack a CDP socket during cold startup.
+        time.sleep(1)
+    if not opened:
+        raise RuntimeError("Native notification-style cold launch did not open real Focus UI")
+
     OUT.write_text(json.dumps({
         "pass": True, "installed_apk": True, "screen_off_verified": True,
         "running_notification_visible": True, "paused_notification_removed": True,
+        "notification_extra_cold_launch_opened_focus": True,
         "canonical_deadline_preserved": session["deadline"] > 0,
-        "scope": "debug installed Android 16 emulator; human Galaxy/lockscreen visual review pending"
+        "scope": "debug installed Android 16 emulator; notification extra simulated by ADB, real tap and Galaxy review pending"
     }, indent=2) + "\n", encoding="utf-8")
-    print("PASS: native Pomodoro countdown notification remained while screen asleep and cleared on pause")
+    print("PASS: native Focus remained during screen sleep, cleared on pause and opened on cold-start deep link")
 
 
 if __name__ == "__main__":

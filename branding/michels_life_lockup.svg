@@ -12,7 +12,6 @@
   <path d="M60 250 Q355 20 650 250" fill="none" stroke="url(#gold)" stroke-width="4" opacity=".7"/>
   <g transform="translate(355 70)" fill="url(#gold)"><path d="M0-54 13-13 54 0 13 13 0 54-13 13-54 0-13-13Z"/></g>
 </g>
-<text x="735" y="305" font-family="Georgia, 'Times New Roman', serif" font-size="132" fill="#071a31">Michel’s</text>
-<text x="1170" y="305" font-family="Georgia, 'Times New Roman', serif" font-size="132" fill="url(#gold)">Life</text>
+<text x="735" y="305" font-family="Georgia, 'Times New Roman', serif" font-size="112" fill="#071a31">Michel’s<tspan dx="14" fill="url(#gold)">Life</tspan></text>
 <text x="742" y="370" font-family="Arial, sans-serif" font-size="25" letter-spacing="8" fill="#45617f">HIGHER VERSIONS AHEAD</text>
 </svg>

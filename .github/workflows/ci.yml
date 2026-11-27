@@ -3,7 +3,25 @@ name: Source validation
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'tools/repository_file_auditor.py'
+      - 'tools/test_repository_file_auditor.py'
+      - '.michelslab/agents/file-steward.md'
+      - '.michelslab/file-audit-policy.json'
+      - '.github/workflows/file-governance-audit.yml'
+      - '.github/workflows/file-steward-pr-validation.yml'
+      - 'docs/audits/FILE_GOVERNANCE_LOG.md'
+      - 'reports/file-governance/**'
   pull_request:
+    paths-ignore:
+      - 'tools/repository_file_auditor.py'
+      - 'tools/test_repository_file_auditor.py'
+      - '.michelslab/agents/file-steward.md'
+      - '.michelslab/file-audit-policy.json'
+      - '.github/workflows/file-governance-audit.yml'
+      - '.github/workflows/file-steward-pr-validation.yml'
+      - 'docs/audits/FILE_GOVERNANCE_LOG.md'
+      - 'reports/file-governance/**'
   # Windows native packaging smoke is manual until the product is final.
   workflow_dispatch:
 
@@ -33,19 +51,42 @@ jobs:
       - name: Shared release asset resolver tests
         run: python tools/test_download_release_asset.py
 
+      - name: Test exact-SHA UI triggers and real production-signed Android release gate
+        run: node --test tools/test_unified_release_gate_3223.mjs tools/test_unified_release_gate_3235.mjs
+
       - name: Canonical frontend validation
         run: |
           python tools/validate_generated_index.py --index src/MichelsLife/frontend/index.html
           node --check src/MichelsLife/frontend/i18n.js
 
+      - name: Verify Chapter artwork recovery, Pomodoro and Windows/Android alarm contracts
+        run: |
+          node --check src/MichelsLife/frontend/focus-immersive.js
+          node --check src/MichelsLife/frontend/personal-alarms.js
+          node --test tools/test_chapter_art_recovery_contract.mjs tools/test_focus_immersive_contract.mjs tools/test_personal_alarm_contract.mjs
+
       - name: Test fail-closed cloud and portable restore storage boundaries
         run: node tools/test_cloud_restore_storage.mjs
+
+      - name: Transactional backup rollback and cross-provider account isolation tests
+        run: |
+          node --test tools/test_granada_transactional_cloud_restore.mjs tools/test_granada_cross_provider_restore_review.mjs
+          node tools/test_granada_restore_review_gate.mjs
+
+      - name: Verify explicit Android Calendar mission publish/remove cannot mutate private state
+        run: |
+          node tools/test_android_calendar_mission_write_ui.mjs
+          node tools/test_google_calendar_capture_stability.mjs
+          python3 tools/test_android_calendar_mission_write_contract.py
 
       - name: Validate Android Supabase sync contract
         run: python android/tools/validate_sync_contract.py
 
       - name: Reject ephemeral Android debug signing as stable direct distribution
         run: python android/tools/verify_direct_apk.py --self-test
+
+      - name: Verify Android 0.2.11 native release fallback is strictly fail-closed
+        run: python tools/test_signed_native_release_gate.py
 
       - name: Spanish source copy audit
         run: node tools/spanish_copy_source_audit.mjs
@@ -56,6 +97,28 @@ jobs:
       - name: Microsoft Store packaging smoke tests
         run: python tools/store_smoke_test.py
 
+
+  windows-alarm-shell:
+    # Compile the actual Windows tray/alarm shell on each source change.
+    # A stub AppBundle is sufficient for the resource type; this job does
+    # NOT claim installed-device acceptance or publish an installer.
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Materialize Windows host and check alarm tray integration
+        shell: pwsh
+        run: |
+          python tools/materialize_host_source.py
+          python -c "from zipfile import ZipFile; z=ZipFile('src/MichelsLife/AppBundle.zip','w'); z.writestr('index.html','<html><body>CI-only Windows source compile</body></html>'); z.close()"
+          dotnet build src/MichelsLife/MichelsLife.csproj -c Release
+          if ($LASTEXITCODE -ne 0) { throw 'Windows alarm/tray shell did not compile.' }
 
   windows-icon-smoke:
     # Owner 2026-10-19: do not construct native Windows executables,

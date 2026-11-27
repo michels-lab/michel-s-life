@@ -1,0 +1,65 @@
+name: GRANADA safe offline legacy backup converter
+
+on:
+  pull_request:
+    paths:
+      - 'tools/granada_safe_backup_converter.py'
+      - 'tools/test_granada_safe_backup_converter.py'
+      - 'tools/granada_backup_preflight.py'
+      - 'tools/test_granada_backup_preflight.py'
+      - 'tools/test_cloud_restore_storage.mjs'
+      - 'src/MichelsLife/frontend/index.html'
+      - '.github/workflows/granada-safe-backup-converter.yml'
+      - 'docs/SAFE_LEGACY_BACKUP_CONVERSION.md'
+      - 'docs/audit/2026-10-21-granada-legacy-safe-backup-converter.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-convert-and-recover:
+    name: Real-file 25-case offline backup conversion and existing restore contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate all source scripts
+        run: |
+          python -m py_compile \
+            tools/granada_backup_preflight.py \
+            tools/granada_safe_backup_converter.py \
+            tools/test_granada_safe_backup_converter.py
+          node --check tools/test_cloud_restore_storage.mjs
+      - name: Execute real I/O synthetic privacy and no-overwrite cases
+        run: |
+          PYTHONPATH=tools python -m unittest -v \
+            tools.test_granada_safe_backup_converter \
+            tools.test_granada_backup_preflight
+      - name: Cross-check actual in-app portable restore allowlist
+        run: node tools/test_cloud_restore_storage.mjs
+      - name: Reject credential exclusion regression or destructive writes
+        run: |
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, 'tools')
+          from granada_safe_backup_converter import source_allowlist
+          source = Path('tools/granada_safe_backup_converter.py').read_text()
+          allow = source_allowlist(Path('.'))
+          assert 'vida_rpg_personal_progress_v2' in allow
+          assert 'michelsLife.journal.v30184' in allow
+          assert not any('supabase' in k.lower() for k in allow)
+          assert 'os.link(temp_path, destination)' in source
+          assert 'localStorage.clear(' not in source
+          assert 'requests.' not in source
+          assert 'urllib.' not in source
+          assert 'import socket' not in source
+          print('PASS: no network/provider/auth capture; output is atomic create-only')
+          PY

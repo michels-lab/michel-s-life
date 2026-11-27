@@ -306,23 +306,45 @@ try{
       todayFocus.tile.bottom<=todayFocus.metrics.top+2&&todayFocus.label==='Start',
     'Today does not expose a touch-size Focus entry above metrics: '+JSON.stringify(todayFocus));
   await page.locator('#mlv-android-menu-button').click();
-  await page.waitForTimeout(260);
+  // An opened drawer must actually enter the touch viewport; aria-expanded
+  // alone is not success if an old CSS transform leaves it at -105%.
+  await page.waitForFunction(()=>{
+    const drawer=document.getElementById('v30171Sidebar');
+    const bounds=drawer?.getBoundingClientRect();
+    return document.body.classList.contains('mlv-android-nav-open')&&
+      !!bounds&&bounds.left>=-2;
+  },null,{timeout:1600});
   const drawerOpen=await page.evaluate(()=>{
-    const s=document.getElementById('v30171Sidebar').getBoundingClientRect();
+    const side=document.getElementById('v30171Sidebar');
+    const s=side.getBoundingClientRect();
     const d=document.getElementById('v30175ActionDock')?.getBoundingClientRect();
     return {
       bodyOpen:document.body.classList.contains('mlv-android-nav-open'),
       left:s.left,right:s.right,width:s.width,
+      inlineTransform:side.style.getPropertyValue('transform'),
+      inlineTransition:side.style.getPropertyValue('transition'),
       actionDock:d?{left:d.left,top:d.top,right:d.right,bottom:d.bottom,width:d.width,height:d.height}:null,
       expanded:document.getElementById('mlv-android-menu-button')?.getAttribute('aria-expanded')
     };
   });
-  ok(drawerOpen.bodyOpen&&drawerOpen.left>=-2&&drawerOpen.expanded==='true','Drawer did not open correctly: '+JSON.stringify(drawerOpen));
+  ok(drawerOpen.bodyOpen&&drawerOpen.left>=-2&&drawerOpen.expanded==='true'&&
+      /^translateX\(0(?:px)?\)$/.test(drawerOpen.inlineTransform)&&drawerOpen.inlineTransition==='none',
+    'Drawer did not become immediately touch-ready: '+JSON.stringify(drawerOpen));
   if(drawerOpen.actionDock)ok(drawerOpen.actionDock.left>=-2&&drawerOpen.actionDock.right<=drawerOpen.right+2,'Quick actions are not contained inside the open Android drawer: '+JSON.stringify(drawerOpen));
 
   await page.locator('#mlv-android-drawer-backdrop').click({position:{x:400,y:300}});
   await page.waitForTimeout(240);
   ok(!(await page.evaluate(()=>document.body.classList.contains('mlv-android-nav-open'))),'Backdrop did not close drawer');
+  await page.locator('#mlv-android-menu-button').click();
+  await page.waitForFunction(()=>{
+    const side=document.getElementById('v30171Sidebar');
+    return document.body.classList.contains('mlv-android-nav-open')&&
+      !!side&&side.getBoundingClientRect().left>=-2&&
+      side.style.getPropertyValue('transition')==='none';
+  },null,{timeout:1600});
+  await page.locator('#mlv-android-drawer-backdrop').click({position:{x:400,y:300}});
+  await page.waitForFunction(()=>!document.body.classList.contains('mlv-android-nav-open'),
+    null,{timeout:1400});
 
   await page.locator('#mlv-android-next-section').click();
   await page.waitForFunction(
@@ -594,6 +616,8 @@ try{
   // picker must be horizontally scrollable, and actual Sync/Google sections
   // must be reachable by a vertical document scroll above Android navigation.
   await page.waitForSelector('#tab-settings .v30171-settings-nav [data-v30171-setting="sync"]',{state:'visible',timeout:5000});
+  ok(await page.evaluate(()=>getComputedStyle(document.getElementById('v176StatusPanel')).display==='none'),
+    'Mobile Settings must not reserve the cinematic dashboard Chapter header');
   const settingsPhoneGeometry=await page.evaluate(()=>{
     const nav=document.querySelector('#tab-settings .v30171-settings-nav');
     const sync=nav?.querySelector('[data-v30171-setting="sync"]');
@@ -647,10 +671,55 @@ try{
       geometry:bounds?{top:bounds.top,bottom:bounds.bottom,width:bounds.width,height:bounds.height}:null,
       tabs:[...(nav?.querySelectorAll('button[data-mobile-tab]')||[])].map(el=>el.dataset.mobileTab)};
   });
-  ok(mobileNav.count===5&&mobileNav.geometry&&mobileNav.geometry.bottom<=916&&mobileNav.geometry.top>780,
+  ok(mobileNav.count===6&&mobileNav.geometry&&mobileNav.geometry.bottom<=916&&mobileNav.geometry.top>780,
     'Mobile navigation is not touch-accessible above bottom system area: '+JSON.stringify(mobileNav));
-  ok(mobileNav.tabs.join(',')==='dashboard,missions,focus,calendar,settings',
+  ok(mobileNav.tabs.join(',')==='dashboard,missions,story,focus,calendar,settings',
     'Mobile primary destinations diverged from platform navigation contract: '+JSON.stringify(mobileNav));
+  // Owner's Galaxy screenshot showed TWO different Pomodoro surfaces:
+  // the obsolete sidebar card and the proper fullscreen workspace.
+  // The old dock must be neither painted nor touchable.
+  const duplicateFocus=await page.evaluate(()=>{
+    const dock=document.getElementById('v30162FocusDock');
+    const legacy=document.querySelector('#v30171Sidebar [data-tab="focus"]');
+    const hidden=el=>!el||getComputedStyle(el).display==='none';
+    return {dockGone:hidden(dock),sidebarGone:hidden(legacy),
+      dockPointer:dock?getComputedStyle(dock).pointerEvents:null};
+  });
+  ok(duplicateFocus.dockGone&&duplicateFocus.sidebarGone,
+    'Old Pomodoro remains visible inside Android sidebar or floating dock: '+
+    JSON.stringify(duplicateFocus));
+  // Story must be a ONE-TOUCH primary Android destination, not buried
+  // behind the drawer or duplicated in a separate Android chapter store.
+  // Check the actual rendered chapter UI and canonical progress invariants.
+  const canonicalBeforeStoryNav=await page.evaluate(()=>{
+    const value=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}');
+    return {xp:Number(value.xp||0),missionIds:(value.missions||[]).map(m=>String(m.id)).sort(),
+      goalIds:(value.goals||[]).map(g=>String(g.id)).sort()};
+  });
+  await page.locator('#mlv-android-bottom-nav [data-mobile-tab="story"]').click();
+  await page.waitForSelector('#tab-story.active',{state:'visible',timeout:16000});
+  const directStory=await page.evaluate(()=>{
+    const panel=document.querySelector('#tab-story.active');
+    const nav=document.querySelector('#mlv-android-bottom-nav [data-mobile-tab="story"]');
+    const form=panel?.querySelector('.v30162-story-form,#v30162ChapterForm');
+    const hero=panel?.querySelector('.v30162-story-hero');
+    const data=JSON.parse(localStorage.getItem('vida_rpg_personal_progress_v2')||'{}');
+    return {panelVisible:!!panel&&panel.getBoundingClientRect().height>50,
+      canonicalContent:!!(form||hero),
+      tabSelected:nav?.getAttribute('aria-current')==='page',
+      xp:Number(data.xp||0),missionIds:(data.missions||[]).map(m=>String(m.id)).sort(),
+      goalIds:(data.goals||[]).map(g=>String(g.id)).sort()};
+  });
+  ok(directStory.panelVisible&&directStory.canonicalContent&&directStory.tabSelected,
+    'One-tap Android Story bottom destination did not render the real chapter surface: '+
+    JSON.stringify(directStory));
+  ok(directStory.xp===canonicalBeforeStoryNav.xp&&
+    JSON.stringify(directStory.missionIds)===JSON.stringify(canonicalBeforeStoryNav.missionIds)&&
+    JSON.stringify(directStory.goalIds)===JSON.stringify(canonicalBeforeStoryNav.goalIds),
+    'One-tap Story navigation changed XP, missions or contracts');
+  await page.locator('#mlv-android-bottom-nav [data-mobile-tab="settings"]').click();
+  await page.waitForSelector('#tab-settings.active .v30171-settings-shell',{state:'visible',timeout:16000});
+
   // Browser-only harness for the Android native alarm bridge. Validate that
   // existing Focus mutations drive native alarm requests without a second
   // session store; the actual BroadcastReceiver is built in Android CI.
@@ -680,14 +749,18 @@ try{
     const ring=document.getElementById('mlv-android-focus-progress-ring');
     const presets=[...document.querySelectorAll('#mlv-android-focus-sheet [data-mobile-preset]')];
     const r=el=>{const x=el?.getBoundingClientRect();return x?{left:x.left,right:x.right,top:x.top,bottom:x.bottom,width:x.width,height:x.height}:null};
-    return {screen:r(area),ring:r(ring),presets:presets.map(r),close:r(document.querySelector('[data-mobile-focus="close"]')),
+    return {screen:r(area),ring:r(ring),presets:presets.map(r),presetColumns:getComputedStyle(document.querySelector('#mlv-android-focus-sheet .mlv-android-focus-presets')).gridTemplateColumns.trim().split(/\s+/).length,close:r(document.querySelector('[data-mobile-focus="close"]')),
       buttons:[...document.querySelectorAll('#mlv-android-focus-sheet [data-mobile-focus]')].map(el=>({
         action:el.dataset.mobileFocus,...r(el)})),viewport:{w:innerWidth,h:innerHeight}};
   });
   ok(focusPresentation.screen&&focusPresentation.screen.top<=1&&
       focusPresentation.screen.height>=880&&focusPresentation.screen.width<=412&&
       focusPresentation.ring?.width>=175&&focusPresentation.close?.width>=44&&
-      focusPresentation.presets.length===2&&focusPresentation.presets.every(x=>x.height>=48),
+      Math.abs((focusPresentation.ring.left+focusPresentation.ring.right)/2-
+        (focusPresentation.screen.left+focusPresentation.screen.right)/2)<=6&&
+      focusPresentation.presets.length===3&&focusPresentation.presets.every(x=>x.height>=48&&x.width>=44)&&
+      focusPresentation.presetColumns===3&&focusPresentation.presets.every(x=>x.left>=focusPresentation.screen.left&&x.right<=focusPresentation.screen.right)&&
+      focusPresentation.presets.every(x=>Math.abs(x.top-focusPresentation.presets[0].top)<2),
     'Focus is not a full-viewport, touch-first Android workspace: '+JSON.stringify(focusPresentation));
   const polishedFocus=await page.evaluate(()=>{
     const sheet=document.getElementById('mlv-android-focus-sheet');
@@ -710,6 +783,26 @@ try{
     polishedFocus.width<=polishedFocus.viewport+1,
     'Professional Pomodoro viewport/status/lock-screen controls regressed: '+
     JSON.stringify(polishedFocus));
+  // Immersive Focus must use a real existing app image. It may darken or
+  // blur it, but cannot replace the wallpaper with a generic opaque blue.
+  const existingWallpaper=await page.evaluate(()=>{
+    const overlay=document.getElementById('mlv-android-focus-overlay');
+    const previous=document.body.style.backgroundImage;
+    document.body.style.backgroundImage='url("assets/michels_life_app_icon.svg")';
+    window.MichelsLifeFocusImmersive?.applyWallpaper?.(overlay);
+    const result={
+      sharedModule:!!window.MichelsLifeFocusImmersive?.wallpaper,
+      value:overlay?.style.getPropertyValue('--mlv-focus-wallpaper'),
+      paint:getComputedStyle(overlay).backgroundImage,
+      fullscreen:overlay?.getBoundingClientRect().height>=window.innerHeight-2
+    };
+    document.body.style.backgroundImage=previous;
+    return result;
+  });
+  ok(existingWallpaper.sharedModule&&existingWallpaper.value?.includes('url(')&&
+    existingWallpaper.paint?.includes('url(')&&existingWallpaper.fullscreen,
+    'Android Focus must reveal an existing selected image in a fullscreen layer: '+
+    JSON.stringify(existingWallpaper));
   await page.screenshot({path:screenshot.endsWith('.png')?screenshot.slice(0,-4)+'-focus-mobile.png':screenshot+'-focus-mobile.png'});
   const focusStart=await page.evaluate(()=>({
     sharedReady:!!window.FocusStoryV30162?.focusState,
@@ -765,6 +858,20 @@ try{
   ok(miniAfterBack.visible&&miniAfterBack.bottom<=miniAfterBack.navTop-2&&
       miniAfterBack.remaining.includes(':')&&miniAfterBack.control==='Resume',
     'Paused Focus timer is not persistent, or hides mobile navigation: '+JSON.stringify(miniAfterBack));
+  // Both persistent quick controls must have independent hit targets;
+  // previous floating Alarms launcher covered the mini timer Resume.
+  const collision=await page.evaluate(()=>{
+    const mini=document.getElementById('mlv-android-mini-focus');
+    const alarm=document.getElementById('mlv-alarm-launcher');
+    const resume=mini?.querySelector('.mlv-mini-toggle');
+    if(!mini||!alarm||!resume)return {missing:true};
+    const a=alarm.getBoundingClientRect(),m=mini.getBoundingClientRect(),r=resume.getBoundingClientRect();
+    const hit=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
+    const alarmHit=document.elementFromPoint(a.left+a.width/2,a.top+a.height/2);
+    return {docked:alarm.parentElement?.id==='mlv-android-topbar',gap:m.top-a.bottom,resumeHit:resume.contains(hit),alarmHit:alarm.contains(alarmHit)};
+  });
+  ok(!collision.missing&&collision.docked&&collision.gap>=5&&collision.resumeHit&&collision.alarmHit,
+    'Alarm launcher and Focus mini controls must not overlap: '+JSON.stringify(collision));
   await page.locator('#mlv-android-mini-focus .mlv-mini-toggle').click();
   await page.waitForFunction(()=>window.FocusStoryV30162?.focusState?.().status==='running');
   await page.locator('#mlv-android-mini-focus .mlv-mini-toggle').click();
@@ -786,6 +893,38 @@ try{
   });
   ok(miniOnMissions.visible&&miniOnMissions.remaining.includes(':'),
     'Focus mini-timer disappeared after navigating to Missions: '+JSON.stringify(miniOnMissions));
+  // Regression from real Galaxy screenshots: an open drawer must not steal
+  // Today/Missions taps from the fixed bottom bar while Focus is minimized.
+  await page.locator('#mlv-android-menu-button').click();
+  await page.waitForFunction(()=>document.body.classList.contains('mlv-android-nav-open'));
+  await page.locator('#mlv-android-bottom-nav [data-mobile-tab="dashboard"]').click();
+  await page.waitForSelector('#tab-dashboard.active',{state:'visible',timeout:12000});
+  const todayNavState=await page.evaluate(()=>({
+    active:window.state?.activeTab||'',
+    section:document.querySelector('#tab-dashboard.active')?.id||'',
+    drawerOpen:document.body.classList.contains('mlv-android-nav-open'),
+    nav:document.querySelector('#mlv-android-bottom-nav [data-mobile-tab="dashboard"]')?.getAttribute('aria-current'),
+    overlay:document.querySelector('#mlv-android-focus-overlay')?.hidden,
+    visible:document.querySelector('#tab-dashboard.active')?.getBoundingClientRect().height||0,
+    panelTransform:document.querySelector('#v30171Sidebar')?.style.transform
+  }));
+  ok(todayNavState.section==='tab-dashboard'&&todayNavState.nav==='page'&&
+     !todayNavState.drawerOpen&&todayNavState.visible>40,
+    'Today is still blocked by the open sidebar after Pomodoro minimizes: '+JSON.stringify(todayNavState));
+  await page.locator('#mlv-android-bottom-nav [data-mobile-tab="missions"]').click();
+  await page.waitForSelector('#tab-missions.active',{state:'visible',timeout:12000});
+  const missionsNavState=await page.evaluate(()=>({
+    section:document.querySelector('#tab-missions.active')?.id||'',
+    height:document.querySelector('#tab-missions.active')?.getBoundingClientRect().height||0,
+    nav:document.querySelector('#mlv-android-bottom-nav [data-mobile-tab="missions"]')?.getAttribute('aria-current'),
+    drawerOpen:document.body.classList.contains('mlv-android-nav-open'),
+    topbar:document.getElementById('mlv-android-section-title')?.textContent,
+    legacyState:window.state?.activeTab||null
+  }));
+  ok(missionsNavState.section==='tab-missions'&&missionsNavState.height>40&&
+     missionsNavState.nav==='page'&&!missionsNavState.drawerOpen,
+    'Missions did not open from the bottom bar after Today: '+JSON.stringify(missionsNavState));
+
   const nativeAfterMini=await page.evaluate(()=>{
     const calls=window.__mlvFocusNativeCalls.slice();
     window.MichelsLifeAndroid=window.__mlvPreviousNativeBridge;
@@ -794,6 +933,31 @@ try{
   ok(nativeAfterMini.filter(x=>x.kind==='sync'&&x.status==='running').length>=2,
     'Resuming from the persistent mini-timer did not re-arm Android native alarm: '+
     JSON.stringify(nativeAfterMini));
+  // New phase contract: a Break begins immersive even after Work was
+  // minimized, but minimizing Break must let Missions remain interactive.
+  const breakImmersion=await page.evaluate(()=>{
+    const api=window.FocusStoryV30162,mobile=window.MichelsLifeMobileExperience;
+    api.skipFocus?.(); // work paused -> ready break (canonical engine)
+    api.startFocus?.();
+    mobile.updateFocus?.();
+    const state=api.focusState?.();
+    return {mode:state?.mode,status:state?.status,
+      fullscreen:!document.getElementById('mlv-android-focus-overlay')?.hidden,
+      phase:document.getElementById('mlv-android-focus-phase')?.textContent};
+  });
+  ok(breakImmersion.mode==='break'&&breakImmersion.status==='running'&&
+    breakImmersion.fullscreen,
+    'New Break phase did not take over the mobile app: '+JSON.stringify(breakImmersion));
+  await page.locator('#mlv-android-focus-overlay [data-mobile-focus="close"]').click();
+  await page.waitForSelector('#mlv-android-focus-overlay:not([hidden])',{state:'hidden'});
+  await page.evaluate(()=>{
+    window.FocusStoryV30162?.pauseFocus?.();
+    window.MichelsLifeMobileExperience?.updateFocus?.();
+  });
+  ok(await page.evaluate(()=>document.getElementById('mlv-android-focus-overlay').hidden&&
+    !document.getElementById('mlv-android-mini-focus').hidden),
+    'Minimized Break did not preserve a navigable mini timer');
+
   // Real touch-first Quick Capture: the phone header action must work from
   // Missions and must reuse shared mission and Journal engines.
   await page.waitForSelector('#mlv-android-capture-button',{state:'visible'});

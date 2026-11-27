@@ -3,8 +3,8 @@ from pathlib import Path
 import base64,gzip
 
 ROOT=Path(__file__).resolve().parents[1]/'src'/'MichelsLife'
-APP_VERSION='3.0.221'
-LEGACY_APP_VERSIONS=('3.0.220','3.0.219','3.0.218','3.0.217','3.0.216','3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207','3.0.208','3.0.209','3.0.210','3.0.211','3.0.212','3.0.213','3.0.214','3.0.215')
+APP_VERSION='3.0.235'
+LEGACY_APP_VERSIONS=('3.0.234','3.0.233','3.0.232','3.0.231','3.0.230','3.0.229','3.0.228','3.0.227','3.0.226','3.0.225','3.0.224','3.0.223','3.0.222','3.0.221','3.0.220','3.0.219','3.0.218','3.0.217','3.0.216','3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207','3.0.208','3.0.209','3.0.210','3.0.211','3.0.212','3.0.213','3.0.214','3.0.215')
 GOOGLE_CLIENT_ID='256320502181-fvfuhkbijecscl1p3g41f8n28cr2541i.apps.googleusercontent.com'
 LEGACY_GOOGLE_CLIENT_IDS=(
     '794181282949-v3ufh901g9rlec673qd0kho1karaqacj.apps.googleusercontent.com',
@@ -34,6 +34,10 @@ for name in ('Program.cs','GoogleCalendarService.cs'):
     text=text.replace('MichelsLife-v','MichelsLife-Portable-v')
 
     if name=='Program.cs':
+        single_instance_anchor='Application.Run(new MainForm());'
+        if text.count(single_instance_anchor)!=1:
+            raise SystemExit('Expected exactly one Windows application entry point')
+        text=text.replace(single_instance_anchor,'MichelsLife.DesktopShell.RunSingleInstance(() => new MainForm());')
         webview_anchor='            await _webView.EnsureCoreWebView2Async(env);'
         if text.count(webview_anchor)!=1:
             raise SystemExit(f'Program.cs expected exactly one WebView2 initialization anchor, found {text.count(webview_anchor)}')

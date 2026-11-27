@@ -1,0 +1,9 @@
+Michel's Life Android Direct 0.2.11 — OWNER-REQUESTED GRANADA STABLE PUBLICATION — 2026-11-12
+
+Continuing the owner's "DALE RELEASE" instruction for Michel's Life after repeated Operación Granada rounds; no RC.
+Publish an immutable unified stable version Android Direct 0.2.11 (versionCode 13), preserving Windows 3.0.221 and existing Windows artifacts byte-for-byte.
+Keep package com.michelslab.michelslife and permanently pinned original Direct signing certificate; never distribute a debug-key APK as an upgrade.
+Source: immersive Pomodoro on Android and desktop, active Missions/Story wallpaper and gradient scenes, intentional mini mode and fixed Today/Missions/Story navigation, account-safe Story and mission/XP persistence.
+Recent debug-candidate native Android 15 test verified real touchscreen onboarding 1/2/3, two same-data force-stop relaunches with identical missions/contracts/XP and native Focus notification behavior; Android 14/16 CI emulator ADB remains unstable.
+REQUIRE exact source SHA green Source validation + Android UI smoke + general UI smoke, signed Direct certificate, package/version code verification, real protected-signed APK install/relaunch with screenshots on Android 15, SHA256 asset verification, and release repo provenance.
+Fail closed if anything fails. Never mark success in a release not actually published and verified.

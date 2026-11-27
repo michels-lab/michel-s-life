@@ -1,0 +1,55 @@
+name: GRANADA Quick Mission and original Pomodoro audio
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/MichelsLife/frontend/index.html'
+      - 'src/MichelsLife/frontend/focus-immersive.js'
+      - 'android/mobile-experience.js'
+      - 'android/app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt'
+      - 'android/app/src/main/res/raw/mlv_focus_*.wav'
+      - 'tools/test_android_focus_completion_native_audio.mjs'
+      - 'tools/test_granada_focus_audio_quickmission.mjs'
+      - '.michelslab/release-intents/unified-v3228-a0217.txt'
+      - '.michelslab/release-intents/unified-v3229-a0218.txt'
+      - '.github/workflows/granada-focus-audio-quickmission.yml'
+      - '.michelslab/release-intents/unified-v3230-a0219.txt'
+      - '.michelslab/release-intents/unified-v3231-a0220.txt'
+      - '.michelslab/release-intents/unified-v3232-a0221.txt'
+      - '.michelslab/release-intents/unified-v3233-a0222.txt'
+      - '.michelslab/release-intents/unified-v3234-a0223.txt'
+      - '.michelslab/release-intents/unified-v3235-a0224.txt'
+  pull_request:
+    paths:
+      - 'src/MichelsLife/frontend/index.html'
+      - 'src/MichelsLife/frontend/focus-immersive.js'
+      - 'android/mobile-experience.js'
+      - 'android/app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt'
+      - 'android/app/src/main/res/raw/mlv_focus_*.wav'
+      - 'tools/test_android_focus_completion_native_audio.mjs'
+      - 'tools/test_granada_focus_audio_quickmission.mjs'
+      - '.github/workflows/granada-focus-audio-quickmission.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quick-mission-focus-audio:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reject malformed original audio and Android controls
+        run: |
+          node --check src/MichelsLife/frontend/focus-immersive.js
+          node --check android/mobile-experience.js
+          node --check tools/test_granada_focus_audio_quickmission.mjs
+      - name: Execute real Web Audio stubs, saved preferences and adversarial Quick Mission gesture fixtures
+        run: node --test tools/test_granada_focus_audio_quickmission.mjs
+      - name: Verify native Android selected end chimes and six authentic original WAV resources
+        run: node --test tools/test_android_focus_completion_native_audio.mjs

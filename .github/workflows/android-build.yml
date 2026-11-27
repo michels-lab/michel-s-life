@@ -27,6 +27,8 @@ on:
       - 'android/gradle.properties'
       - 'src/MichelsLife/frontend/**'
       - 'branding/**'
+      - 'tools/download_latest_michels_life_bundle.py'
+      - 'tools/test_michels_life_bootstrap.py'
       - 'tools/bump_frontend_version.py'
       - 'tools/enable_i18n.py'
       - 'tools/validate_generated_index.py'
@@ -46,6 +48,8 @@ on:
       - 'android/gradle.properties'
       - 'src/MichelsLife/frontend/**'
       - 'branding/**'
+      - 'tools/download_latest_michels_life_bundle.py'
+      - 'tools/test_michels_life_bootstrap.py'
       - 'tools/bump_frontend_version.py'
       - 'tools/enable_i18n.py'
       - 'tools/validate_generated_index.py'
@@ -58,7 +62,7 @@ permissions:
 
 env:
   RELEASES_REPO: michels-lab/michel-s-life-releases
-  ANDROID_VERSION: 0.2.9
+  ANDROID_VERSION: 0.2.24
   ANDROID_UPLOAD_KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
   ANDROID_UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
   ANDROID_UPLOAD_KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
@@ -95,6 +99,17 @@ jobs:
       - name: Validate Android version metadata
         run: python android/tools/validate_android_version.py
 
+      - name: Test real Focus native alarm ownership and notification launch policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/mlv-focus-delivery-contract
+          javac -encoding UTF-8 -d /tmp/mlv-focus-delivery-contract \
+            android/app/src/main/java/com/michelslab/michelslife/FocusDeliveryPolicy.java \
+            tools/FocusDeliveryPolicyTest.java
+          java -cp /tmp/mlv-focus-delivery-contract FocusDeliveryPolicyTest
+          node tools/test_android_focus_notification_ui.mjs
+
       - name: Validate Android mobile UX layer
         run: |
           node --check android/android-bridge.js
@@ -103,6 +118,7 @@ jobs:
           python android/tools/validate_android_mobile_ux.py
           bash -n android/tools/smoke_candidate_apk_install.sh
           python android/tools/native_webview_state_probe.py self-test
+          python android/tools/native_onboarding_touch.py --self-test
           # Validate the release-version generated frontend, not the older raw template.
           python tools/bump_frontend_version.py --index src/MichelsLife/frontend/index.html
           python tools/validate_brand_identity.py
@@ -116,6 +132,9 @@ jobs:
         run: |
           python3 -m pip install --disable-pip-version-check Pillow==11.3.0
           python3 android/tools/compare_signed_native_kpis.py --self-test
+
+      - name: Test resilient bootstrap download before packaging
+        run: python -m unittest discover -s tools -p 'test_michels_life_bootstrap.py' -v
 
       - name: Download current Michel's Life AppBundle
         env:
@@ -284,12 +303,16 @@ jobs:
           retention-days: 7
 
   installed-candidate-smoke:
+    # Release uses the PRODUCTION-SIGNED APK in the unified signed-native gate.
+    # These three emulator probes install a separate debug APK and can fail independently
+    # due to hosted ADB; they remain mandatory on normal PR/push debug CI.
+    if: ${{ inputs.build_direct != true }}
     name: Fresh install + launch of same-run candidate Android APK on Android 16
     needs: android
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      ANDROID_VERSION: 0.2.9
+      ANDROID_VERSION: 0.2.24
       MLV_REQUIRE_NATIVE_STATE_PROBE: "1"
     steps:
       - uses: actions/checkout@v4
@@ -334,6 +357,109 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: MichelsLife-Android-InstallSmoke-v${{ env.ANDROID_VERSION }}
+          path: artifacts/candidate-install/
+          if-no-files-found: warn
+          retention-days: 30
+
+  installed-candidate-android15-smoke:
+    # Release uses the PRODUCTION-SIGNED APK in the unified signed-native gate.
+    # These three emulator probes install a separate debug APK and can fail independently
+    # due to hosted ADB; they remain mandatory on normal PR/push debug CI.
+    if: ${{ inputs.build_direct != true }}
+    name: Install + relaunch exact same-run candidate APK on Android 15
+    needs: android
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      ANDROID_VERSION: 0.2.24
+      MLV_REQUIRE_NATIVE_STATE_PROBE: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download candidate APK from SAME workflow run (not public v0.2.11)
+        uses: actions/download-artifact@v4
+        with:
+          name: MichelsLife-Android-TEST-v${{ env.ANDROID_VERSION }}
+          path: artifacts/candidate
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install pinned native WebView state probe
+        run: python3 -m pip install --disable-pip-version-check websocket-client==1.8.0
+
+      - name: Enable hosted hardware virtualization
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
+
+      - name: Fresh install, native screenshots, state probe and relaunch on Android 15
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          avd-name: michels-life-candidate-android15
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu software -feature -Vulkan
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash android/tools/smoke_candidate_apk_install.sh
+
+      - name: Retain native evidence (never substitute mock browser pixels)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MichelsLife-Android15-Candidate-InstallSmoke-v${{ env.ANDROID_VERSION }}
+          path: artifacts/candidate-install/
+          if-no-files-found: warn
+          retention-days: 30
+
+  installed-candidate-android14-smoke:
+    # Release uses the PRODUCTION-SIGNED APK in the unified signed-native gate.
+    # These three emulator probes install a separate debug APK and can fail independently
+    # due to hosted ADB; they remain mandatory on normal PR/push debug CI.
+    if: ${{ inputs.build_direct != true }}
+    name: Native exact-candidate install + relaunch Android 14 (independent ADB/GPU)
+    needs: android
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      ANDROID_VERSION: '0.2.24'
+      MLV_REQUIRE_NATIVE_STATE_PROBE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download the SAME run's debug candidate, never the public stable APK
+        uses: actions/download-artifact@v4
+        with:
+          name: MichelsLife-Android-TEST-v${{ env.ANDROID_VERSION }}
+          path: artifacts/candidate
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned native WebView state probe
+        run: python3 -m pip install --disable-pip-version-check websocket-client==1.8.0
+      - name: Enable hosted KVM acceleration
+        shell: bash
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
+      - name: Native installation, REAL pixels, Focus and consecutive same-data relaunches
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          avd-name: michels-life-candidate-android14
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -camera-back none -gpu swiftshader_indirect -feature -Vulkan
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash android/tools/smoke_candidate_apk_install.sh
+      - name: Preserve unmodified native screenshots, state and ADB failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MichelsLife-Android14-NativeCandidateEvidence
           path: artifacts/candidate-install/
           if-no-files-found: warn
           retention-days: 30

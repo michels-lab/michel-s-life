@@ -1,0 +1,139 @@
+"""Synthetic local Git repository tests; no production file mutations."""
+import datetime as dt
+import importlib.util
+import subprocess
+import tempfile
+import unittest
+from pathlib import Path
+
+HERE=Path(__file__).resolve().parent
+spec=importlib.util.spec_from_file_location("file_steward",HERE/"repository_file_auditor.py")
+audit=importlib.util.module_from_spec(spec)
+spec.loader.exec_module(audit)
+
+class FileStewardTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp=tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.root=Path(self.tmp.name)
+        subprocess.run(["git","init","-q",str(self.root)],check=True)
+        for key,value in (("user.name","Test"),("user.email","test@example.invalid")):
+            subprocess.run(["git","-C",str(self.root),"config",key,value],check=True)
+        (self.root/"docs").mkdir()
+        (self.root/"README.md").write_text("[ok](docs/notes.md) [bad](missing.md) [offsite](https://example.org)\n",encoding="utf-8")
+        (self.root/"docs/notes.md").write_text("Last reviewed: 2026-01-01\n",encoding="utf-8")
+        (self.root/"docs/copy.md").write_text("Last reviewed: 2026-01-01\n",encoding="utf-8")
+        (self.root/"feature.py").write_text("print(1)\n")
+        (self.root/"mystery.abc").write_text("x\n")
+        subprocess.run(["git","-C",str(self.root),"add","-A"],check=True)
+        subprocess.run(["git","-C",str(self.root),"commit","-qm","synthetic"],check=True)
+        self.policy={**audit.DEFAULT,"canonical_logs":["PROJECT_LOG.md"]}
+    def test_tracked_tree_and_findings(self):
+        r=audit.scan(self.root,self.policy,dt.date(2026,10,21))
+        self.assertEqual(r["tracked_files_total"],5)
+        self.assertEqual(r["classified_files_total"],5)
+        codes={f["code"] for f in r["findings"]}
+        for code in ("BROKEN_RELATIVE_LINK","DUPLICATE_DOC_CONTENT","MISSING_LOG","OLD_REVIEW_DATE","UNKNOWN_PURPOSE"):
+            self.assertIn(code,codes)
+        self.assertFalse(r["deletion_approved"])
+    def test_not_affected_by_untracked_temp(self):
+        before=audit.scan(self.root,self.policy,dt.date(2026,10,21))
+        (self.root/"unsaved_personal_notes.txt").write_text("private")
+        after=audit.scan(self.root,self.policy,dt.date(2026,10,21))
+        self.assertEqual(before["inventory_fingerprint"],after["inventory_fingerprint"])
+        self.assertFalse(after["untracked_audited"])
+    def test_link_boundaries(self):
+        paths={"docs/a.md","docs/b.md"}
+        self.assertEqual(audit.link_result("docs/a.md","b.md#fragment",paths),(True,"docs/b.md"))
+        self.assertIsNone(audit.link_result("docs/a.md","https://example.com",paths))
+        self.assertFalse(audit.link_result("docs/a.md","../../secret",paths)[0])
+    def test_log_does_not_repeat_on_identical_snapshot(self):
+        result=audit.scan(self.root,self.policy,dt.date(2026,10,21))
+        audit.write_reports(self.root,result,self.policy)
+        log=self.root/"docs/audits/FILE_GOVERNANCE_LOG.md"
+        snapshot=log.read_text()
+        audit.write_reports(self.root,result,self.policy)
+        self.assertEqual(log.read_text(),snapshot)
+        summary=(self.root/"reports/file-governance/SUMMARY.json").read_text()
+        self.assertNotIn("unsaved_personal_notes",summary)
+        self.assertNotIn("README.md",summary)
+    def test_life_product_and_release_file_roles(self):
+        cases = {
+            "README.md": "index",
+            "tools/repository_file_auditor.py": "source",
+            "tools/test_repository_file_auditor.py": "test",
+            ".github/workflows/file-governance-audit.yml": "workflow",
+            ".github/workflows/android-build.yml": "workflow",
+            ".michelslab/file-audit-policy.json": "config",
+            "docs/audits/FILE_GOVERNANCE_LOG.md": "bitacora",
+            "reports/file-governance/SUMMARY.json": "config",
+        }
+        for path, role in cases.items():
+            with self.subTest(path=path):
+                self.assertEqual(audit.identify(path,{})[0], role)
+        self.assertEqual(audit.identify("unrelated_solver/0/metal/T",{})[0],"unknown")
+
+    def test_product_source_validation_is_not_triggered_by_file_audit_commits(self):
+        content=(HERE.parent/".github/workflows/ci.yml").read_text(encoding="utf-8")
+        self.assertIn("  push:\n",content)
+        self.assertIn("  pull_request:\n",content)
+        self.assertIn("  workflow_dispatch:\n",content)
+        for block in ("  push:\n","  pull_request:\n"):
+            part=content.split(block,1)[1].split("  workflow_dispatch:",1)[0]
+            self.assertIn("    paths-ignore:\n",part)
+            self.assertIn("tools/repository_file_auditor.py",part)
+            self.assertIn("tools/test_repository_file_auditor.py",part)
+            self.assertIn("reports/file-governance/**",part)
+
+    def test_foreign_domain_roles_not_imported(self):
+        source=(HERE/"repository_file_auditor.py").read_text(encoding="utf-8")
+        for token in ("cleanproy", "doctor_original", "freesurface", "OpenFOAM case"):
+            with self.subTest(token=token):
+                self.assertNotIn(token, source)
+
+    def test_android_backup_rules_not_disposable(self):
+        self.assertEqual(audit.identify("android/app/src/main/res/xml/backup_rules.xml", {})[0], "config")
+    def test_real_app_artifact_purposes(self):
+        values={
+            "supabase/migrations/20261010_delete_instagram_profiles.sql":"database_migration",
+            "supabase/tests/rls_isolation.sql":"test",
+            ".michelslab/release-intents/unified-v3221-a029.txt":"release_intent",
+            "installer/TaskbarPinning.txt":"installer_metadata",
+            "src/MichelsLife/Program.cs.gz.b64":"encoded_source",
+            "src/MichelsLife/app.manifest":"config",
+        }
+        for path,expected in values.items():
+            with self.subTest(path=path):
+                self.assertEqual(audit.identify(path,{})[0],expected)
+
+    def test_backup_and_draft_labels_are_not_unused_evidence(self):
+        for name in ("docs/BACKUP_PREFLIGHT.md","tools/test_granada_backup_preflight.py",
+                     "android/PLAY_CONSOLE_SUBMISSION_DRAFT.md"):
+            self.assertIsNone(audit.OLD.search(name),name)
+        self.assertIsNotNone(audit.OLD.search("legacy/obsolete.test.py"))
+
+    def test_real_source_edit_after_log_needs_reconciliation(self):
+        log=self.root/"PROJECT_LOG.md"
+        log.write_text("Initial implementation was validated here.\n",encoding="utf-8")
+        subprocess.run(["git","-C",str(self.root),"add","PROJECT_LOG.md"],check=True)
+        subprocess.run(["git","-C",str(self.root),"commit","-qm","add log"],check=True)
+        (self.root/"feature.py").write_text("print(2)\n",encoding="utf-8")
+        subprocess.run(["git","-C",str(self.root),"add","feature.py"],check=True)
+        subprocess.run(["git","-C",str(self.root),"commit","-qm","change code without log"],check=True)
+        dirty=audit.scan(self.root,self.policy,dt.date(2026,10,21))
+        self.assertIn("POTENTIAL_UNLOGGED_CHANGES",{x["code"] for x in dirty["findings"]})
+        self.assertEqual(audit.log_change_candidates(self.root,"PROJECT_LOG.md"),["feature.py"])
+        log.write_text("Code change reviewed.\n",encoding="utf-8")
+        subprocess.run(["git","-C",str(self.root),"add","PROJECT_LOG.md"],check=True)
+        subprocess.run(["git","-C",str(self.root),"commit","-qm","reconcile log"],check=True)
+        clean=audit.scan(self.root,self.policy,dt.date(2026,10,21))
+        self.assertNotIn("POTENTIAL_UNLOGGED_CHANGES",{x["code"] for x in clean["findings"]})
+
+    def test_historical_is_not_assumed_obsolete(self):
+        self.assertIsNotNone(audit.HISTORY.search("docs/archive/2026-01-01-experiment.md"))
+    def test_idempotent_digests(self):
+        a=audit.scan(self.root,self.policy,dt.date(2026,10,21))
+        b=audit.scan(self.root,self.policy,dt.date(2026,10,21))
+        self.assertEqual(a["evidence_fingerprint"],b["evidence_fingerprint"])
+
+if __name__=="__main__": unittest.main()

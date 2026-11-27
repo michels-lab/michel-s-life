@@ -9,9 +9,21 @@ a=ap.parse_args()
 p=Path(a.index)
 text=p.read_text(encoding='utf-8')
 
+# HTML encoding must be known before any executable or style payload is parsed,
+# across source, the Windows AppBundle and Android's injected bridge package.
+# This is deliberately a release gate, not a browser-error suppression.
+charset='<meta charset="UTF-8" />'
+charset_index=text.find(charset)
+first_script=text.lower().find('<script')
+first_style=text.lower().find('<style')
+assert text.count(charset)==1, 'exactly one UTF-8 declaration required'
+assert 0<=charset_index<1024, 'UTF-8 must be in first 1024 bytes'
+assert charset_index<first_script and charset_index<first_style, (
+    'UTF-8 charset must precede every script/style, including injected platform scripts')
+
 required=(
-    "const VERSION='3.0.221'",
-    "window.__MICHELS_LIFE_BUILD__='3.0.221'",
+    "const VERSION='3.0.235'",
+    "window.__MICHELS_LIFE_BUILD__='3.0.235'",
     "assets/michels_life_app_icon.svg",
     "assets/michels_life_mark.svg",
     "assets/michels_life_lockup.svg",
@@ -30,7 +42,7 @@ required=(
     "--mlv-font-midnights",
     "Choose by era. Every card keeps its own permanent preview, so you can compare styles without selecting them first.",
     "function createCanonicalSettingsShell(root){",
-    "shell.dataset.v30171Canonical='3.0.221';",
+    "shell.dataset.v30171Canonical='3.0.235';",
     "panes.typography.insertAdjacentHTML('beforeend',typographyPane());",
     "panes.about.insertAdjacentHTML('beforeend',aboutPane());",
     "function activateSetting(key,root){",
@@ -43,7 +55,7 @@ required=(
 )
 for marker in required:
     assert marker in text, f'missing canonical frontend marker: {marker}'
-for stale in ('3.0.216','3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207','3.0.208','3.0.209','3.0.210','3.0.211','3.0.212','3.0.213','3.0.214','3.0.215'):
+for stale in ('3.0.225','3.0.224','3.0.223','3.0.222','3.0.216','3.0.202','3.0.203','3.0.204','3.0.205','3.0.206','3.0.207','3.0.208','3.0.209','3.0.210','3.0.211','3.0.212','3.0.213','3.0.214','3.0.215'):
     assert stale not in text, f'stale frontend version remains: {stale}'
 
 for forbidden in (
@@ -101,4 +113,4 @@ with tempfile.TemporaryDirectory() as td:
         if r.returncode:
             print(r.stderr,file=sys.stderr)
             raise SystemExit(f'JS syntax failed {i}')
-print(f'OK: canonical v3.0.221 frontend + migration checks + {len(parser.items)} inline scripts')
+print(f'OK: canonical v3.0.235 frontend + migration checks + {len(parser.items)} inline scripts')

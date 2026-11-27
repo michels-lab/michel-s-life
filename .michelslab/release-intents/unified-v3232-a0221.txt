@@ -1,0 +1,29 @@
+{
+  "schema": "michelslab.unified-stable-release-intent.v1",
+  "request": "operacion-granada-stable-release",
+  "product": "Michel's Life",
+  "change": "Integrated PR #233: direct 8 ambient and 2 classical Focus controls, completion preview, shared alarm catalog, weekday Settings preview, v153 inline script integrity fix, separated mini Focus/Alarm hit targets. Classical arrangements are excerpts, not complete works. PR #235 docks Android alarm launcher in topbar instead of covering form controls; preserves Story drafts and mini-Focus actions.",
+  "source_base_sha": "d72e5d23f8a1f7d12bb65e1919a4a9f545bf39e4",
+  "windows_version": "3.0.232",
+  "android_direct_version": "0.2.21",
+  "android_version_code": 23,
+  "stable_only": true,
+  "required_checks": [
+    "Source validation",
+    "UI smoke",
+    "Android UI smoke",
+    "GRANADA - Story Focus touch provenance",
+    "GRANADA Data Health and recovery safety",
+    "GRANADA Android Direct safe update discovery",
+    "GRANADA Quick Mission and original Pomodoro audio",
+    "GRANADA cross-platform immersive Focus",
+    "GRANADA personal alarms — Windows and Android contracts",
+    "GRANADA Settings live color persistence",
+    "GRANADA classical Focus excerpts"
+  ],
+  "require_signed_android15_native_install_and_relaunch": true,
+  "require_windows_installer_and_portable_launch": true,
+  "publication": "destination-owned only after exact-SHA successful source workflow, production-signed Android15 real native QA, Windows binaries and all 13 assets verified; no overwrite",
+  "validation": "PR #235 exact-head f8fc81e5c5c65c4f3607cf3d96be894405f91426: 19 successful checks, all eight applicable release gate workflows SUCCESS, including complete Android UI and Story/Focus; remaining three gates are path-filtered on PR and required on this new intent. Android15 debug fresh install, onboarding, two force-stop relaunches, canonical persistence and Focus sleep notification PASS. Android14/16 debug failures retained; previous production SHA signed Android15 passed but Android UI failed, not eligible for publication. Require new production builds and all eleven gates on this SHA.",
+  "supersedes_source_intent_sha": "59c89cb059e3396c3ddd1180376faac7d40d2096"
+}

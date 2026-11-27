@@ -4,11 +4,20 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.media.AudioAttributes
+import android.media.MediaPlayer
+import android.media.RingtoneManager
+import android.view.WindowManager
 import android.view.View
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
+import android.webkit.WebChromeClient
+import android.webkit.ValueCallback
 import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewClientCompat
 import java.util.concurrent.Executors
@@ -18,16 +27,136 @@ class MainActivity : Activity() {
         private set
     lateinit var auth: GoogleAuthorizationCoordinator
         private set
+    lateinit var calendarConsent: AndroidCalendarConsent
+        private set
+    lateinit var calendarWriteConsent: AndroidCalendarWriteConsent
+        private set
     lateinit var cloud: DriveCloudEngine
         private set
     private val executor = Executors.newSingleThreadExecutor()
+    private var notificationOpenGeneration = 0
+    private var pendingNotificationOpen: Runnable? = null
+    private var alarmOpenGeneration = 0
+    private var pendingAlarmOpen: Runnable? = null
+    private var pendingWebFilePicker: ValueCallback<Array<Uri>>? = null
+    private var playingAlarm: MediaPlayer? = null
+    private var vibratingAlarm: Vibrator? = null
+
+    // The notification can cold-start this Activity before the canonical
+    // Story/Focus JavaScript has finished booting. A page-finished event only
+    // means the HTML loaded; it does not prove the mobile UI is ready.
+    private fun stopPendingNotificationOpen() {
+        notificationOpenGeneration++
+        if (::webView.isInitialized) {
+            pendingNotificationOpen?.let { webView.removeCallbacks(it) }
+        }
+        pendingNotificationOpen = null
+    }
+
+    private fun stopPendingPersonalAlarm() {
+        alarmOpenGeneration++
+        if (::webView.isInitialized) {
+            pendingAlarmOpen?.let { webView.removeCallbacks(it) }
+        }
+        pendingAlarmOpen = null
+    }
+
+    private fun beginAlarmAttention(id: String) {
+        if (!id.matches(Regex("^[A-Za-z0-9_-]{1,64}$")) || !NativePersonalAlarms.wasDelivered(this, id)) return
+        if (PersonalAlarmOverlay.isRinging(id)) return
+        stopAlarmAttention()
+        // Wake and show an eligible alarm above the lock screen without unlocking it.
+        if (Build.VERSION.SDK_INT >= 27) {
+            setShowWhenLocked(true)
+            setTurnScreenOn(true)
+        } else {
+            window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
+        }
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        try {
+            val uri = NativePersonalAlarms.alarmSoundUri(this, id)
+                ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            val player = MediaPlayer()
+            player.setAudioAttributes(AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_ALARM)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build())
+            player.setDataSource(this, uri)
+            player.isLooping = true
+            player.prepare()
+            player.start()
+            playingAlarm = player
+        } catch (_: Exception) {
+            playingAlarm?.release()
+            playingAlarm = null
+            // The notification channel still provides a system alarm sound.
+        }
+        try {
+            val vibrator = getSystemService(VIBRATOR_SERVICE) as Vibrator
+            if (vibrator.hasVibrator()) {
+                vibrator.vibrate(VibrationEffect.createWaveform(
+                    longArrayOf(0, 500, 240, 700, 300), 0
+                ))
+                vibratingAlarm = vibrator
+            }
+        } catch (_: Exception) { }
+    }
+
+    fun stopAlarmAttention() {
+        try { playingAlarm?.stop() } catch (_: Exception) { }
+        try { playingAlarm?.release() } catch (_: Exception) { }
+        playingAlarm = null
+        try { vibratingAlarm?.cancel() } catch (_: Exception) { }
+        vibratingAlarm = null
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        if (Build.VERSION.SDK_INT >= 27) {
+            setShowWhenLocked(false)
+            setTurnScreenOn(false)
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
+        }
+    }
+
+    private fun openPersonalAlarmFromNotification() {
+        stopPendingPersonalAlarm()
+        if (!::webView.isInitialized || isDestroyed) return
+        val id = intent.getStringExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM) ?: return
+        if (!id.matches(Regex("^[A-Za-z0-9_-]{1,64}$"))) return
+        beginAlarmAttention(id)
+        attemptPersonalAlarmOpen(alarmOpenGeneration, id, 0)
+    }
+
+    private fun attemptPersonalAlarmOpen(generation: Int, id: String, retries: Int) {
+        if (generation != alarmOpenGeneration || isDestroyed ||
+            intent.getStringExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM) != id) return
+        // Only acknowledge the OS alarm after the themed screen actually opened.
+        webView.evaluateJavascript(
+            "(function(){try{return window.MichelsLifeAlarms?.ringAlarm?.('" + id + "')===true;}" +
+                "catch(_){return false;}})();"
+        ) { opened ->
+            if (generation != alarmOpenGeneration || isDestroyed ||
+                intent.getStringExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM) != id) return@evaluateJavascript
+            if (opened == "true") {
+                intent.removeExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM)
+                pendingAlarmOpen = null
+            } else if (retries < 40) {
+                val retry = Runnable { attemptPersonalAlarmOpen(generation, id, retries + 1) }
+                pendingAlarmOpen = retry
+                webView.postDelayed(retry, 250L)
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         NativeFocusAlarm.createChannel(this)
+        NativePersonalAlarms.createChannel(this)
         val meta = CloudMetaStore(this)
         auth = GoogleAuthorizationCoordinator(this)
+        calendarConsent = AndroidCalendarConsent(this)
+        calendarWriteConsent = AndroidCalendarWriteConsent(this)
         cloud = DriveCloudEngine(this, meta)
 
         // CI can inspect canonical WebView localStorage only in debuggable TEST
@@ -41,7 +170,8 @@ class MainActivity : Activity() {
             .build()
 
         webView = WebView(this)
-        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        // Activity manifest already enables hardware acceleration. A forced
+        // WebView layer adds a second graphics buffer during startup.
         webView.overScrollMode = View.OVER_SCROLL_NEVER
         webView.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_BOUND, true)
         setContentView(webView)
@@ -52,18 +182,62 @@ class MainActivity : Activity() {
             databaseEnabled = true
             cacheMode = WebSettings.LOAD_DEFAULT
             allowFileAccess = false
-            allowContentAccess = false
+            // A user-selected audio URI from the system picker must be readable.
+            // Arbitrary file URLs remain disabled; native import validates bytes.
+            allowContentAccess = true
             mediaPlaybackRequiresUserGesture = false
             javaScriptCanOpenWindowsAutomatically = false
             setSupportMultipleWindows(false)
             setSupportZoom(false)
             builtInZoomControls = false
             displayZoomControls = false
-            offscreenPreRaster = true
+            // Large Story/Focus scenes are rendered as needed, not precached.
+            offscreenPreRaster = false
+        }
+
+        webView.webChromeClient = object : WebChromeClient() {
+            override fun onShowFileChooser(
+                webView: WebView?,
+                filePathCallback: ValueCallback<Array<Uri>>?,
+                fileChooserParams: FileChooserParams?
+            ): Boolean {
+                if (filePathCallback == null) return false
+                pendingWebFilePicker?.onReceiveValue(null)
+                pendingWebFilePicker = filePathCallback
+                return try {
+                    val acceptsAudio = fileChooserParams?.acceptTypes?.any {
+                        it.startsWith("audio/", ignoreCase = true) ||
+                        it.endsWith(".mp3", ignoreCase = true) ||
+                        it.endsWith(".wav", ignoreCase = true) ||
+                        it.endsWith(".ogg", ignoreCase = true)
+                    } == true
+                    val picker = if (acceptsAudio) {
+                        Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                            addCategory(Intent.CATEGORY_OPENABLE)
+                            type = "audio/*"
+                            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, fileChooserParams?.mode == FileChooserParams.MODE_OPEN_MULTIPLE)
+                            putExtra(Intent.EXTRA_MIME_TYPES,
+                                arrayOf("audio/mpeg", "audio/wav", "audio/x-wav", "audio/ogg"))
+                        }
+                    } else {
+                        // Preserve the user's JSON/ZIP/backup file imports.
+                        fileChooserParams?.createIntent() ?: Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                            addCategory(Intent.CATEGORY_OPENABLE)
+                            type = "*/*"
+                        }
+                    }
+                    startActivityForResult(picker, 7942)
+                    true
+                } catch (_: Exception) {
+                    pendingWebFilePicker?.onReceiveValue(null)
+                    pendingWebFilePicker = null
+                    false
+                }
+            }
         }
 
         webView.addJavascriptInterface(
-            AndroidBridge(this, webView, auth, cloud, meta, executor),
+            AndroidBridge(this, webView, auth, calendarConsent, calendarWriteConsent, cloud, meta, executor),
             "MichelsLifeAndroid"
         )
 
@@ -71,6 +245,7 @@ class MainActivity : Activity() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 openPomodoroFromNotification()
+                openPersonalAlarmFromNotification()
             }
 
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
@@ -93,18 +268,45 @@ class MainActivity : Activity() {
     }
 
     private fun openPomodoroFromNotification() {
-        if (!::webView.isInitialized ||
+        stopPendingNotificationOpen()
+        if (!::webView.isInitialized || isDestroyed ||
             !intent.getBooleanExtra(NativeFocusAlarm.EXTRA_OPEN_FOCUS, false)) return
-        intent.removeExtra(NativeFocusAlarm.EXTRA_OPEN_FOCUS)
+        attemptNotificationFocusOpen(notificationOpenGeneration, 0)
+    }
+
+    private fun attemptNotificationFocusOpen(generation: Int, retries: Int) {
+        if (generation != notificationOpenGeneration || isDestroyed ||
+            !intent.getBooleanExtra(NativeFocusAlarm.EXTRA_OPEN_FOCUS, false)) return
+
+        // Do not acknowledge/consume the notification tap until the REAL
+        // Android Focus workspace opens. Optional chaining can silently do
+        // nothing during WebView cold start, losing the user's action.
         webView.evaluateJavascript(
-            "window.MichelsLifeMobileExperience?.openFocus?.();", null
-        )
+            "(function(){try{return window.MichelsLifeMobileExperience?.openFocus?.()===true;}" +
+                "catch(_){return false;}})();"
+        ) { opened ->
+            if (generation != notificationOpenGeneration || isDestroyed ||
+                !intent.getBooleanExtra(NativeFocusAlarm.EXTRA_OPEN_FOCUS, false)) {
+                return@evaluateJavascript
+            }
+            if (opened == "true") {
+                intent.removeExtra(NativeFocusAlarm.EXTRA_OPEN_FOCUS)
+                pendingNotificationOpen = null
+            } else if (FocusDeliveryPolicy.shouldRetryNotificationOpen(true, false, retries)) {
+                val retry = Runnable { attemptNotificationFocusOpen(generation, retries + 1) }
+                pendingNotificationOpen = retry
+                webView.postDelayed(retry, 300L)
+            }
+            // A timed-out request remains pending for a later onResume or
+            // page-finished event; no uncontrolled polling and no fake success.
+        }
     }
 
     override fun onNewIntent(newIntent: Intent) {
         super.onNewIntent(newIntent)
         setIntent(newIntent)
         openPomodoroFromNotification()
+        openPersonalAlarmFromNotification()
     }
 
     override fun onRequestPermissionsResult(
@@ -125,21 +327,43 @@ class MainActivity : Activity() {
                 "window.MichelsLifeMobileExperience?.resyncNativeNotification?.();" +
                 "window.dispatchEvent(new Event('focus'));", null
             )
+            openPomodoroFromNotification()
+            openPersonalAlarmFromNotification()
         }
     }
 
     override fun onPause() {
+        stopPendingNotificationOpen()
         if (::webView.isInitialized) webView.onPause()
         super.onPause()
     }
 
     @Deprecated("Deprecated in Android; retained for Google authorization resolution compatibility.")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == 7942) {
+            val chosen = if (resultCode == Activity.RESULT_OK) {
+                val clips = data?.clipData
+                if (clips != null) (0 until clips.itemCount).mapNotNull { clips.getItemAt(it).uri }.distinct().toTypedArray()
+                else data?.data?.let { arrayOf(it) }
+            } else null
+            pendingWebFilePicker?.onReceiveValue(chosen)
+            pendingWebFilePicker = null
+            return
+        }
+        if (::calendarConsent.isInitialized &&
+            calendarConsent.onActivityResult(requestCode, resultCode, data)) return
+        if (::calendarWriteConsent.isInitialized &&
+            calendarWriteConsent.onActivityResult(requestCode, resultCode, data)) return
         if (::auth.isInitialized && auth.onActivityResult(requestCode, resultCode, data)) return
         super.onActivityResult(requestCode, resultCode, data)
     }
 
     override fun onDestroy() {
+        pendingWebFilePicker?.onReceiveValue(null)
+        pendingWebFilePicker = null
+        stopPendingNotificationOpen()
+        stopPendingPersonalAlarm()
+        stopAlarmAttention()
         executor.shutdownNow()
         if (::webView.isInitialized) webView.destroy()
         super.onDestroy()

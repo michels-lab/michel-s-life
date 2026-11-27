@@ -1,0 +1,25 @@
+name: GRANADA Android drawer atomic touch visibility
+on:
+  pull_request:
+    paths:
+      - 'android/android-bridge.js'
+      - 'tools/test_android_drawer_atomic_open.mjs'
+      - 'tools/ui_android_mobile_smoke.mjs'
+      - '.github/workflows/granada-android-drawer-atomic.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  drawer-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate real Android drawer owner and open/close regression
+        run: |
+          node --check android/android-bridge.js
+          node --check tools/ui_android_mobile_smoke.mjs
+          node --test tools/test_android_drawer_atomic_open.mjs
