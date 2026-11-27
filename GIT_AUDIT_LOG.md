@@ -1085,3 +1085,6 @@ Synchronized only the managed blocks in AGENTS.md and .github/copilot-instructio
 - A previously overlooked timeline-specific `applyBackupJson` restore cleared device storage and reintroduced arbitrary legacy backup keys. This was inconsistent with the central shareable-key allowlist used by Supabase/Google Drive restores.
 - Scoped source fix reuses the existing authoritative `MLVCloudSharedStorageV30216` contract, preserving local sign-in, device identity and other private provider/device state while restoring only allowed user data.
 - New synthetic executable regression check runs in Android build and desktop UI smoke. No Theme/Chapter/assets, signing, installer or public version changes. Require exact-head green CI and actual two-device provider/restore tests before closing P0 issue #55.
+## 2026-11-27 — Optional audio library preflight
+
+Antigravity implemented library-wide recording ID/URL and archive member validation before acquisition. Codex verified 10 offline tests and preflight on both checked-in catalogs (16 entries). This block preserves the 8/15 product milestones; decoding downloaded recordings and owner listening acceptance are separate.
