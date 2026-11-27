@@ -24,7 +24,7 @@
     "verified",
     "pending"
   ],
-  "current_phase": "Block 4B: prior exact candidate 20/22; native phase bell and optional glass blur refinements committed; expanded browser checks pending",
+  "current_phase": "Block 4B: native bell policy and 11 desktop surface routes verified; compact Android Settings and computed zero-opacity check committed; exact candidate validation pending",
   "source_prs": [
     "https://github.com/michels-lab/michel-s-life/pull/225",
     "https://github.com/michels-lab/michel-s-life/pull/226",
@@ -237,7 +237,7 @@
     "published_at": "2026-11-26T03:05:02Z",
     "publisher_run": 45746499113,
     "pr": 241,
-    "head": "44cb22bc9315af752207bc5709946035a649c38f",
+    "head": "7a366e94c151eb14313419bd19bff7ba05431b49",
     "implemented": [
       "six tab CSS selectors restricted to button",
       "sidebar selected text and scrollbars",
@@ -246,26 +246,28 @@
       "Android native bell-only policy",
       "measured independent desktop footer lanes, scrollbar clearance, Coming Next text truncation",
       "native completion and snooze determine bell from completed phase; retained OS bell channels and all music assets",
-      "desktop custom glass enabled: 10px backdrop blur for non-nested translucent surfaces, zero opacity unchanged"
+      "desktop custom glass enabled: 10px backdrop blur for non-nested translucent surfaces, zero opacity unchanged",
+      "Android Settings hides dashboard chapter header only while Settings active; desktop and dashboard preserved",
+      "test zero opacity via computed backgroundColor and backgroundImage"
     ],
     "targeted_mocked_checks": "6/6 pass",
     "remaining": [
-      "exact current candidate CI",
-      "all main routes and 50/0 opacity browser checks added, not executed yet",
+      "verify latest exact candidate CI",
+      "native Android 14/16 evidence remains incomplete",
       "physical owner visual/audio acceptance",
-      "release 3.0.235"
+      "stable 3.0.235 / Android 0.2.24 release"
     ],
     "previous_ci": {
-      "head": "6ffbadbe12454d882407fc9ec2f5e46d4e12b361",
-      "success": 20,
+      "head": "44cb22bc9315af752207bc5709946035a649c38f",
+      "success": 18,
       "total": 22,
+      "source_validation": "success",
+      "native_bell_contract": "success",
       "windows_build": "success",
-      "desktop_ui": "success",
-      "android_ui": "success",
-      "android15_debug": "success",
-      "native_bell_contract": "failed obsolete selected-tone assertion; repaired with actual phase-based native delivery",
-      "android14": "ADB offline and onboarding tap failed",
-      "android16": "ADB offline and native screenshot missing"
+      "desktop_routes": "11 passed before zero CSS shorthand assertion failed",
+      "desktop_zero_opacity": "actual transparent and no blur; assertion compared shorthand against literal transparent",
+      "android_ui": "settings content top 436.5px exceeded 420px budget",
+      "android14_16": "native process / ADB failures"
     }
   }
 }
