@@ -386,6 +386,42 @@ test('interrupted Journal mutation rolls back safely before authorizing A',()=>{
   assert.equal(restarted.authorizeUpload(B),false);
   assert.equal(s.getItem(txnKey),null);
 });
+test('silently dropped board write cannot switch the active owner',()=>{
+  const {s,boundary:b}=withJournal();ready(b,A);
+  s.setItem(boardKey,'A PRIVATE');s.setItem(JOURNAL,'A JOURNAL');
+  const before=new Map(s.map),set=s.setItem.bind(s);
+  s.setItem=(k,v)=>{if(k!==boardKey)set(k,v);};
+  deny(()=>b.startAccount(B),'storage_write_failed');
+  assert.deepEqual(s.map,before);assert.equal(b.authorizeUpload(B),false);
+});
+test('silently dropped journal removal rolls back account switch',()=>{
+  const {s,boundary:b}=withJournal();ready(b,A);
+  s.setItem(boardKey,'A BOARD');s.setItem(JOURNAL,'A JOURNAL');
+  const before=new Map(s.map),remove=s.removeItem.bind(s);
+  s.removeItem=k=>{if(k!==JOURNAL)remove(k);};
+  deny(()=>b.startAccount(B),'storage_write_failed');
+  assert.deepEqual(s.map,before);assert.equal(b.authorizeUpload(B),false);
+});
+test('corrupted transaction write never begins mutation or switches owner',()=>{
+  const {s,boundary:b}=make();ready(b,A);s.setItem(boardKey,'A BOARD');
+  const before=new Map(s.map),set=s.setItem.bind(s);
+  s.setItem=(k,v)=>set(k,k===txnKey?'{"version":1,"changes":[]}':v);
+  deny(()=>b.startAccount(B),'transaction_requires_recovery');
+  assert.equal(s.getItem(boardKey),'A BOARD');
+  assert.equal(s.getItem(activeKey),before.get(activeKey));
+  deny(()=>b.authorizeUpload(B),'corrupt_boundary_transaction');
+});
+test('silent late corruption of a previous write triggers complete rollback',()=>{
+  const {s,boundary:b}=make();ready(b,A);s.setItem(boardKey,'A BOARD');
+  const before=new Map(s.map),set=s.setItem.bind(s);
+  let injected=false;
+  s.setItem=(k,v)=>{
+    set(k,v);
+    if(k===activeKey&&!injected){injected=true;set(boardKey,'WRONG BOARD');}
+  };
+  deny(()=>b.startAccount(B),'storage_write_failed');
+  assert.deepEqual(s.map,before);assert.equal(b.authorizeUpload(B),false);
+});
 let count = 0;
 for(const [name, fn] of cases) {
   try { await fn(); count++; console.log(`PASS ${name}`); }
