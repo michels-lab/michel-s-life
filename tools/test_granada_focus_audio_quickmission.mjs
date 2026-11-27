@@ -46,10 +46,10 @@ function audioSandbox(){
   return {api:sandbox.MichelsLifeFocusAudio,state,timers,created,osc:()=>oscCount,sandbox};
 }
 
-test('real audio controls expose eight original A+C scenes and nine end tones',()=>{
+test('real audio controls expose eight original scenes and eighteen licensed recordings',()=>{
   const {api}=audioSandbox();
   assert.ok(api,'audio engine must be exported at boot');
-  assert.equal(api.sceneOptions().length,24);
+  assert.equal(api.sceneOptions().length,26);
   assert.equal(api.completionOptions().length,25);
   assert.ok(api.sceneOptions().some(x=>x.label.includes('Moonlight Study')));
   assert.ok(api.sceneOptions().some(x=>x.label.includes('Midnight Library')));
@@ -58,7 +58,7 @@ test('real audio controls expose eight original A+C scenes and nine end tones',(
   assert.equal(api.sceneId(),'moonlight');
 });
 
-test('selected completion tone persists and performs real oscillator playback; off is silent',()=>{
+test('legacy preview preference persists but expiry always schedules twelve bell partials',()=>{
   const {api,state,osc}=audioSandbox();
   assert.equal(api.selectCompletion('observatory'),'observatory');
   assert.equal(state.v30165CompletionSound,'observatory');
@@ -68,7 +68,7 @@ test('selected completion tone persists and performs real oscillator playback; o
   api.selectCompletion('off');
   const silent=osc();
   assert.equal(api.playCompletion(),true);
-  assert.equal(osc(),silent,'off must suppress all audio rather than fall back to old bell');
+  assert.equal(osc(),silent+12,'legacy off must not suppress the phase bells');
   assert.equal(api.selectCompletion('invalid-id'),'soft','invalid preference must fail closed');
 });
 
@@ -101,7 +101,7 @@ test('Spanish option labels are genuine and both platform controls are wired',()
     assert.ok(focus.includes(selector),'desktop missing '+selector);
   for(const selector of ['data-mobile-focus-completion','data-mobile-focus-ambience','data-mobile-focus="preview-completion"','data-mobile-focus="toggle-ambient"'])
     assert.ok(android.includes(selector),'Android missing '+selector);
-  assert.match(html,/window\.MichelsLifeFocusAudio\?\.playCompletion\?\.\(\)===true/);
+  assert.match(html,/window\.MichelsLifeFocusAudio\?\.playCompletion\?\.\(false,focusState\(\)\.mode/);
   assert.match(html,/window\.MichelsLifeFocusAudio\?\.unlock\?\.\(\)/);
   assert.doesNotMatch(focus,/localStorage\.setItem\(/,'UI must not own a second store');
   assert.match(html,/function setAudioPreference\(kind,value\)/);
