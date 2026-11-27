@@ -141,5 +141,44 @@ class NativeOnboardingTouchTests(unittest.TestCase):
         self.assertNotIn("setItem(", script)
 
 
+
+    def test_current_cli_touches_webview_insets_not_full_display(self):
+        actual = {"step": 1, "enabled": True, "action": "next",
+                  "viewport": {"width": 360, "height": 800},
+                  "points": [{"x": 288, "y": 640, "topmost": True}]}
+        with tempfile.TemporaryDirectory() as d:
+            output = Path(d)/"report.json"
+            with patch.object(mod, "dismiss_launcher"), \
+                    patch.object(mod, "adb", return_value="1234") as command, \
+                    patch.object(mod, "physical_display", return_value=(1080,2400)), \
+                    patch.object(mod, "accessibility_xml", return_value="<hierarchy/>"), \
+                    patch.object(mod, "verified_webview_bounds", return_value=(0,78,1080,2335)), \
+                    patch.object(mod, "read_native_webview", side_effect=[actual, {"step":2}]), \
+                    patch.object(mod.time, "sleep"):
+                mod.touch_stage(9222, 1, output)
+            command.assert_any_call(mod.SERIAL,"shell","input","tap","864","1884")
+            import json
+            self.assertTrue(json.loads(output.read_text())["completed"])
+
+    def test_current_driver_never_taps_occluded_dom(self):
+        actual = {"step": 1, "enabled": True, "action": "next",
+                  "viewport": {"width":360,"height":800},
+                  "points": [{"x":288,"y":640,"topmost":False}]*3}
+        with tempfile.TemporaryDirectory() as d:
+            with patch.object(mod, "dismiss_launcher"), \
+                    patch.object(mod, "adb", return_value="1234") as command, \
+                    patch.object(mod, "physical_display", return_value=(1080,2400)), \
+                    patch.object(mod, "accessibility_xml", return_value="<hierarchy/>"), \
+                    patch.object(mod, "verified_webview_bounds", return_value=(0,78,1080,2335)), \
+                    patch.object(mod, "read_native_webview", return_value=actual):
+                with self.assertRaisesRegex(RuntimeError,"did_not_advance"):
+                    mod.touch_stage(9222,1,Path(d)/"report.json")
+            self.assertFalse(any("tap" in c.args for c in command.call_args_list))
+
+    def test_current_probe_is_read_only(self):
+        self.assertIn("elementFromPoint", mod.STEP_JS)
+        self.assertNotIn(".click(", mod.STEP_JS)
+        self.assertNotIn("setItem(", mod.STEP_JS)
+
 if __name__ == "__main__":
     unittest.main()
