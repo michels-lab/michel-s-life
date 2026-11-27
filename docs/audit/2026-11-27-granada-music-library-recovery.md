@@ -1,0 +1,3 @@
+# Granada — saved personal track and library recovery
+
+Prior exact candidate 6589cd7585d215496127e54c35e7f25b930e7190: 22/24 workflows success; music 35/35 + 5/5. Native build and RAM matrix remain red. New changes preserve unresolved personal IDs instead of silently playing bundled fallback, deduplicate library reads and expose explicit retry in both expanded library panels, preserve active audio when preferences fail and avoid autoplay after an unsuccessful archived-track replacement. Failed volume persistence is reported as session-only. Five tests added against production JS with mocked media/storage; no real listening or quota claims. No redesign or release. Intentional change: a missing personal selection remains unplayable until loaded or explicitly replaced.

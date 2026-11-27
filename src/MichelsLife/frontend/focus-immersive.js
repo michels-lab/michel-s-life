@@ -116,9 +116,27 @@
     if(!item||!/^my_[a-f0-9]{32}$/.test(item.id)||typeof item.name!=='string'||!item.name.trim())return false;
     ambientScenes[item.id]={en:item.name,es:item.name,group:'Personal',recorded:true,personal:true};return true;
   }
-  async function loadPersonalTracks(){
-    try{for(const item of await personalRead('tracks'))registerPersonal(item);return true;}
-    catch(_){personalStatus=lang('Music library unavailable. Close other app windows and retry.','Biblioteca no disponible. Cierra otras ventanas de la app e inténtalo de nuevo.');return false;}
+  let personalLoadPromise=null,personalLoadFailed=false;
+  function loadPersonalTracks(){
+    if(personalLoadPromise)return personalLoadPromise;
+    if(personalImporting)return Promise.resolve(false);
+    personalLoadFailed=false;
+    const task=(async()=>{
+      try{
+        const tracks=await personalRead('tracks');
+        if(!Array.isArray(tracks))throw Error('Invalid audio library');
+        for(const item of tracks)registerPersonal(item);
+        personalStatus='';
+        return true;
+      }catch(_){
+        personalLoadFailed=true;
+        personalStatus=lang('Music library unavailable. Close other app windows and retry.','Biblioteca no disponible. Cierra otras ventanas de la app e inténtalo de nuevo.');
+        return false;
+      }
+    })();
+    personalLoadPromise=task;
+    task.finally(()=>{if(personalLoadPromise===task)personalLoadPromise=null;});
+    return task;
   }
   function cancelPersonalImport(){
     if(!personalImporting||personalCancel)return false;
@@ -130,6 +148,7 @@
     personalImporting=true;personalCancel=false;playbackError='';
     let added=0,failed=0;
     try{
+      if(personalLoadPromise)await personalLoadPromise;
       const db=await personalDatabase();
       for(const file of list){
         if(personalCancel)break;
@@ -185,7 +204,16 @@
   const archivedIds=()=>{const v=api()?.focusState?.()?.v30165ArchivedAmbient;return new Set(Array.isArray(v)?v.filter(id=>typeof id==='string'&&(Object.hasOwn(ambientScenes,id)||/^my_[a-f0-9]{32}$/.test(id))):[]);};
   const isAvailable=id=>Object.hasOwn(ambientScenes,id)&&!archivedIds().has(id);
   function activeIds(){const c=ambientCollection();return Object.keys(ambientScenes).filter(id=>isAvailable(id)&&(c==='all'||ambientScenes[id].group===c));}
-  const sceneId=()=>{const selected=readChoice(sceneKey,ambientScenes,'moonlight'),ids=activeIds();return ids.includes(selected)?selected:(ids[0]||'');};
+  const sceneId=()=>{
+    const saved=api()?.focusState?.()?.v30165Soundscape,ids=activeIds();
+    if(ids.includes(saved))return saved;
+    // A personal ID may be valid but not yet loaded on this device. Never
+    // silently replace it with unrelated bundled audio or overwrite it.
+    if(typeof saved==='string'&&/^my_[a-f0-9]{32}$/.test(saved)&&
+       !Object.hasOwn(ambientScenes,saved)&&!archivedIds().has(saved)&&
+       ['all','Personal'].includes(ambientCollection()))return '';
+    return ids[0]||'';
+  };
   function unlock(){
     try{return !!soundContext();}catch(_){return false;}
   }
@@ -298,7 +326,10 @@
   }
   function savedVolume(){const v=api()?.focusState?.()?.v30165AmbientVolume;return typeof v==='number'&&Number.isFinite(v)?Math.max(0,Math.min(1,v)):.35;}
   function getVolume(){return volumeDraft??savedVolume();}
-  function setVolume(value,save=true){const n=Number(value);if(!Number.isFinite(n))return getVolume();ambientVolume=Math.max(0,Math.min(1,n));volumeDraft=ambientVolume;applyAmbientVolume();if(save&&api()?.setAudioPreference?.('ambientVolume',ambientVolume)===true)volumeDraft=null;return ambientVolume;}
+  function setVolume(value,save=true){const n=Number(value);if(!Number.isFinite(n))return getVolume();ambientVolume=Math.max(0,Math.min(1,n));volumeDraft=ambientVolume;applyAmbientVolume();if(save){
+      if(api()?.setAudioPreference?.('ambientVolume',ambientVolume)===true){volumeDraft=null;playbackError='';}
+      else playbackError=lang('Volume changed for this session only.','Volumen cambiado solo para esta sesión.');
+    }return ambientVolume;}
   const ambientMode=()=>{const m=api()?.focusState?.()?.v30165AmbientMode;return ['repeat','playlist','shuffle'].includes(m)?m:'repeat';};
   const ambientCollection=()=>{const c=api()?.focusState?.()?.v30165AmbientCollection;return ['Ambient','Cinematic','Classical','Personal'].includes(c)?c:'all';};
   let shuffleHistory=[],shuffleBag=[];
@@ -309,12 +340,19 @@
     const old=archivedIds();if(old.has(id)===archived)return true;
     const selected=sceneId(),wasActive=ambientScene===id,wasPaused=!!ambientRecording?.paused||pauseOnReady;
     if(archived)old.add(id);else old.delete(id);
-    if(api()?.setAudioPreference?.('archivedAmbient',[...old])!==true)return false;
+    if(api()?.setAudioPreference?.('archivedAmbient',[...old])!==true){
+      playbackError=lang('Archive change was not saved.','No se guardó el cambio de archivo.');
+      return false;
+    }
+    playbackError='';
     resetShuffle();
     if(archived&&(wasActive||selected===id)){
       const next=collectionIds()[0]||activeIds()[0]||'';
       if(wasActive)stopAmbient();
-      if(next){choice(sceneKey,ambientScenes,next,'moonlight');if(wasActive)startAmbient(wasPaused);}
+      if(next){
+        if(api()?.setAudioPreference?.(sceneKey,next)===true){if(wasActive)startAmbient(wasPaused);}
+        else playbackError=lang('Track archived, but replacement was not saved.','Canción archivada, pero no se guardó la siguiente.');
+      }
     }
     return true;
   }
@@ -323,7 +361,7 @@
     const previous=ambientCollection(),save=api()?.setAudioPreference;
     if(value===previous)return true;
     if(save?.('ambientCollection',value)!==true){playbackError=lang('Collection was not saved.','No se guardó la colección.');return false;}
-    const ids=activeIds(),selected=sceneId();
+    const ids=activeIds(),selected=sceneId()||ids[0];
     if(ids.length&&save?.(sceneKey,selected)!==true){
       save?.('ambientCollection',previous);
       playbackError=lang('Collection selection was not saved.','No se guardó la selección de colección.');
@@ -432,7 +470,7 @@
     completionId:finishId,sceneId,selectCompletion:id=>{stopClassical();return choice(completionKey,finishTones,id,'soft');},
     selectScene,playCompletion,playPhaseBells,stopClassical,previewingCompletion:()=>previewingId,recordingActive:()=>!!classicalSource,recordingPlayback:()=>classicalSource?{paused:classicalSource.paused,currentTime:classicalSource.currentTime,duration:classicalSource.duration,src:classicalSource.src}:null,unlock,startAmbient,stopAmbient,
     playing:()=>!!ambientScene,
-    importPersonalTracks,loadPersonalTracks,cancelPersonalImport,personalStatus:()=>personalImporting?personalStatus:playbackError||personalStatus,personalImporting:()=>personalImporting,personalCancelPending:()=>personalCancel,playingScene:()=>ambientScene,
+    importPersonalTracks,loadPersonalTracks,cancelPersonalImport,personalLibraryLoading:()=>!!personalLoadPromise,personalLibraryFailed:()=>personalLoadFailed,personalStatus:()=>personalImporting?personalStatus:playbackError||personalStatus,personalImporting:()=>personalImporting,personalCancelPending:()=>personalCancel,playingScene:()=>ambientScene,
     ambientVolume:getVolume,setAmbientVolume:setVolume,ambientMode,setAmbientMode,ambientCollection,setAmbientCollection,moveAmbient,toggleAmbientPlayback,
     canNavigateAmbient:()=>collectionIds().length>1||(collectionIds().length===1&&!collectionIds().includes(sceneId())),
     ambientPlayback:()=>ambientRecording?{paused:ambientRecording.paused,currentTime:ambientRecording.currentTime,duration:ambientRecording.duration,loop:ambientRecording.loop,src:ambientRecording.src,volume:ambientRecording.volume,loading:false}:ambientScene?{paused:pauseOnReady,currentTime:0,duration:NaN,loop:false,src:null,volume:getVolume(),loading:personalPending}:null
@@ -790,7 +828,7 @@
              <label><span data-mlv-volume-label>Volume</span><input type="range" min="0" max="100" value="35" data-mlv-ambient-volume aria-label="Background music volume" /></label>
              <div class="mlv-audio-settings"><select data-mlv-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option><option value="shuffle">Shuffle</option></select><select data-mlv-ambient-collection aria-label="Playlist collection"><option value="all">All audio</option><option value="Ambient">Ambient</option><option value="Cinematic">Cinematic</option><option value="Classical">Classical piano</option><option value="Personal">My music</option></select></div>
           </div>
-          <div class="mlv-audio-library"><h3 class="mlv-audio-heading" data-mlv-library-heading>Music library</h3><label><span data-mlv-personal-label>Import my music</span><input type="file" multiple accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg" data-mlv-personal-files /></label><small data-mlv-personal-status role="status"></small><button type="button" class="mlv-focus-btn" data-mlv-audio="cancel-import" hidden>Cancel import</button><div class="mlv-audio-archive"><button type="button" class="mlv-focus-btn" data-mlv-audio="archive-ambient">Archive track</button><select data-mlv-archived-track aria-label="Archived tracks"></select><button type="button" class="mlv-focus-btn" data-mlv-audio="restore-ambient">Restore</button></div></div>
+          <div class="mlv-audio-library"><h3 class="mlv-audio-heading" data-mlv-library-heading>Music library</h3><label><span data-mlv-personal-label>Import my music</span><input type="file" multiple accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg" data-mlv-personal-files /></label><small data-mlv-personal-status role="status"></small><button type="button" class="mlv-focus-btn" data-mlv-audio="cancel-import" hidden>Cancel import</button><button type="button" class="mlv-focus-btn" data-mlv-audio="retry-library" hidden>Retry library</button><div class="mlv-audio-archive"><button type="button" class="mlv-focus-btn" data-mlv-audio="archive-ambient">Archive track</button><select data-mlv-archived-track aria-label="Archived tracks"></select><button type="button" class="mlv-focus-btn" data-mlv-audio="restore-ambient">Restore</button></div></div>
         </div></details>
 
       </section>`;
@@ -831,6 +869,7 @@
       music?.toggleAmbientPlayback?.();
       refresh();return true;
     }
+    if(command==='retry-library'){window.MichelsLifeFocusAudio?.loadPersonalTracks?.().finally(()=>refresh());refresh();return true;}
     if(command==='cancel-import'){window.MichelsLifeFocusAudio?.cancelPersonalImport?.();refresh();return true;}
     if(command==='archive-ambient'){const audio=window.MichelsLifeFocusAudio;audio?.archiveScene?.(audio.playingScene?.()||audio.sceneId?.(),true);refresh();return true;}
     if(command==='restore-ambient'){const id=q('[data-mlv-archived-track]',screen)?.value;window.MichelsLifeFocusAudio?.archiveScene?.(id,false);refresh();return true;}
@@ -998,6 +1037,7 @@
     if(restoreButton){restoreButton.textContent=lang('Restore','Restaurar');restoreButton.disabled=!archivedSelect?.value;}
     const personalLabel=q('[data-mlv-personal-label]',screen),personalNotice=q('[data-mlv-personal-status]',screen);if(personalLabel)personalLabel.textContent=lang('Import my music (local files)','Importar mi música (archivos locales)');if(personalNotice)personalNotice.textContent=audio?.personalStatus?.()||lang('MP3, WAV, OGG · available storage','MP3, WAV, OGG · espacio disponible');
     const cancelImport=q('[data-mlv-audio="cancel-import"]',screen);if(cancelImport){cancelImport.hidden=!audio?.personalImporting?.();cancelImport.disabled=!!audio?.personalCancelPending?.();cancelImport.textContent=lang('Cancel import','Cancelar importación');}
+    const retryLibrary=q('[data-mlv-audio="retry-library"]',screen);if(retryLibrary){retryLibrary.hidden=!(audio?.personalLibraryFailed?.()||audio?.personalLibraryLoading?.());retryLibrary.disabled=!!(audio?.personalLibraryLoading?.()||audio?.personalImporting?.());retryLibrary.textContent=audio?.personalLibraryLoading?.()?lang('Loading library…','Cargando biblioteca…'):lang('Retry library','Reintentar biblioteca');}
     const ambientButton=q('[data-mlv-audio="toggle-ambient"]',screen);if(ambientButton)ambientButton.disabled=!audio?.sceneId?.();
     const playback=audio?.ambientPlayback?.(),modeSelect=q('[data-mlv-ambient-mode]',screen),progress=q('[data-mlv-ambient-progress]',screen);
     if(modeSelect){modeSelect.value=audio?.ambientMode?.()||'repeat';modeSelect.options[0].textContent=lang('Repeat track','Repetir pista');modeSelect.options[1].textContent=lang('Continuous playlist','Lista continua');modeSelect.options[2].textContent=lang('Shuffle','Aleatorio');}

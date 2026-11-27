@@ -339,3 +339,36 @@ test('personal Blob URL is revoked after decoder release when stopping',async()=
  f.api.selectScene(id);f.api.startAmbient();for(let i=0;i<20&&!f.recordings.length;i++)await Promise.resolve();
  assert.equal(f.recordings.at(-1).src,'blob:test');f.api.stopAmbient();assert.deepEqual(revoked,['blob:test']);
 });
+
+test('saved personal track never falls through to unrelated audio before local library loads',async()=>{
+ const id='my_'+'d'.repeat(32),f=harness({v30165Soundscape:id,v30165CompletionSound:'soft'});
+ assert.equal(f.api.sceneId(),'');assert.equal(f.api.startAmbient(),false);assert.equal(f.persisted.v30165Soundscape,id);
+ const store=fakePersonalStorage(f);store.tracks.set(id,{id,name:'remembered.mp3'});
+ const a=f.api.loadPersonalTracks(),b=f.api.loadPersonalTracks();assert.equal(a,b);assert.equal(f.api.personalLibraryLoading(),true);
+ assert.equal(await a,true);assert.equal(f.api.personalLibraryLoading(),false);assert.equal(f.api.sceneId(),id);
+ assert.equal(f.api.playing(),false);
+});
+test('missing personal file can be replaced only by explicit collection or track choice',()=>{
+ const id='my_'+'e'.repeat(32),f=harness({v30165Soundscape:id,v30165CompletionSound:'soft'});
+ assert.equal(f.api.sceneId(),'');assert.equal(f.api.setAmbientCollection('Classical'),true);
+ assert.equal(f.api.sceneId(),piano[0]);assert.equal(f.api.playing(),false);
+});
+test('library failure is observable and retry clears the failure state',async()=>{
+ const f=harness();f.window.indexedDB={open(){throw Error('blocked');}};
+ assert.equal(await f.api.loadPersonalTracks(),false);assert.equal(f.api.personalLibraryFailed(),true);
+ fakePersonalStorage(f);assert.equal(await f.api.loadPersonalTracks(),true);assert.equal(f.api.personalLibraryFailed(),false);
+ assert.equal(f.api.personalStatus(),'');
+});
+test('failed replacement preference after archive does not start an unintended track',()=>{
+ const f=harness();f.api.selectScene(library[0]);f.api.startAmbient();
+ const save=f.window.FocusStoryV30162.setAudioPreference;f.window.FocusStoryV30162.setAudioPreference=(kind,value)=>kind==='scene'?false:save(kind,value);
+ assert.equal(f.api.archiveScene(library[0]),true);assert.equal(f.api.playing(),false);
+ assert.equal(f.recordings.length,1);assert.match(f.api.personalStatus(),/replacement was not saved/);
+});
+test('failed volume persistence retains session volume and exposes warning',()=>{
+ const f=harness();f.api.selectScene(library[0]);f.api.startAmbient();
+ const save=f.window.FocusStoryV30162.setAudioPreference;f.window.FocusStoryV30162.setAudioPreference=(kind,value)=>kind==='ambientVolume'?false:save(kind,value);
+ f.api.setAmbientVolume(.6);assert.equal(f.api.ambientVolume(),.6);assert.equal(f.recordings.at(-1).volume,.6);
+ assert.match(f.api.personalStatus(),/session only/);f.window.FocusStoryV30162.setAudioPreference=save;
+ f.api.setAmbientVolume(.5);assert.equal(f.persisted.v30165AmbientVolume,.5);assert.equal(f.api.personalStatus(),'');
+});
