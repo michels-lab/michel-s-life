@@ -395,3 +395,20 @@ test('Android persistence accepts every alarm selector sound, including snoozed 
   assert.match(snooze,/\.put\("sound", selected\.optString\("sound", "system"\)\)/);
   assert.match(snooze,/sync\(context, original\)/);
 });
+
+test('failed snooze keeps the ringing overlay active and failed native save retains scheduling',()=>{
+  const snooze=native.slice(native.indexOf('fun snooze(context:'),native.indexOf('private fun notificationAllowed'));
+  assert.match(snooze,/fun snooze\(context: Context, id: String\): Boolean/);
+  assert.match(snooze,/if \(original.length\(\) >= 80\) return false/);
+  assert.match(snooze,/!sync\(context, original\).has\("error"\)/);
+  const save=native.slice(native.indexOf('fun sync(context:'),native.indexOf('fun recover(context:'));
+  assert.ok(save.indexOf('if (!prefs(context).edit()')>=0);
+  assert.ok(save.indexOf('Could not persist alarms')<save.indexOf('cancel(context, it)'));
+  assert.match(overlay,/if \(NativePersonalAlarms.snooze\(app, id\)\) \{\s*stop\(app\)/);
+  const start=overlay.slice(overlay.indexOf('private fun startAttention'),overlay.indexOf('fun stop(context:'));
+  assert.ok(start.indexOf('player = sound')<start.indexOf('sound.setDataSource'));
+  assert.match(start,/player\?\.release\(\)/);
+  const dismiss=alarms.slice(alarms.indexOf('function dismissRing('),alarms.indexOf('function collectDueAlarms('));
+  assert.ok(dismiss.indexOf('records.length>=80')>=0);
+  assert.ok(dismiss.indexOf('records.length>=80')<dismiss.indexOf('stopPresetAudio()'));
+});
