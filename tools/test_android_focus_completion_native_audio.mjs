@@ -6,22 +6,20 @@ import {createHash} from 'node:crypto';
 const native=readFileSync('android/app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt','utf8');
 const mobile=readFileSync('android/mobile-experience.js','utf8');
 
-test('Android native alarm receives same canonical selected completion chime as WebView',()=>{
-  assert.match(mobile,/const completionSound=String\(state\.v30165CompletionSound\|\|'soft'\)/);
+test('native completion and snooze derive fixed bells from the completed phase, not stored music',()=>{
+  assert.match(mobile,/const completionSound=mode==='break'\?'observatory':'soft'/);
   assert.match(mobile,/status:running\?'running':state\.status,deadlineAt:running\?deadline:0,mode,language,completionSound/);
-  assert.match(native,/private const val KEY_SOUND = "completionSound"/);
-  assert.match(native,/val tone = completionSound\(state\.optString\(KEY_SOUND, "soft"\)\)/);
-  assert.match(native,/prefs\.edit\(\)\.putString\(KEY_SOUND, tone\)\.apply\(\)/);
-  assert.equal((native.match(/Notification\.Builder\(context, channelIdForSound\(tone\)\)/g)||[]).length,2,
-    'normal completion AND snoozed notification must use the selected sound');
-  assert.match(native,/if \(chosen == "off"\) setSound\(null, null\)/);
-  assert.match(native,/enableVibration\(chosen != "off"\)/);
+  assert.match(native,/private fun phaseBell\(mode: String\): String = if \(mode == "break"\) "observatory" else "soft"/);
+  assert.equal((native.match(/val tone = phaseBell\(mode\)/g)||[]).length,3);
+  assert.equal((native.match(/Notification\.Builder\(context, channelIdForSound\(tone\)\)/g)||[]).length,2);
+  assert.match(native,/enableVibration\(true\)/);
+  assert.doesNotMatch(native,/R\.raw\.mlv_focus_(?:sb_|mozart|tchaikovsky|debussy|chopin|satie|bach)/);
   assert.match(native,/setAndAllowWhileIdle\(AlarmManager\.RTC_WAKEUP, deadline/);
-  assert.doesNotMatch(native,/System\.currentTimeMillis\(\)\s*\+\s*workMin/,
-    'must not introduce a duplicate Android timer');
+  assert.doesNotMatch(native,/System\.currentTimeMillis\(\)\s*\+\s*workMin/);
+  assert.ok(native.indexOf('if (phaseStatus != "running"')<native.indexOf('val tone = phaseBell(mode)'));
 });
 
-test('six original WAV chimes are 16-bit PCM, distinct, nonempty and referenced by native notifications',()=>{
+test('six existing WAV chimes remain intact; only two are eligible for native Pomodoro',()=>{
   const ids=['soft','glass','aurora','observatory','midnight','silver'],hashes=new Set();
   for(const id of ids){
     const file='android/app/src/main/res/raw/mlv_focus_'+id+'.wav';
@@ -40,10 +38,10 @@ test('six original WAV chimes are 16-bit PCM, distinct, nonempty and referenced 
     const digest=createHash('sha256').update(data).digest('hex');
     assert.ok(!hashes.has(digest),'duplicate native soundscape files');
     hashes.add(digest);
-    assert.ok(native.includes('R.raw.mlv_focus_'+id),'Kotlin channel missing '+id);
+    assert.equal(native.includes('R.raw.mlv_focus_'+id),['soft','observatory'].includes(id),'fixed bell allowlist: '+id);
   }
   assert.equal(hashes.size,6);
 });
 console.log('PASS original Android background Pomodoro completion tone channel and RIFF provenance');
 
-test('native classical notification resources are recorded MP3s',()=>{for(const id of ['mozart_k545','tchaikovsky_op39']){assert.ok(native.includes('R.raw.mlv_focus_'+id));assert.ok(readFileSync('android/app/src/main/res/raw/mlv_focus_'+id+'.mp3').length>500000);}});
+test('classical recordings remain available as assets but never selected for Pomodoro expiry',()=>{for(const id of ['mozart_k545','tchaikovsky_op39']){assert.ok(!native.includes('R.raw.mlv_focus_'+id));assert.ok(readFileSync('android/app/src/main/res/raw/mlv_focus_'+id+'.mp3').length>500000);}});
