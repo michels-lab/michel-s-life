@@ -24,7 +24,7 @@
     "verified",
     "pending"
   ],
-  "current_phase": "Block 4B merged; stable 3.0.235/0.2.24 source build intent committed. Public release remains 3.0.234/0.2.23. PR CI incomplete at integration; publication requires exact intent checks.",
+  "current_phase": "Block 4B merged; exact source and destination publication intents committed; public stable remains 3.0.234/0.2.23 until gates pass.",
   "source_prs": [
     "https://github.com/michels-lab/michel-s-life/pull/225",
     "https://github.com/michels-lab/michel-s-life/pull/226",
@@ -277,10 +277,14 @@
       "android_code": 26,
       "source_workflow": ".github/workflows/release-unified-v3235-a0224.yml",
       "destination_workflow_commit": "43ab48b898730e9b42fd8b26772ba751f28eaa1b",
-      "status": "merged_source_intent_committed",
+      "status": "source_and_destination_intents_committed",
       "exact_gates": 11,
       "source_intent_sha": "f215871229b262abe79b86efa87131692f25e0eb",
-      "destination_preflight_sha": "61500060093e7120e49f45a891d742b1b4bed2ee"
+      "destination_preflight_sha": "61500060093e7120e49f45a891d742b1b4bed2ee",
+      "source_run": 45972159767,
+      "destination_intent_sha": "8077bb23f4bec76018b8f1be4e1f52e6915f166c",
+      "destination_preflight_run": 45972087208,
+      "destination_preflight": "success"
     },
     "merge_sha": "6f93a41519707973bd47e1d728483a7c83b168c7"
   }
