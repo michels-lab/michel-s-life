@@ -24,7 +24,7 @@
     "verified",
     "pending"
   ],
-  "current_phase": "Block 4B published and verified; optional music pack PR #238 integrated, two CI artifacts verified, not a new stable app release. Physical acceptance pending.",
+  "current_phase": "Blocks 6–8 consolidated PR #244; alarm registry/snooze ownership, isolated native validation and Drive metadata revision candidate unmerged. Exact local Kotlin 7/7, transport suite green; full CI/native and physical acceptance pending.",
   "source_prs": [
     "https://github.com/michels-lab/michel-s-life/pull/225",
     "https://github.com/michels-lab/michel-s-life/pull/226",
@@ -33,7 +33,9 @@
     "https://github.com/michels-lab/michel-s-life/pull/230",
     "https://github.com/michels-lab/michel-s-life/pull/231",
     "https://github.com/michels-lab/michel-s-life/pull/233",
-    "https://github.com/michels-lab/michel-s-life/pull/235"
+    "https://github.com/michels-lab/michel-s-life/pull/235",
+    "https://github.com/michels-lab/michel-s-life/pull/241",
+    "https://github.com/michels-lab/michel-s-life/pull/244"
   ],
   "latest_public_release": "v3.0.235-android-v0.2.24",
   "latest_public_release_url": "https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.235-android-v0.2.24",
@@ -41,31 +43,35 @@
   "owner_acceptance": false,
   "release_hold": false,
   "last_granada": {
-    "date": "2026-11-24",
-    "progress_before": 47,
+    "date": "2026-11-27",
+    "progress_before": 53,
     "progress_after": 53,
     "verified": 8,
     "total": 15,
-    "source_status": "public_stable_signed_release_verified",
-    "source_intent_sha": "d82359c010ece7fc0f12d2dcc8238d718093ad22",
-    "source_run_url": "https://github.com/michels-lab/michel-s-life/actions/runs/45478901654",
-    "publisher_intent_sha": "0941ea1010f38c74fc310172334958356c2a4787",
-    "publisher_run_url": "https://github.com/michels-lab/michel-s-life-releases/actions/runs/45485082290",
-    "release_url": "https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.232-android-v0.2.21",
-    "asset_count": 13,
-    "signed_android15_native": "success",
-    "eleven_exact_sha_gates": "success",
-    "runtime_issue_168": "closed; exact root cause fixed and released",
-    "features": "8 ambient + 2 classical excerpts direct Focus, completion preview, 10 alarm arrangements, weekday colors, Android alarm launcher docked topbar, Story draft/submit",
-    "acceptance_pending": [
-      "physical Windows/Galaxy colors and audio",
-      "classical full arrangements not implemented",
-      "Samsung physical Doze and custom MP3",
-      "private data retention on in-place Galaxy update",
-      "real Supabase and Google Calendar OAuth",
-      "owner final installed QA"
+    "source_status": "candidate_unmerged_native_gates_pending",
+    "source_pr": "https://github.com/michels-lab/michel-s-life/pull/244",
+    "candidate_sha": "a9ed0ff92c748a74cf273e6e517a7d7c4ba01be4",
+    "commits": [
+      "2741eaad2a5b32a41daef56c67d5c7781caea32b",
+      "d555fe32eff248d6c79f17319b062c52cafa0e09",
+      "16e4ccf97ff8de43a876c207b7fee9cbcfba063d",
+      "a9ed0ff92c748a74cf273e6e517a7d7c4ba01be4"
     ],
-    "limitations": "Android14/16 debug failures remain recorded; signed Android15 screenshot-only native pass does not prove private-state retention."
+    "prior_head": "59e0518f5f4a8f7fc5db8c37415f369d5c42acb4",
+    "prior_ci_success": 15,
+    "prior_ci_total": 17,
+    "prior_android_compile": "success",
+    "prior_android_native": "failure",
+    "latest_exact_transport_run": 46048108628,
+    "local_cloud_meta_behavior": "7/7 PASS, exact extracted production Kotlin and repository test SHA verified; SharedPreferences stub only",
+    "new_release_published": false,
+    "remaining": [
+      "full exact-head CI incl. alarm registry/snooze and Drive contract",
+      "native emulator screenshots and persistence",
+      "physical Windows/Galaxy acceptance",
+      "real Supabase/Google Calendar/Drive OAuth",
+      "ordinary alarm multi-record scheduling failure rollback and remote Drive write race"
+    ]
   },
   "note": "53%=8/15 bounded acceptance milestones; #14 root cause fixed, exact runtime checks verified, integrated and published. Physical QA and real accounts are not proven by CI.",
   "latest_public_release_source_sha": "f215871229b262abe79b86efa87131692f25e0eb",
@@ -74,14 +80,13 @@
   "latest_public_release_utc": "2026-11-27T09:33:26Z",
   "next_release_acceptance_hold": true,
   "active_development": {
-    "status": "released_verified_owner_acceptance_pending",
+    "status": "consolidated_candidate_unmerged",
     "source_prs": [
-      "https://github.com/michels-lab/michel-s-life/pull/233",
-      "https://github.com/michels-lab/michel-s-life/pull/235"
+      "https://github.com/michels-lab/michel-s-life/pull/244"
     ],
     "runtime_issue": "https://github.com/michels-lab/michel-s-life/issues/168",
     "runtime_issue_state": "closed",
-    "new_release_published": true,
+    "new_release_published": false,
     "owner_acceptance": "pending",
     "milestones_verified": 8,
     "total_milestones": 15
@@ -130,8 +135,126 @@
     "verified_milestones": 8,
     "total_milestones": 15
   },
-  "next_audit": "Probar Pomodoro, importación personal y archivo en Windows/Galaxy físicos, comprobar sonido final y alarma bloqueada; preservar datos al actualizar.",
+  "next_audit": "Verify #244 exact candidate CI, native runtime gates and safe alarm persistence; then physical/real-provider acceptance. Preserve stable 3.0.235/0.2.24.",
   "active_candidate": {
+    "pr": "https://github.com/michels-lab/michel-s-life/pull/244",
+    "head": "a9ed0ff92c748a74cf273e6e517a7d7c4ba01be4",
+    "status": "implementation_candidate_unmerged",
+    "progress_percent": 53,
+    "local_cloud_meta_behavior": "7/7 PASS, exact extracted production Kotlin and repository test SHA verified; SharedPreferences stub only",
+    "transport_run": 46048108628,
+    "remaining": [
+      "full exact-head CI incl. alarm registry/snooze and Drive contract",
+      "native emulator screenshots and persistence",
+      "physical Windows/Galaxy acceptance",
+      "real Supabase/Google Calendar/Drive OAuth",
+      "ordinary alarm multi-record scheduling failure rollback and remote Drive write race"
+    ]
+  },
+  "owner_feedback_4b": {
+    "release": "v3.0.234-android-v0.2.23",
+    "published_at": "2026-11-26T03:05:02Z",
+    "publisher_run": 45746499113,
+    "pr": 241,
+    "head": "fa18f53812ea5a9ee2a55b7fbcc64e9f7c8d22d5",
+    "implemented": [
+      "six tab CSS selectors restricted to button",
+      "sidebar selected text and scrollbars",
+      "always visible ambient play/pause, title and progress",
+      "fixed phase bells, ducking, 18 recordings in ambience",
+      "Android native bell-only policy",
+      "measured independent desktop footer lanes, scrollbar clearance, Coming Next text truncation",
+      "native completion and snooze determine bell from completed phase; retained OS bell channels and all music assets",
+      "desktop custom glass enabled: 10px backdrop blur for non-nested translucent surfaces, zero opacity unchanged",
+      "Android Settings hides dashboard chapter header only while Settings active; desktop and dashboard preserved",
+      "test zero opacity via computed backgroundColor and backgroundImage"
+    ],
+    "targeted_mocked_checks": "6/6 pass",
+    "remaining": [
+      "physical Windows/Galaxy visual/audio acceptance",
+      "Android API34/36 native evidence"
+    ],
+    "previous_ci": {
+      "head": "7a366e94c151eb14313419bd19bff7ba05431b49",
+      "success": 21,
+      "total": 24,
+      "failed": [
+        "UI smoke",
+        "Android UI smoke"
+      ],
+      "pending": [
+        "Build Android test APK"
+      ],
+      "common_failure": "fixture targeted READY cancellation instead of RUNNING arm; fixed in 9c430f76e40eadaccc6fe121f726672047033395",
+      "chapter_pomodoro_regression": "success"
+    },
+    "release_staging": {
+      "windows": "3.0.235",
+      "android": "0.2.24",
+      "android_code": 26,
+      "source_workflow": ".github/workflows/release-unified-v3235-a0224.yml",
+      "destination_workflow_commit": "43ab48b898730e9b42fd8b26772ba751f28eaa1b",
+      "status": "published_verified",
+      "exact_gates": 11,
+      "source_intent_sha": "f215871229b262abe79b86efa87131692f25e0eb",
+      "destination_preflight_sha": "61500060093e7120e49f45a891d742b1b4bed2ee",
+      "source_run": 45972159767,
+      "destination_intent_sha": "8077bb23f4bec76018b8f1be4e1f52e6915f166c",
+      "destination_preflight_run": 45972087208,
+      "destination_preflight": "success",
+      "published_at": "2026-11-27T09:33:26Z",
+      "publisher_run": 45972226615,
+      "independent_verifier_run": 45972226623
+    },
+    "merge_sha": "6f93a41519707973bd47e1d728483a7c83b168c7"
+  },
+  "optional_music_packs": {
+    "status": "merged_verified_ci_artifacts_not_public_release",
+    "pr": 238,
+    "merge_sha": "47817af4f31d1952283b3ea1d3b5515bfc075d73",
+    "verified_source_sha": "10dd97bd64c2f9ad2ec0ef5246c6f2ce230e28a0",
+    "run": 45580732287,
+    "tracks": 16,
+    "pack01": {
+      "artifact": 15006801112,
+      "tracks": 8
+    },
+    "pack02": {
+      "artifact": 15006887081,
+      "tracks": 8
+    },
+    "license": "CC BY 4.0",
+    "bundled_tracks": 18,
+    "changes_stable_app": false
+  },
+  "previous_granada_2026_11_24": {
+    "date": "2026-11-24",
+    "progress_before": 47,
+    "progress_after": 53,
+    "verified": 8,
+    "total": 15,
+    "source_status": "public_stable_signed_release_verified",
+    "source_intent_sha": "d82359c010ece7fc0f12d2dcc8238d718093ad22",
+    "source_run_url": "https://github.com/michels-lab/michel-s-life/actions/runs/45478901654",
+    "publisher_intent_sha": "0941ea1010f38c74fc310172334958356c2a4787",
+    "publisher_run_url": "https://github.com/michels-lab/michel-s-life-releases/actions/runs/45485082290",
+    "release_url": "https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.232-android-v0.2.21",
+    "asset_count": 13,
+    "signed_android15_native": "success",
+    "eleven_exact_sha_gates": "success",
+    "runtime_issue_168": "closed; exact root cause fixed and released",
+    "features": "8 ambient + 2 classical excerpts direct Focus, completion preview, 10 alarm arrangements, weekday colors, Android alarm launcher docked topbar, Story draft/submit",
+    "acceptance_pending": [
+      "physical Windows/Galaxy colors and audio",
+      "classical full arrangements not implemented",
+      "Samsung physical Doze and custom MP3",
+      "private data retention on in-place Galaxy update",
+      "real Supabase and Google Calendar OAuth",
+      "owner final installed QA"
+    ],
+    "limitations": "Android14/16 debug failures remain recorded; signed Android15 screenshot-only native pass does not prove private-state retention."
+  },
+  "historical_active_candidate_4a": {
     "block": "4A",
     "pr": "https://github.com/michels-lab/michel-s-life/pull/239",
     "head": "490bf37dbc1e0e366fbc6d0b49c06bf1da320b42",
@@ -231,81 +354,5 @@
       "android15_native": "success",
       "android14_16": "failed ADB/native evidence"
     }
-  },
-  "owner_feedback_4b": {
-    "release": "v3.0.234-android-v0.2.23",
-    "published_at": "2026-11-26T03:05:02Z",
-    "publisher_run": 45746499113,
-    "pr": 241,
-    "head": "fa18f53812ea5a9ee2a55b7fbcc64e9f7c8d22d5",
-    "implemented": [
-      "six tab CSS selectors restricted to button",
-      "sidebar selected text and scrollbars",
-      "always visible ambient play/pause, title and progress",
-      "fixed phase bells, ducking, 18 recordings in ambience",
-      "Android native bell-only policy",
-      "measured independent desktop footer lanes, scrollbar clearance, Coming Next text truncation",
-      "native completion and snooze determine bell from completed phase; retained OS bell channels and all music assets",
-      "desktop custom glass enabled: 10px backdrop blur for non-nested translucent surfaces, zero opacity unchanged",
-      "Android Settings hides dashboard chapter header only while Settings active; desktop and dashboard preserved",
-      "test zero opacity via computed backgroundColor and backgroundImage"
-    ],
-    "targeted_mocked_checks": "6/6 pass",
-    "remaining": [
-      "physical Windows/Galaxy visual/audio acceptance",
-      "Android API34/36 native evidence"
-    ],
-    "previous_ci": {
-      "head": "7a366e94c151eb14313419bd19bff7ba05431b49",
-      "success": 21,
-      "total": 24,
-      "failed": [
-        "UI smoke",
-        "Android UI smoke"
-      ],
-      "pending": [
-        "Build Android test APK"
-      ],
-      "common_failure": "fixture targeted READY cancellation instead of RUNNING arm; fixed in 9c430f76e40eadaccc6fe121f726672047033395",
-      "chapter_pomodoro_regression": "success"
-    },
-    "release_staging": {
-      "windows": "3.0.235",
-      "android": "0.2.24",
-      "android_code": 26,
-      "source_workflow": ".github/workflows/release-unified-v3235-a0224.yml",
-      "destination_workflow_commit": "43ab48b898730e9b42fd8b26772ba751f28eaa1b",
-      "status": "published_verified",
-      "exact_gates": 11,
-      "source_intent_sha": "f215871229b262abe79b86efa87131692f25e0eb",
-      "destination_preflight_sha": "61500060093e7120e49f45a891d742b1b4bed2ee",
-      "source_run": 45972159767,
-      "destination_intent_sha": "8077bb23f4bec76018b8f1be4e1f52e6915f166c",
-      "destination_preflight_run": 45972087208,
-      "destination_preflight": "success",
-      "published_at": "2026-11-27T09:33:26Z",
-      "publisher_run": 45972226615,
-      "independent_verifier_run": 45972226623
-    },
-    "merge_sha": "6f93a41519707973bd47e1d728483a7c83b168c7"
-  },
-  "optional_music_packs": {
-    "status": "merged_verified_ci_artifacts_not_public_release",
-    "pr": 238,
-    "merge_sha": "47817af4f31d1952283b3ea1d3b5515bfc075d73",
-    "verified_source_sha": "10dd97bd64c2f9ad2ec0ef5246c6f2ce230e28a0",
-    "run": 45580732287,
-    "tracks": 16,
-    "pack01": {
-      "artifact": 15006801112,
-      "tracks": 8
-    },
-    "pack02": {
-      "artifact": 15006887081,
-      "tracks": 8
-    },
-    "license": "CC BY 4.0",
-    "bundled_tracks": 18,
-    "changes_stable_app": false
   }
 }
