@@ -75,10 +75,10 @@ try{
     samples.push(take('skip-to-break',()=>api.skipFocus()));
     samples.push(take('break-start',()=>api.startFocus()));
     samples.push(take('reset-break',()=>api.resetFocus()));
-    failNext=true;
     samples.push(take('work-prepare-retry',()=>api.skipFocus()));
-    // The current phase is now ready for work. First native arm fails, the
-    // next canonical tick must retry rather than caching a false success.
+    // Fail precisely the first RUNNING arm, not the preceding READY cancel.
+    // With distinct phase bells, that READY transition legitimately posts.
+    failNext=true;
     samples.push(take('work-failed-arm',()=>api.startFocus()));
     const failedArms=activity.filter(x=>x.failed).length;
     const attemptsBeforeRetry=activity.length;
@@ -121,6 +121,7 @@ try{
   assertPhase('work-prepare-retry','ready','work');
   assertPhase('work-failed-arm','running','work');
   assert.equal(result.failedArms,1,'Synthetic native arm failure not exercised exactly once');
+  assert.equal(steps['work-failed-arm'].recent.failed,true,'The failed transport must be the running arm, not the preceding cancel');
   assert.equal(result.attemptsAfterRetry,result.attemptsBeforeRetry+1,
     'Failed native alarm transport did not retry on the next live Focus tick');
   assert.equal(result.attemptsAfterRetryTicks,result.attemptsAfterRetry,
