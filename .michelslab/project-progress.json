@@ -1,6 +1,6 @@
 {
   "schema": "michels-lab-product-progress-v1",
-  "as_of": "2026-11-25",
+  "as_of": "2026-11-27",
   "repository": "michels-lab/michel-s-life",
   "scope": "Cierre funcional y aceptación de la siguiente estable unificada Windows/Android Michel's Life; pruebas de fuente y CI separadas de aceptación física",
   "state": "measured",
@@ -24,7 +24,7 @@
     "verified",
     "pending"
   ],
-  "current_phase": "Block 4B owner feedback after stable 3.0.234 published; candidate surface-role repair, fixed bells, visible ambient transport",
+  "current_phase": "Block 4B: surface roles, bell-only expiry, visible ambient controls and separate desktop floating lanes committed; latest candidate CI pending",
   "source_prs": [
     "https://github.com/michels-lab/michel-s-life/pull/225",
     "https://github.com/michels-lab/michel-s-life/pull/226",
@@ -35,8 +35,8 @@
     "https://github.com/michels-lab/michel-s-life/pull/233",
     "https://github.com/michels-lab/michel-s-life/pull/235"
   ],
-  "latest_public_release": "v3.0.233-android-v0.2.22",
-  "latest_public_release_url": "https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.233-android-v0.2.22",
+  "latest_public_release": "v3.0.234-android-v0.2.23",
+  "latest_public_release_url": "https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.234-android-v0.2.23",
   "source_report": "https://github.com/michels-lab/michel-s-life/blob/main/docs/PROJECT_PROGRESS.md",
   "owner_acceptance": false,
   "release_hold": false,
@@ -68,10 +68,10 @@
     "limitations": "Android14/16 debug failures remain recorded; signed Android15 screenshot-only native pass does not prove private-state retention."
   },
   "note": "53%=8/15 bounded acceptance milestones; #14 root cause fixed, exact runtime checks verified, integrated and published. Physical QA and real accounts are not proven by CI.",
-  "latest_public_release_source_sha": "cc446a3f00200ceadaf5fa8776f372ef6639bfc4",
-  "latest_public_release_source_run": 45540789141,
-  "latest_public_release_publisher_run": 45540970195,
-  "latest_public_release_utc": "2026-11-25T03:46:24Z",
+  "latest_public_release_source_sha": "632f84e6345c4eb1cb44d669837edd854d399464",
+  "latest_public_release_source_run": 45741133970,
+  "latest_public_release_publisher_run": 45746499113,
+  "latest_public_release_utc": "2026-11-26T03:05:02Z",
   "next_release_acceptance_hold": true,
   "active_development": {
     "status": "released_verified_owner_acceptance_pending",
@@ -110,15 +110,15 @@
     "source_pr_fix": "https://github.com/michels-lab/michel-s-life/pull/235"
   },
   "latest_granada_release": {
-    "date": "2026-11-25",
-    "release_tag": "v3.0.233-android-v0.2.22",
-    "url": "https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.233-android-v0.2.22",
-    "published_at_utc": "2026-11-25T03:46:24Z",
-    "source_sha": "cc446a3f00200ceadaf5fa8776f372ef6639bfc4",
-    "source_run": 45540789141,
-    "publisher_intent_sha": "fcb60da09e52d3e8adfa5c3fc02755a7bef184b2",
-    "publisher_run": 45540970195,
-    "independent_verifier_run": 45540970202,
+    "date": "2026-11-26",
+    "release_tag": "v3.0.234-android-v0.2.23",
+    "url": "https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.234-android-v0.2.23",
+    "published_at_utc": "2026-11-26T03:05:02Z",
+    "source_sha": "632f84e6345c4eb1cb44d669837edd854d399464",
+    "source_run": 45741133970,
+    "publisher_intent_sha": "352a8743a837cf8bbc8e748193a0ccb27c55c027",
+    "publisher_run": 45746499113,
+    "independent_verifier_run": 45746499216,
     "public_assets": 13,
     "draft": false,
     "prerelease": false,
@@ -190,7 +190,7 @@
       "windows": "3.0.234",
       "android_direct": "0.2.23",
       "version_code": 25,
-      "status": "source_verified_destination_intent_committed",
+      "status": "published_verified",
       "pr": "https://github.com/michels-lab/michel-s-life/pull/240",
       "head": "8e1c1bdc237ba1d13c1d55fdc1d774f4a45788eb",
       "merge_sha": "9ceb06628b59217258c5901f31515cff7bedaec8",
@@ -237,21 +237,31 @@
     "published_at": "2026-11-26T03:05:02Z",
     "publisher_run": 45746499113,
     "pr": 241,
-    "head": "c2e4065cf750175852a670ffb9c02d8e97734af4",
+    "head": "6ffbadbe12454d882407fc9ec2f5e46d4e12b361",
     "implemented": [
       "six tab CSS selectors restricted to button",
       "sidebar selected text and scrollbars",
       "always visible ambient play/pause, title and progress",
       "fixed phase bells, ducking, 18 recordings in ambience",
-      "Android native bell-only policy"
+      "Android native bell-only policy",
+      "measured independent desktop footer lanes, scrollbar clearance, Coming Next text truncation"
     ],
     "targeted_mocked_checks": "6/6 pass",
     "remaining": [
-      "full browser and native tests",
-      "inspect all pages and transparency settings",
-      "Coming Next and floating dock overlaps",
+      "exact candidate browser/native checks",
+      "verify dashboard/settings/missions computed surface and footer geometry",
+      "inspect other windows and saved custom opacity",
       "physical owner visual and audio acceptance",
       "stable release"
-    ]
+    ],
+    "previous_ci": {
+      "head": "c2e4065cf750175852a670ffb9c02d8e97734af4",
+      "success": 14,
+      "total": 22,
+      "android15_debug": "success",
+      "android14_16": "failed",
+      "windows_build": "success",
+      "failed_contracts": "obsolete final music picker, legacy off behavior and preference assertions; updated without claiming latest pass"
+    }
   }
 }
