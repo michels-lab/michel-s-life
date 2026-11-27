@@ -404,11 +404,28 @@ test('failed snooze keeps the ringing overlay active and failed native save reta
   const save=native.slice(native.indexOf('fun sync(context:'),native.indexOf('fun recover(context:'));
   assert.ok(save.indexOf('if (!prefs(context).edit()')>=0);
   assert.ok(save.indexOf('Could not persist alarms')<save.indexOf('cancel(context, it)'));
-  assert.match(overlay,/if \(NativePersonalAlarms.snooze\(app, id\)\) \{\s*stop\(app\)/);
+  assert.match(overlay,/if \(NativePersonalAlarms.snooze\(app, id\)\) \{\s*NativePersonalAlarms.dismiss\(app, id\)/);
   const start=overlay.slice(overlay.indexOf('private fun startAttention'),overlay.indexOf('fun stop(context:'));
   assert.ok(start.indexOf('player = sound')<start.indexOf('sound.setDataSource'));
   assert.match(start,/player\?\.release\(\)/);
   const dismiss=alarms.slice(alarms.indexOf('function dismissRing('),alarms.indexOf('function collectDueAlarms('));
   assert.ok(dismiss.indexOf('records.length>=80')>=0);
   assert.ok(dismiss.indexOf('records.length>=80')<dismiss.indexOf('stopPresetAudio()'));
+});
+
+test('native receiver rejects stale, duplicate and early alarm occurrences and recovers each independently',()=>{
+  const delivery=native.slice(native.indexOf('fun deliver(context:'),native.indexOf('class PersonalAlarmReceiver'));
+  assert.match(native,/putExtra\(EXTRA_OCCURRENCE, occurrence\)/);
+  assert.match(native,/putLong\(key, date\).commit\(\)/);
+  assert.match(delivery,/if \(occurrence <= 0L \|\| stored != occurrence \|\| occurrence > System.currentTimeMillis\(\)\) return/);
+  assert.ok(delivery.indexOf('.remove(SCHEDULED_PREFIX + id)')<delivery.indexOf('schedule(context, target)'));
+  assert.match(native,/intent.getLongExtra\(NativePersonalAlarms.EXTRA_OCCURRENCE, 0L\)/);
+  assert.match(native,/fun recover\(context: Context\)[\s\S]*?try \{ schedule\(context, item\) \} catch/);
+});
+test('a second native overlay queues without replacing the first and advances on dismissal',()=>{
+  assert.match(overlay,/if \(view != null && activeId != null\) \{\s*pending\[id\] = QueuedAlarm\(id, title, time\)\s*return true/);
+  assert.match(overlay,/fun dismiss\(context: Context, id: String\) \{\s*pending.remove\(id\)\s*if \(!isRinging\(id\)\) return\s*stop\(context\)/);
+  assert.match(overlay,/while \(pending.isNotEmpty\(\)\)[\s\S]*?show\(context, next.id, next.title, next.time\)/);
+  assert.match(native,/PersonalAlarmOverlay.dismiss\(context, id\)/);
+  assert.match(native,/if \(!PersonalAlarmOverlay.isQueued\(id\) &&/);
 });
