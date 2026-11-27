@@ -60,10 +60,10 @@ class NativeOnboardingTouchTests(unittest.TestCase):
     def test_transient_accessibility_boot_error_retries_before_real_xml(self):
         xml = '<?xml version="1.0"?><hierarchy />'
         with patch.object(mod, "adb", side_effect=[
-            RuntimeError("native_adb_command_failed"), "UIA dump", xml
+            RuntimeError("native_adb_command_failed"), "", "UIA dump", xml, ""
         ]) as command, patch.object(mod.time, "sleep") as sleep:
             self.assertEqual(mod.accessibility_xml(mod.SERIAL), xml)
-            self.assertEqual(command.call_count, 3)
+            self.assertEqual(command.call_count, 5)
             sleep.assert_called_once_with(3)
 
     def test_permanent_accessibility_failure_never_authorizes_touch(self):
@@ -71,7 +71,7 @@ class NativeOnboardingTouchTests(unittest.TestCase):
                 patch.object(mod.time, "sleep") as sleep:
             with self.assertRaisesRegex(RuntimeError, "native_accessibility_unavailable"):
                 mod.accessibility_xml(mod.SERIAL)
-            self.assertEqual(command.call_count, 5)
+            self.assertEqual(command.call_count, 10)
             self.assertEqual(sleep.call_count, 4)
 
     def test_verified_webview_geometry_survives_missing_stage_two_class(self):
@@ -174,6 +174,31 @@ class NativeOnboardingTouchTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError,"did_not_advance"):
                     mod.touch_stage(9222,1,Path(d)/"report.json")
             self.assertFalse(any("tap" in c.args for c in command.call_args_list))
+
+    def test_unique_dump_path_and_cleanup_prevent_stale_xml(self):
+        xml = '<?xml version="1.0"?><hierarchy />'
+        with patch.object(mod, "adb", side_effect=["dump", xml, "", "dump", xml, ""]) as command:
+            mod.accessibility_xml(mod.SERIAL)
+            mod.accessibility_xml(mod.SERIAL)
+        calls = [c.args for c in command.call_args_list]
+        first, second = calls[0][-1], calls[3][-1]
+        self.assertNotEqual(first, second)
+        self.assertEqual(calls[1][-1], first)
+        self.assertEqual(calls[2][-1], first)
+        self.assertEqual(calls[4][-1], second)
+        self.assertEqual(calls[5][-1], second)
+
+    def test_dismiss_returns_same_fresh_nonobstructed_hierarchy(self):
+        xml = "<hierarchy/>"
+        with patch.object(mod, "accessibility_xml", return_value=xml) as read:
+            self.assertEqual(mod.dismiss_launcher(mod.SERIAL), xml)
+        read.assert_called_once_with(mod.SERIAL)
+
+    def test_unverified_alert_package_is_never_dismissed(self):
+        xml = hierarchy().replace('package="android" resource-id="android:id/alertTitle"',
+                                  'package="com.example" resource-id="android:id/alertTitle"')
+        with self.assertRaisesRegex(RuntimeError, "unverified_system_alert"):
+            mod.launcher_anr_button(xml)
 
     def test_current_probe_is_read_only(self):
         self.assertIn("elementFromPoint", mod.STEP_JS)
