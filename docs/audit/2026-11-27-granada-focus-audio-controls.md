@@ -1,0 +1,3 @@
+# Granada — ambient playback controls
+
+Shared Focus engine now applies immediate master gain for existing generated notes, including zero volume and bell duck/restore with current settings. Recorded volume stays unchanged. Reselecting current track no longer resets playback position; failed preference write retains current playback and returns false for navigation. Late errors from replaced audio are ignored, current recording failures and resume errors surface through existing status control. No layout, audio assets or timer changes. Four executable JS regression tests added; exact CI pending. Main governance-only files integrated with second parent to avoid repeated documentation divergence. Real listening and personal-file IndexedDB/device acceptance still pending.

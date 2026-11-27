@@ -14,7 +14,7 @@ const all=new Set([...legacy,...library,...piano,...classical]);
 const classicalCollection=[...piano,...classical];
 
 function harness(persisted={v30165Soundscape:'moonlight',v30165CompletionSound:'soft'}){
-  const frequencies=[],startTimes=[],contexts=[],timers=new Map(),buffers=[],sources=[];
+  const frequencies=[],startTimes=[],contexts=[],timers=new Map(),buffers=[],sources=[],gains=[],timeouts=new Map();
   let timerCounter=0;
   class AudioContext{
     constructor(){this.currentTime=0;this.state='running';this.destination={};this.closed=false;contexts.push(this);}
@@ -27,7 +27,7 @@ function harness(persisted={v30165Soundscape:'moonlight',v30165CompletionSound:'
         connect(){},start(time){startTimes.push(time)},stop(){}};
     }
     createGain(){
-      return {gain:{setValueAtTime(){},linearRampToValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){}};
+      const gain={value:NaN,setValueAtTime(v){this.value=v;},linearRampToValueAtTime(){},exponentialRampToValueAtTime(){}};gains.push(gain);return {gain,connect(){}};
     }
   }
   const recordings=[];
@@ -48,12 +48,12 @@ function harness(persisted={v30165Soundscape:'moonlight',v30165CompletionSound:'
     },
     setInterval(fn){const id=++timerCounter;timers.set(id,fn);return id},
     clearInterval(id){timers.delete(id)},
-    setTimeout(){return 1},addEventListener(){}
+    setTimeout(fn){const id=++timerCounter;timeouts.set(id,fn);return id},clearTimeout(id){timeouts.delete(id)},addEventListener(){}
   };
   window.window=window;
   window.document={readyState:'loading',documentElement:{dataset:{mlvPlatform:'android'}},querySelector(){return null},addEventListener(){}};
   vm.runInNewContext(focusSource,window,{filename:'focus-immersive.js'});
-  return {api:window.MichelsLifeFocusAudio,frequencies,startTimes,contexts,timers,persisted,buffers,sources,recordings};
+  return {api:window.MichelsLifeFocusAudio,frequencies,startTimes,contexts,timers,persisted,buffers,sources,recordings,gains,timeouts,window};
 }
 
 
@@ -207,4 +207,32 @@ test('track navigation is disabled for empty and single-track collections',()=>{
  assert.equal(f.api.canNavigateAmbient(),false);f.api.archiveScene(piano[0]);
  assert.equal(f.api.canNavigateAmbient(),false);f.api.setAmbientCollection('all');
  assert.equal(f.api.canNavigateAmbient(),true);
+});
+
+test('original soundscape volume changes immediately and phase bell restores the latest volume',()=>{
+ const f=harness();f.api.startAmbient();const bus=f.gains[0];
+ assert.equal(bus.value,1);
+ f.api.setAmbientVolume(0);assert.equal(bus.value,0);
+ f.api.setAmbientVolume(.7);assert.equal(bus.value,2);
+ f.api.playPhaseBells();assert.equal(bus.value,.48);
+ f.api.setAmbientVolume(.35);assert.equal(bus.value,.24);
+ [...f.timeouts.values()].at(-1)();assert.equal(bus.value,1);
+ f.api.stopAmbient();
+});
+test('reselecting current recording does not restart or lose playback position',()=>{
+ const f=harness();f.api.selectScene(library[0]);f.api.startAmbient();
+ const p=f.recordings.at(-1);p.currentTime=52;f.api.selectScene(library[0]);
+ assert.equal(f.recordings.length,1);assert.equal(p.currentTime,52);assert.equal(p.paused,false);
+});
+test('stale audio errors cannot override currently playing track status',()=>{
+ const f=harness();f.api.selectScene(library[0]);f.api.startAmbient();
+ const old=f.recordings.at(-1);f.api.selectScene(library[1]);old.onerror();
+ assert.equal(f.api.playingScene(),library[1]);assert.equal(f.api.personalStatus(),'');
+ f.recordings.at(-1).onerror();assert.equal(f.api.playing(),false);assert.match(f.api.personalStatus(),/Cannot play/);
+});
+test('failed track preference leaves current audio and reports error',()=>{
+ const f=harness();f.api.selectScene(library[0]);f.api.startAmbient();const p=f.recordings.at(-1);
+ const save=f.window.FocusStoryV30162.setAudioPreference;f.window.FocusStoryV30162.setAudioPreference=(kind,value)=>kind==='scene'?false:save(kind,value);
+ assert.equal(f.api.moveAmbient(1),false);assert.equal(f.api.playingScene(),library[0]);
+ assert.equal(p.paused,false);assert.equal(f.recordings.length,1);assert.match(f.api.personalStatus(),/not saved/);
 });
