@@ -29,8 +29,15 @@ def populate(root,arm):
     blob=valid_png()
     for name in native.FRAMES:
         (path/name).write_bytes(blob)
+    state = {"onboardingComplete":True,"genericProfile":True,"missionCount":2,
+             "missionIdsDigest":"b"*64,"missionCompletionCount":0,
+             "missionCompletionsDigest":"c"*64,"totalXpDigest":"d"*64,
+             "collections":{"missions":{"count":2,"idsDigest":"b"*64},
+                            "goals":{"count":0,"idsDigest":"e"*64}},
+             "dashboardKpiCount":2,"dashboardKpisDigest":"f"*64}
     for name in native.COMPARISONS:
-        (path/name).write_text(json.dumps({"pass":True,"private_journal":"DO_NOT_EXPORT"}))
+        (path/name).write_text(json.dumps({"pass":True,"checks":{k:True for k in native.CHECKS},
+                                         "before":state,"after":state,"scope":"synthetic unit test"}))
     (path/"host-watch.json").write_text(json.dumps({
         "result":{"classification":"emulator_process_seen_at_end"},
         "secret":"NEVER_REPORT_THIS"
@@ -94,6 +101,58 @@ class EvidenceSummaryTests(unittest.TestCase):
             r=native.summarize(Path(d),"success","success","d"*40)
             self.assertEqual(r["arms"][1]["canonical_comparisons_passed"],2)
             self.assertEqual(r["interpretation"],"default_pass_only")
+
+    def test_pass_boolean_without_state_cannot_certify_persistence(self):
+        with tempfile.TemporaryDirectory() as d:
+            path=populate(d,"default")
+            for name in native.COMPARISONS:
+                (path/name).write_text('{"pass":true}')
+            r=native.arm_report(path,"default","success")
+            self.assertEqual(r["canonical_comparisons_passed"],0)
+            self.assertFalse(r["native_gate_accepted"])
+
+    def test_contradictory_pass_reports_cannot_certify_same_data(self):
+        with tempfile.TemporaryDirectory() as d:
+            path=populate(d,"default")
+            file=path/native.COMPARISONS[1]
+            report=json.loads(file.read_text())
+            for side in ("before","after"):
+                report[side]["totalXpDigest"]="1"*64
+            file.write_text(json.dumps(report))
+            r=native.arm_report(path,"default","success")
+            self.assertEqual(r["canonical_comparisons_passed"],3)
+            self.assertFalse(r["native_gate_accepted"])
+            self.assertIn("native_state_comparisons_contradictory",r["failure_codes"])
+
+    def test_real_snapshot_delta_overrides_asserted_pass(self):
+        with tempfile.TemporaryDirectory() as d:
+            path=populate(d,"default")
+            file=path/native.COMPARISONS[0]
+            report=json.loads(file.read_text())
+            report["after"]["missionCompletionsDigest"]="2"*64
+            file.write_text(json.dumps(report))
+            r=native.arm_report(path,"default","success")
+            self.assertEqual(r["canonical_comparisons_passed"],2)
+            self.assertFalse(r["native_gate_accepted"])
+
+    def test_unknown_private_fields_are_rejected_not_exported(self):
+        with tempfile.TemporaryDirectory() as d:
+            path=populate(d,"default")
+            file=path/native.COMPARISONS[0]
+            report=json.loads(file.read_text())
+            report["before"]["private_journal"]="DO_NOT_EXPORT"
+            file.write_text(json.dumps(report))
+            r=native.arm_report(path,"default","success")
+            self.assertFalse(r["native_gate_accepted"])
+            self.assertNotIn("DO_NOT_EXPORT",json.dumps(r))
+
+    def test_early_frame_is_mandatory(self):
+        with tempfile.TemporaryDirectory() as d:
+            path=populate(d,"default")
+            (path/"step0-after-55s.png").unlink()
+            r=native.arm_report(path,"default","success")
+            self.assertEqual(r["required_real_png_count"],10)
+            self.assertFalse(r["native_gate_accepted"])
 
     def test_3gib_only_is_not_memory_causality(self):
         with tempfile.TemporaryDirectory() as d:
