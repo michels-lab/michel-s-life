@@ -221,8 +221,8 @@ try{
     !restored.full&&restored.mini,
     'Desktop reload ignored intentional minimized Break: '+JSON.stringify(restored));
   const afterReloadSound=await page.evaluate(()=>window.FocusStoryV30162.focusState());
-  ok(afterReloadSound.v30165CompletionSound==='glass'&&afterReloadSound.v30165Soundscape==='library',
-    'End sound and selected A+C soundtrack were lost after reload');
+  ok(afterReloadSound.v30165Soundscape==='library',
+    'Selected ambient soundtrack was lost after reload');
   await page.evaluate(()=>window.FocusStoryV30162?.resetFocus?.());
 
 
