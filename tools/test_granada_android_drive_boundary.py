@@ -139,5 +139,15 @@ class NativeGoogleDriveBoundaryTests(unittest.TestCase):
         self.assertNotIn("text.take(600)",source)
         self.assertIn('throw IOException("Google API HTTP " + response.code)',source)
 
+    def test_18_restore_rejects_hash_mismatch_and_unrelated_cloud_file(self):
+        master=segment("private fun downloadCloudFile", "\n    private fun downloadText(")
+        history=segment("fun restoreCloudBackup(accessToken: String, fileId: String)", "\n    private fun conflict(")
+        self.assertIn("!remote.contentHash.equals(hashText(content), true)",master)
+        self.assertIn("info.id == fileId",history)
+        self.assertIn("info.name.startsWith(CLOUD_BACKUP_PREFIX)",history)
+        self.assertIn("!info.contentHash.equals(hashText(content), true)",history)
+        self.assertLess(history.index("info.id == fileId"),history.index("downloadText(accessToken, info.id)"))
+        self.assertLess(history.index("!info.contentHash.equals"),history.index('.put("backupJson", safeContent)'))
+
 if __name__=="__main__":
     unittest.main()
