@@ -222,29 +222,40 @@ internal object NativePersonalAlarms {
         return soundUri(context, "system")
     }
 
+    // One native playback catalog also owns persistence validation.
+    private fun recordedResource(selected: String): Int = when (selected) {
+        "mozart_k545" -> R.raw.mlv_focus_mozart_k545
+        "tchaikovsky_op39" -> R.raw.mlv_focus_tchaikovsky_op39
+        "sb_meanwhile" -> R.raw.mlv_focus_sb_meanwhile
+        "sb_moonlight" -> R.raw.mlv_focus_sb_moonlight
+        "sb_cobalt" -> R.raw.mlv_focus_sb_cobalt
+        "sb_skyward" -> R.raw.mlv_focus_sb_skyward
+        "sb_life_is" -> R.raw.mlv_focus_sb_life_is
+        "sb_first_snow" -> R.raw.mlv_focus_sb_first_snow
+        "sb_midsommar" -> R.raw.mlv_focus_sb_midsommar
+        "sb_at_the_end_of_all_things" -> R.raw.mlv_focus_sb_at_the_end_of_all_things
+        "sb_in_this_moment" -> R.raw.mlv_focus_sb_in_this_moment
+        "sb_hyperion" -> R.raw.mlv_focus_sb_hyperion
+        "sb_ascension" -> R.raw.mlv_focus_sb_ascension
+        "sb_bring_me_the_sky" -> R.raw.mlv_focus_sb_bring_me_the_sky
+        "debussy_clair_de_lune" -> R.raw.mlv_focus_debussy_clair_de_lune
+        "chopin_nocturne_op9" -> R.raw.mlv_focus_chopin_nocturne_op9
+        "satie_gymnopedie_1" -> R.raw.mlv_focus_satie_gymnopedie_1
+        "bach_prelude_bwv846" -> R.raw.mlv_focus_bach_prelude_bwv846
+        else -> 0
+    }
+
+    private val generatedSounds = setOf("classic","soft","digital","gentle","pulse","radar",
+        "focus_moonlight","focus_celestial","focus_orbit","focus_aurora",
+        "focus_observatory","focus_library","focus_afterglow","focus_silver")
+
+    private fun normalizeSound(selected: String): String =
+        if (selected == "system" || selected == "custom" ||
+            selected in generatedSounds || recordedResource(selected) != 0) selected else "system"
+
     fun soundUri(context: Context, selected: String): Uri? {
         val dir = File(context.filesDir, "personal-alarm-audio")
-        val recorded = when (selected) {
-            "mozart_k545" -> R.raw.mlv_focus_mozart_k545
-            "tchaikovsky_op39" -> R.raw.mlv_focus_tchaikovsky_op39
-            "sb_meanwhile" -> R.raw.mlv_focus_sb_meanwhile
-            "sb_moonlight" -> R.raw.mlv_focus_sb_moonlight
-            "sb_cobalt" -> R.raw.mlv_focus_sb_cobalt
-            "sb_skyward" -> R.raw.mlv_focus_sb_skyward
-            "sb_life_is" -> R.raw.mlv_focus_sb_life_is
-            "sb_first_snow" -> R.raw.mlv_focus_sb_first_snow
-            "sb_midsommar" -> R.raw.mlv_focus_sb_midsommar
-            "sb_at_the_end_of_all_things" -> R.raw.mlv_focus_sb_at_the_end_of_all_things
-            "sb_in_this_moment" -> R.raw.mlv_focus_sb_in_this_moment
-            "sb_hyperion" -> R.raw.mlv_focus_sb_hyperion
-            "sb_ascension" -> R.raw.mlv_focus_sb_ascension
-            "sb_bring_me_the_sky" -> R.raw.mlv_focus_sb_bring_me_the_sky
-            "debussy_clair_de_lune" -> R.raw.mlv_focus_debussy_clair_de_lune
-            "chopin_nocturne_op9" -> R.raw.mlv_focus_chopin_nocturne_op9
-            "satie_gymnopedie_1" -> R.raw.mlv_focus_satie_gymnopedie_1
-            "bach_prelude_bwv846" -> R.raw.mlv_focus_bach_prelude_bwv846
-            else -> 0
-        }
+        val recorded = recordedResource(selected)
         if (recorded != 0) return Uri.parse("android.resource://" + context.packageName + "/" + recorded)
         if (selected == "custom") {
             val name = prefs(context).getString(KEY_CUSTOM_FILE, "") ?: ""
@@ -252,9 +263,7 @@ internal object NativePersonalAlarms {
             val file = File(dir, name)
             return if (file.isFile && file.length() > 128L) Uri.fromFile(file) else defaultSound()
         }
-        if (selected in setOf("classic","soft","digital","gentle","pulse","radar",
-                "focus_moonlight","focus_celestial","focus_orbit","focus_aurora",
-                "focus_observatory","focus_library","focus_afterglow","focus_silver")) {
+        if (selected in generatedSounds) {
             return try {
                 dir.mkdirs()
                 val file = File(dir, "preset-v3-$selected.wav")
@@ -565,9 +574,7 @@ internal object NativePersonalAlarms {
             if (day in 0..6 && seen.add(day)) days.put(day)
         }
         if (repeat == "weekly" && seen.isEmpty()) return null
-        val sound = input.optString("sound", "system").takeIf {
-            it in setOf("system","classic","soft","digital","gentle","pulse","radar","custom")
-        } ?: "system"
+        val sound = normalizeSound(input.optString("sound", "system"))
         val dueAt = input.optLong("dueAt",0L).takeIf {
             repeat == "once" && it > 0L && it < System.currentTimeMillis()+366L*86400000L
         } ?: 0L
