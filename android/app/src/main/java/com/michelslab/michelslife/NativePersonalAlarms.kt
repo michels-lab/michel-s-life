@@ -44,6 +44,8 @@ internal object NativePersonalAlarms {
     private const val KEY_WALLPAPER = "wallpaper"
     private const val KEY_MOTIVATION = "motivationalCopy.v1"
     private const val LAST_DELIVERED_PREFIX = "lastDelivered."
+    private const val SCHEDULED_PREFIX = "scheduledOccurrence."
+    internal const val EXTRA_OCCURRENCE = "scheduledOccurrence"
     private const val CHANNEL = "michelslife-personal-alarms-v1"
     private const val SILENT_CHANNEL = "michelslife-personal-alarms-immersive-v1"
     private const val ACTION = "com.michelslab.michelslife.PERSONAL_ALARM"
@@ -586,12 +588,13 @@ internal object NativePersonalAlarms {
             .put("days", days).put("enabled", input.optBoolean("enabled", false))
     }
 
-    private fun deliveryIntent(context: Context, id: String): PendingIntent =
+    private fun deliveryIntent(context: Context, id: String, occurrence: Long = 0L): PendingIntent =
         PendingIntent.getBroadcast(context, id.hashCode() and Int.MAX_VALUE,
             Intent(context, PersonalAlarmReceiver::class.java).apply {
                 action = ACTION
                 data = Uri.parse("michelslife://personal-alarm/$id")
                 putExtra("id", id)
+                putExtra(EXTRA_OCCURRENCE, occurrence)
             }, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
     private fun openIntent(context: Context, id: String): PendingIntent =
@@ -616,7 +619,7 @@ internal object NativePersonalAlarms {
         val days = mutableSetOf<Int>()
         val selected = item.optJSONArray("days") ?: JSONArray()
         for (j in 0 until selected.length()) days.add(selected.optInt(j, -1))
-        val today = LocalDate.now(zone)
+        val today = java.time.Instant.ofEpochMilli(after).atZone(zone).toLocalDate()
         for (offset in 0..7) {
             val date = today.plusDays(offset.toLong())
             val calendarDay = date.dayOfWeek.value % 7 // Sunday=0, Monday=1...
@@ -630,6 +633,7 @@ internal object NativePersonalAlarms {
     private fun cancel(context: Context, id: String) {
         (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager)
             .cancel(deliveryIntent(context, id))
+        prefs(context).edit().remove(SCHEDULED_PREFIX + id).apply()
     }
 
     private fun schedule(context: Context, item: JSONObject) {
@@ -637,16 +641,25 @@ internal object NativePersonalAlarms {
         val date = timestamp(item, System.currentTimeMillis())
         if (date <= 0L) return
         val manager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val pending = deliveryIntent(context, item.getString("id"))
-        // Exact timing requires user-granted exact-alarm access on Android 12+.
-        // Always fall back to an inexact wake-up, never falsely claim exact delivery.
-        if (Build.VERSION.SDK_INT < 31 || manager.canScheduleExactAlarms()) {
-            try {
-                manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, date, pending)
-                return
-            } catch (_: SecurityException) { }
+        val id = item.getString("id")
+        val key = SCHEDULED_PREFIX + id
+        if (!prefs(context).edit().putLong(key, date).commit())
+            throw IllegalStateException("Could not persist alarm occurrence")
+        val pending = deliveryIntent(context, id, date)
+        try {
+            // Exact timing requires user-granted exact-alarm access on Android 12+.
+            // Always fall back to an inexact wake-up, never falsely claim exact delivery.
+            if (Build.VERSION.SDK_INT < 31 || manager.canScheduleExactAlarms()) {
+                try {
+                    manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, date, pending)
+                    return
+                } catch (_: SecurityException) { }
+            }
+            manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, date, pending)
+        } catch (e: Exception) {
+            prefs(context).edit().remove(key).apply()
+            throw e
         }
-        manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, date, pending)
     }
 
     fun status(context: Context): JSONObject {
@@ -685,12 +698,17 @@ internal object NativePersonalAlarms {
         return status(context).put("count", cleanList.length())
     }
 
+    @Synchronized
     fun recover(context: Context) {
         createChannel(context)
         val all = list(context)
         for (i in 0 until all.length()) {
             val item = all.optJSONObject(i) ?: continue
-            if (item.optBoolean("enabled")) schedule(context, item)
+            if (item.optBoolean("enabled")) {
+                try { schedule(context, item) } catch (e: Exception) {
+                    android.util.Log.w("MLVPersonalAlarms", "Could not restore one scheduled alarm", e)
+                }
+            }
         }
     }
 
@@ -698,13 +716,16 @@ internal object NativePersonalAlarms {
         if (!idPattern.matches(id)) return
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.cancel(id.hashCode() and Int.MAX_VALUE)
-        if (PersonalAlarmOverlay.isRinging(id)) PersonalAlarmOverlay.stop(context)
         prefs(context).edit().remove(LAST_DELIVERED_PREFIX + id).apply()
+        PersonalAlarmOverlay.dismiss(context, id)
     }
 
     @Synchronized
-    fun deliver(context: Context, id: String) {
+    fun deliver(context: Context, id: String, occurrence: Long) {
         if (!idPattern.matches(id)) return
+        val stored = prefs(context).getLong(SCHEDULED_PREFIX + id, 0L)
+        // Dismissal never resets occurrence identity. Ignore obsolete, early or duplicate broadcasts.
+        if (occurrence <= 0L || stored != occurrence || occurrence > System.currentTimeMillis()) return
         val all = list(context)
         var target: JSONObject? = null
         for (i in 0 until all.length()) {
@@ -721,11 +742,14 @@ internal object NativePersonalAlarms {
                 item.put("enabled", false)
             nextList.put(item)
         }
-        prefs(context).edit().putString(KEY_ALARMS, nextList.toString())
-            .putLong(LAST_DELIVERED_PREFIX + id, System.currentTimeMillis()).commit()
+        if (!prefs(context).edit().putString(KEY_ALARMS, nextList.toString())
+            .remove(SCHEDULED_PREFIX + id)
+            .putLong(LAST_DELIVERED_PREFIX + id, System.currentTimeMillis()).commit()) return
         // Next recurrence is always scheduled from now, so it never doubles on clock changes.
         if (target.optString("repeat") != "once") {
-            schedule(context, target)
+            try { schedule(context, target) } catch (e: Exception) {
+                android.util.Log.w("MLVPersonalAlarms", "Could not schedule next occurrence", e)
+            }
         }
         // An explicitly authorized overlay is the only Android-supported route
         // above other UNLOCKED apps; full-screen notifications show a heads-up
@@ -749,7 +773,7 @@ internal object NativePersonalAlarms {
             .setPriority(Notification.PRIORITY_MAX)
         // Fullscreen intents are allowed only for eligible alarm apps and only
         // when Android grants access. If denied, a heads-up notification remains.
-        if (Build.VERSION.SDK_INT < 34 || manager.canUseFullScreenIntent())
+        if (!PersonalAlarmOverlay.isQueued(id) && (Build.VERSION.SDK_INT < 34 || manager.canUseFullScreenIntent()))
             notificationBuilder.setFullScreenIntent(open, true)
         manager.notify(id.hashCode() and Int.MAX_VALUE, notificationBuilder.build())
         // The channel carries sound/vibration. Do not bypass the user's blocked
@@ -760,6 +784,7 @@ internal object NativePersonalAlarms {
 class PersonalAlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != "com.michelslab.michelslife.PERSONAL_ALARM") return
-        NativePersonalAlarms.deliver(context, intent.getStringExtra("id") ?: "")
+        NativePersonalAlarms.deliver(context, intent.getStringExtra("id") ?: "",
+            intent.getLongExtra(NativePersonalAlarms.EXTRA_OCCURRENCE, 0L))
     }
 }
