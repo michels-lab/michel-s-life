@@ -24,7 +24,7 @@
     "verified",
     "pending"
   ],
-  "current_phase": "Block 4B: native bell policy and 11 desktop surface routes verified; compact Android Settings and computed zero-opacity check committed; exact candidate validation pending",
+  "current_phase": "Block 4B staged stable 3.0.235/0.2.24 in PR #241; fixed native retry test targeting; release workflows prepared, no publication intent",
   "source_prs": [
     "https://github.com/michels-lab/michel-s-life/pull/225",
     "https://github.com/michels-lab/michel-s-life/pull/226",
@@ -237,7 +237,7 @@
     "published_at": "2026-11-26T03:05:02Z",
     "publisher_run": 45746499113,
     "pr": 241,
-    "head": "7a366e94c151eb14313419bd19bff7ba05431b49",
+    "head": "fa18f53812ea5a9ee2a55b7fbcc64e9f7c8d22d5",
     "implemented": [
       "six tab CSS selectors restricted to button",
       "sidebar selected text and scrollbars",
@@ -252,22 +252,34 @@
     ],
     "targeted_mocked_checks": "6/6 pass",
     "remaining": [
-      "verify latest exact candidate CI",
-      "native Android 14/16 evidence remains incomplete",
-      "physical owner visual/audio acceptance",
-      "stable 3.0.235 / Android 0.2.24 release"
+      "exact staged version CI",
+      "merge PR #241",
+      "source and destination isolated intents",
+      "signed Android15 and Windows launch checks",
+      "physical owner acceptance; API34/36 not certified"
     ],
     "previous_ci": {
-      "head": "44cb22bc9315af752207bc5709946035a649c38f",
-      "success": 18,
-      "total": 22,
-      "source_validation": "success",
-      "native_bell_contract": "success",
-      "windows_build": "success",
-      "desktop_routes": "11 passed before zero CSS shorthand assertion failed",
-      "desktop_zero_opacity": "actual transparent and no blur; assertion compared shorthand against literal transparent",
-      "android_ui": "settings content top 436.5px exceeded 420px budget",
-      "android14_16": "native process / ADB failures"
+      "head": "7a366e94c151eb14313419bd19bff7ba05431b49",
+      "success": 21,
+      "total": 24,
+      "failed": [
+        "UI smoke",
+        "Android UI smoke"
+      ],
+      "pending": [
+        "Build Android test APK"
+      ],
+      "common_failure": "fixture targeted READY cancellation instead of RUNNING arm; fixed in 9c430f76e40eadaccc6fe121f726672047033395",
+      "chapter_pomodoro_regression": "success"
+    },
+    "release_staging": {
+      "windows": "3.0.235",
+      "android": "0.2.24",
+      "android_code": 26,
+      "source_workflow": ".github/workflows/release-unified-v3235-a0224.yml",
+      "destination_workflow_commit": "43ab48b898730e9b42fd8b26772ba751f28eaa1b",
+      "status": "staged_not_merged_not_published",
+      "exact_gates": 11
     }
   }
 }
