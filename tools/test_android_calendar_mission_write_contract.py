@@ -68,6 +68,22 @@ checks.update({
  'official app does not auto publish on Android':"if(opts.silent)return null;" in frontend and
     "if(window.__MICHELSLIFE_PLATFORM__!=='android'&&runtime.connected&&settings().autoSync)" in frontend
 })
+checks.update({
+ 'response size bounded before UTF-8 allocation':
+    'source?.request(maxResponseBytes + 1L)' in gateway and
+    gateway.index('source?.request(maxResponseBytes + 1L)') < gateway.index('source?.readUtf8()'),
+ 'provider detail identity checked':
+    'CalendarSyncRules.verifyResponseId(eventId, it.optString("id"))' in gateway,
+ 'create and update results confirm ownership and identity':
+    'requireOwned(created, mission)' in gateway and 'requireOwned(updated, mission)' in gateway and
+    'CalendarSyncRules.verifyResponseId(rule.second, created.optString("id"))' in gateway and
+    'CalendarSyncRules.verifyResponseId(id, updated.optString("id"))' in gateway,
+ 'conflict retry does not patch event ID':
+    gateway.index('body.remove("id")') < gateway.index('val updated = request'),
+ 'delete verifies deterministic ID even after an empty list':
+    'val remote = detail(accessToken, plan.second)' in gateway and
+    'if (plan.first == CalendarSyncRules.Operation.CREATE)' not in gateway
+})
 for k,passed in checks.items():
     if not passed:raise SystemExit("FAIL Android Calendar mission write: "+k)
 print(f'PASS: {len(checks)}/{len(checks)} native write-scope, provider ownership and explicit UI contracts')
