@@ -110,7 +110,7 @@ def safe_write(path: Path, report: dict) -> None:
         temporary = Path(f.name)
         json.dump({
             "schema": "mlv.granada.android-native-relaunch-transport.v1",
-            "environment": "hosted-emulator-api36-ci",
+            "environment": "hosted-android-emulator-ci",
             "android_data_modified": False,
             "package_relaunched_by_guard": False,
             "browser_simulation": False,
