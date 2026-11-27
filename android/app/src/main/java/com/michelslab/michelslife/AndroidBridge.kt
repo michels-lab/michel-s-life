@@ -504,6 +504,7 @@ class AndroidBridge(
     private fun send(message: JSONObject) {
         val quoted = JSONObject.quote(message.toString())
         activity.runOnUiThread {
+            if (!activity.acceptsWebViewCallbacks(webView)) return@runOnUiThread
             webView.evaluateJavascript("window.__mlvAndroidReceive && window.__mlvAndroidReceive(" + quoted + ");", null)
         }
     }
