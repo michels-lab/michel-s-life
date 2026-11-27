@@ -27,12 +27,12 @@
   },
   "finding_counts": {
     "BROKEN_RELATIVE_LINK": 4,
-    "POTENTIAL_UNLOGGED_CHANGES": 2,
+    "POTENTIAL_UNLOGGED_CHANGES": 1,
     "UNKNOWN_PURPOSE": 6
   },
-  "finding_total": 12,
-  "inventory_fingerprint": "f51808b47cafcaaf07eb828aaf56966a3a19b028d98e1d9ce1ac187f900e8818",
-  "evidence_fingerprint": "0ceff7f258fa43d4832c0813040ad7e330e454bb5d0820f244bb05d126b2250d",
+  "finding_total": 11,
+  "inventory_fingerprint": "09f138b93b1e51d8474857b4e01e44369431c0b37f83034be3a70940fbf5e7d2",
+  "evidence_fingerprint": "051671cce99c7776ed26c2bece24b21c6c8fef6cff20c7df7d01e94331cf6859",
   "files": [
     {
       "path": ".github/ISSUE_TEMPLATE/chatgpt-task.yml",
@@ -837,7 +837,7 @@
       "role": "bitacora",
       "purpose": "technical/audit change history",
       "certainty": "rule",
-      "blob": "7e3b76cbde324e525a3b056adc08cc5bd1458479"
+      "blob": "80e727df75f9019704778bd2fd9dfb6b238998f2"
     },
     {
       "path": "LICENSE.txt",
@@ -2678,7 +2678,7 @@
       "role": "source",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "b342e0ea4c16d30cabacaa8e20d351c185a6467e"
+      "blob": "d7398b1f53925d2337d6d04af32b29bf849f9b9e"
     },
     {
       "path": "tools/build_windows_local.ps1",
@@ -3231,7 +3231,7 @@
       "role": "test",
       "purpose": "code/test implementation",
       "certainty": "rule",
-      "blob": "c2a683959d37fae549ffdc413c7de96531a85b6d"
+      "blob": "3c6bc4d86c858ce38661b8f1990cb0fb8534921c"
     },
     {
       "path": "tools/test_personal_alarm_contract.mjs",
@@ -3773,15 +3773,6 @@
       "path": "docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md",
       "observation": "Missing: docs/android/audit/2026-10-12-ui-screenshot-gallery.md",
       "recommendation": "Fix link or restore target",
-      "state": "REVIEW_REQUIRED"
-    },
-    {
-      "id": "eb512373a00d195d",
-      "code": "POTENTIAL_UNLOGGED_CHANGES",
-      "severity": "review",
-      "path": "GIT_AUDIT_LOG.md",
-      "observation": "75 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-classical-focus.yml, .github/workflows/granada-data-health.yml",
-      "recommendation": "Inspect diffs and reconcile only meaningful decisions/results in the canonical log",
       "state": "REVIEW_REQUIRED"
     },
     {

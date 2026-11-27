@@ -5,7 +5,7 @@ No file is auto-deleted or declared unused.
 
 ## Coverage
 
-Tracked: 533; classified: 529; readable documents: 121; above read cap: 0; findings: 12.
+Tracked: 533; classified: 529; readable documents: 121; above read cap: 0; findings: 11.
 
 ## File roles
 
@@ -35,7 +35,6 @@ Tracked: 533; classified: 529; readable documents: 121; above read cap: 0; findi
 - **CONFIRMED / BROKEN_RELATIVE_LINK** docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md: Missing: docs/AGENTS.md. Next: Fix link or restore target (ID 7a232f866547f4b1)
 - **CONFIRMED / BROKEN_RELATIVE_LINK** docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md: Missing: docs/tools/ui_android_section_design_smoke.mjs. Next: Fix link or restore target (ID c9b0ed37825bd396)
 - **CONFIRMED / BROKEN_RELATIVE_LINK** docs/audit/2026-10-22-granada-lovable-ui-prototype-rejected.md: Missing: docs/android/audit/2026-10-12-ui-screenshot-gallery.md. Next: Fix link or restore target (ID 55915b207228a042)
-- **REVIEW / POTENTIAL_UNLOGGED_CHANGES** GIT_AUDIT_LOG.md: 75 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/ci.yml, .github/workflows/granada-android-direct-update.yml, .github/workflows/granada-classical-focus.yml, .github/workflows/granada-data-health.yml. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID eb512373a00d195d)
 - **REVIEW / POTENTIAL_UNLOGGED_CHANGES** android/ANDROID_AUDIT_LOG.md: 101 implementation/config paths changed since this log's last commit; examples: .github/workflows/android-build.yml, .github/workflows/android-public-install-smoke.yml, .github/workflows/android-ui-smoke.yml, .github/workflows/build-test-windows.yml, .github/workflows/ci.yml, .github/workflows/file-steward-pr-validation.yml. Next: Inspect diffs and reconcile only meaningful decisions/results in the canonical log (ID f4d85d2478b3d839)
 - **REVIEW / UNKNOWN_PURPOSE** android/app/src/main/res/raw/mlv_focus_aurora.wav: No reliable purpose category from path. Next: Declare role after reviewing usage (ID 5f24662c6e85f329)
 - **REVIEW / UNKNOWN_PURPOSE** android/app/src/main/res/raw/mlv_focus_glass.wav: No reliable purpose category from path. Next: Declare role after reviewing usage (ID a3f98f17133ad740)
