@@ -588,14 +588,29 @@ internal object NativePersonalAlarms {
             .put("days", days).put("enabled", input.optBoolean("enabled", false))
     }
 
-    private fun deliveryIntent(context: Context, id: String, occurrence: Long = 0L): PendingIntent =
+    private fun occurrenceIntent(context: Context, id: String, occurrence: Long): Intent =
+        Intent(context, PersonalAlarmReceiver::class.java).apply {
+            action = ACTION
+            // Extras alone do not participate in PendingIntent identity.
+            // Preserve the legacy URI only to cancel pre-upgrade alarms.
+            data = Uri.parse(if (occurrence > 0L) "michelslife://personal-alarm/$id/$occurrence"
+                else "michelslife://personal-alarm/$id")
+            putExtra("id", id)
+            putExtra(EXTRA_OCCURRENCE, occurrence)
+        }
+
+    private fun deliveryIntent(context: Context, id: String, occurrence: Long): PendingIntent =
         PendingIntent.getBroadcast(context, id.hashCode() and Int.MAX_VALUE,
-            Intent(context, PersonalAlarmReceiver::class.java).apply {
-                action = ACTION
-                data = Uri.parse("michelslife://personal-alarm/$id")
-                putExtra("id", id)
-                putExtra(EXTRA_OCCURRENCE, occurrence)
-            }, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            occurrenceIntent(context, id, occurrence),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+
+    private fun cancelOccurrence(context: Context, id: String, occurrence: Long) {
+        val pending = PendingIntent.getBroadcast(context, id.hashCode() and Int.MAX_VALUE,
+            occurrenceIntent(context, id, occurrence),
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE) ?: return
+        (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).cancel(pending)
+        pending.cancel()
+    }
 
     private fun openIntent(context: Context, id: String): PendingIntent =
         PendingIntent.getActivity(context, id.hashCode() and Int.MAX_VALUE,
@@ -631,10 +646,15 @@ internal object NativePersonalAlarms {
     }
 
     private fun cancel(context: Context, id: String) {
-        (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager)
-            .cancel(deliveryIntent(context, id))
+        val occurrence = prefs(context).getLong(SCHEDULED_PREFIX + id, 0L)
+        cancelOccurrence(context, id, occurrence)
+        if (occurrence > 0L) cancelOccurrence(context, id, 0L)
         prefs(context).edit().remove(SCHEDULED_PREFIX + id).apply()
     }
+
+    private fun sameSchedule(previous: JSONObject, current: JSONObject): Boolean =
+        listOf("enabled", "time", "repeat", "date", "days", "dueAt")
+            .all { previous.optString(it) == current.optString(it) }
 
     private fun schedule(context: Context, item: JSONObject) {
         if (!item.optBoolean("enabled")) return
@@ -643,6 +663,9 @@ internal object NativePersonalAlarms {
         val manager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val id = item.getString("id")
         val key = SCHEDULED_PREFIX + id
+        val previous = prefs(context).getLong(key, 0L)
+        if (previous != date) cancelOccurrence(context, id, previous)
+        if (previous > 0L) cancelOccurrence(context, id, 0L)
         if (!prefs(context).edit().putLong(key, date).commit())
             throw IllegalStateException("Could not persist alarm occurrence")
         val pending = deliveryIntent(context, id, date)
@@ -689,13 +712,31 @@ internal object NativePersonalAlarms {
             prefs(context).edit().putString(KEY_ALARMS, existing.toString()).commit()
             return JSONObject().put("error", "Could not persist alarms")
         }
-        for (i in 0 until existing.length()) {
-            val old = existing.optJSONObject(i) ?: continue
-            old.optString("id").takeIf { idPattern.matches(it) }?.let { cancel(context, it) }
+        val previousById = (0 until existing.length()).mapNotNull { existing.optJSONObject(it) }
+            .associateBy { it.optString("id") }
+        val currentById = (0 until cleanList.length()).map { cleanList.getJSONObject(it) }
+            .associateBy { it.optString("id") }
+        for ((id, old) in previousById) {
+            if (!idPattern.matches(id)) continue
+            val current = currentById[id]
+            if (current == null || !sameSchedule(old, current)) id.let { cancel(context, it) }
         }
         createChannel(context)
-        for (i in 0 until cleanList.length()) schedule(context, cleanList.getJSONObject(i))
-        return status(context).put("count", cleanList.length())
+        var failed = 0
+        for ((id, item) in currentById) {
+            val old = previousById[id]
+            // Editing a label or adding another alarm must not replace a due
+            // occurrence that Android has delayed while idle.
+            if (old != null && sameSchedule(old, item) &&
+                prefs(context).getLong(SCHEDULED_PREFIX + id, 0L) > 0L) continue
+            try { schedule(context, item) } catch (e: Exception) {
+                failed++
+                android.util.Log.w("MLVPersonalAlarms", "Could not schedule one alarm", e)
+            }
+        }
+        val result = status(context).put("count", cleanList.length())
+        if (failed > 0) result.put("error", "Could not schedule $failed alarm(s)")
+        return result
     }
 
     @Synchronized
@@ -710,14 +751,28 @@ internal object NativePersonalAlarms {
                 }
             }
         }
+        PersonalAlarmOverlay.restoreRecent(context)
+    }
+
+    private const val NOTIFICATION_ID = 4710
+    private fun notificationTag(id: String) = "personal-alarm:$id"
+
+    // The existing persisted delivery markers also recover unacknowledged
+    // alarms after process death. Never revive an old notification indefinitely.
+    internal fun recentDelivered(context: Context): List<JSONObject> {
+        val records = list(context)
+        return (0 until records.length()).mapNotNull { records.optJSONObject(it) }
+            .filter { wasDelivered(context, it.optString("id")) }
+            .sortedBy { prefs(context).getLong(LAST_DELIVERED_PREFIX + it.optString("id"), 0L) }
     }
 
     fun dismiss(context: Context, id: String) {
         if (!idPattern.matches(id)) return
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.cancel(id.hashCode() and Int.MAX_VALUE)
+        manager.cancel(notificationTag(id), NOTIFICATION_ID)
         prefs(context).edit().remove(LAST_DELIVERED_PREFIX + id).apply()
         PersonalAlarmOverlay.dismiss(context, id)
+        PersonalAlarmOverlay.restoreRecent(context)
     }
 
     @Synchronized
@@ -775,7 +830,7 @@ internal object NativePersonalAlarms {
         // when Android grants access. If denied, a heads-up notification remains.
         if (!PersonalAlarmOverlay.isQueued(id) && (Build.VERSION.SDK_INT < 34 || manager.canUseFullScreenIntent()))
             notificationBuilder.setFullScreenIntent(open, true)
-        manager.notify(id.hashCode() and Int.MAX_VALUE, notificationBuilder.build())
+        manager.notify(notificationTag(id), NOTIFICATION_ID, notificationBuilder.build())
         // The channel carries sound/vibration. Do not bypass the user's blocked
         // channel, DND, or system accessibility preferences with forced media.
     }
