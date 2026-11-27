@@ -24,7 +24,7 @@
     "verified",
     "pending"
   ],
-  "current_phase": "Block 4B: surface roles, bell-only expiry, visible ambient controls and separate desktop floating lanes committed; latest candidate CI pending",
+  "current_phase": "Block 4B: prior exact candidate 20/22; native phase bell and optional glass blur refinements committed; expanded browser checks pending",
   "source_prs": [
     "https://github.com/michels-lab/michel-s-life/pull/225",
     "https://github.com/michels-lab/michel-s-life/pull/226",
@@ -237,31 +237,35 @@
     "published_at": "2026-11-26T03:05:02Z",
     "publisher_run": 45746499113,
     "pr": 241,
-    "head": "6ffbadbe12454d882407fc9ec2f5e46d4e12b361",
+    "head": "44cb22bc9315af752207bc5709946035a649c38f",
     "implemented": [
       "six tab CSS selectors restricted to button",
       "sidebar selected text and scrollbars",
       "always visible ambient play/pause, title and progress",
       "fixed phase bells, ducking, 18 recordings in ambience",
       "Android native bell-only policy",
-      "measured independent desktop footer lanes, scrollbar clearance, Coming Next text truncation"
+      "measured independent desktop footer lanes, scrollbar clearance, Coming Next text truncation",
+      "native completion and snooze determine bell from completed phase; retained OS bell channels and all music assets",
+      "desktop custom glass enabled: 10px backdrop blur for non-nested translucent surfaces, zero opacity unchanged"
     ],
     "targeted_mocked_checks": "6/6 pass",
     "remaining": [
-      "exact candidate browser/native checks",
-      "verify dashboard/settings/missions computed surface and footer geometry",
-      "inspect other windows and saved custom opacity",
-      "physical owner visual and audio acceptance",
-      "stable release"
+      "exact current candidate CI",
+      "all main routes and 50/0 opacity browser checks added, not executed yet",
+      "physical owner visual/audio acceptance",
+      "release 3.0.235"
     ],
     "previous_ci": {
-      "head": "c2e4065cf750175852a670ffb9c02d8e97734af4",
-      "success": 14,
+      "head": "6ffbadbe12454d882407fc9ec2f5e46d4e12b361",
+      "success": 20,
       "total": 22,
-      "android15_debug": "success",
-      "android14_16": "failed",
       "windows_build": "success",
-      "failed_contracts": "obsolete final music picker, legacy off behavior and preference assertions; updated without claiming latest pass"
+      "desktop_ui": "success",
+      "android_ui": "success",
+      "android15_debug": "success",
+      "native_bell_contract": "failed obsolete selected-tone assertion; repaired with actual phase-based native delivery",
+      "android14": "ADB offline and onboarding tap failed",
+      "android16": "ADB offline and native screenshot missing"
     }
   }
 }
