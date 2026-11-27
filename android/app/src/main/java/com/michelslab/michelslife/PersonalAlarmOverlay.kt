@@ -143,9 +143,12 @@ internal object PersonalAlarmOverlay {
                 text = "Posponer 5 min"
                 minHeight = dp(app, 54)
                 setOnClickListener {
-                    NativePersonalAlarms.snooze(app, id)
-                    stop(app)
-                    NativePersonalAlarms.dismiss(app, id)
+                    if (NativePersonalAlarms.snooze(app, id)) {
+                        stop(app)
+                        NativePersonalAlarms.dismiss(app, id)
+                    } else {
+                        android.widget.Toast.makeText(app, "No se pudo posponer. La alarma sigue activa.", android.widget.Toast.LENGTH_LONG).show()
+                    }
                 }
             }
             buttons.addView(close)
@@ -178,6 +181,8 @@ internal object PersonalAlarmOverlay {
             val uri = NativePersonalAlarms.alarmSoundUri(context, id)
                 ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
             val sound = MediaPlayer()
+            // Track ownership before any fallible operation so the catch releases it.
+            player = sound
             sound.setAudioAttributes(AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_ALARM)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
@@ -186,7 +191,6 @@ internal object PersonalAlarmOverlay {
             sound.isLooping = true
             sound.prepare()
             sound.start()
-            player = sound
         } catch (_: Exception) {
             try { player?.release() } catch (_: Exception) { }
             player = null
