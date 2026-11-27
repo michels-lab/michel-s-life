@@ -393,7 +393,7 @@ test('Android persistence accepts every alarm selector sound, including snoozed 
   assert.match(native,/if \(selected in generatedSounds\)/);
   const snooze=native.slice(native.indexOf('fun snooze(context:'),native.indexOf('private fun notificationAllowed'));
   assert.match(snooze,/\.put\("sound", selected\.optString\("sound", "system"\)\)/);
-  assert.match(snooze,/schedule\(context, replacement\)/);
+  assert.match(snooze,/armOccurrence\(context, replacementId, dueAt\)/);
 });
 
 test('failed snooze keeps the ringing overlay active and failed native save retains scheduling',()=>{
@@ -517,4 +517,32 @@ test('Android Activity queues multiple notification opens and preserves them on 
   assert.match(activity,/queue.addAll\(pendingPersonalAlarmIds\)/);
   assert.match(activity,/getStringArrayList\(personalAlarmQueueKey\)\?\.forEach/);
   assert.match(activity,/webView.post \{ openPersonalAlarmFromNotification\(\) \}/);
+});
+
+test('snooze stages its new OS occurrence before committing the acknowledgement and registry',()=>{
+  const snooze=native.slice(native.indexOf('fun snooze(context:'),native.indexOf('private fun notificationAllowed'));
+  assert.ok(snooze.indexOf('armOccurrence(context, replacementId, dueAt)')<snooze.indexOf('putString(KEY_ALARMS, original.toString())'));
+  assert.match(snooze,/\.putLong\(SCHEDULED_PREFIX \+ replacementId, dueAt\)\s*\.remove\(deliveryKey\)\.commit\(\)/);
+  assert.match(snooze,/retireOccurrence\(context, replacementId, dueAt\)/);
+  assert.match(snooze,/\.remove\(SCHEDULED_PREFIX \+ replacementId\)\s*\.putLong\(deliveryKey, deliveredAt\)/);
+});
+test('expired one-time alarms cannot block unrelated changes and deleted alarm markers cannot reopen UI',()=>{
+  const sync=native.slice(native.indexOf('fun sync(context:'),native.indexOf('fun recover(context:'));
+  assert.match(sync,/sameSchedule\(old, item\) && item.optString\("repeat"\) == "once"\) \{\s*item.put\("enabled", false\)/);
+  const recovery=native.slice(native.indexOf('fun recover(context:'),native.indexOf('private const val NOTIFICATION_ID'));
+  assert.match(recovery,/timestamp\(item, now\) <= 0L/);
+  assert.match(recovery,/item.put\("enabled", false\)/);
+  assert.ok(recovery.indexOf('if (!edit.commit())')<recovery.indexOf('retireOccurrence(context, id, previous)'));
+  const delivered=native.slice(native.indexOf('fun wasDelivered('),native.indexOf('fun rememberMotivation('));
+  assert.match(delivered,/readRegistry\(context\)/);
+  assert.match(delivered,/registry.optJSONObject\(it\)\?\.optString\("id"\) == id/);
+});
+test('clock/timezone changes re-arm personal alarms without touching the canonical Focus timer',()=>{
+  assert.match(manifest,/\.PersonalAlarmClockReceiver/);
+  assert.match(manifest,/android.intent.action.TIME_SET/);
+  assert.match(manifest,/android.intent.action.TIMEZONE_CHANGED/);
+  const focusNative=readFileSync('android/app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt','utf8');
+  const receiver=focusNative.slice(focusNative.indexOf('class PersonalAlarmClockReceiver'));
+  assert.match(receiver,/NativePersonalAlarms.recover\(context\)/);
+  assert.doesNotMatch(receiver,/NativeFocusAlarm.recoverAfterBoot/);
 });

@@ -78,7 +78,9 @@ internal object NativePersonalAlarms {
     fun wasDelivered(context: Context, id: String): Boolean {
         if (!idPattern.matches(id)) return false
         val at = prefs(context).getLong(LAST_DELIVERED_PREFIX + id, 0L)
-        return at > 0L && System.currentTimeMillis() - at in 0..15 * 60 * 1000L
+        if (at <= 0L || System.currentTimeMillis() - at !in 0..15 * 60 * 1000L) return false
+        val registry = try { readRegistry(context) } catch (_: Exception) { return false }
+        return (0 until registry.length()).any { registry.optJSONObject(it)?.optString("id") == id }
     }
 
     /**
@@ -537,17 +539,18 @@ internal object NativePersonalAlarms {
         // Claim this delivered occurrence once and persist only the new snooze.
         // Scheduling a snooze must not touch unrelated delayed alarms.
         val replacementId = replacement.getString("id")
-        val saved = prefs(context).edit().putString(KEY_ALARMS, original.toString())
-            .remove(deliveryKey).commit()
-        if (saved) {
-            try {
-                schedule(context, replacement)
-                if (prefs(context).getLong(SCHEDULED_PREFIX + replacementId, 0L) == dueAt)
-                    return true
-            } catch (_: Exception) { }
-        }
-        try { cancel(context, replacementId) } catch (_: Exception) { }
+        try {
+            // Arm the new identity before committing both the registry and
+            // the acknowledgement. A crash cannot persist an unarmed snooze.
+            armOccurrence(context, replacementId, dueAt)
+            val saved = prefs(context).edit().putString(KEY_ALARMS, original.toString())
+                .putLong(SCHEDULED_PREFIX + replacementId, dueAt)
+                .remove(deliveryKey).commit()
+            if (saved) return true
+        } catch (_: Exception) { }
+        retireOccurrence(context, replacementId, dueAt)
         prefs(context).edit().putString(KEY_ALARMS, originalRaw)
+            .remove(SCHEDULED_PREFIX + replacementId)
             .putLong(deliveryKey, deliveredAt).commit()
         return false
     }
@@ -771,8 +774,16 @@ internal object NativePersonalAlarms {
             val previous = oldOccurrences[id] ?: 0L
             val next = if (old != null && sameSchedule(old, item) && previous > 0L) previous
                 else timestamp(item, now)
-            if (next <= 0L)
+            if (next <= 0L) {
+                // Old one-shot entries left enabled after a missed alarm must
+                // not prevent unrelated edits. Never silently accept a new
+                // or deliberately rescheduled one-shot in the past.
+                if (old != null && sameSchedule(old, item) && item.optString("repeat") == "once") {
+                    item.put("enabled", false)
+                    continue
+                }
                 return JSONObject().put("error", "An enabled alarm has no future occurrence")
+            }
             newOccurrences[id] = next
         }
         val armed = mutableListOf<Pair<String, Long>>()
@@ -819,7 +830,34 @@ internal object NativePersonalAlarms {
     @Synchronized
     fun recover(context: Context) {
         createChannel(context)
-        val all = list(context)
+        val all = readRegistry(context)
+        val now = System.currentTimeMillis()
+        // Android clears its alarm queue on boot. A past single occurrence
+        // has no next delivery; keep the historical row but mark it inactive.
+        // Do not retroactively ring a missed alarm after boot or clock change.
+        val expired = mutableListOf<Pair<String, Long>>()
+        for (i in 0 until all.length()) {
+            val item = all.optJSONObject(i) ?: continue
+            if (item.optBoolean("enabled") && item.optString("repeat") == "once" &&
+                timestamp(item, now) <= 0L) {
+                val id = item.optString("id")
+                if (!idPattern.matches(id)) continue
+                expired.add(id to prefs(context).getLong(SCHEDULED_PREFIX + id, 0L))
+                item.put("enabled", false)
+            }
+        }
+        if (expired.isNotEmpty()) {
+            val edit = prefs(context).edit().putString(KEY_ALARMS, all.toString())
+            for ((id, _) in expired) edit.remove(SCHEDULED_PREFIX + id)
+            if (!edit.commit()) {
+                android.util.Log.w("MLVPersonalAlarms", "Could not persist expired alarm recovery")
+                return
+            }
+            for ((id, previous) in expired) {
+                retireOccurrence(context, id, previous)
+                if (previous > 0L) retireOccurrence(context, id, 0L)
+            }
+        }
         for (i in 0 until all.length()) {
             val item = all.optJSONObject(i) ?: continue
             if (item.optBoolean("enabled")) {

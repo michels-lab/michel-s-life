@@ -39,6 +39,14 @@
             android:name=".PersonalAlarmReceiver"
             android:exported="false" />
         <receiver
+            android:name=".PersonalAlarmClockReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
+        <receiver
             android:name=".FocusAlarmReceiver"
             android:exported="false" />
         <!-- Private OS notification action, never a second Focus timer. -->
