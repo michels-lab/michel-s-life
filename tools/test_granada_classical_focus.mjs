@@ -236,3 +236,9 @@ test('failed track preference leaves current audio and reports error',()=>{
  assert.equal(f.api.moveAmbient(1),false);assert.equal(f.api.playingScene(),library[0]);
  assert.equal(p.paused,false);assert.equal(f.recordings.length,1);assert.match(f.api.personalStatus(),/not saved/);
 });
+
+test('a playlist with one remaining recording restarts on natural end',()=>{
+ const f=harness();f.api.setAmbientCollection('Classical');for(const id of classicalCollection.slice(1))f.api.archiveScene(id);
+ f.api.setAmbientMode('playlist');f.api.startAmbient();const first=f.recordings.at(-1);first.onended();
+ assert.equal(f.recordings.length,2);assert.equal(f.api.playingScene(),piano[0]);assert.equal(f.recordings.at(-1).paused,false);
+});

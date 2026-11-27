@@ -320,7 +320,7 @@
     if(!fromPlaylist){resetShuffle();const group=ambientScenes[id]?.group;if(ambientCollection()!=='all'&&group!==ambientCollection())api()?.setAudioPreference?.('ambientCollection','all');}
     const old=ambientScene;
     if(api()?.setAudioPreference?.(sceneKey,id)!==true){playbackError=lang('Track selection was not saved.','No se guardó la selección.');return sceneId();}
-    if(old&&old!==sceneId())startAmbient(paused);
+    if(old&&(old!==sceneId()||fromPlaylist))startAmbient(paused);
     return sceneId();
   }
   function toggleScene(id){
