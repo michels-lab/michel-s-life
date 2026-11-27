@@ -24,7 +24,7 @@
     "verified",
     "pending"
   ],
-  "current_phase": "Block 4B published and verified; physical owner acceptance pending; optional music packs are separate.",
+  "current_phase": "Block 4B published and verified; optional music pack PR #238 integrated, two CI artifacts verified, not a new stable app release. Physical acceptance pending.",
   "source_prs": [
     "https://github.com/michels-lab/michel-s-life/pull/225",
     "https://github.com/michels-lab/michel-s-life/pull/226",
@@ -288,5 +288,24 @@
       "independent_verifier_run": 45972226623
     },
     "merge_sha": "6f93a41519707973bd47e1d728483a7c83b168c7"
+  },
+  "optional_music_packs": {
+    "status": "merged_verified_ci_artifacts_not_public_release",
+    "pr": 238,
+    "merge_sha": "47817af4f31d1952283b3ea1d3b5515bfc075d73",
+    "verified_source_sha": "10dd97bd64c2f9ad2ec0ef5246c6f2ce230e28a0",
+    "run": 45580732287,
+    "tracks": 16,
+    "pack01": {
+      "artifact": 15006801112,
+      "tracks": 8
+    },
+    "pack02": {
+      "artifact": 15006887081,
+      "tracks": 8
+    },
+    "license": "CC BY 4.0",
+    "bundled_tracks": 18,
+    "changes_stable_app": false
   }
 }
