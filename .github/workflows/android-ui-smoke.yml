@@ -16,6 +16,7 @@ on:
       - 'tools/ui_granada_transactional_restore_smoke.mjs'
       - 'tools/ui_android_quest_chain_guard_smoke.mjs'
       - 'tools/ui_android_story_navigation_smoke.mjs'
+      - 'tools/ui_android_direct_updater_smoke.mjs'
       - 'tools/ui_android_onboarding_persistence_smoke.mjs'
       - 'tools/ui_android_section_design_smoke.mjs'
       - 'tools/ui_android_chapter_motion_smoke.mjs'
@@ -156,6 +157,11 @@ jobs:
         run: |
           export MLV_ANDROID_UI_URL=http://127.0.0.1:4174
           node tools/ui_android_story_navigation_smoke.mjs
+
+      - name: Verify Android Settings updater real browser touch and paired release metadata
+        run: |
+          export MLV_ANDROID_UI_URL=http://127.0.0.1:4174
+          node tools/ui_android_direct_updater_smoke.mjs
 
       - name: Prevent onboarding mission and contract drift on WebView relaunch
         run: |
