@@ -1,4 +1,11 @@
 {
+  "granada_android_focus_checkpoint": {
+    "candidate": "97dd95e249967befb2d016bcac2735ed2ccfa3a0",
+    "local_transport_tests_passed": 54,
+    "guard_run": "https://github.com/michels-lab/michel-s-life/actions/runs/46099113823",
+    "previous_android15_result": "install and cold launch succeeded; focus unconfirmed before first tap",
+    "acceptance": "installed onboarding and two relaunches pending"
+  },
   "schema": "michels-lab-product-progress-v1",
   "as_of": "2026-11-27",
   "repository": "michels-lab/michel-s-life",
