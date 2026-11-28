@@ -293,7 +293,15 @@ def require_focused_app(serial):
     # A live PID or CDP connection alone does not prove Android will route
     # the native touch to the target window. Never retain other window titles.
     raw = adb(serial, "shell", "dumpsys", "window", "windows", timeout=12)
-    focus = re.findall(r"(?m)^\s*mCurrentFocus\s*=\s*(.+)$", raw)
+    field = r"(?m)^[ \t]*mCurrentFocus[ \t]*=[ \t]*([^\r\n]*)"
+    focus = re.findall(field, raw)
+    if not focus:
+        # Some Android builds report focus under display state instead of
+        # the list of windows. Only fall back if the field was absent.
+        displays = adb(serial, "shell", "dumpsys", "window", "displays", timeout=12)
+        focus = re.findall(field, displays)
+    if not focus:
+        raise RuntimeError("native_app_window_focus_field_missing")
     component = re.escape(PKG) + r"/(?:" + re.escape(PKG) + r")?\.MainActivity"
     if len(focus) != 1 or not re.search(r"(?<![\w.])" + component + r"(?:\s|\})", focus[0]):
         raise RuntimeError("native_app_window_not_focused")

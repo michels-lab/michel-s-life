@@ -1,5 +1,11 @@
 # Michel's Life — avance funcional y puertas de aceptación
 
+## Granada #244 ? Android 15 onboarding focus
+
+The Android 15 job for a02c7db7 installed the APK and cold-launched MainActivity. The onboarding report recorded zero touches and failed the focus check. The artifact did not record whether focus was absent from the window dump or belonged to another window. The driver now queries display state when the windows listing omits the focus field. Explicit null, foreign or ambiguous focus still prevents input. The local onboarding suite passed 25 tests. Installed-device onboarding and two relaunches remain pending. Project milestone count remains 8/15.
+
+[Android 15 candidate evidence](https://github.com/michels-lab/michel-s-life/actions/runs/46093786288/job/140821469115)
+
 ## 27-nov — GRANADA: convergencia de ramas y comprobación coherente de persistencia
 
 **53% → 53% (8/15 hitos).** Candidato previo 25fa4067: 18/20 workflows, ambos APK compile PASS, [53/53 guard](https://github.com/michels-lab/michel-s-life/actions/runs/46058548080), los tres emuladores normales verificaron SHA256 `680e8107fda9bf8695ad101e2039f865d38a3d594497c21bf202cf281fd77377`. API34/36 pérdida de transporte, API35 foco no confirmado después de reintentos UIAutomator; los tres brazos A/B fallaron, causa no demostrada. Merge f70a81e incorpora seis archivos de gobierno de main sin diferencias de producto; #244 fusionable, behind=0 al consultar. Nuevo HEAD `b1de24ae3af9991b9a5f5caa68e3c2e62b4d2a43`: incorpora comprobación histórica #166 de coherencia de tres comparaciones y diez PNG CRC, con ocho campos actuales incluyendo XP y completions, cinco nuevas pruebas negativas pendientes. #190 cerrado como sustituido tras comprobar 18 tests originales presentes en suite actual de 24; cuatro PR abiertos (#244, #181, #166, #62). Nuevo CI: 1/20 SUCCESS al consultar, [build](https://github.com/michels-lab/michel-s-life/actions/runs/46062840828) y [matriz](https://github.com/michels-lab/michel-s-life/actions/runs/46062840885) pendientes. Sin merge funcional, release, cambios de UI ni acceso a cuentas reales. Estable 3.0.235/0.2.24. Persisten gates físicos y OAuth.

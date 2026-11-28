@@ -213,6 +213,20 @@ class NativeOnboardingTouchTests(unittest.TestCase):
             with patch.object(mod,"adb",return_value=raw), self.assertRaisesRegex(RuntimeError,"not_focused"):
                 mod.require_focused_app(mod.SERIAL)
 
+    def test_missing_window_field_uses_display_focus(self):
+        app = "mCurrentFocus=Window{abc u0 " + mod.PKG + "/.MainActivity}"
+        with patch.object(mod, "adb", side_effect=["Window list", app]) as cmd:
+            mod.require_focused_app(mod.SERIAL)
+            cmd.assert_called_with(mod.SERIAL, "shell", "dumpsys", "window", "displays", timeout=12)
+        for value in ("mCurrentFocus=null", "mCurrentFocus=", app + "\n" + app):
+            with self.subTest(value=value), patch.object(mod, "adb", side_effect=[value]) as cmd:
+                with self.assertRaisesRegex(RuntimeError, "not_focused"):
+                    mod.require_focused_app(mod.SERIAL)
+                self.assertEqual(cmd.call_count, 1)
+        with patch.object(mod, "adb", side_effect=["windows", "displays"]):
+            with self.assertRaisesRegex(RuntimeError, "focus_field_missing"):
+                mod.require_focused_app(mod.SERIAL)
+
     def test_launcher_never_closed_on_manual_or_shared_host(self):
         with patch.object(mod,"accessibility_xml",return_value=hierarchy()), \
              patch.object(mod.os,"environ",{}), patch.object(mod,"adb") as cmd:
