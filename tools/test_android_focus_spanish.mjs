@@ -117,6 +117,27 @@ test('Every Android notification permission/channel state is translated without 
   }
 });
 
+test('Missing native notification state at startup matches an explicitly denied state',()=>{
+  const denied={notificationsGranted:false};
+  for(const [language,expectedNote,expectedAction] of [
+    ['en','Allow Michel’s Life notifications to show Pomodoro with the screen locked.','Enable'],
+    ['es','Permite las notificaciones de Michel’s Life para ver el Pomodoro con la pantalla bloqueada.','Activar']
+  ]){
+    const deniedPresentation=Focus.focusNotificationPresentation(denied,language);
+    assert.equal(deniedPresentation.showAction,true);
+    assert.equal(deniedPresentation.actionLabel,expectedAction);
+    assert.equal(deniedPresentation.note,expectedNote);
+    for(const missing of [undefined,null,{}]){
+      const actual=Focus.focusNotificationPresentation(missing,language);
+      assert.deepEqual(actual,deniedPresentation,
+        `Missing native state must present as denied (${language})`);
+      assert.equal(actual.showAction,true,`Denied state must show the enable action (${language})`);
+      assert.equal(actual.actionLabel,expectedAction,`Denied action label (${language})`);
+      assert.equal(actual.note,expectedNote,`Denied permission copy (${language})`);
+    }
+  }
+});
+
 test('Running clock uses language-dependent copy without mutating canonical timer state',()=>{
   assert.match(source,/localizeFocusSurface\(\);\s*if\(!f\)/);
   assert.match(source,/focusText\('Session in progress','Sesión en curso'\)/);
