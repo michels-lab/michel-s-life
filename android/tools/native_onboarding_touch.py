@@ -51,6 +51,7 @@ STEP_JS = r"""(() => {
 PKG = "com.michelslab.michelslife"
 SERIAL = "emulator-5554"
 BOUNDS = re.compile(r"^\[(\d+),(\d+)\]\[(\d+),(\d+)\]$")
+FAILURE_REASON = re.compile(r"^[a-z0-9_]{1,96}$")
 PAGE_URL = "https://appassets.androidplatform.net/assets/app/index.html"
 UI_XML = "/sdcard/mlv-native-onboarding-accessibility.xml"
 GEOMETRY_CACHE = Path("artifacts/candidate-install/native-accessibility-webview-geometry.json")
@@ -307,6 +308,26 @@ def require_focused_app(serial):
         raise RuntimeError("native_app_window_not_focused")
 
 
+def failure_reason(error):
+    """Bounded machine-readable code for a failure before the first tap.
+
+    Only our own fixed reason codes are persisted. Raw window titles, device
+    serials, DOM values and command output never reach the report.
+    """
+    if isinstance(error, RuntimeError):
+        text = str(error)
+        return text if FAILURE_REASON.fullmatch(text) else "native_unexpected_runtime_failure"
+    if isinstance(error, subprocess.TimeoutExpired):
+        return "native_command_timed_out"
+    if isinstance(error, TimeoutError):
+        return "native_operation_timed_out"
+    if isinstance(error, OSError):
+        return "native_io_error"
+    if isinstance(error, ValueError):
+        return "native_value_error"
+    return "native_unexpected_failure"
+
+
 def touch_stage(port, expected, output, serial=SERIAL):
     pid = adb(serial, "shell", "pidof", PKG).strip()
     if not re.fullmatch(r"[1-9][0-9]*", pid):
@@ -364,6 +385,12 @@ def touch_stage(port, expected, output, serial=SERIAL):
                 if after != expected:
                     raise RuntimeError("native_onboarding_changed_unexpectedly")
         raise RuntimeError(f"native_onboarding_step_{expected}_did_not_advance")
+    except Exception as error:
+        # A zero-attempt report must still explain WHY no real touch was sent,
+        # without persisting raw window, serial, DOM or command output.
+        if not attempts:
+            report["failureReason"] = failure_reason(error)
+        raise
     finally:
         target = Path(output)
         target.parent.mkdir(parents=True, exist_ok=True)

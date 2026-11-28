@@ -1,6 +1,8 @@
 """Fail-closed native Android touch targeting and system ANR regressions."""
 import importlib.util
+import json
 from pathlib import Path
+import subprocess
 import unittest
 import tempfile
 from unittest.mock import patch
@@ -252,6 +254,46 @@ class NativeOnboardingTouchTests(unittest.TestCase):
         self.assertIn("elementFromPoint", mod.STEP_JS)
         self.assertNotIn(".click(", mod.STEP_JS)
         self.assertNotIn("setItem(", mod.STEP_JS)
+
+    def test_zero_attempt_report_distinguishes_focus_window_and_transport(self):
+        actual = {"step": 1, "enabled": True, "action": "next",
+                  "viewport": {"width": 360, "height": 800},
+                  "points": [{"x": 288, "y": 640, "topmost": True}]}
+        for reason in ("native_app_window_focus_field_missing",
+                       "native_app_window_not_focused",
+                       "native_adb_command_failed"):
+            with self.subTest(reason=reason), tempfile.TemporaryDirectory() as d:
+                output = Path(d) / "report.json"
+                with patch.object(mod, "dismiss_launcher"), \
+                        patch.object(mod, "require_focused_app",
+                                     side_effect=RuntimeError(reason)), \
+                        patch.object(mod, "adb", return_value="1234") as command, \
+                        patch.object(mod, "physical_display", return_value=(1080, 2400)), \
+                        patch.object(mod, "accessibility_xml", return_value="<hierarchy/>"), \
+                        patch.object(mod, "verified_webview_bounds", return_value=(0, 78, 1080, 2335)), \
+                        patch.object(mod, "read_native_webview", return_value=actual):
+                    with self.assertRaisesRegex(RuntimeError, reason):
+                        mod.touch_stage(9222, 1, output)
+                report = json.loads(output.read_text())
+                self.assertEqual(report["failureReason"], reason)
+                self.assertEqual(report["attempts"], [])
+                self.assertFalse(report["completed"])
+                self.assertFalse(any("tap" in c.args for c in command.call_args_list))
+                text = output.read_text()
+                self.assertNotIn(mod.SERIAL, text)
+                self.assertNotIn("Window{", text)
+
+    def test_failure_reason_never_persists_raw_window_or_command_output(self):
+        raw_window = "Window{abc u0 com.michelslab.michelslife/.MainActivity}"
+        self.assertEqual(mod.failure_reason(RuntimeError(raw_window)),
+                         "native_unexpected_runtime_failure")
+        timeout = subprocess.TimeoutExpired(
+            ["adb", "-s", mod.SERIAL, "shell", "dumpsys", "window", "windows"], 12)
+        self.assertEqual(mod.failure_reason(timeout), "native_command_timed_out")
+        for code in ("native_app_window_focus_field_missing",
+                     "native_app_window_not_focused",
+                     "native_adb_command_failed"):
+            self.assertEqual(mod.failure_reason(RuntimeError(code)), code)
 
 if __name__ == "__main__":
     unittest.main()
