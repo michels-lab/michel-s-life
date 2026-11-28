@@ -184,7 +184,12 @@ assert.equal(discard.hidden,false);
 assert.match(status.textContent,/APK verificada/);
 
 install.fire();request('updateInstall');
-respond({opened:false,needsPermission:true});
+const installRequest=latest(),countBeforeInstall=sent.length;
+check.fire();discard.fire();stage.fire();
+assert.equal(sent.length,countBeforeInstall,'No check, discard or stage during installer verification');
+assert.equal(check.disabled,true);assert.equal(discard.disabled,true);
+respond({opened:false,needsPermission:true},true,installRequest);
+assert.equal(check.disabled,false);assert.equal(discard.disabled,false);
 assert.equal(permission.hidden,false);
 assert.match(status.textContent,/requiere permiso/);
 permission.fire();request('updatePermissionSettings');
@@ -288,4 +293,16 @@ assert.equal(get('discard-update').hidden,true);
 assert.equal(listeners.size,0);
 assert.equal(timers.size,0);
 
+// A detached Settings panel must not paint status or enable buttons in a new one.
+freshSettings();context.renderUpdates();respond({ready:false,hasCached:false});
+get('check-updates').fire();const abandonedCheck=request('updateStatus');
+freshSettings();context.renderUpdates();const newResume=request('updateReady');
+respond({ready:false,hasCached:false},true,newResume);
+const newStatus=get('update-status').textContent;
+respond({checked:true,updateAvailable:true,channel:'android-direct',latestAndroidVersion:'0.2.24',
+ releaseUrl:'https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.235-android-v0.2.24'},true,abandonedCheck);
+assert.equal(get('stage-update').hidden,true);
+assert.equal(get('update-release-link').hidden,true);
+assert.equal(get('update-status').textContent,newStatus);
+assert.equal(listeners.size,0);assert.equal(timers.size,0);
 console.log('PASS real Android updater UI: ES/EN, progress/cancel/cleanup, retry, restart, revocation, signed install, permission, forgery/offline, no auto-install');

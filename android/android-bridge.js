@@ -1042,6 +1042,15 @@
       cancel.hidden=true;
       cancel.style.cssText='min-height:44px;padding:8px 12px;margin:8px 0 0;';
       panel.append(title,button,status,link,stage,progress,cancel,install,permission,discard);
+      const actions=[button,stage,install,permission,discard];
+      const busy=()=>actions.some(el=>el.disabled);
+      // Lock contradictory controls while a verification or cache operation
+      // is active. Cancel is intentionally outside this group.
+      const lockOthers=clicked=>{
+        const previous=actions.filter(el=>el!==clicked).map(el=>[el,el.disabled]);
+        for(const [el] of previous)el.disabled=true;
+        return ()=>{for(const [el,disabled] of previous)el.disabled=disabled;};
+      };
       // The native app revalidates official metadata on download, and verifies
       // actual APK bytes/signature again on EVERY explicit install tap.
       // Responses are correlated; late/stale replies never touch this control.
@@ -1102,9 +1111,9 @@
         }
       };
       stage.addEventListener('click',()=>{
-        if(stage.disabled)return;
+        if(stage.hidden||busy())return;
+        const unlock=lockOthers(stage);
         stage.hidden=true;
-        button.disabled=true; // no concurrent update check while APK downloads
         install.hidden=true;
         permission.hidden=true;
         discard.hidden=true;
@@ -1120,18 +1129,20 @@
           cancelPending=false;
           cancel.hidden=true;
           progress.hidden=true;
-          button.disabled=false;
-          status.textContent=ok&&result?.staged
+          unlock();
+          status.textContent=ok&&result?.staged===true
             ?(es?'APK verificada. Toca Instalar para abrir la confirmación de Android.':
               'APK verified. Tap Install to open Android confirmation.')
-            :result?.cancelled
+            :result?.cancelled===true
               ?(es?'Descarga cancelada. No se inició ninguna instalación.':
                 'Download cancelled. No installation was started.')
-              :(es?'No se pudo verificar la APK; no se instaló nada.':
-                'APK verification failed; nothing was installed.');
-          install.hidden=!(ok&&result?.staged);
+              :result?.busy===true
+                ?(es?'Hay otra operación de actualización en curso.':'Another update operation is running.')
+                :(!ok?(es?'No se confirmó el resultado. Vuelve a abrir Ajustes para comprobar la APK.':'Result not confirmed. Reopen Settings to check the APK.')
+                  :(es?'No se pudo verificar la APK; no se instaló nada.':'APK verification failed; nothing was installed.'));
+          install.hidden=!(ok&&result?.staged===true);
           stage.hidden=false; // retry always requires another explicit tap
-          if(ok&&result?.staged)discard.hidden=false;
+          if(ok&&result?.staged===true)discard.hidden=false;
         },(bytes,total)=>{
           if(cancelPending)return; // Preserve "Cancelling…" while worker exits
           const percent=Math.max(0,Math.min(100,Math.floor(100*bytes/total)));
@@ -1161,34 +1172,43 @@
         });
       });
       install.addEventListener('click',()=>{
-        if(install.disabled)return;
+        if(install.hidden||busy())return;
+        const unlock=lockOthers(install);
         permission.hidden=true;
         status.textContent=document.documentElement.lang?.startsWith('es')
           ?'Comprobando la APK de nuevo antes de abrir Android…'
           :'Checking APK again before opening Android…';
-        callNative(install,'updateInstall',90000,(result,ok)=>{
+        callNative(install,'updateInstall',180000,(result,ok)=>{
+          unlock();
           const es=String(document.documentElement.lang||'').startsWith('es');
-          if(ok&&result?.stale){
+          if(ok&&result?.stale===true){
             install.hidden=true;
             status.textContent=es
               ?'La APK guardada ya no coincide con el release oficial actual. Comprueba actualizaciones y descarga la versión nueva.'
               :'The saved APK no longer matches the latest official release. Check updates and download again.';
-          }else if(ok&&result?.needsPermission){
+          }else if(ok&&result?.needsPermission===true){
             permission.hidden=false;
             status.textContent=es
               ?'Android requiere permiso para instalar desde esta app. Abre Ajustes y vuelve a tocar Instalar.'
               :'Android needs installation permission for this app. Open Settings, then tap Install again.';
-          }else if(ok&&result?.opened)status.textContent=es
+          }else if(ok&&result?.opened===true)status.textContent=es
             ?'Se abrió el instalador de Android. Confirma o cancela ahí; aún no está instalada.'
             :'Android installer opened. Confirm or cancel there; the update is not yet installed.';
+          else if(result?.busy===true)status.textContent=es
+            ?'Hay otra operación de actualización en curso.':'Another update operation is running.';
+          else if(!ok)status.textContent=es
+            ?'No se confirmó la apertura del instalador. Comprueba Android antes de reintentar.'
+            :'Installer opening was not confirmed. Check Android before retrying.';
           else status.textContent=es
             ?'No se pudo abrir una APK verificada. Vuelve a descargarla.'
             :'Could not open a verified APK. Download it again.';
         });
       });
       permission.addEventListener('click',()=>{
-        if(permission.disabled)return;
+        if(permission.hidden||busy())return;
+        const unlock=lockOthers(permission);
         callNative(permission,'updatePermissionSettings',90000,(result,ok)=>{
+          unlock();
           const es=String(document.documentElement.lang||'').startsWith('es');
           status.textContent=ok&&result?.opened
             ?(es?'Ajustes de Android abiertos. Si das permiso, regresa y toca Instalar de nuevo.':
@@ -1198,13 +1218,15 @@
         });
       });
       discard.addEventListener('click',()=>{
-        if(discard.disabled)return;
+        if(discard.hidden||busy())return;
+        const unlock=lockOthers(discard);
         status.textContent=String(document.documentElement.lang||'').startsWith('es')
           ?'Eliminando solo la APK descargada…'
           :'Removing only the downloaded APK…';
         callNative(discard,'updateDiscard',20000,(result,ok)=>{
+          unlock();
           const es=String(document.documentElement.lang||'').startsWith('es');
-          if(ok&&result?.discarded){
+          if(ok&&result?.discarded===true){
             discard.hidden=true;
             install.hidden=true;
             permission.hidden=true;
@@ -1218,21 +1240,16 @@
       });
       mount.prepend(panel);
       button.addEventListener('click',()=>{
-        if(button.disabled)return;
+        if(busy())return;
+        const unlock=lockOthers(button);
         userRequestedUpdate=true;
         const requestId='android-direct-check-'+(++updateRequestCounter);
         const isEs=String(document.documentElement.lang||
           localStorage.getItem('michelsLife.language.v1')||'en').toLowerCase().startsWith('es');
         button.disabled=true;
-        const active=q('#mlv-android-update-status');
-        if(active)active.textContent=isEs?'Consultando release oficial…':'Checking official release…';
-        const open=q('#mlv-android-update-release-link');
-        if(open){open.hidden=true;open.removeAttribute('href');}
-        for(const id of ['mlv-android-stage-update','mlv-android-install-update',
-          'mlv-android-permission-update']){
-          const el=q('#'+id);
-          if(el)el.hidden=true;
-        }
+        status.textContent=isEs?'Consultando release oficial…':'Checking official release…';
+        link.hidden=true;link.removeAttribute('href');
+        for(const el of [stage,install,permission])el.hidden=true;
         let completed=false;
         const responseHandler=event=>{
           const data=event?.data;
@@ -1242,13 +1259,14 @@
           clearTimeout(timeout);
           window.chrome.webview.removeEventListener('message',responseHandler);
           button.disabled=false;
+          unlock();
           const result=data.ok?data.payload:null;
           const url=typeof result?.releaseUrl==='string'?result.releaseUrl:'';
           const tag=/^https:\/\/github\.com\/michels-lab\/michel-s-life-releases\/releases\/tag\/v[0-9]{1,5}\.[0-9]{1,5}\.[0-9]{1,5}-android-v([0-9]{1,5}\.[0-9]{1,5}\.[0-9]{1,5})$/.exec(url);
           const offered=data.ok===true&&result?.channel==='android-direct'&&
             result.checked===true&&result.updateAvailable===true&&
             !!tag&&tag[1]===result.latestAndroidVersion;
-          const displayed=q('#mlv-android-update-status');
+          const displayed=status;
           if(displayed){
             if(!data.ok)displayed.textContent=isEs
               ?'No se pudo verificar la actualización.'
@@ -1265,12 +1283,10 @@
             else if(isEs)displayed.textContent='No se pudo verificar el release oficial. Revisa tu conexión e inténtalo de nuevo.';
             else displayed.textContent=String(result?.status||'No verifiable result.');
           }
-          const link=q('#mlv-android-update-release-link');
-          if(link && offered){
+          if(offered){
             link.href=url;
             link.hidden=false;
-            const download=q('#mlv-android-stage-update');
-            if(download)download.hidden=false;
+            stage.hidden=false;
           }
         };
         const timeout=setTimeout(()=>{
@@ -1278,7 +1294,8 @@
           completed=true;
           window.chrome.webview.removeEventListener('message',responseHandler);
           button.disabled=false;
-          const displayed=q('#mlv-android-update-status');
+          unlock();
+          const displayed=status;
           if(displayed)displayed.textContent=isEs
             ?'Sin respuesta de Android. Intenta de nuevo.'
             :'No Android response. Please retry.';
@@ -1306,14 +1323,16 @@
         if(userRequestedUpdate)return;
         const es=String(document.documentElement.lang||
           localStorage.getItem('michelsLife.language.v1')||'en').startsWith('es');
-        if(ok&&result?.ready){
+        if(ok&&result?.ready===true){
           install.hidden=false;
           discard.hidden=false;
           stage.hidden=true;
           status.textContent=es
             ?'APK guardada verificada de nuevo. Toca Instalar si deseas continuar; antes se consultará el release oficial.'
             :'Saved APK reverified. Tap Install to continue; the official release will be checked again first.';
-        }else if(ok&&result?.hasCached){
+        }else if(ok&&result?.busy===true){
+          status.textContent=es?'Hay otra operación de actualización en curso. Vuelve a abrir Ajustes para comprobar la APK.':'Another update operation is running. Reopen Settings to check the APK.';
+        }else if(ok&&result?.hasCached===true){
           install.hidden=true;
           discard.hidden=false;
           status.textContent=es
