@@ -1,0 +1,7 @@
+# Granada — Calendar provider integrity (2026-11-27)
+
+Baseline main a9414349dcbff9d9733f735598b9c5a4c7af7eaa. Independent of alarms PR #244 and Orca audio PR #243. Native Calendar rules rounded durations to whole days, accepted up to almost 367 days despite stated 366-day cap. Gateway allocated full response body before bounding it and did not confirm event IDs and ownership in returned successful writes. HTTP 409 retry could include POST-only id in PATCH. Removal trusted empty filtered listing without checking deterministic ID.
+
+Changes: exact Duration bound, response byte bound before UTF-8 decode, requested ID verified on detail, create and update require matching ID and ownership, strip id before PATCH, deterministic lookup before reporting absent on removal. Separate OAuth scopes, explicit review and ETag protections unchanged. No external provider action was performed.
+
+Code commits 3edbe96fe1373045a2f3b800e1dfcd0286c90258, 641c20486acb31e8c8e393dee7061350b5e20607, 2c696b7b833de2dc2b19dc8e0a72681c7ce39347, b94878fb3a551f529295c363b400d8ca935bc1b6. Compiled exact rules blob 16fdb37d4c6d8bb5129fc5b8358529246999f981 locally and executed 8/8 focused Kotlin cases; five gateway structural checks fail on baseline and pass on changed code. Full CI, Android compile of gateway and real OAuth/provider acceptance remain pending. A malformed successful response can still mean the provider performed a write; UI does not certify that response. No release or percentage change.

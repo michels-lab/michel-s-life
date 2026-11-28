@@ -17,6 +17,11 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebChromeClient
+import android.webkit.RenderProcessGoneDetail
+import android.widget.LinearLayout
+import android.widget.TextView
+import android.widget.Button
+import android.view.Gravity
 import android.webkit.ValueCallback
 import androidx.webkit.WebViewAssetLoader
 import androidx.webkit.WebViewClientCompat
@@ -34,12 +39,22 @@ class MainActivity : Activity() {
     lateinit var cloud: DriveCloudEngine
         private set
     private val executor = Executors.newSingleThreadExecutor()
+    private var rendererGone = false
+    private var recoveryRequested = false
+    internal fun acceptsWebViewCallbacks(view: WebView): Boolean =
+        ::webView.isInitialized && view === webView && !rendererGone && !isDestroyed && !isFinishing
+
     private var notificationOpenGeneration = 0
     private var pendingNotificationOpen: Runnable? = null
     private var alarmOpenGeneration = 0
     private var pendingAlarmOpen: Runnable? = null
+    private val pendingPersonalAlarmIds = linkedSetOf<String>()
+    private var activePersonalAlarmId: String? = null
+    private var personalAlarmScreenOpened = false
+    private val personalAlarmQueueKey = "mlv.personalAlarmQueue"
     private var pendingWebFilePicker: ValueCallback<Array<Uri>>? = null
     private var playingAlarm: MediaPlayer? = null
+    private var attentionAlarmId: String? = null
     private var vibratingAlarm: Vibrator? = null
 
     // The notification can cold-start this Activity before the canonical
@@ -47,7 +62,7 @@ class MainActivity : Activity() {
     // means the HTML loaded; it does not prove the mobile UI is ready.
     private fun stopPendingNotificationOpen() {
         notificationOpenGeneration++
-        if (::webView.isInitialized) {
+        if (::webView.isInitialized && !rendererGone) {
             pendingNotificationOpen?.let { webView.removeCallbacks(it) }
         }
         pendingNotificationOpen = null
@@ -55,7 +70,7 @@ class MainActivity : Activity() {
 
     private fun stopPendingPersonalAlarm() {
         alarmOpenGeneration++
-        if (::webView.isInitialized) {
+        if (::webView.isInitialized && !rendererGone) {
             pendingAlarmOpen?.let { webView.removeCallbacks(it) }
         }
         pendingAlarmOpen = null
@@ -64,7 +79,8 @@ class MainActivity : Activity() {
     private fun beginAlarmAttention(id: String) {
         if (!id.matches(Regex("^[A-Za-z0-9_-]{1,64}$")) || !NativePersonalAlarms.wasDelivered(this, id)) return
         if (PersonalAlarmOverlay.isRinging(id)) return
-        stopAlarmAttention()
+        if (attentionAlarmId != null) return
+        attentionAlarmId = id
         // Wake and show an eligible alarm above the lock screen without unlocking it.
         if (Build.VERSION.SDK_INT >= 27) {
             setShowWhenLocked(true)
@@ -78,6 +94,7 @@ class MainActivity : Activity() {
             val uri = NativePersonalAlarms.alarmSoundUri(this, id)
                 ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
             val player = MediaPlayer()
+            playingAlarm = player
             player.setAudioAttributes(AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_ALARM)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build())
@@ -85,9 +102,8 @@ class MainActivity : Activity() {
             player.isLooping = true
             player.prepare()
             player.start()
-            playingAlarm = player
         } catch (_: Exception) {
-            playingAlarm?.release()
+            try { playingAlarm?.release() } catch (_: Exception) { }
             playingAlarm = null
             // The notification channel still provides a system alarm sound.
         }
@@ -102,7 +118,9 @@ class MainActivity : Activity() {
         } catch (_: Exception) { }
     }
 
-    fun stopAlarmAttention() {
+    fun stopAlarmAttention(id: String? = null) {
+        if (id != null && attentionAlarmId != id) return
+        attentionAlarmId = null
         try { playingAlarm?.stop() } catch (_: Exception) { }
         try { playingAlarm?.release() } catch (_: Exception) { }
         playingAlarm = null
@@ -118,38 +136,79 @@ class MainActivity : Activity() {
         }
     }
 
+    internal fun completePersonalAlarm(id: String) {
+        NativePersonalAlarms.dismiss(this, id)
+        stopAlarmAttention(id)
+        pendingPersonalAlarmIds.remove(id)
+        if (activePersonalAlarmId == id) {
+            stopPendingPersonalAlarm()
+            activePersonalAlarmId = null
+            personalAlarmScreenOpened = false
+        }
+        if (::webView.isInitialized && acceptsWebViewCallbacks(webView)) {
+            // Let the current JS dismiss handler finish before showing the next.
+            webView.post { openPersonalAlarmFromNotification() }
+        }
+    }
+
+    private fun enqueuePersonalAlarm(id: String?) {
+        if (id == null || !id.matches(Regex("^[A-Za-z0-9_-]{1,64}$"))) return
+        if (id != activePersonalAlarmId && NativePersonalAlarms.wasDelivered(this, id))
+            pendingPersonalAlarmIds.add(id)
+    }
+
     private fun openPersonalAlarmFromNotification() {
+        enqueuePersonalAlarm(intent.getStringExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM))
+        intent.removeExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM)
+        if (!::webView.isInitialized || !acceptsWebViewCallbacks(webView)) return
+        if (activePersonalAlarmId == null) {
+            val next = pendingPersonalAlarmIds.firstOrNull()
+            if (next == null) return
+            pendingPersonalAlarmIds.remove(next)
+            activePersonalAlarmId = next
+            personalAlarmScreenOpened = false
+        }
+        val id = activePersonalAlarmId ?: return
+        if (!NativePersonalAlarms.wasDelivered(this, id)) {
+            stopPendingPersonalAlarm()
+            stopAlarmAttention(id)
+            activePersonalAlarmId = null
+            personalAlarmScreenOpened = false
+            webView.post { openPersonalAlarmFromNotification() }
+            return
+        }
+        if (personalAlarmScreenOpened) return
         stopPendingPersonalAlarm()
-        if (!::webView.isInitialized || isDestroyed) return
-        val id = intent.getStringExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM) ?: return
-        if (!id.matches(Regex("^[A-Za-z0-9_-]{1,64}$"))) return
         beginAlarmAttention(id)
         attemptPersonalAlarmOpen(alarmOpenGeneration, id, 0)
     }
 
     private fun attemptPersonalAlarmOpen(generation: Int, id: String, retries: Int) {
-        if (generation != alarmOpenGeneration || isDestroyed ||
-            intent.getStringExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM) != id) return
-        // Only acknowledge the OS alarm after the themed screen actually opened.
+        if (generation != alarmOpenGeneration || !acceptsWebViewCallbacks(webView) ||
+            activePersonalAlarmId != id) return
         webView.evaluateJavascript(
             "(function(){try{return window.MichelsLifeAlarms?.ringAlarm?.('" + id + "')===true;}" +
                 "catch(_){return false;}})();"
         ) { opened ->
-            if (generation != alarmOpenGeneration || isDestroyed ||
-                intent.getStringExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM) != id) return@evaluateJavascript
+            if (generation != alarmOpenGeneration || !acceptsWebViewCallbacks(webView) ||
+                activePersonalAlarmId != id) return@evaluateJavascript
             if (opened == "true") {
-                intent.removeExtra(NativePersonalAlarms.EXTRA_OPEN_ALARM)
+                personalAlarmScreenOpened = true
                 pendingAlarmOpen = null
             } else if (retries < 40) {
                 val retry = Runnable { attemptPersonalAlarmOpen(generation, id, retries + 1) }
                 pendingAlarmOpen = retry
                 webView.postDelayed(retry, 250L)
+            } else {
+                pendingAlarmOpen = null
+                // Keep this alarm active; onResume/onPageFinished can retry.
             }
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        savedInstanceState?.getStringArrayList(personalAlarmQueueKey)?.forEach { enqueuePersonalAlarm(it) }
 
         NativeFocusAlarm.createChannel(this)
         NativePersonalAlarms.createChannel(this)
@@ -242,8 +301,15 @@ class MainActivity : Activity() {
         )
 
         webView.webViewClient = object : WebViewClientCompat() {
+            override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean {
+                if (view !== webView) return false
+                if (!rendererGone) showRendererRecovery(view)
+                return true
+            }
+
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
+                if (view == null || !acceptsWebViewCallbacks(view)) return
                 openPomodoroFromNotification()
                 openPersonalAlarmFromNotification()
             }
@@ -267,15 +333,52 @@ class MainActivity : Activity() {
         webView.loadUrl("https://appassets.androidplatform.net/assets/app/index.html")
     }
 
+    // A lost renderer cannot be reused. Keep saved WebView data intact, detach
+    // the dead instance and require an explicit retry instead of a crash loop.
+    private fun showRendererRecovery(view: WebView) {
+        stopPendingNotificationOpen()
+        stopPendingPersonalAlarm()
+        personalAlarmScreenOpened = false
+        rendererGone = true
+        pendingWebFilePicker?.onReceiveValue(null)
+        pendingWebFilePicker = null
+        val spanish = java.util.Locale.getDefault().language == "es"
+        val density = resources.displayMetrics.density
+        val panel = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            val padding = (24 * density).toInt()
+            setPadding(padding, padding, padding, padding)
+        }
+        panel.addView(TextView(this).apply {
+            text = if (spanish) "No se pudo mostrar Michel’s Life. Vuelve a abrir la aplicación. Tus datos guardados no se han borrado."
+                   else "Michel’s Life could not display its content. Reopen the app. Your saved data has not been erased."
+            gravity = Gravity.CENTER
+            textSize = 16f
+        })
+        panel.addView(Button(this).apply {
+            text = if (spanish) "Volver a abrir" else "Reopen"
+            setOnClickListener {
+                if (!recoveryRequested && !isDestroyed && !isFinishing) {
+                    recoveryRequested = true
+                    isEnabled = false
+                    recreate()
+                }
+            }
+        })
+        setContentView(panel)
+        view.destroy()
+    }
+
     private fun openPomodoroFromNotification() {
         stopPendingNotificationOpen()
-        if (!::webView.isInitialized || isDestroyed ||
+        if (!::webView.isInitialized || !acceptsWebViewCallbacks(webView) ||
             !intent.getBooleanExtra(NativeFocusAlarm.EXTRA_OPEN_FOCUS, false)) return
         attemptNotificationFocusOpen(notificationOpenGeneration, 0)
     }
 
     private fun attemptNotificationFocusOpen(generation: Int, retries: Int) {
-        if (generation != notificationOpenGeneration || isDestroyed ||
+        if (generation != notificationOpenGeneration || !acceptsWebViewCallbacks(webView) ||
             !intent.getBooleanExtra(NativeFocusAlarm.EXTRA_OPEN_FOCUS, false)) return
 
         // Do not acknowledge/consume the notification tap until the REAL
@@ -285,7 +388,7 @@ class MainActivity : Activity() {
             "(function(){try{return window.MichelsLifeMobileExperience?.openFocus?.()===true;}" +
                 "catch(_){return false;}})();"
         ) { opened ->
-            if (generation != notificationOpenGeneration || isDestroyed ||
+            if (generation != notificationOpenGeneration || !acceptsWebViewCallbacks(webView) ||
                 !intent.getBooleanExtra(NativeFocusAlarm.EXTRA_OPEN_FOCUS, false)) {
                 return@evaluateJavascript
             }
@@ -302,6 +405,14 @@ class MainActivity : Activity() {
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        val queue = ArrayList<String>()
+        activePersonalAlarmId?.let { queue.add(it) }
+        queue.addAll(pendingPersonalAlarmIds)
+        outState.putStringArrayList(personalAlarmQueueKey, queue)
+        super.onSaveInstanceState(outState)
+    }
+
     override fun onNewIntent(newIntent: Intent) {
         super.onNewIntent(newIntent)
         setIntent(newIntent)
@@ -313,7 +424,7 @@ class MainActivity : Activity() {
         requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 4706 && ::webView.isInitialized)
+        if (requestCode == 4706 && ::webView.isInitialized && acceptsWebViewCallbacks(webView))
             webView.evaluateJavascript(
                 "window.MichelsLifeMobileExperience?.resyncNativeNotification?.();", null
             )
@@ -321,7 +432,7 @@ class MainActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
-        if (::webView.isInitialized) {
+        if (::webView.isInitialized && acceptsWebViewCallbacks(webView)) {
             webView.onResume()
             webView.evaluateJavascript(
                 "window.MichelsLifeMobileExperience?.resyncNativeNotification?.();" +
@@ -334,7 +445,8 @@ class MainActivity : Activity() {
 
     override fun onPause() {
         stopPendingNotificationOpen()
-        if (::webView.isInitialized) webView.onPause()
+        stopPendingPersonalAlarm()
+        if (::webView.isInitialized && !rendererGone) webView.onPause()
         super.onPause()
     }
 
@@ -365,24 +477,24 @@ class MainActivity : Activity() {
         stopPendingPersonalAlarm()
         stopAlarmAttention()
         executor.shutdownNow()
-        if (::webView.isInitialized) webView.destroy()
+        if (::webView.isInitialized && !rendererGone) webView.destroy()
         super.onDestroy()
     }
 
     private fun fallbackBackNavigation() {
-        if (::webView.isInitialized && webView.canGoBack()) webView.goBack() else super.onBackPressed()
+        if (::webView.isInitialized && !rendererGone && webView.canGoBack()) webView.goBack() else super.onBackPressed()
     }
 
     @Deprecated("Deprecated in Android; retained while Michel's Life coordinates WebView and native back behavior.")
     override fun onBackPressed() {
-        if (!::webView.isInitialized) {
+        if (!::webView.isInitialized || rendererGone) {
             super.onBackPressed()
             return
         }
         webView.evaluateJavascript(
             "(function(){try{return !!(window.__mlvAndroidHandleBack&&window.__mlvAndroidHandleBack());}catch(e){return false;}})();"
         ) { handled ->
-            if (handled != "true") fallbackBackNavigation()
+            if (acceptsWebViewCallbacks(webView) && handled != "true") fallbackBackNavigation()
         }
     }
 }

@@ -110,6 +110,11 @@
     }
     html[data-mlv-platform="android"] #main .v30135-row-actions button{min-height:44px!important}
 
+    html[data-mlv-platform="android"] #tab-calendar .v30135-day:focus-visible{
+      outline:3px solid var(--ui-accent,#75e4ff)!important;
+      outline-offset:2px!important
+    }
+
     /* Journal becomes one continuous, keyboard-safe writing screen.
        Existing editor/autosave/entry history remain the exact same DOM
        and underlying JournalV30189 API as desktop. */
@@ -921,10 +926,69 @@
   // Shared frontend and the Android bridge both re-render mission cards,
   // sometimes adding late !important/inline geometry from older layouts.
   // Own the final touch targets for Android without touching the desktop DOM.
+  function enhanceCalendarA11y(main){
+    const spanish=window.MichelsLifeI18n?.language==='es';
+    const locale=spanish?'es-MX':'en-US';
+    const formatter=new Intl.DateTimeFormat(locale,{
+      weekday:'long',year:'numeric',month:'long',day:'numeric'
+    });
+    main.querySelectorAll('#tab-calendar .v30135-day[data-date]').forEach(day=>{
+      const date=day.getAttribute('data-date')||'';
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return;
+      const parsed=new Date(date+'T12:00:00');
+      if(Number.isNaN(parsed.getTime())||parsed.getFullYear()!==Number(date.slice(0,4))||
+         parsed.getMonth()+1!==Number(date.slice(5,7))||parsed.getDate()!==Number(date.slice(8,10)))return;
+      if(!day.hasAttribute('role'))day.setAttribute('role','button');
+      if(!day.hasAttribute('tabindex'))day.tabIndex=0;
+      // Never overwrite an authored accessible name from the source app.
+      if(!day.hasAttribute('aria-label')||day.dataset.mlvAndroidA11yLabel==='1'){
+        day.setAttribute('aria-label',(spanish?'Seleccionar ':'Select ')+formatter.format(parsed));
+        day.dataset.mlvAndroidA11yLabel='1';
+      }
+      day.setAttribute('aria-pressed',day.classList.contains('selected')?'true':'false');
+      if(day.dataset.mlvAndroidKeyboard==='1')return;
+      day.dataset.mlvAndroidKeyboard='1';
+      day.addEventListener('keydown',event=>{
+        if(event.target!==day||event.altKey||event.ctrlKey||event.metaKey)return;
+        if(event.key!=='Enter'&&event.key!==' '&&event.key!=='Spacebar')return;
+        event.preventDefault();
+        if(event.repeat)return;
+        // Click uses the ONE canonical v30135 handler; the handler redraws
+        // the month cells, replacing the focused div in the same task.
+        const selectedDate=day.dataset.date;
+        day.click();
+        requestAnimationFrame(()=>{
+          let root=document.getElementById('main')||main;
+          // A shared legacy redraw can reset activeTab while unmounting the
+          // mobile Calendar. Restore the user's current Calendar surface even
+          // if legacy navigation state became stale during the click.
+          if(!root.querySelector('#tab-calendar .v30135-day[data-date]')&&
+             typeof window.__mlvAndroidFastRoute==='function'){
+            window.__mlvAndroidFastRoute('calendar');
+            root=document.getElementById('main')||root;
+          }
+          enhanceCalendarA11y(root);
+          const selected=[...root.querySelectorAll('#tab-calendar .v30135-day.selected')]
+            .find(el=>el.dataset.date===selectedDate);
+          // Keep the keyboard cursor on the newly-rendered selected day.
+          if(selected&&document.activeElement!==selected&&
+             (document.activeElement===document.body||document.activeElement===day))
+            selected.focus({preventScroll:true});
+        });
+      });
+    });
+    const save=main.querySelector('#tab-journal #mlv184JournalSaveState');
+    if(save){
+      if(!save.hasAttribute('role'))save.setAttribute('role','status');
+      if(!save.hasAttribute('aria-live'))save.setAttribute('aria-live','polite');
+      if(!save.hasAttribute('aria-atomic'))save.setAttribute('aria-atomic','true');
+    }
+  }
   function enforceRendered(){
     if(!owned())return;
     const main=document.getElementById('main');
     if(!main)return;
+    enhanceCalendarA11y(main);
     main.querySelectorAll('.v132-mission .v132-check').forEach(el=>{
       for(const key of ['width','height','min-width','min-height'])
         if(el.style.getPropertyValue(key)!=='44px'||el.style.getPropertyPriority(key)!=='important')
@@ -1447,6 +1511,7 @@
       });
     });
     observer.observe(main,{childList:true,subtree:true});
+    window.addEventListener('michelslife:languagechange',()=>enhanceCalendarA11y(main));
     const modal=document.getElementById('modalRoot');
     if(modal){
       const modalObserver=new MutationObserver(()=>{

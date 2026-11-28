@@ -21,7 +21,9 @@ required = {
     'michels_life_backup_': cloud,
     'michels_life_device_': cloud,
     'CLOUD_BACKUP_LIMIT = 10': cloud,
-    'plusSeconds(3)': cloud,
+    'return conflict(localHash, remoteHash, remote, meta.lastLocalDirtyAt,': cloud,
+    'saved.contentHash.equals(hashText(current.first), true)': cloud,
+    'latest.modifiedTime != remote.modifiedTime': cloud,
     'michelsLifeHash': cloud,
     'michelsLifeDevice': cloud,
     'michelsLifeUpdatedAt': cloud,
@@ -39,6 +41,10 @@ required = {
 missing = [needle for needle, text in required.items() if needle not in text]
 if missing:
     raise SystemExit("Android cloud contract missing: " + ", ".join(missing))
+# Concurrent divergent copies must remain available for explicit resolution.
+# A clock-based winner or time-only backup suppression is not a valid guard.
+if any(token in cloud for token in ("localWhen.isAfter", "remoteWhen.isAfter", "Duration.ofMinutes(5)")):
+    raise SystemExit("Unsafe automatic conflict resolution or recovery backup suppression")
 # Restore point requests originate in WebView. A canonical path string-prefix
 # check is insufficient: /files/restore-points-backup starts with
 # /files/restore-points but is outside the intended directory.

@@ -1052,6 +1052,7 @@
        #mlv-android-focus-sheet .mlv-audio-archive{display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
        #mlv-android-focus-sheet .mlv-audio-library input,#mlv-android-focus-sheet .mlv-audio-settings select,#mlv-android-focus-sheet .mlv-audio-archive select{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
        @media(max-width:550px){#mlv-android-focus-sheet .mlv-audio-controls{grid-template-columns:repeat(2,minmax(0,1fr))}#mlv-android-focus-sheet .mlv-audio-settings,#mlv-android-focus-sheet .mlv-audio-archive{grid-template-columns:1fr}}
+       #mlv-android-focus-sheet [data-mobile-seek-wrap][hidden]{display:none!important}
        #mlv-android-focus-sheet .mlv-android-focus-audio-grid label{
         display:block;min-width:0;color:#d2e7e8;font:650 12px/1.4 system-ui,sans-serif
       }
@@ -1314,9 +1315,10 @@
               </label>
              <div class="mlv-audio-controls"><button type="button" data-mobile-focus="previous-ambient" aria-label="Previous track">⏮ Previous</button><button type="button" data-mobile-focus="next-ambient" aria-label="Skip track">Next ⏭</button><button type="button" data-mobile-focus="stop-ambient">Stop</button></div>
 
+             <label data-mobile-seek-wrap hidden><span data-mobile-seek-label>Track position</span><input type="range" min="0" max="1" step="0.1" value="0" data-mobile-ambient-seek aria-label="Track position" disabled /></label>
              <label><span data-mobile-volume-label>Volume</span><input type="range" min="0" max="100" value="35" data-mobile-ambient-volume aria-label="Background music volume" /></label>
              <div class="mlv-audio-settings"><select data-mobile-ambient-mode aria-label="Playback mode"><option value="repeat">Repeat track</option><option value="playlist">Continuous playlist</option><option value="shuffle">Shuffle</option></select><select data-mobile-ambient-collection aria-label="Playlist collection"><option value="all">All audio</option><option value="Ambient">Ambient</option><option value="Cinematic">Cinematic</option><option value="Classical">Classical piano</option><option value="Personal">My music</option></select></div>
-             <div class="mlv-audio-library"><h3 class="mlv-audio-heading" data-mobile-library-heading>Music library</h3><label><span data-mobile-personal-label>Import my music</span><input type="file" multiple accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg" data-mobile-personal-files /></label><small data-mobile-personal-status role="status"></small><div class="mlv-audio-archive"><button type="button" data-mobile-focus="archive-ambient">Archive track</button><select data-mobile-archived-track aria-label="Archived tracks"></select><button type="button" data-mobile-focus="restore-ambient">Restore</button></div></div>
+             <div class="mlv-audio-library"><h3 class="mlv-audio-heading" data-mobile-library-heading>Music library</h3><label><span data-mobile-personal-label>Import my music</span><input type="file" multiple accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg" data-mobile-personal-files /></label><small data-mobile-personal-status role="status"></small><button type="button" data-mobile-focus="cancel-import" hidden>Cancel import</button><button type="button" data-mobile-focus="retry-library" hidden>Retry library</button><div class="mlv-audio-archive"><button type="button" data-mobile-focus="archive-ambient">Archive track</button><select data-mobile-archived-track aria-label="Archived tracks"></select><button type="button" data-mobile-focus="restore-ambient">Restore</button></div></div>
             </div>
           </details>
 
@@ -1351,6 +1353,14 @@
       root.addEventListener('change',async event=>{
         const audio=window.MichelsLifeFocusAudio;
         if(event.target?.matches?.('[data-mobile-personal-files]')){const input=event.target;input.disabled=true;try{await audio?.importPersonalTracks?.(input.files);}finally{input.value='';input.disabled=false;updateFocus();}return;}
+        if(event.target?.matches?.('[data-mobile-ambient-seek]')){
+          const input=event.target;audio?.seekAmbient?.(Number(input.value),input.dataset.audioGeneration);
+          const current=audio?.ambientPlayback?.();
+          if(current?.generation&&Number.isFinite(current.duration)&&current.duration>0){
+            input.max=String(current.duration);input.value=String(current.currentTime);input.dataset.audioGeneration=current.generation;
+          }
+          updateFocus();return;
+        }
         if(event.target?.matches?.('[data-mobile-ambient-volume]'))audio?.setAmbientVolume?.(Number(event.target.value)/100);
         if(event.target?.matches?.('[data-mobile-ambient-mode]'))audio?.setAmbientMode?.(event.target.value);
         if(event.target?.matches?.('[data-mobile-ambient-collection]'))audio?.setAmbientCollection?.(event.target.value);
@@ -1400,6 +1410,8 @@
           sound?.toggleAmbientPlayback?.();
           updateFocus();return;
         }
+        if(action==='retry-library'){window.MichelsLifeFocusAudio?.loadPersonalTracks?.().finally(()=>updateFocus());updateFocus();return;}
+        if(action==='cancel-import'){window.MichelsLifeFocusAudio?.cancelPersonalImport?.();updateFocus();return;}
         if(action==='archive-ambient'){const audio=window.MichelsLifeFocusAudio;audio?.archiveScene?.(audio.playingScene?.()||audio.sceneId?.(),true);updateFocus();return;}
         if(action==='restore-ambient'){window.MichelsLifeFocusAudio?.archiveScene?.(q('[data-mobile-archived-track]',root)?.value,false);updateFocus();return;}
         if(action==='stop-ambient'){window.MichelsLifeFocusAudio?.stopAmbient?.();updateFocus();return;}
@@ -1662,6 +1674,8 @@
     writeText(q('[data-mobile-now-playing]',root),audio?.sceneOptions?.().find(x=>x.id===audio?.sceneId?.())?.label||focusText('No track selected','Sin pista seleccionada'));
     const volume=q('[data-mobile-ambient-volume]',root);if(volume&&document.activeElement!==volume)volume.value=String(Math.round((audio?.ambientVolume?.()??.35)*100));
     writeText(q('[data-mobile-volume-label]',root),focusText('Volume','Volumen'));
+    const cancelImport=q('[data-mobile-focus="cancel-import"]',root);if(cancelImport){cancelImport.hidden=!audio?.personalImporting?.();cancelImport.disabled=!!audio?.personalCancelPending?.();writeText(cancelImport,focusText('Cancel import','Cancelar importación'));}
+    const retryLibrary=q('[data-mobile-focus="retry-library"]',root);if(retryLibrary){retryLibrary.hidden=!(audio?.personalLibraryFailed?.()||audio?.personalLibraryLoading?.());retryLibrary.disabled=!!(audio?.personalLibraryLoading?.()||audio?.personalImporting?.());writeText(retryLibrary,audio?.personalLibraryLoading?.()?focusText('Loading library…','Cargando biblioteca…'):focusText('Retry library','Reintentar biblioteca'));}
     const archivedSelect=q('[data-mobile-archived-track]',root),archiveButton=q('[data-mobile-focus="archive-ambient"]',root),restoreButton=q('[data-mobile-focus="restore-ambient"]',root),archived=audio?.archivedOptions?.()||[];
     writeText(archiveButton,focusText('Archive track','Archivar canción'));if(archiveButton)archiveButton.disabled=!audio?.sceneId?.();
     if(archivedSelect){const selected=archivedSelect.value;const opts=[{id:'',label:focusText('Archived','Archivadas')+' ('+archived.length+')'},...archived];if(archivedSelect.options.length!==opts.length||opts.some((x,i)=>archivedSelect.options[i]?.value!==x.id||archivedSelect.options[i]?.textContent!==x.label)){archivedSelect.replaceChildren(...opts.map(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.label;return o;}));archivedSelect.value=archived.some(x=>x.id===selected)?selected:'';}archivedSelect.disabled=!archived.length;}
@@ -1670,6 +1684,14 @@
     writeText(q('[data-mobile-personal-label]',root),focusText('Import my music (local files)','Importar mi música (archivos locales)'));writeText(q('[data-mobile-personal-status]',root),audio?.personalStatus?.()||focusText('MP3, WAV, OGG · available storage','MP3, WAV, OGG · espacio disponible'));
     const ambientToggle=q('[data-mobile-focus="toggle-ambient"]',root);if(ambientToggle)ambientToggle.disabled=!audio?.sceneId?.();
     const playback=audio?.ambientPlayback?.(),playMode=q('[data-mobile-ambient-mode]',root);
+    const seek=q('[data-mobile-ambient-seek]',root),seekWrap=q('[data-mobile-seek-wrap]',root);
+    const seekable=!!playback&&typeof playback.generation==='string'&&Number.isFinite(playback.duration)&&playback.duration>0;
+    if(seekWrap)seekWrap.hidden=!seekable;
+    writeText(q('[data-mobile-seek-label]',root),focusText('Track position','Posición de la canción'));
+    if(seek){seek.disabled=!seekable;seek.setAttribute('aria-label',focusText('Track position','Posición de la canción'));
+      if(seekable&&document.activeElement!==seek){seek.max=String(playback.duration);seek.value=String(playback.currentTime);seek.dataset.audioGeneration=playback.generation;}
+      if(!seekable)delete seek.dataset.audioGeneration;
+    }
     if(playMode){playMode.value=audio?.ambientMode?.()||'repeat';writeText(playMode.options[0],focusText('Repeat track','Repetir pista'));writeText(playMode.options[1],focusText('Continuous playlist','Lista continua'));writeText(playMode.options[2],focusText('Shuffle','Aleatorio'));}
     const coll=q('[data-mobile-ambient-collection]',root);if(coll){coll.value=audio?.ambientCollection?.()||'all';[focusText('All audio','Todo el audio'),focusText('Ambient','Ambiental'),focusText('Cinematic','Cinematográfica'),focusText('Classical piano','Piano clásico'),focusText('My music','Mi música')].forEach((name,i)=>writeText(coll.options[i],name));}
     const fmtAudio=s=>Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');

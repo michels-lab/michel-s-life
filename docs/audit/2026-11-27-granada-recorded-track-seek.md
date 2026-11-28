@@ -1,0 +1,3 @@
+# Granada — recorded track position
+
+Added optional position slider inside existing advanced audio options for finite-duration recorded audio only, on Windows and Android. Seeks preserve pause state and never touch canonical Focus timing. Reject stale gesture generations after replacement/relaunch, invalid values and generated soundscapes; clamp to playable range just before natural end. Three regression tests added with simulated media; physical accessibility/visual/listening validation pending. This is a scoped usability addition, not a redesign.

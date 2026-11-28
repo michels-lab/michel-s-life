@@ -38,6 +38,33 @@ internal object PersonalAlarmOverlay {
     private var manager: WindowManager? = null
     private var view: FrameLayout? = null
     private var activeId: String? = null
+    private data class QueuedAlarm(val id: String, val title: String, val time: String)
+    private val pending = LinkedHashMap<String, QueuedAlarm>()
+
+    fun isQueued(id: String): Boolean = pending.containsKey(id)
+
+    fun dismiss(context: Context, id: String) {
+        pending.remove(id)
+        if (!isRinging(id)) return
+        stop(context)
+        while (pending.isNotEmpty()) {
+            val next = pending.entries.first().value
+            pending.remove(next.id)
+            // Every delivery has its own OS notification fallback. If permission
+            // changed or presentation fails, leave that fallback intact.
+            if (show(context, next.id, next.title, next.time)) break
+        }
+    }
+    // Reconstruct a bounded recent queue from the native registry, not
+    // WebView storage. A locked/unauthorized device keeps its OS fallback.
+    fun restoreRecent(context: Context) {
+        for (item in NativePersonalAlarms.recentDelivered(context)) {
+            val id = item.optString("id")
+            if (!isRinging(id) && !isQueued(id))
+                show(context, id, item.optString("label"), item.optString("time"))
+        }
+    }
+
     private var player: MediaPlayer? = null
     private var vibrator: Vibrator? = null
 
@@ -54,6 +81,10 @@ internal object PersonalAlarmOverlay {
         val locked = (app.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager).isDeviceLocked
         if (locked) return false
         if (activeId == id && view != null) return true
+        if (view != null && activeId != null) {
+            pending[id] = QueuedAlarm(id, title, time)
+            return true
+        }
         stop(app)
         try {
             val window = app.getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -135,7 +166,6 @@ internal object PersonalAlarmOverlay {
                 text = "Descartar"
                 minHeight = dp(app, 54)
                 setOnClickListener {
-                    stop(app)
                     NativePersonalAlarms.dismiss(app, id)
                 }
             }
@@ -143,9 +173,11 @@ internal object PersonalAlarmOverlay {
                 text = "Posponer 5 min"
                 minHeight = dp(app, 54)
                 setOnClickListener {
-                    NativePersonalAlarms.snooze(app, id)
-                    stop(app)
-                    NativePersonalAlarms.dismiss(app, id)
+                    if (NativePersonalAlarms.snooze(app, id)) {
+                        NativePersonalAlarms.dismiss(app, id)
+                    } else {
+                        android.widget.Toast.makeText(app, "No se pudo posponer. La alarma sigue activa.", android.widget.Toast.LENGTH_LONG).show()
+                    }
                 }
             }
             buttons.addView(close)
@@ -178,6 +210,8 @@ internal object PersonalAlarmOverlay {
             val uri = NativePersonalAlarms.alarmSoundUri(context, id)
                 ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
             val sound = MediaPlayer()
+            // Track ownership before any fallible operation so the catch releases it.
+            player = sound
             sound.setAudioAttributes(AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_ALARM)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
@@ -186,7 +220,6 @@ internal object PersonalAlarmOverlay {
             sound.isLooping = true
             sound.prepare()
             sound.start()
-            player = sound
         } catch (_: Exception) {
             try { player?.release() } catch (_: Exception) { }
             player = null

@@ -1,0 +1,3 @@
+# Granada — alarm notification FIFO
+
+Activity intent previously held a single pending alarm; another notification could replace it. Keep a deduplicated FIFO of acknowledged delivery IDs, separate active screen from audio ownership, preserve active and queued IDs in Activity saved instance state, and dispatch the next screen after the prior JS dismissal. Expired/acknowledged IDs are ignored by the persisted native marker. Renderer recovery retains the queue through explicit recreation. No forced alarm display from ordinary launch; no physical acceptance yet. The queue survives Activity recreation with a saved state, not arbitrary process death without state; OS notifications remain fallback.

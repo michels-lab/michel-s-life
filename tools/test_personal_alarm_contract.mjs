@@ -374,3 +374,175 @@ test('actual import controller streams a 17 MiB MP3 and rolls back incomplete na
   assert.equal(await window.runImport(file),true);assert.equal(length,size);assert.ok(parts>64);assert.equal(largest,256*1024);assert.equal(saved.blob,file);assert.equal(select.value,'custom');assert.equal(label.textContent,'long.mp3');assert.equal(input.disabled,false);
   fail=true;const replacement={...file,name:'replacement.mp3'};assert.equal(await window.runImport(replacement),false);assert.equal(saved.blob,file);assert.equal(cancelled,1);assert.ok(alerted.length);assert.equal(input.disabled,false);
 });
+
+
+test('Android persistence accepts every alarm selector sound, including snoozed recordings',()=>{
+  const ids=[...alarms.match(/const SOUNDS=\[([\s\S]*?)\];/)[1].matchAll(/'([^']+)'/g)].map(m=>m[1]);
+  const recorded=native.match(/private fun recordedResource\(selected: String\): Int = when \(selected\) \{([\s\S]*?)\n    \}/);
+  const presets=native.match(/private val generatedSounds = setOf\(([\s\S]*?)\)/);
+  assert.ok(recorded&&presets,'native validation must reuse the actual playback catalog');
+  const recordingIds=[...recorded[1].matchAll(/"([^"]+)"\s*->\s*R\.raw\.mlv_focus_([a-z0-9_]+)/g)].map(m=>{
+    assert.equal(m[1],m[2],'resource identity must match');return m[1];
+  });
+  const presetIds=[...presets[1].matchAll(/"([^"]+)"/g)].map(m=>m[1]);
+  assert.deepEqual([...new Set(['system','custom',...recordingIds,...presetIds])].sort(),[...ids].sort());
+  const cleaner=native.slice(native.indexOf('private fun clean('),native.indexOf('private fun deliveryIntent('));
+  assert.match(cleaner,/val sound = normalizeSound\(input\.optString\("sound", "system"\)\)/);
+  assert.match(native,/private fun normalizeSound\(selected: String\): String =\s*if \(selected == "system" \|\| selected == "custom" \|\|\s*selected in generatedSounds \|\| recordedResource\(selected\) != 0\) selected else "system"/);
+  assert.match(native,/val recorded = recordedResource\(selected\)/);
+  assert.match(native,/if \(selected in generatedSounds\)/);
+  const snooze=native.slice(native.indexOf('fun snooze(context:'),native.indexOf('private fun notificationAllowed'));
+  assert.match(snooze,/\.put\("sound", selected\.optString\("sound", "system"\)\)/);
+  assert.match(snooze,/armOccurrence\(context, replacementId, dueAt\)/);
+});
+
+test('failed snooze keeps the ringing overlay active and failed native save retains scheduling',()=>{
+  const snooze=native.slice(native.indexOf('fun snooze(context:'),native.indexOf('private fun notificationAllowed'));
+  assert.match(snooze,/fun snooze\(context: Context, id: String\): Boolean/);
+  assert.match(snooze,/if \(original.length\(\) >= 80\) return false/);
+  assert.match(snooze,/if \(!wasDelivered\(context, id\)\) return false/);
+  assert.match(snooze,/\.putString\(KEY_ALARMS, originalRaw\)/);
+  assert.match(snooze,/\.putLong\(deliveryKey, deliveredAt\)/);
+  const save=native.slice(native.indexOf('fun sync(context:'),native.indexOf('fun recover(context:'));
+  assert.ok(save.indexOf('armOccurrence(context, id, date)')<save.indexOf('if (!edit.commit())'));
+  assert.ok(save.indexOf('if (!edit.commit())')<save.indexOf('for ((id, previous) in oldOccurrences)'));
+  assert.match(save,/for \(\(id, date\) in armed\) retireOccurrence\(context, id, date\)/);
+  assert.match(overlay,/if \(NativePersonalAlarms.snooze\(app, id\)\) \{\s*NativePersonalAlarms.dismiss\(app, id\)/);
+  const start=overlay.slice(overlay.indexOf('private fun startAttention'),overlay.indexOf('fun stop(context:'));
+  assert.ok(start.indexOf('player = sound')<start.indexOf('sound.setDataSource'));
+  assert.match(start,/player\?\.release\(\)/);
+  const dismiss=alarms.slice(alarms.indexOf('function dismissRing('),alarms.indexOf('function collectDueAlarms('));
+  assert.ok(dismiss.indexOf('records.length>=80')>=0);
+  assert.ok(dismiss.indexOf('records.length>=80')<dismiss.indexOf('stopPresetAudio()'));
+});
+
+test('native receiver rejects stale, duplicate and early alarm occurrences and recovers each independently',()=>{
+  const delivery=native.slice(native.indexOf('fun deliver(context:'),native.indexOf('class PersonalAlarmReceiver'));
+  assert.match(native,/putExtra\(EXTRA_OCCURRENCE, occurrence\)/);
+  assert.match(native,/putLong\(key, date\).commit\(\)/);
+  assert.match(delivery,/if \(occurrence <= 0L \|\| stored != occurrence \|\| occurrence > System.currentTimeMillis\(\)\) return/);
+  assert.ok(delivery.indexOf('.remove(SCHEDULED_PREFIX + id)')<delivery.indexOf('schedule(context, target)'));
+  assert.match(native,/intent.getLongExtra\(NativePersonalAlarms.EXTRA_OCCURRENCE, 0L\)/);
+  assert.match(native,/fun recover\(context: Context\)[\s\S]*?try \{ schedule\(context, item\) \} catch/);
+});
+test('a second native overlay queues without replacing the first and advances on dismissal',()=>{
+  assert.match(overlay,/if \(view != null && activeId != null\) \{\s*pending\[id\] = QueuedAlarm\(id, title, time\)\s*return true/);
+  assert.match(overlay,/fun dismiss\(context: Context, id: String\) \{\s*pending.remove\(id\)\s*if \(!isRinging\(id\)\) return\s*stop\(context\)/);
+  assert.match(overlay,/while \(pending.isNotEmpty\(\)\)[\s\S]*?show\(context, next.id, next.title, next.time\)/);
+  assert.match(native,/PersonalAlarmOverlay.dismiss\(context, id\)/);
+  assert.match(native,/if \(!PersonalAlarmOverlay.isQueued\(id\) &&/);
+});
+
+test('occurrence identity uses immutable data and unrelated edits preserve delayed delivery',()=>{
+  assert.match(native,/michelslife:\/\/personal-alarm\/\$id\/\$occurrence/);
+  assert.match(native,/PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE/);
+  assert.match(native,/if \(previous != date\) retireOccurrence\(context, id, previous\)/);
+  assert.match(native,/if \(previous != newOccurrences\[id\]\) retireOccurrence\(context, id, previous\)/);
+  assert.match(native,/if \(old != null && sameSchedule\(old, item\) && previous > 0L\) previous/);
+});
+test('recent unacknowledged alarms restore from persistent delivery records and notification tags are unique',()=>{
+  assert.match(native,/fun recentDelivered\(context: Context\): List<JSONObject>/);
+  assert.match(native,/\.filter \{ wasDelivered\(context, it.optString\("id"\)\) \}/);
+  assert.match(native,/\.sortedBy \{ prefs\(context\).getLong\(LAST_DELIVERED_PREFIX/);
+  assert.match(overlay,/for \(item in NativePersonalAlarms.recentDelivered\(context\)\)/);
+  assert.match(native,/PersonalAlarmOverlay.dismiss\(context, id\)\s*PersonalAlarmOverlay.restoreRecent\(context\)/);
+  assert.match(native,/manager.notify\(notificationTag\(id\), NOTIFICATION_ID,/);
+  assert.match(native,/manager.cancel\(notificationTag\(id\), NOTIFICATION_ID\)/);
+});
+
+test('invalid native alarm input cannot silently replace the registry and CAS rejects a stale list',()=>{
+  const sync=native.slice(native.indexOf('fun sync(context:'),native.indexOf('fun recover(context:'));
+  assert.ok(sync.indexOf('Invalid alarm record')<sync.indexOf('putString(KEY_ALARMS'));
+  assert.ok(sync.indexOf('Duplicate alarm identifier')<sync.indexOf('putString(KEY_ALARMS'));
+  assert.match(native,/if \(registrySnapshot\(context\) != expected\)/);
+  assert.match(native,/val existing = readRegistry\(context\)/);
+});
+test('real frontend registry controller fails closed on stale read and never overwrites newer Android delivery',()=>{
+  const from=alarms.indexOf('function hasNativeRegistry()'),to=alarms.indexOf('function localAt(',from);
+  let raw=JSON.stringify([{id:'a',enabled:true}]),written=0,alerts=0,local=raw;
+  const context={window:{MichelsLifeAndroid:{getPersonalAlarms:()=>raw,syncPersonalAlarmsIfUnchanged:(next,expected)=>{
+    if(expected!==raw)return JSON.stringify({error:'stale'});
+    written++;raw=next;return JSON.stringify({registry:raw});
+  }},alert(){alerts++;}},localStorage:{setItem:(k,v)=>{local=v;}},KEY:'alarms',
+    normal:x=>x,localRead:()=>JSON.parse(local),renderList(){},tr:x=>x,console,
+    records:[],nativeCache:'',nativeSnapshot:null,nativeError:''};
+  vm.createContext(context);vm.runInContext(alarms.slice(from,to),context);
+  assert.equal(context.read(),true);
+  raw=JSON.stringify([{id:'a',enabled:false}]); // real delivery happened after read
+  context.records.push({id:'b',enabled:true});
+  assert.equal(context.store(),false);assert.equal(written,0);assert.equal(alerts,1);
+  assert.equal(context.records[0].enabled,false);assert.equal(context.records.length,1);
+  context.records.push({id:'b',enabled:true});assert.equal(context.store(),true);assert.equal(written,1);
+  raw='{"error":"unavailable"}';assert.equal(context.read(),false);
+  context.records.push({id:'c',enabled:true});assert.equal(context.store(),false);assert.equal(written,1);
+});
+test('native snooze failure does not stop the visible alarm and success does not issue a second dismiss',()=>{
+  const from=alarms.indexOf('function dismissRing('),to=alarms.indexOf('function collectDueAlarms(',from);
+  let ok=false,dismissed=0,stopped=0,alerts=0;
+  const context={ring:{hidden:false},ringingId:'a',records:[{id:'a'}],hasNativeRegistry:()=>true,
+    window:{MichelsLifeAndroid:{snoozePersonalAlarm:()=>ok,dismissPersonalAlarm:()=>{dismissed++;}},alert:()=>{alerts++;}},
+    tr:x=>x,windowsRingtone:null,stopPresetAudio:()=>{stopped++;},stopCustomAudio(){},read(){},renderList(){},
+    windowsNotifications:[],document:{body:{classList:{remove(){}}}},ringNextDue(){}};
+  vm.createContext(context);vm.runInContext(alarms.slice(from,to),context);
+  context.dismissRing(true);assert.equal(alerts,1);assert.equal(stopped,0);assert.equal(context.ring.hidden,false);
+  ok=true;context.dismissRing(true);assert.equal(context.ring.hidden,true);assert.equal(dismissed,0);assert.equal(stopped,1);
+});
+test('lockscreen audio ownership and pending notification are not overwritten by another alarm',()=>{
+  const activity=readFileSync('android/app/src/main/java/com/michelslab/michelslife/MainActivity.kt','utf8');
+  const bridge=readFileSync('android/app/src/main/java/com/michelslab/michelslife/AndroidBridge.kt','utf8');
+  assert.match(activity,/if \(id != null && attentionAlarmId != id\) return/);
+  assert.match(activity,/if \(attentionAlarmId != null\) return/);
+  assert.match(activity,/stopAlarmAttention\(id\)/);
+  assert.match(bridge,/activity.completePersonalAlarm\(id\)/);
+  assert.match(alarms,/if\(android\(\)&&ringingId&&ringingId!==id&&!ring.hidden\)return false/);
+});
+
+test('multi-alarm scheduling stages replacements before committing registry and retires old alarms only afterwards',()=>{
+  const sync=native.slice(native.indexOf('fun sync(context:'),native.indexOf('fun recover(context:'));
+  assert.ok(sync.indexOf('An enabled alarm has no future occurrence')<sync.indexOf('armOccurrence(context, id, date)'));
+  assert.ok(sync.indexOf('armed.add(id to date)')<sync.indexOf('armOccurrence(context, id, date)'));
+  assert.ok(sync.indexOf('armOccurrence(context, id, date)')<sync.indexOf('putString(KEY_ALARMS, cleanList.toString())'));
+  assert.match(sync,/rollback.putLong\(SCHEDULED_PREFIX \+ id, date\)/);
+  assert.match(sync,/rollback.remove\(SCHEDULED_PREFIX \+ id\)/);
+  assert.match(sync,/for \(\(id, date\) in armed\) retireOccurrence\(context, id, date\)/);
+  assert.ok(sync.indexOf('if (!edit.commit())')<sync.indexOf('if (previous != newOccurrences[id])'));
+});
+
+test('Android Activity queues multiple notification opens and preserves them on Activity recreation',()=>{
+  const activity=readFileSync('android/app/src/main/java/com/michelslab/michelslife/MainActivity.kt','utf8');
+  assert.match(activity,/private val pendingPersonalAlarmIds = linkedSetOf<String>\(\)/);
+  assert.match(activity,/if \(id != activePersonalAlarmId && NativePersonalAlarms.wasDelivered\(this, id\)\)/);
+  assert.match(activity,/activePersonalAlarmId != id\) return@evaluateJavascript/);
+  assert.match(activity,/activePersonalAlarmId\?\.let \{ queue.add\(it\) \}/);
+  assert.match(activity,/queue.addAll\(pendingPersonalAlarmIds\)/);
+  assert.match(activity,/getStringArrayList\(personalAlarmQueueKey\)\?\.forEach/);
+  assert.match(activity,/webView.post \{ openPersonalAlarmFromNotification\(\) \}/);
+});
+
+test('snooze stages its new OS occurrence before committing the acknowledgement and registry',()=>{
+  const snooze=native.slice(native.indexOf('fun snooze(context:'),native.indexOf('private fun notificationAllowed'));
+  assert.ok(snooze.indexOf('armOccurrence(context, replacementId, dueAt)')<snooze.indexOf('putString(KEY_ALARMS, original.toString())'));
+  assert.match(snooze,/\.putLong\(SCHEDULED_PREFIX \+ replacementId, dueAt\)\s*\.remove\(deliveryKey\)\.commit\(\)/);
+  assert.match(snooze,/retireOccurrence\(context, replacementId, dueAt\)/);
+  assert.match(snooze,/\.remove\(SCHEDULED_PREFIX \+ replacementId\)\s*\.putLong\(deliveryKey, deliveredAt\)/);
+});
+test('expired one-time alarms cannot block unrelated changes and deleted alarm markers cannot reopen UI',()=>{
+  const sync=native.slice(native.indexOf('fun sync(context:'),native.indexOf('fun recover(context:'));
+  assert.match(sync,/sameSchedule\(old, item\) && item.optString\("repeat"\) == "once"\) \{\s*item.put\("enabled", false\)/);
+  const recovery=native.slice(native.indexOf('fun recover(context:'),native.indexOf('private const val NOTIFICATION_ID'));
+  assert.match(recovery,/timestamp\(item, now\) <= 0L/);
+  assert.match(recovery,/item.put\("enabled", false\)/);
+  assert.ok(recovery.indexOf('if (!edit.commit())')<recovery.indexOf('retireOccurrence(context, id, previous)'));
+  const delivered=native.slice(native.indexOf('fun wasDelivered('),native.indexOf('fun rememberMotivation('));
+  assert.match(delivered,/readRegistry\(context\)/);
+  assert.match(delivered,/registry.optJSONObject\(it\)\?\.optString\("id"\) == id/);
+});
+test('clock/timezone changes re-arm personal alarms without touching the canonical Focus timer',()=>{
+  assert.match(manifest,/\.PersonalAlarmClockReceiver/);
+  assert.match(manifest,/android.intent.action.TIME_SET/);
+  assert.match(manifest,/android.intent.action.TIMEZONE_CHANGED/);
+  const focusNative=readFileSync('android/app/src/main/java/com/michelslab/michelslife/NativeFocusAlarm.kt','utf8');
+  const receiver=focusNative.slice(focusNative.indexOf('class PersonalAlarmClockReceiver'));
+  assert.match(receiver,/NativePersonalAlarms.recover\(context\)/);
+  assert.doesNotMatch(receiver,/NativeFocusAlarm.recoverAfterBoot/);
+});

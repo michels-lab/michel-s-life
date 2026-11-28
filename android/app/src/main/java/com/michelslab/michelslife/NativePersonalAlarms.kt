@@ -44,6 +44,8 @@ internal object NativePersonalAlarms {
     private const val KEY_WALLPAPER = "wallpaper"
     private const val KEY_MOTIVATION = "motivationalCopy.v1"
     private const val LAST_DELIVERED_PREFIX = "lastDelivered."
+    private const val SCHEDULED_PREFIX = "scheduledOccurrence."
+    internal const val EXTRA_OCCURRENCE = "scheduledOccurrence"
     private const val CHANNEL = "michelslife-personal-alarms-v1"
     private const val SILENT_CHANNEL = "michelslife-personal-alarms-immersive-v1"
     private const val ACTION = "com.michelslab.michelslife.PERSONAL_ALARM"
@@ -55,14 +57,30 @@ internal object NativePersonalAlarms {
     private fun prefs(context: Context) =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
+    private fun readRegistry(context: Context): JSONArray =
+        JSONArray(prefs(context).getString(KEY_ALARMS, "[]") ?: "[]")
+
     fun list(context: Context): JSONArray =
-        try { JSONArray(prefs(context).getString(KEY_ALARMS, "[]") ?: "[]") }
-        catch (_: Exception) { JSONArray() }
+        try { readRegistry(context) } catch (_: Exception) { JSONArray() }
+
+    @Synchronized
+    fun registrySnapshot(context: Context): String = readRegistry(context).toString()
+
+    @Synchronized
+    fun syncIfUnchanged(context: Context, input: JSONArray, expected: String): JSONObject {
+        // Delivery may disable a one-time alarm while the WebView is editing.
+        // Do not overwrite a newer native registry with an old whole-list copy.
+        if (registrySnapshot(context) != expected)
+            return JSONObject().put("error", "Alarm list changed; reload before editing")
+        return sync(context, input)
+    }
 
     fun wasDelivered(context: Context, id: String): Boolean {
         if (!idPattern.matches(id)) return false
         val at = prefs(context).getLong(LAST_DELIVERED_PREFIX + id, 0L)
-        return at > 0L && System.currentTimeMillis() - at in 0..15 * 60 * 1000L
+        if (at <= 0L || System.currentTimeMillis() - at !in 0..15 * 60 * 1000L) return false
+        val registry = try { readRegistry(context) } catch (_: Exception) { return false }
+        return (0 until registry.length()).any { registry.optJSONObject(it)?.optString("id") == id }
     }
 
     /**
@@ -222,29 +240,40 @@ internal object NativePersonalAlarms {
         return soundUri(context, "system")
     }
 
+    // One native playback catalog also owns persistence validation.
+    private fun recordedResource(selected: String): Int = when (selected) {
+        "mozart_k545" -> R.raw.mlv_focus_mozart_k545
+        "tchaikovsky_op39" -> R.raw.mlv_focus_tchaikovsky_op39
+        "sb_meanwhile" -> R.raw.mlv_focus_sb_meanwhile
+        "sb_moonlight" -> R.raw.mlv_focus_sb_moonlight
+        "sb_cobalt" -> R.raw.mlv_focus_sb_cobalt
+        "sb_skyward" -> R.raw.mlv_focus_sb_skyward
+        "sb_life_is" -> R.raw.mlv_focus_sb_life_is
+        "sb_first_snow" -> R.raw.mlv_focus_sb_first_snow
+        "sb_midsommar" -> R.raw.mlv_focus_sb_midsommar
+        "sb_at_the_end_of_all_things" -> R.raw.mlv_focus_sb_at_the_end_of_all_things
+        "sb_in_this_moment" -> R.raw.mlv_focus_sb_in_this_moment
+        "sb_hyperion" -> R.raw.mlv_focus_sb_hyperion
+        "sb_ascension" -> R.raw.mlv_focus_sb_ascension
+        "sb_bring_me_the_sky" -> R.raw.mlv_focus_sb_bring_me_the_sky
+        "debussy_clair_de_lune" -> R.raw.mlv_focus_debussy_clair_de_lune
+        "chopin_nocturne_op9" -> R.raw.mlv_focus_chopin_nocturne_op9
+        "satie_gymnopedie_1" -> R.raw.mlv_focus_satie_gymnopedie_1
+        "bach_prelude_bwv846" -> R.raw.mlv_focus_bach_prelude_bwv846
+        else -> 0
+    }
+
+    private val generatedSounds = setOf("classic","soft","digital","gentle","pulse","radar",
+        "focus_moonlight","focus_celestial","focus_orbit","focus_aurora",
+        "focus_observatory","focus_library","focus_afterglow","focus_silver")
+
+    private fun normalizeSound(selected: String): String =
+        if (selected == "system" || selected == "custom" ||
+            selected in generatedSounds || recordedResource(selected) != 0) selected else "system"
+
     fun soundUri(context: Context, selected: String): Uri? {
         val dir = File(context.filesDir, "personal-alarm-audio")
-        val recorded = when (selected) {
-            "mozart_k545" -> R.raw.mlv_focus_mozart_k545
-            "tchaikovsky_op39" -> R.raw.mlv_focus_tchaikovsky_op39
-            "sb_meanwhile" -> R.raw.mlv_focus_sb_meanwhile
-            "sb_moonlight" -> R.raw.mlv_focus_sb_moonlight
-            "sb_cobalt" -> R.raw.mlv_focus_sb_cobalt
-            "sb_skyward" -> R.raw.mlv_focus_sb_skyward
-            "sb_life_is" -> R.raw.mlv_focus_sb_life_is
-            "sb_first_snow" -> R.raw.mlv_focus_sb_first_snow
-            "sb_midsommar" -> R.raw.mlv_focus_sb_midsommar
-            "sb_at_the_end_of_all_things" -> R.raw.mlv_focus_sb_at_the_end_of_all_things
-            "sb_in_this_moment" -> R.raw.mlv_focus_sb_in_this_moment
-            "sb_hyperion" -> R.raw.mlv_focus_sb_hyperion
-            "sb_ascension" -> R.raw.mlv_focus_sb_ascension
-            "sb_bring_me_the_sky" -> R.raw.mlv_focus_sb_bring_me_the_sky
-            "debussy_clair_de_lune" -> R.raw.mlv_focus_debussy_clair_de_lune
-            "chopin_nocturne_op9" -> R.raw.mlv_focus_chopin_nocturne_op9
-            "satie_gymnopedie_1" -> R.raw.mlv_focus_satie_gymnopedie_1
-            "bach_prelude_bwv846" -> R.raw.mlv_focus_bach_prelude_bwv846
-            else -> 0
-        }
+        val recorded = recordedResource(selected)
         if (recorded != 0) return Uri.parse("android.resource://" + context.packageName + "/" + recorded)
         if (selected == "custom") {
             val name = prefs(context).getString(KEY_CUSTOM_FILE, "") ?: ""
@@ -252,9 +281,7 @@ internal object NativePersonalAlarms {
             val file = File(dir, name)
             return if (file.isFile && file.length() > 128L) Uri.fromFile(file) else defaultSound()
         }
-        if (selected in setOf("classic","soft","digital","gentle","pulse","radar",
-                "focus_moonlight","focus_celestial","focus_orbit","focus_aurora",
-                "focus_observatory","focus_library","focus_afterglow","focus_silver")) {
+        if (selected in generatedSounds) {
             return try {
                 dir.mkdirs()
                 val file = File(dir, "preset-v3-$selected.wav")
@@ -479,21 +506,26 @@ internal object NativePersonalAlarms {
         file.writeBytes(buffer.array())
     }
 
-    fun snooze(context: Context, id: String) {
-        val original = list(context)
+    @Synchronized
+    fun snooze(context: Context, id: String): Boolean {
+        if (!wasDelivered(context, id)) return false
+        val original = try { readRegistry(context) } catch (_: Exception) { return false }
+        val originalRaw = original.toString()
+        val deliveryKey = LAST_DELIVERED_PREFIX + id
+        val deliveredAt = prefs(context).getLong(deliveryKey, 0L)
         var selected: JSONObject? = null
         for (index in 0 until original.length()) {
             val entry = original.optJSONObject(index)
             if (entry?.optString("id") == id) { selected = entry;break }
         }
-        if (selected == null) return
+        if (selected == null) return false
         // A five-minute snooze is an exact epoch deadline. HH:mm is only a
         // display field; rounding it forward used to delay alarms by ~6 min.
         val dueAt = System.currentTimeMillis() + 5L * 60_000L
         val next = LocalDateTime.ofInstant(
             java.time.Instant.ofEpochMilli(dueAt), ZoneId.systemDefault())
         val replacement = JSONObject()
-            .put("id", "s" + System.currentTimeMillis().toString(36))
+            .put("id", "s" + java.util.UUID.randomUUID().toString())
             .put("label", selected.optString("label"))
             .put("time", next.format(DateTimeFormatter.ofPattern("HH:mm")))
             .put("date", next.toLocalDate().toString())
@@ -502,9 +534,25 @@ internal object NativePersonalAlarms {
             .put("sound", selected.optString("sound", "system"))
             .put("days", JSONArray())
             .put("enabled", true)
-        if (original.length() >= 80) return
+        if (original.length() >= 80) return false
         original.put(replacement)
-        sync(context, original)
+        // Claim this delivered occurrence once and persist only the new snooze.
+        // Scheduling a snooze must not touch unrelated delayed alarms.
+        val replacementId = replacement.getString("id")
+        try {
+            // Arm the new identity before committing both the registry and
+            // the acknowledgement. A crash cannot persist an unarmed snooze.
+            armOccurrence(context, replacementId, dueAt)
+            val saved = prefs(context).edit().putString(KEY_ALARMS, original.toString())
+                .putLong(SCHEDULED_PREFIX + replacementId, dueAt)
+                .remove(deliveryKey).commit()
+            if (saved) return true
+        } catch (_: Exception) { }
+        retireOccurrence(context, replacementId, dueAt)
+        prefs(context).edit().putString(KEY_ALARMS, originalRaw)
+            .remove(SCHEDULED_PREFIX + replacementId)
+            .putLong(deliveryKey, deliveredAt).commit()
+        return false
     }
 
     private fun notificationAllowed(context: Context): Boolean =
@@ -565,9 +613,7 @@ internal object NativePersonalAlarms {
             if (day in 0..6 && seen.add(day)) days.put(day)
         }
         if (repeat == "weekly" && seen.isEmpty()) return null
-        val sound = input.optString("sound", "system").takeIf {
-            it in setOf("system","classic","soft","digital","gentle","pulse","radar","custom")
-        } ?: "system"
+        val sound = normalizeSound(input.optString("sound", "system"))
         val dueAt = input.optLong("dueAt",0L).takeIf {
             repeat == "once" && it > 0L && it < System.currentTimeMillis()+366L*86400000L
         } ?: 0L
@@ -578,13 +624,29 @@ internal object NativePersonalAlarms {
             .put("days", days).put("enabled", input.optBoolean("enabled", false))
     }
 
-    private fun deliveryIntent(context: Context, id: String): PendingIntent =
+    private fun occurrenceIntent(context: Context, id: String, occurrence: Long): Intent =
+        Intent(context, PersonalAlarmReceiver::class.java).apply {
+            action = ACTION
+            // Extras alone do not participate in PendingIntent identity.
+            // Preserve the legacy URI only to cancel pre-upgrade alarms.
+            data = Uri.parse(if (occurrence > 0L) "michelslife://personal-alarm/$id/$occurrence"
+                else "michelslife://personal-alarm/$id")
+            putExtra("id", id)
+            putExtra(EXTRA_OCCURRENCE, occurrence)
+        }
+
+    private fun deliveryIntent(context: Context, id: String, occurrence: Long): PendingIntent =
         PendingIntent.getBroadcast(context, id.hashCode() and Int.MAX_VALUE,
-            Intent(context, PersonalAlarmReceiver::class.java).apply {
-                action = ACTION
-                data = Uri.parse("michelslife://personal-alarm/$id")
-                putExtra("id", id)
-            }, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            occurrenceIntent(context, id, occurrence),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+
+    private fun cancelOccurrence(context: Context, id: String, occurrence: Long) {
+        val pending = PendingIntent.getBroadcast(context, id.hashCode() and Int.MAX_VALUE,
+            occurrenceIntent(context, id, occurrence),
+            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE) ?: return
+        (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).cancel(pending)
+        pending.cancel()
+    }
 
     private fun openIntent(context: Context, id: String): PendingIntent =
         PendingIntent.getActivity(context, id.hashCode() and Int.MAX_VALUE,
@@ -608,7 +670,7 @@ internal object NativePersonalAlarms {
         val days = mutableSetOf<Int>()
         val selected = item.optJSONArray("days") ?: JSONArray()
         for (j in 0 until selected.length()) days.add(selected.optInt(j, -1))
-        val today = LocalDate.now(zone)
+        val today = java.time.Instant.ofEpochMilli(after).atZone(zone).toLocalDate()
         for (offset in 0..7) {
             val date = today.plusDays(offset.toLong())
             val calendarDay = date.dayOfWeek.value % 7 // Sunday=0, Monday=1...
@@ -620,25 +682,54 @@ internal object NativePersonalAlarms {
     }
 
     private fun cancel(context: Context, id: String) {
-        (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager)
-            .cancel(deliveryIntent(context, id))
+        val occurrence = prefs(context).getLong(SCHEDULED_PREFIX + id, 0L)
+        cancelOccurrence(context, id, occurrence)
+        if (occurrence > 0L) cancelOccurrence(context, id, 0L)
+        prefs(context).edit().remove(SCHEDULED_PREFIX + id).apply()
+    }
+
+    private fun sameSchedule(previous: JSONObject, current: JSONObject): Boolean =
+        listOf("enabled", "time", "repeat", "date", "days", "dueAt")
+            .all { previous.optString(it) == current.optString(it) }
+
+    private fun armOccurrence(context: Context, id: String, date: Long) {
+        val manager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val pending = deliveryIntent(context, id, date)
+        var exactScheduled = false
+        if (Build.VERSION.SDK_INT < 31 || manager.canScheduleExactAlarms()) {
+            try {
+                manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, date, pending)
+                exactScheduled = true
+            } catch (_: SecurityException) { }
+        }
+        if (!exactScheduled) manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, date, pending)
+    }
+
+    private fun retireOccurrence(context: Context, id: String, date: Long) {
+        try { cancelOccurrence(context, id, date) }
+        catch (e: Exception) { android.util.Log.w("MLVPersonalAlarms", "Could not retire stale occurrence", e) }
     }
 
     private fun schedule(context: Context, item: JSONObject) {
         if (!item.optBoolean("enabled")) return
         val date = timestamp(item, System.currentTimeMillis())
         if (date <= 0L) return
-        val manager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val pending = deliveryIntent(context, item.getString("id"))
-        // Exact timing requires user-granted exact-alarm access on Android 12+.
-        // Always fall back to an inexact wake-up, never falsely claim exact delivery.
-        if (Build.VERSION.SDK_INT < 31 || manager.canScheduleExactAlarms()) {
-            try {
-                manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, date, pending)
-                return
-            } catch (_: SecurityException) { }
+        val id = item.getString("id")
+        val key = SCHEDULED_PREFIX + id
+        val previous = prefs(context).getLong(key, 0L)
+        try {
+            armOccurrence(context, id, date)
+            if (!prefs(context).edit().putLong(key, date).commit())
+                throw IllegalStateException("Could not persist alarm occurrence")
+        } catch (e: Exception) {
+            if (previous != date) retireOccurrence(context, id, date)
+            val restore = prefs(context).edit()
+            if (previous > 0L) restore.putLong(key, previous) else restore.remove(key)
+            restore.commit()
+            throw e
         }
-        manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, date, pending)
+        if (previous != date) retireOccurrence(context, id, previous)
+        if (previous > 0L) retireOccurrence(context, id, 0L)
     }
 
     fun status(context: Context): JSONObject {
@@ -653,45 +744,159 @@ internal object NativePersonalAlarms {
             .put("fullScreen", Build.VERSION.SDK_INT < 34 || nm.canUseFullScreenIntent())
     }
 
+    @Synchronized
     fun sync(context: Context, input: JSONArray): JSONObject {
         if (input.length() > 80) return JSONObject().put("error", "Too many alarms")
         val cleanList = JSONArray()
         val unique = mutableSetOf<String>()
         for (i in 0 until input.length()) {
-            val normalized = clean(input.optJSONObject(i) ?: continue) ?: continue
-            if (unique.add(normalized.getString("id"))) cleanList.put(normalized)
+            val row = input.optJSONObject(i)
+                ?: return JSONObject().put("error", "Invalid alarm record")
+            val normalized = clean(row)
+                ?: return JSONObject().put("error", "Invalid alarm record")
+            if (!unique.add(normalized.getString("id")))
+                return JSONObject().put("error", "Duplicate alarm identifier")
+            cleanList.put(normalized)
         }
-        val existing = list(context)
-        for (i in 0 until existing.length()) {
-            val old = existing.optJSONObject(i) ?: continue
-            old.optString("id").takeIf { idPattern.matches(it) }?.let { cancel(context, it) }
+        val existing = readRegistry(context)
+        val previousById = (0 until existing.length()).mapNotNull { existing.optJSONObject(it) }
+            .associateBy { it.optString("id") }
+        val currentById = (0 until cleanList.length()).map { cleanList.getJSONObject(it) }
+            .associateBy { it.optString("id") }
+        val ids = (previousById.keys + currentById.keys).filter { idPattern.matches(it) }
+        val oldOccurrences = ids.associateWith { prefs(context).getLong(SCHEDULED_PREFIX + it, 0L) }
+        val newOccurrences = linkedMapOf<String, Long>()
+        val now = System.currentTimeMillis()
+        // Plan every occurrence before touching AlarmManager or preferences.
+        for ((id, item) in currentById) {
+            if (!item.optBoolean("enabled")) continue
+            val old = previousById[id]
+            val previous = oldOccurrences[id] ?: 0L
+            val next = if (old != null && sameSchedule(old, item) && previous > 0L) previous
+                else timestamp(item, now)
+            if (next <= 0L) {
+                // Old one-shot entries left enabled after a missed alarm must
+                // not prevent unrelated edits. Never silently accept a new
+                // or deliberately rescheduled one-shot in the past.
+                if (old != null && sameSchedule(old, item) && item.optString("repeat") == "once") {
+                    item.put("enabled", false)
+                    continue
+                }
+                return JSONObject().put("error", "An enabled alarm has no future occurrence")
+            }
+            newOccurrences[id] = next
         }
-        // Commit before re-arming: a receiver can then validate the new configuration.
-        prefs(context).edit().putString(KEY_ALARMS, cleanList.toString()).commit()
-        createChannel(context)
-        for (i in 0 until cleanList.length()) schedule(context, cleanList.getJSONObject(i))
+        val armed = mutableListOf<Pair<String, Long>>()
+        try {
+            createChannel(context)
+            // Stage only changed PendingIntents. The receiver is synchronized
+            // with this transaction and ignores any uncommitted occurrence.
+            for ((id, date) in newOccurrences) {
+                if (oldOccurrences[id] == date) continue
+                armed.add(id to date)
+                armOccurrence(context, id, date)
+            }
+            val edit = prefs(context).edit().putString(KEY_ALARMS, cleanList.toString())
+            for (id in ids) {
+                val date = newOccurrences[id]
+                if (date != null) edit.putLong(SCHEDULED_PREFIX + id, date)
+                else edit.remove(SCHEDULED_PREFIX + id)
+            }
+            if (!edit.commit()) {
+                // SharedPreferences may update memory even when disk commit fails.
+                val rollback = prefs(context).edit().putString(KEY_ALARMS, existing.toString())
+                for ((id, date) in oldOccurrences) {
+                    if (date > 0L) rollback.putLong(SCHEDULED_PREFIX + id, date)
+                    else rollback.remove(SCHEDULED_PREFIX + id)
+                }
+                rollback.commit()
+                throw IllegalStateException("Could not persist alarms")
+            }
+        } catch (e: Exception) {
+            for ((id, date) in armed) retireOccurrence(context, id, date)
+            android.util.Log.w("MLVPersonalAlarms", "Alarm transaction not committed", e)
+            return JSONObject().put("error", "Could not schedule alarms; previous list retained")
+        }
+        // Commit is complete: retire only replaced or removed identities.
+        // A stale OS broadcast cannot ring because its stored marker differs.
+        for ((id, previous) in oldOccurrences) {
+            if (previous != newOccurrences[id]) retireOccurrence(context, id, previous)
+            if (previous > 0L) retireOccurrence(context, id, 0L)
+        }
         return status(context).put("count", cleanList.length())
+            .put("registry", registrySnapshot(context))
     }
 
+    @Synchronized
     fun recover(context: Context) {
         createChannel(context)
-        val all = list(context)
+        val all = readRegistry(context)
+        val now = System.currentTimeMillis()
+        // Android clears its alarm queue on boot. A past single occurrence
+        // has no next delivery; keep the historical row but mark it inactive.
+        // Do not retroactively ring a missed alarm after boot or clock change.
+        val expired = mutableListOf<Pair<String, Long>>()
         for (i in 0 until all.length()) {
             val item = all.optJSONObject(i) ?: continue
-            if (item.optBoolean("enabled")) schedule(context, item)
+            if (item.optBoolean("enabled") && item.optString("repeat") == "once" &&
+                timestamp(item, now) <= 0L) {
+                val id = item.optString("id")
+                if (!idPattern.matches(id)) continue
+                expired.add(id to prefs(context).getLong(SCHEDULED_PREFIX + id, 0L))
+                item.put("enabled", false)
+            }
         }
+        if (expired.isNotEmpty()) {
+            val edit = prefs(context).edit().putString(KEY_ALARMS, all.toString())
+            for ((id, _) in expired) edit.remove(SCHEDULED_PREFIX + id)
+            if (!edit.commit()) {
+                android.util.Log.w("MLVPersonalAlarms", "Could not persist expired alarm recovery")
+                return
+            }
+            for ((id, previous) in expired) {
+                retireOccurrence(context, id, previous)
+                if (previous > 0L) retireOccurrence(context, id, 0L)
+            }
+        }
+        for (i in 0 until all.length()) {
+            val item = all.optJSONObject(i) ?: continue
+            if (item.optBoolean("enabled")) {
+                try { schedule(context, item) } catch (e: Exception) {
+                    android.util.Log.w("MLVPersonalAlarms", "Could not restore one scheduled alarm", e)
+                }
+            }
+        }
+        PersonalAlarmOverlay.restoreRecent(context)
     }
 
+    private const val NOTIFICATION_ID = 4710
+    private fun notificationTag(id: String) = "personal-alarm:$id"
+
+    // The existing persisted delivery markers also recover unacknowledged
+    // alarms after process death. Never revive an old notification indefinitely.
+    internal fun recentDelivered(context: Context): List<JSONObject> {
+        val records = list(context)
+        return (0 until records.length()).mapNotNull { records.optJSONObject(it) }
+            .filter { wasDelivered(context, it.optString("id")) }
+            .sortedBy { prefs(context).getLong(LAST_DELIVERED_PREFIX + it.optString("id"), 0L) }
+    }
+
+    @Synchronized
     fun dismiss(context: Context, id: String) {
         if (!idPattern.matches(id)) return
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.cancel(id.hashCode() and Int.MAX_VALUE)
-        if (PersonalAlarmOverlay.isRinging(id)) PersonalAlarmOverlay.stop(context)
+        manager.cancel(notificationTag(id), NOTIFICATION_ID)
         prefs(context).edit().remove(LAST_DELIVERED_PREFIX + id).apply()
+        PersonalAlarmOverlay.dismiss(context, id)
+        PersonalAlarmOverlay.restoreRecent(context)
     }
 
-    fun deliver(context: Context, id: String) {
+    @Synchronized
+    fun deliver(context: Context, id: String, occurrence: Long) {
         if (!idPattern.matches(id)) return
+        val stored = prefs(context).getLong(SCHEDULED_PREFIX + id, 0L)
+        // Dismissal never resets occurrence identity. Ignore obsolete, early or duplicate broadcasts.
+        if (occurrence <= 0L || stored != occurrence || occurrence > System.currentTimeMillis()) return
         val all = list(context)
         var target: JSONObject? = null
         for (i in 0 until all.length()) {
@@ -708,11 +913,14 @@ internal object NativePersonalAlarms {
                 item.put("enabled", false)
             nextList.put(item)
         }
-        prefs(context).edit().putString(KEY_ALARMS, nextList.toString())
-            .putLong(LAST_DELIVERED_PREFIX + id, System.currentTimeMillis()).commit()
+        if (!prefs(context).edit().putString(KEY_ALARMS, nextList.toString())
+            .remove(SCHEDULED_PREFIX + id)
+            .putLong(LAST_DELIVERED_PREFIX + id, System.currentTimeMillis()).commit()) return
         // Next recurrence is always scheduled from now, so it never doubles on clock changes.
         if (target.optString("repeat") != "once") {
-            schedule(context, target)
+            try { schedule(context, target) } catch (e: Exception) {
+                android.util.Log.w("MLVPersonalAlarms", "Could not schedule next occurrence", e)
+            }
         }
         // An explicitly authorized overlay is the only Android-supported route
         // above other UNLOCKED apps; full-screen notifications show a heads-up
@@ -736,9 +944,9 @@ internal object NativePersonalAlarms {
             .setPriority(Notification.PRIORITY_MAX)
         // Fullscreen intents are allowed only for eligible alarm apps and only
         // when Android grants access. If denied, a heads-up notification remains.
-        if (Build.VERSION.SDK_INT < 34 || manager.canUseFullScreenIntent())
+        if (!PersonalAlarmOverlay.isQueued(id) && (Build.VERSION.SDK_INT < 34 || manager.canUseFullScreenIntent()))
             notificationBuilder.setFullScreenIntent(open, true)
-        manager.notify(id.hashCode() and Int.MAX_VALUE, notificationBuilder.build())
+        manager.notify(notificationTag(id), NOTIFICATION_ID, notificationBuilder.build())
         // The channel carries sound/vibration. Do not bypass the user's blocked
         // channel, DND, or system accessibility preferences with forced media.
     }
@@ -747,6 +955,7 @@ internal object NativePersonalAlarms {
 class PersonalAlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != "com.michelslab.michelslife.PERSONAL_ALARM") return
-        NativePersonalAlarms.deliver(context, intent.getStringExtra("id") ?: "")
+        NativePersonalAlarms.deliver(context, intent.getStringExtra("id") ?: "",
+            intent.getLongExtra(NativePersonalAlarms.EXTRA_OCCURRENCE, 0L))
     }
 }

@@ -14,7 +14,7 @@ const all=new Set([...legacy,...library,...piano,...classical]);
 const classicalCollection=[...piano,...classical];
 
 function harness(persisted={v30165Soundscape:'moonlight',v30165CompletionSound:'soft'}){
-  const frequencies=[],startTimes=[],contexts=[],timers=new Map(),buffers=[],sources=[];
+  const frequencies=[],startTimes=[],contexts=[],timers=new Map(),buffers=[],sources=[],gains=[],timeouts=new Map();
   let timerCounter=0;
   class AudioContext{
     constructor(){this.currentTime=0;this.state='running';this.destination={};this.closed=false;contexts.push(this);}
@@ -27,17 +27,17 @@ function harness(persisted={v30165Soundscape:'moonlight',v30165CompletionSound:'
         connect(){},start(time){startTimes.push(time)},stop(){}};
     }
     createGain(){
-      return {gain:{setValueAtTime(){},linearRampToValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){}};
+      const gain={value:NaN,setValueAtTime(v){this.value=v;},linearRampToValueAtTime(){},exponentialRampToValueAtTime(){}};gains.push(gain);return {gain,connect(){}};
     }
   }
   const recordings=[];
-  class Audio{constructor(src){this.src=src;this.paused=true;this.currentTime=0;this.playCalls=0;recordings.push(this);}play(){this.playCalls++;this.paused=false;return Promise.resolve();}pause(){this.paused=true;}}
+  class Audio{constructor(src){this.src=src;this.paused=true;this.currentTime=0;this.playCalls=0;recordings.push(this);}play(){this.playCalls++;this.paused=false;return Promise.resolve();}pause(){this.paused=true;}removeAttribute(name){if(name==='src')this.src='';}load(){this.released=true;}}
   const window={
     AudioContext,Audio,
     FocusStoryV30162:{
       focusState:()=>persisted,
       setAudioPreference(kind,value){
-        if(kind==='scene')persisted.v30165Soundscape=all.has(value)?value:'moonlight';
+        if(kind==='scene')persisted.v30165Soundscape=all.has(value)||/^my_[a-f0-9]{32}$/.test(value)?value:'moonlight';
         else if(kind==='completion')persisted.v30165CompletionSound=value;
         else if(kind==='ambientVolume')persisted.v30165AmbientVolume=value;
         else if(kind==='ambientMode')persisted.v30165AmbientMode=value;
@@ -48,12 +48,12 @@ function harness(persisted={v30165Soundscape:'moonlight',v30165CompletionSound:'
     },
     setInterval(fn){const id=++timerCounter;timers.set(id,fn);return id},
     clearInterval(id){timers.delete(id)},
-    setTimeout(){return 1},addEventListener(){}
+    setTimeout(fn){const id=++timerCounter;timeouts.set(id,fn);return id},clearTimeout(id){timeouts.delete(id)},addEventListener(){}
   };
   window.window=window;
   window.document={readyState:'loading',documentElement:{dataset:{mlvPlatform:'android'}},querySelector(){return null},addEventListener(){}};
   vm.runInNewContext(focusSource,window,{filename:'focus-immersive.js'});
-  return {api:window.MichelsLifeFocusAudio,frequencies,startTimes,contexts,timers,persisted,buffers,sources,recordings};
+  return {api:window.MichelsLifeFocusAudio,frequencies,startTimes,contexts,timers,persisted,buffers,sources,recordings,gains,timeouts,window};
 }
 
 
@@ -207,4 +207,200 @@ test('track navigation is disabled for empty and single-track collections',()=>{
  assert.equal(f.api.canNavigateAmbient(),false);f.api.archiveScene(piano[0]);
  assert.equal(f.api.canNavigateAmbient(),false);f.api.setAmbientCollection('all');
  assert.equal(f.api.canNavigateAmbient(),true);
+});
+
+test('original soundscape volume changes immediately and phase bell restores the latest volume',()=>{
+ const f=harness();f.api.startAmbient();const bus=f.gains[0];
+ assert.equal(bus.value,1);
+ f.api.setAmbientVolume(0);assert.equal(bus.value,0);
+ f.api.setAmbientVolume(.7);assert.equal(bus.value,2);
+ f.api.playPhaseBells();assert.equal(bus.value,.48);
+ f.api.setAmbientVolume(.35);assert.equal(bus.value,.24);
+ [...f.timeouts.values()].at(-1)();assert.equal(bus.value,1);
+ f.api.stopAmbient();
+});
+test('reselecting current recording does not restart or lose playback position',()=>{
+ const f=harness();f.api.selectScene(library[0]);f.api.startAmbient();
+ const p=f.recordings.at(-1);p.currentTime=52;f.api.selectScene(library[0]);
+ assert.equal(f.recordings.length,1);assert.equal(p.currentTime,52);assert.equal(p.paused,false);
+});
+test('stale audio errors cannot override currently playing track status',()=>{
+ const f=harness();f.api.selectScene(library[0]);f.api.startAmbient();
+ const old=f.recordings.at(-1);f.api.selectScene(library[1]);old.onerror();
+ assert.equal(f.api.playingScene(),library[1]);assert.equal(f.api.personalStatus(),'');
+ f.recordings.at(-1).onerror();assert.equal(f.api.playing(),false);assert.match(f.api.personalStatus(),/Cannot play/);
+});
+test('failed track preference leaves current audio and reports error',()=>{
+ const f=harness();f.api.selectScene(library[0]);f.api.startAmbient();const p=f.recordings.at(-1);
+ const save=f.window.FocusStoryV30162.setAudioPreference;f.window.FocusStoryV30162.setAudioPreference=(kind,value)=>kind==='scene'?false:save(kind,value);
+ assert.equal(f.api.moveAmbient(1),false);assert.equal(f.api.playingScene(),library[0]);
+ assert.equal(p.paused,false);assert.equal(f.recordings.length,1);assert.match(f.api.personalStatus(),/not saved/);
+});
+
+test('a playlist with one remaining recording restarts on natural end',()=>{
+ const f=harness();f.api.setAmbientCollection('Classical');for(const id of classicalCollection.slice(1))f.api.archiveScene(id);
+ f.api.setAmbientMode('playlist');f.api.startAmbient();const first=f.recordings.at(-1);first.onended();
+ assert.equal(f.recordings.length,2);assert.equal(f.api.playingScene(),piano[0]);assert.equal(f.recordings.at(-1).paused,false);
+});
+
+test('failed collection selection rolls back the collection and retains existing recording',()=>{
+ const f=harness();f.api.setAmbientCollection('Ambient');f.api.startAmbient();const p=f.recordings.at(-1);
+ const save=f.window.FocusStoryV30162.setAudioPreference;f.window.FocusStoryV30162.setAudioPreference=(kind,value)=>kind==='scene'?false:save(kind,value);
+ assert.equal(f.api.setAmbientCollection('Classical'),false);assert.equal(f.api.ambientCollection(),'Ambient');
+ assert.equal(f.api.playingScene(),library[0]);assert.equal(p.paused,false);assert.equal(f.recordings.length,1);
+});
+test('failed cross-collection track selection does not alter the existing collection',()=>{
+ const f=harness();f.api.setAmbientCollection('Classical');f.api.startAmbient();const p=f.recordings.at(-1);
+ const save=f.window.FocusStoryV30162.setAudioPreference;f.window.FocusStoryV30162.setAudioPreference=(kind,value)=>kind==='scene'?false:save(kind,value);
+ assert.equal(f.api.selectScene(library[0]),piano[0]);assert.equal(f.api.ambientCollection(),'Classical');
+ assert.equal(f.api.playingScene(),piano[0]);assert.equal(p.paused,false);assert.equal(f.recordings.length,1);
+});
+
+function fakePersonalStorage(f,{failBlob=false}={}){
+ const tracks=new Map(),blobs=new Map(),pending=[];
+ let counter=0,opens=0;
+ const db={close(){},transaction(names,mode){
+   const tx={error:null,aborted:false,staged:[],abort(){this.aborted=true;this.onabort?.();},
+     objectStore(name){const store=name==='tracks'?tracks:blobs;return {
+       add(value,key){if(failBlob&&name==='blobs')throw Error('quota');tx.staged.push([store,key??value.id,value]);},
+       getAll(){const req={result:[...store.values()]};queueMicrotask(()=>{req.onsuccess?.();tx.oncomplete?.();});return req;},
+       get(key){const req={result:store.get(key)};queueMicrotask(()=>{req.onsuccess?.();tx.oncomplete?.();});return req;}
+     };}
+   };
+   if(mode==='readwrite')pending.push(()=>{if(!tx.aborted){for(const [store,key,value] of tx.staged)store.set(key,value);tx.oncomplete?.();}});
+   return tx;
+ }};
+ f.window.crypto={getRandomValues(bytes){bytes.fill(++counter);return bytes;}};
+ f.window.indexedDB={open(){opens++;const req={result:db};queueMicrotask(()=>req.onsuccess?.());return req;}};
+ return {tracks,blobs,pending,db,opens:()=>opens};
+}
+async function waitPending(store){for(let i=0;i<20&&!store.pending.length;i++)await Promise.resolve();assert.ok(store.pending.length);}
+test('cancel personal import commits current file and skips remaining files without changing music',async()=>{
+ const f=harness(),store=fakePersonalStorage(f);f.api.setAmbientCollection('Classical');f.api.startAmbient();const p=f.recordings.at(-1);
+ const result=f.api.importPersonalTracks([{name:'one.mp3',size:200},{name:'two.wav',size:300}]);
+ await waitPending(store);assert.equal(f.api.cancelPersonalImport(),true);assert.equal(f.api.personalCancelPending(),true);
+ store.pending.shift()();assert.equal(await result,true);
+ assert.equal(store.tracks.size,1);assert.equal(store.blobs.size,1);
+ assert.equal(f.api.personalImporting(),false);assert.equal(f.api.personalCancelPending(),false);
+ assert.equal(f.api.ambientCollection(),'Classical');assert.equal(f.api.playingScene(),piano[0]);assert.equal(p.paused,false);
+ assert.match(f.api.personalStatus(),/Skipped: 1/);
+});
+test('synchronous Blob write failure aborts metadata and leaves no orphan song',async()=>{
+ const f=harness(),store=fakePersonalStorage(f,{failBlob:true});
+ assert.equal(await f.api.importPersonalTracks([{name:'broken.mp3',size:300}]),false);
+ store.pending.shift()();assert.equal(store.tracks.size,0);assert.equal(store.blobs.size,0);
+ assert.match(f.api.personalStatus(),/Failed: 1/);
+});
+test('blocked database open releases import state and late success closes abandoned handle',async()=>{
+ const f=harness();let req,closed=0;
+ f.window.indexedDB={open(){req={result:{close(){closed++;}}};queueMicrotask(()=>req.onblocked());return req;}};
+ assert.equal(await f.api.importPersonalTracks([{name:'song.mp3',size:200}]),false);
+ assert.equal(f.api.personalImporting(),false);req.onsuccess();assert.equal(closed,1);
+ const store=fakePersonalStorage(f);const result=f.api.importPersonalTracks([{name:'song.mp3',size:200}]);await waitPending(store);store.pending.shift()();
+ assert.equal(await result,true);assert.equal(store.opens(),1);
+});
+test('synchronous database open exception is retryable',async()=>{
+ const f=harness();f.window.indexedDB={open(){throw Error('denied');}};
+ assert.equal(await f.api.loadPersonalTracks(),false);
+ const store=fakePersonalStorage(f);assert.equal(await f.api.loadPersonalTracks(),true);assert.equal(store.opens(),1);
+});
+test('large personal files are accepted without a hard size cap and without autoplay',async()=>{
+ const f=harness(),store=fakePersonalStorage(f);
+ const result=f.api.importPersonalTracks([{name:'long.mp3',size:8*1024*1024*1024}]);await waitPending(store);store.pending.shift()();
+ assert.equal(await result,true);assert.equal(store.tracks.size,1);assert.equal(f.api.playing(),false);assert.equal(f.api.ambientCollection(),'all');
+ assert.ok(f.api.sceneOptions().some(o=>o.label.includes('long.mp3')));
+});
+test('cancel import is available only in expanded library on desktop and Android',()=>{
+ const mobile=readFileSync('android/mobile-experience.js','utf8');
+ for(const [source,attr] of [[focusSource,'data-mlv-audio'],[mobile,'data-mobile-focus']]){
+  assert.ok(source.includes(attr+'="cancel-import" hidden'));assert.ok(source.includes('cancelPersonalImport'));
+ }
+});
+
+test('replacing or stopping recorded audio releases decoder resources',()=>{
+ const f=harness();f.api.selectScene(library[0]);f.api.startAmbient();const first=f.recordings.at(-1);
+ f.api.selectScene(library[1]);const second=f.recordings.at(-1);assert.equal(first.released,true);assert.equal(first.src,'');
+ assert.equal(second.released,undefined);f.api.stopAmbient();assert.equal(second.released,true);
+});
+test('stale personal Blob read cannot play after switching to another track',async()=>{
+ const f=harness(),store=fakePersonalStorage(f);const id='my_'+'b'.repeat(32);
+ store.tracks.set(id,{id,name:'personal.mp3'});store.blobs.set(id,{name:'personal.mp3',size:200});
+ assert.equal(await f.api.loadPersonalTracks(),true);let created=0;
+ f.window.URL={createObjectURL(){created++;return 'blob:test';},revokeObjectURL(){}};
+ f.api.selectScene(id);f.api.startAmbient();f.api.selectScene(library[0]);
+ for(let i=0;i<20;i++)await Promise.resolve();
+ assert.equal(created,0);assert.equal(f.api.playingScene(),library[0]);assert.equal(f.recordings.length,1);
+});
+test('personal Blob URL is revoked after decoder release when stopping',async()=>{
+ const f=harness(),store=fakePersonalStorage(f);const id='my_'+'c'.repeat(32);
+ store.tracks.set(id,{id,name:'song.mp3'});store.blobs.set(id,{name:'song.mp3',size:300});
+ await f.api.loadPersonalTracks();const revoked=[];
+ f.window.URL={createObjectURL(){return 'blob:test';},revokeObjectURL(url){assert.equal(f.recordings.at(-1).released,true);revoked.push(url);}};
+ f.api.selectScene(id);f.api.startAmbient();for(let i=0;i<20&&!f.recordings.length;i++)await Promise.resolve();
+ assert.equal(f.recordings.at(-1).src,'blob:test');f.api.stopAmbient();assert.deepEqual(revoked,['blob:test']);
+});
+
+test('saved personal track never falls through to unrelated audio before local library loads',async()=>{
+ const id='my_'+'d'.repeat(32),f=harness({v30165Soundscape:id,v30165CompletionSound:'soft'});
+ assert.equal(f.api.sceneId(),'');assert.equal(f.api.startAmbient(),false);assert.equal(f.persisted.v30165Soundscape,id);
+ const store=fakePersonalStorage(f);store.tracks.set(id,{id,name:'remembered.mp3'});
+ const a=f.api.loadPersonalTracks(),b=f.api.loadPersonalTracks();assert.equal(a,b);assert.equal(f.api.personalLibraryLoading(),true);
+ assert.equal(await a,true);assert.equal(f.api.personalLibraryLoading(),false);assert.equal(f.api.sceneId(),id);
+ assert.equal(f.api.playing(),false);
+});
+test('missing personal file can be replaced only by explicit collection or track choice',()=>{
+ const id='my_'+'e'.repeat(32),f=harness({v30165Soundscape:id,v30165CompletionSound:'soft'});
+ assert.equal(f.api.sceneId(),'');assert.equal(f.api.setAmbientCollection('Classical'),true);
+ assert.equal(f.api.sceneId(),piano[0]);assert.equal(f.api.playing(),false);
+});
+test('library failure is observable and retry clears the failure state',async()=>{
+ const f=harness();f.window.indexedDB={open(){throw Error('blocked');}};
+ assert.equal(await f.api.loadPersonalTracks(),false);assert.equal(f.api.personalLibraryFailed(),true);
+ fakePersonalStorage(f);assert.equal(await f.api.loadPersonalTracks(),true);assert.equal(f.api.personalLibraryFailed(),false);
+ assert.equal(f.api.personalStatus(),'');
+});
+test('failed replacement preference after archive does not start an unintended track',()=>{
+ const f=harness();f.api.selectScene(library[0]);f.api.startAmbient();
+ const save=f.window.FocusStoryV30162.setAudioPreference;f.window.FocusStoryV30162.setAudioPreference=(kind,value)=>kind==='scene'?false:save(kind,value);
+ assert.equal(f.api.archiveScene(library[0]),true);assert.equal(f.api.playing(),false);
+ assert.equal(f.recordings.length,1);assert.match(f.api.personalStatus(),/replacement was not saved/);
+});
+test('failed volume persistence retains session volume and exposes warning',()=>{
+ const f=harness();f.api.selectScene(library[0]);f.api.startAmbient();
+ const save=f.window.FocusStoryV30162.setAudioPreference;f.window.FocusStoryV30162.setAudioPreference=(kind,value)=>kind==='ambientVolume'?false:save(kind,value);
+ f.api.setAmbientVolume(.6);assert.equal(f.api.ambientVolume(),.6);assert.equal(f.recordings.at(-1).volume,.6);
+ assert.match(f.api.personalStatus(),/session only/);f.window.FocusStoryV30162.setAudioPreference=save;
+ f.api.setAmbientVolume(.5);assert.equal(f.persisted.v30165AmbientVolume,.5);assert.equal(f.api.personalStatus(),'');
+});
+
+test('seek recorded music without changing pause state or Focus preferences',()=>{
+ const f=harness();f.api.selectScene(library[0]);f.api.startAmbient();const p=f.recordings.at(-1);p.duration=200;
+ const generation=f.api.ambientPlayback().generation;f.api.toggleAmbientPlayback();
+ const saved=JSON.stringify(f.persisted);
+ assert.equal(f.api.seekAmbient(50,generation),true);assert.equal(p.currentTime,50);assert.equal(p.paused,true);
+ assert.equal(f.api.seekAmbient(-50,generation),true);assert.equal(p.currentTime,0);
+ assert.equal(f.api.seekAmbient(999,generation),true);assert.equal(p.currentTime,199.95);
+ assert.equal(f.api.seekAmbient(NaN,generation),false);assert.equal(JSON.stringify(f.persisted),saved);
+});
+test('stale seek gestures cannot affect a replacement recording or generated soundtrack',()=>{
+ const f=harness();f.api.selectScene(library[0]);f.api.startAmbient();f.recordings.at(-1).duration=120;
+ const old=f.api.ambientPlayback().generation;f.api.selectScene(library[1]);const p=f.recordings.at(-1);p.duration=160;
+ assert.equal(f.api.seekAmbient(90,old),false);assert.equal(p.currentTime,0);
+ f.api.selectScene('moonlight');assert.equal(f.api.seekAmbient(30,old),false);
+});
+test('seek control is in advanced options and not the timer controls on either platform',()=>{
+ const mobile=readFileSync('android/mobile-experience.js','utf8');
+ for(const [src,key,drawer] of [[focusSource,'mlv','<details class="mlv-focus-sound-details"'],[mobile,'mobile','<details class="mlv-android-focus-sounds"']]){
+   assert.ok(src.indexOf(drawer)<src.indexOf('data-'+key+'-ambient-seek'));
+   assert.ok(src.includes('input.dataset.audioGeneration'));
+ }
+});
+
+test('seek uses native range keyboard focus and explicit hidden styles',()=>{
+ const mobile=readFileSync('android/mobile-experience.js','utf8');
+ for(const [src,key] of [[focusSource,'mlv'],[mobile,'mobile']]){
+   assert.ok(src.includes('[data-'+key+'-seek-wrap][hidden]{display:none!important}'));
+   const handler=src.slice(src.indexOf("matches?.('[data-"+key+"-ambient-seek]')"),src.indexOf("matches?.('[data-"+key+"-ambient-seek]')")+700);
+   assert.ok(handler.includes('seekAmbient'));assert.doesNotMatch(handler,/input\.blur\(/);
+ }
 });

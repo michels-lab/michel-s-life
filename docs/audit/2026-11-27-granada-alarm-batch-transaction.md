@@ -1,0 +1,3 @@
+# Granada — multi-alarm scheduling transaction
+
+Plan all enabled occurrences, preserve unchanged delayed occurrences, stage changed OS intents, commit registry and occurrence markers in a single preference editor, and retire old intents only after successful commit. Failure removes staged intents and restores previous preference snapshot on failed disk commit. Receiver and sync share the same monitor; obsolete intents fail their occurrence marker check. This is not a distributed atomic transaction with AlarmManager: process death before commit can leave ignored orphan intents, and OS/storage failure during rollback needs real-device verification. Structural tests updated; compilation and device gates pending. No UI, version or provider changes.

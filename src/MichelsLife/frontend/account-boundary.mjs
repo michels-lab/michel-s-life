@@ -109,8 +109,9 @@ function commit(storage, entries) {
   }
   if (!changes.length) return;
   try {
-    storage.setItem(TRANSACTION, JSON.stringify({version:1,changes}));
-    if (storage.getItem(TRANSACTION) === null) throw Error('journal_not_stored');
+    const journal = JSON.stringify({version:1,changes});
+    storage.setItem(TRANSACTION, journal);
+    if (storage.getItem(TRANSACTION) !== journal) throw Error('journal_not_verified');
   } catch {
     throw new BoundaryError(storage.getItem(TRANSACTION) === null ?
       'storage_write_failed' : 'transaction_requires_recovery');
@@ -119,7 +120,11 @@ function commit(storage, entries) {
     for (const [key, value] of entries) {
       if (value === null) storage.removeItem(key);
       else storage.setItem(key, value);
+      if (storage.getItem(key) !== value) throw Error('storage_write_not_verified');
     }
+    // Verify the complete new state before discarding the rollback journal.
+    if (entries.some(([key,value]) => storage.getItem(key) !== value))
+      throw Error('transaction_state_not_verified');
     storage.removeItem(TRANSACTION);
     if (storage.getItem(TRANSACTION) !== null) throw Error('journal_remains');
   } catch {

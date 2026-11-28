@@ -1,0 +1,3 @@
+# Granada — paired release update UI
+
+The native verifier accepts combined Windows/Android release tags, but the Settings control accepted only the obsolete Windows-only tag. Real stable metadata could therefore claim an update while hiding Download. Require paired canonical tag and matching native Android version, strict booleans and Direct channel before showing link or download. Mismatches report unverified rather than offer a dead-end. Extend UI metadata timeout for bounded native multi-request discovery, reject negative progress and avoid claiming partial file deletion after cancellation. Tests execute actual JS Settings function with fake bridge; no real install or release.

@@ -387,7 +387,20 @@ class FocusAlarmBootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED &&
             intent.action != Intent.ACTION_MY_PACKAGE_REPLACED) return
-        NativeFocusAlarm.recoverAfterBoot(context)
-        NativePersonalAlarms.recover(context)
+        try { NativeFocusAlarm.recoverAfterBoot(context) }
+        finally {
+            try { NativePersonalAlarms.recover(context) }
+            catch (e: Exception) { android.util.Log.w("MLVPersonalAlarms", "Alarm recovery failed", e) }
+        }
+    }
+}
+
+/** Recalculate personal wall-clock schedules only on actual clock changes. */
+class PersonalAlarmClockReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action != Intent.ACTION_TIME_CHANGED &&
+            intent.action != Intent.ACTION_TIMEZONE_CHANGED) return
+        try { NativePersonalAlarms.recover(context) }
+        catch (e: Exception) { android.util.Log.w("MLVPersonalAlarms", "Clock recovery failed", e) }
     }
 }

@@ -1,6 +1,7 @@
 package com.michelslab.michelslife
 
 import java.security.MessageDigest
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -56,6 +57,15 @@ internal object CalendarSyncRules {
         return Operation.UPDATE to single.id
     }
 
+    fun verifyResponseId(expected: String, actual: String): String {
+        require(expected.isNotBlank() && actual == expected) {
+            "Google Calendar returned an unexpected event identifier."
+        }
+        return actual
+    }
+
+    private val maxTimedDuration = Duration.ofDays(366)
+
     fun validateTiming(start: String, end: String, allDay: Boolean) {
         if (allDay) {
             val first = LocalDate.parse(start)
@@ -67,7 +77,7 @@ internal object CalendarSyncRules {
             val first = OffsetDateTime.parse(start).toInstant()
             val last = OffsetDateTime.parse(end).toInstant()
             require(last.isAfter(first)) { "Calendar event end must follow start." }
-            require(ChronoUnit.DAYS.between(first, last) <= 366) { "Calendar duration is too long." }
+            require(Duration.between(first, last) <= maxTimedDuration) { "Calendar duration is too long." }
         }
     }
 
@@ -75,6 +85,6 @@ internal object CalendarSyncRules {
         val first = Instant.parse(start)
         val last = Instant.parse(end)
         require(last.isAfter(first)) { "Invalid Calendar read window." }
-        require(ChronoUnit.DAYS.between(first, last) <= 366) { "Calendar read window is too long." }
+        require(Duration.between(first, last) <= maxTimedDuration) { "Calendar read window is too long." }
     }
 }

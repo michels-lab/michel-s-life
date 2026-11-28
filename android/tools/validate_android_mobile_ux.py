@@ -166,6 +166,29 @@ if "setLayerType(View.LAYER_TYPE_HARDWARE" in main or "offscreenPreRaster = true
 if 'android:hardwareAccelerated="true"' not in manifest:
     raise SystemExit("Android WebView must retain hardware acceleration for visible UI")
 
+# A renderer exit is not equivalent to a full emulator crash. The app must
+# detach the unusable WebView and preserve disk state, with explicit retry.
+recovery = main.split("private fun showRendererRecovery(", 1)
+if len(recovery) != 2:
+    raise SystemExit("Android renderer recovery is missing")
+recovery = recovery[1].split("private fun openPomodoroFromNotification()", 1)[0]
+for token in ("override fun onRenderProcessGone", "if (view !== webView) return false",
+              "if (!rendererGone) showRendererRecovery(view)",
+              "if (::webView.isInitialized && !rendererGone) webView.destroy()"):
+    if token not in main:
+        raise SystemExit("Renderer lifecycle contract missing: " + token)
+for token in ("rendererGone = true", "stopPendingNotificationOpen()", "stopPendingPersonalAlarm()",
+              "if (!recoveryRequested", "recreate()", "setContentView(panel)", "view.destroy()"):
+    if token not in recovery:
+        raise SystemExit("Renderer recovery contract missing: " + token)
+if recovery.index("setContentView(panel)") > recovery.index("view.destroy()"):
+    raise SystemExit("Dead WebView must be detached before destruction")
+if any(token in recovery for token in ("clearCache(", "clearHistory(", "deleteAllData(", "clearStorage(", "loadUrl(")):
+    raise SystemExit("Renderer recovery must not erase user data or reuse a dead renderer")
+bridge_source = (ROOT / "app/src/main/java/com/michelslab/michelslife/AndroidBridge.kt").read_text(encoding="utf-8")
+if "if (!activity.acceptsWebViewCallbacks(webView)) return@runOnUiThread" not in bridge_source:
+    raise SystemExit("Bridge must not deliver callbacks to dead WebView")
+
 if "__mlvAndroidHandleBack" not in main:
     raise SystemExit("MainActivity does not delegate Android back handling to the web UI")
 

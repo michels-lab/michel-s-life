@@ -1,0 +1,3 @@
+# Granada — historical #166 browser interaction convergence
+
+Adapt the useful Android updater browser regression to current Settings panel, paired tag/Android version contract and real touchscreen browser navigation at 412px English and 360px Spanish. Verify a stale reply cannot complete a pending query, canonical paired link is offered only when matching, mismatch hides Download, and XP/missions/goals are unchanged. Retain screenshots under the existing Android UI artifact; synthetic native responses are explicitly not real installed APK/installer evidence. Historical #166 remains open until all distinct pieces are reconciled. New browser test pending exact CI; no release.

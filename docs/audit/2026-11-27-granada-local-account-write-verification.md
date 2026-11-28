@@ -1,0 +1,3 @@
+# Granada — local account transaction verification
+
+Prior candidate 8dd0ac1f4dedf73af6bd169690d37db415178992 had specific alarm, Calendar, Drive and transport suites green. This change is local storage only, no provider access/schema changes. AccountBoundary formerly accepted any non-null transaction journal and did not read back committed values before clearing recovery. Require exact journal bytes, per-key readback and full final readback, retaining rollback on failure. Four synthetic negative regressions: silently dropped board write, silently dropped companion removal, corrupt journal write and late corruption. New exact-head CI pending. No claims of cross-tab locking, physical WebView persistence or live Supabase verification. No UI changes.

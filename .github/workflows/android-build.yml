@@ -61,6 +61,7 @@ permissions:
   contents: read
 
 env:
+  CANDIDATE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
   RELEASES_REPO: michels-lab/michel-s-life-releases
   ANDROID_VERSION: 0.2.24
   ANDROID_UPLOAD_KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
@@ -78,6 +79,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CANDIDATE_SHA }}
+      - name: Assert exact source checkout
+        run: test "$(git rev-parse HEAD)" = "$CANDIDATE_SHA"
 
       - uses: actions/setup-java@v5
         with:
@@ -95,6 +100,7 @@ jobs:
         run: |
           python android/tools/validate_sync_contract.py
           node tools/test_cloud_restore_storage.mjs
+          python3 tools/test_cloud_meta_store_behavior.py
 
       - name: Validate Android version metadata
         run: python android/tools/validate_android_version.py
@@ -294,6 +300,7 @@ jobs:
             | tee artifacts/android/signing-certificate.txt
           echo "=== APK SHA-256 ==="
           sha256sum "$APK" | tee artifacts/android/MichelsLife-Android-TEST-v${ANDROID_VERSION}.apk.sha256
+          python3 tools/granada_candidate_native_artifact.py --dir artifacts/android --source-sha "$CANDIDATE_SHA" --filename "$(basename "$APK")" --create
 
       - uses: actions/upload-artifact@v4
         with:
@@ -316,12 +323,21 @@ jobs:
       MLV_REQUIRE_NATIVE_STATE_PROBE: "1"
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CANDIDATE_SHA }}
+      - name: Assert exact source checkout
+        run: test "$(git rev-parse HEAD)" = "$CANDIDATE_SHA"
 
       - name: Download candidate APK from SAME workflow run
         uses: actions/download-artifact@v4
         with:
           name: MichelsLife-Android-TEST-v${{ env.ANDROID_VERSION }}
           path: artifacts/candidate
+      - name: Verify exact APK digest and source before native installation
+        run: |
+          python3 tools/granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha "$CANDIDATE_SHA" --filename "MichelsLife-Android-TEST-v${ANDROID_VERSION}.apk" --verify
+          mkdir -p artifacts/candidate-install
+          cp artifacts/candidate/candidate-provenance.json artifacts/candidate-install/candidate-provenance.json
 
       - uses: actions/setup-python@v5
         with:
@@ -375,12 +391,21 @@ jobs:
       MLV_REQUIRE_NATIVE_STATE_PROBE: "1"
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CANDIDATE_SHA }}
+      - name: Assert exact source checkout
+        run: test "$(git rev-parse HEAD)" = "$CANDIDATE_SHA"
 
       - name: Download candidate APK from SAME workflow run (not public v0.2.11)
         uses: actions/download-artifact@v4
         with:
           name: MichelsLife-Android-TEST-v${{ env.ANDROID_VERSION }}
           path: artifacts/candidate
+      - name: Verify exact APK digest and source before native installation
+        run: |
+          python3 tools/granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha "$CANDIDATE_SHA" --filename "MichelsLife-Android-TEST-v${ANDROID_VERSION}.apk" --verify
+          mkdir -p artifacts/candidate-install
+          cp artifacts/candidate/candidate-provenance.json artifacts/candidate-install/candidate-provenance.json
 
       - uses: actions/setup-python@v5
         with:
@@ -429,11 +454,20 @@ jobs:
       MLV_REQUIRE_NATIVE_STATE_PROBE: '1'
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.CANDIDATE_SHA }}
+      - name: Assert exact source checkout
+        run: test "$(git rev-parse HEAD)" = "$CANDIDATE_SHA"
       - name: Download the SAME run's debug candidate, never the public stable APK
         uses: actions/download-artifact@v4
         with:
           name: MichelsLife-Android-TEST-v${{ env.ANDROID_VERSION }}
           path: artifacts/candidate
+      - name: Verify exact APK digest and source before native installation
+        run: |
+          python3 tools/granada_candidate_native_artifact.py --dir artifacts/candidate --source-sha "$CANDIDATE_SHA" --filename "MichelsLife-Android-TEST-v${ANDROID_VERSION}.apk" --verify
+          mkdir -p artifacts/candidate-install
+          cp artifacts/candidate/candidate-provenance.json artifacts/candidate-install/candidate-provenance.json
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'

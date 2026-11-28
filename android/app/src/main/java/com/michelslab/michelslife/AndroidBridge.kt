@@ -59,7 +59,25 @@ class AndroidBridge(
 
     /** Android alarm registry is authoritative after recurring/one-time delivery. */
     @JavascriptInterface
-    fun getPersonalAlarms(): String = NativePersonalAlarms.list(activity).toString()
+    fun getPersonalAlarms(): String = try {
+        NativePersonalAlarms.registrySnapshot(activity)
+    } catch (_: Exception) {
+        JSONObject().put("error", "Alarm registry unavailable").toString()
+    }
+
+    @JavascriptInterface
+    fun syncPersonalAlarmsIfUnchanged(raw: String, expected: String): String = try {
+        NativePersonalAlarms.syncIfUnchanged(activity, JSONArray(raw), expected).toString()
+    } catch (_: Exception) {
+        JSONObject().put("error", "Personal alarm scheduling failed").toString()
+    }
+
+    @JavascriptInterface
+    fun snoozePersonalAlarm(id: String): Boolean {
+        if (!NativePersonalAlarms.snooze(activity, id)) return false
+        activity.runOnUiThread { activity.completePersonalAlarm(id) }
+        return true
+    }
 
     @JavascriptInterface
     fun syncPersonalAlarms(raw: String): String = try {
@@ -123,8 +141,7 @@ class AndroidBridge(
     @JavascriptInterface
     fun dismissPersonalAlarm(id: String) {
         activity.runOnUiThread {
-            NativePersonalAlarms.dismiss(activity, id)
-            activity.stopAlarmAttention()
+            activity.completePersonalAlarm(id)
         }
     }
 
@@ -194,21 +211,35 @@ class AndroidBridge(
                 respondOk(requestId, cloud.status(account))
             }
             "disconnect" -> {
-                meta.resetForDisconnect()
-                respondOk(requestId, cloud.status(""))
+                try {
+                    meta.resetForDisconnect()
+                    respondOk(requestId, cloud.status(""))
+                } catch (e: Exception) {
+                    respondError(requestId, e.message ?: "Cloud disconnect failed.")
+                }
             }
             "cloudDirty" -> {
                 val at = parseInstant(payload.optString("changedAt")) ?: Instant.now()
-                meta.markDirty(at)
-                respondOk(requestId, JSONObject().put("marked", true).put("changedAt", at.toString()))
+                try {
+                    meta.markDirty(at)
+                    respondOk(requestId, JSONObject().put("marked", true).put("changedAt", at.toString()))
+                } catch (e: Exception) {
+                    respondError(requestId, e.message ?: "Cloud change could not be recorded.")
+                }
             }
             "cloudAccept" -> {
                 val hash = payload.optString("hash", "")
                 val modified = parseInstant(payload.optString("remoteModifiedAt"))
-                meta.acceptRestore(hash, modified)
-                respondOk(requestId, JSONObject().put("accepted", true))
+                try {
+                    meta.acceptRestore(hash, modified)
+                    respondOk(requestId, JSONObject().put("accepted", true))
+                } catch (e: Exception) {
+                    respondError(requestId, e.message ?: "Cloud restore confirmation failed.")
+                }
             }
-            "cloudSync" -> authorizeFor(requestId, false) { token, account ->
+            "cloudSync" -> {
+              val requestMeta = meta.load()
+              authorizeFor(requestId, false) { token, account ->
                 executor.execute {
                     try {
                         val result = cloud.sync(
@@ -216,13 +247,15 @@ class AndroidBridge(
                             account,
                             payload.optString("backupJson", ""),
                             payload.optString("localChangedAt", ""),
-                            payload.optString("mode", "auto")
+                            payload.optString("mode", "auto"),
+                            requestMeta.generation, requestMeta.dirtyRevision
                         )
                         respondOk(requestId, result)
                     } catch (e: Exception) {
                         respondError(requestId, e.message ?: "Cloud sync failed.")
                     }
                 }
+              }
             }
             "cloudOverview" -> authorizeFor(requestId, false) { token, account ->
                 executor.execute {
@@ -230,17 +263,20 @@ class AndroidBridge(
                     catch (e: Exception) { respondError(requestId, e.message ?: "Cloud overview failed.") }
                 }
             }
-            "cloudRestoreBackup" -> authorizeFor(requestId, false) { token, account ->
+            "cloudRestoreBackup" -> {
+              val requestMeta = meta.load()
+              authorizeFor(requestId, false) { token, account ->
                 executor.execute {
                     try {
                         payload.optString("backupJson", "").takeIf { it.isNotBlank() }?.let {
                             createRestorePoint(it, "before_cloud_history_restore")
                         }
-                        respondOk(requestId, cloud.restoreCloudBackup(token, payload.optString("fileId")))
+                        respondOk(requestId, cloud.restoreCloudBackup(token, payload.optString("fileId"), account, requestMeta.generation, requestMeta.dirtyRevision))
                     } catch (e: Exception) {
                         respondError(requestId, e.message ?: "Cloud backup restore failed.")
                     }
                 }
+              }
             }
             "createRestorePoint" -> {
                 try {
@@ -504,6 +540,7 @@ class AndroidBridge(
     private fun send(message: JSONObject) {
         val quoted = JSONObject.quote(message.toString())
         activity.runOnUiThread {
+            if (!activity.acceptsWebViewCallbacks(webView)) return@runOnUiThread
             webView.evaluateJavascript("window.__mlvAndroidReceive && window.__mlvAndroidReceive(" + quoted + ");", null)
         }
     }

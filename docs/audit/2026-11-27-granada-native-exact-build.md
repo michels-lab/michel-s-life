@@ -1,0 +1,3 @@
+# Granada — exact main Android APK provenance
+
+Previous exact candidate cb4b87369eea0856cfc38403e79c91ff29b0721e: 18/20 workflows SUCCESS, both APK compiles PASS, 50/50 alarm tests. Native API34 transport lost initial launch, API35 accessibility unavailable, API36 transport lost first 30s screenshot. All three matrix arms failed. #135 closed as superseded after exact Android UI PASS (360/412px Enter/Space, Journal live region). Main Android build now checks out exact PR head or dispatch SHA in all four jobs, binds versioned APK to its existing sidecar and verifies in all three native arms before installation. No signed release/name changes, no native gate bypass. New exact-head CI pending. #181 remains open until unique historical code reconciled.

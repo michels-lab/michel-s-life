@@ -72,5 +72,17 @@ fun main() {
     blocked("oversized read window") {
         CalendarSyncRules.validateReadWindow("2026-10-21T00:00:00Z", "2028-10-21T00:00:00Z")
     }
+    CalendarSyncRules.validateTiming("2026-01-01T00:00:00Z", "2027-01-02T00:00:00Z", false); assertions++
+    blocked("366 days plus one second timed event") {
+        CalendarSyncRules.validateTiming("2026-01-01T00:00:00Z", "2027-01-02T00:00:01Z", false)
+    }
+    CalendarSyncRules.validateReadWindow("2026-01-01T00:00:00Z", "2027-01-02T00:00:00Z"); assertions++
+    blocked("366 days plus one nanosecond read") {
+        CalendarSyncRules.validateReadWindow("2026-01-01T00:00:00Z", "2027-01-02T00:00:00.000000001Z")
+    }
+    ok(CalendarSyncRules.verifyResponseId(id, id) == id, "confirmed event identity")
+    blocked("missing provider id") { CalendarSyncRules.verifyResponseId(id, "") }
+    blocked("different provider id") { CalendarSyncRules.verifyResponseId(id, "another") }
+    blocked("empty expected id") { CalendarSyncRules.verifyResponseId("", "") }
     println("PASS: " + assertions + " calendar-domain safety assertions")
 }

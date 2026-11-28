@@ -28,11 +28,17 @@ import java.util.concurrent.atomic.AtomicReference
 internal object VerifiedDirectApk {
     private const val PENDING_APK = "verified-direct.apk"
     private const val MARKER = "verified-direct.json"
+    private const val MARKER_PART = "verified-direct.json.part"
+    private const val MAX_RECEIPT_BYTES = 4096L
     private const val MAX_APK_BYTES = 188_743_680L
     private const val MIN_APK_BYTES = 1_048_576L
     // Prevent concurrent Downloads or cache deletion while a hash is being staged.
     private val staging = AtomicBoolean(false)
     private val cancelRequested = AtomicBoolean(false)
+    private val operationLock = Any()
+    // Guard cancellation acknowledgement against starting/finishing a
+    // download or a different operation using the same cache.
+    private var downloadActive = false
     // Holds only this staging operation's currently active HTTP call.
     // Cancel never needs to wait for socket readTimeout or the download executor.
     private val activeCall = AtomicReference<Call?>(null)
@@ -99,7 +105,8 @@ internal object VerifiedDirectApk {
         var current = url
         for (hop in 0..4) {
             val uri = Uri.parse(current)
-            if (uri.scheme != "https" || uri.host !in allowedHosts)
+            if (uri.scheme != "https" || uri.host !in allowedHosts ||
+                (uri.port != -1 && uri.port != 443) || uri.userInfo != null)
                 throw IllegalStateException("Untrusted APK download host.")
             val request = Request.Builder().url(current)
                 .header("User-Agent", "MichelsLife-Android-Direct-Update")
@@ -115,7 +122,8 @@ internal object VerifiedDirectApk {
                         ?: throw IllegalStateException("Invalid APK redirect.")
                     val resolved = response.request.url.resolve(location)
                         ?: throw IllegalStateException("APK redirect target was invalid.")
-                    if (resolved.scheme != "https" || resolved.host !in allowedHosts)
+                    if (resolved.scheme != "https" || resolved.host !in allowedHosts ||
+                        resolved.port != 443 || resolved.username.isNotEmpty() || resolved.password.isNotEmpty())
                         throw IllegalStateException("APK redirected to an untrusted server.")
                     current = resolved.toString()
                 } else {
@@ -167,16 +175,26 @@ internal object VerifiedDirectApk {
     /** User explicitly taps Download: always re-query trustworthy metadata. */
     fun stage(activity: Activity,
             onProgress: (Long, Long) -> Unit = { _, _ -> }): JSONObject {
-        if (!staging.compareAndSet(false, true))
-            return JSONObject().put("staged", false)
-                .put("busy", true)
-                .put("status", "A verified APK download is already in progress.")
-        cancelRequested.set(false)
+        synchronized(operationLock) {
+            if (!staging.compareAndSet(false, true))
+                return JSONObject().put("staged", false)
+                    .put("busy", true)
+                    .put("status", "An update operation is already in progress.")
+            cancelRequested.set(false)
+            downloadActive = true
+        }
         return try { stageInternal(activity, onProgress) }
+            catch (_: Exception) {
+                JSONObject().put("staged", false)
+                    .put("status", "Could not prepare the private APK cache.")
+            }
             finally {
-                activeCall.getAndSet(null)?.cancel()
-                staging.set(false)
-                cancelRequested.set(false)
+                synchronized(operationLock) {
+                    activeCall.getAndSet(null)?.cancel()
+                    downloadActive = false
+                    cancelRequested.set(false)
+                    staging.set(false)
+                }
             }
     }
 
@@ -189,11 +207,13 @@ internal object VerifiedDirectApk {
         val candidate = File(dir, "download.part")
         val ready = File(dir, PENDING_APK)
         val marker = File(dir, MARKER)
-        // An old candidate must never look ready after network interruption.
-        marker.delete()
-        ready.delete()
-        candidate.delete()
+        val markerPart = File(dir, MARKER_PART)
+        // Invalidate the previous receipt before opening the network. Do
+        // not proceed if any old cache file cannot actually be removed.
         try {
+            for (file in listOf(marker, markerPart, ready, candidate))
+                if (file.exists() && !file.delete())
+                    throw IllegalStateException("Could not clear the previous update cache.")
             val metadata = AndroidDirectUpdateChecker.check(activity)
             if (!metadata.optBoolean("checked") || !metadata.optBoolean("updateAvailable"))
                 throw IllegalStateException("No verified newer Direct release available.")
@@ -225,13 +245,29 @@ internal object VerifiedDirectApk {
             val receipt = JSONObject().put("version", version).put("versionCode", code)
                 .put("sha256", digest).put("bytes", bytes)
                 .put("filename", filename).put("source", metadata.optString("releaseUrl"))
-            marker.writeText(receipt.toString(), Charsets.UTF_8)
+            synchronized(operationLock) {
+                if (cancelRequested.get())
+                    throw java.util.concurrent.CancellationException("APK download cancelled.")
+                val bytesToWrite = receipt.toString().toByteArray(Charsets.UTF_8)
+                if (bytesToWrite.size.toLong() > MAX_RECEIPT_BYTES)
+                    throw IllegalStateException("Update receipt exceeds size limit.")
+                markerPart.outputStream().use { stream ->
+                    stream.write(bytesToWrite)
+                    stream.fd.sync()
+                }
+                if (marker.exists() || !markerPart.renameTo(marker))
+                    throw IllegalStateException("Could not publish the verified update receipt.")
+                // After publishing a verified receipt, Cancel must no longer
+                // claim it can cancel the completed download.
+                downloadActive = false
+            }
             return JSONObject().put("staged", true).put("version", version)
                 .put("bytes", bytes)
                 .put("status", "APK downloaded, SHA-256 and permanent signing certificate verified. Tap Install to open the Android installer.")
         } catch (error: Exception) {
             // Never leave behind an unverified APK or a false-ready receipt.
             marker.delete()
+            markerPart.delete()
             ready.delete()
             // OkHttp Call.cancel() interrupts execute/read with IOException,
             // not CancellationException. Treat an explicit user-requested
@@ -240,10 +276,11 @@ internal object VerifiedDirectApk {
                 error is java.util.concurrent.CancellationException
             return JSONObject().put("staged", false).put("cancelled", cancelled)
                 .put("status", if (cancelled)
-                    "APK download cancelled. Partial files removed; your data is unchanged."
+                    "APK download cancelled. No installation was started."
                     else "Could not verify a signed APK. Nothing was installed; your app data is unchanged.")
         } finally {
             candidate.delete()
+            markerPart.delete()
         }
     }
 
@@ -253,9 +290,14 @@ internal object VerifiedDirectApk {
         val dir = folder(activity)
         val ready = File(dir, PENDING_APK)
         val receiptFile = File(dir, MARKER)
-        if (!ready.isFile || !receiptFile.isFile) return null
+        if (!ready.isFile || !receiptFile.isFile ||
+            receiptFile.length() !in 1L..MAX_RECEIPT_BYTES) return null
         return try {
             val receipt = JSONObject(receiptFile.readText(Charsets.UTF_8))
+            val keys = setOf("version", "versionCode", "sha256", "bytes", "filename", "source")
+            if (receipt.keys().asSequence().toSet() != keys) return null
+            if (listOf("version", "sha256", "filename", "source").any { receipt.opt(it) !is String }) return null
+            if (listOf("versionCode", "bytes").any { receipt.opt(it) !is Int && receipt.opt(it) !is Long }) return null
             val version = receipt.optString("version")
             val code = receipt.optLong("versionCode")
             val expectedBytes = receipt.optLong("bytes")
@@ -264,19 +306,22 @@ internal object VerifiedDirectApk {
             val tag = receipt.optString("source").substringAfterLast('/')
             val url = "https://github.com/michels-lab/michel-s-life-releases/releases/download/" +
                 tag + "/" + filename
-            val installedCode = if (Build.VERSION.SDK_INT >= 33)
+            @Suppress("DEPRECATION")
+            val installedInfo = if (Build.VERSION.SDK_INT >= 33)
                 activity.packageManager.getPackageInfo(activity.packageName,
-                    PackageManager.PackageInfoFlags.of(0L)).longVersionCode
-            else {
-                @Suppress("DEPRECATION")
-                val info = activity.packageManager.getPackageInfo(activity.packageName, 0)
-                if (Build.VERSION.SDK_INT >= 28) info.longVersionCode else info.versionCode.toLong()
-            }
+                    PackageManager.PackageInfoFlags.of(0L))
+            else activity.packageManager.getPackageInfo(activity.packageName, 0)
+            @Suppress("DEPRECATION")
+            val installedCode = if (Build.VERSION.SDK_INT >= 28) installedInfo.longVersionCode
+                else installedInfo.versionCode.toLong()
+            val installedVersion = installedInfo.versionName ?: return null
             if (!DirectUpdatePolicy.validVersion(version) ||
                 !DirectUpdatePolicy.officialReleaseUrl(receipt.optString("source"), tag) ||
                 !DirectUpdatePolicy.officialAssetUrl(url, tag, filename) ||
                 filename != "MichelsLife-Android-Direct-v" + version + ".apk" ||
-                code <= installedCode || expectedBytes !in MIN_APK_BYTES..MAX_APK_BYTES ||
+                code <= installedCode || DirectUpdatePolicy.compare(installedVersion, installedCode,
+                    version, code, true, true, true) != DirectUpdatePolicy.Status.NEWER ||
+                expectedBytes !in MIN_APK_BYTES..MAX_APK_BYTES ||
                 ready.length() != expectedBytes || !expectedHash.matches(Regex("[0-9a-f]{64}")) ||
                 digestOf(ready) != expectedHash || !archiveVerified(activity, ready, version, code))
                 null else Pair(ready, receipt)
@@ -292,15 +337,17 @@ internal object VerifiedDirectApk {
         if (AndroidDirectUpdateChecker.channel(activity) != "android-direct")
             return JSONObject().put("requested", false)
                 .put("status", "Only Android Direct downloads can be cancelled.")
-        if (!staging.get())
-            return JSONObject().put("requested", false)
-                .put("status", "No APK download is running.")
-        cancelRequested.set(true)
-        // Abort a blocked DNS/connect/read immediately, instead of waiting
-        // up to OkHttp's read timeout. The worker still cleans partial files.
-        activeCall.get()?.cancel()
-        return JSONObject().put("requested", true)
-            .put("status", "Cancellation requested; partial APK will be deleted.")
+        synchronized(operationLock) {
+            if (!downloadActive)
+                return JSONObject().put("requested", false)
+                    .put("status", "No APK download is running.")
+            cancelRequested.set(true)
+            // Abort a blocked APK HTTP call immediately. The worker alone
+            // owns cleanup. Metadata lookup is bounded separately.
+            activeCall.get()?.cancel()
+            return JSONObject().put("requested", true)
+                .put("status", "Cancellation requested; partial APK will be deleted.")
+        }
     }
 
     /**
@@ -309,14 +356,20 @@ internal object VerifiedDirectApk {
      * The marker is untrusted and the actual on-disk bytes are rehashed.
      */
     fun readiness(activity: Activity): JSONObject {
-        if (staging.get())
+        if (!staging.compareAndSet(false, true))
             return JSONObject().put("ready", false).put("busy", true)
                 .put("status", "APK verification is still running.")
+        return try { readinessInternal(activity) }
+        catch (_: Exception) { JSONObject().put("ready", false).put("status", "Update cache unavailable.") }
+        finally { staging.set(false) }
+    }
+
+    private fun readinessInternal(activity: Activity): JSONObject {
         val candidate = validatedCandidate(activity)
         if (candidate == null) {
             val dir = folder(activity)
             val cached = File(dir, PENDING_APK).exists() ||
-                File(dir, MARKER).exists() || File(dir, "download.part").exists()
+                File(dir, MARKER).exists() || File(dir, MARKER_PART).exists() || File(dir, "download.part").exists()
             return JSONObject().put("ready", false)
                 .put("hasCached", cached)
                 .put("status", if (cached)
@@ -344,13 +397,15 @@ internal object VerifiedDirectApk {
         if (!staging.compareAndSet(false, true))
             return JSONObject().put("discarded", false).put("busy", true)
                 .put("status", "Wait until the APK download finishes before removing it.")
-        return try { discardInternal(activity) } finally { staging.set(false) }
+        return try { discardInternal(activity) }
+        catch (_: Exception) { JSONObject().put("discarded", false).put("status", "Update cache unavailable.") }
+        finally { staging.set(false) }
     }
 
     private fun discardInternal(activity: Activity): JSONObject {
         val dir = folder(activity)
         val targets = listOf(File(dir, MARKER), File(dir, PENDING_APK),
-            File(dir, "download.part"))
+            File(dir, MARKER_PART), File(dir, "download.part"))
         // Delete receipt first so no half-deleted file can ever be offered.
         for (file in targets) {
             if (file.exists() && !file.delete())
@@ -380,49 +435,71 @@ internal object VerifiedDirectApk {
 
     /** Explicit second user tap only, always subject to Android OS confirmation. */
     fun requestInstaller(activity: Activity, onResult: (JSONObject) -> Unit) {
-        if (staging.get()) {
+        // Hold the same exclusive gate across the worker verification AND
+        // the actual UI-thread handoff. Another Activity/bridge executor
+        // cannot replace or discard the file while it is being checked.
+        if (!staging.compareAndSet(false, true)) {
             onResult(JSONObject().put("opened", false).put("busy", true)
-                .put("status", "Download verification is still running."))
+                .put("status", "Another update operation is running."))
             return
         }
-        val candidate = validatedCandidate(activity)
-        if (candidate == null) {
-            onResult(JSONObject().put("opened", false)
-                .put("status", "No verified signed APK is ready; download it again."))
-            return
-        }
-        if (!matchesCurrentOfficialRelease(activity, candidate.second)) {
-            onResult(JSONObject().put("opened", false).put("stale", true)
-                .put("status", "This staged APK is no longer the latest verified official release. Check updates and download again."))
-            return
-        }
-        if (!activity.packageManager.canRequestPackageInstalls()) {
-            onResult(JSONObject().put("opened", false).put("needsPermission", true)
-                .put("status", "Allow installations from Michel's Life in Android Settings, then tap Install again."))
-            return
-        }
-        activity.runOnUiThread {
-            try {
-                val uri = FileProvider.getUriForFile(activity,
-                    activity.packageName + ".verifiedupdates", candidate.first)
-                val intent = Intent(Intent.ACTION_VIEW).apply {
-                    setDataAndType(uri, "application/vnd.android.package-archive")
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-                activity.startActivity(intent)
-                // OS confirmation is NOT evidence an update was installed.
-                onResult(JSONObject().put("opened", true)
-                    .put("status", "Android's installer was opened; confirm or cancel there."))
-            } catch (_: Exception) {
+        var handedToUi = false
+        try {
+            val candidate = validatedCandidate(activity)
+            if (candidate == null) {
                 onResult(JSONObject().put("opened", false)
-                    .put("status", "Android could not open the package installer."))
+                    .put("status", "No verified signed APK is ready; download it again."))
+                return
             }
+            if (!matchesCurrentOfficialRelease(activity, candidate.second)) {
+                onResult(JSONObject().put("opened", false).put("stale", true)
+                    .put("status", "This staged APK is no longer the latest verified official release. Check updates and download again."))
+                return
+            }
+            if (!activity.packageManager.canRequestPackageInstalls()) {
+                onResult(JSONObject().put("opened", false).put("needsPermission", true)
+                    .put("status", "Allow installations from Michel's Life in Android Settings, then tap Install again."))
+                return
+            }
+            activity.runOnUiThread {
+                val result = try {
+                    if (activity.isFinishing || activity.isDestroyed)
+                        throw IllegalStateException("Installer request no longer has an active screen.")
+                    val uri = FileProvider.getUriForFile(activity,
+                        activity.packageName + ".verifiedupdates", candidate.first)
+                    val intent = Intent(Intent.ACTION_VIEW).apply {
+                        setDataAndType(uri, "application/vnd.android.package-archive")
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    activity.startActivity(intent)
+                    JSONObject().put("opened", true)
+                        .put("status", "Android's installer was opened; confirm or cancel there.")
+                } catch (_: Exception) {
+                    JSONObject().put("opened", false)
+                        .put("status", "Android could not open the package installer.")
+                } finally {
+                    staging.set(false)
+                }
+                onResult(result)
+            }
+            handedToUi = true
+        } catch (_: Exception) {
+            onResult(JSONObject().put("opened", false).put("status", "Could not verify the staged update."))
+        } finally {
+            if (!handedToUi) staging.set(false)
         }
     }
 
     /** Separate explicit tap. Permission settings never trigger an install. */
     fun openPermissionSettings(activity: Activity, onResult: (JSONObject) -> Unit) {
-        if (validatedCandidate(activity) == null) {
+        if (!staging.compareAndSet(false, true)) {
+            onResult(JSONObject().put("opened", false).put("busy", true).put("status", "Another update operation is running."))
+            return
+        }
+        val verified = try { validatedCandidate(activity) != null }
+            catch (_: Exception) { false }
+            finally { staging.set(false) }
+        if (!verified) {
             onResult(JSONObject().put("opened", false).put("status", "No verified APK is staged."))
             return
         }

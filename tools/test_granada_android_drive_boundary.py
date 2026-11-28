@@ -73,7 +73,7 @@ class NativeGoogleDriveBoundaryTests(unittest.TestCase):
         self.assertIn('uploadCloudFile(accessToken, remote?.id, backupJson',source)
 
     def test_08_restore_sanitizes_legacy_but_keeps_remote_hash(self):
-        source=segment("fun restoreCloudBackup(accessToken: String, fileId: String)", "\n    private fun conflict(")
+        source=segment("fun restoreCloudBackup(accessToken: String, fileId: String, account: String", "\n    private fun conflict(")
         self.assertIn("val safeContent = validateBackup(content, forUpload = false)",source)
         self.assertIn('.put("backupJson", safeContent)',source)
         self.assertIn("val hash = hashText(content)",source)
@@ -101,6 +101,86 @@ class NativeGoogleDriveBoundaryTests(unittest.TestCase):
         self.assertNotIn("localStorage.setItem",boundary)
         self.assertNotIn("SESSION_KEY",boundary)
         self.assertNotIn("accessToken",boundary)
+
+    def test_13_divergent_edits_never_choose_a_winner_by_clock(self):
+        source=segment("fun sync(accessToken: String, account: String, backupJson: String", "\n    fun overview(")
+        self.assertNotIn("localWhen.isAfter",source)
+        self.assertNotIn("remoteWhen.isAfter",source)
+        self.assertNotIn("before_newer_local_upload",source)
+        self.assertIn("return conflict(localHash, remoteHash, remote, meta.lastLocalDirtyAt,",source)
+        self.assertLess(source.index("if (localHash.equals(remoteHash, true))"),
+                        source.index("if (meta.lastSyncedHash.isBlank())"))
+
+    def test_14_every_overwrite_saves_and_checks_a_recovery_copy(self):
+        source=segment("private fun createHistoryBackup", "\n    private fun pruneBackups(")
+        self.assertNotIn("Duration.ofMinutes(5)",source)
+        self.assertIn("!remote.contentHash.equals(current.second, true)",source)
+        self.assertIn("saved.contentHash.equals(hashText(current.first), true)",source)
+        self.assertIn("latest.modifiedTime != remote.modifiedTime",source)
+        self.assertLess(source.index("uploadJson(accessToken, null, name, current.first, props)"),
+                        source.index("val latest = findCloudFile(accessToken)"))
+
+    def test_15_account_change_preserves_current_dirty_marker(self):
+        source=segment("fun sync(accessToken: String, account: String, backupJson: String", "\n    fun overview(")
+        store=segment("fun beginSync(", "private fun requireCurrentLocked(")
+        self.assertLess(store.index("meta = CloudMeta("),
+                        store.index("meta.lastLocalDirtyAt = localChangedAt"))
+        self.assertIn("metaStore.beginSync(account, localChangedAt, expectedGeneration, expectedDirtyRevision)",source)
+        self.assertLess(source.index('require(mode in setOf("auto", "upload", "download"))'),
+                        source.index("findCloudFile(accessToken)"))
+
+    def test_16_ambiguous_master_and_invalid_upload_receipt_fail_closed(self):
+        self.assertIn("if (matches.size > 1)",NATIVE)
+        self.assertIn("uploaded.contentHash.equals(contentHash, true)",NATIVE)
+        self.assertIn("(fileId == null || uploaded.id == fileId)",NATIVE)
+
+    def test_17_provider_response_is_bounded_and_errors_do_not_echo_body(self):
+        source=segment("private fun execute(", "\n    private fun hashText(")
+        self.assertLess(source.index("source?.request(10L * 1024 * 1024 + 1L)"),
+                        source.index("source?.readUtf8()"))
+        self.assertNotIn("text.take(600)",source)
+        self.assertIn('throw IOException("Google API HTTP " + response.code)',source)
+
+    def test_18_restore_rejects_hash_mismatch_and_unrelated_cloud_file(self):
+        master=segment("private fun downloadCloudFile", "\n    private fun downloadText(")
+        history=segment("fun restoreCloudBackup(accessToken: String, fileId: String, account: String", "\n    private fun conflict(")
+        self.assertIn("!remote.contentHash.equals(hashText(content), true)",master)
+        self.assertIn("info.id == fileId",history)
+        self.assertIn("info.name.startsWith(CLOUD_BACKUP_PREFIX)",history)
+        self.assertIn("!info.contentHash.equals(hashText(content), true)",history)
+        self.assertLess(history.index("info.id == fileId"),history.index("downloadText(accessToken, info.id)"))
+        self.assertLess(history.index("!info.contentHash.equals"),history.index('.put("backupJson", safeContent)'))
+
+    def test_19_metadata_commit_preserves_late_edit_and_refuses_old_account(self):
+        store=segment("fun commitUploaded(expected:", "fun registerRestore(")
+        self.assertIn("requireCurrentLocked(expected)",store)
+        self.assertIn("if (current.dirtyRevision == expected.dirtyRevision) current.lastLocalDirtyAt = null",store)
+        self.assertIn("saveLocked(current)",store)
+        guard=segment("private fun requireCurrentLocked(", "fun requireCurrent(")
+        self.assertIn("current.generation == expected.generation",guard)
+        self.assertIn("current.deviceId == expected.deviceId",guard)
+        self.assertIn("current.account.equals(expected.account, true)",guard)
+
+    def test_20_disconnect_invalidates_queued_upload_and_restore(self):
+        store=segment("fun resetForDisconnect()", "private fun parseInstant")
+        self.assertIn("previous.generation + 1",store)
+        self.assertIn("pendingRestore = null",store)
+        self.assertEqual(ANDROID_BRIDGE.count("val requestMeta = meta.load()"),2)
+        self.assertEqual(ANDROID_BRIDGE.count("requestMeta.generation, requestMeta.dirtyRevision"),2)
+        self.assertIn("meta.dirtyRevision == expectedDirtyRevision",NATIVE)
+        source=segment("fun sync(accessToken: String, account: String, backupJson: String", "\n    fun overview(")
+        self.assertEqual(source.count("metaStore.requireCurrent(meta)"),4)
+        self.assertNotIn("metaStore.save(",source)
+
+    def test_21_restore_acknowledgement_is_bound_to_actual_download(self):
+        store=segment("fun registerRestore(", "fun resetForDisconnect()")
+        self.assertIn("current.dirtyRevision == expected.dirtyRevision",store)
+        self.assertIn("PendingRestore(expected.copy(), hash, modified)",store)
+        self.assertIn("pendingRestore ?: throw",store)
+        self.assertIn("requireCurrentLocked(pending.owner)",store)
+        self.assertIn("pending.hash.equals(hash, true) && pending.modified == remoteModifiedAt",store)
+        self.assertIn("if (current.dirtyRevision == pending.owner.dirtyRevision)",store)
+        self.assertIn("metaStore.registerRestore(meta, hash, info.modifiedTime)",NATIVE)
 
 if __name__=="__main__":
     unittest.main()
