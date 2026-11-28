@@ -1079,7 +1079,7 @@
             if(typeof onProgress==='function'&&typeof bytes==='number'&&
               typeof total==='number'&&Number.isFinite(bytes)&&
               Number.isFinite(total)&&Number.isSafeInteger(bytes)&&
-              Number.isSafeInteger(total)&&total>0&&bytes>lastBytes&&
+              Number.isSafeInteger(total)&&total>0&&bytes>=0&&bytes>lastBytes&&
               bytes<=total&&(expectedTotal===null||total===expectedTotal)){
               expectedTotal=total;
               lastBytes=bytes;
@@ -1125,8 +1125,8 @@
             ?(es?'APK verificada. Toca Instalar para abrir la confirmación de Android.':
               'APK verified. Tap Install to open Android confirmation.')
             :result?.cancelled
-              ?(es?'Descarga cancelada. Los archivos parciales se eliminaron; tus datos siguen intactos.':
-                'Download cancelled. Partial files were removed; your data is unchanged.')
+              ?(es?'Descarga cancelada. No se inició ninguna instalación.':
+                'Download cancelled. No installation was started.')
               :(es?'No se pudo verificar la APK; no se instaló nada.':
                 'APK verification failed; nothing was installed.');
           install.hidden=!(ok&&result?.staged);
@@ -1243,14 +1243,21 @@
           window.chrome.webview.removeEventListener('message',responseHandler);
           button.disabled=false;
           const result=data.ok?data.payload:null;
+          const url=typeof result?.releaseUrl==='string'?result.releaseUrl:'';
+          const tag=/^https:\/\/github\.com\/michels-lab\/michel-s-life-releases\/releases\/tag\/v[0-9]{1,5}\.[0-9]{1,5}\.[0-9]{1,5}-android-v([0-9]{1,5}\.[0-9]{1,5}\.[0-9]{1,5})$/.exec(url);
+          const offered=data.ok===true&&result?.channel==='android-direct'&&
+            result.checked===true&&result.updateAvailable===true&&
+            !!tag&&tag[1]===result.latestAndroidVersion;
           const displayed=q('#mlv-android-update-status');
           if(displayed){
             if(!data.ok)displayed.textContent=isEs
               ?'No se pudo verificar la actualización.'
               :'Update check could not be completed.';
-            else if(isEs && result?.checked)displayed.textContent=result?.updateAvailable
-              ?'Hay una actualización oficial de Android Direct. Revisa la página antes de descargar; no se instalará automáticamente.'
-              :'Tu versión de Android Direct está actualizada.';
+            else if(result?.updateAvailable===true)displayed.textContent=offered
+              ?(isEs?'Hay una actualización oficial de Android Direct. Revisa la página antes de descargar; no se instalará automáticamente.':'An official Android Direct update is available. Review the release before downloading; installation is never automatic.')
+              :(isEs?'La información de la actualización no coincide con el release oficial.':'Update metadata does not match the official release.');
+            else if(isEs && result?.checked===true && result?.channel==='android-direct' && result?.updateAvailable===false)
+              displayed.textContent='Tu versión de Android Direct está actualizada.';
             else if(isEs && result?.channel==='google-play')
               displayed.textContent='Las actualizaciones de esta instalación se gestionan desde Google Play.';
             else if(isEs && result?.channel==='test')
@@ -1259,9 +1266,7 @@
             else displayed.textContent=String(result?.status||'No verifiable result.');
           }
           const link=q('#mlv-android-update-release-link');
-          const url=String(result?.releaseUrl||'');
-          if(link && data.ok && result?.checked && result?.updateAvailable &&
-            /^https:\/\/github\.com\/michels-lab\/michel-s-life-releases\/releases\/tag\/v[0-9]+\.[0-9]+\.[0-9]+$/.test(url)){
+          if(link && offered){
             link.href=url;
             link.hidden=false;
             const download=q('#mlv-android-stage-update');
@@ -1277,7 +1282,7 @@
           if(displayed)displayed.textContent=isEs
             ?'Sin respuesta de Android. Intenta de nuevo.'
             :'No Android response. Please retry.';
-        },18000);
+        },160000);
         window.chrome.webview.addEventListener('message',responseHandler);
         try{
           window.chrome.webview.postMessage({

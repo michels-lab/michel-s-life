@@ -112,12 +112,13 @@ document.documentElement.lang='es';
 context.renderUpdates();
 assert.match(check.textContent,/Buscar actualizaciones/);
 check.fire();request('updateStatus');
-respond({checked:true,updateAvailable:true,
-  releaseUrl:'https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.222'});
+respond({checked:true,updateAvailable:true,channel:'android-direct',latestAndroidVersion:'0.2.24',
+  releaseUrl:'https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.235-android-v0.2.24'});
 assert.equal(stage.hidden,false);
 assert.equal(install.hidden,true);
 assert.equal(permission.hidden,true);
 assert.equal(link.hidden,false);
+assert.match(link.href,/v3\.0\.235-android-v0\.2\.24$/);
 assert.match(status.textContent,/Hay una actualización oficial/);
 
 const progress=get('update-progress'),cancel=get('cancel-update');
@@ -250,6 +251,24 @@ assert.match(get('update-status').textContent,/No se pudo verificar/);
 assert.equal(get('check-updates').disabled,false);
 assert.equal(listeners.size,0);
 assert.equal(timers.size,0);
+
+// The production paired tag must agree with the native Android version.
+for(const bad of [
+ {channel:'android-direct',latestAndroidVersion:'0.2.25',releaseUrl:'https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.235-android-v0.2.24'},
+ {channel:'android-direct',latestAndroidVersion:'0.2.24',releaseUrl:'https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.235'},
+ {channel:'test',latestAndroidVersion:'0.2.24',releaseUrl:'https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.235-android-v0.2.24'},
+ {channel:'android-direct',latestAndroidVersion:'0.2.24',releaseUrl:'https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.235-android-v0.2.24?x=1'}
+]){
+ get('check-updates').fire();request('updateStatus');
+ respond({checked:true,updateAvailable:true,...bad});
+ assert.equal(get('stage-update').hidden,true);
+ assert.equal(get('update-release-link').hidden,true);
+ assert.match(get('update-status').textContent,/no coincide/);
+}
+get('check-updates').fire();request('updateStatus');
+respond({checked:'true',updateAvailable:true,channel:'android-direct',latestAndroidVersion:'0.2.24',
+ releaseUrl:'https://github.com/michels-lab/michel-s-life-releases/releases/tag/v3.0.235-android-v0.2.24'});
+assert.equal(get('stage-update').hidden,true);
 
 // Race: the user starts an official update check while local cache rehash is
 // still running. Its later response must not resurrect an obsolete Install.
